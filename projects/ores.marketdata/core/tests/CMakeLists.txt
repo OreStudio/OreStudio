@@ -49,22 +49,31 @@ add_custom_target(test_${tests_target_name}
 
 add_dependencies(run_all_tests test_${tests_target_name})
 
+# The whole-corpus import walk is its own ctest entry, so it and the rest of the
+# suite each have the full per-test time limit CI applies (600 s on Linux):
+# together they ran 592 s. Both run by default.
+set(corpus_tests_name ${name}.corpus.tests)
 add_test(NAME ${tests_target_name}
-    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} "~[corpus-full]"
+        -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_test(NAME ${corpus_tests_name}
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} "[corpus-full]"
+        -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${corpus_tests_name}.xml
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-# This suite carries the whole-corpus import walk: it writes every market
-# payload under external/ore/examples, which takes about half an hour and keeps
-# the database busy throughout. Running it beside another suite slows that
-# suite's database reads enough to expose a race of its own -- a reporting
+# The whole-corpus walk writes every market payload under external/ore/examples
+# and keeps the database busy throughout. Running it beside another suite slows
+# that suite's database reads enough to expose a race of its own -- a reporting
 # test asserts its version history is unchanged immediately after a delete,
-# while the service's notification re-drive can still be writing -- so the
-# suite runs alone rather than beside anything.
-set_tests_properties(${tests_target_name} PROPERTIES
-    PROCESSORS 1
-    RUN_SERIAL TRUE
-    ENVIRONMENT "${ORES_TEST_ENV}"
-    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
-)
-
-set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)
+# while the service's notification re-drive can still be writing -- so both
+# entries run alone rather than beside anything.
+foreach(entry ${tests_target_name} ${corpus_tests_name})
+    set_tests_properties(${entry} PROPERTIES
+        PROCESSORS 1
+        RUN_SERIAL TRUE
+        ENVIRONMENT "${ORES_TEST_ENV}"
+        ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${entry}.xml"
+    )
+    set_property(TEST ${entry} PROPERTY USES_XML_OUTPUT ON)
+endforeach()

@@ -87,7 +87,6 @@ domain::market_observation to_domain(const messaging::market_observation_write& 
     v.series_id = write.series_id;
     v.observation_datetime = write.observation_datetime;
     v.oresmd_uri = write.oresmd_uri;
-    v.key = write.key;
     v.value = write.value;
     v.source = write.source;
     return v;

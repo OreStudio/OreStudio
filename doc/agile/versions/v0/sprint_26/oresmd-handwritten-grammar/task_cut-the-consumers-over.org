@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/cut-the-consumers-over
-#+pr: 2545
+#+branch: feature/cut-the-consumers-over-part-2
+#+pr: 2559
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -27,11 +27,11 @@ tests prove values by key.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Part 1 raised: the readers and writers. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Part 2: drop the key column.           |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -92,6 +92,9 @@ task and name that file in the Command column.
 | Whole suite after recreating the database | 89 of 89 passed (part 1) | =compass test run= | b1623fa8ab |
 | Marketdata core suite | 453 cases passed, 452 s, including the corpus import compared by canonical key and the export round trip | =compass test run -- -R marketdata= | b1623fa8ab |
 | Spot pillar key ORE accepts | =IR_SWAP/RATE/USD/0D/1D/20260319= refused; =.../0D/1D/7W= and =.../20260128/1D/20260319= accepted | catalogue harness on the local ORE build | b1623fa8ab |
+| Whole suite, part 2, after recreating the database | 89 of 89 passed before the split; core suite 592 s | =compass test run= | 4b9da9fbbf |
+| Core suite after the split | =ores.marketdata.core.tests= 167.87 s; =ores.marketdata.core.corpus.tests= 402.84 s; both passed | =compass test run -- -R "^ores.marketdata.core"= | 4b9da9fbbf |
+| Slowest cases before the split | whole-corpus walk 423 s; fixing walk 54 s; seed URI scan 18 s (=std::regex=) | =LastTest.log= durations | 4b9da9fbbf |
 
 * Notes
 
@@ -136,13 +139,30 @@ through the two codecs, and the SQL seeds hold the new form.
   own series and no respelling is reported. An alias such as =FX_SPOT= is still
   respelled and reported.
 
-** What part 2 holds
+** Part 2: the raw key goes
 
-=market_observations.key= still exists and holds the canonical key; part 2
-drops it through the model. The corpus tests already compare by canonical key;
-part 2 adds the =MD_*= and =FD_*= files and the shared tokeniser. The import
-still passes the shape registry to the tokeniser, which fills decomposition
-fields nothing reads now; the retire task removes both.
+- *=market_observations.key= is dropped* through the model and regenerated: the
+  domain type, the entity, the mapper, the protocol, the wire types and the
+  table. The row's only identity is its datum URI. The import, the feed ingest
+  loop and the curve republish stop writing the column, and the SQL publish
+  from a DQ dataset stops copying it. The DQ staging table keeps its own =key=,
+  which records the vendor's text for the dataset, not a stored observation.
+- *The corpus tests compare values by key and read with the production
+  tokeniser.* Each file is read with =parse_market_data= or =parse_fixings=,
+  the readers the import uses, and each stored row's key is written from its
+  datum URI, so a value under another key or date fails.
+- *The corpus selection takes the =MD_*= and =FD_*= files.* The dated =MD_*=
+  dumps are market payloads, which the catalogue's corpus extract already
+  included, and the =FD_*= dumps are fixing payloads. A new case imports every
+  fixing file and compares (date, index name, value).
+- *The suite stays inside CI's limit.* With the fixing walk and the =MD_*=
+  files, =ores.marketdata.core.tests= ran 592 s, against the 600 s per-test
+  limit CI applies on Linux. The whole-corpus walk is now its own ctest entry,
+  =ores.marketdata.core.corpus.tests=, so each half has the full limit; both
+  run by default. The seed URI scan no longer uses =std::regex=, which took
+  18 s in a debug build.
+
+The cut-over's merge date is recorded in the sprint's Achievements.
 
 * Test Scenarios
 
@@ -159,6 +179,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2559][#2559]] | [marketdata] Drop the stored observation key and widen the corpus tests |
 | [[https://github.com/OreStudio/OreStudio/pull/2545][#2545]] | [marketdata] Cut the quote readers and writers over to the new codecs |
 
 * Review
@@ -172,5 +193,20 @@ via its "Verifies task" field.
 | 5 | PR 2545 round 1: =parse_value= refuses empty text, which the URI codec now uses. | =market_datum.cpp= | Not changed | The URI reader already refused an empty query value before, so nothing that read before stops reading. |
 | 6 | PR 2545 round 1: =parse_ore_key= accepts an empty qualifier. | =feed_ingest_loop.cpp= | Accepted | A comment says the codec, not the splitter, decides whether the parts make a key. |
 | 7 | PR 2545 round 1: old-format URIs no longer read. | | Noted | The PR body names the recreate step; the journal records the merge date. |
+| 8 | Local review, part 2: =.journal.org= is git-ignored, so it cannot carry the merge date to other developers. | =sprint.org= | Accepted | Recorded in the sprint's Achievements instead. |
+| 9 | Local review, part 2: the corpus test and the rest of the suite, run together, reached 592 s against CI's 600 s limit. | =tests/CMakeLists.txt= | Accepted | The whole-corpus walk is its own ctest entry; the seed scan drops =std::regex=. |
+| 10 | PR 2559 round 1: =marketdata_market_observations_add_key_migration.sql= still adds the dropped column. | =ores.sql/migration= | Accepted | The migrations are a history, so a drop migration follows it, as for =compute_results_drop_pgmq_msg_id=; it runs and skips on a recreated database. |
+| 11 | PR 2559 round 1: check CI time before merging. | | Noted | The build-and-test workflows run on a schedule, not on a PR, so the first CI timing comes after merge; it will be checked then. |
+| 12 | PR 2559 round 1: the fixing walk runs in the main entry. | | No change | Measured: the main entry, including the 54 s fixing walk, ran 167.87 s. |
 
 * Result
+
+Every reader and writer of a stored quote identity uses =ore_key_codec= and
+=oresmd_uri_codec=, in two PRs. A stored observation holds one identity, its
+datum URI, and every ORE key is written from it; =market_observations.key= is
+gone. The SQL seeds hold the new URIs, and a test checks every URI they hold.
+The corpus tests read with the production tokeniser, compare values by key
+and date, cover the =MD_*= and =FD_*= dumps and every fixing file, and run in
+two ctest entries inside CI's per-test limit. Fixings keep the old grammar by
+design. Every developer recreates their database after each part merges; the
+sprint's Achievements record part 1's merge.

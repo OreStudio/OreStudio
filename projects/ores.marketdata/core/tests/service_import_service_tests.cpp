@@ -18,6 +18,8 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
@@ -133,7 +135,9 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
     REQUIRE(observations.size() == 1);
     CHECK(observations.front().oresmd_uri ==
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
-    CHECK(observations.front().key == "FX/RATE/EUR/USD");
+    CHECK(ores::marketdata::datum::ore_key_codec::write(
+              ores::marketdata::datum::oresmd_uri_codec::read(observations.front().oresmd_uri)
+                  .value()) == "FX/RATE/EUR/USD");
 }
 
 TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
@@ -261,7 +265,9 @@ TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tag
     REQUIRE(series.size() == 1);
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
-    CHECK(observations.front().key == "FX/RATE/EUR/USD");
+    CHECK(ores::marketdata::datum::ore_key_codec::write(
+              ores::marketdata::datum::oresmd_uri_codec::read(observations.front().oresmd_uri)
+                  .value()) == "FX/RATE/EUR/USD");
 }
 
 TEST_CASE("import_stores_a_key_in_the_case_it_was_written", tags) {

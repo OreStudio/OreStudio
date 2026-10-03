@@ -332,7 +332,6 @@ void curve_republish_service::republish(context ctx,
         obs.oresmd_uri = datum_uri;
         obs.value = std::format("{:.17g}", point.discount_factor);
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
-        obs.key = datum::ore_key_codec::write(point_datum).value();
         observations.push_back(std::move(obs));
 
         // A rerun over the same (series, as_of, point_id) natural key must reuse the prior

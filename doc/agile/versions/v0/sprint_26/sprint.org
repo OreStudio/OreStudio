@@ -168,6 +168,17 @@ Milestones worth capturing as they happen, so the release notes at
 sprint close have the evidence to hand. Add a dated =** subheading=
 per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
 
+** 2026-10-03: market data quote identities moved to the new codecs
+
+PR 2545 merged at 14:24 UTC (=f0d385c1d8=). Every reader and writer of a
+stored quote identity now uses the hand-written ORE key codec and oresmd URI
+codec, and quote URIs have the form
+=oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=. A quote URI
+in the old form no longer reads, so every developer must recreate their
+database and re-import after pulling main: =compass db recreate -y -k=. The
+second part of the cut-over, which drops =market_observations.key=, needs the
+same step.
+
 * Captures
 
 Real captures filed during this sprint that have *not* been pulled into a

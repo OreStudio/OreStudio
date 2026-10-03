@@ -473,7 +473,6 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.value = value;
         obs.source = source;
         obs.oresmd_uri = datum::oresmd_uri_codec::write(tick_datum).value();
-        obs.key = datum::ore_key_codec::write(tick_datum).value();
 
         repository::market_observations_repository obs_repo;
         obs_repo.write(tenant_ctx, obs);

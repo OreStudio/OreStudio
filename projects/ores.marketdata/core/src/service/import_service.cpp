@@ -350,9 +350,6 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.series_id = series;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
                 obs.oresmd_uri = named->datum_uri;
-                // The canonical key of the datum the row holds, never the file's
-                // own text: a row names one identity.
-                obs.key = named->canonical;
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

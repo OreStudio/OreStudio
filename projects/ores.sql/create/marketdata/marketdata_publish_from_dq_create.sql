@@ -107,7 +107,7 @@ begin
 
     for r in
         select
-            dq.oresmd_uri, dq.key, dq.datum_uri,
+            dq.oresmd_uri, dq.datum_uri,
             dq.observation_date, dq.value, dq.source
         from ores_dq_market_data_observations_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
@@ -151,12 +151,13 @@ begin
             -- ores_marketdata_market_series_tbl (OBSERVED <-> nil-uuid/0,
             -- else both required).
             --
-            -- The series is named by the identity the dataset's rows carry, which
-            -- is the identity their own ORE source key projects to: the deposit
-            -- grid's MM/RATE/USD/2D/3M row names the MM/RATE/USD/2D series. The
-            -- dataset states the projection because SQL cannot make it; the
-            -- grammar in C++ is what reads a key back. The identity is the only
-            -- name the series row carries now.
+            -- The series is named by the series URI the dataset's rows carry,
+            -- which is the series of the datum their own ORE source key names: the
+            -- deposit grid's MM/RATE/USD/2D/3M row names the MM/RATE/USD/2D series.
+            -- The dataset states the URI because SQL cannot run the codec; the
+            -- marketdata core tests check every URI the seeds hold. The URI is the
+            -- only name the series row carries, and an observation's key is
+            -- written from its datum URI rather than stored.
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 oresmd_uri, series_subclass,
@@ -198,12 +199,12 @@ begin
         end if;
 
         insert into ores_marketdata_market_observations_tbl (
-            id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, key, value,
+            id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
             source,
             valid_from, valid_to
         ) values (
             gen_random_uuid(), p_target_tenant_id, v_target_party_id, v_series_id,
-            r.observation_date::timestamptz, r.datum_uri, r.key, r.value::text, r.source,
+            r.observation_date::timestamptz, r.datum_uri, r.value::text, r.source,
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 

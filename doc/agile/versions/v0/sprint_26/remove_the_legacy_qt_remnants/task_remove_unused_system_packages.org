@@ -8,7 +8,7 @@
 #+filetags: :remove_the_legacy_qt_remnants:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trim-system-package-dependencies
-#+pr:
+#+pr: 2528
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2528][#2528]] | [build] Remove the X11 headers, pg_cron and pgmq from the setup |
 
 * Review
 

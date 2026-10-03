@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-03
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A report type is our own classification, not ORE's. It decides which workflow ru
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
 
 * Acceptance
 
@@ -92,6 +92,20 @@ task and name that file in the Command column.
 
 * Notes
 
+- The trigger refuses every definition that binds fewer than the four
+  configurations =risk= requires. No seeded definition binds any configuration
+  yet, so after this change no seeded report can be triggered until its
+  configurations are bound. That is the enforcement the operator chose; it is
+  stated here so the refusal is not mistaken for a regression.
+- The check runs when a report is triggered, not when it is scheduled. A
+  definition's configuration can change between scheduling and a run, so the
+  trigger is the one place the answer is current.
+- The existing foreign key from =report_configuration.configuration_type_code=
+  resolves under the definition's tenant, while configuration types are seeded
+  only for the system tenant. A report configuration in a non-system tenant is
+  therefore refused today. Not changed here; it belongs with binding real
+  configurations to definitions.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -116,3 +130,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- =report_type= gains =workflow_type=; only =risk= is seeded, selecting
+  =report_execution_workflow=. =grid= is gone.
+- New junction =ores_reporting_report_type_configuration_types_tbl=, seeded with
+  =risk= requiring =pricing_engines=, =todays_market=, =curve_configuration= and
+  =conventions=. System-wide like the other reporting lookups (RLS exception
+  recorded), with its permissions seeded.
+- =report_definition.report_type= gains a soft foreign key resolved under the
+  system tenant. The column keeps its name; see the plan.
+- The trigger handler reads the workflow from the report type and refuses an
+  unknown type (=unknown_report_type=) or a definition missing a required
+  configuration type (=missing_configuration=, naming them). The comparison is
+  =service::missing_configuration_types=, pinned by six unit tests.
+- Migration =reporting_report_types_bind_workflow_and_requirements_migration.sql=
+  for existing databases, exercised in a rolled-back transaction: it refuses
+  while a current definition names a non-=risk= type, and otherwise leaves =risk=
+  with its workflow and four requirements.

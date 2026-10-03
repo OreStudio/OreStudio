@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: E4C6E92B-1625-43AE-8129-D01165AB89D8
+:END:
+#+title: ores.refdata.calendar_name
+#+description: Codegen entity model for the refdata =calendar_name= table. The calendar names ORE accepts.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One calendar name that an ORE document may write.
+#+entity_singular: calendar_name
+#+entity_plural: calendar_names
+#+entity_title: Calendar Name
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+ORE names a calendar by text, and its schema fixes the names it accepts: 471
+of them, such as =TARGET=, =US settlement=, =weekends only= and currency codes
+that stand for a currency's calendar. The schema also accepts two open forms
+no list can hold -- any four-letter exchange code such as =XNYS=, and any name
+beginning =CUSTOM_= -- and joins of several calendars, written as =TARGET,UK=
+or =JoinHolidays(TARGET, US settlement)=.
+
+A curve keeps the calendar expression its document wrote, so the export writes
+it back unchanged. =ores_refdata_validate_calendar_fn= splits the expression
+and checks each calendar in it against this table or against one of the two
+open forms, so a calendar ORE would refuse is refused on insert. The refdata
+=calendar= table models calendars the system materialises; this table is the
+vocabulary of names an ORE document may write.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The calendar name exactly as an ORE document may write it: 'TARGET', 'US
+settlement', 'weekends only', 'USD'.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    true
+:END:
+
+What the spelling means, in one line, for a reader who does not know ORE.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_names_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calendar_name
+:entity_plural_short:   calendar_names
+:entity_singular_words: calendar name
+:entity_plural_words:   calendar names
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cn
+:END:
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/calendar_name.hpp
+:domain_class:           refdata::domain::calendar_name
+:protocol_include:       ores.refdata.api/messaging/calendar_name_protocol.hpp
+:collection_name:        calendar_names
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | e.g. TARGET         |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 200   |
+| Description | description | Description | string    | 350   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

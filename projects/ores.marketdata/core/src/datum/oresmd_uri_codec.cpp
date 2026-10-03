@@ -59,23 +59,6 @@ std::unexpected<std::string> refuse(std::string_view uri, std::string_view why) 
     return std::unexpected(std::format("'{}': {}", uri, why));
 }
 
-/// A field's value read from its URI text, by the value type the field holds.
-std::expected<value, std::string> value_of(field f, std::string_view text) {
-    switch (kind_of(f)) {
-        case value_kind::text:
-            return value(std::string(text));
-        case value_kind::term:
-            return term::parse(text).transform([](term t) { return value(std::move(t)); });
-        case value_kind::decimal:
-            return decimal::parse(text).transform([](decimal d) { return value(std::move(d)); });
-        case value_kind::strike:
-            return strike::parse(text).transform([](strike s) { return value(std::move(s)); });
-        case value_kind::code:
-            return code::parse(text).transform([](code c) { return value(std::move(c)); });
-    }
-    return std::unexpected(std::string("unknown value kind"));
-}
-
 struct query_entry {
     std::string key;
     std::string text;
@@ -176,7 +159,7 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
             if (take(name))
                 return refuse(uri,
                               std::format("'{}' is the path; the query must not repeat it", name));
-            auto held = value_of(spec.name, subject_text);
+            auto held = parse_value(spec.name, subject_text);
             if (!held)
                 return refuse(uri, std::format("the path: {}", held.error()));
             fields.push_back({spec.name, std::move(*held)});
@@ -189,7 +172,7 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
             fields.push_back({spec.name, none});
             continue;
         }
-        auto held = value_of(spec.name, *text);
+        auto held = parse_value(spec.name, *text);
         if (!held)
             return refuse(uri, std::format("'{}': {}", name, held.error()));
         fields.push_back({spec.name, std::move(*held)});

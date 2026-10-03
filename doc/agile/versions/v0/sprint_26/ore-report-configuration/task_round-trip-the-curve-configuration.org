@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2536
+#+pr: 2556
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -113,6 +113,78 @@ task and name that file in the Command column.
 
 * Notes
 
+Step 2, decided while building it:
+
+- A document is a =curve_configuration= row, as today's market is a
+  =todays_market_config= row, so a tenant may hold several and a report reaches
+  one through its reporting configuration.
+- Sixteen of the nineteen sections appear empty somewhere in the corpus, so the
+  sections a document writes are rows of =curve_configuration_section=, with or
+  without entries.
+- =BootstrapConfig= is shared by five section types, so it is one table keyed
+  to the curve entry. A row exists exactly when the element does; fourteen
+  corpus yield curves write it empty.
+- Every corpus =Report= on a yield curve is present and empty (121), so
+  =yield_curve.has_report= holds its presence.
+- A segment stores only its type; the type fixes the segment element. The
+  mapper keeps the same table as the seed, and the seed test ties the seed to
+  the schema.
+- ORE enumerations other than the day counter and the segment type -- the ORE
+  boolean, the interpolation method and variable, the extrapolation method --
+  are held as the text the schema spells, and the binding refuses an unknown
+  value on export. Only the two the acceptance names are lookups.
+- A convention is checked by =ores_refdata_validate_convention_id_fn=, which
+  looks in all twenty-four convention tables keyed by id. FX conventions are
+  held per currency pair and their id is not stored, so only the id the
+  conventions export writes, =BASE-QUOTE-FX-CONVENTIONS=, resolves. 600 or more
+  corpus FX ids have another form; [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]] fixes that.
+- Four index names the corpus yield curves use were not seeded floating index
+  types: =EUR-EONIA=, =EUR-ESTER=, =GBP-LIBOR-3M= and =USD-LIBOR-1M=. They are
+  seeded now.
+
+Step 3a, decided while building it:
+
+- Step 3 is split by section family: 3a the equity curves, securities, FX
+  spots and intraday power curves; 3b inflation; 3c default curves, whose
+  nested configurations need child rows; 3d commodity.
+- A calendar is an expression, not a name: =TARGET,UK= and
+  =JoinHolidays(TARGET, US settlement)= are both one calendar. The schema
+  lists 471 names and allows two open forms, any four-letter exchange code and
+  any =CUSTOM_= name. =calendar_name= holds the 471, and
+  =ores_refdata_validate_calendar_fn= splits an expression and checks each
+  part against them or against the two forms. The refdata =calendar= table's
+  61 codes miss most of the corpus (=XNYS=, =USD=, =weekends only=), so it is
+  not the target.
+- 101 corpus equity curves write an empty =Calendar= and three an empty
+  =Quotes=; the empty calendar is stored as empty text and the quotes element's
+  presence as =equity_curve.has_quotes=.
+- =intraday_power_curve.convention= is nullable in the table because the
+  generated event test cannot seed a convention; the mapper refuses to export
+  an entry without one.
+
+Step 3b, decided while building it:
+
+- An inflation curve's settings are =inflation_curve= and its seasonality
+  factors =inflation_seasonality_factor=; its quotes sit on the entry, as an
+  equity curve's do. =has_quotes= and =has_seasonality= hold the presence of
+  the two optional elements.
+- The schema allows inflation =Segments= and no corpus document writes them.
+  The mapper refuses an entry that does, rather than lose it; modelling them
+  waits for a document that needs them.
+
+Step 3c, decided while building it:
+
+- A default curve writes its settings inline (144 corpus curves) or as a list
+  of prioritised =Configurations= (189, nine with two), never both. One table,
+  =default_curve_configuration=, holds both forms: an inline curve is one row
+  with =is_inline= set. =default_curve= holds only the currency.
+- A configuration's quotes and =BootstrapConfig= are rows of =curve_quote= and
+  =curve_bootstrap_config= naming the configuration, through a new nullable
+  =default_curve_configuration_id= on each.
+- =Pillars= and =States= are comma lists in ORE's own text and are held as
+  written. =SourceCurves= and =SwitchDates= appear in no corpus document and are
+  refused, as inflation segments are.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -128,6 +200,10 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2556][#2556]] | [refdata] Map the default curve section |
+| [[https://github.com/OreStudio/OreStudio/pull/2555][#2555]] | [refdata] Map the inflation curve section |
+| [[https://github.com/OreStudio/OreStudio/pull/2554][#2554]] | [refdata] Map the equity, security, FX spot and power curve sections |
+| [[https://github.com/OreStudio/OreStudio/pull/2551][#2551]] | [refdata] Hold yield curves as typed rows and map them in both directions |
 | [[https://github.com/OreStudio/OreStudio/pull/2536][#2536]] | [refdata] Seed the curve configuration vocabulary from the schemas |
 
 * Review

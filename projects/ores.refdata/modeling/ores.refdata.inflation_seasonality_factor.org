@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 34F339B8-5C3B-4E10-BAC3-5D0FB67BA2F7
+:END:
+#+title: ores.refdata.inflation_seasonality_factor
+#+description: Codegen entity model for the refdata =inflation_seasonality_factor= table. One seasonality factor of an ORE inflation curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One factor of an ORE inflation curve's seasonality adjustment.
+#+entity_singular: inflation_seasonality_factor
+#+entity_plural: inflation_seasonality_factors
+#+entity_title: Inflation Seasonality Factor
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One factor of the seasonality adjustment an inflation curve applies, one per
+period of the seasonality frequency, in the order the document lists them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** factor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The factor as the document writes it.
+
+#+begin_src cpp :name generator
+std::string("1.0")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The factor's place in the list, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_inflation_seasonality_factors_tbl
+:END:
+
+** Checks
+
+| expression      |
+|-----------------|
+| "factor" <> ''  |
+| "position" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: seasonality_factor
+:entity_plural_short:   seasonality_factors
+:entity_singular_words: inflation seasonality factor
+:entity_plural_words:   inflation seasonality factors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sf
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

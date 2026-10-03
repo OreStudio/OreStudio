@@ -123,6 +123,7 @@ public:
     std::optional<domain::curve_segment>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest curve segments with pagination support.
      * @param ctx Repository context with database connection

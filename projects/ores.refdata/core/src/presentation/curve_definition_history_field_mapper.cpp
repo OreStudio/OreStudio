@@ -35,18 +35,11 @@ render_curve_definition_fields(const domain::curve_definition& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Curve Configuration ID",
+                      .value = boost::uuids::to_string(v.curve_configuration_id)});
     fields.push_back({.name = "Section Code", .value = v.section_code});
     fields.push_back({.name = "Curve ID", .value = v.curve_id});
     fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
-    fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
-    fields.push_back({.name = "Day Counter", .value = v.day_counter.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Interpolation Method", .value = v.interpolation_method.value_or(std::string{})});
-    fields.push_back({.name = "Interpolation Variable",
-                      .value = v.interpolation_variable.value_or(std::string{})});
-    fields.push_back({.name = "Extrapolation", .value = v.extrapolation.value_or(std::string{})});
-    fields.push_back({.name = "Tolerance", .value = v.tolerance.value_or(std::string{})});
-    fields.push_back({.name = "Extras", .value = v.extras.value_or(std::string{})});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

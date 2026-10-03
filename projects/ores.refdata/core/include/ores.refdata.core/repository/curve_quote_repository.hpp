@@ -122,6 +122,7 @@ public:
     std::optional<domain::curve_quote>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest curve quotes with pagination support.
      * @param ctx Repository context with database connection

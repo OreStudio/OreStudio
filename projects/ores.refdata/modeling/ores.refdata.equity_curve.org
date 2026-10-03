@@ -1,0 +1,303 @@
+:PROPERTIES:
+:ID: A5F39222-082E-4954-B085-15DEC4839CD3
+:END:
+#+title: ores.refdata.equity_curve
+#+description: Codegen entity model for the refdata =equity_curve= table. The settings of one ORE equity curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE equity curve entry.
+#+entity_singular: equity_curve
+#+entity_plural: equity_curves
+#+entity_title: Equity Curve
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =EquityCurve= entry of a =curveconfig.xml=, one row per
+=curve_definition= in the =EquityCurves= section: the equity's spot quote and
+forecasting curve, how its forward curve is given, and how its dividends
+interpolate. The quotes the forward curve is built from are rows of
+=curve_quote=.
+
+Three corpus entries write an empty =Quotes= element, so =has_quotes= holds
+whether the element is there. 101 write an empty =Calendar=; the column then
+holds the empty text the document wrote. A calendar that is not empty is
+checked by =ores_refdata_validate_calendar_fn=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The equity's currency, as the document writes it.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The equity's calendar, as the document spells it; a joined calendar is one
+expression.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** forecasting_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The yield curve the equity's forward is projected with.
+
+#+begin_src cpp :name generator
+std::string("USD-SOFR")
+#+end_src
+
+** equity_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the forward curve is given: =ForwardPrice=, =DividendYield= and the other
+values ORE's schema allows.
+
+#+begin_src cpp :name generator
+std::string("DividendYield")
+#+end_src
+
+** exercise_style
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The exercise style of the options the curve is implied from, when it is.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spot_quote
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The quote of the equity's spot price.
+
+#+begin_src cpp :name generator
+std::string("EQUITY/PRICE/SP5/USD")
+#+end_src
+
+** has_quotes
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =Quotes= element, which may be empty.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter the curve is built on, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_dividend_interpolation
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =DividendInterpolation= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** dividend_interpolation_variable
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the dividend curve interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** dividend_interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the dividend curve interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** dividend_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the dividend curve extrapolates, as the ORE boolean the document
+wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the curve extrapolates, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_equity_curves_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_curve
+:entity_plural_short:   equity_curves
+:entity_singular_words: equity curve
+:entity_plural_words:   equity curves
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ec
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

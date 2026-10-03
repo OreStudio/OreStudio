@@ -24,21 +24,22 @@
  *
  * Curve Segment Table
  *
- * A curve is bootstrapped from one or more segments, and each segment names the
- * kind of instrument it is built from. The corpus uses ten kinds -- Simple in
- * 1198 entries, CrossCurrency in 500, ZeroSpread in 66, Direct in 50,
- * AverageOIS in 24, IborFallback in 20, DiscountRatio in 15 and four more --
- * in one Segments block per curve.
+ * A yield curve is bootstrapped from one or more segments, and each states its
+ * Type: Deposit, Cross Currency Basis Swap, Average OIS and eighteen more.
+ * The type fixes the segment element it is written under, so the row holds only
+ * the type and refers to curve_segment_type, and a type written under the wrong
+ * element cannot be stored.
  *
- * The kinds look different and share a skeleton: every one of them carries a
- * Type and a Conventions, and each adds its own settings -- ProjectionCurve
- * for a simple segment, DiscountCurve and SpotRate for a cross-currency one,
- * ReferenceCurve for a zero spread. The kind is a column, the Type and
- * Conventions are columns because every kind has them, and the rest is written
- * into extras as a stated list of name and value pairs, so the ten kinds need
- * one table rather than ten.
+ * The twelve segment elements share a skeleton and differ in a few settings
+ * each: projection curves for simple and tenor basis segments, a discount curve
+ * and a spot rate for cross currency ones, a reference curve for zero spread
+ * ones. Each setting is its own typed column, null where the segment's element
+ * has no such setting. The lists a segment holds are child rows: its quotes in
+ * curve_quote, and the index curves and default curves of the bond and default
+ * based segments in curve_segment_curve.
  *
- * Each segment's own quote list belongs to the segment, in curve_quote.
+ * The convention a segment names may be any of ORE's convention kinds, which are
+ * one table each, so a function that looks in all of them checks the reference.
  */
 
 create table if not exists "ores_refdata_curve_segments_tbl" (
@@ -46,11 +47,36 @@ create table if not exists "ores_refdata_curve_segments_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "curve_definition_id" uuid not null,
-    "kind" text not null,
-    "segment_type" text null,
-    "conventions" text null,
-    "extras" text null,
+    "segment_type" text not null,
     "position" integer not null,
+    "conventions" text null,
+    "pillar_choice" text null,
+    "priority" integer null,
+    "min_distance" integer null,
+    "projection_curve" text null,
+    "discount_curve" text null,
+    "spot_rate" text null,
+    "projection_curve_domestic" text null,
+    "projection_curve_foreign" text null,
+    "projection_curve_pay" text null,
+    "projection_curve_receive" text null,
+    "projection_curve_long" text null,
+    "projection_curve_short" text null,
+    "reference_curve" text null,
+    "reference_curve_2" text null,
+    "weight_1" double precision null,
+    "weight_2" double precision null,
+    "ibor_index" text null,
+    "rfr_curve" text null,
+    "rfr_index" text null,
+    "spread" double precision null,
+    "base_curve" text null,
+    "base_curve_currency" text null,
+    "numerator_curve" text null,
+    "numerator_curve_currency" text null,
+    "denominator_curve" text null,
+    "denominator_curve_currency" text null,
+    "extrapolate_flat" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -65,7 +91,8 @@ create table if not exists "ores_refdata_curve_segments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("kind" <> '')
+    check ("segment_type" <> ''),
+    check ("position" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -88,6 +115,59 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate curve_definition_id (soft FK to ores_refdata_curve_definitions_tbl)
+    if not exists (
+        select 1 from ores_refdata_curve_definitions_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.curve_definition_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid curve_definition_id: %. No active curve definition found with this id.', NEW.curve_definition_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate segment_type (soft FK to ores_refdata_curve_segment_types_tbl)
+    if not exists (
+        select 1 from ores_refdata_curve_segment_types_tbl
+        where tenant_id = NEW.tenant_id
+          and code = NEW.segment_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid segment_type: %. No active curve segment type found with this code.', NEW.segment_type
+            using errcode = '23503';
+    end if;
+
+    -- Validate ibor_index (optional soft FK to ores_refdata_floating_index_types_tbl)
+    if NEW.ibor_index is not null then
+        if not exists (
+            select 1 from ores_refdata_floating_index_types_tbl
+            where tenant_id = NEW.tenant_id
+              and code = NEW.ibor_index
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid ibor_index: %. No active floating index type found with this code.', NEW.ibor_index
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate rfr_index (optional soft FK to ores_refdata_floating_index_types_tbl)
+    if NEW.rfr_index is not null then
+        if not exists (
+            select 1 from ores_refdata_floating_index_types_tbl
+            where tenant_id = NEW.tenant_id
+              and code = NEW.rfr_index
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid rfr_index: %. No active floating index type found with this code.', NEW.rfr_index
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate conventions (optional field -- skip validation when null)
+    if NEW.conventions is not null then
+        NEW.conventions := ores_refdata_validate_convention_id_fn(NEW.tenant_id, NEW.conventions);
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

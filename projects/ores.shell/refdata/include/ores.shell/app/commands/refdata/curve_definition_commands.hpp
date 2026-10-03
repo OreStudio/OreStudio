@@ -87,27 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <section_code> <curve_id> <description> <currency> <day_counter>
-     * <interpolation_method> <interpolation_variable> <extrapolation> <tolerance> <extras>
-     * <position> <reason> <commentary>
+     * @brief add <curve_configuration_id> <section_code> <curve_id> <description> <position>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <section_code> <curve_id> <description> <currency> <day_counter>
-     * <interpolation_method> <interpolation_variable> <extrapolation> <tolerance> <extras>
-     * <position> <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_configuration_id> <section_code> <curve_id> <description> <position>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <section_code> <curve_id> <description> <currency>
-     * <day_counter> <interpolation_method> <interpolation_variable> <extrapolation> <tolerance>
-     * <extras> <position> <reason> <commentary>
+     * @brief put-many --count <n> <id> <curve_configuration_id> <section_code> <curve_id>
+     * <description> <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -241,14 +241,11 @@ TEST_CASE("export_reproduces_the_fixings_file_it_imported", tags) {
     CHECK(actual_names == expected_names);
 }
 
-TEST_CASE("export_refuses_an_observation_a_writer_left_without_a_key", tags) {
-    auto lg(make_logger(test_suite));
+namespace {
 
-    // Every writer stores the key its row is written under, so a row without one is
-    // a row no writer produced. The export says so rather than emitting a key it
-    // cannot know: the rebuild that used to serve such rows read the series'
-    // registry columns, and went with them.
-    export_tenant t;
+// One FX spot series with one observation, stored with the URIs given and no key:
+// the export must take each key from the datum URI the row stores.
+void write_fx_row(export_tenant& t, const std::string& series_uri, const std::string& datum_uri) {
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observations_repository obs_repo;
     boost::uuids::random_generator gen;
@@ -257,7 +254,7 @@ TEST_CASE("export_refuses_an_observation_a_writer_left_without_a_key", tags) {
     s.id = gen();
     s.tenant_id = t.ctx.tenant_id();
     s.party_id = t.ctx.party_id().value_or(boost::uuids::uuid{});
-    s.oresmd_uri = "oresmd://fx/eurusd?type=quote&quote=spot";
+    s.oresmd_uri = series_uri;
     s.series_subclass = "spot";
     s.modified_by = t.ctx.actor();
     s.performed_by = t.ctx.service_account();
@@ -273,10 +270,34 @@ TEST_CASE("export_refuses_an_observation_a_writer_left_without_a_key", tags) {
     o.series_id = s.id;
     o.observation_datetime =
         std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
-    o.oresmd_uri = "oresmd://fx/eurusd?type=quote&quote=spot";
+    o.oresmd_uri = datum_uri;
     o.value = "1.132337";
-    // The key is deliberately left empty: this is the row the export must refuse.
     obs_repo.write(t.ctx, o);
+}
+
+}
+
+TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", tags) {
+    auto lg(make_logger(test_suite));
+
+    export_tenant t;
+    write_fx_row(t,
+                 "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD",
+                 "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+
+    const ore_export_service exporter(t.ctx);
+    const auto result = exporter.write_all();
+    CHECK(result.observation_count == 1);
+    CHECK(result.market_data.contains("FX/RATE/EUR/USD"));
+}
+
+TEST_CASE("export_refuses_an_observation_whose_uri_names_no_datum", tags) {
+    auto lg(make_logger(test_suite));
+
+    export_tenant t;
+    write_fx_row(t,
+                 "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD",
+                 "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate");
 
     const ore_export_service exporter(t.ctx);
     CHECK_THROWS(exporter.write_all());

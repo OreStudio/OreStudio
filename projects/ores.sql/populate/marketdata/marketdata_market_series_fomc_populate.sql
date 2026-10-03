@@ -69,7 +69,7 @@ values
         ores_utility_system_tenant_id_fn(),
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
-        'yield', 'oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount',
+        'yield', 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC',
         'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Bootstrapped USD SOFR curve (FOMC segment): republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
@@ -100,5 +100,5 @@ do nothing;
 select 'marketdata_market_series (FOMC segment)' as entity, count(*) as count
 from ores_marketdata_market_series_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
-  and oresmd_uri = 'oresmd://ir/usd?curve_id=USD-SOFR-FOMC&type=quote&metric=rate&quote=discount'
+  and oresmd_uri = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC'
   and valid_to = ores_utility_infinity_timestamp_fn();

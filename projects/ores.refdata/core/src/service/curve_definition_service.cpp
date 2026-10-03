@@ -83,16 +83,10 @@ messaging::curve_definition_key key_from(const domain::curve_definition& v) {
 domain::curve_definition to_domain(const messaging::curve_definition_write& write) {
     domain::curve_definition v;
     v.id = write.id;
+    v.curve_configuration_id = write.curve_configuration_id;
     v.section_code = write.section_code;
     v.curve_id = write.curve_id;
     v.description = write.description;
-    v.currency = write.currency;
-    v.day_counter = write.day_counter;
-    v.interpolation_method = write.interpolation_method;
-    v.interpolation_variable = write.interpolation_variable;
-    v.extrapolation = write.extrapolation;
-    v.tolerance = write.tolerance;
-    v.extras = write.extras;
     v.position = write.position;
     return v;
 }

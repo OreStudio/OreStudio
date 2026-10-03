@@ -85,8 +85,11 @@ domain::curve_quote to_domain(const messaging::curve_quote_write& write) {
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
     v.curve_segment_id = write.curve_segment_id;
-    v.item_kind = write.item_kind;
+    v.default_curve_configuration_id = write.default_curve_configuration_id;
     v.quote_text = write.quote_text;
+    v.optional_flag = write.optional_flag;
+    v.rate_quote = write.rate_quote;
+    v.spread_quote = write.spread_quote;
     v.position = write.position;
     return v;
 }

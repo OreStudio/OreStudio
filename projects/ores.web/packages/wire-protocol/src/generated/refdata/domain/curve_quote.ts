@@ -36,8 +36,11 @@ export interface CurveQuote {
     id: string;
     curve_definition_id: string;
     curve_segment_id: string;
-    item_kind: string;
-    quote_text: string;
+    default_curve_configuration_id: string;
+    quote_text: string | null;
+    optional_flag: string | null;
+    rate_quote: string | null;
+    spread_quote: string | null;
     position: number;
     modified_by: string;
     performed_by: string;

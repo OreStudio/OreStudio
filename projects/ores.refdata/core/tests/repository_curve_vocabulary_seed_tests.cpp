@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+#include "ores.refdata.core/repository/calendar_name_repository.hpp"
 #include "ores.refdata.core/repository/curve_section_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_type_repository.hpp"
 #include "ores.refdata.core/repository/day_counter_repository.hpp"
@@ -153,5 +154,39 @@ TEST_CASE("the seeded segment types are the schema's segment types, each under i
     std::map<std::string, std::string> seeded;
     for (const auto& t : repo.read_latest(system_context(h)))
         seeded.emplace(t.code, t.segment_kind);
+    CHECK(seeded == expected);
+}
+
+TEST_CASE("the seeded calendar names are the schema's calendar pattern names", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "calendar");
+    const std::string open_mark = "(^)?(";
+    const std::string close_mark = "))*(\\))?";
+    const auto start = body.find(open_mark);
+    REQUIRE(start != std::string::npos);
+    const auto end = body.find(close_mark, start);
+    REQUIRE(end != std::string::npos);
+    const auto alternatives = body.substr(start + open_mark.size(), end - start - open_mark.size());
+
+    std::set<std::string> expected;
+    std::size_t from = 0;
+    while (from <= alternatives.size()) {
+        const auto bar = alternatives.find('|', from);
+        const auto name = alternatives.substr(from, bar == std::string::npos ? std::string::npos
+                                                                             : bar - from);
+        if (name != "[A-Z]{4}" && name != "CUSTOM_.*")
+            expected.insert(name);
+        if (bar == std::string::npos)
+            break;
+        from = bar + 1;
+    }
+    INFO("The calendar pattern's names are read between (^)?( and ))*(\\))?; the four-letter "
+         "exchange code and CUSTOM_ forms are checked by form, not seeded.");
+    REQUIRE(expected.size() == 471);
+
+    ores::refdata::repository::calendar_name_repository repo;
+    std::set<std::string> seeded;
+    for (const auto& c : repo.read_latest(system_context(h)))
+        seeded.insert(c.code);
     CHECK(seeded == expected);
 }

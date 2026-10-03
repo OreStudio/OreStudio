@@ -7,41 +7,49 @@
 #+level: s1
 #+filetags: :iam:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr: 2548
+#+branch: feature/decide-what-a-persons-token-carries
+#+pr: 2549
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Decide what a person's token carries and how it stays true, before any code
+changes, so the next three tasks build one design: which tokens carry
+permissions, where they come from, how a role change reaches them, and what the
+check does with an empty list.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- Every point that issues a person's token is named with what it carries today
+  and what it will carry.
+- The design says how a role change reaches a token, and how long it takes.
+- The design says what the check does with an empty list, and how a context
+  with no token stays usable.
+- The story's Decisions record the outcome.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read every token issue point, every role the deployment seeds, the two
+permission checks, the token settings and the request context, then write the
+design into the story's Decisions.
 
 * Measurements
 
@@ -55,7 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Token permission checks in handlers | 1193 call sites in 17 components | =grep -rn 'has_permission(' projects --include=*.hpp --include=*.cpp= less tests and the two definitions | =4fe36432cf= |
+| Seeded roles | 28, the largest granting 17 codes; most grant a component wildcard | =grep -o "role_permissions_assign_fn([^,]*, '[A-Za-z]*', '[^']*'" projects/ores.sql/populate/iam/iam_roles_populate.sql \| awk -F"'" '{c[$2]++} END {for (r in c) print c[r], r}' \| sort -rn= | =4fe36432cf= |
+| Access token lifetime | 1800 s; maximum session 28800 s | =variability_system_settings_populate.sql= | =4fe36432cf= |
 
 * Notes
 
@@ -74,12 +84,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2549][#2549]] | [agile] Decide what a person's token carries |
 | [[https://github.com/OreStudio/OreStudio/pull/2548][#2548]] | [agile] Promote the token permission gap to a story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1.1 | The story's Now field is stale | =story.org= | Accept | Now and Next updated. |
+| R1.2 | A context with no list must not arise by accident | =story.org= | Accept | Decision 5: only a named constructor builds it, and no production request path does. |
+| R1.3 | The party-choice token would be refused everywhere | =story.org= | Accept | Decision 1: the selection handler checks no permission and accepts only that audience, which the standard verifier rejects elsewhere. |
+| R1.4 | Say the maximum session does not lengthen the window | =story.org= | Accept | Decision 3. |
+| R1.5 | Say what the tenant session carries | =story.org= | Accept | Decision 1: unchanged. |
+| R1.6 | The roles measurement names no command | this task | Accept | The command is in the table. |
 
 * Result
+
+The design is in the story's Decisions. What exists today:
+
+| Issue point | File | Permissions today |
+|-------------+------+-------------------|
+| Login, one party | =auth_handler.hpp= | none |
+| Login, party choice pending | =auth_handler.hpp= | none; the token can only choose a party |
+| Party selection | =account_operations_handler.hpp= | none |
+| Party switch | =account_operations_handler.hpp= | none |
+| Refresh | =auth_handler.hpp= | copied from the old token |
+| Service login | =auth_handler.hpp= | read from the database |
+| Internal impersonation | =internal_impersonation_service.cpp= | read from the database |
+| Tenant session | =tenant_session_service.cpp= | the administrator's read codes |
+
+So every person's token carries an empty list, the token check passes it, and
+about 1,190 handler checks pass for every signed-in person. Production
+services always build a verifier, so the empty list that means "no token, trust
+the caller" arises only in tests and service-internal contexts.
+

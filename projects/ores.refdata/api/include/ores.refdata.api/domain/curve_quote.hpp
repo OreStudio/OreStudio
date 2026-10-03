@@ -28,7 +28,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -37,21 +37,15 @@ namespace ores::refdata::domain {
 /**
  * @brief One market quote a curve entry or one of its segments is built from.
  *
- * The market quotes a curve is built from. The corpus holds four thousand one
- * hundred and fifty-six of them directly on a curve entry -- a default curve
- * names its credit spreads this way -- and twenty-nine thousand more inside the
- * segments of the yield curves, which is where most of them live.
+ * One market quote a curve is built from. A quote sits either directly on the
+ * curve entry or inside one of its segments, or in a default curve's configuration, and the row
+ * names the curve entry as well so the quotes of a curve can be read without walking its segments
+ * or configurations.
  *
- * A quote is one string naming a market point, FRA/RATE/USD/1M/1M or
- * CDS/CREDIT_SPREAD/BANK/SR/USD/1Y, and the order they are listed in is the
- * order the curve is built in, so it is kept.
- *
- * Two places hold the same element and this one table holds both. A quote whose
- * curve_segment_id is set belongs to that segment's own list; a quote whose
- * curve_segment_id is nil belongs to the curve entry itself, and the export
- * writes it at the level it came from. The element is not always spelled Quote:
- * an average OIS segment names its quotes CompositeQuote, so the item's own
- * element name is a column.
+ * Almost every list is of Quote elements, each a market point and an optional
+ * optional attribute. An average OIS segment lists CompositeQuote elements
+ * instead, each a rate quote and a spread quote. A row is one or the other: a
+ * quote_text, or a rate_quote with a spread_quote.
  */
 struct curve_quote final {
     /**
@@ -70,32 +64,46 @@ struct curve_quote final {
     boost::uuids::uuid id;
 
     /**
-     * @brief The curve recipe the quote belongs to, whether it sits on the entry or inside one of
-     * the entry's segments. Carried on both so the quotes of a curve can be read without walking
-     * the segments.
+     * @brief The curve entry this row belongs to.
      */
     boost::uuids::uuid curve_definition_id;
 
     /**
-     * @brief The segment whose own list holds the quote, or the nil uuid when the quote sits
-     * directly on the curve entry.
+     * @brief The segment whose list holds the quote, or nil when the quote sits directly on the
+     * curve entry.
      */
-    boost::uuids::uuid curve_segment_id = boost::uuids::nil_uuid();
+    boost::uuids::uuid curve_segment_id;
 
     /**
-     * @brief The element the quote is written as: Quote in almost every list, CompositeQuote in an
-     * average OIS segment's.
+     * @brief The default curve configuration whose list holds the row, or nil when it belongs to
+     * the curve entry or one of its segments.
      */
-    std::string item_kind;
+    boost::uuids::uuid default_curve_configuration_id;
 
     /**
-     * @brief The market point the quote names, exactly as the document spells it.
+     * @brief The market point a Quote names, exactly as the document spells it.
      */
-    std::string quote_text;
+    std::optional<std::string> quote_text;
 
     /**
-     * @brief The order the document listed the quote in, which is the order the curve is built in
-     * and what the export restores.
+     * @brief The quote's optional attribute as the document wrote it, when it wrote one: an
+     * optional quote may be missing from the market without failing the curve.
+     */
+    std::optional<std::string> optional_flag;
+
+    /**
+     * @brief The RateQuote of a CompositeQuote.
+     */
+    std::optional<std::string> rate_quote;
+
+    /**
+     * @brief The SpreadQuote of a CompositeQuote.
+     */
+    std::optional<std::string> spread_quote;
+
+    /**
+     * @brief The quote's place in its list, which is the order the curve is built in and what the
+     * export restores.
      */
     int position = 0;
 

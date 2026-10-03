@@ -216,6 +216,7 @@ std::optional<domain::curve_definition> curve_definition_repository::read_at_ver
     return entities.front();
 }
 
+
 curve_definition_repository::remove_status curve_definition_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;

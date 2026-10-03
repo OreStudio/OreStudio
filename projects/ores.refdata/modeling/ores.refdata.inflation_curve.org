@@ -1,0 +1,361 @@
+:PROPERTIES:
+:ID: 5C5C7E70-9DBE-4E11-B797-A85FB0C602A1
+:END:
+#+title: ores.refdata.inflation_curve
+#+description: Codegen entity model for the refdata =inflation_curve= table. The settings of one ORE inflation curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE inflation curve entry.
+#+entity_singular: inflation_curve
+#+entity_plural: inflation_curves
+#+entity_title: Inflation Curve
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =InflationCurve= entry of a =curveconfig.xml=, one row per
+=curve_definition= in the =InflationCurves= section: the nominal curve it is
+built over, whether it is zero coupon or year on year, its lag and frequency,
+and its seasonality. The quotes it is built from are rows of =curve_quote=, and
+the seasonality factors rows of =inflation_seasonality_factor=.
+
+The schema also allows a list of segments, each a convention and quotes. No
+corpus document writes one, and the mapper refuses an entry that does rather
+than lose it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** nominal_term_structure
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The nominal yield curve the inflation curve is built over.
+
+#+begin_src cpp :name generator
+std::string("Yield/EUR/EUR6M")
+#+end_src
+
+** inflation_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the curve is zero coupon (=ZC=) or year on year (=YY=).
+
+#+begin_src cpp :name generator
+std::string("ZC")
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the curve's swaps are priced with, by its id.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_quotes
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =Quotes= element.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the curve extrapolates, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The curve's calendar, as the document spells it; a joined calendar is one
+expression.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter the curve is built on, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The observation lag of the index, as a period such as =3M=.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+** frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The frequency the index is published at, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("Monthly")
+#+end_src
+
+** base_rate
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The base rate of a year on year curve, as the document writes it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** tolerance
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The bootstrap tolerance.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_seasonality
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =Seasonality= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** seasonality_base_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The base date of the seasonality adjustment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** seasonality_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The frequency of the seasonality factors.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_last_fixing_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the curve starts from the last fixing date, as the ORE boolean the
+document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_variable
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the curve interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the curve interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| conventions          | ores_refdata_validate_convention_id_fn        |
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_inflation_curves_tbl
+:END:
+
+** Checks
+
+| expression                     |
+|--------------------------------|
+| "nominal_term_structure" <> '' |
+| "inflation_type" <> ''         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: inflation_curve
+:entity_plural_short:   inflation_curves
+:entity_singular_words: inflation curve
+:entity_plural_words:   inflation curves
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ic
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -19,6 +19,8 @@
  */
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.marketdata.api/domain/oresmd_uri.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
@@ -38,20 +40,29 @@ using namespace ores::logging;
 namespace {
 
 /**
- * @brief One stored observation as the serializer's input.
+ * @brief One stored observation as the serializer's input, its key written from
+ * the datum URI the row stores.
  *
- * The export emits the key the row was written under; a row with none is a row
- * no writer produced, and the export says so rather than writing a key it
- * cannot know.
+ * The row holds one identity, so the key is that identity's canonical ORE
+ * spelling; a row whose URI does not read is a data-integrity error and names
+ * itself.
  */
 ores::ore::market::market_datum to_datum(const domain::market_observation& o) {
-    if (o.key.empty())
-        throw std::runtime_error("market data export: an observation carries no key to export");
+    const auto fail = [&](const std::string& why) {
+        return std::runtime_error("market data export: observation " +
+                                  boost::uuids::to_string(o.id) + " has no ORE key: " + why);
+    };
+    const auto datum = datum::oresmd_uri_codec::read(o.oresmd_uri);
+    if (!datum)
+        throw fail(datum.error());
+    const auto key = datum::ore_key_codec::write(*datum);
+    if (!key)
+        throw fail(key.error());
     ores::ore::market::market_datum d;
     d.date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(o.observation_datetime)};
     d.value = o.value;
-    d.key = o.key;
+    d.key = *key;
     return d;
 }
 
@@ -96,19 +107,26 @@ ore_export_result ore_export_service::write_all() const {
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
     for (const auto& s : series) {
-        // The identity says which kind of series this is, so the export reads a
-        // fixing's rows and a quote's rows without a classification column. A
-        // series the parser cannot read at all is a data-integrity error and names
-        // itself rather than aborting with the parser's own message.
-        domain::market_data_identifier identifier;
-        try {
-            identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
-        } catch (const std::exception& e) {
-            throw std::runtime_error("market data export: series " + boost::uuids::to_string(s.id) +
-                                     " carries the identity '" + s.oresmd_uri +
-                                     "', which does not parse: " + e.what());
-        }
-        if (is_fixing_series(identifier)) {
+        // A quote series has a URI the datum codec reads; every other series is a
+        // fixing, whose index identity keeps the richer grammar. A series neither
+        // reads is a data-integrity error and names itself.
+        if (const auto quote_series = datum::oresmd_uri_codec::read(s.oresmd_uri); !quote_series) {
+            // Neither reading is a fixing: name both reasons, so a quote URI the
+            // codec refuses says why rather than that the old grammar disagrees.
+            const auto refusal = [&](const std::string& fixing_reason) {
+                return std::runtime_error(
+                    "market data export: series " + boost::uuids::to_string(s.id) + " carries '" +
+                    s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
+                    ") and no fixing series (" + fixing_reason + ")");
+            };
+            domain::market_data_identifier identifier;
+            try {
+                identifier = core::oresmd_parser::parse(domain::oresmd_uri{s.oresmd_uri});
+            } catch (const std::exception& e) {
+                throw refusal(e.what());
+            }
+            if (!is_fixing_series(identifier))
+                throw refusal("it names no fixing");
             const auto index_name = core::oresmd_projections::to_index_name(identifier);
             if (!index_name)
                 throw std::runtime_error("market data export: fixing series " +

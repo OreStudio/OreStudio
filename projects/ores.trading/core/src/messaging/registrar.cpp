@@ -85,6 +85,8 @@
 #include "ores.trading.core/messaging/return_type_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_registrar.hpp"
+#include "ores.trading.core/messaging/trade_additional_field_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_additional_field_registrar.hpp"
 #include "ores.trading.core/messaging/trade_anchor_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_registrar.hpp"
@@ -166,6 +168,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_price_type_handlers(nats, ctx, verifier));
     append(register_return_type_handlers(nats, ctx, verifier));
     append(register_settlement_type_handlers(nats, ctx, verifier));
+    append(register_trade_additional_field_handlers(nats, ctx, verifier));
     append(register_trade_anchor_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
@@ -230,6 +233,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_price_type_history_provider(hist_registry);
     register_return_type_history_provider(hist_registry);
     register_settlement_type_history_provider(hist_registry);
+    register_trade_additional_field_history_provider(hist_registry);
     register_trade_booking_history_provider(hist_registry);
     register_trade_envelope_additional_field_history_provider(hist_registry);
     register_trade_envelope_history_provider(hist_registry);

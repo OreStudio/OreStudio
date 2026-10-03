@@ -29,7 +29,10 @@
 #include "ores.trading.core/repository/trade_identifier_entity.hpp"
 #include "ores.trading.core/repository/trade_identifier_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <set>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <tuple>
 
 namespace ores::trading::repository {
 
@@ -44,7 +47,7 @@ std::string trade_identifier_repository::sql() {
 
 ores::utility::domain::precondition
 trade_identifier_repository::replace_claim(context ctx, const domain::trade_identifier& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+    const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id), v.id_type);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -71,7 +74,7 @@ trade_identifier_repository::apply_claim(context ctx,
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
+            const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id), v.id_type);
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -95,7 +98,8 @@ void trade_identifier_repository::write(context ctx,
 void trade_identifier_repository::write(context ctx,
                                         const domain::trade_identifier& v,
                                         const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "trade_id: " << v.trade_id
+                               << " id_type: " << v.id_type;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
         ctx, trade_identifier_mapper::map(t), lg(), "Writing trade identifier to database.");
@@ -117,24 +121,9 @@ void trade_identifier_repository::write(
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
-            ctx,
-            query,
-            [](const auto& entities) { return trade_identifier_mapper::map(entities); },
-            lg(),
-            "Reading latest trade identifiers (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_identifier_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "id_type"_c);
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
@@ -144,51 +133,52 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(c
         "Reading latest trade identifiers");
 }
 
-std::vector<domain::trade_identifier>
-trade_identifier_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "id: " << id;
+std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
+    context ctx, const std::string& trade_id, const std::string& id_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "trade_id: " << trade_id
+                               << " id_type: " << id_type;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "id_type"_c == id_type && "valid_to"_c == max.value());
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
         query,
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
         lg(),
-        "Reading latest trade identifier by id.");
+        "Reading latest trade identifier by trade_id.");
 }
 
 
-std::vector<domain::trade_identifier> trade_identifier_repository::read_all(context ctx,
-                                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. " << "id: " << id;
+std::vector<domain::trade_identifier> trade_identifier_repository::read_all(
+    context ctx, const std::string& trade_id, const std::string& id_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. "
+                               << "trade_id: " << trade_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<trade_identifier_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "id_type"_c == id_type) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
         query,
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
         lg(),
-        "Reading all trade identifier versions by id.");
+        "Reading all trade identifier versions by trade_id.");
 }
 
 std::optional<domain::trade_identifier> trade_identifier_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading trade identifier at version. " << "id: " << id
+    context ctx, const std::string& trade_id, const std::string& id_type, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading trade identifier at version. "
+                               << "trade_id: " << trade_id << " id_type: " << id_type
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "id_type"_c == id_type && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<trade_identifier_entity, domain::trade_identifier>(
@@ -203,10 +193,15 @@ std::optional<domain::trade_identifier> trade_identifier_repository::read_at_ver
     return entities.front();
 }
 
-trade_identifier_repository::remove_status trade_identifier_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "id: " << id;
-    const auto current = read_latest(ctx, id);
+
+trade_identifier_repository::remove_status
+trade_identifier_repository::remove(context ctx,
+                                    const std::string& trade_id,
+                                    const std::string& id_type,
+                                    std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
+                               << " id_type: " << id_type;
+    const auto current = read_latest(ctx, trade_id, id_type);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -219,22 +214,24 @@ trade_identifier_repository::remove_status trade_identifier_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<trade_identifier_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<trade_identifier_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "id_type"_c == id_type &&
+              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing trade identifier from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, id).empty())
+    if (!read_latest(ctx, trade_id, id_type).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void trade_identifier_repository::remove(context ctx, const std::string& id) {
-    static_cast<void>(remove(ctx, id, std::nullopt));
+void trade_identifier_repository::remove(context ctx,
+                                         const std::string& trade_id,
+                                         const std::string& id_type) {
+    static_cast<void>(remove(ctx, trade_id, id_type, std::nullopt));
 }
 
 std::vector<domain::trade_identifier>
@@ -243,11 +240,10 @@ trade_identifier_repository::read_latest(context ctx, std::uint32_t offset, std:
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_identifier_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "id_type"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
     return execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
@@ -266,11 +262,9 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count(context ct
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::select_from<trade_identifier_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<trade_identifier_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -281,40 +275,52 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count(context ct
 }
 
 std::vector<domain::trade_identifier>
-trade_identifier_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty())
+trade_identifier_repository::read_latest(context ctx,
+                                         const std::vector<std::string>& trade_ids,
+                                         const std::vector<std::string>& id_types) {
+    if (trade_ids.empty() || id_types.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "id_type"_c.in(id_types) && "valid_to"_c == max.value());
     auto result = execute_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
         query,
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
         lg(),
         "Reading latest trade identifiers by ids.");
-    return result;
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (id_types.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "trade_identifier_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string>> requested;
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], id_types[i]);
+    std::vector<domain::trade_identifier> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(
+                std::make_tuple(boost::uuids::to_string(item.trade_id), item.id_type)))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
-void trade_identifier_repository::remove(context ctx, const std::vector<std::string>& ids) {
-    // A batch of nothing addresses no row, so there is nothing to delete. The
-    // query builder renders an empty key list as an empty IN (), which the
-    // server refuses as a syntax error; the read overloads answer the empty
-    // case the same way. The compound branch above is left alone: it loops, so
-    // it already removes nothing, and its length check still refuses an
-    // asymmetric pair.
-    if (ids.empty())
-        return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<trade_identifier_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing trade identifiers.");
+void trade_identifier_repository::remove(context ctx,
+                                         const std::vector<std::string>& trade_ids,
+                                         const std::vector<std::string>& id_types) {
+    // Compound key: a per-column .in() DELETE would be a cross-product
+    // over-delete (rows outside the requested tuples), and a DELETE can't
+    // be filtered after the fact like a read -- remove one tuple at a time.
+    if (id_types.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "trade_identifier_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], id_types[i]);
 }
 
 

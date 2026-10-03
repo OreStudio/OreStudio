@@ -24,50 +24,56 @@
  *
  * Trade Party Role Table
  *
- * Associates a counterparty with a specific role on a trade.
- * The internal party (the house) is derived from book_id via books.party_id.
- * Supports multiple counterparties per trade in different roles.
+ * The role another party plays on a trade: calculation agent, executing
+ * broker and the like, one row per role. The firm's party and the
+ * counterparty the firm faces are not roles here: both are fixed for the
+ * trade's life and sit on the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], so a row naming the
+ * counterparty role is refused.
+ *
+ * The row is keyed by the trade and references the anchor with a database
+ * foreign key. It copies the anchor's party, pinned to the anchor, because
+ * row-level security needs the party on every row.
  */
 
 create table if not exists "ores_trading_party_roles_tbl" (
-    "id" uuid not null,
+    "trade_id" uuid not null,
+    "role" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid not null,
+    "party_id" uuid not null,
     "counterparty_id" uuid not null,
-    "role" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, trade_id, role, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        trade_id WITH =,
+        role WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("role" in ('Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee'))
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("role" <> ''),
+    check ("role" <> 'Counterparty'),
+    constraint ores_trading_party_roles_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trade_anchors_tbl" ("tenant_id", "id"),
+    constraint ores_trading_party_roles_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trade_anchors_tbl" ("tenant_id", "id", "party_id")
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists party_roles_version_uniq_idx
-on "ores_trading_party_roles_tbl" (tenant_id, id, version)
+on "ores_trading_party_roles_tbl" (tenant_id, trade_id, role, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists party_roles_id_uniq_idx
-on "ores_trading_party_roles_tbl" (tenant_id, id)
+on "ores_trading_party_roles_tbl" (tenant_id, trade_id, role)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists party_roles_tenant_idx
 on "ores_trading_party_roles_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists party_roles_trade_idx
-on "ores_trading_party_roles_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists party_roles_counterparty_idx
@@ -82,14 +88,14 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    -- Validate role (soft FK to ores_trading_party_role_types_tbl)
     if not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
+        select 1 from ores_trading_party_role_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.role
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+        raise exception 'Invalid role: %. No active party role type found with this code.', NEW.role
             using errcode = '23503';
     end if;
 
@@ -111,7 +117,7 @@ begin
     select version into current_version
     from "ores_trading_party_roles_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and trade_id = NEW.trade_id and role = NEW.role
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -140,7 +146,7 @@ begin
         update "ores_trading_party_roles_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and trade_id = NEW.trade_id and role = NEW.role
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -165,6 +171,6 @@ on delete to "ores_trading_party_roles_tbl" do instead (
     update "ores_trading_party_roles_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and trade_id = OLD.trade_id and role = OLD.role
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

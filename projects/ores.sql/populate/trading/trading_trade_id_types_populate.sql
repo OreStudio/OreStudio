@@ -36,6 +36,8 @@ insert into ores_trading_trade_id_types_tbl (
     ('USI',      ores_utility_system_tenant_id_fn(), 0, 'Unique Swap Identifier',
      current_user, 'system.initial_load', 'Seed trade identifier types'),
     ('Internal', ores_utility_system_tenant_id_fn(), 0, 'Internal system identifier',
+     current_user, 'system.initial_load', 'Seed trade identifier types'),
+    ('ORE',      ores_utility_system_tenant_id_fn(), 0, 'The id an ORE document gives the trade (Trade/@id)',
      current_user, 'system.initial_load', 'Seed trade identifier types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

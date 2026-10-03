@@ -33,13 +33,11 @@
 export interface TradeIdentifier {
     version: number;
     tenant_id: string;
-    workspace_id: string;
-    id: string;
     trade_id: string;
-    issuing_party_id: string | null;
-    id_value: string;
     id_type: string;
-    id_scheme: string;
+    party_id: string;
+    id_value: string;
+    issuing_party_id: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

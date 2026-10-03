@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,5 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_provider_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_ADDITIONAL_FIELD_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_ADDITIONAL_FIELD_HISTORY_PROVIDER_REGISTRAR_HPP
 
-drop view if exists ores_trade_ore_envelope_vw;
+#include "ores.history.core/service/dispatch_registry.hpp"
+
+namespace ores::trading::messaging {
+
+void register_trade_additional_field_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+} // namespace ores::trading::messaging
+
+#endif

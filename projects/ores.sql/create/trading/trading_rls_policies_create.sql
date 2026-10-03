@@ -423,6 +423,17 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation: strict enforcement, as on the anchor. FOR SELECT only.
+drop policy if exists identifiers_party_isolation_policy
+    on ores_trading_trade_identifiers_tbl;
+
+create policy identifiers_party_isolation_policy
+on ores_trading_trade_identifiers_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Trade Party Roles
 -- -----------------------------------------------------------------------------
@@ -437,6 +448,44 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement, as on the anchor. FOR SELECT only.
+drop policy if exists party_roles_party_isolation_policy
+    on ores_trading_party_roles_tbl;
+
+create policy party_roles_party_isolation_policy
+on ores_trading_party_roles_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Trade Additional Fields
+-- -----------------------------------------------------------------------------
+alter table ores_trading_trade_additional_fields_tbl enable row level security;
+
+drop policy if exists trade_additional_fields_tenant_isolation_policy
+    on ores_trading_trade_additional_fields_tbl;
+
+create policy trade_additional_fields_tenant_isolation_policy on ores_trading_trade_additional_fields_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement, as on the anchor. FOR SELECT only.
+drop policy if exists trade_additional_fields_party_isolation_policy
+    on ores_trading_trade_additional_fields_tbl;
+
+create policy trade_additional_fields_party_isolation_policy
+on ores_trading_trade_additional_fields_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- =============================================================================

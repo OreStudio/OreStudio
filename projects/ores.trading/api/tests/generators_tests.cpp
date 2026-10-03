@@ -252,10 +252,10 @@ TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_trade_identifier(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated trade_identifier id: " << sut.id;
+    BOOST_LOG_SEV(lg, info) << "Generated trade_identifier id: " << sut.trade_id;
 
     CHECK(sut.version == 0);
-    CHECK(!sut.id.is_nil());
+    CHECK(!sut.trade_id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
@@ -269,7 +269,7 @@ TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
-        CHECK(!item.id.is_nil());
+        CHECK(!item.trade_id.is_nil());
         CHECK(item.version == 0);
     }
 }
@@ -281,10 +281,10 @@ TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_trade_party_role(ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Generated trade_party_role id: " << sut.id;
+    BOOST_LOG_SEV(lg, info) << "Generated trade_party_role id: " << sut.trade_id;
 
     CHECK(sut.version == 0);
-    CHECK(!sut.id.is_nil());
+    CHECK(!sut.trade_id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
 }
@@ -297,7 +297,7 @@ TEST_CASE("trade_party_role_generator_produces_multiple_instances", tags) {
 
     CHECK(items.size() == count);
     for (const auto& item : items) {
-        CHECK(!item.id.is_nil());
+        CHECK(!item.trade_id.is_nil());
         CHECK(item.version == 0);
     }
 }

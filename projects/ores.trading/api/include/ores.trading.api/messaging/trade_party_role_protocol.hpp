@@ -36,14 +36,14 @@
 namespace ores::trading::messaging {
 
 struct trade_party_role_key {
-    boost::uuids::uuid id;
+    boost::uuids::uuid trade_id;
+    std::string role;
 };
 
 struct trade_party_role_write {
-    boost::uuids::uuid id;
     boost::uuids::uuid trade_id;
-    boost::uuids::uuid counterparty_id;
     std::string role;
+    boost::uuids::uuid counterparty_id;
 };
 
 struct trade_party_role_change {

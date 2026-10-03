@@ -34,14 +34,12 @@ render_trade_identifier_fields(const domain::trade_identifier& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
+    fields.push_back({.name = "ID Value", .value = v.id_value});
     fields.push_back({.name = "Issuing Party ID",
                       .value = v.issuing_party_id ? boost::uuids::to_string(*v.issuing_party_id) :
                                                     std::string{}});
-    fields.push_back({.name = "ID Value", .value = v.id_value});
-    fields.push_back({.name = "ID Type", .value = v.id_type});
-    fields.push_back({.name = "ID Scheme", .value = v.id_scheme});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

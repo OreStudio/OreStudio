@@ -166,6 +166,15 @@ begin
     -- first: the soft-delete rule would only close the current one, so it is
     -- disabled around the delete. An anchor is immutable, so the purge turns
     -- on the purge signal for this transaction before it deletes them.
+    alter table ores_trading_trade_identifiers_tbl disable rule ores_trading_trade_identifiers_delete_rule;
+    delete from ores_trading_trade_identifiers_tbl where tenant_id = p_tenant_id;
+    alter table ores_trading_trade_identifiers_tbl enable rule ores_trading_trade_identifiers_delete_rule;
+    alter table ores_trading_party_roles_tbl disable rule ores_trading_party_roles_delete_rule;
+    delete from ores_trading_party_roles_tbl where tenant_id = p_tenant_id;
+    alter table ores_trading_party_roles_tbl enable rule ores_trading_party_roles_delete_rule;
+    alter table ores_trading_trade_additional_fields_tbl disable rule ores_trading_trade_additional_fields_delete_rule;
+    delete from ores_trading_trade_additional_fields_tbl where tenant_id = p_tenant_id;
+    alter table ores_trading_trade_additional_fields_tbl enable rule ores_trading_trade_additional_fields_delete_rule;
     alter table ores_trading_trade_states_tbl disable rule ores_trading_trade_states_delete_rule;
     delete from ores_trading_trade_states_tbl where tenant_id = p_tenant_id;
     alter table ores_trading_trade_states_tbl enable rule ores_trading_trade_states_delete_rule;

@@ -29,14 +29,14 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface TradePartyRoleKey {
-    id: string;
+    trade_id: string;
+    role: string;
 }
 
 export interface TradePartyRoleWrite {
-    id: string;
     trade_id: string;
-    counterparty_id: string;
     role: string;
+    counterparty_id: string;
 }
 
 export interface TradePartyRoleChange {

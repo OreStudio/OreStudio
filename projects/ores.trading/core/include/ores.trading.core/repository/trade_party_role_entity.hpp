@@ -42,12 +42,12 @@ struct trade_party_role_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_party_roles_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> trade_id;
+    sqlgen::PrimaryKey<std::string> role;
     std::string tenant_id;
     int version = 0;
-    std::string trade_id;
+    std::string party_id;
     std::string counterparty_id;
-    std::string role;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

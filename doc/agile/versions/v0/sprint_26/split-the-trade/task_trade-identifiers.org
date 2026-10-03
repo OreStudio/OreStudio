@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 2FA3C2C8-8F53-4EFE-945A-67AA6BC8ADB1
+:END:
+#+title: Task: Key identifiers, party roles and additional fields by the anchor
+#+description: Reshape trade_identifier and trade_party_role around the anchor and add trade_additional_field: each keyed by the trade with a database foreign key to the anchor, ORE's Trade/@id one identifier scheme among others, and no workspace.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trade-identifiers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every identifier of a trade, ORE's Trade/@id included, is a trade_identifier row; the other parties' roles and the additional fields are rows keyed by the trade; all three reference the anchor with a database foreign key.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- trade_identifier is keyed by (trade, scheme), with value and issuer; the scheme is a trade_id_type code and ORE is one of them.
+- trade_party_role is keyed by (trade, role) and holds only roles other than the counterparty, which the anchor holds.
+- trade_additional_field is keyed by (trade, order) with name and value.
+- All three reference the anchor with an enforced foreign key, carry the anchor's party for row-level security, and have no workspace.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- =trade_identifier= and =trade_party_role= are reshaped in place: nothing
+  outside generated code writes them, so they move onto the anchor without a
+  table beside them. =trade_additional_field= is new, beside the envelope's
+  additional field table, which the ORE import still writes until its own task.
+- Keys: identifier (trade, scheme); party role (trade, role); additional field
+  (trade, ordinal). Each has an enforced foreign key to the anchor and a party
+  copy pinned to it for row-level security, and none has a workspace.
+- The scheme is a =trade_id_type= code, checked against the catalogue rather
+  than a check list; the catalogue gains =ORE= for =Trade/@id=.
+- A party role refuses =Counterparty=: the anchor holds the counterparty.
+- The ORE envelope view joined the =Counterparty= role, so it could never
+  return a row again. Nothing read it, so it goes, with its test. The old
+  identifier and party role pgTAP tests, which tested the wide trade's shapes
+  and already stopped at their fixtures, are replaced by one test of the three
+  tables.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: =trading_sample_data_populate.sql= still writes the old identifier and party role shapes | populate script | Decline | The script is not wired into any populate run; a backlog capture already holds the decision to wire or delete it. |
+| 2 | Local review: the issuer has no foreign key | =ores.trading.trade_identifier.org= | Accept as is | It may name a party or a counterparty, so no single table can check it; unchanged from before. |
+| 3 | ctest: a party role domain test still expected the counterparty role | =domain_trade_party_role_tests.cpp= | Accept | The test sets and checks a calculation agent. |
+
+* Result
+
+- =trade_identifier= is keyed by (trade, scheme) with value and issuer; the
+  scheme is a =trade_id_type= code, and =ORE= is one, for =Trade/@id=.
+- =trade_party_role= is keyed by (trade, role) and refuses the counterparty
+  role, which the anchor holds.
+- =trade_additional_field= is keyed by (trade, ordinal) with name and value.
+- All three reference the anchor with an enforced foreign key, carry the
+  anchor's party pinned to it with tenant and party row-level security, and
+  have no workspace. The tenant purger removes every version of each.
+- The unused ORE envelope view and the stale identifier and party role pgTAP
+  tests are removed.
+- Verified: build clean (=linux-clang-debug-make=); ctest 89/90 on the full
+  run, the one failure (a stale assertion) fixed and =ores.trading.*= 3/3 on
+  the rerun; db recreate clean; pgTAP 55/55; codegen pytest 1120; drift shows
+  only the known =trade_service.cpp= diff; sweep, paste blocks, reachability,
+  permissions, populate references, CMake, inventory, ER strict, SQL hygiene,
+  shell scripts, lint, structure notes, misspell and site page clean.

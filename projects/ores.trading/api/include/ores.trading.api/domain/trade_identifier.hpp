@@ -35,11 +35,17 @@
 namespace ores::trading::domain {
 
 /**
- * @brief External identifier (UTI, USI, internal) assigned to a trade.
+ * @brief An identifier of a trade under one scheme (UTI, USI, Internal, ORE).
  *
- * Junction entity assigning external identifiers to trades.
- * Each trade can have multiple identifiers of different types.
- * The issuing_party_id references either a party or counterparty.
+ * One identifier a trade is known by under one scheme: a UTI, a USI, the
+ * firm's internal reference, or the id an ORE document gave it. Each scheme
+ * is a [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] code, and a trade has at most one
+ * value per scheme. The firm's own id is the anchor's UUID, the trade id, and is not repeated here.
+ *
+ * The row is keyed by the trade and references the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade
+ * anchor]] with a database foreign key. It copies the anchor's party, pinned to the anchor, because
+ * row-level security needs the party on every row. The issuer is the party or counterparty that
+ * issued the value, when it is known.
  */
 struct trade_identifier final {
     /**
@@ -53,53 +59,29 @@ struct trade_identifier final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
-     * @brief UUID uniquely identifying this trade identifier record.
-     *
-     * Surrogate key for the trade identifier record.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief Trade this identifier belongs to.
-     *
-     * Soft FK to ores_trading_trades_tbl.
+     * @brief The trade this identifier belongs to.
      */
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Party or counterparty that issued this identifier.
-     *
-     * Soft FK to parties or counterparties. Absent if issuer unknown.
-     */
-    std::optional<boost::uuids::uuid> issuing_party_id;
-
-    /**
-     * @brief The identifier value.
-     *
-     * e.g., UTI value, internal trade reference.
-     */
-    std::string id_value;
-
-    /**
-     * @brief Type of identifier (e.g. UTI, USI, Internal).
-     *
-     * Soft FK to ores_trading_trade_id_types_tbl.
+     * @brief The scheme the value belongs to (e.g. UTI, USI, Internal, ORE).
      */
     std::string id_type;
 
     /**
-     * @brief Optional scheme qualifier for the identifier.
-     *
-     * e.g., the LEI namespace for UTI schemes.
+     * @brief The trade's party, copied from the anchor.
      */
-    std::string id_scheme;
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief The identifier value under the scheme.
+     */
+    std::string id_value;
+
+    /**
+     * @brief The party or counterparty that issued the value. Absent when the issuer is unknown.
+     */
+    std::optional<boost::uuids::uuid> issuing_party_id;
 
     /**
      * @brief Username of the person who last modified this trade identifier.

@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::trade_identifier> read_one(repository::trade_identifier_repository& repo,
                                                const ores::database::context& ctx,
                                                const messaging::trade_identifier_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id), key.id_type);
 }
 
 /**
@@ -69,7 +69,8 @@ std::vector<domain::trade_identifier> read_one(repository::trade_identifier_repo
  */
 messaging::trade_identifier_key key_from(const domain::trade_identifier& v) {
     messaging::trade_identifier_key key;
-    key.id = v.id;
+    key.trade_id = v.trade_id;
+    key.id_type = v.id_type;
     return key;
 }
 
@@ -82,12 +83,10 @@ messaging::trade_identifier_key key_from(const domain::trade_identifier& v) {
  */
 domain::trade_identifier to_domain(const messaging::trade_identifier_write& write) {
     domain::trade_identifier v;
-    v.id = write.id;
     v.trade_id = write.trade_id;
-    v.issuing_party_id = write.issuing_party_id;
-    v.id_value = write.id_value;
     v.id_type = write.id_type;
-    v.id_scheme = write.id_scheme;
+    v.id_value = write.id_value;
+    v.issuing_party_id = write.issuing_party_id;
     return v;
 }
 
@@ -206,7 +205,10 @@ messaging::delete_trade_identifier_response trade_identifier_service::delete_tra
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(request.removal.key.trade_id),
+                         request.removal.key.id_type,
+                         expected)) {
         case repository::trade_identifier_repository::remove_status::removed:
             break;
         case repository::trade_identifier_repository::remove_status::missing:
@@ -248,11 +250,15 @@ trade_identifier_service::delete_many_trade_identifiers(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
-    repo_.remove(ctx_, id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    std::vector<std::string> id_type_keys;
+    id_type_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        id_type_keys.push_back(removal.key.id_type);
+    repo_.remove(ctx_, trade_id_keys, id_type_keys);
     return response;
 }
 
@@ -273,7 +279,8 @@ trade_identifier_service::list_trade_identifier_versions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
+    auto all =
+        repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id), request.key.id_type);
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -289,8 +296,11 @@ messaging::get_trade_identifier_version_response
 trade_identifier_service::get_trade_identifier_version(
     const messaging::get_trade_identifier_version_request& request) {
     messaging::get_trade_identifier_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.trade_identifier.id), request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_,
+                              boost::uuids::to_string(request.key.trade_identifier.trade_id),
+                              request.key.trade_identifier.id_type,
+                              request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -361,43 +371,51 @@ std::uint32_t trade_identifier_service::count_identifiers() {
 }
 
 
-std::optional<domain::trade_identifier>
-trade_identifier_service::get_identifier_at_version(const boost::uuids::uuid& id,
-                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier at version. " << "id: " << id
+std::optional<domain::trade_identifier> trade_identifier_service::get_identifier_at_version(
+    const std::string& trade_id, const std::string& id_type, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier at version. "
+                               << "trade_id: " << trade_id << " id_type: " << id_type
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
+    return repo_.read_at_version(ctx_, trade_id, id_type, version);
 }
 
 std::optional<domain::trade_identifier>
-trade_identifier_service::get_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+trade_identifier_service::get_identifier(const std::string& trade_id, const std::string& id_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "trade_id: " << trade_id
+                               << " id_type: " << id_type;
+    auto results = repo_.read_latest(ctx_, trade_id, id_type);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::trade_identifier>
-trade_identifier_service::get_identifiers(const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+trade_identifier_service::get_identifiers(const std::vector<std::string>& trade_ids,
+                                          const std::vector<std::string>& id_types) {
+    return repo_.read_latest(ctx_, trade_ids, id_types);
 }
 
 void trade_identifier_service::save_identifier(const domain::trade_identifier& v) {
-    if (v.id.is_nil())
-        throw std::invalid_argument("Trade Identifier id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "id: " << v.id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Trade Identifier trade_id cannot be empty.");
+    if (v.id_type.empty())
+        throw std::invalid_argument("Trade Identifier id_type cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "trade_id: " << v.trade_id
+                               << " id_type: " << v.id_type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier. " << "trade_id: " << v.trade_id
+                              << " id_type: " << v.id_type;
 }
 
 void trade_identifier_service::save_identifiers(
     const std::vector<domain::trade_identifier>& identifiers) {
     for (const auto& e : identifiers) {
-        if (e.id.is_nil())
-            throw std::invalid_argument("Trade Identifier id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Trade Identifier trade_id cannot be empty.");
+        if (e.id_type.empty())
+            throw std::invalid_argument("Trade Identifier id_type cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " trade identifiers";
     auto ts = identifiers;
@@ -407,20 +425,26 @@ void trade_identifier_service::save_identifiers(
     repo_.write(ctx_, ts);
 }
 
-void trade_identifier_service::delete_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier. " << "id: " << id;
+void trade_identifier_service::delete_identifier(const std::string& trade_id,
+                                                 const std::string& id_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
+                               << " id_type: " << id_type;
+    repo_.remove(ctx_, trade_id, id_type);
+    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type;
 }
 
-void trade_identifier_service::delete_identifiers(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+void trade_identifier_service::delete_identifiers(const std::vector<std::string>& trade_ids,
+                                                  const std::vector<std::string>& id_types) {
+    repo_.remove(ctx_, trade_ids, id_types);
 }
 
 std::vector<domain::trade_identifier>
-trade_identifier_service::get_identifier_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier. " << "id: " << id;
-    return repo_.read_all(ctx_, id);
+trade_identifier_service::get_identifier_history(const std::string& trade_id,
+                                                 const std::string& id_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier. "
+                               << "trade_id: " << trade_id << " id_type: " << id_type;
+    return repo_.read_all(ctx_, trade_id, id_type);
 }
 
 }

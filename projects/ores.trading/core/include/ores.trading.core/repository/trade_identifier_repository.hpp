@@ -101,16 +101,19 @@ public:
      */
     /**@{*/
     std::vector<domain::trade_identifier> read_latest(context ctx);
-    std::vector<domain::trade_identifier> read_latest(context ctx, const std::string& id);
+    std::vector<domain::trade_identifier>
+    read_latest(context ctx, const std::string& trade_id, const std::string& id_type);
     std::vector<domain::trade_identifier> read_latest(context ctx,
-                                                      const std::vector<std::string>& ids);
+                                                      const std::vector<std::string>& trade_ids,
+                                                      const std::vector<std::string>& id_types);
     /**@}*/
 
 
     /**
      * @brief Reads all trade identifiers, possibly filtered by primary key.
      */
-    std::vector<domain::trade_identifier> read_all(context ctx, const std::string& id);
+    std::vector<domain::trade_identifier>
+    read_all(context ctx, const std::string& trade_id, const std::string& id_type);
 
     /**
      * @brief Reads a single trade identifier as it stood at a specific
@@ -121,8 +124,11 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::trade_identifier>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    std::optional<domain::trade_identifier> read_at_version(context ctx,
+                                                            const std::string& trade_id,
+                                                            const std::string& id_type,
+                                                            std::uint32_t version);
+
 
     /**
      * @brief Reads latest trade identifiers with pagination support.
@@ -143,7 +149,7 @@ public:
     /**
      * @brief Deletes a trade identifier by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(context ctx, const std::string& trade_id, const std::string& id_type);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -165,12 +171,17 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status remove(context ctx,
+                         const std::string& trade_id,
+                         const std::string& id_type,
+                         std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes trade identifiers by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(context ctx,
+                const std::vector<std::string>& trade_ids,
+                const std::vector<std::string>& id_types);
 
 
 private:

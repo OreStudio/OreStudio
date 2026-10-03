@@ -29,13 +29,15 @@ declare
     notification_payload jsonb;
     change_action text;
     changed_version integer := 0;
-    changed_id uuid;
+    changed_trade_id uuid;
+    changed_role text;
     changed_key jsonb;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
-        changed_id := OLD.id;
+        changed_trade_id := OLD.trade_id;
+        changed_role := OLD.role;
         changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
@@ -53,11 +55,12 @@ begin
             change_action := 'updated';
         end if;
         changed_version := NEW.version;
-        changed_id := NEW.id;
+        changed_trade_id := NEW.trade_id;
+        changed_role := NEW.role;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
 
-    changed_key := jsonb_build_object('id', changed_id);
+    changed_key := jsonb_build_object('trade_id', changed_trade_id, 'role', changed_role);
 
     notification_payload := jsonb_build_object(
         'event_id', gen_random_uuid()::text,

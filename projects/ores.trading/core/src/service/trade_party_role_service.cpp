@@ -58,7 +58,7 @@ namespace {
 std::vector<domain::trade_party_role> read_one(repository::trade_party_role_repository& repo,
                                                const ores::database::context& ctx,
                                                const messaging::trade_party_role_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id), key.role);
 }
 
 /**
@@ -69,7 +69,8 @@ std::vector<domain::trade_party_role> read_one(repository::trade_party_role_repo
  */
 messaging::trade_party_role_key key_from(const domain::trade_party_role& v) {
     messaging::trade_party_role_key key;
-    key.id = v.id;
+    key.trade_id = v.trade_id;
+    key.role = v.role;
     return key;
 }
 
@@ -82,10 +83,9 @@ messaging::trade_party_role_key key_from(const domain::trade_party_role& v) {
  */
 domain::trade_party_role to_domain(const messaging::trade_party_role_write& write) {
     domain::trade_party_role v;
-    v.id = write.id;
     v.trade_id = write.trade_id;
-    v.counterparty_id = write.counterparty_id;
     v.role = write.role;
+    v.counterparty_id = write.counterparty_id;
     return v;
 }
 
@@ -204,7 +204,10 @@ messaging::delete_trade_party_role_response trade_party_role_service::delete_tra
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(request.removal.key.trade_id),
+                         request.removal.key.role,
+                         expected)) {
         case repository::trade_party_role_repository::remove_status::removed:
             break;
         case repository::trade_party_role_repository::remove_status::missing:
@@ -246,11 +249,15 @@ trade_party_role_service::delete_many_trade_party_roles(
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
-    repo_.remove(ctx_, id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    std::vector<std::string> role_keys;
+    role_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        role_keys.push_back(removal.key.role);
+    repo_.remove(ctx_, trade_id_keys, role_keys);
     return response;
 }
 
@@ -271,7 +278,8 @@ trade_party_role_service::list_trade_party_role_versions(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
+    auto all =
+        repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id), request.key.role);
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -287,8 +295,11 @@ messaging::get_trade_party_role_version_response
 trade_party_role_service::get_trade_party_role_version(
     const messaging::get_trade_party_role_version_request& request) {
     messaging::get_trade_party_role_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.trade_party_role.id), request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_,
+                              boost::uuids::to_string(request.key.trade_party_role.trade_id),
+                              request.key.trade_party_role.role,
+                              request.key.version);
     if (!found) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
@@ -359,41 +370,50 @@ std::uint32_t trade_party_role_service::count_roles() {
 }
 
 
-std::optional<domain::trade_party_role>
-trade_party_role_service::get_role_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role at version. " << "id: " << id
+std::optional<domain::trade_party_role> trade_party_role_service::get_role_at_version(
+    const std::string& trade_id, const std::string& role, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role at version. "
+                               << "trade_id: " << trade_id << " role: " << role
                                << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
+    return repo_.read_at_version(ctx_, trade_id, role, version);
 }
 
 std::optional<domain::trade_party_role>
-trade_party_role_service::get_role(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+trade_party_role_service::get_role(const std::string& trade_id, const std::string& role) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role. " << "trade_id: " << trade_id
+                               << " role: " << role;
+    auto results = repo_.read_latest(ctx_, trade_id, role);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::trade_party_role>
-trade_party_role_service::get_roles(const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+trade_party_role_service::get_roles(const std::vector<std::string>& trade_ids,
+                                    const std::vector<std::string>& roles) {
+    return repo_.read_latest(ctx_, trade_ids, roles);
 }
 
 void trade_party_role_service::save_role(const domain::trade_party_role& v) {
-    if (v.id.is_nil())
-        throw std::invalid_argument("Trade Party Role id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade party role. " << "id: " << v.id;
+    if (v.trade_id.is_nil())
+        throw std::invalid_argument("Trade Party Role trade_id cannot be empty.");
+    if (v.role.empty())
+        throw std::invalid_argument("Trade Party Role role cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade party role. " << "trade_id: " << v.trade_id
+                               << " role: " << v.role;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade party role. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade party role. " << "trade_id: " << v.trade_id
+                              << " role: " << v.role;
 }
 
 void trade_party_role_service::save_roles(const std::vector<domain::trade_party_role>& roles) {
     for (const auto& e : roles) {
-        if (e.id.is_nil())
-            throw std::invalid_argument("Trade Party Role id cannot be empty.");
+        if (e.trade_id.is_nil())
+            throw std::invalid_argument("Trade Party Role trade_id cannot be empty.");
+        if (e.role.empty())
+            throw std::invalid_argument("Trade Party Role role cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " trade party roles";
     auto ts = roles;
@@ -403,20 +423,24 @@ void trade_party_role_service::save_roles(const std::vector<domain::trade_party_
     repo_.write(ctx_, ts);
 }
 
-void trade_party_role_service::delete_role(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade party role. " << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade party role. " << "id: " << id;
+void trade_party_role_service::delete_role(const std::string& trade_id, const std::string& role) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade party role. " << "trade_id: " << trade_id
+                               << " role: " << role;
+    repo_.remove(ctx_, trade_id, role);
+    BOOST_LOG_SEV(lg(), info) << "Removed trade party role. " << "trade_id: " << trade_id
+                              << " role: " << role;
 }
 
-void trade_party_role_service::delete_roles(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+void trade_party_role_service::delete_roles(const std::vector<std::string>& trade_ids,
+                                            const std::vector<std::string>& roles) {
+    repo_.remove(ctx_, trade_ids, roles);
 }
 
 std::vector<domain::trade_party_role>
-trade_party_role_service::get_role_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade party role. " << "id: " << id;
-    return repo_.read_all(ctx_, id);
+trade_party_role_service::get_role_history(const std::string& trade_id, const std::string& role) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade party role. "
+                               << "trade_id: " << trade_id << " role: " << role;
+    return repo_.read_all(ctx_, trade_id, role);
 }
 
 }

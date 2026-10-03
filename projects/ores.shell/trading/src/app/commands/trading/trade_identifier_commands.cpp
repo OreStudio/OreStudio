@@ -127,65 +127,65 @@ void trade_identifier_commands::register_commands(cli::Menu& root_menu, nats_cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get(std::ref(out), std::ref(session), std::move(args));
         },
-        "get <id>");
+        "get <trade_id> <id_type>");
 
     menu->Insert(
         "get-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "get-many <id>");
+        "get-many <trade_id> <id_type>");
 
     menu->Insert(
         "add",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> <reason> <commentary>");
+        "add <id_type> <id_value> <issuing_party_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <id_type> <id_value> <issuing_party_id> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <trade_id> <issuing_party_id> <id_value> <id_type> <id_scheme> "
-        "<reason> <commentary>");
+        "put-many --count <n> <trade_id> <id_type> <id_value> <issuing_party_id> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete <id> <reason> <commentary> [--version <n>]");
+        "delete <trade_id> <id_type> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "delete-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_delete_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "delete-many <id> <reason> <commentary>");
+        "delete-many <trade_id> <id_type> <reason> <commentary>");
 
     menu->Insert(
         "versions",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_versions(std::ref(out), std::ref(session), std::move(args));
         },
-        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+        "versions <trade_id> <id_type> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
 
     menu->Insert(
         "version",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_version(std::ref(out), std::ref(session), std::move(args));
         },
-        "version <id> --version <n>");
+        "version <trade_id> <id_type> --version <n>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -262,11 +262,12 @@ void trade_identifier_commands::process_get(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 2) {
+            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
+        read_token(req.key.id_type, parsed->positionals[next++], "id_type");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -304,14 +305,15 @@ void trade_identifier_commands::process_get_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
-            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.empty() || parsed->positionals.size() % 2 != 0) {
+            fail(out) << "Expected a multiple of 2 arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::trade_identifier_key key;
-            read_token(key.id, parsed->positionals[i + 0], "id");
+            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            read_token(key.id_type, parsed->positionals[i + 1], "id_type");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -351,18 +353,16 @@ void trade_identifier_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        req.change.write.trade_id = boost::uuids::random_generator()();
+        read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
+        read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
         read_token(
             req.change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");
-        read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
-        read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
-        read_token(req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -405,18 +405,16 @@ void trade_identifier_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
+        read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
         read_token(
             req.change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");
-        read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
-        read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
-        read_token(req.change.write.id_scheme, parsed->positionals[next++], "id_scheme");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -471,20 +469,18 @@ void trade_identifier_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 4 + 2) {
+            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::trade_identifier_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
+            read_token(change.write.id_type, parsed->positionals[next++], "id_type");
+            read_token(change.write.id_value, parsed->positionals[next++], "id_value");
             read_token(
                 change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");
-            read_token(change.write.id_value, parsed->positionals[next++], "id_value");
-            read_token(change.write.id_type, parsed->positionals[next++], "id_type");
-            read_token(change.write.id_scheme, parsed->positionals[next++], "id_scheme");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -529,11 +525,12 @@ void trade_identifier_commands::process_delete(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1 + 2) {
-            fail(out) << "Expected " << (1 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 2 + 2) {
+            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
+        read_token(req.removal.key.id_type, parsed->positionals[next++], "id_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -579,15 +576,16 @@ void trade_identifier_commands::process_delete_many(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() < 1 + 2 || (parsed->positionals.size() - 2) % 1 != 0) {
+        if (parsed->positionals.size() < 2 + 2 || (parsed->positionals.size() - 2) % 2 != 0) {
             fail(out) << "Expected a whole number of key groups and an intent, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
-        const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::trade_identifier_key key;
-            read_token(key.id, parsed->positionals[i * 1 + 0], "id");
+            read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
+            read_token(key.id_type, parsed->positionals[i * 2 + 1], "id_type");
             req.removals.push_back(messaging::trade_identifier_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -634,11 +632,12 @@ void trade_identifier_commands::process_versions(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 2) {
+            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
+        read_token(req.key.id_type, parsed->positionals[next++], "id_type");
         apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
@@ -679,11 +678,12 @@ void trade_identifier_commands::process_version(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 1) {
-            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+        if (parsed->positionals.size() != 2) {
+            fail(out) << "Expected 2 arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
             return;
         }
+        read_token(req.key.trade_identifier.id_type, parsed->positionals[next++], "id_type");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

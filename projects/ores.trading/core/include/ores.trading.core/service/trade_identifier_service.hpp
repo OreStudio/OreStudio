@@ -120,23 +120,23 @@ public:
      * @param version The version to fetch.
      * @return The trade identifier at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::trade_identifier> get_identifier_at_version(const boost::uuids::uuid& id,
+    std::optional<domain::trade_identifier> get_identifier_at_version(const std::string& trade_id,
+                                                                      const std::string& id_type,
                                                                       std::uint32_t version);
 
     /**
      * @brief Retrieves a single trade identifier by its primary key.
      *
-     * The storage key is a uuid, so the signature says which key is meant and
-     * the human-readable key cannot be passed here by mistake.
-     *
      * @return The trade identifier if found, std::nullopt otherwise.
      */
-    std::optional<domain::trade_identifier> get_identifier(const boost::uuids::uuid& id);
+    std::optional<domain::trade_identifier> get_identifier(const std::string& trade_id,
+                                                           const std::string& id_type);
 
     /**
      * @brief Retrieves a batch of trade identifiers by primary key.
      */
-    std::vector<domain::trade_identifier> get_identifiers(const std::vector<std::string>& ids);
+    std::vector<domain::trade_identifier> get_identifiers(const std::vector<std::string>& trade_ids,
+                                                          const std::vector<std::string>& id_types);
 
     /**
      * @brief Saves a trade identifier (creates or updates).
@@ -159,19 +159,21 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_identifier(const boost::uuids::uuid& id);
+    void delete_identifier(const std::string& trade_id, const std::string& id_type);
 
     /**
      * @brief Deletes trade identifiers by their primary keys.
      */
-    void delete_identifiers(const std::vector<std::string>& ids);
+    void delete_identifiers(const std::vector<std::string>& trade_ids,
+                            const std::vector<std::string>& id_types);
 
     /**
      * @brief Retrieves all historical versions of a trade identifier.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::trade_identifier> get_identifier_history(const std::string& id);
+    std::vector<domain::trade_identifier> get_identifier_history(const std::string& trade_id,
+                                                                 const std::string& id_type);
 
 private:
     context ctx_;

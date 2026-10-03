@@ -37,7 +37,6 @@ const std::string tags("[domain]");
 trade_party_role make_trade_party_role(const std::string& role) {
     trade_party_role tpr;
     tpr.version = 1;
-    tpr.id = boost::uuids::random_generator()();
     tpr.trade_id = boost::uuids::random_generator()();
     tpr.counterparty_id = boost::uuids::random_generator()();
     tpr.role = role;
@@ -59,10 +58,9 @@ TEST_CASE("create_trade_party_role_with_valid_fields", tags) {
 
     trade_party_role sut;
     sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.counterparty_id = boost::uuids::random_generator()();
-    sut.role = "Counterparty";
+    sut.role = "CalculationAgent";
     sut.modified_by = "admin";
     sut.performed_by = "admin";
     sut.change_reason_code = "system.new";
@@ -71,10 +69,9 @@ TEST_CASE("create_trade_party_role_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(!sut.id.is_nil());
     CHECK(!sut.trade_id.is_nil());
     CHECK(!sut.counterparty_id.is_nil());
-    CHECK(sut.role == "Counterparty");
+    CHECK(sut.role == "CalculationAgent");
     CHECK(sut.change_reason_code == "system.new");
 }
 
@@ -83,7 +80,6 @@ TEST_CASE("trade_party_role_insertion_operator", tags) {
 
     trade_party_role sut;
     sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.counterparty_id = boost::uuids::random_generator()();
     sut.role = "CalculationAgent";
@@ -107,7 +103,6 @@ TEST_CASE("create_trade_party_role_with_faker", tags) {
 
     trade_party_role sut;
     sut.version = faker::number::integer(1, 10);
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.counterparty_id = boost::uuids::random_generator()();
     sut.role = std::string(faker::word::noun()) + "_role";
@@ -119,7 +114,7 @@ TEST_CASE("create_trade_party_role_with_faker", tags) {
     BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
     CHECK(sut.version >= 1);
-    CHECK(!sut.id.is_nil());
+    CHECK(!sut.trade_id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -132,7 +127,7 @@ TEST_CASE("create_multiple_random_trade_party_roles", tags) {
     for (const auto& role : roles) {
         auto sut = make_trade_party_role(role);
         BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
-        CHECK(!sut.id.is_nil());
+        CHECK(!sut.trade_id.is_nil());
         CHECK(sut.version == 1);
     }
 }
@@ -182,7 +177,6 @@ TEST_CASE("trade_party_role_table_with_faker_data", tags) {
     for (int i = 0; i < 5; ++i) {
         trade_party_role tpr;
         tpr.version = 1;
-        tpr.id = boost::uuids::random_generator()();
         tpr.trade_id = boost::uuids::random_generator()();
         tpr.counterparty_id = boost::uuids::random_generator()();
         tpr.role = std::string(faker::word::noun()) + "_role_" + std::to_string(i);

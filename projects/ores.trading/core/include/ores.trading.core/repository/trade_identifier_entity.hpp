@@ -42,15 +42,13 @@ struct trade_identifier_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_trade_identifiers_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> trade_id;
+    sqlgen::PrimaryKey<std::string> id_type;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
-    std::string trade_id;
-    std::optional<std::string> issuing_party_id;
+    std::string party_id;
     std::string id_value;
-    std::string id_type;
-    std::optional<std::string> id_scheme;
+    std::optional<std::string> issuing_party_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

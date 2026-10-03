@@ -66,7 +66,7 @@ select (select tenant_id from ores_refdata_books_tbl where valid_to = ores_utili
         order by username offset 2 limit 1) as member_id;
 
 
-create function pg_temp.portfolio(p_id uuid, p_parent uuid, p_sandbox uuid)
+create or replace function pg_temp.portfolio(p_id uuid, p_parent uuid, p_sandbox uuid)
 returns void as $$
     insert into ores_refdata_portfolios_tbl (id, tenant_id, version, party_id, name,
         parent_portfolio_id, purpose_type, is_virtual, sandbox_id, status,
@@ -76,7 +76,7 @@ returns void as $$
     from t_ctx;
 $$ language sql;
 
-create function pg_temp.book(p_id uuid, p_parent uuid, p_sandbox uuid,
+create or replace function pg_temp.book(p_id uuid, p_parent uuid, p_sandbox uuid,
     p_gl text default null, p_sweep boolean default false)
 returns void as $$
     insert into ores_refdata_books_tbl (id, tenant_id, version, party_id, name,
@@ -89,7 +89,7 @@ returns void as $$
     from t_ctx;
 $$ language sql;
 
-create function pg_temp.sandbox(p_id uuid, p_anchor uuid, p_version int,
+create or replace function pg_temp.sandbox(p_id uuid, p_anchor uuid, p_version int,
     p_visibility text default 'private', p_status text default 'open')
 returns void as $$
     insert into ores_refdata_sandboxes_tbl (id, tenant_id, version, name, purpose,
@@ -101,7 +101,7 @@ returns void as $$
     from t_ctx;
 $$ language sql;
 
-create function pg_temp.grant_right(p_account uuid, p_portfolio uuid, p_right text)
+create or replace function pg_temp.grant_right(p_account uuid, p_portfolio uuid, p_right text)
 returns void as $$
     insert into ores_refdata_portfolio_rights_tbl (id, tenant_id, version, account_id,
         portfolio_id, right_code, modified_by, performed_by, change_reason_code,

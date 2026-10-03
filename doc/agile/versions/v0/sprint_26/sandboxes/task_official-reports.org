@@ -8,7 +8,7 @@
 #+filetags: :sandboxes:sprint_26:v0:
 #+owner: marco
 #+branch: feature/official-reports
-#+pr:
+#+pr: 2561
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2561][#2561]] | [reporting] Keep sandboxes out of official reports |
 
 * Review
 

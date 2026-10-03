@@ -142,6 +142,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: =ores.ore.api.lib= had no source left, so CMake refused to generate. | =ores.ore/api/src/CMakeLists.txt= | Accepted | An INTERFACE library, as =ores.storage.api= is; the part is marked =header_only=. Codegen's general template would have dropped three link dependencies, so the file stays hand-written. |
 | 2 | Local review: a reworded pasted comment in the operations model overran the column limit, which the drift gate reports. | =ores.marketdata.operations.org= | Accepted | Reflowed in the model and regenerated. |
+| 3 | PR 2577: ctest ran before the rebase onto main, and MSVC was not built. | — | Accepted | Rebuilt and reran the full suite on a recreated database after syncing. MSVC is left to CI: no =ores.ore.api= header uses the export macro. |
+| 4 | PR 2577: lock in that one bad key no longer aborts the file. | =service_import_service_tests.cpp= | Accepted | =import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file=. |
+| 5 | PR 2577: state why =classification_key_of= may dereference both correlation indices. | =series_classifier.cpp= | Accepted | A comment names the schema invariant that guarantees them. |
+| 6 | PR 2577: mention the orphan key shape table for long-lived environments. | — | Declined | A database recreate is the only migration this project has; no environment keeps a schema across one. |
 
 * Result
 

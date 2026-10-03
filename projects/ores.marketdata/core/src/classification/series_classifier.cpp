@@ -97,6 +97,8 @@ classification_key classification_key_of(const datum::market_datum& d) {
     classification_key k{std::string(datum::ore_key_codec::token_of(d.type())),
                          std::string(datum::ore_name(d.quote())),
                          {}};
+    // The correlation row makes both indices identity fields that cannot be
+    // none, and market_datum::make refuses a datum without them.
     if (d.type() == datum::instrument_type::correlation)
         k.qualifier = *d.get<datum::field::index1>() + "/" + *d.get<datum::field::index2>();
     return k;

@@ -131,8 +131,8 @@ codec and ORE agree on all 158 corpus names. The ORE column is the verdict
 | =EUR=, =NOSUCHCPI= | refuses without a convention | accepts | the agreed structural reading: a hyphen-free name is an inflation index a convention may define |
 | =UK RPI=, =EU HICPXT= | reads as =UKRPI=, =EUHICPXT= | writes the unspaced name | the canonical spelling |
 
-A power index with a DST flag, =POWER-ICE:PDQ-2021-03-28-3600-7200-DST=, is
-refused by ORE's catalogue, so the codec refuses the flag too. ORE's grammar
+A power index with a DST flag, =POWER-ICE:PDQ-2021-03-28-3600-7200-DST= (a
+hand-written negative probe), is refused by ORE's catalogue, so the codec refuses the flag too. ORE's grammar
 names it, but no corpus name carries it, and ORE's error does not say which
 hour it would accept.
 
@@ -169,6 +169,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the first draft of =market_index::make= checked for unknown fields after moving the known ones out. | =market_index.cpp= | Accepted | Unknown fields are checked first. |
 | 2 | Local review: the consumer map in the cut-over missed =ores.iam=. | =tenant_provisioning_handler.hpp= | Accepted | Fixed here; the map is now a =grep= over all of =projects/=. |
+| 3 | PR 2570: storing the canonical name as the qualifier could split a spaced alias's series. | =import_service.cpp= | Declined | A series is found by its oresmd URI, not its qualifier, and the fixings tokenizer splits on spaces, so a spaced alias never reaches the import. |
+| 4 | PR 2570: a power index with a DST flag is refused. | =ore_index_codec.cpp= | Declined | ORE refuses it too (=index_forms.jsonl=); the name is a hand-written negative probe, noted under the deviations. |
+| 5 | PR 2570: =std::stoi= copies strings already checked to be digits. | =ore_index_codec.cpp= | Accepted | A =from_chars= helper reads them. |
+| 6 | PR 2570: =starts()= only forwards to =starts_with=. | =ore_index_codec.cpp= | Accepted | Removed. |
+| 7 | PR 2570: say why =is_currency= checks only three upper-case letters. | =ore_index_codec.cpp= | Accepted | A comment says ORE checks its configurable currency table and the codec checks the shape. |
+| 8 | PR 2570: move the =skip= lambda and the namespace alias to the top of the function. | =tenant_provisioning_handler.hpp= | Declined | The lambda reads the loop's config, and the alias is scoped to its one use. |
+| 9 | Own finding while checking 3: an import test comment named the deleted =from_ore_key()= and =from_index_name()=. | =service_import_service_tests.cpp= | Accepted | It names the two codecs now. |
 
 * Result
 

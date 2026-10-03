@@ -330,11 +330,10 @@ TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable"
 TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
     auto lg(make_logger(test_suite));
 
-    // A market-data key and a fixing index name are different key spaces, and each
-    // has its own inverse: from_ore_key() for the ORE key grammar, from_index_name()
-    // for the index names the fixing boundary carries. Both write what they project
-    // to onto the series, so a row can be reached by the identity ORE wrote rather
-    // than by the registry's (series_type, metric, qualifier) triple alone.
+    // A market-data key and a fixing index name are different key spaces, each
+    // with its own codec: ore_key_codec for the ORE key grammar, ore_index_codec
+    // for the index names the fixing boundary carries. Both give the series the
+    // oresmd URI of what they read, and the series is found by that URI.
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);

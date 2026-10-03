@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <charconv>
 #include <chrono>
 #include <format>
 #include <utility>
@@ -53,6 +54,8 @@ std::vector<std::string_view> split(std::string_view s) {
     return parts;
 }
 
+// ORE checks a currency against its table, which a currency configuration can
+// extend, so the codec checks only the shape every code in that table has.
 bool is_currency(std::string_view t) {
     return t.size() == 3 &&
            std::ranges::all_of(t, [](unsigned char c) { return c >= 'A' && c <= 'Z'; });
@@ -67,16 +70,22 @@ bool all_digits(std::string_view t) {
     return !t.empty() && std::ranges::all_of(t, [](unsigned char c) { return std::isdigit(c); });
 }
 
+/// The number @p t writes; the caller has checked it is all digits.
+unsigned number(std::string_view t) {
+    unsigned n = 0;
+    const auto [end, error] = std::from_chars(t.data(), t.data() + t.size(), n);
+    return error == std::errc{} && end == t.data() + t.size() ? n : 0;
+}
+
 /// Whether @p t is a real date written YYYY-MM-DD.
 bool is_iso_date(std::string_view t) {
     if (t.size() != 10 || t[4] != '-' || t[7] != '-')
         return false;
     if (!all_digits(t.substr(0, 4)) || !all_digits(t.substr(5, 2)) || !all_digits(t.substr(8, 2)))
         return false;
-    const std::chrono::year_month_day d{
-        std::chrono::year{std::stoi(std::string(t.substr(0, 4)))},
-        std::chrono::month{static_cast<unsigned>(std::stoi(std::string(t.substr(5, 2))))},
-        std::chrono::day{static_cast<unsigned>(std::stoi(std::string(t.substr(8, 2))))}};
+    const std::chrono::year_month_day d{std::chrono::year{static_cast<int>(number(t.substr(0, 4)))},
+                                        std::chrono::month{number(t.substr(5, 2))},
+                                        std::chrono::day{number(t.substr(8, 2))}};
     return d.ok();
 }
 
@@ -84,7 +93,7 @@ bool is_iso_date(std::string_view t) {
 bool is_iso_month(std::string_view t) {
     if (t.size() != 7 || t[4] != '-' || !all_digits(t.substr(0, 4)) || !all_digits(t.substr(5, 2)))
         return false;
-    const auto m = std::stoi(std::string(t.substr(5, 2)));
+    const auto m = number(t.substr(5, 2));
     return m >= 1 && m <= 12;
 }
 
@@ -183,37 +192,33 @@ std::string_view unspaced(std::string_view name) {
     return name;
 }
 
-bool starts(std::string_view s, std::string_view prefix) {
-    return s.starts_with(prefix);
-}
-
 }
 
 std::expected<market_index, std::string> ore_index_codec::read(std::string_view name) {
     auto result = [&]() -> std::expected<market_index, std::string> {
-        if (starts(name, "EQ-"))
+        if (name.starts_with("EQ-"))
             return make(f::equity, name.substr(3));
-        if (starts(name, "BOND-")) {
+        if (name.starts_with("BOND-")) {
             const auto [security, expiry] = split_expiry(name.substr(5));
             return make(f::bond, security, with_optional({}, "expiry", expiry));
         }
-        if (starts(name, "BOND_FUTURE-"))
+        if (name.starts_with("BOND_FUTURE-"))
             return make(f::bond_future, name.substr(12));
-        if (starts(name, "COMM-")) {
+        if (name.starts_with("COMM-")) {
             const auto [commodity, expiry] = split_expiry(name.substr(5));
             return make(f::commodity, commodity, with_optional({}, "expiry", expiry));
         }
-        if (starts(name, "POWER-"))
+        if (name.starts_with("POWER-"))
             return read_power(name.substr(6));
-        if (starts(name, "FX-")) {
+        if (name.starts_with("FX-")) {
             const auto t = split(name);
             if (t.size() != 4 || !is_currency(t[2]) || !is_currency(t[3]) || t[1].empty())
                 return refuse("an FX index is FX-SOURCE-CCY1-CCY2");
             return make(f::fx, t[2], {{"source", std::string(t[1])}, {"ccy", std::string(t[3])}});
         }
-        if (starts(name, "GENERIC-"))
+        if (name.starts_with("GENERIC-"))
             return make(f::generic, name.substr(8));
-        if (starts(name, "CMB-")) {
+        if (name.starts_with("CMB-")) {
             const auto t = split(name);
             if (t.size() < 3 || !is_period(t.back()))
                 return refuse("a constant maturity bond index is CMB-FAMILY-TENOR");

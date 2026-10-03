@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2554
+#+pr: 2555
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -187,6 +187,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2555][#2555]] | [refdata] Map the inflation curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2554][#2554]] | [refdata] Map the equity, security, FX spot and power curve sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2551][#2551]] | [refdata] Hold yield curves as typed rows and map them in both directions |
 | [[https://github.com/OreStudio/OreStudio/pull/2536][#2536]] | [refdata] Seed the curve configuration vocabulary from the schemas |

@@ -87,7 +87,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Archived rule may block deleting books | book | Keep | A delete is the soft-delete rule, which the insert trigger does not see; only new versions are refused. |
+| 2 | Missing parent skips the sandbox rule | book | Keep | The generated foreign key check refuses a missing parent before the custom block runs. |
+| 3 | Shell argument for the new column | shell | Keep | The tangled scripts pass the empty marker for an official book; the shell command tests pass. |
+| 4 | Mapper include | book_mapper.cpp | Keep | Generated, as for portfolio; the build is clean. |
+| 5 | Blank line before the next comment | SQL | Keep | Cosmetic. |
+| 6 | No automated test of the rules | pgTAP | Fix | =projects/ores.sql/test/refdata_sandbox_test.sql=: 24 pgTAP cases over the story's rights, sandbox, tree, virtual book, visibility and row-security rules. |
 
 * Result
 
@@ -102,3 +107,5 @@ via its "Verifies task" field.
     and another account and a session with no actor saw none.
 - The book shell scripts are tangled with the new column.
 - Build clean; ctest 89 of 89 on a recreated database.
+- =refdata_sandbox_test.sql= (pgTAP): 24 of 24 pass against the recreated
+  database.

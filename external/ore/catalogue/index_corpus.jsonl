@@ -1,0 +1,158 @@
+{"key":"AUCPI","accepted":"true","class":"QuantLib::AUCPI","name":"Australia CPI","familyName":"CPI","currency":"AUD","region":"Australia"}
+{"key":"AUD-AONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"AoniaON Actual/365 (Fixed)","overnight":"true","familyName":"Aonia","tenor":"1D","currency":"AUD"}
+{"key":"AUD-BBSW-3M","accepted":"true","class":"QuantLib::Bbsw","name":"Bbsw3M Actual/365 (Fixed)","familyName":"Bbsw","tenor":"3M","currency":"AUD"}
+{"key":"AUD-BBSW-6M","accepted":"true","class":"QuantLib::Bbsw","name":"Bbsw6M Actual/365 (Fixed)","familyName":"Bbsw","tenor":"6M","currency":"AUD"}
+{"key":"BOND-ISIN:IE00BH3SQ895","accepted":"true","class":"QuantExt::BondIndex","name":"BOND-ISIN:IE00BH3SQ895","securityName":"ISIN:IE00BH3SQ895"}
+{"key":"BOND-ISIN:IE00BH3SQ895-2025-08","accepted":"true","class":"QuantExt::BondFuturesIndex","name":"BOND-ISIN:IE00BH3SQ895-2025-08","futureContract":"ISIN:IE00BH3SQ895","futureExpiryDate":"2025-08-01"}
+{"key":"CAD-CORRA","accepted":"true","class":"QuantLib::OvernightIndex","name":"CORRAON Actual/365 (Fixed)","overnight":"true","familyName":"CORRA","tenor":"1D","currency":"CAD"}
+{"key":"CHF-SARON","accepted":"true","class":"QuantLib::OvernightIndex","name":"CHF-SARONON Actual/360","overnight":"true","familyName":"CHF-SARON","tenor":"1D","currency":"CHF"}
+{"key":"CLP-CAMARA","accepted":"true","class":"QuantLib::OvernightIndex","name":"CLP-CAMARASN Actual/360","overnight":"true","familyName":"CLP-CAMARA","tenor":"1D","currency":"CLP"}
+{"key":"CNY-REPOFIX-7D","accepted":"true","class":"QuantExt::CNYRepoFix","name":"CNY-REPOFIX1W Actual/365 (Fixed)","familyName":"CNY-REPOFIX","tenor":"1W","currency":"CNY"}
+{"key":"CNY-SHIBOR-3M","accepted":"true","class":"QuantLib::Shibor","name":"Shibor3M Actual/360","familyName":"Shibor","tenor":"3M","currency":"CNY"}
+{"key":"COMM-ICE:B-2024-12","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-ICE:B-2024-12","underlyingName":"ICE:B","isFuturesIndex":"true","expiryDate":"2024-12-01"}
+{"key":"COMM-ICE:B-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-ICE:B-2025-01","underlyingName":"ICE:B","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-ICE:B-2025-02","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-ICE:B-2025-02","underlyingName":"ICE:B","isFuturesIndex":"true","expiryDate":"2025-02-01"}
+{"key":"COMM-ICE:B-2025-03","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-ICE:B-2025-03","underlyingName":"ICE:B","isFuturesIndex":"true","expiryDate":"2025-03-01"}
+{"key":"COMM-ICE:B-2025-04","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-ICE:B-2025-04","underlyingName":"ICE:B","isFuturesIndex":"true","expiryDate":"2025-04-01"}
+{"key":"COMM-NYMEX:A7Q-2024-12","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:A7Q-2024-12","underlyingName":"NYMEX:A7Q","isFuturesIndex":"true","expiryDate":"2024-12-01"}
+{"key":"COMM-NYMEX:A7Q-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:A7Q-2025-01","underlyingName":"NYMEX:A7Q","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-NYMEX:A7Q-2025-02","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:A7Q-2025-02","underlyingName":"NYMEX:A7Q","isFuturesIndex":"true","expiryDate":"2025-02-01"}
+{"key":"COMM-NYMEX:A7Q-2025-03","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:A7Q-2025-03","underlyingName":"NYMEX:A7Q","isFuturesIndex":"true","expiryDate":"2025-03-01"}
+{"key":"COMM-NYMEX:A7Q-2025-04","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:A7Q-2025-04","underlyingName":"NYMEX:A7Q","isFuturesIndex":"true","expiryDate":"2025-04-01"}
+{"key":"COMM-NYMEX:CL-2024-12","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2024-12","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2024-12-01"}
+{"key":"COMM-NYMEX:CL-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-01","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-NYMEX:CL-2025-02","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-02","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-02-01"}
+{"key":"COMM-NYMEX:CL-2025-03","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-03","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-03-01"}
+{"key":"COMM-NYMEX:CL-2025-04","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-04","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-04-01"}
+{"key":"COMM-NYMEX:CSX-2024-12","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CSX-2024-12","underlyingName":"NYMEX:CSX","isFuturesIndex":"true","expiryDate":"2024-12-01"}
+{"key":"COMM-NYMEX:CSX-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CSX-2025-01","underlyingName":"NYMEX:CSX","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-NYMEX:CSX-2025-02","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CSX-2025-02","underlyingName":"NYMEX:CSX","isFuturesIndex":"true","expiryDate":"2025-02-01"}
+{"key":"COMM-NYMEX:CSX-2025-03","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CSX-2025-03","underlyingName":"NYMEX:CSX","isFuturesIndex":"true","expiryDate":"2025-03-01"}
+{"key":"COMM-NYMEX:CSX-2025-04","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CSX-2025-04","underlyingName":"NYMEX:CSX","isFuturesIndex":"true","expiryDate":"2025-04-01"}
+{"key":"COMM-NYMEX:NG-2024-12","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:NG-2024-12","underlyingName":"NYMEX:NG","isFuturesIndex":"true","expiryDate":"2024-12-01"}
+{"key":"COMM-NYMEX:NG-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:NG-2025-01","underlyingName":"NYMEX:NG","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-NYMEX:NG-2025-02","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:NG-2025-02","underlyingName":"NYMEX:NG","isFuturesIndex":"true","expiryDate":"2025-02-01"}
+{"key":"COMM-NYMEX:NG-2025-03","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:NG-2025-03","underlyingName":"NYMEX:NG","isFuturesIndex":"true","expiryDate":"2025-03-01"}
+{"key":"COMM-NYMEX:NG-2025-04","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:NG-2025-04","underlyingName":"NYMEX:NG","isFuturesIndex":"true","expiryDate":"2025-04-01"}
+{"key":"CZK-CZEONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"CZK-CZEONIAON Actual/365 (Fixed)","overnight":"true","familyName":"CZK-CZEONIA","tenor":"1D","currency":"CZK"}
+{"key":"CZK-PRIBOR-3M","accepted":"true","class":"QuantExt::CZKPribor","name":"CZK-PRIBOR3M Actual/360","familyName":"CZK-PRIBOR","tenor":"3M","currency":"CZK"}
+{"key":"DKK-CIBOR-3M","accepted":"true","class":"QuantExt::DKKCibor","name":"DKK-CIBOR3M Actual/360","familyName":"DKK-CIBOR","tenor":"3M","currency":"DKK"}
+{"key":"DKK-CIBOR-6M","accepted":"true","class":"QuantExt::DKKCibor","name":"DKK-CIBOR6M Actual/360","familyName":"DKK-CIBOR","tenor":"6M","currency":"DKK"}
+{"key":"DKK-DKKOIS","accepted":"true","class":"QuantLib::OvernightIndex","name":"DKK-DKKOISTN Actual/360","overnight":"true","familyName":"DKK-DKKOIS","tenor":"1D","currency":"DKK"}
+{"key":"EQ-FIGI:BBG00R251JN8","accepted":"true","class":"QuantExt::EquityIndex2","name":"FIGI:BBG00R251JN8","familyName":"FIGI:BBG00R251JN8"}
+{"key":"EQ-RIC:.SPX","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:.SPX","familyName":"RIC:.SPX"}
+{"key":"EQ-RIC:.STOXX50","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:.STOXX50","familyName":"RIC:.STOXX50"}
+{"key":"EQ-RIC:.STOXX50E","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:.STOXX50E","familyName":"RIC:.STOXX50E"}
+{"key":"EQ-RIC:FISV.OQ","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:FISV.OQ","familyName":"RIC:FISV.OQ"}
+{"key":"EQ-RIC:KSS.N","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:KSS.N","familyName":"RIC:KSS.N"}
+{"key":"EQ-RIC:ON.O","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:ON.O","familyName":"RIC:ON.O"}
+{"key":"EQ-SP5","accepted":"true","class":"QuantExt::EquityIndex2","name":"SP5","familyName":"SP5"}
+{"key":"EUHICP","accepted":"true","class":"QuantLib::EUHICP","name":"EU HICP","familyName":"HICP","currency":"EUR","region":"EU"}
+{"key":"EUHICPXT","accepted":"true","class":"QuantLib::EUHICPXT","name":"EU HICPXT","familyName":"HICPXT","currency":"EUR","region":"EU"}
+{"key":"EUR-CMS-10Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix10Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"10Y","currency":"EUR"}
+{"key":"EUR-CMS-1Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix1Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"1Y","currency":"EUR"}
+{"key":"EUR-CMS-2Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix2Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"2Y","currency":"EUR"}
+{"key":"EUR-CMS-30Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix30Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"30Y","currency":"EUR"}
+{"key":"EUR-EONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"EoniaON Actual/360","overnight":"true","familyName":"Eonia","tenor":"1D","currency":"EUR"}
+{"key":"EUR-ESTER","accepted":"true","class":"QuantLib::OvernightIndex","name":"ESTRON Actual/360","overnight":"true","familyName":"ESTR","tenor":"1D","currency":"EUR"}
+{"key":"EUR-EURIBOR-1M","accepted":"true","class":"QuantLib::Euribor","name":"Euribor1M Actual/360","familyName":"Euribor","tenor":"1M","currency":"EUR"}
+{"key":"EUR-EURIBOR-1W","accepted":"true","class":"QuantLib::Euribor","name":"Euribor1W Actual/360","familyName":"Euribor","tenor":"1W","currency":"EUR"}
+{"key":"EUR-EURIBOR-2W","accepted":"true","class":"QuantLib::Euribor","name":"Euribor2W Actual/360","familyName":"Euribor","tenor":"2W","currency":"EUR"}
+{"key":"EUR-EURIBOR-3M","accepted":"true","class":"QuantLib::Euribor","name":"Euribor3M Actual/360","familyName":"Euribor","tenor":"3M","currency":"EUR"}
+{"key":"EUR-EURIBOR-6M","accepted":"true","class":"QuantLib::Euribor","name":"Euribor6M Actual/360","familyName":"Euribor","tenor":"6M","currency":"EUR"}
+{"key":"FRHICP","accepted":"true","class":"QuantLib::FRHICP","name":"France HICP","familyName":"HICP","currency":"EUR","region":"France"}
+{"key":"FX-ECB-EUR-GBP","accepted":"true","class":"QuantExt::FxIndex","name":"ECB EUR/GBP","familyName":"ECB","sourceCurrency":"EUR","targetCurrency":"GBP"}
+{"key":"FX-ECB-EUR-USD","accepted":"true","class":"QuantExt::FxIndex","name":"ECB EUR/USD","familyName":"ECB","sourceCurrency":"EUR","targetCurrency":"USD"}
+{"key":"FX-Reuters-USD-EUR","accepted":"true","class":"QuantExt::FxIndex","name":"Reuters USD/EUR","familyName":"Reuters","sourceCurrency":"USD","targetCurrency":"EUR"}
+{"key":"FX-TR20H-EUR-GBP","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H EUR/GBP","familyName":"TR20H","sourceCurrency":"EUR","targetCurrency":"GBP"}
+{"key":"FX-TR20H-EUR-USD","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H EUR/USD","familyName":"TR20H","sourceCurrency":"EUR","targetCurrency":"USD"}
+{"key":"FX-TR20H-GBP-EUR","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H GBP/EUR","familyName":"TR20H","sourceCurrency":"GBP","targetCurrency":"EUR"}
+{"key":"FX-TR20H-GBP-USD","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H GBP/USD","familyName":"TR20H","sourceCurrency":"GBP","targetCurrency":"USD"}
+{"key":"GBP-LIBOR-12M","accepted":"true","class":"QuantLib::GBPLibor","name":"GBPLibor1Y Actual/365 (Fixed)","familyName":"GBPLibor","tenor":"1Y","currency":"GBP"}
+{"key":"GBP-LIBOR-1M","accepted":"true","class":"QuantLib::GBPLibor","name":"GBPLibor1M Actual/365 (Fixed)","familyName":"GBPLibor","tenor":"1M","currency":"GBP"}
+{"key":"GBP-LIBOR-1W","accepted":"true","class":"QuantLib::GBPLibor","name":"GBPLibor1W Actual/365 (Fixed)","familyName":"GBPLibor","tenor":"1W","currency":"GBP"}
+{"key":"GBP-LIBOR-3M","accepted":"true","class":"QuantLib::GBPLibor","name":"GBPLibor3M Actual/365 (Fixed)","familyName":"GBPLibor","tenor":"3M","currency":"GBP"}
+{"key":"GBP-LIBOR-6M","accepted":"true","class":"QuantLib::GBPLibor","name":"GBPLibor6M Actual/365 (Fixed)","familyName":"GBPLibor","tenor":"6M","currency":"GBP"}
+{"key":"GBP-SONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"SoniaON Actual/365 (Fixed)","overnight":"true","familyName":"Sonia","tenor":"1D","currency":"GBP"}
+{"key":"GBP-SONIA-3M","accepted":"true","class":"QuantExt::SoniaTerm","name":"GBP-SONIATerm3M Actual/360","familyName":"GBP-SONIATerm","tenor":"3M","currency":"GBP"}
+{"key":"GENERIC-JuniorNote","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-JuniorNote","expiry":"null"}
+{"key":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C","expiry":"null"}
+{"key":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3400/C","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3400/C","expiry":"null"}
+{"key":"GENERIC-PortfolioBasket#1","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-PortfolioBasket#1","expiry":"null"}
+{"key":"HKD-HIBOR-3M","accepted":"true","class":"QuantExt::HKDHibor","name":"HKD-HIBOR3M Actual/365 (Fixed)","familyName":"HKD-HIBOR","tenor":"3M","currency":"HKD"}
+{"key":"HKD-HONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"HKD-HONIAON Actual/365 (Fixed)","overnight":"true","familyName":"HKD-HONIA","tenor":"1D","currency":"HKD"}
+{"key":"JPY-LIBOR-12M","accepted":"true","class":"QuantLib::JPYLibor","name":"JPYLibor1Y Actual/360","familyName":"JPYLibor","tenor":"1Y","currency":"JPY"}
+{"key":"JPY-LIBOR-1M","accepted":"true","class":"QuantLib::JPYLibor","name":"JPYLibor1M Actual/360","familyName":"JPYLibor","tenor":"1M","currency":"JPY"}
+{"key":"JPY-LIBOR-1W","accepted":"true","class":"QuantLib::JPYLibor","name":"JPYLibor1W Actual/360","familyName":"JPYLibor","tenor":"1W","currency":"JPY"}
+{"key":"JPY-LIBOR-3M","accepted":"true","class":"QuantLib::JPYLibor","name":"JPYLibor3M Actual/360","familyName":"JPYLibor","tenor":"3M","currency":"JPY"}
+{"key":"JPY-LIBOR-6M","accepted":"true","class":"QuantLib::JPYLibor","name":"JPYLibor6M Actual/360","familyName":"JPYLibor","tenor":"6M","currency":"JPY"}
+{"key":"JPY-TONAR","accepted":"true","class":"QuantLib::OvernightIndex","name":"TonarON Actual/365 (Fixed)","overnight":"true","familyName":"Tonar","tenor":"1D","currency":"JPY"}
+{"key":"MXN-FTIIE","accepted":"true","class":"QuantLib::OvernightIndex","name":"MXN-FTIIEON Actual/360","overnight":"true","familyName":"MXN-FTIIE","tenor":"1D","currency":"MXN"}
+{"key":"MXN-TIIE-28D","accepted":"true","class":"QuantExt::MXNTiie","name":"MXN-TIIE4W Actual/360","familyName":"MXN-TIIE","tenor":"4W","currency":"MXN"}
+{"key":"NOK-NIBOR-3M","accepted":"true","class":"QuantExt::NOKNibor","name":"NOK-NIBOR3M Actual/360","familyName":"NOK-NIBOR","tenor":"3M","currency":"NOK"}
+{"key":"NOK-NIBOR-6M","accepted":"true","class":"QuantExt::NOKNibor","name":"NOK-NIBOR6M Actual/360","familyName":"NOK-NIBOR","tenor":"6M","currency":"NOK"}
+{"key":"NOK-NOWA","accepted":"true","class":"QuantLib::OvernightIndex","name":"NowaON Actual/Actual (ISMA)","overnight":"true","familyName":"Nowa","tenor":"1D","currency":"NOK"}
+{"key":"POWER-ICE:PDQ-2021-01-01-10800-14400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-10800-14400","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-14400-18000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-14400-18000","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-18000-21600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-18000-21600","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-21600-25200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-21600-25200","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-25200-28800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-25200-28800","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-28800-32400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-28800-32400","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-3600-7200","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-7200-10800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-7200-10800","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-02-10800-14400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-10800-14400","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-14400-18000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-14400-18000","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-18000-21600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-18000-21600","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-21600-25200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-21600-25200","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-25200-28800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-25200-28800","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-28800-32400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-28800-32400","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-3600-7200","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-02-7200-10800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-02-7200-10800","deliveryDate":"2021-01-02"}
+{"key":"POWER-ICE:PDQ-2021-01-03-10800-14400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-10800-14400","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-14400-18000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-14400-18000","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-18000-21600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-18000-21600","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-21600-25200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-21600-25200","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-25200-28800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-25200-28800","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-28800-32400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-28800-32400","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-3600-7200","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-03-7200-10800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-03-7200-10800","deliveryDate":"2021-01-03"}
+{"key":"POWER-ICE:PDQ-2021-01-04","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-10800-14400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-10800-14400","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-14400-18000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-14400-18000","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-18000-21600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-18000-21600","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-21600-25200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-21600-25200","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-25200-28800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-25200-28800","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-28800-32400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-28800-32400","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-32400-36000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-32400-36000","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-3600-7200","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-36000-39600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-36000-39600","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-39600-43200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-39600-43200","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-43200-46800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-43200-46800","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-46800-50400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-46800-50400","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-50400-54000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-50400-54000","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-54000-57600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-54000-57600","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-57600-61200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-57600-61200","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-61200-64800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-61200-64800","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-64800-68400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-64800-68400","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-68400-72000","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-68400-72000","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-7200-10800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-7200-10800","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-72000-75600","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-72000-75600","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-75600-79200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-75600-79200","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-79200-82800","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-79200-82800","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ-2021-01-04-82800-86400","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04-82800-86400","deliveryDate":"2021-01-04"}
+{"key":"SEK-SIOR","accepted":"true","class":"QuantLib::OvernightIndex","name":"SEK-SIORTN Actual/360","overnight":"true","familyName":"SEK-SIOR","tenor":"1D","currency":"SEK"}
+{"key":"SEK-STIBOR-3M","accepted":"true","class":"QuantExt::SEKStibor","name":"SEK-STIBOR3M Actual/360","familyName":"SEK-STIBOR","tenor":"3M","currency":"SEK"}
+{"key":"TWD-TAIBOR-3M","accepted":"true","class":"QuantExt::TWDTaibor","name":"TWD-TAIBOR3M Actual/365 (Fixed)","familyName":"TWD-TAIBOR","tenor":"3M","currency":"TWD"}
+{"key":"UKRPI","accepted":"true","class":"QuantLib::UKRPI","name":"UK RPI","familyName":"RPI","currency":"GBP","region":"UK"}
+{"key":"USCPI","accepted":"true","class":"QuantLib::USCPI","name":"USA CPI","familyName":"CPI","currency":"USD","region":"USA"}
+{"key":"USD-CMS-5Y","accepted":"true","class":"QuantLib::SwapIndex","name":"USDLiborSwapIsdaFix5Y Actual/365 (Fixed)","familyName":"USDLiborSwapIsdaFix","tenor":"5Y","currency":"USD"}
+{"key":"USD-FedFunds","accepted":"true","class":"QuantLib::OvernightIndex","name":"FedFundsON Actual/360","overnight":"true","familyName":"FedFunds","tenor":"1D","currency":"USD"}
+{"key":"USD-LIBOR-12M","accepted":"true","class":"QuantLib::USDLibor","name":"USDLibor1Y Actual/360","familyName":"USDLibor","tenor":"1Y","currency":"USD"}
+{"key":"USD-LIBOR-1M","accepted":"true","class":"QuantLib::USDLibor","name":"USDLibor1M Actual/360","familyName":"USDLibor","tenor":"1M","currency":"USD"}
+{"key":"USD-LIBOR-1W","accepted":"true","class":"QuantLib::USDLibor","name":"USDLibor1W Actual/360","familyName":"USDLibor","tenor":"1W","currency":"USD"}
+{"key":"USD-LIBOR-3M","accepted":"true","class":"QuantLib::USDLibor","name":"USDLibor3M Actual/360","familyName":"USDLibor","tenor":"3M","currency":"USD"}
+{"key":"USD-LIBOR-6M","accepted":"true","class":"QuantLib::USDLibor","name":"USDLibor6M Actual/360","familyName":"USDLibor","tenor":"6M","currency":"USD"}
+{"key":"USD-SIFMA","accepted":"true","class":"QuantExt::BMAIndexWrapper","name":"BMA1W Actual/Actual (ISDA)","familyName":"BMA1W Actual/Actual (ISDA)","tenor":"1W","currency":"USD"}
+{"key":"USD-SOFR","accepted":"true","class":"QuantLib::OvernightIndex","name":"SOFRON Actual/360","overnight":"true","familyName":"SOFR","tenor":"1D","currency":"USD"}
+{"key":"USD-SOFR-3M","accepted":"true","class":"QuantExt::SofrTerm","name":"USD-SOFRTerm3M Actual/360","familyName":"USD-SOFRTerm","tenor":"3M","currency":"USD"}
+{"key":"ZACPI","accepted":"true","class":"QuantLib::ZACPI","name":"South Africa CPI","familyName":"CPI","currency":"ZAR","region":"South Africa"}

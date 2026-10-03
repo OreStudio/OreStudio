@@ -122,6 +122,8 @@ std::string_view name_of(asset_class a) {
             return "rating";
         case asset_class::shape_profile:
             return "shape_profile";
+        case asset_class::generic:
+            return "generic";
     }
     return {};
 }

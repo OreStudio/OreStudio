@@ -46,8 +46,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -1375,10 +1375,10 @@ private:
             return false;
         }
 
-        // Each pair is (source_name, the series' oresmd identity). The config names
-        // the series by its ORE key, and the binding names it by the identity that
-        // key projects to -- the same projection the ingest loop applies to a tick --
-        // so a key the grammar cannot name has no series to bind and is skipped.
+        // Each pair is (source_name, the series URI). The config names the series by
+        // its ORE key, and the binding names it by the series URI of the datum that
+        // key names -- the same codecs the ingest loop applies to a tick -- so a key
+        // the codec refuses has no series to bind and is skipped.
         std::vector<std::pair<std::string, std::string>> sources;
         {
             synthetic::messaging::list_fx_spot_generation_configs_request req;
@@ -1393,17 +1393,23 @@ private:
             for (auto& c : resp.fx_spot_generation_configs) {
                 if (!c.enabled || c.config_id != config_id)
                     continue;
-                const auto identifier =
-                    ores::marketdata::core::oresmd_projections::from_ore_key(c.ore_key);
-                if (!identifier) {
+                namespace datum = ores::marketdata::datum;
+                const auto skip = [&](const std::string& why) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                        << "create_theme_feed_bindings: oresmd names no series for ORE key '"
-                        << c.ore_key << "'; skipping its binding";
+                        << "create_theme_feed_bindings: no series for ORE key '" << c.ore_key
+                        << "' (" << why << "); skipping its binding";
+                };
+                const auto read = datum::ore_key_codec::read(c.ore_key);
+                if (!read) {
+                    skip(read.error());
                     continue;
                 }
-                sources.emplace_back(
-                    c.source_name,
-                    ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value);
+                const auto uri = datum::oresmd_uri_codec::write(datum::series_of(*read));
+                if (!uri) {
+                    skip(uri.error());
+                    continue;
+                }
+                sources.emplace_back(c.source_name, *uri);
             }
         }
 

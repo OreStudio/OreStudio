@@ -62,6 +62,10 @@ task and name that file in the Command column.
 
 * Notes
 
+Depends on [[id:FE1151D5-5433-41C1-8F05-835818FEC1F9][Write the ORE index codec]]: after the cut-over, fixings are the
+last production consumer of the generated grammar, through =from_index_name=
+and =to_index_name= in the import, the export and the classifier.
+
 The template has 2,585 lines and 187 tags; the shape table is a second
 description of the same grammar. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3.
 

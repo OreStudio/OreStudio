@@ -57,7 +57,10 @@ How do I rebuild the ORE market datum catalogue?
 * Script
 
 =external/ore/tools/datum_catalogue/regenerate.sh= drives
-=generate_dump.py= (the inspector dump), the =datum_catalogue= harness,
+=generate_dump.py= (the inspector dump), the =datum_catalogue= harness, the
+=index_catalogue= harness (ORE's =parseIndex=, over =index_forms.txt= and the
+names =extract_corpus_index_names.py= takes from the corpus's fixing files, with
+the corpus's conventions loaded),
 =extract_enum_tokens.py= (ORE's instrument and quote types and their tokens),
 =generate_quote_matrix.py= (every accepted form with each quote token) and
 =extract_corpus_keys.py= (the corpus key list). The harness reads one key per
@@ -78,7 +81,8 @@ the corpus and the quote matrix: the ORE key codec must accept and refuse what
 ORE does and hold each token where ORE puts it, and every member of
 =instrument_types.txt= and =quote_types.txt= must be modelled and read.
 =datum_oresmd_uri_codec_tests.cpp= round trips the same keys through the oresmd
-URI. =oresmd_ore_catalogue_tests.cpp= still measures the old oresmd grammar
+URI. =datum_ore_index_codec_tests.cpp= reads the two index files: the index codec
+must read what =parseIndex= reads, but for the names it lists with why. =oresmd_ore_catalogue_tests.cpp= still measures the old oresmd grammar
 against the forms and the corpus until it is retired.
 
 * See also

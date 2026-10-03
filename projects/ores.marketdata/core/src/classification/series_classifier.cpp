@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>
@@ -154,15 +154,16 @@ std::optional<series_classification> series_classifier::try_classify(
                                      row.series_subclass_code};
 
     if (row.asset_class_source == k_index_name_source) {
-        // The qualifier is the index name. It projects onto an oresmd
-        // identifier, and the catalogue maps that identifier's authority onto a
-        // refdata class: one rule serves every fixing class, and a name no
-        // class can name leaves the class list empty rather than mis-classing
-        // the series.
-        const auto identifier = oresmd_projections::from_index_name(qualifier);
-        if (!identifier)
+        // The qualifier is the index name. The index codec reads its family,
+        // whose asset class is the oresmd authority the catalogue maps onto a
+        // refdata class: one rule serves every fixing class, and a name the
+        // codec refuses, or a generic index, leaves the class list empty rather
+        // than mis-classing the series.
+        const auto index = datum::ore_index_codec::read(qualifier);
+        if (!index)
             return series_classification{{}, row.series_subclass_code};
-        const auto code = domain::asset_class_for_identifier(*identifier);
+        const auto code = domain::asset_class_for_authority(
+            datum::name_of(datum::index_row_of(index->family()).asset));
         if (!code)
             return series_classification{{}, row.series_subclass_code};
         return series_classification{{std::string(*code)}, row.series_subclass_code};

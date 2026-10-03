@@ -29,3 +29,17 @@ target_link_libraries(datum_catalogue PRIVATE
     Boost::headers)
 set_target_properties(datum_catalogue PROPERTIES
     BUILD_RPATH "${ORE_BUILD_DIR}/OREData/ored;${ORE_BUILD_DIR}/QuantExt/qle;${ORE_BUILD_DIR}/QuantLib/ql")
+
+add_executable(index_catalogue index_catalogue.cpp)
+target_include_directories(index_catalogue PRIVATE
+    ${ORE_SOURCE_DIR}/OREData
+    ${ORE_SOURCE_DIR}/QuantExt
+    ${ORE_SOURCE_DIR}/QuantLib
+    ${ORE_BUILD_DIR}/QuantLib)
+target_link_libraries(index_catalogue PRIVATE
+    ${ORE_BUILD_DIR}/OREData/ored/libOREData.so
+    ${ORE_BUILD_DIR}/QuantExt/qle/libQuantExt.so
+    ${ORE_BUILD_DIR}/QuantLib/ql/libQuantLib.so
+    Boost::headers)
+set_target_properties(index_catalogue PROPERTIES
+    BUILD_RPATH "${ORE_BUILD_DIR}/OREData/ored;${ORE_BUILD_DIR}/QuantExt/qle;${ORE_BUILD_DIR}/QuantLib/ql")

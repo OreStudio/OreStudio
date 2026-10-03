@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: FE1151D5-5433-41C1-8F05-835818FEC1F9
+:END:
+#+title: Task: Write the ORE index codec
+#+description: A hand-written reader and writer between ORE index names and a typed fixing identity, following ORE's parseIndex and checked against it, so fixings no longer need the generated grammar.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch: feature/write-the-ore-index-codec
+#+pr: 2570
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fixing is named by a hand-written index codec that reads every index name ORE reads, as ORE reads it, and writes it back; the fixing import, export and classification use it, and the generated grammar has no remaining consumer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- A catalogue of index names, taken from every fixing file in the corpus and from the forms ORE's parseIndex documents, records ORE's own reading of each, regenerated from the local ORE build like the key catalogue.
+- The codec accepts the index names ORE accepts and refuses the ones it refuses, and write(read(n)) == n or the canonical spelling where ORE reads an alias.
+- The fixing URI shape is agreed with the product owner before the codec writes it, and a fixing URI is one to one with the canonical index name.
+- The fixing import, the export and the classifier's index-name rule use the codec; oresmd_parser and oresmd_projections have no production consumer.
+- The SQL seeds that hold fixing URIs hold the new form, and a test checks every one.
+
+* Plan
+
+Added on 2026-10-03, when the retire task found that fixings still need the
+generated grammar: a fixing is named by an ORE index name such as
+=EUR-EURIBOR-6M=, =UKRPI= or =FX-ECB-EUR-USD=, and only the old grammar's
+=from_index_name= and =to_index_name= read and write one. The product owner
+chose to replace it before the retire task removes the grammar, rather than
+keep the fixing half or flatten the fixing identity.
+
+The same method as the key codec:
+
+1. Extend the catalogue harness to ORE's =parseIndex=, and record ORE's reading
+   of every index name in the corpus's fixing files and of the forms
+   =parseIndex= documents.
+2. Model the index identity as data, the way the schema models a quote.
+3. Agree the fixing URI shape with the product owner.
+4. Write the codec, test it against the catalogue, and move the fixing import,
+   the export and the classifier onto it, with the seeds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Index forms in the catalogue | 69, of which ORE accepts 53 with the corpus's conventions | =index_forms.jsonl= | 9f124dec1f |
+| Corpus index names | 158; ORE accepts 156 without conventions and 158 with them | =index_corpus.jsonl= | 9f124dec1f |
+| Index codec tests | 5 cases, 32 assertions, all passed; every corpus name reads, writes back and matches ORE's family fields | =ores.marketdata.core.tests "[ore_index_codec]"= | 9f124dec1f |
+| Tests bite | with the FX currencies swapped in the reader, 4 of 5 cases failed | the same, with the defect | 9f124dec1f |
+| Whole suite after recreating the database | 90 of 90 passed (5 suites after the recreate) | =compass test run= | 9f124dec1f |
+| Production consumers of the old grammar | none | =grep= of =oresmd_parser= and =oresmd_projections= over =projects/= | 9f124dec1f |
+
+* Notes
+
+** Decisions agreed on 2026-10-03
+
+- *Decomposed fixing URIs*, in the pattern of quote URIs: the authority is the
+  asset class, the path the index's subject, and the query =type=fixing=,
+  =index=<family>= and the family's own fields.
+
+  #+begin_example
+  EUR-EURIBOR-6M     oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M
+  FX-ECB-EUR-USD     oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD
+  COMM-NYMEX:CL-2025-01
+                     oresmd://commodity/NYMEX:CL?type=fixing&index=commodity&expiry=2025-01
+  #+end_example
+- *Structural acceptance.* ORE reads any IBOR or inflation index a conventions
+  file defines, such as =CZK-CZEONIA= and =MXN-FTIIE= in the corpus, so the
+  codec accepts any name of the right shape. The catalogue harness loads the
+  corpus's conventions, so ORE stays the oracle.
+- *A generic authority.* =GENERIC-*= indices take a new =generic= asset class,
+  which maps to no refdata class, like =correlation=.
+
+** What ORE's parseIndex reads
+
+Eleven families, tried in this order: equity (=EQ-*=), bond (=BOND-ID[-YYYY-MM[-DD]]=,
+a bond future when dated), bond future (=BOND_FUTURE-*=), commodity
+(=COMM-NAME[-YYYY-MM[-DD]]=), intraday power (=POWER-NAME-DATE[-START-END]=), FX
+(=FX-SOURCE-CCY1-CCY2=), generic (=GENERIC-*=), constant maturity bond
+(=CMB-FAMILY-TENOR=), IBOR and overnight (=CCY-NAME[-TENOR]=), CMS swap
+(=CCY-CMS[-TAG]-TENOR=), and zero inflation (a fixed list with spaced aliases
+such as =UK RPI=, or a convention). QuantLib's =name()= is an internal label
+(=Euribor6M Actual/360=), not an ORE name, so the harness reports the family's
+inspectors rather than a canonical spelling.
+
+Without conventions ORE accepts 156 of the 158 corpus index names; with
+=examples/Products/Input/conventions.xml= it accepts all 158.
+
+** Where the codec and ORE differ, on purpose
+
+Every name in this table is a negative probe written into
+=external/ore/tools/datum_catalogue/index_forms.txt=, not data from ORE: the
+codec and ORE agree on all 158 corpus names. The ORE column is the verdict
+=external/ore/catalogue/index_forms.jsonl= records.
+
+| Name | ORE | Codec | Why |
+|------+-----+-------+-----|
+| =EQ-=, =BOND-=, =COMM-= | accepts, empty name | refuses | the model refuses empty text; an index with no name is no identity |
+| =POWER-ICE:PDQ= | accepts, delivery from the evaluation date | refuses | the name cannot keep a date ORE takes from the clock |
+| =FX-ECB-EUR-XXX= | refuses, unknown currency | accepts | ORE checks its currency list; the codec takes three letters, as the key codec does |
+| =CMB-US-TREASURY-10Y=, =CMB-BUND-5Y= | refuses without bond reference data | accepts | a data dependency, not grammar |
+| =EUR=, =NOSUCHCPI= | refuses without a convention | accepts | the agreed structural reading: a hyphen-free name is an inflation index a convention may define |
+| =UK RPI=, =EU HICPXT= | reads as =UKRPI=, =EUHICPXT= | writes the unspaced name | the canonical spelling |
+
+A power index with a DST flag, =POWER-ICE:PDQ-2021-03-28-3600-7200-DST= (a
+hand-written negative probe), is refused by ORE's catalogue, so the codec refuses the flag too. ORE's grammar
+names it, but no corpus name carries it, and ORE's error does not say which
+hour it would accept.
+
+** A regression from the cut-over, found here
+
+The tenant provisioning handler in =ores.iam= still wrote feed bindings through
+=oresmd_projections= and =oresmd_parser=, in the old URI form. The cut-over's
+consumer map, taken by =grep= over =ores.marketdata= and =ores.synthetic=, did
+not include =ores.iam=, so from PR 2545 a newly provisioned tenant's FX feed
+bindings named series the ingest loop could not read, and its ticks were
+dropped. This task moves it onto the codecs; a =grep= over the whole of
+=projects/= now finds no production consumer of the old grammar.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2570][#2570]] | [marketdata] Write the ORE index codec and name fixings with it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the first draft of =market_index::make= checked for unknown fields after moving the known ones out. | =market_index.cpp= | Accepted | Unknown fields are checked first. |
+| 2 | Local review: the consumer map in the cut-over missed =ores.iam=. | =tenant_provisioning_handler.hpp= | Accepted | Fixed here; the map is now a =grep= over all of =projects/=. |
+| 3 | PR 2570: storing the canonical name as the qualifier could split a spaced alias's series. | =import_service.cpp= | Declined | A series is found by its oresmd URI, not its qualifier, and the fixings tokenizer splits on spaces, so a spaced alias never reaches the import. |
+| 4 | PR 2570: a power index with a DST flag is refused. | =ore_index_codec.cpp= | Declined | ORE refuses it too (=index_forms.jsonl=); the name is a hand-written negative probe, noted under the deviations. |
+| 5 | PR 2570: =std::stoi= copies strings already checked to be digits. | =ore_index_codec.cpp= | Accepted | A =from_chars= helper reads them. |
+| 6 | PR 2570: =starts()= only forwards to =starts_with=. | =ore_index_codec.cpp= | Accepted | Removed. |
+| 7 | PR 2570: say why =is_currency= checks only three upper-case letters. | =ore_index_codec.cpp= | Accepted | A comment says ORE checks its configurable currency table and the codec checks the shape. |
+| 8 | PR 2570: move the =skip= lambda and the namespace alias to the top of the function. | =tenant_provisioning_handler.hpp= | Declined | The lambda reads the loop's config, and the alias is scoped to its one use. |
+| 9 | Own finding while checking 3: an import test comment named the deleted =from_ore_key()= and =from_index_name()=. | =service_import_service_tests.cpp= | Accepted | It names the two codecs now. |
+
+* Result
+
+=ore_index_codec= reads every index name ORE's =parseIndex= reads, by
+structure, and writes it back; =market_index= holds a fixing's identity as data,
+one row per family; and =oresmd_uri_codec= writes and reads the agreed fixing
+URI. The fixing import, the export, the classifier and the tenant provisioning
+handler use them, so the generated grammar has no production consumer and the
+retire task can delete it. Along the way this found and fixed a regression from
+the cut-over: tenant provisioning still wrote old-form feed bindings.

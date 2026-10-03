@@ -21,10 +21,9 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
@@ -207,11 +206,10 @@ std::vector<dated_value> stored_fixings(ores::database::context ctx, const std::
                    tag,
                    "Reading one corpus file's fixings");
     for (auto& [date, uri, value] : rows) {
-        const auto name = core::oresmd_projections::to_index_name(
-            core::oresmd_parser::parse(domain::oresmd_uri{uri}));
-        if (!name)
-            FAIL("stored fixing series names no index: " << uri);
-        uri = *name;
+        const auto index = datum::oresmd_uri_codec::read_index(uri);
+        if (!index)
+            FAIL("stored fixing URI does not read: " << uri << ": " << index.error());
+        uri = datum::ore_index_codec::write(*index);
     }
     std::sort(rows.begin(), rows.end());
     return rows;
@@ -293,14 +291,12 @@ std::size_t import_fixings_and_verify(const std::filesystem::path& path,
     std::vector<dated_value> wanted;
     std::size_t unnamed = 0;
     for (const auto& f : data) {
-        const auto identifier = core::oresmd_projections::from_index_name(f.index_name);
-        const auto name = identifier ? core::oresmd_projections::to_index_name(*identifier) :
-                                       std::optional<std::string>{};
-        if (!name) {
+        const auto index = datum::ore_index_codec::read(f.index_name);
+        if (!index) {
             ++unnamed;
             continue;
         }
-        wanted.emplace_back(iso(f.date), *name, f.value);
+        wanted.emplace_back(iso(f.date), datum::ore_index_codec::write(*index), f.value);
     }
     std::sort(wanted.begin(), wanted.end());
 

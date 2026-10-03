@@ -84,6 +84,20 @@ inline const std::vector<catalogue_line>& catalogue_quote_matrix() {
     return result;
 }
 
+/// Every index form ORE's parseIndex documents, with ORE's reading of each.
+inline const std::vector<catalogue_line>& catalogue_index_forms() {
+    static const auto result = catalogue_lines_of(
+        ores::platform::filesystem::file::read_content(catalogue_dir() / "index_forms.jsonl"));
+    return result;
+}
+
+/// Every distinct index name the corpus's fixing files carry, with ORE's reading.
+inline const std::vector<catalogue_line>& catalogue_index_corpus() {
+    static const auto result = catalogue_lines_of(
+        ores::platform::filesystem::file::read_content(catalogue_dir() / "index_corpus.jsonl"));
+    return result;
+}
+
 /// One member of an ORE enum and the key tokens ORE's parser reads as it.
 struct enum_member {
     std::string name;

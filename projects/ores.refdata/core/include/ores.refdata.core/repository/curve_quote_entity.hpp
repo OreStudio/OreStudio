@@ -48,6 +48,8 @@ struct curve_quote_entity {
     std::string curve_definition_id;
     std::optional<std::string> curve_segment_id;
     std::optional<std::string> default_curve_configuration_id;
+    std::optional<std::string> commodity_price_segment_id;
+    std::optional<std::string> quote_list;
     std::optional<std::string> quote_text;
     std::optional<std::string> optional_flag;
     std::optional<std::string> rate_quote;

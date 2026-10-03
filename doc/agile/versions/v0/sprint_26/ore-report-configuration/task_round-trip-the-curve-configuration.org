@@ -185,6 +185,17 @@ Step 3c, decided while building it:
   written. =SourceCurves= and =SwitchDates= appear in no corpus document and are
   refused, as inflation segments are.
 
+Step 3d, decided while building it:
+
+- A commodity curve's =BasisConfiguration= is one per curve, so its settings
+  are =basis_= columns on =commodity_curve=; its =PriceSegments= are rows of
+  =commodity_price_segment=. Each appears in one corpus document.
+- A quote's owner can now also be a price segment, and a parent that writes
+  more than one quote list names the list: =curve_quote.quote_list= is
+  =BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=, and null for the main
+  =Quotes=. That is the fourth way a quote attaches, and step 4 should decide
+  whether a single owner reference reads better than four nullable columns.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

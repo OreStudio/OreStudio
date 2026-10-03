@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: FBFE686D-63A8-5138-ADD1-997F0C37024A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodity_price_segments commands from the shell?
+#+description: Every command the commodity_price_segments submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodity_price_segments:
+
+This file documents the commodity_price_segments resource at the shell, one section per command. Every command is a subcommand of =commodity_price_segments=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 10C89808-4FFA-529D-B28C-CCBD97701AC1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.list=.
+
+#+name: commodity_price_segments-list
+#+begin_src ores-shell :tangle commodity_price_segments-list.ores :exports none
+commodity_price_segments list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 59C87A7A-8EA6-5B8B-A6AE-F1965B9618FE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments get <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.get=.
+
+#+name: commodity_price_segments-get
+#+begin_src ores-shell :tangle commodity_price_segments-get.ores :exports none
+commodity_price_segments get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A823EAB0-4832-586A-959E-D50437798B28
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.get_many=.
+
+#+name: commodity_price_segments-get-many
+#+begin_src ores-shell :tangle commodity_price_segments-get-many.ores :exports none
+commodity_price_segments get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A37C45CE-21F1-5071-8D9A-AD393FEAA414
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments add <curve_definition_id> <segment_type> <priority> <conventions> <has_quotes> <peak_price_curve_id> <peak_price_calendar> <has_off_peak_daily> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.put=.
+
+#+name: commodity_price_segments-add
+#+begin_src ores-shell :tangle commodity_price_segments-add.ores :exports none
+commodity_price_segments add 00000000-0000-0000-0000-000000000000 __none__ - - false - - false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 288F55E4-F994-5635-8E2C-A1DBE78CBFAA
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments set <id> <curve_definition_id> <segment_type> <priority> <conventions> <has_quotes> <peak_price_curve_id> <peak_price_calendar> <has_off_peak_daily> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.put=.
+
+#+name: commodity_price_segments-set
+#+begin_src ores-shell :tangle commodity_price_segments-set.ores :exports none
+commodity_price_segments set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - false - - false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4A493F30-0C1A-5997-8DCF-BAE23BBB1CCE
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments put-many --count <n> <id> <curve_definition_id> <segment_type> <priority> <conventions> <has_quotes> <peak_price_curve_id> <peak_price_calendar> <has_off_peak_daily> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.put_many=.
+
+#+name: commodity_price_segments-put-many
+#+begin_src ores-shell :tangle commodity_price_segments-put-many.ores :exports none
+commodity_price_segments put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - false - - false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1F342731-4644-5AE9-80BC-F7EDB5CB0220
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.delete=.
+
+#+name: commodity_price_segments-delete
+#+begin_src ores-shell :tangle commodity_price_segments-delete.ores :exports none
+commodity_price_segments delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 249722ED-DE15-5CF2-A47B-2C88A90CE4DF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments.delete_many=.
+
+#+name: commodity_price_segments-delete-many
+#+begin_src ores-shell :tangle commodity_price_segments-delete-many.ores :exports none
+commodity_price_segments delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 5FEA519A-986E-5819-8F73-25384193A628
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments_versions.list=.
+
+#+name: commodity_price_segments-versions
+#+begin_src ores-shell :tangle commodity_price_segments-versions.ores :exports none
+commodity_price_segments versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4AB53609-4A58-5399-AFBA-549B7E1B934C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodity_price_segments version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodity_price_segments_versions.get=.
+
+#+name: commodity_price_segments-version
+#+begin_src ores-shell :tangle commodity_price_segments-version.ores :exports none
+commodity_price_segments version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -86,6 +86,8 @@ domain::curve_quote to_domain(const messaging::curve_quote_write& write) {
     v.curve_definition_id = write.curve_definition_id;
     v.curve_segment_id = write.curve_segment_id;
     v.default_curve_configuration_id = write.default_curve_configuration_id;
+    v.commodity_price_segment_id = write.commodity_price_segment_id;
+    v.quote_list = write.quote_list;
     v.quote_text = write.quote_text;
     v.optional_flag = write.optional_flag;
     v.rate_quote = write.rate_quote;

@@ -37,6 +37,8 @@ export interface CurveQuoteWrite {
     curve_definition_id: string;
     curve_segment_id: string;
     default_curve_configuration_id: string;
+    commodity_price_segment_id: string;
+    quote_list: string | null;
     quote_text: string | null;
     optional_flag: string | null;
     rate_quote: string | null;

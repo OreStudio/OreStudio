@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T14:04:17.792030Z
+' Generated: 2026-10-03T14:04:39.633090Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1630,6 +1630,57 @@ package "refdata" #FFF3E0 {
     convention are normalised to the canonical codes the other tables hold.
     end note
 
+    entity ores_refdata_commodity_curves_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          base_price_curve : text
+          base_yield_curve : text
+          yield_curve : text
+          spot_quote : text
+        * has_quotes : boolean
+          day_counter : text
+          interpolation_method : text
+          conventions : text
+          extrapolation : text
+        * has_basis_configuration : boolean
+          basis_base_price_curve : text
+          basis_base_price_conventions : text
+          basis_conventions : text
+          basis_day_counter : text
+          basis_interpolation_method : text
+          basis_add_basis : text
+          basis_month_offset : integer
+          basis_average_base : text
+          basis_price_as_historical_fixing : text
+        * has_price_segments : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_curves_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Curve Table
+    The settings of one CommodityCurve entry of a curveconfig.xml, one row per
+    curve_definition in the CommodityCurves section. A commodity curve is built
+    from forward quotes, or from a base curve and a yield curve, or as a basis over
+    another commodity curve, or from price segments.
+    The basis form writes a BasisConfiguration element, whose settings are the
+    basis_ columns and whose BasisQuotes are rows of curve_quote with that
+    list name. Price segments are rows of commodity_price_segment. The entry's
+    own quotes are rows of curve_quote on the entry, and its BootstrapConfig a
+    row of curve_bootstrap_config.
+    end note
+
     entity ores_refdata_commodity_forward_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
@@ -1754,6 +1805,39 @@ package "refdata" #FFF3E0 {
     column each, holding comma-separated dates and from:to pairs. A column is a
     weaker home than a table, and it is what keeps the field in the element's
     round trip rather than excluding the file from it.
+    end note
+
+    entity ores_refdata_commodity_price_segments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * segment_type : text
+          priority : integer
+          conventions : text
+        * has_quotes : boolean
+          peak_price_curve_id : text <<FK>>
+          peak_price_calendar : text
+        * has_off_peak_daily : boolean
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_price_segments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Price Segment Table
+    One PriceSegment of a commodity curve: the kind of instrument the segment's
+    prices come from, its priority, its convention, and its quotes. An off peak
+    power segment lists its off peak and peak quotes separately, as rows of
+    curve_quote with the list names OffPeakQuotes and PeakQuotes.
     end note
 
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
@@ -2609,6 +2693,8 @@ package "refdata" #FFF3E0 {
         * curve_definition_id : uuid <<FK>>
           curve_segment_id : uuid <<FK>>
           default_curve_configuration_id : uuid <<FK>>
+          commodity_price_segment_id : uuid <<FK>>
+          quote_list : text
           quote_text : text
           optional_flag : text
           rate_quote : text

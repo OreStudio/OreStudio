@@ -65,8 +65,8 @@ tenant_party_service::list_tenant_parties(const messaging::list_tenant_parties_r
         return messaging::list_tenant_parties_response{
             .success = true, .parties = page.parties, .total = page.total};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Reading the parties of tenant " << request.tenant_id
-                                   << " failed: " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Reading the parties of tenant " << request.tenant_id << " failed: " << e.what();
         return refused(e.what());
     }
 }

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/service/tenant_party_service.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.refdata.core/service/tenant_party_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -53,8 +53,7 @@ TEST_CASE("a_system_caller_reads_the_named_tenants_parties_and_no_others", tags)
 
     auto party = ores::refdata::generators::generate_synthetic_party(gen_ctx);
     party.change_reason_code = "system.test";
-    party.parent_party_id =
-        repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
+    party.parent_party_id = repo.read_system_party(h.context(), h.tenant_id().to_string()).at(0).id;
     repo.write(h.context(), party);
 
     tenant_party_service svc(system_caller(h));

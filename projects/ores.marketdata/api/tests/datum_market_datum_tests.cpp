@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <set>
@@ -258,6 +259,8 @@ TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
     std::set<asset_class> used;
     for (const auto& row : schema)
         used.insert(row.asset);
+    for (const auto& row : index_rows)
+        used.insert(row.asset);
     for (std::size_t i = 0; i < asset_class_count; ++i) {
         const auto a = static_cast<asset_class>(i);
         INFO("asset class: " << name_of(a));
@@ -267,11 +270,13 @@ TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", tags) {
     CHECK_FALSE(asset_class_named("interest_rates"));
 }
 
-TEST_CASE("every_asset_class_but_correlation_is_a_refdata_asset_class", tags) {
+TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_class", tags) {
     using ores::marketdata::domain::asset_class_for_authority;
     for (std::size_t i = 0; i < asset_class_count; ++i) {
         const auto a = static_cast<asset_class>(i);
         INFO("asset class: " << name_of(a));
-        CHECK(asset_class_for_authority(name_of(a)).has_value() != (a == asset_class::correlation));
+        const bool none = a == asset_class::correlation || a == asset_class::generic;
+        CHECK(asset_class_for_authority(name_of(a)).has_value() != none);
     }
+}
 }

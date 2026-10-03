@@ -21,6 +21,7 @@
 #define ORES_MARKETDATA_CORE_DATUM_ORESMD_URI_CODEC_HPP
 
 #include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <expected>
 #include <string>
@@ -60,6 +61,25 @@ public:
     /// The URI of @p datum, or why it has none: a datum with no ORE key has no
     /// quote URI.
     [[nodiscard]] static std::expected<std::string, std::string> write(const market_datum& datum);
+
+    /**
+     * @brief The index @p uri names, a fixing's identity, or why it names none.
+     *
+     * @code
+     * oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M
+     * @endcode
+     *
+     * The authority is the family's asset class and the path its subject; the
+     * query is type=fixing, index and the family's other fields in its row's
+     * order. The reader is as strict as for a quote: it refuses an unknown,
+     * repeated or empty key, a missing required field, an index no ORE index
+     * name names, and any spelling but the writer's.
+     */
+    [[nodiscard]] static std::expected<market_index, std::string> read_index(std::string_view uri);
+
+    /// The URI of @p index, or why it has none.
+    [[nodiscard]] static std::expected<std::string, std::string>
+    write_index(const market_index& index);
 };
 
 }

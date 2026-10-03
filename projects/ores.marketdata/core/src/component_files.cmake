@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "classification/series_classifier.cpp"
+    "datum/ore_index_codec.cpp"
     "datum/ore_key_codec.cpp"
     "datum/ore_key_commodity.cpp"
     "datum/ore_key_credit.cpp"
@@ -89,6 +90,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/classification/series_classifier.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/ore_index_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/ore_key_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/datum/oresmd_uri_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/export.hpp"

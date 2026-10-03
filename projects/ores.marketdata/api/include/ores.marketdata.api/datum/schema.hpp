@@ -250,7 +250,8 @@ struct field_spec {
  * writes as its authority.
  *
  * The names are the oresmd authorities ores.refdata's asset class catalogue
- * maps onto its asset classes.
+ * maps onto its asset classes. A generic index, ORE's GENERIC-*, belongs to
+ * none of them.
  */
 enum class asset_class : std::uint8_t {
     ir,
@@ -262,10 +263,11 @@ enum class asset_class : std::uint8_t {
     security,
     correlation,
     rating,
-    shape_profile
+    shape_profile,
+    generic
 };
 
-inline constexpr std::size_t asset_class_count = 10;
+inline constexpr std::size_t asset_class_count = 11;
 
 /// The asset class as an oresmd URI's authority writes it: ir, shape_profile.
 ORES_MARKETDATA_API_EXPORT std::string_view name_of(asset_class a);

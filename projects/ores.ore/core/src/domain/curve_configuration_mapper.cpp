@@ -29,6 +29,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -879,12 +880,10 @@ void import_commodity_curve(mapped_curve_configuration& out,
         import_bootstrap(out, d.id, none, *v.BootstrapConfig);
 }
 
-void import_report(mapped_curve_configuration& out,
-                   const boost::uuids::uuid& definition_id,
-                   const reportConfiguration& v) {
-    refdata::domain::curve_report_configuration r;
-    r.id = new_uuid();
-    r.curve_definition_id = definition_id;
+// The report columns are shared by an entry's Report and the document's
+// per-family reports, so one pair of functions fills and reads them for both.
+template <typename Row>
+void fill_report(Row& r, const reportConfiguration& v) {
     r.report_on_delta_grid = optional_enum_text(v.ReportOnDeltaGrid);
     r.report_on_moneyness_grid = optional_enum_text(v.ReportOnMoneynessGrid);
     r.report_on_strike_grid = optional_enum_text(v.ReportOnStrikeGrid);
@@ -897,11 +896,21 @@ void import_report(mapped_curve_configuration& out,
     r.pillar_dates = optional_text(v.PillarDates);
     r.underlying_tenors = optional_text(v.UnderlyingTenors);
     r.continuation_expiry = optional_text(v.ContinuationExpiry);
+}
+
+void import_report(mapped_curve_configuration& out,
+                   const boost::uuids::uuid& definition_id,
+                   const reportConfiguration& v) {
+    refdata::domain::curve_report_configuration r;
+    r.id = new_uuid();
+    r.curve_definition_id = definition_id;
+    fill_report(r, v);
     set_audit(r);
     out.report_configurations.push_back(std::move(r));
 }
 
-reportConfiguration export_report(const refdata::domain::curve_report_configuration& r) {
+template <typename Row>
+reportConfiguration export_report(const Row& r) {
     reportConfiguration v;
     assign_optional_enum(v.ReportOnDeltaGrid, r.report_on_delta_grid, "ORE boolean");
     assign_optional_enum(v.ReportOnMoneynessGrid, r.report_on_moneyness_grid, "ORE boolean");
@@ -2724,6 +2733,106 @@ const Row& settings_of(const std::map<boost::uuids::uuid, const Row*>& rows,
 
 }
 
+namespace {
+
+refdata::domain::curve_global_report new_global_report(const boost::uuids::uuid& configuration_id,
+                                                       std::string_view family,
+                                                       bool has_report,
+                                                       int position) {
+    refdata::domain::curve_global_report r;
+    r.id = new_uuid();
+    r.curve_configuration_id = configuration_id;
+    r.family = std::string(family);
+    r.has_report = has_report;
+    r.position = position;
+    set_audit(r);
+    return r;
+}
+
+template <typename Family>
+void import_global_family(mapped_curve_configuration& out,
+                          const boost::uuids::uuid& configuration_id,
+                          std::string_view family,
+                          const xsd::optional<Family>& element,
+                          int& position) {
+    if (!element)
+        return;
+    auto r = new_global_report(configuration_id, family, static_cast<bool>(element->Report), position++);
+    if (element->Report) {
+        if constexpr (std::is_same_v<std::decay_t<decltype(*element->Report)>, yieldCurveReport>)
+            r.pillar_dates = optional_text(element->Report->PillarDates);
+        else
+            fill_report(r, *element->Report);
+    }
+    out.global_reports.push_back(std::move(r));
+}
+
+void import_global_report(mapped_curve_configuration& out,
+                          const boost::uuids::uuid& configuration_id,
+                          const globalReportConfiguration& v) {
+    int position = 0;
+    import_global_family(out, configuration_id, "FXVolatilities", v.FXVolatilities, position);
+    import_global_family(out, configuration_id, "EquityVolatilities", v.EquityVolatilities, position);
+    import_global_family(
+        out, configuration_id, "CommodityVolatilities", v.CommodityVolatilities, position);
+    import_global_family(
+        out, configuration_id, "IRSwaptionVolatilities", v.IRSwaptionVolatilities, position);
+    import_global_family(
+        out, configuration_id, "IRCapFloorVolatilities", v.IRCapFloorVolatilities, position);
+    import_global_family(out, configuration_id, "YieldCurves", v.YieldCurves, position);
+    import_global_family(out,
+                         configuration_id,
+                         "InflationCapFloorVolatilities",
+                         v.InflationCapFloorVolatilities,
+                         position);
+    import_global_family(out, configuration_id, "DefaultCurves", v.DefaultCurves, position);
+    if (position == 0)
+        throw refusal("the report configuration writes no curve family");
+}
+
+template <typename Family>
+void export_global_family(xsd::optional<Family>& element,
+                          const refdata::domain::curve_global_report& r) {
+    element = Family{};
+    if (!r.has_report)
+        return;
+    if constexpr (std::is_same_v<std::decay_t<decltype(*element->Report)>, yieldCurveReport>) {
+        yieldCurveReport report;
+        assign_optional_text(report.PillarDates, r.pillar_dates);
+        element->Report = report;
+    } else {
+        element->Report = export_report(r);
+    }
+}
+
+globalReportConfiguration export_global_report(
+    const std::vector<const refdata::domain::curve_global_report*>& rows) {
+    globalReportConfiguration v;
+    for (const auto* r : rows) {
+        if (r->family == "FXVolatilities")
+            export_global_family(v.FXVolatilities, *r);
+        else if (r->family == "EquityVolatilities")
+            export_global_family(v.EquityVolatilities, *r);
+        else if (r->family == "CommodityVolatilities")
+            export_global_family(v.CommodityVolatilities, *r);
+        else if (r->family == "IRSwaptionVolatilities")
+            export_global_family(v.IRSwaptionVolatilities, *r);
+        else if (r->family == "IRCapFloorVolatilities")
+            export_global_family(v.IRCapFloorVolatilities, *r);
+        else if (r->family == "YieldCurves")
+            export_global_family(v.YieldCurves, *r);
+        else if (r->family == "InflationCapFloorVolatilities")
+            export_global_family(v.InflationCapFloorVolatilities, *r);
+        else if (r->family == "DefaultCurves")
+            export_global_family(v.DefaultCurves, *r);
+        else
+            throw refusal("the report configuration has an unknown curve family " + r->family);
+    }
+    return v;
+}
+
+}
+
 mapped_curve_configuration curve_configuration_mapper::map(const curveconfiguration& v) {
     mapped_curve_configuration mapped;
 
@@ -2734,7 +2843,7 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     set_audit(config);
 
     if (v.ReportConfiguration)
-        throw refusal("the report configuration is not modelled yet");
+        import_global_report(mapped, config.id, *v.ReportConfiguration);
 
     for (const auto& s : sections()) {
         if (!s.present(v))
@@ -2823,6 +2932,13 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
         if (it == by_code.end())
             throw refusal("unknown section '" + row.section_code + "'");
         it->second->emplace(document);
+    }
+    if (!v.global_reports.empty()) {
+        std::vector<const refdata::domain::curve_global_report*> reports;
+        for (const auto& r : v.global_reports)
+            reports.push_back(&r);
+        std::sort(reports.begin(), reports.end(), by_position<refdata::domain::curve_global_report>);
+        document.ReportConfiguration = export_global_report(reports);
     }
 
     std::map<boost::uuids::uuid, const refdata::domain::yield_curve*> yield_by_definition;

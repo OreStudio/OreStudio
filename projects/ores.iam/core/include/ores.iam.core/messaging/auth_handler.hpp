@@ -95,7 +95,7 @@ inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
 inline std::optional<std::string> auth_refresh_refusal(const security::jwt::jwt_claims& claims) {
     if (claims.acting_from_tenant_id)
         return "A session inside a tenant is not refreshed.";
-    if (claims.audience == "select_party_only")
+    if (claims.audience == security::jwt::party_selection_audience)
         return "A token that only chooses a party is not refreshed.";
     return std::nullopt;
 }
@@ -768,7 +768,7 @@ public:
                 claims.issued_at = now;
                 claims.expires_at =
                     now + std::chrono::seconds(token_settings()->party_selection_lifetime_s);
-                claims.audience = "select_party_only";
+                claims.audience = std::string(security::jwt::party_selection_audience);
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();

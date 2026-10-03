@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T18:44:19.054058Z
+' Generated: 2026-10-03T19:13:22.659722Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2974,6 +2974,52 @@ package "refdata" #FFF3E0 {
     The natural key is the document, the section and the curve id together:
     EUR-ESTR names a curve inside one section of one document, another section
     may name its own, and two documents may define the same curve differently.
+    end note
+
+    entity ores_refdata_curve_global_reports_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_configuration_id : uuid <<FK>>
+        * family : text
+        * has_report : boolean
+          report_on_delta_grid : text
+          report_on_moneyness_grid : text
+          report_on_strike_grid : text
+          report_on_strike_spread_grid : text
+          deltas : text
+          moneyness : text
+          strikes : text
+          strike_spreads : text
+          expiries : text
+          pillar_dates : text
+          underlying_tenors : text
+          continuation_expiry : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_curve_global_reports_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Curve Global Report Table
+    The document level ReportConfiguration of a curveconfig.xml gives report
+    settings per curve family: FX, equity, commodity, swaption, cap and floor and
+    inflation cap and floor volatilities, yield curves and default curves. Each
+    family element the document writes is one row here, keyed to the document, and
+    has_report says whether the element holds a Report. An entry's own Report
+    overrides these and is a row of curve_report_configuration.
+    The columns are those of curve_report_configuration. The yield curve family's
+    report writes only PillarDates.
+    A ReportConfiguration element that writes no family appears in no corpus
+    document, and the mapper refuses it, because rows cannot record it.
     end note
 
     entity ores_refdata_curve_parametric_smile_parameters_tbl <<temporal>> #C6F0D8 {

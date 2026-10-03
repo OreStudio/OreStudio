@@ -33,6 +33,7 @@
 #include "ores.refdata.core/repository/curve_configuration_section_repository.hpp"
 #include "ores.refdata.core/repository/curve_correlation_repository.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
+#include "ores.refdata.core/repository/curve_global_report_repository.hpp"
 #include "ores.refdata.core/repository/curve_parametric_smile_parameter_repository.hpp"
 #include "ores.refdata.core/repository/curve_parametric_smile_repository.hpp"
 #include "ores.refdata.core/repository/curve_quote_repository.hpp"
@@ -96,13 +97,11 @@ Document load(const std::string& name) {
 const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";
 const std::string products_example = "external/ore/examples/Products/Input/curveconfig.xml";
 
-// Every modelled section of a corpus document apart from the yield and
-// commodity curves, with the unmodelled sections kept empty, so only the
+// A corpus document without its yield and commodity curves, so only the
 // inflation swap and CDS conventions have to be written first.
 curveconfiguration equity_and_securities() {
     curveconfiguration d;
     load_data(file::read_content(ores::testing::project_root::resolve(equity_example)), d);
-    d.ReportConfiguration = decltype(d.ReportConfiguration){};
     if (d.YieldCurves)
         d.YieldCurves->YieldCurve.clear();
     if (d.CommodityCurves)
@@ -153,6 +152,7 @@ void write_input_conventions(const ores::database::context& ctx) {
 void write(const ores::database::context& ctx, const mapped_curve_configuration& m) {
     curve_configuration_repository().write(ctx, m.config);
     curve_configuration_section_repository().write(ctx, m.sections);
+    curve_global_report_repository().write(ctx, m.global_reports);
     curve_definition_repository().write(ctx, m.definitions);
     yield_curve_repository().write(ctx, m.yield_curves);
     equity_curve_repository().write(ctx, m.equity_curves);
@@ -199,6 +199,10 @@ mapped_curve_configuration read_back(const ores::database::context& ctx,
     const auto id = written.config.id;
     m.sections = read<ores::refdata::domain::curve_configuration_section>(
         ctx, curve_configuration_section_repository(), [&](const auto& r) {
+            return r.curve_configuration_id == id;
+        });
+    m.global_reports = read<ores::refdata::domain::curve_global_report>(
+        ctx, curve_global_report_repository(), [&](const auto& r) {
             return r.curve_configuration_id == id;
         });
     m.definitions = read<ores::refdata::domain::curve_definition>(
@@ -385,7 +389,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(difference.empty());
 }
 
-TEST_CASE("equity and commodity volatility configurations round trip through the database", tags) {
+TEST_CASE("equity and commodity volatility configurations and the report configuration round trip through the database", tags) {
     ores::testing::scoped_database_helper h;
 
     conventions c;
@@ -401,13 +405,16 @@ TEST_CASE("equity and commodity volatility configurations round trip through the
     curveconfiguration original;
     original.EquityVolatilities = full.EquityVolatilities;
     original.CommodityVolatilities = full.CommodityVolatilities;
+    original.ReportConfiguration = full.ReportConfiguration;
     const auto mapped = curve_configuration_mapper::map(original);
     REQUIRE(std::ranges::any_of(mapped.volatility_configs, [](const auto& v) { return v.is_wrapped; }));
+    REQUIRE(!mapped.global_reports.empty());
 
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
     CHECK(back.volatility_configs.size() == mapped.volatility_configs.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
+    CHECK(back.global_reports.size() == mapped.global_reports.size());
 
     curveconfiguration exported;
     load_data(save_data(curve_configuration_mapper::reverse(back)), exported);

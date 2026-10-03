@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: B476DBDD-F7AE-4337-A2F2-17295CE5A971
+:END:
+#+title: Story: Implement order and filter in the generated list contract
+#+description: The protocol states every list's order and filter, but the generated service refuses both and the repository sorts by id only. Generate order, filter, search and one-of members from the model, then move the hand-written tenant reads onto them.
+#+type: story
+#+level: s2
+#+filetags: :codegen:protocol:paging:sprint_26:v0:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Finish the list contract the protocol specification already states, in the
+code generator, so every entity gets it from its model:
+
+1. *Order.* Columns declare =:sortable: true= and the entity a
+   =:default_order:=. The repository builds the order from that allow-list,
+   with the key as the last tie-break, and the service accepts a declared field
+   and refuses any other with =order_not_supported=.
+2. *Filter.* The repository applies each set member of the filter record the
+   generator already derives, as a condition on its column.
+3. *Search.* A model may declare =:searchable:= columns, which add one typed
+   =search= member to the filter record: a case-insensitive substring match over
+   those columns. This amends the specification, which forbids a query
+   language; a typed member is not one.
+4. *One of.* Key and relation columns may take a list-typed member, so a screen
+   can read the rows for the keys on its current page in one call.
+   The parties screen needs it too: a party's parent is named only when it is
+   on the same page, because party =get= and =get_many= key by short code and
+   nothing reads a party by its id.
+
+Then move the hand-written reads onto the contract: =iam.v1.tenants.search=
+becomes =iam.v1.tenants.list= with a filter, its SQL function
+=ores_iam_tenants_search_fn= is removed, and the roster's provisioning run read
+uses a one-of member in place of a single read capped at 1000.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-03                               |
+
+* Acceptance
+
+- The specification states the searchable and one-of filter members.
+- A model declares sortable columns and a default order, and the generated
+  repository and service honour a stated order and refuse an undeclared one.
+- The generated repository applies every set member of the filter record.
+- =iam.v1.tenants.search= and =ores_iam_tenants_search_fn= are removed, and the
+  roster reads =iam.v1.tenants.list= with a filter.
+- No list read keeps a fixed cap: the roster's run read and the parties page's
+  parent names use a one-of member.
+- Every new behaviour is proved by a test, and the roster and parties screens
+  were read against the running deployment.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A24A43C8-804F-43DA-9334-4225C57D9854][Amend the list contract specification]] | BACKLOG | | | State the searchable and one-of filter members in the NATS entity protocol specification, and how a model declares sortable columns and a default order. |
+| [[id:A8A5C4E4-67EB-4CD5-8786-1C4F790EA18B][Generate a stated order]] | BACKLOG | | | Sortable columns and a default order in the model; the generated repository orders by an allow-list with the key as tie-break, and the service refuses an undeclared field. |
+| [[id:28598EF6-342E-434A-A329-71324C973B49][Generate the filter record, search and one-of members]] | BACKLOG | | | The generated repository applies each set filter member, a searchable text member, and list-typed one-of members for keys and relations. |
+| [[id:C6D29D53-2E3E-4557-A469-6FD755ABF151][Move the tenant reads onto the contract]] | BACKLOG | | | The roster reads iam.v1.tenants.list with a filter and the search function goes; the roster's run read and the parties page's parent names use one-of members with no fixed cap. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-03 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Finish the list contract the protocol specification already states, in the
+code generator, so every entity gets it from its model:
+
+1. *Order.* Columns declare =:sortable: true= and the entity a
+   =:default_order:=. The repository builds the order from that allow-list,
+   with the key as the last tie-break, and the service accepts a declared field
+   and refuses any other with =order_not_supported=.
+2. *Filter.* The repository applies each set member of the filter record the
+   generator already derives, as a condition on its column.
+3. *Search.* A model may declare =:searchable:= columns, which add one typed
+   =search= member to the filter record: a case-insensitive substring match over
+   those columns. This amends the specification, which forbids a query
+   language; a typed member is not one.
+4. *One of.* Key and relation columns may take a list-typed member, so a screen
+   can read the rows for the keys on its current page in one call.
+   The parties screen needs it too: a party's parent is named only when it is
+   on the same page, because party =get= and =get_many= key by short code and
+   nothing reads a party by its id.
+
+Then move the hand-written reads onto the contract: =iam.v1.tenants.search=
+becomes =iam.v1.tenants.list= with a filter, its SQL function
+=ores_iam_tenants_search_fn= is removed, and the roster's provisioning run read
+uses a one-of member in place of a single read capped at 1000.
+
+** Why
+
+The specification makes every list paged, with a stated order and a filter
+record. The generated service refuses any stated order and any filter, and the
+repository can only sort by id. That gap pushed the tenant roster into a
+hand-written search read and a capped run read. Every list must page, with no
+fixed cap.
+
+** References
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] -- the list contract
+- =projects/ores.codegen/library/templates/ores.cpp.service.service_impl.org= -- where order and filter are refused

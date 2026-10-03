@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 55A6C125-F7F2-49AC-AAF3-AA9A31DE6316
+:END:
+#+title: Task: Add the immutable trade anchor
+#+description: Add trade_anchor beside the wide trade: an immutable, tenant-keyed row with party, counterparty, trade type, counterparty scope, booking nature and entry channel, and the three closed lookups it references.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trade-anchor
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The anchor exists beside the wide trade as a generated immutable entity, with database foreign keys to its three classification lookups, an insert-only write, and a sanctioned tenant purge path.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- trade_anchor is immutable and keyed by (tenant_id, id); its party, counterparty and trade type are checked, and its three closed classifications are C++ enums with enforced foreign keys to immutable lookup tables.
+- The generated write inserts and never replaces, so the key refuses a second write of the same trade id. The booking operation, which task 2 adds, maps that refusal to a domain error.
+- A tenant purge removes anchors through a sanctioned session switch; any other update, delete or truncate is refused.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- Three lookup entities, =entry_channel_type=, =counterparty_scope_type= and
+  =booking_nature_type=: =read-only-current-state= profile, =:immutable:=, no
+  tenant, seeded by populate scripts. The codes are the enumerators of three
+  hand-written C++ enums, in the manner of =binding_mode=; enum generation was
+  retired in sprint 20, so there is no generator to extend.
+- The anchor, =trade_anchor=: =read-only-current-state=, =:immutable:=,
+  tenant-scoped, so its key is =(tenant_id, id)=. Party, counterparty and trade
+  type are trigger checks, because their tables are temporal. The three
+  classifications are enforced foreign keys with =:use_no_tenant:=. A check
+  requires a counterparty unless the scope is =intra_entity=.
+- Generator: the immutable guard lets a =DELETE= through while the
+  transaction-local purge switch is on (=ores_utility_allow_immutable_purge_fn=).
+  The notify trigger states a null tenant for a table with no tenant.
+- Hand wiring: the trading create and drop masters, the populate master, the
+  message registrar, the anchor event mapping, the anchor RLS policies, the
+  tenant purger, the custom type registry and the CMake source lists.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- =trade_trades_test.sql=, =trade_identifiers_test.sql=, =trade_party_roles_test.sql= and =trade_ore_envelope_view_test.sql= stop at their fixture: each books a party id it never creates. This predates the task.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the lookup generator emits codes outside the closed set | =*_type_generator.cpp= | Decline | The template does this for every lookup; nothing generates synthetic lookup rows. |
+| 2 | Local review: notify triggers and event registrars of the immutable lookups never fire | lookup notify triggers | Decline | The facet emits them for every entity; they cost nothing. |
+| 3 | Local review: four trade pgTAP files fail on a fixture party they never create | =projects/ores.sql/test/trade_*_test.sql= | Decline | Predates this task; the wide trade's tests go with it in the last task of the story. |
+
+* Result

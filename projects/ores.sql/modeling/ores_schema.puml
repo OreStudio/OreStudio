@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T18:00:09.138631Z
+' Generated: 2026-10-03T18:44:19.054058Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -8702,6 +8702,28 @@ package "trading" #E8F5E9 {
     round trip is whole without them, and they are a recorded scope limit.
     end note
 
+    entity ores_trading_booking_nature_types_tbl  #F7E5FF {
+        * code : text <<PK>>
+        --
+        * description : text
+    }
+
+    note right of ores_trading_booking_nature_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Booking Nature Type Table
+    Reference data table holding whether anything happened to cause a
+    booking: actual (the firm did a deal), test (the booking exercises
+    the system) and hypothetical (the booking answers a question).
+    The set is closed, and the C++ enum domain::booking_nature holds the same
+    values. A code with no enum value cannot be read back, so the table is
+    immutable: it is seeded once and never changes at run time. Because it
+    is immutable, the trade anchor references it with a database foreign
+    key rather than a trigger check. The table has no tenant: the set is the
+    same for every tenant.
+    end note
+
     entity ores_trading_callable_swap_call_dates_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -8970,6 +8992,29 @@ package "trading" #E8F5E9 {
     own key.
     end note
 
+    entity ores_trading_counterparty_scope_types_tbl  #F7E5FF {
+        * code : text <<PK>>
+        --
+        * description : text
+    }
+
+    note right of ores_trading_counterparty_scope_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Counterparty Scope Type Table
+    Reference data table holding who the firm faces on a trade, and so what
+    obligation the booking creates: external (a party outside the group),
+    inter_entity (another legal entity of the same group) and
+    intra_entity (another book in the same legal entity and branch).
+    The set is closed, and the C++ enum domain::counterparty_scope holds the same
+    values. A code with no enum value cannot be read back, so the table is
+    immutable: it is seeded once and never changes at run time. Because it
+    is immutable, the trade anchor references it with a database foreign
+    key rather than a trigger check. The table has no tenant: the set is the
+    same for every tenant.
+    end note
+
     entity ores_trading_credit_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -9028,6 +9073,29 @@ package "trading" #E8F5E9 {
     the table with no UI surface -- the per-instrument forms were hand-crafted
     in the removed desktop client and consumed the generated messaging
     protocol.
+    end note
+
+    entity ores_trading_entry_channel_types_tbl  #F7E5FF {
+        * code : text <<PK>>
+        --
+        * description : text
+    }
+
+    note right of ores_trading_entry_channel_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Entry Channel Type Table
+    Reference data table holding the ways a trade reaches the firm's books:
+    manual (a user captured it), stp (straight-through processing from
+    an upstream system), ecn (an electronic communication network) and
+    allocation (a block trade split into its allocations).
+    The set is closed, and the C++ enum domain::entry_channel holds the same
+    values. A code with no enum value cannot be read back, so the table is
+    immutable: it is seeded once and never changes at run time. Because it
+    is immutable, the trade anchor references it with a database foreign
+    key rather than a trigger check. The table has no tenant: the set is the
+    same for every tenant.
     end note
 
     entity ores_trading_equity_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
@@ -10581,6 +10649,37 @@ package "trading" #E8F5E9 {
     Represents a swaption — an option granting the right to enter into an
     interest rate swap at a future date. Exercise type may be European,
     Bermudan, or American.
+    end note
+
+    entity ores_trading_trade_anchors_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+          counterparty_id : uuid <<FK>>
+        * trade_type : text
+        * counterparty_scope : text
+        * booking_nature : text
+        * entry_channel : text
+    }
+
+    note right of ores_trading_trade_anchors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Anchor Table
+    The immutable anchor of a trade. It holds only the facts that are fixed
+    for the trade's life: the firm's legal entity (party), the counterparty,
+    the trade type, and the three closed classifications — counterparty
+    scope, booking nature and entry channel. Everything that changes lives in
+    component tables keyed by the trade, each on its own timeline.
+    A row is written once and never changed. A change of party or
+    counterparty is a cancel and rebook: a new trade, linked to the old one.
+    Because the row never changes, the component tables reference it with
+    database foreign keys instead of trigger checks against temporal rows.
+    The anchor is built beside the wide trade table, which it replaces in
+    the last task of the story; until then it is named trade_anchor. It has
+    no audit tail: the audit record of the act that booked it carries that.
     end note
 
     entity ores_trading_trade_envelope_additional_fields_tbl <<temporal>> #C6F0D8 {

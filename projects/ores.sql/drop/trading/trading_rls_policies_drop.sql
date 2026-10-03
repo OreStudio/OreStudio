@@ -44,6 +44,10 @@ drop policy if exists party_roles_tenant_isolation_policy on "ores_trading_party
 -- Trade Identifiers
 drop policy if exists identifiers_tenant_isolation_policy on "ores_trading_trade_identifiers_tbl";
 
+-- Trade anchors
+drop policy if exists trade_anchors_party_isolation_policy on "ores_trading_trade_anchors_tbl";
+drop policy if exists trade_anchors_tenant_isolation_policy on "ores_trading_trade_anchors_tbl";
+
 -- Trades
 drop policy if exists trades_tenant_isolation_policy on "ores_trading_trades_tbl";
 

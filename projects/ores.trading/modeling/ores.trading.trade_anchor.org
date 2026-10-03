@@ -1,0 +1,274 @@
+:PROPERTIES:
+:ID: 4304A441-E532-45FB-837A-378F13693CAE
+:END:
+#+title: ores.trading.trade_anchor
+#+description: Codegen entity model for the trading trade_anchor table: the immutable row that fixes a trade's identity and the facts that never change for its life.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The immutable anchor of a trade.
+#+entity_singular: trade_anchor
+#+entity_plural: trade_anchors
+#+entity_title: Trade Anchor
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The immutable anchor of a trade. It holds only the facts that are fixed
+for the trade's life: the firm's legal entity (party), the counterparty,
+the trade type, and the three closed classifications — counterparty
+scope, booking nature and entry channel. Everything that changes lives in
+component tables keyed by the trade, each on its own timeline.
+
+A row is written once and never changed. A change of party or
+counterparty is a cancel and rebook: a new trade, linked to the old one.
+Because the row never changes, the component tables reference it with
+database foreign keys instead of trigger checks against temporal rows.
+
+The anchor is built beside the wide =trade= table, which it replaces in
+the last task of the story; until then it is named =trade_anchor=. It has
+no audit tail: the audit record of the act that booked it carries that.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       read-only-current-state
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade id: the firm's own identifier of the trade.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The firm's legal entity that is party to the trade.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The party the firm faces. Absent only on an intra-entity trade, which
+moves risk between two books of one legal entity and faces nobody.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** trade_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ORE trade type code (e.g. Swap, FxForward, CapFloor).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** counterparty_scope
+:PROPERTIES:
+:type:          text
+:cpp_type:      ores::trading::domain::counterparty_scope
+:is_enum:       true
+:nullable:      false
+:default_value: ores::trading::domain::counterparty_scope::external
+:END:
+
+Who the firm faces: =external=, =inter_entity= or =intra_entity=.
+
+#+begin_src cpp :name generator
+ores::trading::domain::counterparty_scope::intra_entity
+#+end_src
+
+** booking_nature
+:PROPERTIES:
+:type:          text
+:cpp_type:      ores::trading::domain::booking_nature
+:is_enum:       true
+:nullable:      false
+:default_value: ores::trading::domain::booking_nature::actual
+:END:
+
+Whether anything happened to cause the booking: =actual=, =test= or
+=hypothetical=.
+
+#+begin_src cpp :name generator
+ores::trading::domain::booking_nature::test
+#+end_src
+
+** entry_channel
+:PROPERTIES:
+:type:          text
+:cpp_type:      ores::trading::domain::entry_channel
+:is_enum:       true
+:nullable:      false
+:default_value: ores::trading::domain::entry_channel::manual
+:END:
+
+How the trade reached the firm's books: =manual=, =stp=, =ecn= or
+=allocation=.
+
+#+begin_src cpp :name generator
+ores::trading::domain::entry_channel::manual
+#+end_src
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+The firm's legal entity. A party is temporal, so this stays a trigger
+check.
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:nullable:      true
+:error_message: Invalid counterparty_id: %. Counterparty must exist for tenant.
+:END:
+
+The counterparty. Temporal, so a trigger check.
+
+** trade_type
+:PROPERTIES:
+:table:             ores_trading_trade_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid trade_type: %. No active trade type found with this code.
+:END:
+
+The trade type catalogue is system reference data, so the check reads
+the system tenant.
+
+** counterparty_scope
+:PROPERTIES:
+:table:         ores_trading_counterparty_scope_types_tbl
+:target_column: code
+:enforce:       true
+:use_no_tenant: true
+:nullable:      false
+:END:
+
+A database foreign key: the lookup is immutable and has no tenant.
+
+** booking_nature
+:PROPERTIES:
+:table:         ores_trading_booking_nature_types_tbl
+:target_column: code
+:enforce:       true
+:use_no_tenant: true
+:nullable:      false
+:END:
+
+A database foreign key: the lookup is immutable and has no tenant.
+
+** entry_channel
+:PROPERTIES:
+:table:         ores_trading_entry_channel_types_tbl
+:target_column: code
+:enforce:       true
+:use_no_tenant: true
+:nullable:      false
+:END:
+
+A database foreign key: the lookup is immutable and has no tenant.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_trade_anchors_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+** Checks
+
+An external trade faces a counterparty; only an intra-entity trade may
+have none.
+
+| expression                                                   |
+|--------------------------------------------------------------|
+| "counterparty_scope" = 'intra_entity' or "counterparty_id" is not null |
+
+** Indexes
+
+| name         | columns                   | unique | current_only | where_extra |
+|--------------+---------------------------+--------+--------------+-------------|
+| party        | tenant_id, party_id       | false  | false        |             |
+| counterparty | tenant_id, counterparty_id | false | false        |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_anchor
+:entity_plural_short:   trade_anchors
+:entity_singular_words: trade anchor
+:entity_plural_words:   trade anchors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ta
+:END:
+
+** Table display
+
+| column             | header             |
+|--------------------+--------------------|
+| id                 | Trade Id           |
+| trade_type         | Trade Type         |
+| counterparty_scope | Counterparty Scope |
+| booking_nature     | Booking Nature     |
+| entry_channel      | Entry Channel      |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — counterparty scope and booking nature.

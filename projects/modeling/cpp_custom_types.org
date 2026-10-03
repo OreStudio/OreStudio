@@ -59,6 +59,9 @@ carries clang-format's order whatever order the model lists them in.
 | =domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
 | =domain::scope= | ="ores.synthetic.api/domain/scope.hpp"= |
 | =ores::telemetry::domain::telemetry_source= | ="ores.telemetry.core/domain/telemetry_source.hpp"= |
+| =ores::trading::domain::booking_nature= | ="ores.trading.api/domain/booking_nature.hpp"= |
+| =ores::trading::domain::counterparty_scope= | ="ores.trading.api/domain/counterparty_scope.hpp"= |
+| =ores::trading::domain::entry_channel= | ="ores.trading.api/domain/entry_channel.hpp"= |
 | =ores::trading::domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
 | =ores::utility::decimal::decimal= | ="ores.utility/decimal/decimal.hpp"= |
 | =ores::workflow::messaging::step_log_level= | ="ores.workflow.api/messaging/workflow_vocabulary.hpp"= |

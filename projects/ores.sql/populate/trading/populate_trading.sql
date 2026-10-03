@@ -34,6 +34,9 @@
 \ir ./trading_party_role_types_populate.sql
 \ir ./trading_trade_id_types_populate.sql
 \ir ./trading_long_short_types_populate.sql
+\ir ./trading_entry_channel_types_populate.sql
+\ir ./trading_counterparty_scope_types_populate.sql
+\ir ./trading_booking_nature_types_populate.sql
 \ir ./trading_moment_types_populate.sql
 \ir ./trading_price_types_populate.sql
 \ir ./trading_amortization_types_populate.sql

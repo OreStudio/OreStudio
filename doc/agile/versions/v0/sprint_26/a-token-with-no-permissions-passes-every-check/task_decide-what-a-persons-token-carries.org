@@ -8,7 +8,7 @@
 #+filetags: :iam:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
 #+branch: feature/decide-what-a-persons-token-carries
-#+pr: 2548
+#+pr: 2549
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -84,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2549][#2549]] | [agile] Decide what a person's token carries |
 | [[https://github.com/OreStudio/OreStudio/pull/2548][#2548]] | [agile] Promote the token permission gap to a story |
 
 * Review

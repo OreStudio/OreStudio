@@ -19,8 +19,9 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] | The immutable anchor of a trade. |
 | [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][ores.trading.trade_booking]] | Where a trade is booked and the netting set it is filed in. |
 | [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][ores.trading.trade_state]] | A trade's lifecycle status. |
-| [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | External identifier (UTI, USI, internal) assigned to a trade. |
-| [[id:E031135C-5728-401B-BBD4-88B197B937B1][ores.trading.trade_party_role]] | Counterparty role assignment on a trade. |
+| [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | An identifier of a trade under one scheme (UTI, USI, Internal, ORE). |
+| [[id:E031135C-5728-401B-BBD4-88B197B937B1][ores.trading.trade_party_role]] | The role another party plays on a trade. |
+| [[id:EDEBBAAB-C045-4D67-957C-C7F18497A8E6][ores.trading.trade_additional_field]] | A field a trade carries that ORE Studio does not model. |
 | [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] | ORE instrument type code (e.g. Swap, FxForward, CapFloor, Swaption). |
 | [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][ores.trading.trade_id_type]] | Trade identifier type code (e.g. UTI, USI, Internal). |
 | [[id:D18832B9-0D51-4617-A789-AB33E14AA41A][ores.trading.party_role_type]] | FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker). |

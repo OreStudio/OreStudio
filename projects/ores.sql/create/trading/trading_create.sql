@@ -314,15 +314,15 @@
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql
 
--- Trade junction tables (depend on trades)
+-- Trade identifiers, party roles and additional fields (depend on the anchor)
 \ir ./trading_trade_identifiers_create.sql
 \ir ./trading_trade_identifiers_notify_trigger_create.sql
 
 \ir ./trading_trade_party_roles_create.sql
 \ir ./trading_trade_party_roles_notify_trigger_create.sql
 
--- ORE envelope view (depends on trades + party roles)
-\ir ./trading_ore_envelope_view_create.sql
+\ir ./trading_trade_additional_fields_create.sql
+\ir ./trading_trade_additional_fields_notify_trigger_create.sql
 
 -- Trade query functions (depend on trades table + refdata tables)
 \ir ./trading_trades_functions_create.sql

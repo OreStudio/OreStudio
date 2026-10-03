@@ -33,10 +33,10 @@
 export interface TradePartyRole {
     version: number;
     tenant_id: string;
-    id: string;
     trade_id: string;
-    counterparty_id: string;
     role: string;
+    party_id: string;
+    counterparty_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

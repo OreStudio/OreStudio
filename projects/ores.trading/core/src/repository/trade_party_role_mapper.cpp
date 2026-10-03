@@ -39,10 +39,10 @@ domain::trade_party_role trade_party_role_mapper::map(const trade_party_role_ent
     domain::trade_party_role r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.role = v.role.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
-    r.role = v.role;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -57,12 +57,12 @@ trade_party_role_entity trade_party_role_mapper::map(const domain::trade_party_r
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_party_role_entity r;
-    r.id = boost::uuids::to_string(v.id);
+    r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.role = v.role;
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
-    r.role = v.role;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

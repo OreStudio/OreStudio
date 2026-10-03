@@ -37,7 +37,6 @@ const std::string tags("[domain]");
 trade_identifier make_trade_identifier(const std::string& id_type, const std::string& id_value) {
     trade_identifier ti;
     ti.version = 1;
-    ti.id = boost::uuids::random_generator()();
     ti.trade_id = boost::uuids::random_generator()();
     ti.id_value = id_value;
     ti.id_type = id_type;
@@ -59,11 +58,9 @@ TEST_CASE("create_trade_identifier_with_valid_fields", tags) {
 
     trade_identifier sut;
     sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.id_value = "UTI-2026-001-ABCDEF";
     sut.id_type = "UTI";
-    sut.id_scheme = "urn:iso:std:iso:19312";
     sut.modified_by = "admin";
     sut.performed_by = "admin";
     sut.change_reason_code = "system.new";
@@ -72,7 +69,6 @@ TEST_CASE("create_trade_identifier_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(!sut.id.is_nil());
     CHECK(!sut.trade_id.is_nil());
     CHECK(sut.id_value == "UTI-2026-001-ABCDEF");
     CHECK(sut.id_type == "UTI");
@@ -85,12 +81,10 @@ TEST_CASE("create_trade_identifier_with_issuing_party", tags) {
 
     trade_identifier sut;
     sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.issuing_party_id = boost::uuids::random_generator()();
     sut.id_value = "USI-2026-999";
     sut.id_type = "USI";
-    sut.id_scheme = "CFTC";
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -108,7 +102,6 @@ TEST_CASE("trade_identifier_insertion_operator", tags) {
 
     trade_identifier sut;
     sut.version = 1;
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.id_value = "INT-12345";
     sut.id_type = "Internal";
@@ -132,7 +125,6 @@ TEST_CASE("create_trade_identifier_with_faker", tags) {
 
     trade_identifier sut;
     sut.version = faker::number::integer(1, 10);
-    sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
     sut.id_value =
         std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1000, 9999));
@@ -145,7 +137,7 @@ TEST_CASE("create_trade_identifier_with_faker", tags) {
     BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
     CHECK(sut.version >= 1);
-    CHECK(!sut.id.is_nil());
+    CHECK(!sut.trade_id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -159,7 +151,7 @@ TEST_CASE("create_multiple_random_trade_identifiers", tags) {
     for (const auto& [id_type, id_value] : ids) {
         auto sut = make_trade_identifier(id_type, id_value);
         BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
-        CHECK(!sut.id.is_nil());
+        CHECK(!sut.trade_id.is_nil());
         CHECK(sut.version == 1);
     }
 }
@@ -210,7 +202,6 @@ TEST_CASE("trade_identifier_table_with_faker_data", tags) {
     for (int i = 0; i < 5; ++i) {
         trade_identifier ti;
         ti.version = 1;
-        ti.id = boost::uuids::random_generator()();
         ti.trade_id = boost::uuids::random_generator()();
         ti.id_value = std::string(faker::word::noun()) + "-" + std::to_string(i);
         ti.id_type = std::string(faker::word::noun());

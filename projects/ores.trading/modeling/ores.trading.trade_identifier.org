@@ -7,67 +7,71 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: External identifier (UTI, USI, internal) assigned to a trade.
+#+brief: An identifier of a trade under one scheme (UTI, USI, Internal, ORE).
 #+entity_singular: trade_identifier
 #+entity_plural: trade_identifiers
 #+entity_title: Trade Identifier
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-10-03
 
-Junction entity assigning external identifiers to trades.
-Each trade can have multiple identifiers of different types.
-The issuing_party_id references either a party or counterparty.
+One identifier a trade is known by under one scheme: a UTI, a USI, the
+firm's internal reference, or the id an ORE document gave it. Each scheme
+is a [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] code, and a trade has at most one value per scheme.
+The firm's own id is the anchor's UUID, the trade id, and is not repeated
+here.
+
+The row is keyed by the trade and references the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a
+database foreign key. It copies the anchor's party, pinned to the anchor,
+because row-level security needs the party on every row. The issuer is
+the party or counterparty that issued the value, when it is known.
 
 * Flags
 :PROPERTIES:
-:schema:           public
-:product:          ores
-:component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
 :END:
 
 * Columns
 
-** id
+** trade_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :END:
 
-UUID uniquely identifying this trade identifier record.
+The trade this identifier belongs to.
 
-Surrogate key for the trade identifier record.
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
 
-** trade_id
+** id_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The scheme the value belongs to (e.g. UTI, USI, Internal, ORE).
+
+#+begin_src cpp :name generator
+std::string("Internal")
+#+end_src
+
+** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
 :END:
 
-Trade this identifier belongs to.
-
-Soft FK to ores_trading_trades_tbl.
+The trade's party, copied from the anchor.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
-#+end_src
-
-** issuing_party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
-:END:
-
-Party or counterparty that issued this identifier.
-
-Soft FK to parties or counterparties. Absent if issuer unknown.
-
-#+begin_src cpp :name generator
-std::nullopt
 #+end_src
 
 ** id_value
@@ -77,42 +81,24 @@ std::nullopt
 :nullable: false
 :END:
 
-The identifier value.
-
-e.g., UTI value, internal trade reference.
+The identifier value under the scheme.
 
 #+begin_src cpp :name generator
 std::string("ID-") + std::string(faker::string::alphanumeric(10))
 #+end_src
 
-** id_type
+** issuing_party_id
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Type of identifier (e.g. UTI, USI, Internal).
-
-Soft FK to ores_trading_trade_id_types_tbl.
-
-#+begin_src cpp :name generator
-std::string("Internal")
-#+end_src
-
-** id_scheme
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
 :END:
 
-Optional scheme qualifier for the identifier.
-
-e.g., the LEI namespace for UTI schemes.
+The party or counterparty that issued the value. Absent when the issuer
+is unknown.
 
 #+begin_src cpp :name generator
-std::string()
+std::nullopt
 #+end_src
 
 * SQL
@@ -124,9 +110,43 @@ std::string()
 
 ** Checks
 
-| expression |
-|---|
-| "id_type" in ('UTI', 'USI', 'Internal') |
+| expression       |
+|------------------|
+| "id_value" <> '' |
+
+** Pinned keys
+
+| name         | columns            | table                          | target_columns | error_message                                                     |
+|--------------+--------------------+--------------------------------+----------------+-------------------------------------------------------------------|
+| anchor_party | trade_id, party_id | ores_trading_trade_anchors_tbl | id, party_id   | Invalid trade_id: %. The identifier's party must be the trade's. |
+
+** Indexes
+
+| name  | columns                     | unique | current_only | where_extra |
+|-------+-----------------------------+--------+--------------+-------------|
+| value | tenant_id, id_type, id_value | false | true         |             |
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:    ores_trading_trade_anchors_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+** id_type
+:PROPERTIES:
+:table:             ores_trading_trade_id_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid id_type: %. No active trade id type found with this code.
+:END:
+
+The scheme catalogue is system reference data.
 
 * C++
 
@@ -162,9 +182,9 @@ std::string()
 
 | column      | header      |
 |-------------+-------------|
-| id_value    | ID Value    |
+| trade_id    | Trade Id    |
 | id_type     | ID Type     |
-| id_scheme   | Scheme      |
+| id_value    | ID Value    |
 | modified_by | Modified By |
 | version     | Version     |
 

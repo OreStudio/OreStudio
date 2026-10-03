@@ -39,16 +39,14 @@ domain::trade_identifier trade_identifier_mapper::map(const trade_identifier_ent
     domain::trade_identifier r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.id_type = v.id_type.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.id_value = v.id_value;
     r.issuing_party_id =
         v.issuing_party_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.issuing_party_id)) :
             std::nullopt;
-    r.id_value = v.id_value;
-    r.id_type = v.id_type;
-    r.id_scheme = v.id_scheme.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -63,17 +61,15 @@ trade_identifier_entity trade_identifier_mapper::map(const domain::trade_identif
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_identifier_entity r;
-    r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
-    r.version = v.version;
     r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.id_type = v.id_type;
+    r.tenant_id = v.tenant_id.to_string();
+    r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
+    r.id_value = v.id_value;
     r.issuing_party_id = v.issuing_party_id.has_value() ?
                              std::optional(boost::uuids::to_string(*v.issuing_party_id)) :
                              std::nullopt;
-    r.id_value = v.id_value;
-    r.id_type = v.id_type;
-    r.id_scheme = v.id_scheme.empty() ? std::nullopt : std::optional(v.id_scheme);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

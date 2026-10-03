@@ -119,23 +119,23 @@ public:
      * @param version The version to fetch.
      * @return The trade party role at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::trade_party_role> get_role_at_version(const boost::uuids::uuid& id,
+    std::optional<domain::trade_party_role> get_role_at_version(const std::string& trade_id,
+                                                                const std::string& role,
                                                                 std::uint32_t version);
 
     /**
      * @brief Retrieves a single trade party role by its primary key.
      *
-     * The storage key is a uuid, so the signature says which key is meant and
-     * the human-readable key cannot be passed here by mistake.
-     *
      * @return The trade party role if found, std::nullopt otherwise.
      */
-    std::optional<domain::trade_party_role> get_role(const boost::uuids::uuid& id);
+    std::optional<domain::trade_party_role> get_role(const std::string& trade_id,
+                                                     const std::string& role);
 
     /**
      * @brief Retrieves a batch of trade party roles by primary key.
      */
-    std::vector<domain::trade_party_role> get_roles(const std::vector<std::string>& ids);
+    std::vector<domain::trade_party_role> get_roles(const std::vector<std::string>& trade_ids,
+                                                    const std::vector<std::string>& roles);
 
     /**
      * @brief Saves a trade party role (creates or updates).
@@ -158,19 +158,21 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_role(const boost::uuids::uuid& id);
+    void delete_role(const std::string& trade_id, const std::string& role);
 
     /**
      * @brief Deletes trade party roles by their primary keys.
      */
-    void delete_roles(const std::vector<std::string>& ids);
+    void delete_roles(const std::vector<std::string>& trade_ids,
+                      const std::vector<std::string>& roles);
 
     /**
      * @brief Retrieves all historical versions of a trade party role.
      *
      * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::trade_party_role> get_role_history(const std::string& id);
+    std::vector<domain::trade_party_role> get_role_history(const std::string& trade_id,
+                                                           const std::string& role);
 
 private:
     context ctx_;

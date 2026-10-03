@@ -93,6 +93,7 @@
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/swap_leg_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_additional_field_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_anchor_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_booking_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_envelope_additional_field_event_registrar.hpp"
@@ -155,6 +156,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, event_bus, nats);
     auto trade_anchor_sub =
         ores::trading::service::messaging::register_trade_anchor_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_additional_field_sub =
+        ores::trading::service::messaging::register_trade_additional_field_event_mapping(
             event_source, event_bus, nats);
     auto trade_booking_sub =
         ores::trading::service::messaging::register_trade_booking_event_mapping(

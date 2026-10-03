@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T21:18:34.792036Z
+' Generated: 2026-10-03T22:20:13.710343Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10387,19 +10387,19 @@ package "trading" #E8F5E9 {
     Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee'.
     end note
 
-    entity ores_trading_party_roles_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_party_roles_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * trade_id : uuid <<PK, FK>>
+        * role : text <<PK>>
+        * valid_from : timestamptz <<PK>>
         --
         * version : integer
-        * trade_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
         * counterparty_id : uuid <<FK>>
-        * role : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -10408,9 +10408,14 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Trade Party Role Table
-    Associates a counterparty with a specific role on a trade.
-    The internal party (the house) is derived from book_id via books.party_id.
-    Supports multiple counterparties per trade in different roles.
+    The role another party plays on a trade: calculation agent, executing
+    broker and the like, one row per role. The firm's party and the
+    counterparty the firm faces are not roles here: both are fixed for the
+    trade's life and sit on the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], so a row naming the
+    counterparty role is refused.
+    The row is keyed by the trade and references the anchor with a database
+    foreign key. It copies the anchor's party, pinned to the anchor, because
+    row-level security needs the party on every row.
     end note
 
     entity ores_trading_payoff_types_tbl <<temporal>> #C6F0D8 {
@@ -10697,6 +10702,41 @@ package "trading" #E8F5E9 {
     Bermudan, or American.
     end note
 
+    entity ores_trading_trade_additional_fields_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * value : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_additional_fields_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Additional Field Table
+    One field a trade carries in a document's own vocabulary: ORE's
+    AdditionalFields is open content, any element name with any content,
+    and it is where a document states what ORE Studio does not model. The row
+    keeps the element's name and its text, so nothing is decoded and both
+    round trip. The order is the document's order, and the ordinal preserves
+    it.
+    The row is keyed by the trade and the ordinal, and references the
+    [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a database foreign key. It copies the anchor's party,
+    pinned to the anchor, because row-level security needs the party on
+    every row. It replaces the envelope's additional field table, which the
+    ORE import moves off in its own task.
+    end note
+
     entity ores_trading_trade_anchors_tbl  #F7E5FF {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -10898,15 +10938,13 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_trade_identifiers_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * trade_id : uuid <<PK, FK>>
+        * id_type : text <<PK>>
         --
         * version : integer
-        * trade_id : uuid <<FK>>
-          issuing_party_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
         * id_value : text
-        * id_type : text
-          id_scheme : text
-        * workspace_id : uuid <<FK>>
+          issuing_party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10920,9 +10958,15 @@ package "trading" #E8F5E9 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Trade Identifier Table
-    Junction entity assigning external identifiers to trades.
-    Each trade can have multiple identifiers of different types.
-    The issuing_party_id references either a party or counterparty.
+    One identifier a trade is known by under one scheme: a UTI, a USI, the
+    firm's internal reference, or the id an ORE document gave it. Each scheme
+    is a [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] code, and a trade has at most one value per scheme.
+    The firm's own id is the anchor's UUID, the trade id, and is not repeated
+    here.
+    The row is keyed by the trade and references the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a
+    database foreign key. It copies the anchor's party, pinned to the anchor,
+    because row-level security needs the party on every row. The issuer is
+    the party or counterparty that issued the value, when it is known.
     end note
 
     entity ores_trading_trade_states_tbl <<junction>> #ECECEC {

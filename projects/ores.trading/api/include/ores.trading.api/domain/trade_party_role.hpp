@@ -34,11 +34,17 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Counterparty role assignment on a trade.
+ * @brief The role another party plays on a trade.
  *
- * Associates a counterparty with a specific role on a trade.
- * The internal party (the house) is derived from book_id via books.party_id.
- * Supports multiple counterparties per trade in different roles.
+ * The role another party plays on a trade: calculation agent, executing
+ * broker and the like, one row per role. The firm's party and the
+ * counterparty the firm faces are not roles here: both are fixed for the
+ * trade's life and sit on the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], so a row
+ * naming the counterparty role is refused.
+ *
+ * The row is keyed by the trade and references the anchor with a database
+ * foreign key. It copies the anchor's party, pinned to the anchor, because
+ * row-level security needs the party on every row.
  */
 struct trade_party_role final {
     /**
@@ -52,32 +58,24 @@ struct trade_party_role final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID uniquely identifying this party role assignment.
-     *
-     * Surrogate key for the trade party role record.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief Trade this role assignment belongs to.
-     *
-     * Soft FK to ores_trading_trades_tbl.
+     * @brief The trade this role belongs to.
      */
     boost::uuids::uuid trade_id;
 
     /**
-     * @brief Counterparty fulfilling the role.
-     *
-     * Soft FK to ores_refdata_counterparties_tbl.
-     */
-    boost::uuids::uuid counterparty_id;
-
-    /**
-     * @brief Role the counterparty plays on this trade.
-     *
-     * Soft FK to ores_trading_party_role_types_tbl.
+     * @brief The role the other party plays (a party role type code).
      */
     std::string role;
+
+    /**
+     * @brief The trade's party, copied from the anchor.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief The counterparty playing the role.
+     */
+    boost::uuids::uuid counterparty_id;
 
     /**
      * @brief Username of the person who last modified this trade party role.

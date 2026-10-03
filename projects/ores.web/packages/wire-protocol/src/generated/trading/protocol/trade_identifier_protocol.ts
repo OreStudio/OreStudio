@@ -29,16 +29,15 @@ import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface TradeIdentifierKey {
-    id: string;
+    trade_id: string;
+    id_type: string;
 }
 
 export interface TradeIdentifierWrite {
-    id: string;
     trade_id: string;
-    issuing_party_id: string | null;
-    id_value: string;
     id_type: string;
-    id_scheme: string;
+    id_value: string;
+    issuing_party_id: string | null;
 }
 
 export interface TradeIdentifierChange {

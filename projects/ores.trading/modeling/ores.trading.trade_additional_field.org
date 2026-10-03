@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: EDEBBAAB-C045-4D67-957C-C7F18497A8E6
+:END:
+#+title: ores.trading.trade_additional_field
+#+description: Codegen entity model for the trading trade_additional_field table: a field a trade carries in a document's own vocabulary, kept as name and text in the document's order.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: A field a trade carries that ORE Studio does not model.
+#+entity_singular: trade_additional_field
+#+entity_plural: trade_additional_fields
+#+entity_title: Trade Additional Field
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One field a trade carries in a document's own vocabulary: ORE's
+=AdditionalFields= is open content, any element name with any content,
+and it is where a document states what ORE Studio does not model. The row
+keeps the element's name and its text, so nothing is decoded and both
+round trip. The order is the document's order, and the ordinal preserves
+it.
+
+The row is keyed by the trade and the ordinal, and references the
+[[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a database foreign key. It copies the anchor's party,
+pinned to the anchor, because row-level security needs the party on
+every row. It replaces the envelope's additional field table, which the
+ORE import moves off in its own task.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade this field belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this field among the trade's additional fields, from one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The trade's party, copied from the anchor.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:             text
+:cpp_type:         std::string
+:nullable:         false
+:END:
+
+Element name of the field, as the document spelled it.
+
+#+begin_src cpp :name generator
+std::string("MyField")
+#+end_src
+
+** value
+:PROPERTIES:
+:type:             text
+:cpp_type:         std::string
+:nullable:         false
+:END:
+
+Text content of the field, as the document spelled it.
+
+#+begin_src cpp :name generator
+std::string("MyValue")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_additional_fields_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+** Pinned keys
+
+| name         | columns            | table                          | target_columns | error_message                                                |
+|--------------+--------------------+--------------------------------+----------------+--------------------------------------------------------------|
+| anchor_party | trade_id, party_id | ores_trading_trade_anchors_tbl | id, party_id   | Invalid trade_id: %. The field's party must be the trade's. |
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:    ores_trading_trade_anchors_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_additional_field
+:entity_plural_short:   trade_additional_fields
+:entity_singular_words: trade additional field
+:entity_plural_words:   trade additional fields
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: field
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| name            | Name        |
+| value           | Value       |
+| modified_by     | Modified By |
+| version         | Version     |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] — the anchor this field belongs to.

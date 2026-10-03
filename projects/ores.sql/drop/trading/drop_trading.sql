@@ -23,10 +23,10 @@
 -- =============================================================================
 -- Drop all trade tables in reverse dependency order.
 
--- ORE trade view (drop first as it depends on junction tables)
-\ir ./trading_ore_envelope_view_drop.sql
+-- Trade identifiers, party roles and additional fields (depend on the anchor)
+\ir ./trading_trade_additional_fields_notify_trigger_drop.sql
+\ir ./trading_trade_additional_fields_drop.sql
 
--- Trade junction tables (depend on trades, drop after view)
 \ir ./trading_trade_party_roles_notify_trigger_drop.sql
 \ir ./trading_trade_party_roles_drop.sql
 

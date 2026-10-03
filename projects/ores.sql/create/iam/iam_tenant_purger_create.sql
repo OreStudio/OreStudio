@@ -161,9 +161,17 @@ begin
     -- Variability: System settings
     delete from ores_variability_system_settings_tbl where tenant_id = p_tenant_id;
 
-    -- Trading: trade anchors. An anchor is immutable, so the purge turns on
-    -- the purge signal for this transaction before it deletes them. Tables
-    -- that reference an anchor with a foreign key are deleted before it.
+    -- Trading: trade components, then trade anchors. A component references
+    -- its anchor with a foreign key, so every version of it must be gone
+    -- first: the soft-delete rule would only close the current one, so it is
+    -- disabled around the delete. An anchor is immutable, so the purge turns
+    -- on the purge signal for this transaction before it deletes them.
+    alter table ores_trading_trade_states_tbl disable rule ores_trading_trade_states_delete_rule;
+    delete from ores_trading_trade_states_tbl where tenant_id = p_tenant_id;
+    alter table ores_trading_trade_states_tbl enable rule ores_trading_trade_states_delete_rule;
+    alter table ores_trading_trade_bookings_tbl disable rule ores_trading_trade_bookings_delete_rule;
+    delete from ores_trading_trade_bookings_tbl where tenant_id = p_tenant_id;
+    alter table ores_trading_trade_bookings_tbl enable rule ores_trading_trade_bookings_delete_rule;
     perform ores_utility_allow_immutable_purge_fn();
     delete from ores_trading_trade_anchors_tbl where tenant_id = p_tenant_id;
     perform set_config('ores.utility.allow_immutable_purge', 'off', true);

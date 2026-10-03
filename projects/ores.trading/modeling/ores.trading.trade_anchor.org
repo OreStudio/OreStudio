@@ -225,10 +225,16 @@ have none.
 
 ** Indexes
 
-| name         | columns                   | unique | current_only | where_extra |
-|--------------+---------------------------+--------+--------------+-------------|
-| party        | tenant_id, party_id       | false  | false        |             |
-| counterparty | tenant_id, counterparty_id | false | false        |             |
+The two unique keys are what a component pins its copied party and
+counterparty to: a database pin can only name a key, and the primary key
+=(tenant_id, id)= does not carry either column.
+
+| name               | columns                        | unique | current_only | where_extra |
+|--------------------+--------------------------------+--------+--------------+-------------|
+| party              | tenant_id, party_id            | false  | false        |             |
+| counterparty       | tenant_id, counterparty_id     | false  | false        |             |
+| id_party           | tenant_id, id, party_id        | true   | false        |             |
+| id_counterparty    | tenant_id, id, counterparty_id | true   | false        |             |
 
 * C++
 

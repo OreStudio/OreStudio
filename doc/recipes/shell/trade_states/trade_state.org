@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 6E6BC1D6-49C9-51CD-B678-A509660C6EEB
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the trade_states commands from the shell?
+#+description: Every command the trade_states submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_states:
+
+This file documents the trade_states resource at the shell, one section per command. Every command is a subcommand of =trade_states=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: DE58D3B9-05C1-5CAC-A60F-70540AFB19CF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_states.list=.
+
+#+name: trade_states-list
+#+begin_src ores-shell :tangle trade_states-list.ores :exports none
+trade_states list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: DBDD2581-7B68-5055-B1DE-19E42E349BA0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states get <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.trade_states.get=.
+
+#+name: trade_states-get
+#+begin_src ores-shell :tangle trade_states-get.ores :exports none
+trade_states get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 07497EB4-81A9-5966-AD03-CBC5173778FD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states get-many <trade_id>
+#+end_example
+
+It is addressed at =trading.v1.trade_states.get_many=.
+
+#+name: trade_states-get-many
+#+begin_src ores-shell :tangle trade_states-get-many.ores :exports none
+trade_states get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 43B619E1-92D6-5D83-87DB-96C1F3720648
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states add <activity_type_code> <status_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_states.put=.
+
+#+name: trade_states-add
+#+begin_src ores-shell :tangle trade_states-add.ores :exports none
+trade_states add __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F6F07121-0F35-5296-AA99-7D9537ECEAF7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states set <trade_id> <activity_type_code> <status_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_states.put=.
+
+#+name: trade_states-set
+#+begin_src ores-shell :tangle trade_states-set.ores :exports none
+trade_states set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: EF0A1C40-C37B-5205-B0CE-E467B6F55811
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states put-many --count <n> <trade_id> <activity_type_code> <status_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_states.put_many=.
+
+#+name: trade_states-put-many
+#+begin_src ores-shell :tangle trade_states-put-many.ores :exports none
+trade_states put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 92150C75-8ACB-5E0F-A8C9-480DD13FCCF7
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states delete <trade_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.trade_states.delete=.
+
+#+name: trade_states-delete
+#+begin_src ores-shell :tangle trade_states-delete.ores :exports none
+trade_states delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 0C9140FF-8EE0-5B55-AC2C-53C13453DBA5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states delete-many <trade_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.trade_states.delete_many=.
+
+#+name: trade_states-delete-many
+#+begin_src ores-shell :tangle trade_states-delete-many.ores :exports none
+trade_states delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: DB20DB12-42C4-54D3-A37D-654F8BDE72D8
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states versions <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.trade_states_versions.list=.
+
+#+name: trade_states-versions
+#+begin_src ores-shell :tangle trade_states-versions.ores :exports none
+trade_states versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1768B917-E799-5F96-84E2-2BABCD2B0BD5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_states version <trade_id> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.trade_states_versions.get=.
+
+#+name: trade_states-version
+#+begin_src ores-shell :tangle trade_states-version.ores :exports none
+trade_states version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

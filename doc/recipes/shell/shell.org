@@ -1348,3 +1348,11 @@ tangled into the runnable script library
 * Curve Global Reports
 
 - [[id:5EA45D27-11CE-5737-AA64-B553CBD8D0A2][How do I run the curve_global_reports commands from the shell?]]
+
+* Trade Bookings
+
+- [[id:77755A32-AB0A-5A90-9E9E-BFCE2E8A242B][How do I run the trade_bookings commands from the shell?]]
+
+* Trade States
+
+- [[id:6E6BC1D6-49C9-51CD-B678-A509660C6EEB][How do I run the trade_states commands from the shell?]]

@@ -192,6 +192,13 @@
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql
 
+-- Trade components (drop before the anchor they reference)
+\ir ./trading_trade_states_notify_trigger_drop.sql
+\ir ./trading_trade_states_drop.sql
+\ir ./trading_trade_bookings_notify_trigger_drop.sql
+\ir ./trading_trade_bookings_drop.sql
+\ir ./trading_trade_components_functions_drop.sql
+
 -- Trade anchors (drop before the classification lookups they reference)
 \ir ./trading_trade_anchors_notify_trigger_drop.sql
 \ir ./trading_trade_anchors_drop.sql

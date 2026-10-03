@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: D5F645E6-67B5-45EF-AEE7-FF929150C5A4
+:END:
+#+title: Task: Add the trade booking and state components
+#+description: Add trade_booking and trade_state beside the wide trade: temporal components keyed by the anchor through a database foreign key, the netting set pinned to the anchor's party and counterparty, and the virtual-book rule.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trade-booking-and-state
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A trade's booking and lifecycle state live in their own temporal tables keyed by the anchor, the netting set cannot name another counterparty's or entity's set, and a virtual book holds only drafts, tests and hypotheticals.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- trade_booking (book, netting set, trade date, execution time) and trade_state (status) are temporal and reference the anchor with an enforced foreign key.
+- A booking's netting set is pinned to the anchor's party and counterparty.
+- A booking names a virtual book only while its trade is a pre-agreement draft, a test or a hypothetical; going live needs a real book in the same write.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- =trade_booking= and =trade_state=: =uuid-identified-lookup= profile, keyed by
+  =trade_id=, temporal, with an enforced foreign key to the anchor.
+- Both copy the anchor's party, pinned to the anchor, because row-level
+  security reads it. The booking also copies the counterparty, pinned the
+  same way, so the netting set can be pinned to the trade's counterparty and
+  party. The book is pinned to the party. The anchor gains two unique keys,
+  =(tenant_id, id, party_id)= and =(tenant_id, id, counterparty_id)=, for the
+  database pins.
+- The state reuses the wide trade's guarded transition, keyed by the trade id.
+- The virtual-book rule is checked by whichever row is written second: the
+  booking reads the current state, the state reads the current booking. An
+  actual trade goes live by writing its real booking before the state.
+- The booking operation (anchor, booking and state in one write, with the
+  duplicate trade id as a domain error) moves to its own task: it is the
+  first consumer of the three tables and needs a service operation of its
+  own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: a netting set read from ORE has no counterparty or party, so the pin refuses it for a booking that names a counterparty | =ores.trading.trade_booking.org= | Accept as follow-up | The ORE import task fills the set's parties from the trade it imports; recorded in the story's Decisions. |
+| 2 | Local review: the purger's plain deletes of refdata close rows rather than remove them | =iam_tenant_purger_create.sql= | Decline | Predates this task; the new component deletes bypass the rule because the anchor's foreign key needs every version gone. |
+| 3 | ctest: the booking write test seeded a book of another party | generated test | Accept | The book is seeded under its own foreign key, which replaces the derived seed. |
+
+* Result
+
+- =trade_booking= (book, netting set, trade date, execution time) and
+  =trade_state= (activity, status) are temporal components keyed by the trade
+  id, with an enforced foreign key to the anchor.
+- Both copy the anchor's party; the booking also copies its counterparty.
+  Database pins hold the copies to the anchor; trigger pins hold the book to
+  the party and the netting set to the counterparty and party.
+- The state takes its status through the guarded =trade_status= transition.
+- A virtual book holds an actual trade only while it is a draft; whichever
+  of the booking and the state is written second checks the other.
+- The tenant purger removes every version of both components before it
+  deletes the anchors.
+- The booking operation moved to its own task, "Book a trade in one write".
+- Verified: build clean (=linux-clang-debug-make=); ctest 89/90 on the full
+  run, the one failure fixed and =ores.trading.*= 3/3 and =ores.shell.*= 16/16
+  on the rerun; pgTAP =trading_trade_components_test.sql= 19/19, with the
+  anchor and tenant tests still passing; codegen pytest 1120; drift shows only
+  the known =trade_service.cpp= diff; sweep, paste blocks, reachability,
+  permissions, populate references, CMake, inventory, ER strict, SQL hygiene,
+  shell scripts, lint, structure notes, misspell and site page all clean.

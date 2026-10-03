@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T19:13:22.659722Z
+' Generated: 2026-10-03T19:47:50.595356Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10728,6 +10728,45 @@ package "trading" #E8F5E9 {
     no audit tail: the audit record of the act that booked it carries that.
     end note
 
+    entity ores_trading_trade_bookings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+          counterparty_id : uuid <<FK>>
+        * book_id : uuid <<FK>>
+          netting_set_id : uuid <<FK>>
+        * trade_date : date
+          execution_timestamp : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_bookings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Booking Table
+    A trade's booking: the book that holds it, the netting set it is filed
+    in, the date it was agreed and the time it was executed. It is a
+    component of the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], keyed by the trade id, and versions on
+    its own timeline: a book move or a re-papering into another netting set
+    cuts a new version of the booking and leaves the anchor alone.
+    The booking copies the anchor's party and counterparty. The copies are
+    pinned to the anchor, so they cannot drift, and they are what the other
+    pins and row-level security read: the book must belong to the trade's
+    party, and the netting set to its counterparty and party.
+    A booking names a virtual book, one inside a sandbox, only while its
+    trade is a pre-agreement draft, a test or a hypothetical. An actual trade
+    going live needs a real book: the booking is written before the state
+    that takes the trade live, in the same transaction.
+    end note
+
     entity ores_trading_trade_envelope_additional_fields_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -10884,6 +10923,41 @@ package "trading" #E8F5E9 {
     Junction entity assigning external identifiers to trades.
     Each trade can have multiple identifiers of different types.
     The issuing_party_id references either a party or counterparty.
+    end note
+
+    entity ores_trading_trade_states_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * activity_type_code : text
+        * status_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_states_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade State Table
+    A trade's lifecycle state: where it stands in the trade_status machine
+    (draft, live, expired or cancelled). It is a component of the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade
+    anchor]], keyed by the trade id, and versions on its own timeline: a
+    lifecycle event cuts a new version of the state and leaves the booking
+    alone.
+    The status is not the caller's to supply. The activity names the event,
+    reference data maps the event to a transition, and the insert trigger
+    takes the transition only from the state it starts from. An activity that
+    maps to no transition versions the state and leaves the status where it
+    was.
+    The state copies the anchor's party, pinned to the anchor, because
+    row-level security needs the party on every row.
     end note
 
     entity ores_trading_trade_types_tbl <<temporal>> #C6F0D8 {

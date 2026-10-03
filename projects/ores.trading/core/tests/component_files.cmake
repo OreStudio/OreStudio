@@ -81,7 +81,9 @@ set(files
     "service_trade_envelope_reader_tests.cpp"
     "settlement_type_eventing_integration_tests.cpp"
     "swap_leg_eventing_integration_tests.cpp"
+    "trade_booking_eventing_integration_tests.cpp"
     "trade_eventing_integration_tests.cpp"
     "trade_id_type_eventing_integration_tests.cpp"
+    "trade_state_eventing_integration_tests.cpp"
     "trade_type_eventing_integration_tests.cpp"
 )

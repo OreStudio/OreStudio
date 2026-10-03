@@ -1,0 +1,294 @@
+:PROPERTIES:
+:ID: 40B71C6F-6E04-4679-BF7E-A2CE936C2515
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.trade_booking
+#+description: Codegen entity model for the trading trade_booking table: where a trade is booked, the netting set it is filed in, and when it was agreed and executed.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Where a trade is booked and the netting set it is filed in.
+#+entity_singular: trade_booking
+#+entity_plural: trade_bookings
+#+entity_title: Trade Booking
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A trade's booking: the book that holds it, the netting set it is filed
+in, the date it was agreed and the time it was executed. It is a
+component of the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], keyed by the trade id, and versions on
+its own timeline: a book move or a re-papering into another netting set
+cuts a new version of the booking and leaves the anchor alone.
+
+The booking copies the anchor's party and counterparty. The copies are
+pinned to the anchor, so they cannot drift, and they are what the other
+pins and row-level security read: the book must belong to the trade's
+party, and the netting set to its counterparty and party.
+
+A booking names a virtual book, one inside a sandbox, only while its
+trade is a pre-agreement draft, a test or a hypothetical. An actual trade
+going live needs a real book: the booking is written before the state
+that takes the trade live, in the same transaction.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade this booking belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The trade's party, copied from the anchor.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The trade's counterparty, copied from the anchor. Absent on an
+intra-entity trade.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** book_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The book that holds the trade.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** netting_set_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The netting set the trade is filed in.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** trade_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+The date the trade was agreed.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2025}/1/15}
+#+end_src
+
+** execution_timestamp
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The time the trade was executed.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_bookings_tbl
+:END:
+
+** Pinned keys
+
+| name                | columns                                   | table                          | target_columns                | error_message                                                                    |
+|---------------------+-------------------------------------------+--------------------------------+-------------------------------+----------------------------------------------------------------------------------|
+| anchor_party        | trade_id, party_id                        | ores_trading_trade_anchors_tbl | id, party_id                  | Invalid trade_id: %. The booking's party must be the trade's.                    |
+| anchor_counterparty | trade_id, counterparty_id                 | ores_trading_trade_anchors_tbl | id, counterparty_id           | Invalid trade_id: %. The booking's counterparty must be the trade's.             |
+| book_party          | book_id, party_id                         | ores_refdata_books_tbl         | id, party_id                  | Invalid book_id: %. The book must belong to the trade's party.                   |
+| netting_set         | netting_set_id, counterparty_id, party_id | ores_refdata_netting_sets_tbl  | id, counterparty_id, party_id | Invalid netting_set_id: %. The set must be the trade's counterparty's and party's. |
+
+** Virtual books
+
+A virtual book holds no position of the firm, so an actual trade may sit
+in one only while it is a draft. The check reads the trade's current
+state; a booking written before any state is allowed, because the state
+that follows checks the booking in turn.
+
+#+begin_src sql :name body :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    if ores_trading_book_is_virtual_fn(NEW.tenant_id, NEW.book_id)
+       and not ores_trading_trade_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id) then
+        raise exception 'Invalid book_id: %. A virtual book holds only drafts, tests and hypotheticals.',
+            NEW.book_id
+            using errcode = '23514';
+    end if;
+#+end_src
+
+** Indexes
+
+| name        | columns                   | unique | current_only | where_extra |
+|-------------+---------------------------+--------+--------------+-------------|
+| book        | tenant_id, book_id        | false  | true         |             |
+| netting_set | tenant_id, netting_set_id | false  | true         |             |
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trade_anchors_tbl
+:enforce:       true
+:nullable:      false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+
+        v.trade_id = anchor.id;
+        v.party_id = anchor.party_id;
+        v.counterparty_id = std::nullopt;
+    }
+#+end_src
+
+** book_id
+:PROPERTIES:
+:table:         ores_refdata_books_tbl
+:nullable:      false
+:error_message: Invalid book_id: %. Book must exist for tenant.
+:END:
+
+The book. Temporal, so a trigger check. The seed books into a book of the
+session party, which the book pin requires.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.refdata.api/generators/book_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/portfolio_generator.hpp"
+#include "ores.refdata.core/repository/book_repository.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/portfolio_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        namespace gen = ores::refdata::generators;
+        namespace repo = ores::refdata::repository;
+
+        auto currency = gen::generate_synthetic_currency(ctx);
+        repo::currency_repository().write(party_ctx, {currency});
+
+        auto portfolio = gen::generate_synthetic_portfolio(ctx);
+        portfolio.party_id = *party_ctx.party_id();
+        portfolio.change_reason_code = "system.test";
+        repo::portfolio_repository().write(party_ctx, portfolio);
+
+        auto book = gen::generate_synthetic_book(ctx);
+        book.party_id = *party_ctx.party_id();
+        book.parent_portfolio_id = portfolio.id;
+        book.functional_currency = currency.iso_code;
+        book.change_reason_code = "system.test";
+        repo::book_repository().write(party_ctx, book);
+
+        v.book_id = book.id;
+    }
+#+end_src
+
+** netting_set_id
+:PROPERTIES:
+:table:         ores_refdata_netting_sets_tbl
+:nullable:      true
+:error_message: Invalid netting_set_id: %. No active netting set found with this id.
+:END:
+
+The netting set. Temporal, so a trigger check.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_booking
+:entity_plural_short:   trade_bookings
+:entity_singular_words: trade booking
+:entity_plural_words:   trade bookings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tb
+:END:
+
+** Table display
+
+| column     | header     |
+|------------+------------|
+| trade_id   | Trade Id   |
+| book_id    | Book       |
+| trade_date | Trade Date |
+| version    | Version    |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] — the anchor this booking belongs to.

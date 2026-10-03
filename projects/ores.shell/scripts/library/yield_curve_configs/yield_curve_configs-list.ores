@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/yield_curve_configs/yield_curve_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+yield_curve_configs list --limit 1

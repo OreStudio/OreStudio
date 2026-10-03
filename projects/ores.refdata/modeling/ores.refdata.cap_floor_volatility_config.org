@@ -1,0 +1,601 @@
+:PROPERTIES:
+:ID: D9D86394-EF11-468C-AE45-A4127F79CAB9
+:END:
+#+title: ores.refdata.cap_floor_volatility_config
+#+description: Codegen entity model for the refdata =cap_floor_volatility_config= table. The settings of one ORE cap and floor volatility.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE cap and floor volatility entry.
+#+entity_singular: cap_floor_volatility_config
+#+entity_plural: cap_floor_volatility_configs
+#+entity_title: Cap Floor Volatility Config
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =CapFloorVolatility= entry of a =curveconfig.xml=, one row
+per =curve_definition= in the =CapFloorVolatilities= section: the cap and floor
+surface's tenors and strikes, the index and discount curve it is stripped with,
+and how it interpolates. Its =Report= is a row of =curve_report_configuration=,
+its =BootstrapConfig= a row of =curve_bootstrap_config= and its
+=ParametricSmileConfiguration= a row of =curve_parametric_smile=.
+
+A =ProxyConfig= builds the surface from another one; it is one per entry, so
+its fields are the =proxy_= columns, and =has_proxy_config= says whether the
+entry wrote it. The schema allows both =UseEffeciveVolatility=, a misspelling
+kept for old documents, and =UseEffectiveVolatility=; each has its own column so
+either round trips.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** volatility_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the input volatility is normal, lognormal or shifted lognormal.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** output_volatility_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The volatility type the surface is converted to.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** model_shift
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The shift of the model.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** output_shift
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The shift of the output volatility.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface extrapolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolation_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_atm
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether ATM quotes are included, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The day counter of the surface, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The surface's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The business day convention of the surface's dates.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The cap and floor tenors, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strikes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The strikes, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** optional_quotes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether missing quotes are allowed, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** ibor_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The IBOR index the caps and floors fix against.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index the caps and floors fix against, the newer form of =IborIndex=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** rate_computation_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rate computation period of an overnight index cap.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** on_cap_settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The settlement days of an overnight index cap.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** discount_curve
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The curve the caps and floors are discounted on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** atm_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The ATM tenors, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of settlement days.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** interpolate_on
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface interpolates on term or optionlet volatilities.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates in time.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates in strike.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** input_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the quotes are term or optionlet volatilities.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** quote_includes_index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the quote names include the index name, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** flat_first_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the first period is flat, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_effecive_volatility
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The schema's misspelt =UseEffeciveVolatility= element, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** use_effective_volatility
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether effective volatilities are used, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_proxy_config
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the entry writes a =ProxyConfig= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** proxy_source_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The cap and floor volatility a proxy surface is built from.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_source_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_source_rate_computation_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rate computation period of the proxy's source.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_target_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The index of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_target_rate_computation_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rate computation period of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_target_on_cap_settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The overnight cap settlement days of the proxy's target.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** proxy_scaling_factor
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The factor the proxy's volatilities are scaled by.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cap_floor_volatility_configs_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cap_floor_volatility_config
+:entity_plural_short:   cap_floor_volatility_configs
+:entity_singular_words: cap floor volatility config
+:entity_plural_words:   cap floor volatility configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cfv
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

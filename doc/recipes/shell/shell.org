@@ -1237,29 +1237,9 @@ tangled into the runnable script library
 
 - [[id:7145522E-15CB-5CEC-A5BB-C119A5569D4D][How do I run the curve_segment_curves commands from the shell?]]
 
-* Yield Curves
-
-- [[id:075A0A10-FFA0-560D-96E6-085B755714B9][How do I run the yield_curves commands from the shell?]]
-
 * Calendar Names
 
 - [[id:58362D85-3BC7-5309-A91C-811E7C6B7E3F][How do I run the calendar_names commands from the shell?]]
-
-* Curve Securities
-
-- [[id:50474A63-FCC6-575B-A7D4-76CA92FC3778][How do I run the curve_securities commands from the shell?]]
-
-* Equity Curves
-
-- [[id:EE615A53-A85D-54A8-8E40-3762D4AE0186][How do I run the equity_curves commands from the shell?]]
-
-* Intraday Power Curves
-
-- [[id:FD0054AF-F29F-5C8A-8C04-3F78AE74F65F][How do I run the intraday_power_curves commands from the shell?]]
-
-* Inflation Curves
-
-- [[id:E20E118B-EF21-5FC0-A390-F856D5C5005A][How do I run the inflation_curves commands from the shell?]]
 
 * Inflation Seasonality Factors
 
@@ -1269,41 +1249,13 @@ tangled into the runnable script library
 
 - [[id:D1801F72-0CCA-5248-9428-26329B6B88B3][How do I run the default_curve_configurations commands from the shell?]]
 
-* Default Curves
-
-- [[id:6C38EA7F-1EA6-58DD-B8DD-104F79921131][How do I run the default_curves commands from the shell?]]
-
-* Commodity Curves
-
-- [[id:0B639743-18A1-5347-94C3-EBD27AFB32F4][How do I run the commodity_curves commands from the shell?]]
-
 * Commodity Price Segments
 
 - [[id:FBFE686D-63A8-5138-ADD1-997F0C37024A][How do I run the commodity_price_segments commands from the shell?]]
 
-* Base Correlations
-
-- [[id:67BB4D29-FC85-5442-BD68-2C706628C607][How do I run the base_correlations commands from the shell?]]
-
-* Curve Correlations
-
-- [[id:33E8AE3D-44FA-5CCF-B6EA-E3F8E6548EF0][How do I run the curve_correlations commands from the shell?]]
-
 * Curve Report Configurations
 
 - [[id:9971E745-EC2C-56DF-B416-C298B5AA5330][How do I run the curve_report_configurations commands from the shell?]]
-
-* Fx Volatilities
-
-- [[id:BFC9D5EC-8A05-5B3F-8B37-2C590C45F5FD][How do I run the fx_volatilities commands from the shell?]]
-
-* Yield Volatilities
-
-- [[id:B41CF7F7-C607-5141-9E55-3905AFB64B83][How do I run the yield_volatilities commands from the shell?]]
-
-* Cds Volatilities
-
-- [[id:240C9D4C-3797-57FC-98DF-7774EE5B0051][How do I run the cds_volatilities commands from the shell?]]
 
 * Cds Volatility Terms
 
@@ -1313,14 +1265,6 @@ tangled into the runnable script library
 
 - [[id:2FA31558-E591-5171-A62C-8E349E1EF2A4][How do I run the curve_volatility_configs commands from the shell?]]
 
-* Inflation Cap Floor Volatilities
-
-- [[id:6C85A0A9-1646-5B73-A131-A0F78EB386F9][How do I run the inflation_cap_floor_volatilities commands from the shell?]]
-
-* Cap Floor Volatilities
-
-- [[id:A873138C-5F76-57B7-AA19-E605D8039F68][How do I run the cap_floor_volatilities commands from the shell?]]
-
 * Curve Parametric Smile Parameters
 
 - [[id:724CBD9F-7CD3-5A89-A0EF-558B3418FDDF][How do I run the curve_parametric_smile_parameters commands from the shell?]]
@@ -1329,22 +1273,78 @@ tangled into the runnable script library
 
 - [[id:0F93DB5C-6783-5CDD-B84C-B557D3972FDC][How do I run the curve_parametric_smiles commands from the shell?]]
 
-* Swaption Volatilities
-
-- [[id:AF6DAA28-6415-51CA-945C-7C0AB301EF62][How do I run the swaption_volatilities commands from the shell?]]
-
-* Bond Future Volatilities
-
-- [[id:979FCCBB-6F17-5337-8560-9091DCA1A40B][How do I run the bond_future_volatilities commands from the shell?]]
-
-* Commodity Volatilities
-
-- [[id:C8A4F0D3-13E1-50CA-8A75-1C41165CDCBA][How do I run the commodity_volatilities commands from the shell?]]
-
-* Equity Volatilities
-
-- [[id:729F89D9-A60D-55B1-8790-4014E2AFBD03][How do I run the equity_volatilities commands from the shell?]]
-
 * Curve Global Reports
 
 - [[id:5EA45D27-11CE-5737-AA64-B553CBD8D0A2][How do I run the curve_global_reports commands from the shell?]]
+
+* Base Correlation Configs
+
+- [[id:2FD99C15-D01C-5E61-9DFB-D8A8DBE42A01][How do I run the base_correlation_configs commands from the shell?]]
+
+* Bond Future Volatility Configs
+
+- [[id:C55F5003-5B50-5006-965F-19178C3EB95B][How do I run the bond_future_volatility_configs commands from the shell?]]
+
+* Cap Floor Volatility Configs
+
+- [[id:B807B11D-C620-5180-9DF0-A94A64944FA5][How do I run the cap_floor_volatility_configs commands from the shell?]]
+
+* Cds Volatility Configs
+
+- [[id:1A65F9E0-1738-5D2F-99D0-3B3C6FBC7191][How do I run the cds_volatility_configs commands from the shell?]]
+
+* Commodity Curve Configs
+
+- [[id:1A189960-0D62-5B85-9645-3C1F679024A6][How do I run the commodity_curve_configs commands from the shell?]]
+
+* Commodity Volatility Configs
+
+- [[id:7CF30319-64FA-575D-9CF9-8109F38D79B9][How do I run the commodity_volatility_configs commands from the shell?]]
+
+* Curve Correlation Configs
+
+- [[id:D1800CDC-F348-51DE-BFD7-E1137098CFD1][How do I run the curve_correlation_configs commands from the shell?]]
+
+* Curve Security Configs
+
+- [[id:DAE19173-3298-547B-84A4-EFDA7E58CEE8][How do I run the curve_security_configs commands from the shell?]]
+
+* Default Curve Configs
+
+- [[id:D1BBEA1D-151E-5ACF-A643-85E83DC56E74][How do I run the default_curve_configs commands from the shell?]]
+
+* Equity Curve Configs
+
+- [[id:42C5C084-78C5-5B8D-865F-30E8759F5698][How do I run the equity_curve_configs commands from the shell?]]
+
+* Equity Volatility Configs
+
+- [[id:E2B27E47-E81C-51DD-90F5-AEB4CD894BE7][How do I run the equity_volatility_configs commands from the shell?]]
+
+* Fx Volatility Configs
+
+- [[id:28DF664C-4503-5DAF-A8A6-747AE8E09AA2][How do I run the fx_volatility_configs commands from the shell?]]
+
+* Inflation Cap Floor Volatility Configs
+
+- [[id:3E9F29E7-F3D4-5FF1-A719-651FF92FA5DC][How do I run the inflation_cap_floor_volatility_configs commands from the shell?]]
+
+* Inflation Curve Configs
+
+- [[id:E7A6FBB5-B3CB-5D1A-AE6C-8E33E092BBA2][How do I run the inflation_curve_configs commands from the shell?]]
+
+* Intraday Power Curve Configs
+
+- [[id:3BCAB623-9665-5165-B480-C2A98D09A4E6][How do I run the intraday_power_curve_configs commands from the shell?]]
+
+* Swaption Volatility Configs
+
+- [[id:2DF87290-C8C9-5708-9CD8-CF10A0FCDEED][How do I run the swaption_volatility_configs commands from the shell?]]
+
+* Yield Curve Configs
+
+- [[id:03FFC102-CB45-553E-BCEF-E56F641CCFEE][How do I run the yield_curve_configs commands from the shell?]]
+
+* Yield Volatility Configs
+
+- [[id:AA65A81E-54A8-55FB-9D44-C3B97EE6D3F8][How do I run the yield_volatility_configs commands from the shell?]]

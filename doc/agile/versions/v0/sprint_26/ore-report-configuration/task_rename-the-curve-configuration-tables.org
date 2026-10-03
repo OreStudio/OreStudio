@@ -26,11 +26,11 @@ Rename the per-entry curve configuration tables so each name says it holds confi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -38,7 +38,6 @@ Rename the per-entry curve configuration tables so each name says it holds confi
 - Every per-entry curve configuration table, and its C++ type, repository, protocol, shell commands and permissions, carries the _config suffix.
 - curve_definition, the child tables and the tables whose names already say configuration keep their names.
 - Every corpus curveconfig.xml still round trips, in memory and through the database.
-- A migration takes a database that holds the old tables to the new names.
 
 * Plan
 
@@ -86,3 +85,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The eighteen per-entry curve configuration entities now carry the =_config=
+suffix in every layer: table (=ores_refdata_yield_curve_configs_tbl=), C++ type
+and repository (=yield_curve_config=, =yield_curve_config_repository=),
+protocol, shell commands, recipes and permission codes. They are the yield,
+equity, default, inflation, commodity and intraday power curves, securities,
+the FX, yield, CDS, inflation cap and floor, swaption, cap and floor, equity,
+commodity and bond future volatilities, and the base and curve correlations.
+=curve_definition=, the child tables and the tables whose names already said
+configuration kept their names.
+
+The rename is reproducible: a script renders the renamed models from the same
+specs that produced them (the eighteen committed models matched their specs
+exactly first), removes the 702 files the old names generated, as listed by the
+generator itself, regenerates, and rewrites the hand-written references in the
+mapper, its tests and the SQL entry points.
+
+Verified: build clean; database recreated; ctest 90/90, including the
+whole-document corpus walk and the database round trips.
+
+No migration: on the operator's instruction a database is trashed and
+recreated rather than migrated, and no backwards compatibility code is kept.
+The same change removed the thirteen migration scripts this story had added
+(the curve configuration steps, the report type binding, the stress shift
+vocabulary and the today's market collection kinds).

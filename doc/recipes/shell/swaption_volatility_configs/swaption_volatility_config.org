@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 2DF87290-C8C9-5708-9CD8-CF10A0FCDEED
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the swaption_volatility_configs commands from the shell?
+#+description: Every command the swaption_volatility_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:swaption_volatility_configs:
+
+This file documents the swaption_volatility_configs resource at the shell, one section per command. Every command is a subcommand of =swaption_volatility_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 6E447174-87A0-5200-8A57-6E3407B2980D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.list=.
+
+#+name: swaption_volatility_configs-list
+#+begin_src ores-shell :tangle swaption_volatility_configs-list.ores :exports none
+swaption_volatility_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8F31533E-F7D7-50AD-AAFB-1DEB2FB4565D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.get=.
+
+#+name: swaption_volatility_configs-get
+#+begin_src ores-shell :tangle swaption_volatility_configs-get.ores :exports none
+swaption_volatility_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3D3AB6CE-A805-56ED-A9DC-8FA98F09F3ED
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.get_many=.
+
+#+name: swaption_volatility_configs-get-many
+#+begin_src ores-shell :tangle swaption_volatility_configs-get-many.ores :exports none
+swaption_volatility_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: DD36F4CB-9BC9-5F0A-AF26-AD1DF4AB9FA2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs add <curve_definition_id> <dimension> <volatility_type> <interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base> <proxy_source_swap_index_base> <proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.put=.
+
+#+name: swaption_volatility_configs-add
+#+begin_src ores-shell :tangle swaption_volatility_configs-add.ores :exports none
+swaption_volatility_configs add 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - - - - - - false - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 423C9F48-C33B-513D-9BD4-2DFAE14AD01A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs set <id> <curve_definition_id> <dimension> <volatility_type> <interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base> <proxy_source_swap_index_base> <proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.put=.
+
+#+name: swaption_volatility_configs-set
+#+begin_src ores-shell :tangle swaption_volatility_configs-set.ores :exports none
+swaption_volatility_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - - - - - - false - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 19A7149E-09F7-57D8-BFEE-6CF4C40A801A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs put-many --count <n> <id> <curve_definition_id> <dimension> <volatility_type> <interpolation> <extrapolation> <output_volatility_type> <model_shift> <output_shift> <day_counter> <calendar> <business_day_convention> <option_tenors> <swap_tenors> <short_swap_index_base> <swap_index_base> <smile_option_tenors> <smile_swap_tenors> <smile_spreads> <quote_tag> <has_proxy_config> <proxy_source_curve_id> <proxy_source_short_swap_index_base> <proxy_source_swap_index_base> <proxy_target_short_swap_index_base> <proxy_target_swap_index_base> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.put_many=.
+
+#+name: swaption_volatility_configs-put-many
+#+begin_src ores-shell :tangle swaption_volatility_configs-put-many.ores :exports none
+swaption_volatility_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - - - - - - - - - - - - - - - - - false - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 3BCD0FCA-7B35-556F-A046-4E7088E2EA1D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.delete=.
+
+#+name: swaption_volatility_configs-delete
+#+begin_src ores-shell :tangle swaption_volatility_configs-delete.ores :exports none
+swaption_volatility_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: FE0430A4-9B8E-5F05-9DA1-E5DC248273A4
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs.delete_many=.
+
+#+name: swaption_volatility_configs-delete-many
+#+begin_src ores-shell :tangle swaption_volatility_configs-delete-many.ores :exports none
+swaption_volatility_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 5E1157EF-DC33-50C1-BE55-F55810B94D2D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs_versions.list=.
+
+#+name: swaption_volatility_configs-versions
+#+begin_src ores-shell :tangle swaption_volatility_configs-versions.ores :exports none
+swaption_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 428200E5-F61A-5980-AE39-99E4F35D5EC7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+swaption_volatility_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.swaption_volatility_configs_versions.get=.
+
+#+name: swaption_volatility_configs-version
+#+begin_src ores-shell :tangle swaption_volatility_configs-version.ores :exports none
+swaption_volatility_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

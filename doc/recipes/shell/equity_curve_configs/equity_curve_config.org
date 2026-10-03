@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 42C5C084-78C5-5B8D-865F-30E8759F5698
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the equity_curve_configs commands from the shell?
+#+description: Every command the equity_curve_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_curve_configs:
+
+This file documents the equity_curve_configs resource at the shell, one section per command. Every command is a subcommand of =equity_curve_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 76C2EE90-C67E-56AE-8EB7-44C18675BB6C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.list=.
+
+#+name: equity_curve_configs-list
+#+begin_src ores-shell :tangle equity_curve_configs-list.ores :exports none
+equity_curve_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 509ABBEA-B370-521E-B3A5-C04E7D2FF54F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs get <id>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.get=.
+
+#+name: equity_curve_configs-get
+#+begin_src ores-shell :tangle equity_curve_configs-get.ores :exports none
+equity_curve_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0AB32CBB-2511-50FF-826C-B91FC48889C0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.get_many=.
+
+#+name: equity_curve_configs-get-many
+#+begin_src ores-shell :tangle equity_curve_configs-get-many.ores :exports none
+equity_curve_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3979345F-E907-5252-B32E-B96792A1E2CF
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs add <curve_definition_id> <currency> <calendar> <forecasting_curve> <equity_type> <exercise_style> <spot_quote> <has_quotes> <day_counter> <has_dividend_interpolation> <dividend_interpolation_variable> <dividend_interpolation_method> <dividend_extrapolation> <extrapolation> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.put=.
+
+#+name: equity_curve_configs-add
+#+begin_src ores-shell :tangle equity_curve_configs-add.ores :exports none
+equity_curve_configs add 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ false - false - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 89FC8DF0-E03E-5D2E-9D25-284FA38ADB47
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs set <id> <curve_definition_id> <currency> <calendar> <forecasting_curve> <equity_type> <exercise_style> <spot_quote> <has_quotes> <day_counter> <has_dividend_interpolation> <dividend_interpolation_variable> <dividend_interpolation_method> <dividend_extrapolation> <extrapolation> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.put=.
+
+#+name: equity_curve_configs-set
+#+begin_src ores-shell :tangle equity_curve_configs-set.ores :exports none
+equity_curve_configs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ false - false - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 671B4761-9404-5047-A7AE-B65E723E5509
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs put-many --count <n> <id> <curve_definition_id> <currency> <calendar> <forecasting_curve> <equity_type> <exercise_style> <spot_quote> <has_quotes> <day_counter> <has_dividend_interpolation> <dividend_interpolation_variable> <dividend_interpolation_method> <dividend_extrapolation> <extrapolation> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.put_many=.
+
+#+name: equity_curve_configs-put-many
+#+begin_src ores-shell :tangle equity_curve_configs-put-many.ores :exports none
+equity_curve_configs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ __none__ - __none__ false - false - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E0AE3592-C3C2-5CB4-8F41-8C61250D2E59
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.delete=.
+
+#+name: equity_curve_configs-delete
+#+begin_src ores-shell :tangle equity_curve_configs-delete.ores :exports none
+equity_curve_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 348373DD-1CC9-5D88-9847-B2D26172164F
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs.delete_many=.
+
+#+name: equity_curve_configs-delete-many
+#+begin_src ores-shell :tangle equity_curve_configs-delete-many.ores :exports none
+equity_curve_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8C7AE83E-133C-5FD3-92AC-6EC3ADFEA2CF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs_versions.list=.
+
+#+name: equity_curve_configs-versions
+#+begin_src ores-shell :tangle equity_curve_configs-versions.ores :exports none
+equity_curve_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: C7009ADB-D84E-5441-A0AD-DDEED12595A7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_curve_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.equity_curve_configs_versions.get=.
+
+#+name: equity_curve_configs-version
+#+begin_src ores-shell :tangle equity_curve_configs-version.ores :exports none
+equity_curve_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

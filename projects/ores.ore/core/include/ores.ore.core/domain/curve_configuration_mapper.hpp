@@ -22,14 +22,14 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.refdata.api/domain/base_correlation.hpp"
-#include "ores.refdata.api/domain/bond_future_volatility.hpp"
-#include "ores.refdata.api/domain/cap_floor_volatility.hpp"
-#include "ores.refdata.api/domain/cds_volatility.hpp"
+#include "ores.refdata.api/domain/base_correlation_config.hpp"
+#include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
-#include "ores.refdata.api/domain/commodity_curve.hpp"
+#include "ores.refdata.api/domain/commodity_curve_config.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
-#include "ores.refdata.api/domain/commodity_volatility.hpp"
+#include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
@@ -37,25 +37,25 @@
 #include "ores.refdata.api/domain/curve_global_report.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
-#include "ores.refdata.api/domain/curve_correlation.hpp"
+#include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_quote.hpp"
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
-#include "ores.refdata.api/domain/curve_security.hpp"
+#include "ores.refdata.api/domain/curve_security_config.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
-#include "ores.refdata.api/domain/default_curve.hpp"
+#include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
-#include "ores.refdata.api/domain/equity_curve.hpp"
-#include "ores.refdata.api/domain/equity_volatility.hpp"
-#include "ores.refdata.api/domain/fx_volatility.hpp"
-#include "ores.refdata.api/domain/inflation_cap_floor_volatility.hpp"
-#include "ores.refdata.api/domain/inflation_curve.hpp"
+#include "ores.refdata.api/domain/equity_curve_config.hpp"
+#include "ores.refdata.api/domain/equity_volatility_config.hpp"
+#include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
-#include "ores.refdata.api/domain/intraday_power_curve.hpp"
-#include "ores.refdata.api/domain/swaption_volatility.hpp"
-#include "ores.refdata.api/domain/yield_curve.hpp"
-#include "ores.refdata.api/domain/yield_volatility.hpp"
+#include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/yield_curve_config.hpp"
+#include "ores.refdata.api/domain/yield_volatility_config.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
@@ -71,33 +71,33 @@ struct mapped_curve_configuration {
     refdata::domain::curve_configuration config;
     std::vector<refdata::domain::curve_configuration_section> sections;
     std::vector<refdata::domain::curve_definition> definitions;
-    std::vector<refdata::domain::yield_curve> yield_curves;
-    std::vector<refdata::domain::equity_curve> equity_curves;
-    std::vector<refdata::domain::inflation_curve> inflation_curves;
-    std::vector<refdata::domain::default_curve> default_curves;
-    std::vector<refdata::domain::commodity_curve> commodity_curves;
-    std::vector<refdata::domain::fx_volatility> fx_volatilities;
-    std::vector<refdata::domain::yield_volatility> yield_volatilities;
-    std::vector<refdata::domain::base_correlation> base_correlations;
-    std::vector<refdata::domain::curve_correlation> correlations;
+    std::vector<refdata::domain::yield_curve_config> yield_curves;
+    std::vector<refdata::domain::equity_curve_config> equity_curves;
+    std::vector<refdata::domain::inflation_curve_config> inflation_curves;
+    std::vector<refdata::domain::default_curve_config> default_curves;
+    std::vector<refdata::domain::commodity_curve_config> commodity_curves;
+    std::vector<refdata::domain::fx_volatility_config> fx_volatilities;
+    std::vector<refdata::domain::yield_volatility_config> yield_volatilities;
+    std::vector<refdata::domain::base_correlation_config> base_correlations;
+    std::vector<refdata::domain::curve_correlation_config> correlations;
     std::vector<refdata::domain::curve_report_configuration> report_configurations;
-    std::vector<refdata::domain::cds_volatility> cds_volatilities;
+    std::vector<refdata::domain::cds_volatility_config> cds_volatilities;
     std::vector<refdata::domain::cds_volatility_term> cds_volatility_terms;
     std::vector<refdata::domain::curve_volatility_config> volatility_configs;
-    std::vector<refdata::domain::inflation_cap_floor_volatility> inflation_cap_floor_volatilities;
-    std::vector<refdata::domain::swaption_volatility> swaption_volatilities;
-    std::vector<refdata::domain::cap_floor_volatility> cap_floor_volatilities;
+    std::vector<refdata::domain::inflation_cap_floor_volatility_config> inflation_cap_floor_volatilities;
+    std::vector<refdata::domain::swaption_volatility_config> swaption_volatilities;
+    std::vector<refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
     std::vector<refdata::domain::curve_parametric_smile> parametric_smiles;
     std::vector<refdata::domain::curve_parametric_smile_parameter> parametric_smile_parameters;
-    std::vector<refdata::domain::equity_volatility> equity_volatilities;
-    std::vector<refdata::domain::commodity_volatility> commodity_volatilities;
-    std::vector<refdata::domain::bond_future_volatility> bond_future_volatilities;
+    std::vector<refdata::domain::equity_volatility_config> equity_volatilities;
+    std::vector<refdata::domain::commodity_volatility_config> commodity_volatilities;
+    std::vector<refdata::domain::bond_future_volatility_config> bond_future_volatilities;
     std::vector<refdata::domain::curve_global_report> global_reports;
     std::vector<refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<refdata::domain::default_curve_configuration> default_curve_configurations;
     std::vector<refdata::domain::inflation_seasonality_factor> seasonality_factors;
-    std::vector<refdata::domain::curve_security> securities;
-    std::vector<refdata::domain::intraday_power_curve> intraday_power_curves;
+    std::vector<refdata::domain::curve_security_config> securities;
+    std::vector<refdata::domain::intraday_power_curve_config> intraday_power_curves;
     std::vector<refdata::domain::curve_bootstrap_config> bootstrap_configs;
     std::vector<refdata::domain::curve_segment> segments;
     std::vector<refdata::domain::curve_segment_curve> segment_curves;

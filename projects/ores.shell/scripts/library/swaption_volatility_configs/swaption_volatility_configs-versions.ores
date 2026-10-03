@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/swaption_volatility_configs/swaption_volatility_config.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+swaption_volatility_configs versions 00000000-0000-0000-0000-000000000000 --limit 1

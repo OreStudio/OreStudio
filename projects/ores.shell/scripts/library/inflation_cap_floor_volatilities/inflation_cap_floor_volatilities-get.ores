@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/inflation_cap_floor_volatilities/inflation_cap_floor_volatility.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+inflation_cap_floor_volatilities get 00000000-0000-0000-0000-000000000000

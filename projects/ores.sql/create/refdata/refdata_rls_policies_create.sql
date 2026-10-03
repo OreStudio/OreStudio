@@ -2118,6 +2118,74 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- CDS Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cds_volatilities_tbl enable row level security;
+
+drop policy if exists cds_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_cds_volatilities_tbl;
+
+create policy cds_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_cds_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- CDS Volatility Terms
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_cds_volatility_terms_tbl enable row level security;
+
+drop policy if exists cds_volatility_terms_tbl_tenant_isolation_policy
+    on ores_refdata_cds_volatility_terms_tbl;
+
+create policy cds_volatility_terms_tbl_tenant_isolation_policy
+on ores_refdata_cds_volatility_terms_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Volatility Configs
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_volatility_configs_tbl enable row level security;
+
+drop policy if exists curve_volatility_configs_tbl_tenant_isolation_policy
+    on ores_refdata_curve_volatility_configs_tbl;
+
+create policy curve_volatility_configs_tbl_tenant_isolation_policy
+on ores_refdata_curve_volatility_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Inflation Cap Floor Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_inflation_cap_floor_volatilities_tbl enable row level security;
+
+drop policy if exists inflation_cap_floor_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_inflation_cap_floor_volatilities_tbl;
+
+create policy inflation_cap_floor_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_inflation_cap_floor_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

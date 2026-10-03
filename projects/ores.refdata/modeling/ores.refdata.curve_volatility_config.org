@@ -1,0 +1,325 @@
+:PROPERTIES:
+:ID: 0BF5C03A-FF06-4B30-9174-EAE587F3646A
+:END:
+#+title: ores.refdata.curve_volatility_config
+#+description: Codegen entity model for the refdata =curve_volatility_config= table. One volatility configuration of an ORE volatility entry.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One surface a volatility entry may be built as, with its priority.
+#+entity_singular: curve_volatility_config
+#+entity_plural: curve_volatility_configs
+#+entity_title: Curve Volatility Config
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One way a volatility entry's surface may be built. CDS, equity and commodity
+volatilities each name one or more volatility configurations, each with an
+optional =priority=; ORE builds the first that succeeds. =kind= names the
+element the document wrote, and the columns that kind uses are set.
+
+Only the =StrikeSurface= kind is modelled so far, because it is the only kind a
+corpus CDS volatility writes. The other kinds (=Constant=, =Curve=,
+=ProxySurface= and the equity and commodity surfaces) are added with the
+sections that write them, and the mapper refuses them until then.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The element the document wrote, such as =StrikeSurface=.
+
+#+begin_src cpp :name generator
+std::string("StrikeSurface")
+#+end_src
+
+** priority
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The configuration's =priority= attribute, when it has one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** quote_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the quotes are, such as =ImpliedVolatility= or =Premium=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** volatility_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the volatility is normal, lognormal or shifted lognormal.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** exercise_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The exercise type of quoted premiums.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strikes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The strikes of a strike surface, as ORE's comma separated text or =*=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The expiries of a surface, as ORE's comma separated text or =*=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates in time.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface interpolates in strike.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface extrapolates, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface extrapolates in time.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** time_extrapolation_variance
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether time extrapolation is in variance, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How the surface extrapolates in strike.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The configuration's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The configuration's place among the entry's configurations, which the export
+restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_volatility_configs_tbl
+:END:
+
+** Checks
+
+| expression      |
+|-----------------|
+| "kind" <> ''    |
+| "position" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: volatility_config
+:entity_plural_short:   volatility_configs
+:entity_singular_words: curve volatility config
+:entity_plural_words:   curve volatility configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: vc
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

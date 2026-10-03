@@ -56,10 +56,6 @@ curveconfiguration modelled_only(curveconfiguration d) {
         d.SwaptionVolatilities->SwaptionVolatility.clear();
     if (d.CapFloorVolatilities)
         d.CapFloorVolatilities->CapFloorVolatility.clear();
-    if (d.CDSVolatilities)
-        d.CDSVolatilities->CDSVolatility.clear();
-    if (d.InflationCapFloorVolatilities)
-        d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
     if (d.EquityVolatilities)
         d.EquityVolatilities->EquityVolatility.clear();
     if (d.CommodityVolatilities)
@@ -266,6 +262,24 @@ TEST_CASE("an FX volatility with a parametric smile is refused", tags) {
     fxVolatility v;
     v.ParametricSmileConfiguration = parametricSmileConfig{};
     d.FXVolatilities->FXVolatility.push_back(v);
+    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+}
+
+TEST_CASE("a CDS volatility with a constant volatility is refused", tags) {
+    curveconfiguration d;
+    d.CDSVolatilities = cdsVolatilities{};
+    cdsVolatility v;
+    v.Constant = constantVolatilityConfig{};
+    d.CDSVolatilities->CDSVolatility.push_back(v);
+    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+}
+
+TEST_CASE("a CDS volatility with price information is refused", tags) {
+    curveconfiguration d;
+    d.CDSVolatilities = cdsVolatilities{};
+    cdsVolatility v;
+    v.PriceInfo = priceInfoType{};
+    d.CDSVolatilities->CDSVolatility.push_back(v);
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 

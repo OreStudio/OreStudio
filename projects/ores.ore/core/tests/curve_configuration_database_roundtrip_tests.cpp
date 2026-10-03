@@ -24,6 +24,8 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/base_correlation_repository.hpp"
+#include "ores.refdata.core/repository/cds_volatility_repository.hpp"
+#include "ores.refdata.core/repository/cds_volatility_term_repository.hpp"
 #include "ores.refdata.core/repository/curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.refdata.core/repository/curve_configuration_section_repository.hpp"
@@ -31,6 +33,7 @@
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
 #include "ores.refdata.core/repository/curve_quote_repository.hpp"
 #include "ores.refdata.core/repository/curve_report_configuration_repository.hpp"
+#include "ores.refdata.core/repository/curve_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_curve_repository.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
 #include "ores.refdata.core/repository/curve_security_repository.hpp"
@@ -40,6 +43,7 @@
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.core/repository/equity_curve_repository.hpp"
 #include "ores.refdata.core/repository/fx_volatility_repository.hpp"
+#include "ores.refdata.core/repository/inflation_cap_floor_volatility_repository.hpp"
 #include "ores.refdata.core/repository/inflation_curve_repository.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_repository.hpp"
 #include "ores.refdata.core/repository/inflation_swap_convention_repository.hpp"
@@ -81,11 +85,12 @@ Document load(const std::string& name) {
 }
 
 const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";
+const std::string products_example = "external/ore/examples/Products/Input/curveconfig.xml";
 
-// The default, equity and inflation curves, securities, FX spots, FX
-// volatilities and correlations of a corpus document, with every other section
-// kept empty, so only the inflation swap and CDS conventions have to be written
-// first.
+// The default, equity and inflation curves, securities, FX spots, the FX, CDS
+// and inflation cap and floor volatilities and the correlations of a corpus
+// document, with every other section kept empty, so only the inflation swap and
+// CDS conventions have to be written first.
 curveconfiguration equity_and_securities() {
     curveconfiguration d;
     load_data(file::read_content(ores::testing::project_root::resolve(equity_example)), d);
@@ -98,10 +103,6 @@ curveconfiguration equity_and_securities() {
         d.SwaptionVolatilities->SwaptionVolatility.clear();
     if (d.CapFloorVolatilities)
         d.CapFloorVolatilities->CapFloorVolatility.clear();
-    if (d.CDSVolatilities)
-        d.CDSVolatilities->CDSVolatility.clear();
-    if (d.InflationCapFloorVolatilities)
-        d.InflationCapFloorVolatilities->InflationCapFloorVolatility.clear();
     if (d.EquityVolatilities)
         d.EquityVolatilities->EquityVolatility.clear();
     if (d.CommodityVolatilities)
@@ -167,6 +168,10 @@ void write(const ores::database::context& ctx, const mapped_curve_configuration&
     base_correlation_repository().write(ctx, m.base_correlations);
     curve_correlation_repository().write(ctx, m.correlations);
     curve_report_configuration_repository().write(ctx, m.report_configurations);
+    cds_volatility_repository().write(ctx, m.cds_volatilities);
+    cds_volatility_term_repository().write(ctx, m.cds_volatility_terms);
+    curve_volatility_config_repository().write(ctx, m.volatility_configs);
+    inflation_cap_floor_volatility_repository().write(ctx, m.inflation_cap_floor_volatilities);
     curve_bootstrap_config_repository().write(ctx, m.bootstrap_configs);
     curve_segment_repository().write(ctx, m.segments);
     curve_segment_curve_repository().write(ctx, m.segment_curves);
@@ -225,6 +230,14 @@ mapped_curve_configuration read_back(const ores::database::context& ctx,
         ctx, curve_correlation_repository(), of_definition);
     m.report_configurations = read<ores::refdata::domain::curve_report_configuration>(
         ctx, curve_report_configuration_repository(), of_definition);
+    m.cds_volatilities = read<ores::refdata::domain::cds_volatility>(
+        ctx, cds_volatility_repository(), of_definition);
+    m.cds_volatility_terms = read<ores::refdata::domain::cds_volatility_term>(
+        ctx, cds_volatility_term_repository(), of_definition);
+    m.volatility_configs = read<ores::refdata::domain::curve_volatility_config>(
+        ctx, curve_volatility_config_repository(), of_definition);
+    m.inflation_cap_floor_volatilities = read<ores::refdata::domain::inflation_cap_floor_volatility>(
+        ctx, inflation_cap_floor_volatility_repository(), of_definition);
     m.bootstrap_configs = read<ores::refdata::domain::curve_bootstrap_config>(
         ctx, curve_bootstrap_config_repository(), of_definition);
     m.segments =
@@ -319,6 +332,8 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     REQUIRE(!mapped.fx_volatilities.empty());
     REQUIRE(!mapped.base_correlations.empty());
     REQUIRE(!mapped.correlations.empty());
+    REQUIRE(!mapped.cds_volatilities.empty());
+    REQUIRE(!mapped.inflation_cap_floor_volatilities.empty());
 
     write(h.context(), mapped);
     const auto back = read_back(h.context(), mapped);
@@ -330,12 +345,40 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(back.fx_volatilities.size() == mapped.fx_volatilities.size());
     CHECK(back.base_correlations.size() == mapped.base_correlations.size());
     CHECK(back.correlations.size() == mapped.correlations.size());
+    CHECK(back.cds_volatilities.size() == mapped.cds_volatilities.size());
+    CHECK(back.inflation_cap_floor_volatilities.size() ==
+          mapped.inflation_cap_floor_volatilities.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
 
     curveconfiguration exported;
     load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
     const auto difference =
         ores::ore::xml::parsed_text_difference(original, exported, equity_example);
+    INFO(difference);
+    CHECK(difference.empty());
+}
+
+TEST_CASE("a CDS volatility's terms and strike surface round trip through the database", tags) {
+    ores::testing::scoped_database_helper h;
+
+    curveconfiguration full;
+    load_data(file::read_content(ores::testing::project_root::resolve(products_example)), full);
+    REQUIRE(full.CDSVolatilities);
+    curveconfiguration original;
+    original.CDSVolatilities = full.CDSVolatilities;
+    const auto mapped = curve_configuration_mapper::map(original);
+    REQUIRE(!mapped.cds_volatility_terms.empty());
+    REQUIRE(mapped.volatility_configs.size() == 1);
+
+    write(h.context(), mapped);
+    const auto back = read_back(h.context(), mapped);
+    CHECK(back.cds_volatility_terms.size() == mapped.cds_volatility_terms.size());
+    CHECK(back.volatility_configs.size() == 1);
+
+    curveconfiguration exported;
+    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
+    const auto difference =
+        ores::ore::xml::parsed_text_difference(original, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
 }

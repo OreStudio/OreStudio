@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2558
+#+pr: 2560
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -213,6 +213,25 @@ Step 4a, decided while building it:
 - The FX smile interpolation is free text in the schema, not an enumeration,
   and is held as written.
 
+Step 4b, decided while building it:
+
+- CDS, equity and commodity volatilities all name one or more volatility
+  configurations (=Constant=, =Curve=, =StrikeSurface=, =ProxySurface= and, for
+  equity and commodity, more surface kinds), each with an optional priority.
+  They share one table, =curve_volatility_config=, with a =kind= column and the
+  columns each kind uses. Only =StrikeSurface= is modelled now, because it is
+  the only kind a corpus CDS volatility writes; steps 4c and 4d add the other
+  kinds with the sections that write them.
+- A CDS volatility's =Terms= are rows of =cds_volatility_term=, with their
+  position. =PriceInfo=, an empty =Terms= element and the unmodelled surface
+  kinds are refused.
+- An inflation cap and floor volatility is flat. Its =Report= and
+  =BootstrapConfig= reuse =curve_report_configuration= and
+  =curve_bootstrap_config=.
+- The operator asked whether these tables hold curves or curve
+  configurations. They hold configurations only; the naming question waits in
+  [[id:1027E041-1B39-4150-8725-3C0C78F0F1D1][Discuss the _config suffix for the curve configuration tables]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -228,6 +247,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2560][#2560]] | [refdata] Map the CDS and inflation cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2558][#2558]] | [refdata] Map the flat volatility and correlation sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2557][#2557]] | [refdata] Map the commodity curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2556][#2556]] | [refdata] Map the default curve section |

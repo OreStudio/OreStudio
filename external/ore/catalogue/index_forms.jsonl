@@ -16,8 +16,11 @@
 {"key":"COMM-PJM-WH-RT","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-PJM-WH-RT","underlyingName":"PJM-WH-RT","isFuturesIndex":"false","expiryDate":"null"}
 {"key":"COMM-","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-","underlyingName":"","isFuturesIndex":"false","expiryDate":"null"}
 {"key":"POWER-ICE:PDQ-2021-01-01-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-3600-7200","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-03-28-3600-7200-DST","accepted":"false","error":"parseIndex \"POWER-ICE:PDQ-2021-03-28-3600-7200-DST\" not recognized"}
 {"key":"POWER-ICE:PDQ-2021-01-04","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04","deliveryDate":"2021-01-04"}
 {"key":"POWER-ICE:PDQ","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-1901-01-01","deliveryDate":"1901-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-01-3600","accepted":"false","error":"parseIndex \"POWER-ICE:PDQ-2021-01-01-3600\" not recognized"}
+{"key":"POWER-ICE:PDQ-2021-01-01-3600-7200-XYZ","accepted":"false","error":"parseIndex \"POWER-ICE:PDQ-2021-01-01-3600-7200-XYZ\" not recognized"}
 {"key":"FX-ECB-EUR-USD","accepted":"true","class":"QuantExt::FxIndex","name":"ECB EUR/USD","familyName":"ECB","sourceCurrency":"EUR","targetCurrency":"USD"}
 {"key":"FX-TR20H-GBP-USD","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H GBP/USD","familyName":"TR20H","sourceCurrency":"GBP","targetCurrency":"USD"}
 {"key":"FX-Reuters-USD-EUR","accepted":"true","class":"QuantExt::FxIndex","name":"Reuters USD/EUR","familyName":"Reuters","sourceCurrency":"USD","targetCurrency":"EUR"}

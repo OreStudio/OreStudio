@@ -28,10 +28,14 @@ COMM-ICE:B
 COMM-PJM-WH-RT
 COMM-
 
-# Intraday power: POWER-<name>-<date>[-<start>-<end>] (:903).
+# Intraday power: POWER-<name>[-<date>[-<start>-<end>[-DST]]], the name without
+# a hyphen (:883).
 POWER-ICE:PDQ-2021-01-01-3600-7200
+POWER-ICE:PDQ-2021-03-28-3600-7200-DST
 POWER-ICE:PDQ-2021-01-04
 POWER-ICE:PDQ
+POWER-ICE:PDQ-2021-01-01-3600
+POWER-ICE:PDQ-2021-01-01-3600-7200-XYZ
 
 # FX: FX-<source>-<ccy1>-<ccy2>, exactly four tokens (:208).
 FX-ECB-EUR-USD

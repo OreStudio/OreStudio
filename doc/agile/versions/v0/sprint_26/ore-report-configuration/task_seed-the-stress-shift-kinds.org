@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/seed-the-stress-shift-kinds
-#+pr:
+#+pr: 2541
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2541][#2541]] | [analytics] Seed the stress shift families and shift types |
 
 * Review
 

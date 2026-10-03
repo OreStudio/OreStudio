@@ -4077,6 +4077,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # A current-state table keys on the model's own primary key alone --
         # tenant_id stays a column, but out of the key.
         has_tenant_id = domain_entity.get('has_tenant_id', False)
+        # A fixed column keeps the value of the row's first version: a new
+        # version that changes it is refused, so a copy pinned to it elsewhere
+        # stays true.
+        domain_entity['fixed_columns'] = [
+            {'column': name} for name in sorted(_column_names(domain_entity))
+            if any((c.get('name') or c.get('column')) == name and c.get('fixed')
+                   for source in (domain_entity.get('columns') or [],
+                                  domain_entity.get('natural_keys') or [])
+                   for c in source)]
+        if domain_entity['fixed_columns'] and current_state:
+            raise ValueError(
+                f"{model_path}: :fixed: needs a temporal table; a current-state "
+                "row has no versions to compare.")
         domain_entity['immutable_tenant_key'] = _immutable_tenant_key(
             domain_entity)
         domain_entity['has_tenant_in_pk'] = (

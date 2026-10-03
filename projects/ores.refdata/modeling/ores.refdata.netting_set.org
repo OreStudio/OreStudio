@@ -1,0 +1,306 @@
+:PROPERTIES:
+:ID: 83C9697A-0D6D-42A2-9917-6C68268B5404
+:END:
+#+title: ores.refdata.netting_set
+#+description: Codegen entity model for the refdata =netting_set= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The trades with one counterparty that may legally offset each other for credit exposure.
+#+entity_singular: netting_set
+#+entity_plural: netting_sets
+#+entity_title: Netting Set
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A netting set is the group of trades with one counterparty whose values
+offset one another when credit exposure is computed. Every trade names
+exactly one set, as ORE requires; a trade with nothing to net against
+sits in a set of its own. See [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] for the analysis.
+
+A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]] copies the agreement's
+counterparty and legal entity, and a pinned key holds the copy to the
+agreement, so a set cannot be filed under another counterparty's
+agreement. A set with no agreement holds trades that do not net; its
+counterparty and legal entity may be unknown, as they are for a set read
+from an ORE document, which names neither.
+
+The code is the netting set id ORE uses. The call type and initial margin
+type are the remaining parts of ORE's netting set details, and the risk
+weight is ORE's.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this netting set.
+
+Surrogate key for the netting set record.
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The netting set id, as ORE names it.
+
+Unique within the tenant. A trade's envelope names its set by this code.
+
+#+begin_src cpp :name generator
+std::string("NS-") + std::string(faker::string::alphanumeric(10))
+#+end_src
+
+** netting_agreement_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The agreement the set is opened under.
+
+Absent when the trades in the set do not net.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The counterparty whose trades the set holds.
+
+Required when the set has an agreement, and then equal to the agreement's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The legal entity of the firm the set belongs to.
+
+Required when the set has an agreement, and then equal to the agreement's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** call_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ORE's call type for the set.
+
+Part of ORE's netting set details. Free text: ORE's schema types it as a
+plain string and no example uses it, so there is no list to check against.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** initial_margin_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ORE's initial margin type for the set.
+
+Part of ORE's netting set details. Free text: ORE's schema types it as a
+plain string and no example uses it, so there is no list to check against.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** risk_weight
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+ORE's risk weight for the set.
+
+Not negative.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional description of the set.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Test netting set")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_netting_sets_tbl
+:END:
+
+** Checks
+
+| expression                                                                                     |
+|------------------------------------------------------------------------------------------------|
+| "netting_agreement_id" is null or ("counterparty_id" is not null and "party_id" is not null)   |
+| "risk_weight" is null or "risk_weight" >= 0                                                    |
+
+** Pinned keys
+
+| name      | columns                                         | table                               | target_columns                | error_message                                                                  |
+|-----------+-------------------------------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------|
+| agreement | netting_agreement_id, counterparty_id, party_id | ores_refdata_netting_agreements_tbl | id, counterparty_id, party_id | Invalid netting_agreement_id: %. The set's parties must be the agreement's.    |
+
+* Foreign keys
+
+** netting_agreement_id
+:PROPERTIES:
+:table:         ores_refdata_netting_agreements_tbl
+:parent_entity: netting_agreement
+:nullable:      true
+:error_message: Invalid netting_agreement_id: %. No active netting agreement found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:parent_entity: counterparty
+:nullable:      true
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:END:
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:parent_entity: party
+:nullable:      true
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: netting_set
+:entity_plural_short:   netting_sets
+:entity_singular_words: netting set
+:entity_plural_words:   netting sets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ns
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| code                | Code        |
+| call_type           | Call Type   |
+| initial_margin_type | IM Type     |
+| risk_weight         | Risk Weight |
+| modified_by         | Modified By |
+| version             | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/netting_set.hpp
+:domain_class:            refdata::domain::netting_set
+:protocol_include:        ores.refdata.api/messaging/netting_set_protocol.hpp
+:collection_name:         netting_sets
+:key_field:               code
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field               | label       | widget                 | type      | is_key | is_required | placeholder         |
+|---------------------+-------------+------------------------+-----------+--------+-------------+---------------------|
+| code                | Code        | codeEdit               | line_edit | true   | true        | Netting set id      |
+| call_type           | Call Type   | callTypeEdit           | line_edit | false  | false       | ORE call type       |
+| initial_margin_type | IM Type     | initialMarginTypeEdit  | line_edit | false  | false       | ORE IM type         |
+| description         | Description | descriptionEdit        | line_edit | false  | false       | Enter description   |
+
+*** Columns
+
+| enum_name         | field               | header      | type      | width |
+|-------------------+---------------------+-------------+-----------+-------|
+| Code              | code                | Code        | string    |   140 |
+| CallType          | call_type           | Call Type   | string    |   100 |
+| InitialMarginType | initial_margin_type | IM Type     | string    |   100 |
+| Description       | description         | Description | string    |   200 |
+| Version           | version             | Version     | int       |    80 |
+| ModifiedBy        | modified_by         | Modified By | string    |   120 |
+| RecordedAt        | recorded_at         | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:6AADB1A7-1229-4D10-8951-58446788957F][ores.refdata.netting_agreement]] — the agreement a set is opened under.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the analysis this entity follows.

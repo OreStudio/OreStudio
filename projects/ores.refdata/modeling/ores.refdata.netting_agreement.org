@@ -1,0 +1,258 @@
+:PROPERTIES:
+:ID: 6AADB1A7-1229-4D10-8951-58446788957F
+:END:
+#+title: ores.refdata.netting_agreement
+#+description: Codegen entity model for the refdata =netting_agreement= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A legal agreement between a legal entity of the firm and a counterparty that makes their trades nettable.
+#+entity_singular: netting_agreement
+#+entity_plural: netting_agreements
+#+entity_title: Netting Agreement
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A netting agreement is the legal document, such as an ISDA Master
+Agreement, that lets one legal entity of the firm and one counterparty
+replace what each owes the other under it with a single net amount. It is
+the legal fact behind a [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]]: a set opened under an agreement
+belongs to the agreement's two parties, and a set with no agreement holds
+trades that do not net.
+
+The agreement's two parties never change across its versions: both
+columns are fixed, so a new version that changes either is refused. A
+netting set copies them and pins the copy to the agreement, so a set
+cannot be filed under another counterparty's agreement, and the copy stays
+true. Closing an agreement does not close its sets, as for every soft
+foreign key in the schema; a set's agreement is checked when the set is
+written.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this netting agreement.
+
+Surrogate key for the agreement record.
+
+** agreement_number
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The reference the two parties give the agreement.
+
+Unique within the tenant.
+
+#+begin_src cpp :name generator
+std::string("NA-") + std::string(faker::string::alphanumeric(10))
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:fixed:    true
+:END:
+
+The legal entity of the firm that signed the agreement.
+
+References the parties table. Fixed for the agreement's life.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:fixed:    true
+:END:
+
+The counterparty that signed the agreement.
+
+References the counterparties table. Fixed for the agreement's life.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** agreement_type
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:END:
+
+The family of master agreement.
+
+ISDA for the ISDA Master Agreement; AFB and FBF for the French
+agreements; OTHER for any other signed-off master agreement.
+
+#+begin_src cpp :name generator
+std::string("ISDA")
+#+end_src
+
+** governing_law
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The law the agreement is governed by.
+
+Free text, such as English law or New York law.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("English law")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional description of the agreement.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Test netting agreement")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_netting_agreements_tbl
+:END:
+
+** Checks
+
+| expression                                                      |
+|-----------------------------------------------------------------|
+| "agreement_type" in ('ISDA', 'AFB', 'FBF', 'OTHER')             |
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:parent_entity: counterparty
+:nullable:      false
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: netting_agreement
+:entity_plural_short:   netting_agreements
+:entity_singular_words: netting agreement
+:entity_plural_words:   netting agreements
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: na
+:END:
+
+** Table display
+
+| column           | header        |
+|------------------+---------------|
+| agreement_number | Number        |
+| agreement_type   | Type          |
+| governing_law    | Governing Law |
+| modified_by      | Modified By   |
+| version          | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/netting_agreement.hpp
+:domain_class:            refdata::domain::netting_agreement
+:protocol_include:        ores.refdata.api/messaging/netting_agreement_protocol.hpp
+:collection_name:         netting_agreements
+:key_field:               agreement_number
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field            | label            | widget              | type      | is_key | is_required | placeholder              |
+|------------------+------------------+---------------------+-----------+--------+-------------+--------------------------|
+| agreement_number | Number           | agreementNumberEdit | line_edit | true   | true        | Agreement reference      |
+| agreement_type   | Type             | agreementTypeEdit   | line_edit | false  | true        | ISDA, AFB, FBF or OTHER  |
+| governing_law    | Governing Law    | governingLawEdit    | line_edit | false  | false       | Governing law            |
+| description      | Description      | descriptionEdit     | line_edit | false  | false       | Enter description        |
+
+*** Columns
+
+| enum_name       | field            | header        | type      | width |
+|-----------------+------------------+---------------+-----------+-------|
+| AgreementNumber | agreement_number | Number        | string    |   140 |
+| AgreementType   | agreement_type   | Type          | string    |    80 |
+| GoverningLaw    | governing_law    | Governing Law | string    |   160 |
+| Description     | description      | Description   | string    |   200 |
+| Version         | version          | Version       | int       |    80 |
+| ModifiedBy      | modified_by      | Modified By   | string    |   120 |
+| RecordedAt      | recorded_at      | Recorded At   | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the analysis this entity follows.

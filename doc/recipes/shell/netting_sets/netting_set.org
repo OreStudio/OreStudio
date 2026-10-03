@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 9993B255-2A0E-5AD9-B8F0-3CE5F85E6356
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the netting_sets commands from the shell?
+#+description: Every command the netting_sets submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:netting_sets:
+
+This file documents the netting_sets resource at the shell, one section per command. Every command is a subcommand of =netting_sets=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: FD35F2C5-588C-5A96-9A42-D447B6FB6306
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.list=.
+
+#+name: netting_sets-list
+#+begin_src ores-shell :tangle netting_sets-list.ores :exports none
+netting_sets list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3814EEE9-565B-52CA-884C-C832B858F3AA
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets get <code>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.get=.
+
+#+name: netting_sets-get
+#+begin_src ores-shell :tangle netting_sets-get.ores :exports none
+netting_sets get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F3BAAB59-7C34-5048-9B3B-EA0D273AD394
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.get_many=.
+
+#+name: netting_sets-get-many
+#+begin_src ores-shell :tangle netting_sets-get-many.ores :exports none
+netting_sets get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1339A017-EF6C-52A0-93D0-CCEB3F62D5E3
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets add <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.put=.
+
+#+name: netting_sets-add
+#+begin_src ores-shell :tangle netting_sets-add.ores :exports none
+netting_sets add __none__ - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E8180EC0-FDDD-5D16-A4B3-7EBD646A1170
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets set <id> <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.put=.
+
+#+name: netting_sets-set
+#+begin_src ores-shell :tangle netting_sets-set.ores :exports none
+netting_sets set 00000000-0000-0000-0000-000000000000 __none__ - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: FC4E23EF-0A2A-59C6-B1BD-9044CF26E96C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets put-many --count <n> <id> <code> <netting_agreement_id> <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.put_many=.
+
+#+name: netting_sets-put-many
+#+begin_src ores-shell :tangle netting_sets-put-many.ores :exports none
+netting_sets put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E5DB6C2F-0E78-58B2-8CF7-D2CA134BFCDB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.delete=.
+
+#+name: netting_sets-delete
+#+begin_src ores-shell :tangle netting_sets-delete.ores :exports none
+netting_sets delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AB913DA9-974D-5825-B7AC-20765A94AEC5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.delete_many=.
+
+#+name: netting_sets-delete-many
+#+begin_src ores-shell :tangle netting_sets-delete-many.ores :exports none
+netting_sets delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-netting-agreement-id=
+:PROPERTIES:
+:ID: 62195FD6-937D-52E7-A18D-535C043F1BF1
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets by-netting-agreement-id <netting_agreement_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets.list_by_netting_agreement_id=.
+
+#+name: netting_sets-by-netting-agreement-id
+#+begin_src ores-shell :tangle netting_sets-by-netting-agreement-id.ores :exports none
+netting_sets by-netting-agreement-id - --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 45CD8859-39E9-5141-B302-680C42B0AC4C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets_versions.list=.
+
+#+name: netting_sets-versions
+#+begin_src ores-shell :tangle netting_sets-versions.ores :exports none
+netting_sets versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B6386D8C-8F3D-5A38-A60D-C39C11F26183
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_sets version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.netting_sets_versions.get=.
+
+#+name: netting_sets-version
+#+begin_src ores-shell :tangle netting_sets-version.ores :exports none
+netting_sets version __none__ --version 1
+#+end_src
+

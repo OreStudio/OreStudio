@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 8973DCC5-2AD0-5F32-A9BB-6245ADC8AA9D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the netting_agreements commands from the shell?
+#+description: Every command the netting_agreements submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:netting_agreements:
+
+This file documents the netting_agreements resource at the shell, one section per command. Every command is a subcommand of =netting_agreements=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: CDB99A8A-10BD-594E-857C-24A6D32C9FFC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.list=.
+
+#+name: netting_agreements-list
+#+begin_src ores-shell :tangle netting_agreements-list.ores :exports none
+netting_agreements list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C9E83CAE-B8E0-582D-953F-00D7C25ABB6B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements get <agreement_number>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.get=.
+
+#+name: netting_agreements-get
+#+begin_src ores-shell :tangle netting_agreements-get.ores :exports none
+netting_agreements get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0A6F28C2-4439-5F0F-9CD2-82E397F6F5BB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements get-many <agreement_number>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.get_many=.
+
+#+name: netting_agreements-get-many
+#+begin_src ores-shell :tangle netting_agreements-get-many.ores :exports none
+netting_agreements get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 54C43BCB-226E-526F-9F95-F79262892E67
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements add <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.put=.
+
+#+name: netting_agreements-add
+#+begin_src ores-shell :tangle netting_agreements-add.ores :exports none
+netting_agreements add __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AD94B99B-0CDC-57C8-83DE-1895035AFD74
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements set <id> <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.put=.
+
+#+name: netting_agreements-set
+#+begin_src ores-shell :tangle netting_agreements-set.ores :exports none
+netting_agreements set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CE79B635-B86C-5E76-97F8-950203873234
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements put-many --count <n> <id> <agreement_number> <counterparty_id> <agreement_type> <governing_law> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.put_many=.
+
+#+name: netting_agreements-put-many
+#+begin_src ores-shell :tangle netting_agreements-put-many.ores :exports none
+netting_agreements put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 __none__ - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6EEC2BBE-CDF0-5C84-9F95-E71C086C1002
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements delete <agreement_number> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.delete=.
+
+#+name: netting_agreements-delete
+#+begin_src ores-shell :tangle netting_agreements-delete.ores :exports none
+netting_agreements delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 06459BF4-9CBD-5F87-A205-9A444FE196C7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements delete-many <agreement_number> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.delete_many=.
+
+#+name: netting_agreements-delete-many
+#+begin_src ores-shell :tangle netting_agreements-delete-many.ores :exports none
+netting_agreements delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-counterparty-id=
+:PROPERTIES:
+:ID: 789F7E80-C8C5-5015-93F5-53DF42BD7628
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements by-counterparty-id <counterparty_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements.list_by_counterparty_id=.
+
+#+name: netting_agreements-by-counterparty-id
+#+begin_src ores-shell :tangle netting_agreements-by-counterparty-id.ores :exports none
+netting_agreements by-counterparty-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 319ABC0E-7FAA-5120-94C4-0ED72B0846E9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements versions <agreement_number> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements_versions.list=.
+
+#+name: netting_agreements-versions
+#+begin_src ores-shell :tangle netting_agreements-versions.ores :exports none
+netting_agreements versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 04C7BEE6-C533-58E2-92D3-54322069A791
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_agreements version <agreement_number> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.netting_agreements_versions.get=.
+
+#+name: netting_agreements-version
+#+begin_src ores-shell :tangle netting_agreements-version.ores :exports none
+netting_agreements version __none__ --version 1
+#+end_src
+

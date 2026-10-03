@@ -175,6 +175,12 @@
 \ir ./refdata_counterparty_contact_informations_create.sql
 \ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql
 
+-- Netting agreements and the netting sets opened under them
+\ir ./refdata_netting_agreements_create.sql
+\ir ./refdata_netting_agreements_notify_trigger_create.sql
+\ir ./refdata_netting_sets_create.sql
+\ir ./refdata_netting_sets_notify_trigger_create.sql
+
 -- Business unit types (must precede business units)
 \ir ./refdata_business_unit_types_create.sql
 \ir ./refdata_business_unit_types_notify_trigger_create.sql

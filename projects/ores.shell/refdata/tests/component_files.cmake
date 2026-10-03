@@ -84,6 +84,8 @@ set(files
     "leg_type_commands_tests.cpp"
     "main.cpp"
     "monetary_nature_commands_tests.cpp"
+    "netting_agreement_commands_tests.cpp"
+    "netting_set_commands_tests.cpp"
     "ois_convention_commands_tests.cpp"
     "overnight_index_convention_commands_tests.cpp"
     "party_commands_tests.cpp"

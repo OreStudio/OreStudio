@@ -1839,3 +1839,60 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Netting agreements
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_netting_agreements_tbl enable row level security;
+
+drop policy if exists netting_agreements_tenant_isolation_policy
+    on ores_refdata_netting_agreements_tbl;
+
+create policy netting_agreements_tenant_isolation_policy on ores_refdata_netting_agreements_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: an agreement is visible to the parties that can see the
+-- firm's legal entity that signed it. FOR SELECT only, as for books.
+drop policy if exists netting_agreements_party_isolation_policy
+    on ores_refdata_netting_agreements_tbl;
+
+create policy netting_agreements_party_isolation_policy
+on ores_refdata_netting_agreements_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Netting sets
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_netting_sets_tbl enable row level security;
+
+drop policy if exists netting_sets_tenant_isolation_policy
+    on ores_refdata_netting_sets_tbl;
+
+create policy netting_sets_tenant_isolation_policy on ores_refdata_netting_sets_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: a set read from an ORE document has no legal entity
+-- yet and stays visible across the tenant until one is assigned. FOR SELECT
+-- only, as for books.
+drop policy if exists netting_sets_party_isolation_policy
+    on ores_refdata_netting_sets_tbl;
+
+create policy netting_sets_party_isolation_policy
+on ores_refdata_netting_sets_tbl
+as restrictive
+for select using (
+    party_id is null or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

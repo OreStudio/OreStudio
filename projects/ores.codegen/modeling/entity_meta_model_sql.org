@@ -242,6 +242,13 @@ not checked, as PostgreSQL does for a constraint. A pin into a mutable
 current-state table is refused, and so are repeated pin names, columns
 either model does not declare, and a message without exactly one =%=.
 
+*A fixed column keeps its first value.* A column marked =:fixed: true=
+in =* Columns= keeps the value of its row's first version: the insert
+trigger refuses a new version that changes it, with SQLSTATE =23514=, and
+it does so for a version replace too. A copy pinned to a temporal source
+stays true only when the copied columns are fixed. A fixed column needs a
+temporal table; a current-state row has no versions to compare.
+
 *Tenant-scoping is a policy, not three booleans.* =:system_scope:= and
 =:nullable_tenant_id:= are mutually exclusive with the default
 (standard-tenant) mode; together they form a single enumerated feature —

@@ -1172,3 +1172,11 @@ tangled into the runnable script library
 * Tenant Party
 
 - [[id:2F6C97DD-4F60-5936-870C-ACA6B4DD4811][How do I run the tenant_party commands from the shell?]]
+
+* Netting Agreements
+
+- [[id:8973DCC5-2AD0-5F32-A9BB-6245ADC8AA9D][How do I run the netting_agreements commands from the shell?]]
+
+* Netting Sets
+
+- [[id:9993B255-2A0E-5AD9-B8F0-3CE5F85E6356][How do I run the netting_sets commands from the shell?]]

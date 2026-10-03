@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-02T22:10:08.652474Z
+' Generated: 2026-10-03T01:55:13.746161Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3210,6 +3210,86 @@ package "refdata" #FFF3E0 {
     Monetary Nature Table
     Reference data defining valid monetary natures for currencies.
     Values include: Fiat, Commodity, Synthetic, Supranational.
+    end note
+
+    entity ores_refdata_netting_agreements_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * agreement_number : text
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * agreement_type : text
+          governing_law : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_netting_agreements_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Netting Agreement Table
+    A netting agreement is the legal document, such as an ISDA Master
+    Agreement, that lets one legal entity of the firm and one counterparty
+    replace what each owes the other under it with a single net amount. It is
+    the legal fact behind a [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][netting set]]: a set opened under an agreement
+    belongs to the agreement's two parties, and a set with no agreement holds
+    trades that do not net.
+    The agreement's two parties never change across its versions: both
+    columns are fixed, so a new version that changes either is refused. A
+    netting set copies them and pins the copy to the agreement, so a set
+    cannot be filed under another counterparty's agreement, and the copy stays
+    true. Closing an agreement does not close its sets, as for every soft
+    foreign key in the schema; a set's agreement is checked when the set is
+    written.
+    end note
+
+    entity ores_refdata_netting_sets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+          netting_agreement_id : uuid <<FK>>
+          counterparty_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+          call_type : text
+          initial_margin_type : text
+          risk_weight : double
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_netting_sets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Netting Set Table
+    A netting set is the group of trades with one counterparty whose values
+    offset one another when credit exposure is computed. Every trade names
+    exactly one set, as ORE requires; a trade with nothing to net against
+    sits in a set of its own. See [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] for the analysis.
+    A set opened under a [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]] copies the agreement's
+    counterparty and legal entity, and a pinned key holds the copy to the
+    agreement, so a set cannot be filed under another counterparty's
+    agreement. A set with no agreement holds trades that do not net; its
+    counterparty and legal entity may be unknown, as they are for a set read
+    from an ORE document, which names neither.
+    The code is the netting set id ORE uses. The call type and initial margin
+    type are the remaining parts of ORE's netting set details, and the risk
+    weight is ORE's.
     end note
 
     entity ores_refdata_ois_conventions_tbl <<temporal>> #C6F0D8 {

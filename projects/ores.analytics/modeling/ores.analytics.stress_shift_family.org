@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: F95005F1-86BE-4FE7-998A-069937FF6895
+:END:
+#+title: ores.analytics.stress_shift_family
+#+description: Codegen entity model for the analytics =stress_shift_family= table. The shift families of an ORE stress scenario.
+#+type: ores.codegen.entity
+#+component: analytics
+#+filetags: :model:entity:analytics:
+#+brief: One kind of market object a stress scenario can shift.
+#+entity_singular: stress_shift_family
+#+entity_plural: stress_shift_families
+#+entity_title: Stress Shift Family
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A stress scenario in =stresstest.xml= is a set of shifts, grouped by the
+element that holds them: =DiscountCurves=, =FxSpots=, =SwaptionVolatilities=
+and thirteen more. The schema fixes the set as the children of its =stresstest=
+type, apart from =Date=. Sixteen families in all.
+
+The family is a seeded lookup, seeded for the system tenant and read by every
+tenant, so a shift that names a family ORE does not have is refused.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The family's element name in the document, exactly as ORE spells it:
+'DiscountCurves', 'FxSpots', 'ParShifts'.
+
+#+begin_src cpp :name generator
+std::string("DiscountCurves")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the value means, in one line, for a reader who does not know ORE.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_analytics_stress_shift_families_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: family
+:entity_plural_short:   families
+:entity_singular_words: stress shift family
+:entity_plural_words:   stress shift families
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ssf
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  families
+:key_field:        code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | e.g. DiscountCurves |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 220   |
+| Description | description | Description | string    | 320   |
+| Version     | version     | Version     | int       | 70    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.

@@ -35,6 +35,7 @@ set(files
     "planner_import_planner_tests.cpp"
     "pricing_engine_database_roundtrip_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
+    "stress_test_database_roundtrip_tests.cpp"
     "todays_market_database_roundtrip_tests.cpp"
     "xml_bond_fact_mapper_roundtrip_tests.cpp"
     "xml_bond_golden_roundtrip_tests.cpp"

@@ -19,3 +19,5 @@
  */
 
 \ir ./analytics_pricing_engine_types_populate.sql
+\ir ./analytics_stress_shift_families_populate.sql
+\ir ./analytics_shift_types_populate.sql

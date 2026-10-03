@@ -44,6 +44,42 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Stress Shift Families
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_stress_shift_families_tbl enable row level security;
+
+drop policy if exists stress_shift_families_tenant_isolation_policy
+    on ores_analytics_stress_shift_families_tbl;
+
+create policy stress_shift_families_tenant_isolation_policy
+on ores_analytics_stress_shift_families_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system shift families visible to all
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Shift Types
+-- -----------------------------------------------------------------------------
+alter table ores_analytics_shift_types_tbl enable row level security;
+
+drop policy if exists shift_types_tenant_isolation_policy
+    on ores_analytics_shift_types_tbl;
+
+create policy shift_types_tenant_isolation_policy
+on ores_analytics_shift_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()  -- system shift types visible to all
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Pricing Model Configs (tenant-scoped)
 -- -----------------------------------------------------------------------------
 alter table ores_analytics_pricing_model_configs_tbl enable row level security;

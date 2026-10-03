@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/seed-the-stress-shift-kinds
+#+pr: 2541
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The database refuses a stress shift family or shift type ORE does not have.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -43,9 +43,19 @@ The database refuses a stress shift family or shift type ORE does not have.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The families are the sixteen children of the =stresstest= type in
+  =external/ore/xsd/stress.xsd=, apart from =Date=. They are exactly the sixteen
+  strings the stress test mapper writes into =stress_test_shift.family=.
+- The shift types are the =shiftType= enumeration in
+  =external/ore/xsd/ore_types.xsd=: =Relative=, =Absolute=, =EqualTo=. The
+  sensitivity configuration uses the same enumeration, so the lookup is named
+  =shift_type=, not after stress.
+- Both are analytics lookups seeded for the system tenant and readable by every
+  tenant, as =pricing_engine_type= is, and the shift's foreign keys resolve
+  under the system tenant.
+- No stress database round trip existed, so this task adds one, over the corpus
+  file that applies shifts in ten families and uses all three types, with a
+  refusal case for each column and a test that pins both seeds to the schemas.
 
 * Measurements
 
@@ -59,9 +69,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Shift families in the schema | 16 | children of =stresstest= in =stress.xsd=, apart from =Date= | 4b5499c45d |
+| Shift types in the schema | 3 (=Relative=, =Absolute=, =EqualTo=) | =shiftType= enumeration in =ore_types.xsd= | 4b5499c45d |
+| Corpus shift type values | =Absolute= 252, =Relative= 61, =EqualTo= 2, over 19 documents | corpus walk of =ShiftType= in =StressTesting= roots | 4b5499c45d |
+| Families and types in =MarketRisk/Input/stresstest.xml= | 14 family elements, 10 of them holding shifts; 3 types | the same walk, per document; shift rows counted by the database round trip | 4b5499c45d |
 
 * Notes
+
+- =stress_test_shift= also carries an =extras= column of name and value pairs,
+  which the story's acceptance rules out. It is outside this task, which is
+  about the family and the shift type: [[id:4C7C8ED1-5B25-46B5-85C8-4E0A73D7A12A][Replace the stress shift extras with typed rows]].
 
 * Test Scenarios
 
@@ -78,12 +95,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2541][#2541]] | [analytics] Seed the stress shift families and shift types |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unrelated generated shell scripts in the diff | projects/ores.shell/scripts/library | No change | The tangle regenerates every script from the recipes, and the shell script drift gate fails a PR whose scripts lag the recipes; these caught up with recipes merged in PR 2539. |
+| 2 | The migration guard skips a null family | analytics_stress_shift_vocabulary_migration.sql | No change | =family= is not null in the model and the table. |
+| 3 | The follow-up must remove the in-memory comparison | task_type-the-stress-shift-extras.org | Accept | Added to that task's acceptance. |
+| 4 | Generated lookup code is near-identical | generated files | No change | Generated; fixes belong in the templates. |
 
 * Result
+
+- New analytics lookups =stress_shift_family= (16 rows) and =shift_type= (3
+  rows), seeded for the system tenant from =stress.xsd= and =ore_types.xsd=,
+  readable by every tenant.
+- =stress_test_shift.family= and =stress_test_shift.shift_type= are soft
+  foreign keys resolved under the system tenant; an unknown value is refused on
+  insert.
+- New tests: the seeds pinned to the schemas; a stress database round trip over
+  =MarketRisk/Input/stresstest.xml=, ten families and three types, compared with
+  the mapper's in-memory round trip; one refusal case per column.
+- Migration =analytics_stress_shift_vocabulary_migration.sql= for existing
+  databases, refusing while a current shift names a value outside the schemas.
+- Build clean; ctest 89/89 after a database recreate.
+- Found on the way and filed: the shift's =extras= column of name and value
+  pairs, and the mapper dropping an empty family element, in
+  [[id:4C7C8ED1-5B25-46B5-85C8-4E0A73D7A12A][Replace the stress shift extras with typed rows]].

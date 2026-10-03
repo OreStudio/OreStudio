@@ -32,6 +32,12 @@
 \ir ./analytics_pricing_engine_types_create.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_create.sql
 
+-- Stress and sensitivity vocabulary (shift families and shift types)
+\ir ./analytics_stress_shift_families_create.sql
+\ir ./analytics_stress_shift_families_notify_trigger_create.sql
+\ir ./analytics_shift_types_create.sql
+\ir ./analytics_shift_types_notify_trigger_create.sql
+
 -- Pricing model configuration (header)
 \ir ./analytics_pricing_model_configs_create.sql
 \ir ./analytics_pricing_model_configs_notify_trigger_create.sql

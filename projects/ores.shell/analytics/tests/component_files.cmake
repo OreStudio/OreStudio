@@ -30,6 +30,8 @@ set(files
     "pricing_model_config_commands_tests.cpp"
     "pricing_model_product_commands_tests.cpp"
     "pricing_model_product_parameter_commands_tests.cpp"
+    "shift_type_commands_tests.cpp"
+    "stress_shift_family_commands_tests.cpp"
     "stress_test_library_commands_tests.cpp"
     "stress_test_scenario_commands_tests.cpp"
     "stress_test_shift_commands_tests.cpp"

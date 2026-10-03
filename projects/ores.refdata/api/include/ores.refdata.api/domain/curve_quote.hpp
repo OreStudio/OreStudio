@@ -87,7 +87,9 @@ struct curve_quote final {
 
     /**
      * @brief The list the quote belongs to when its parent writes more than one: BasisQuotes,
-     * OffPeakQuotes or PeakQuotes. Null for the parent's Quotes list.
+     * OffPeakQuotes or PeakQuotes, or the quotes of a volatility entry's Curve configuration, Curve
+     * when written on the entry and VolatilityConfig/Curve when written inside its
+     * VolatilityConfig. Null for the parent's Quotes list.
      */
     std::optional<std::string> quote_list;
 

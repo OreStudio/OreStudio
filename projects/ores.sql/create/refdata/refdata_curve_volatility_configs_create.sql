@@ -27,12 +27,15 @@
  * One way a volatility entry's surface may be built. CDS, equity and commodity
  * volatilities each name one or more volatility configurations, each with an
  * optional priority; ORE builds the first that succeeds. kind names the
- * element the document wrote, and the columns that kind uses are set.
+ * element the document wrote, and the columns that kind uses are set. An entry
+ * writes a kind either directly or inside a VolatilityConfig element, which
+ * holds at most one of each kind; is_wrapped says which.
  *
- * Only the StrikeSurface kind is modelled so far, because it is the only kind a
- * corpus CDS volatility writes. The other kinds (Constant, Curve,
- * ProxySurface and the equity and commodity surfaces) are added with the
- * sections that write them, and the mapper refuses them until then.
+ * The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
+ * DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
+ * curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
+ * MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
+ * appear in no corpus document, and the mapper refuses them.
  */
 
 create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
@@ -41,6 +44,7 @@ create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
     "version" integer not null,
     "curve_definition_id" uuid not null,
     "kind" text not null,
+    "is_wrapped" boolean not null,
     "priority" integer null,
     "quote_type" text null,
     "volatility_type" text null,
@@ -54,6 +58,19 @@ create table if not exists "ores_refdata_curve_volatility_configs_tbl" (
     "time_extrapolation_variance" text null,
     "strike_extrapolation" text null,
     "calendar" text null,
+    "quote" text null,
+    "interpolation" text null,
+    "enforce_monotone_variance" boolean null,
+    "delta_type" text null,
+    "atm_type" text null,
+    "atm_delta_type" text null,
+    "put_deltas" text null,
+    "call_deltas" text null,
+    "future_price_correction" text null,
+    "proxy_volatility_curve" text null,
+    "fx_volatility_curve" text null,
+    "correlation_curve" text null,
+    "cds_volatility_curve" text null,
     "position" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,

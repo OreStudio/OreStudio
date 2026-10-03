@@ -109,8 +109,10 @@ boost::uuids::nil_uuid()
 :END:
 
 The list the quote belongs to when its parent writes more than one:
-=BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=. Null for the parent's =Quotes=
-list.
+=BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=, or the quotes of a volatility
+entry's =Curve= configuration, =Curve= when written on the entry and
+=VolatilityConfig/Curve= when written inside its =VolatilityConfig=. Null for
+the parent's =Quotes= list.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -232,7 +234,7 @@ what the export restores.
 
 | expression                                                                                                                                                           |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes'))                                                                             |
+| ("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes', 'Curve', 'VolatilityConfig/Curve'))                                                                             |
 | ("quote_text" is not null and "rate_quote" is null and "spread_quote" is null) or ("quote_text" is null and "rate_quote" is not null and "spread_quote" is not null) |
 | "position" >= 0                                                                                                                                                      |
 

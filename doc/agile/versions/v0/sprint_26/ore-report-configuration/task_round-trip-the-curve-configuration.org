@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2562
+#+pr: 2564
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -247,6 +247,27 @@ Step 4c, decided while building it:
   for old documents, and =UseEffectiveVolatility=. Each has a column, so either
   round trips.
 
+Step 4d, decided while building it:
+
+- Step 4 gains a fifth part. 4d is the equity, commodity and bond future
+  volatilities; 4e is the global =ReportConfiguration=, the whole-document
+  corpus round trip, and closing this task.
+- An entry writes each volatility configuration kind either directly or inside
+  a =VolatilityConfig= element, which holds at most one of each kind.
+  =curve_volatility_config= gains =is_wrapped= and the columns of the kinds
+  the corpus writes: =Constant=, =Curve=, =DeltaSurface= and =ProxySurface=.
+  =MoneynessSurface=, =ApoFutureSurface=, =OneDimSolverConfig= and a smile
+  inside a surface appear in no corpus document and are refused.
+- A =Curve= kind's quotes are rows of =curve_quote= on the entry, in the list
+  =Curve= or =VolatilityConfig/Curve=, which reuses =quote_list= instead of
+  adding a fifth owner column to =curve_quote=. The owner question noted in
+  step 3d stays open.
+- No corpus document writes =BondFutureVolatilities=. It is modelled from the
+  schema, because it is flat with a strike surface and costs little, so a
+  document that writes it is held rather than refused.
+- Every section is now modelled, so the test of an unmodelled section is
+  replaced by refusals of a solver configuration and an APO future surface.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -262,6 +283,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2564][#2564]] | [refdata] Map the equity, commodity and bond future volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2562][#2562]] | [refdata] Map the swaption and cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2560][#2560]] | [refdata] Map the CDS and inflation cap and floor volatility sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2558][#2558]] | [refdata] Map the flat volatility and correlation sections |

@@ -52,12 +52,6 @@ std::filesystem::path corpus_root() {
 
 curveconfiguration modelled_only(curveconfiguration d) {
     d.ReportConfiguration = decltype(d.ReportConfiguration){};
-    if (d.EquityVolatilities)
-        d.EquityVolatilities->EquityVolatility.clear();
-    if (d.CommodityVolatilities)
-        d.CommodityVolatilities->CommodityVolatility.clear();
-    if (d.BondFutureVolatilities)
-        d.BondFutureVolatilities->BondFutureVolatility.clear();
     return d;
 }
 
@@ -245,10 +239,21 @@ TEST_CASE("a yield curve with every segment element round trips", tags) {
     CHECK(ores::ore::xml::parsed_text_difference(original, exported, "synthetic").empty());
 }
 
-TEST_CASE("entries of a section the mapper does not model are refused", tags) {
+TEST_CASE("an equity volatility with a solver configuration is refused", tags) {
     curveconfiguration d;
     d.EquityVolatilities = equityVolatilities{};
-    d.EquityVolatilities->EquityVolatility.push_back(equityVolatility{});
+    equityVolatility v;
+    v.OneDimSolverConfig = oneDimSolverConfigType{};
+    d.EquityVolatilities->EquityVolatility.push_back(v);
+    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+}
+
+TEST_CASE("a commodity volatility with an APO future surface is refused", tags) {
+    curveconfiguration d;
+    d.CommodityVolatilities = commodityVolatilities{};
+    commodityVolatility v;
+    v.ApoFutureSurface = volatilityApoFutureSurfaceConfig{};
+    d.CommodityVolatilities->CommodityVolatility.push_back(v);
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 

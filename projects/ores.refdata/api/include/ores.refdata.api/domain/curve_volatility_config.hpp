@@ -40,12 +40,15 @@ namespace ores::refdata::domain {
  * One way a volatility entry's surface may be built. CDS, equity and commodity
  * volatilities each name one or more volatility configurations, each with an
  * optional priority; ORE builds the first that succeeds. kind names the
- * element the document wrote, and the columns that kind uses are set.
+ * element the document wrote, and the columns that kind uses are set. An entry
+ * writes a kind either directly or inside a VolatilityConfig element, which
+ * holds at most one of each kind; is_wrapped says which.
  *
- * Only the StrikeSurface kind is modelled so far, because it is the only kind a
- * corpus CDS volatility writes. The other kinds (Constant, Curve,
- * ProxySurface and the equity and commodity surfaces) are added with the
- * sections that write them, and the mapper refuses them until then.
+ * The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
+ * DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
+ * curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
+ * MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
+ * appear in no corpus document, and the mapper refuses them.
  */
 struct curve_volatility_config final {
     /**
@@ -72,6 +75,11 @@ struct curve_volatility_config final {
      * @brief The element the document wrote, such as StrikeSurface.
      */
     std::string kind;
+
+    /**
+     * @brief Whether the configuration is written inside a VolatilityConfig element.
+     */
+    bool is_wrapped = false;
 
     /**
      * @brief The configuration's priority attribute, when it has one.
@@ -114,7 +122,8 @@ struct curve_volatility_config final {
     std::optional<std::string> strike_interpolation;
 
     /**
-     * @brief Whether the surface extrapolates, as the ORE boolean the document wrote.
+     * @brief How the configuration extrapolates: for a surface, whether it extrapolates as the ORE
+     * boolean the document wrote; for a curve, the extrapolation type.
      */
     std::optional<std::string> extrapolation;
 
@@ -137,6 +146,72 @@ struct curve_volatility_config final {
      * @brief The configuration's calendar, as the document spells it.
      */
     std::optional<std::string> calendar;
+
+    /**
+     * @brief The quote of a constant volatility.
+     */
+    std::optional<std::string> quote;
+
+    /**
+     * @brief How a volatility curve interpolates.
+     */
+    std::optional<std::string> interpolation;
+
+    /**
+     * @brief Whether a volatility curve enforces monotone variance.
+     */
+    std::optional<bool> enforce_monotone_variance;
+
+    /**
+     * @brief The delta type of a delta surface.
+     */
+    std::optional<std::string> delta_type;
+
+    /**
+     * @brief The ATM type of a delta surface.
+     */
+    std::optional<std::string> atm_type;
+
+    /**
+     * @brief The delta type of a delta surface's ATM strike.
+     */
+    std::optional<std::string> atm_delta_type;
+
+    /**
+     * @brief The put deltas of a delta surface, as ORE's comma separated text.
+     */
+    std::optional<std::string> put_deltas;
+
+    /**
+     * @brief The call deltas of a delta surface, as ORE's comma separated text.
+     */
+    std::optional<std::string> call_deltas;
+
+    /**
+     * @brief Whether a delta surface corrects for the future price, as the ORE boolean the document
+     * wrote.
+     */
+    std::optional<std::string> future_price_correction;
+
+    /**
+     * @brief The volatility a proxy surface is built from.
+     */
+    std::optional<std::string> proxy_volatility_curve;
+
+    /**
+     * @brief The FX volatility a proxy surface converts with.
+     */
+    std::optional<std::string> fx_volatility_curve;
+
+    /**
+     * @brief The correlation a proxy surface converts with.
+     */
+    std::optional<std::string> correlation_curve;
+
+    /**
+     * @brief The CDS volatility a proxy surface is built from.
+     */
+    std::optional<std::string> cds_volatility_curve;
 
     /**
      * @brief The configuration's place among the entry's configurations, which the export restores.

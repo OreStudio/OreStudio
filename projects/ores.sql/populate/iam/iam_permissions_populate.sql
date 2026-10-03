@@ -476,6 +476,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatilities:read',       'View cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatilities:write',      'Create and modify cap floor volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::cap_floor_volatilities:delete',     'Delete cap floor volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_volatilities:read',          'View equity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_volatilities:write',         'Create and modify equity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::equity_volatilities:delete',        'Delete equity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_volatilities:read',       'View commodity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_volatilities:write',      'Create and modify commodity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::commodity_volatilities:delete',     'Delete commodity volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_future_volatilities:read',     'View bond future volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_future_volatilities:write',    'Create and modify bond future volatilities');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bond_future_volatilities:delete',   'Delete bond future volatilities');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:read',              'View curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:write',             'Create and modify curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:delete',            'Delete curve configurations');

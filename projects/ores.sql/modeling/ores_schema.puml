@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T17:15:35.055936Z
+' Generated: 2026-10-03T18:00:09.138631Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1044,6 +1044,43 @@ package "refdata" #FFF3E0 {
     either payment convention.
     end note
 
+    entity ores_refdata_bond_future_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * contract_name : text
+          day_counter : text
+          calendar : text
+          yield_curve_id : text <<FK>>
+          strike_factor : double
+          use_only_put_call : text
+          prefer_out_of_the_money : text
+          treat_as_european : text
+        * has_volatility_config : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bond_future_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bond Future Volatility Table
+    The settings of one BondFutureVolatility entry of a curveconfig.xml, one
+    row per curve_definition in the BondFutureVolatilities section: the future
+    contract and the yield curve the surface is built with. Its volatility configurations, written directly or inside a VolatilityConfig
+    element, are rows of curve_volatility_config.
+    No corpus document writes this section; it is modelled from the schema so a
+    document that does is held rather than refused. A OneDimSolverConfig is
+    refused, as for equity and commodity volatilities.
+    end note
+
     entity ores_refdata_bond_yield_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
@@ -2012,6 +2049,48 @@ package "refdata" #FFF3E0 {
     prices come from, its priority, its convention, and its quotes. An off peak
     power segment lists its off peak and peak quotes separately, as rows of
     curve_quote with the list names OffPeakQuotes and PeakQuotes.
+    end note
+
+    entity ores_refdata_commodity_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+        * currency : text
+          instrument_type : text
+          calendar_spread_offset : integer
+          calendar_spread_underlying_name : text
+          day_counter : text
+          calendar : text
+          future_conventions : text
+          option_expiry_roll_days : text
+          price_curve_id : text <<FK>>
+          yield_curve_id : text <<FK>>
+          quote_suffix : text
+          prefer_out_of_the_money : text
+        * has_volatility_config : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodity_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Volatility Table
+    The settings of one CommodityVolatility entry of a curveconfig.xml, one row
+    per curve_definition in the CommodityVolatilities section: the currency, the
+    instrument the surface is quoted on, and the price curve, yield curve and
+    future convention it is built with. Its volatility configurations, written directly or inside a VolatilityConfig
+    element, are rows of curve_volatility_config. Its Report is a row of
+    curve_report_configuration.
+    The schema also allows a OneDimSolverConfig, which no corpus document writes;
+    the mapper refuses an entry that has one rather than lose it.
     end note
 
     entity ores_refdata_contact_types_tbl <<temporal>> #C6F0D8 {
@@ -3260,6 +3339,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * curve_definition_id : uuid <<FK>>
         * kind : text
+        * is_wrapped : boolean
           priority : integer
           quote_type : text
           volatility_type : text
@@ -3273,6 +3353,19 @@ package "refdata" #FFF3E0 {
           time_extrapolation_variance : text
           strike_extrapolation : text
           calendar : text
+          quote : text
+          interpolation : text
+          enforce_monotone_variance : boolean
+          delta_type : text
+          atm_type : text
+          atm_delta_type : text
+          put_deltas : text
+          call_deltas : text
+          future_price_correction : text
+          proxy_volatility_curve : text
+          fx_volatility_curve : text
+          correlation_curve : text
+          cds_volatility_curve : text
         * position : integer
         * modified_by : text
         * performed_by : text
@@ -3290,11 +3383,14 @@ package "refdata" #FFF3E0 {
     One way a volatility entry's surface may be built. CDS, equity and commodity
     volatilities each name one or more volatility configurations, each with an
     optional priority; ORE builds the first that succeeds. kind names the
-    element the document wrote, and the columns that kind uses are set.
-    Only the StrikeSurface kind is modelled so far, because it is the only kind a
-    corpus CDS volatility writes. The other kinds (Constant, Curve,
-    ProxySurface and the equity and commodity surfaces) are added with the
-    sections that write them, and the mapper refuses them until then.
+    element the document wrote, and the columns that kind uses are set. An entry
+    writes a kind either directly or inside a VolatilityConfig element, which
+    holds at most one of each kind; is_wrapped says which.
+    The kinds the corpus writes are modelled: Constant, Curve, StrikeSurface,
+    DeltaSurface and ProxySurface. A Curve kind's quotes are rows of
+    curve_quote on the entry, in the list Curve or VolatilityConfig/Curve.
+    MoneynessSurface, ApoFutureSurface and a parametric smile inside a surface
+    appear in no corpus document, and the mapper refuses them.
     end note
 
     entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
@@ -3604,6 +3700,46 @@ package "refdata" #FFF3E0 {
     whether the element is there. 101 write an empty Calendar; the column then
     holds the empty text the document wrote. A calendar that is not empty is
     checked by ores_refdata_validate_calendar_fn.
+    end note
+
+    entity ores_refdata_equity_volatilities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * curve_definition_id : uuid <<FK>>
+          equity_id : text <<FK>>
+        * currency : text
+          dimension : text
+          expiries : text
+          strikes : text
+          day_counter : text
+          time_extrapolation : text
+          strike_extrapolation : text
+          calendar : text
+          prefer_out_of_the_money : text
+        * has_volatility_config : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_equity_volatilities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Volatility Table
+    The settings of one EquityVolatility entry of a curveconfig.xml, one row per
+    curve_definition in the EquityVolatilities section: the equity, its
+    currency, and the settings the older form of the entry writes directly
+    (dimension, expiries, strikes and extrapolation). Its volatility configurations, written directly or inside a VolatilityConfig
+    element, are rows of curve_volatility_config. Its Report
+    is a row of curve_report_configuration.
+    The schema also allows a OneDimSolverConfig, which no corpus document writes;
+    the mapper refuses an entry that has one rather than lose it.
     end note
 
     entity ores_refdata_floating_index_types_tbl <<temporal>> #C6F0D8 {

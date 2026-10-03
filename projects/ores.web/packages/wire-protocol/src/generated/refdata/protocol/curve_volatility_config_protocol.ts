@@ -36,6 +36,7 @@ export interface CurveVolatilityConfigWrite {
     id: string;
     curve_definition_id: string;
     kind: string;
+    is_wrapped: boolean;
     priority: number | null;
     quote_type: string | null;
     volatility_type: string | null;
@@ -49,6 +50,19 @@ export interface CurveVolatilityConfigWrite {
     time_extrapolation_variance: string | null;
     strike_extrapolation: string | null;
     calendar: string | null;
+    quote: string | null;
+    interpolation: string | null;
+    enforce_monotone_variance: boolean | null;
+    delta_type: string | null;
+    atm_type: string | null;
+    atm_delta_type: string | null;
+    put_deltas: string | null;
+    call_deltas: string | null;
+    future_price_correction: string | null;
+    proxy_volatility_curve: string | null;
+    fx_volatility_curve: string | null;
+    correlation_curve: string | null;
+    cds_volatility_curve: string | null;
     position: number;
 }
 

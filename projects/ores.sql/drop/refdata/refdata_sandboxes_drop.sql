@@ -26,5 +26,7 @@
 drop rule if exists ores_refdata_sandboxes_delete_rule on "ores_refdata_sandboxes_tbl";
 drop trigger if exists ores_refdata_sandboxes_insert_trg on "ores_refdata_sandboxes_tbl";
 drop function if exists ores_refdata_sandboxes_insert_fn;
+drop function if exists ores_refdata_actor_sees_sandbox_fn;
+drop function if exists ores_refdata_actor_account_id_fn;
 drop function if exists ores_refdata_account_sees_sandbox_fn;
 drop table if exists "ores_refdata_sandboxes_tbl";

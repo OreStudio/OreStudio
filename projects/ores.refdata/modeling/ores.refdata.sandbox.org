@@ -27,7 +27,15 @@ Opening a sandbox needs the =open_sandbox= [[id:F783F38A-C123-489A-881D-5BCB5DE6
 an official anchor; the check runs again when the owner changes.
 =ores_refdata_account_sees_sandbox_fn= answers whether an account may see a
 sandbox: its owner always may; anyone with =read= at the anchor may when it
-is shared; its [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][members]] may when it is shared with members.
+is shared; its [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][members]] may when it is shared with members. A restrictive
+row-level security policy on portfolios applies it to the session's actor
+through =ores_refdata_actor_sees_sandbox_fn=, so a sandbox's portfolios are
+read and written only by those who may see the sandbox, and a session with
+no actor sees none of them.
+
+Closing a sandbox does not close its portfolios, as for every soft foreign
+key in the schema. Handing a sandbox to a new owner needs the right at the
+anchor on the new owner's side; the new owner's consent is not recorded.
 
 * Flags
 :PROPERTIES:
@@ -304,6 +312,41 @@ begin
     return false;
 end;
 $$ language plpgsql stable set search_path = public, pg_temp;
+
+-- The account of the user the session acts for, from app.current_actor.
+-- Security definer and narrow, for the same reason as the liveness check:
+-- it answers one id, for the session's own actor.
+create or replace function ores_refdata_actor_account_id_fn(
+    p_tenant_id uuid
+) returns uuid as $$
+declare
+    v_id uuid;
+begin
+    select id into v_id
+    from ores_iam_accounts_tbl
+    where username = ores_iam_current_actor_fn()
+      and tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    order by (tenant_id = p_tenant_id) desc
+    limit 1;
+    return v_id;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- Whether the session's actor may see a sandbox. A session with no actor,
+-- such as a system process, sees none. The portfolio policy uses it to keep
+-- a sandbox's portfolios out of every read and write by anyone else.
+create or replace function ores_refdata_actor_sees_sandbox_fn(
+    p_tenant_id uuid,
+    p_sandbox_id uuid
+) returns boolean as $$
+declare
+    v_account uuid := ores_refdata_actor_account_id_fn(p_tenant_id);
+begin
+    return v_account is not null
+       and ores_refdata_account_sees_sandbox_fn(p_tenant_id, v_account, p_sandbox_id);
+end;
+$$ language plpgsql stable set search_path = public, pg_temp;
 #+end_src
 
 * C++
@@ -393,6 +436,8 @@ $$ language plpgsql stable set search_path = public, pg_temp;
 *** Extra drop statements
 
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_actor_sees_sandbox_fn;
+drop function if exists ores_refdata_actor_account_id_fn;
 drop function if exists ores_refdata_account_sees_sandbox_fn;
 #+end_src
 

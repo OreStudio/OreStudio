@@ -95,7 +95,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Sandbox portfolios leak into official reads | refdata RLS | Fix | A restrictive policy on portfolios shows and accepts a sandbox's portfolios only for an actor who may see the sandbox; a session with no actor sees none. Covers every generated read, the count and list-by-sandbox. |
+| 2 | Anyone with write can write into another's sandbox | refdata RLS | Fix | The same policy's check refuses the write. |
+| 3 | Member rows can move between sandboxes | sandbox_member | Fix | Both columns are fixed. |
+| 4 | Archived sandboxes stay writable | portfolio | Fix | The portfolio trigger refuses a write into an archived sandbox. |
+| 5 | Closing a sandbox orphans its portfolios | sandbox | Document | The soft-key convention; the model says so. |
+| 6 | Owner change without the new owner's consent | sandbox | Document | The model says consent is not recorded. |
+| 7 | Anchor check reveals sandbox portfolios | sandbox | Keep | Ids are UUIDs and the anchor must be readable to be named. |
+| 8 | list_portfolios refuses a stated filter | portfolio | Keep | That comes from main's list contract, applied by regeneration; no caller states a filter. |
+| 9 | (CI) Shell scripts not tangled | shell scripts | Fix | Tangled; the portfolio right scripts PR 2544 missed come along. |
+| 10 | (Found) The refdata service cannot read iam accounts | portfolio_right, sandbox | Fix | Account liveness and the actor's account resolve through narrow security definer helpers, so the invoker functions work under any service role. |
 
 * Result
 
@@ -116,4 +125,8 @@ via its "Verifies task" field.
     non-member.
 - The generated sandbox and member tests open a sandbox through seed
   snippets that grant =open_sandbox= first, and pass.
+- After review, as the refdata service role in a transaction that rolled
+  back: the owner saw the sandbox portfolio, another account and a session
+  with no actor saw none, another account's write was refused (42501, row
+  security), and a write into an archived sandbox was refused (23514).
 - Build clean; ctest 89 of 89 on a recreated database.

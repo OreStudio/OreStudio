@@ -174,13 +174,26 @@ on delete to "ores_refdata_portfolio_rights_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+-- Whether an account is live. Security definer and narrow: the services that
+-- check rights may not read the accounts table, and this answers one yes or
+-- no about one account id.
+create or replace function ores_refdata_account_is_live_fn(
+    p_account_id uuid
+) returns boolean as $$
+begin
+    return exists (
+        select 1 from ores_iam_accounts_tbl
+        where id = p_account_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
 -- Whether an account holds a right at a portfolio node, directly or through
 -- an ancestor. The function runs with the caller's rights, so row-level
 -- security confines it to the session's tenant whatever tenant is passed.
 -- A closed account holds nothing. Portfolio inserts refuse cycles; the depth
--- bound only keeps a corrupt tree from looping. PL/pgSQL, not SQL: refdata is
--- created before iam, and a SQL function would resolve the accounts table at
--- creation time.
+-- bound only keeps a corrupt tree from looping.
 create or replace function ores_refdata_account_holds_portfolio_right_fn(
     p_tenant_id uuid,
     p_account_id uuid,
@@ -206,14 +219,10 @@ begin
         select 1
         from ores_refdata_portfolio_rights_tbl r
         join ancestry a on r.portfolio_id = a.id
-        join ores_iam_accounts_tbl acc
-          on acc.id = r.account_id
-         and acc.tenant_id = r.tenant_id
-         and acc.valid_to = ores_utility_infinity_timestamp_fn()
         where r.tenant_id = p_tenant_id
           and r.account_id = p_account_id
           and r.right_code = p_right_code
           and r.valid_to = ores_utility_infinity_timestamp_fn()
-    );
+    ) and ores_refdata_account_is_live_fn(p_account_id);
 end;
 $$ language plpgsql stable set search_path = public, pg_temp;

@@ -125,6 +125,26 @@ begin
                 NEW.version, current_version
                 using errcode = 'P0002';
         end if;
+        if exists (
+            select 1 from "ores_refdata_sandbox_members_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "account_id" is distinct from NEW."account_id"
+        ) then
+            raise exception 'account_id cannot change: it is fixed for the life of the sandbox_member.'
+                using errcode = '23514';
+        end if;
+        if exists (
+            select 1 from "ores_refdata_sandbox_members_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "sandbox_id" is distinct from NEW."sandbox_id"
+        ) then
+            raise exception 'sandbox_id cannot change: it is fixed for the life of the sandbox_member.'
+                using errcode = '23514';
+        end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction

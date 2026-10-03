@@ -27,4 +27,5 @@ drop rule if exists ores_refdata_portfolio_rights_delete_rule on "ores_refdata_p
 drop trigger if exists ores_refdata_portfolio_rights_insert_trg on "ores_refdata_portfolio_rights_tbl";
 drop function if exists ores_refdata_portfolio_rights_insert_fn;
 drop function if exists ores_refdata_account_holds_portfolio_right_fn;
+drop function if exists ores_refdata_account_is_live_fn;
 drop table if exists "ores_refdata_portfolio_rights_tbl";

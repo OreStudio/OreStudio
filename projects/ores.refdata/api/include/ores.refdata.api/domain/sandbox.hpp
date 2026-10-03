@@ -52,7 +52,14 @@ namespace ores::refdata::domain {
  * ores_refdata_account_sees_sandbox_fn answers whether an account may see a
  * sandbox: its owner always may; anyone with read at the anchor may when it
  * is shared; its [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][members]] may when it is shared with
- * members.
+ * members. A restrictive row-level security policy on portfolios applies it to the session's actor
+ * through ores_refdata_actor_sees_sandbox_fn, so a sandbox's portfolios are
+ * read and written only by those who may see the sandbox, and a session with
+ * no actor sees none of them.
+ *
+ * Closing a sandbox does not close its portfolios, as for every soft foreign
+ * key in the schema. Handing a sandbox to a new owner needs the right at the
+ * anchor on the new owner's side; the new owner's consent is not recorded.
  */
 struct sandbox final {
     /**

@@ -267,6 +267,19 @@ begin
             NEW.parent_portfolio_id
             using errcode = '23514';
     end if;
+
+    -- An archived sandbox is read-only.
+    if NEW.sandbox_id is not null and exists (
+        select 1 from ores_refdata_sandboxes_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.sandbox_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and status = 'archived'
+    ) then
+        raise exception 'Invalid sandbox_id: %. The sandbox is archived and read-only.',
+            NEW.sandbox_id
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

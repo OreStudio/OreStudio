@@ -36,6 +36,7 @@ drop policy if exists sandbox_members_tenant_isolation_policy on "ores_refdata_s
 drop policy if exists csa_eligible_currencies_tenant_isolation_policy on "ores_refdata_csa_eligible_currencies_tbl";
 
 -- Portfolios
+drop policy if exists portfolios_sandbox_isolation_policy on "ores_refdata_portfolios_tbl";
 drop policy if exists portfolios_tenant_isolation_policy on "ores_refdata_portfolios_tbl";
 
 -- Business Units

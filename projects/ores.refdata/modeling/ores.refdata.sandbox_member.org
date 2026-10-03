@@ -42,6 +42,7 @@ Surrogate key for the sandbox member record.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :natural_key: true
+:fixed:       true
 :END:
 
 The sandbox shared.
@@ -55,6 +56,7 @@ ctx.generate_uuid()
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :natural_key: true
+:fixed:       true
 :END:
 
 The account it is shared with.

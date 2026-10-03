@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 002F3C62-BD7D-475C-925F-4E656AD10E98
+:END:
+#+title: Task: Keep sandboxes out of official reports
+#+description: Mark report definitions as official or not, and keep sandbox portfolios and virtual books out of an official report's scope and of the books it resolves.
+#+type: task
+#+level: s1
+#+filetags: :sandboxes:sprint_26:v0:
+#+owner: marco
+#+branch: feature/official-reports
+#+pr: 2561
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make it impossible for an official report to read sandbox data, even by a forgotten filter.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- A report definition states whether it is official; existing definitions are official.
+- An official definition's scope cannot name a sandbox portfolio or a virtual book, and a definition cannot become official while its scope does.
+- The books an official report resolves never include a virtual book.
+
+* Plan
+
+- Row-level security already hides a sandbox's portfolios and books from a
+  session with no actor, so a system process sees none. That is not
+  enough: the book resolver runs as the table owner, which bypasses
+  row-level security, so the rule has to live in reporting itself.
+- =report_definition= gains =is_official=, defaulting to true, so every
+  existing definition stays official.
+- The two scope tables refuse a virtual book or a sandbox portfolio when
+  the configuration's definition is official.
+- A definition cannot become official while one of its configurations
+  scopes a sandbox input.
+- The resolver drops virtual books from an official report's set, as a
+  last line of defence for data written before these checks.
+- A pgTAP test covers the rules the test user can reach.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2561][#2561]] | [reporting] Keep sandboxes out of official reports |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =report_definition.is_official= is generated, defaulting to true in the
+  C++ type and in the database; every existing definition is official.
+- The risk report scope tables refuse a virtual book or a sandbox
+  portfolio for an official report (23514), and a definition cannot
+  become official while its scope holds one (23514).
+- The book resolver drops virtual books from an official report's set.
+- =projects/ores.sql/test/reporting_official_reports_test.sql= (pgTAP):
+  9 of 9 pass. The resolver's own filter is not reachable from the test
+  user, because the scope and definition checks keep the state from
+  arising; it stays as a guard for data written before them.
+- Build clean; ctest 89 of 89 on a recreated database.

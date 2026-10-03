@@ -57,6 +57,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "pre_processing" text not null,
     "prepared_input_key" text null,
     "post_processing" text not null,
+    "is_official" boolean not null default true,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -118,6 +119,15 @@ begin
             using errcode = '23503';
     end if;
 
+    -- An official definition reads no sandbox: it cannot become official
+    -- while the scope of one of its risk report configurations names a
+    -- sandbox portfolio or a virtual book.
+    if NEW.is_official
+       and ores_reporting_definition_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
+        raise exception 'Invalid is_official: report definition % has sandbox portfolios or virtual books in its scope.',
+            NEW.id
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

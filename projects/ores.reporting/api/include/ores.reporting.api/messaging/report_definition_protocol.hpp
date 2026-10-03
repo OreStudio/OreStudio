@@ -52,6 +52,7 @@ struct report_definition_write {
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;
+    bool is_official;
 };
 
 struct report_definition_change {

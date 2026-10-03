@@ -19,6 +19,104 @@
  */
 
 -- =============================================================================
+-- Official reports read no sandbox
+-- =============================================================================
+
+-- Whether a risk report config belongs to an official report definition. A
+-- config whose definition cannot be found is treated as official, the safe
+-- side. Security definer: the answer must not depend on what the session may
+-- see.
+create or replace function ores_reporting_config_is_official_fn(
+    p_tenant_id              uuid,
+    p_risk_report_config_id  uuid
+)
+returns boolean as $$
+begin
+    return coalesce((
+        select d.is_official
+        from ores_reporting_risk_report_configs_tbl c
+        join ores_reporting_report_definitions_tbl d
+          on d.tenant_id = c.tenant_id
+         and d.id = c.report_definition_id
+         and d.valid_to = ores_utility_infinity_timestamp_fn()
+        where c.tenant_id = p_tenant_id
+          and c.id = p_risk_report_config_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+        limit 1
+    ), true);
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- Whether a book is a virtual book. Security definer: row-level security hides
+-- sandbox books from most sessions, and the check must see them to refuse them.
+create or replace function ores_reporting_book_is_virtual_fn(
+    p_tenant_id uuid,
+    p_book_id   uuid
+)
+returns boolean as $$
+begin
+    return exists (
+        select 1 from ores_refdata_books_tbl
+        where tenant_id = p_tenant_id
+          and id = p_book_id
+          and sandbox_id is not null
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- Whether a portfolio is a sandbox portfolio, for the same reason.
+create or replace function ores_reporting_portfolio_is_sandbox_fn(
+    p_tenant_id    uuid,
+    p_portfolio_id uuid
+)
+returns boolean as $$
+begin
+    return exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = p_tenant_id
+          and id = p_portfolio_id
+          and sandbox_id is not null
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- Whether any risk report config of a definition names a sandbox portfolio or a
+-- virtual book in its scope. A definition cannot become official while it does.
+create or replace function ores_reporting_definition_scope_has_sandbox_fn(
+    p_tenant_id            uuid,
+    p_report_definition_id uuid
+)
+returns boolean as $$
+begin
+    return exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl c
+        join ores_reporting_risk_report_config_books_tbl b
+          on b.tenant_id = c.tenant_id
+         and b.risk_report_config_id = c.id
+         and b.valid_to = ores_utility_infinity_timestamp_fn()
+        where c.tenant_id = p_tenant_id
+          and c.report_definition_id = p_report_definition_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and ores_reporting_book_is_virtual_fn(p_tenant_id, b.book_id)
+    ) or exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl c
+        join ores_reporting_risk_report_config_portfolios_tbl p
+          on p.tenant_id = c.tenant_id
+         and p.risk_report_config_id = c.id
+         and p.valid_to = ores_utility_infinity_timestamp_fn()
+        where c.tenant_id = p_tenant_id
+          and c.report_definition_id = p_report_definition_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and ores_reporting_portfolio_is_sandbox_fn(p_tenant_id, p.portfolio_id)
+    );
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- =============================================================================
 -- Resolve Book IDs for a Risk Report Config
 -- =============================================================================
 
@@ -45,6 +143,8 @@ returns setof uuid as $$
 declare
     v_has_books      boolean;
     v_has_portfolios boolean;
+    v_official       boolean := ores_reporting_config_is_official_fn(
+        p_tenant_id, p_risk_report_config_id);
 begin
     -- Check if explicit book scope exists.
     select exists(
@@ -61,7 +161,9 @@ begin
             from ores_reporting_risk_report_config_books_tbl b
             where b.tenant_id = p_tenant_id
               and b.risk_report_config_id = p_risk_report_config_id
-              and b.valid_to = ores_utility_infinity_timestamp_fn();
+              and b.valid_to = ores_utility_infinity_timestamp_fn()
+              and not (v_official
+                       and ores_reporting_book_is_virtual_fn(p_tenant_id, b.book_id));
         return;
     end if;
 
@@ -82,7 +184,9 @@ begin
                 p_tenant_id, p.portfolio_id) as bk(id)
             where p.tenant_id = p_tenant_id
               and p.risk_report_config_id = p_risk_report_config_id
-              and p.valid_to = ores_utility_infinity_timestamp_fn();
+              and p.valid_to = ores_utility_infinity_timestamp_fn()
+              and not (v_official
+                       and ores_reporting_book_is_virtual_fn(p_tenant_id, bk.id));
         return;
     end if;
 

@@ -136,6 +136,16 @@ struct report_definition final {
     std::string post_processing;
 
     /**
+     * @brief Whether the report is an official one.
+     *
+     * An official report never reads a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]]: its
+     * scope cannot name a sandbox portfolio or a virtual book, and the books it resolves never
+     * include one. A definition defaults to official, so a report reads only official data unless
+     * it is set up otherwise.
+     */
+    bool is_official = true;
+
+    /**
      * @brief Username of the person who last modified this report definition.
      */
     std::string modified_by;

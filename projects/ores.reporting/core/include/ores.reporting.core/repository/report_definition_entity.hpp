@@ -60,6 +60,7 @@ struct report_definition_entity {
     std::string pre_processing;
     std::optional<std::string> prepared_input_key;
     std::string post_processing;
+    bool is_official = true;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

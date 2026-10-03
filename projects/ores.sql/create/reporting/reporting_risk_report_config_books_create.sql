@@ -65,6 +65,14 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- An official report reads no sandbox.
+    if ores_reporting_config_is_official_fn(new.tenant_id, new.risk_report_config_id)
+       and ores_reporting_book_is_virtual_fn(new.tenant_id, new.book_id) then
+        raise exception 'Invalid book_id: %. An official report cannot include a virtual book.',
+            new.book_id
+            using errcode = '23514';
+    end if;
+
     -- Close any existing active association for this config + book pair
     update "ores_reporting_risk_report_config_books_tbl"
     set valid_to = current_timestamp

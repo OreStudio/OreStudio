@@ -1758,6 +1758,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'component': de.get('component'),
         'column_prefixes': prefixes,
         'mandatory_fks': mandatory,
+        'immutable': bool((de.get('sql') or {}).get('immutable')),
     }
 
 
@@ -3736,6 +3737,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _name = _column.get('name') or _column.get('column')
                     if _name:
                         _prefix_by_column[_name] = _column.get('group_prefix') or ''
+            # A REFERENCES constraint is checked against every row, so it can
+            # only name a table whose rows never change; a temporal table holds
+            # closed versions a constraint would accept as current.
+            for fk in fks:
+                if not fk.get('enforce'):
+                    continue
+                parent = _parent_entity_info(
+                    (org_by_table.get(fk.get('table')) or {}).get('org'))
+                if not parent or not parent['immutable']:
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        f":enforce: true but {fk.get('table')} is not an "
+                        "immutable entity; leave it a trigger check.")
+                fk['skip_check'] = True
+            domain_entity['enforced_foreign_keys'] = [
+                fk for fk in fks if fk.get('enforce')]
             for fk in fks:
                 fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
                 if fk.get('nullable'):

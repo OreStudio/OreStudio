@@ -2,18 +2,18 @@
 :ID: 764E3F6E-84E7-49CA-A661-0F263F92450B
 :END:
 #+title: Task: Generate real foreign keys into immutable entities
-#+description: Let a foreign key whose target is an immutable entity be declared as a real REFERENCES constraint, single- or multi-column, instead of a trigger check.
+#+description: Let a foreign key whose target is an immutable entity be declared as a real REFERENCES constraint instead of a trigger check.
 #+type: task
 #+level: s1
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/real-foreign-keys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Let components, links and participants reference the trade anchor with constrain
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ Let components, links and participants reference the trade anchor with constrain
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add =:enforce: true= to a node under =* Foreign keys=. The generator
+  reads the target table's model and refuses the flag unless that model
+  is immutable.
+- An enforced key renders a named constraint,
+  =<table>_<column>_fk foreign key (column) references target (target_column)=,
+  in both the temporal and the current-state table bodies. It sets
+  =skip_check=, so the trigger check for that column is not generated.
+- Keys over several columns belong to the composite pinned keys task.
 
 * Measurements
 
@@ -85,3 +90,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- A foreign key node with =:enforce: true= renders a named =REFERENCES=
+  constraint and no trigger check. A node without it stays a trigger check.
+- The generator refuses =:enforce:= when the target model is not immutable.
+- Four tests in =projects/ores.codegen/tests/test_enforced_foreign_key.py=
+  cover the constraint, the absent trigger check, the unenforced key and the
+  refusal.
+- In Postgres, a rendered parent and child ran in a transaction that rolled
+  back. An insert that named an unknown anchor was refused with SQLSTATE
+  23503 by =ores_testcomp_child_records_anchor_id_fk=. An insert that named
+  a known anchor was accepted.
+- The SQL meta-model page and the variability index now document
+  =:immutable:=, which the previous task added. The meta-model page also
+  documents =:enforce:=.

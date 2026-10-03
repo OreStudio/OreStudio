@@ -172,6 +172,7 @@ The bundle as a feature model:
 | Feature | Type | Default | Effect |
 |---------+------+---------+--------|
 | =:current_state:= | bool | false | Table holds one row per key and no history at all: no =valid_from=/=valid_to=, no GIST exclusion, no temporal checks, no =version= or audit tail, and the model's own primary key. Because it has no temporal axis it has no history surface either: no history endpoint, no history request/response messages and no history subscription. A current-state entity still validates its =tenant_id= on insert, and keeps any =** Indexes= it declares (without a =valid_to= predicate). *Structural consequence:* removes the temporal axis. |
+| =:immutable:= | bool | false | Rows are written once and never changed: a trigger refuses =UPDATE=, =DELETE= and =TRUNCATE= with SQLSTATE =55000=, and the repository inserts rather than upserts, so a second write of a key fails. Requires =:current_state:= and the top-level =:read_only:=. *Structural consequence:* lets other tables reference the entity with a real foreign key. |
 | =:system_scope:= | bool | false | Table is system-tenant-scoped: =tenant_id= defaults to the system tenant and the insert trigger forces it. *Structural consequence:* changes the =tenant_id= column default. |
 | =:nullable_tenant_id:= | bool | false | =tenant_id= is nullable (system records carry NULL); selects the nullable-tenant validation and index variants. *Structural consequence:* changes =tenant_id= nullability. |
 | =:extra_checks:= | collection<string> | ∅ | Additional =CHECK= constraints to emit on the table. |
@@ -207,6 +208,15 @@ suppressions), which is how the =iam_login_info= table keeps
 =login_info_locked_idx= and avoids gaining a nil-UUID check it never had.
 The feature is authored in the =* SQL ** Flags= drawer, beside the other SQL
 projection knobs above.
+
+*A foreign key into an immutable entity can be enforced by the
+database.* A foreign key is normally a trigger check against the target's
+current row, because a temporal target holds closed versions that a
+=REFERENCES= constraint would accept as current. An immutable target has
+no closed versions, so a foreign key declared with =:enforce: true= in the
+=* Foreign keys= section renders a named =REFERENCES= constraint
+(=<table>_<column>_fk=) and no trigger check. The generator refuses
+=:enforce:= when the target table's model is not immutable.
 
 *Tenant-scoping is a policy, not three booleans.* =:system_scope:= and
 =:nullable_tenant_id:= are mutually exclusive with the default

@@ -116,16 +116,25 @@ if [[ $configure -eq 1 ]]; then
         echo "Configuring shared_preload_libraries in ${pg_conf}..."
         required_libs=("timescaledb")
         if grep -q "^shared_preload_libraries" "$pg_conf"; then
-            # Read the existing value and append only missing libraries
-            current=$(grep "^shared_preload_libraries" "$pg_conf" \
-                | sed "s/shared_preload_libraries[[:space:]]*=[[:space:]]*//;s/'//g;s/\"//g" \
-                | tr ',' '\n' | tr -d ' ')
-            new_val="$current"
+            # Keep the existing libraries except pg_cron, which nothing uses
+            # and which stops PostgreSQL starting once its package is gone,
+            # then append the required ones that are missing.
+            current=$(grep -m1 "^shared_preload_libraries" "$pg_conf" \
+                | sed -e 's/#.*//' \
+                      -e 's/^shared_preload_libraries[[:space:]]*=[[:space:]]*//' \
+                      -e "s/['\"]//g" \
+                | tr ',' '\n' | tr -d ' \t')
+            kept=()
+            while IFS= read -r lib; do
+                [[ -z "$lib" || "$lib" == "pg_cron" ]] && continue
+                kept+=("$lib")
+            done <<< "$current"
             for lib in "${required_libs[@]}"; do
-                if ! echo "$current" | grep -qx "$lib"; then
-                    new_val="${new_val:+${new_val},}${lib}"
+                if [[ ! " ${kept[*]} " == *" ${lib} "* ]]; then
+                    kept+=("$lib")
                 fi
             done
+            new_val=$(IFS=,; echo "${kept[*]}")
             sudo sed -i \
                 "s|^shared_preload_libraries.*|shared_preload_libraries = '${new_val}'|" \
                 "$pg_conf"

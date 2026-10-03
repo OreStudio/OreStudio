@@ -66,6 +66,7 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.regulatory_book_type = std::string("Trading");
     r.is_sweepable = false;
     r.rates_centre_code = std::string("WRLD");
+    r.sandbox_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

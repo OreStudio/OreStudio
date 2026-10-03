@@ -158,6 +158,18 @@ struct book final {
     std::string rates_centre_code = "WRLD";
 
     /**
+     * @brief The sandbox the book belongs to; absent for an official book.
+     *
+     * A book in a sandbox is a /virtual book/ (see
+     * [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]): the trading system creates it, it
+     * never maps to the ledger, and nothing official reads it. It sits in its sandbox's portfolio
+     * tree, so its parent portfolio belongs to the same sandbox, and an official book never sits
+     * under a sandbox portfolio. It carries no ledger reference and is not a sweep target. Fixed
+     * for the book's life.
+     */
+    std::optional<boost::uuids::uuid> sandbox_id;
+
+    /**
      * @brief Username of the person who last modified this book.
      */
     std::string modified_by;

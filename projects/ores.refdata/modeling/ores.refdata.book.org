@@ -239,6 +239,27 @@ value the FK-validation trigger accepts.
 std::string("WRLD")
 #+end_src
 
+** sandbox_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:fixed:    true
+:END:
+
+The sandbox the book belongs to; absent for an official book.
+
+A book in a sandbox is a /virtual book/ (see [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]): the trading
+system creates it, it never maps to the ledger, and nothing official reads
+it. It sits in its sandbox's portfolio tree, so its parent portfolio
+belongs to the same sandbox, and an official book never sits under a
+sandbox portfolio. It carries no ledger reference and is not a sweep
+target. Fixed for the book's life.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 
 * Artefact columns
 
@@ -310,6 +331,12 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 :tablename: ores_refdata_books_tbl
 :END:
 
+** Checks
+
+| expression                                                                                   |
+|----------------------------------------------------------------------------------------------|
+| "sandbox_id" is null or (coalesce("gl_account_ref", '') = '' and not "is_sweepable")         |
+
 * Foreign keys
 
 ** functional_currency
@@ -351,7 +378,45 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 :error_message: Invalid owner_unit_id: %. No active business unit found.
 :END:
 
+** sandbox_id
+:PROPERTIES:
+:table:         ores_refdata_sandboxes_tbl
+:nullable:      true
+:error_message: Invalid sandbox_id: %. No active sandbox found with this id.
+:END:
+
 * Insert trigger
+
+#+begin_src sql :name virtual_book_checks :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- A book belongs to its parent portfolio's sandbox, or both to none: a
+    -- virtual book sits only in its sandbox's tree, and a real book never
+    -- does.
+    if exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and sandbox_id is distinct from NEW.sandbox_id
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. A book and its portfolio belong to the same sandbox, or both to none.',
+            NEW.parent_portfolio_id
+            using errcode = '23514';
+    end if;
+
+    -- An archived sandbox is read-only.
+    if NEW.sandbox_id is not null and exists (
+        select 1 from ores_refdata_sandboxes_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.sandbox_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and status = 'archived'
+    ) then
+        raise exception 'Invalid sandbox_id: %. The sandbox is archived and read-only.',
+            NEW.sandbox_id
+            using errcode = '23514';
+    end if;
+
+#+end_src
 
 ** Validations
 

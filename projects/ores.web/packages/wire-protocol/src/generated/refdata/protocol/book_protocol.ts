@@ -47,6 +47,7 @@ export interface BookWrite {
     regulatory_book_type: string;
     is_sweepable: boolean;
     rates_centre_code: string;
+    sandbox_id: string | null;
 }
 
 export interface BookChange {

@@ -53,6 +53,7 @@ struct book_write {
     std::string regulatory_book_type;
     bool is_sweepable;
     std::string rates_centre_code;
+    std::optional<boost::uuids::uuid> sandbox_id;
 };
 
 struct book_change {

@@ -45,6 +45,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "regulatory_book_type" text not null,
     "is_sweepable" boolean not null,
     "rates_centre_code" text not null,
+    "sandbox_id" uuid null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -59,7 +60,8 @@ create table if not exists "ores_refdata_books_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("sandbox_id" is null or (coalesce("gl_account_ref", '') = '' and not "is_sweepable"))
 );
 
 -- Composite natural key: unique combination for active records
@@ -130,6 +132,19 @@ begin
         end if;
     end if;
 
+    -- Validate sandbox_id (optional soft FK to ores_refdata_sandboxes_tbl)
+    if NEW.sandbox_id is not null then
+        if not exists (
+            select 1 from ores_refdata_sandboxes_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.sandbox_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid sandbox_id: %. No active sandbox found with this id.', NEW.sandbox_id
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate functional_currency
     NEW.functional_currency := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.functional_currency);
 
@@ -142,6 +157,33 @@ begin
     -- Validate rates_centre_code
     NEW.rates_centre_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.rates_centre_code);
 
+    -- A book belongs to its parent portfolio's sandbox, or both to none: a
+    -- virtual book sits only in its sandbox's tree, and a real book never
+    -- does.
+    if exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and sandbox_id is distinct from NEW.sandbox_id
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. A book and its portfolio belong to the same sandbox, or both to none.',
+            NEW.parent_portfolio_id
+            using errcode = '23514';
+    end if;
+
+    -- An archived sandbox is read-only.
+    if NEW.sandbox_id is not null and exists (
+        select 1 from ores_refdata_sandboxes_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.sandbox_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and status = 'archived'
+    ) then
+        raise exception 'Invalid sandbox_id: %. The sandbox is archived and read-only.',
+            NEW.sandbox_id
+            using errcode = '23514';
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
@@ -183,6 +225,16 @@ begin
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
                 using errcode = 'P0002';
+        end if;
+        if exists (
+            select 1 from "ores_refdata_books_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and "sandbox_id" is distinct from NEW."sandbox_id"
+        ) then
+            raise exception 'sandbox_id cannot change: it is fixed for the life of the book.'
+                using errcode = '23514';
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is

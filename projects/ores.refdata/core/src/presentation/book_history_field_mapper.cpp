@@ -49,6 +49,9 @@ std::vector<ores::diff::domain::field_value> render_book_fields(const domain::bo
     fields.push_back({.name = "Regulatory Book Type", .value = v.regulatory_book_type});
     fields.push_back({.name = "Is Sweepable", .value = v.is_sweepable ? "true" : "false"});
     fields.push_back({.name = "Rates Centre Code", .value = v.rates_centre_code});
+    fields.push_back(
+        {.name = "Sandbox ID",
+         .value = v.sandbox_id ? boost::uuids::to_string(*v.sandbox_id) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

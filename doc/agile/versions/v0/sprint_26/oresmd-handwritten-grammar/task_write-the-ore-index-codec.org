@@ -117,6 +117,11 @@ Without conventions ORE accepts 156 of the 158 corpus index names; with
 
 ** Where the codec and ORE differ, on purpose
 
+Every name in this table is a negative probe written into
+=external/ore/tools/datum_catalogue/index_forms.txt=, not data from ORE: the
+codec and ORE agree on all 158 corpus names. The ORE column is the verdict
+=external/ore/catalogue/index_forms.jsonl= records.
+
 | Name | ORE | Codec | Why |
 |------+-----+-------+-----|
 | =EQ-=, =BOND-=, =COMM-= | accepts, empty name | refuses | the model refuses empty text; an index with no name is no identity |

@@ -47,6 +47,9 @@ using ores::marketdata::test::catalogue_index_corpus;
 using ores::marketdata::test::catalogue_index_forms;
 using ores::marketdata::test::catalogue_line;
 
+/// The names in both maps are negative probes from index_forms.txt, not ORE
+/// data: the codec and ORE agree on every corpus name.
+///
 /// Names ORE accepts and the codec refuses: ORE completes them from outside the
 /// name, so no index could write them back.
 const std::map<std::string, std::string> refused_on_purpose{

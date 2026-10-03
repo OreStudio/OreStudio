@@ -81,6 +81,17 @@ struct curve_quote final {
     boost::uuids::uuid default_curve_configuration_id;
 
     /**
+     * @brief The commodity price segment whose list holds the quote, or nil.
+     */
+    boost::uuids::uuid commodity_price_segment_id;
+
+    /**
+     * @brief The list the quote belongs to when its parent writes more than one: BasisQuotes,
+     * OffPeakQuotes or PeakQuotes. Null for the parent's Quotes list.
+     */
+    std::optional<std::string> quote_list;
+
+    /**
      * @brief The market point a Quote names, exactly as the document spells it.
      */
     std::optional<std::string> quote_text;

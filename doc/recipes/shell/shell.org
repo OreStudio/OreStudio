@@ -1272,3 +1272,11 @@ tangled into the runnable script library
 * Default Curves
 
 - [[id:6C38EA7F-1EA6-58DD-B8DD-104F79921131][How do I run the default_curves commands from the shell?]]
+
+* Commodity Curves
+
+- [[id:0B639743-18A1-5347-94C3-EBD27AFB32F4][How do I run the commodity_curves commands from the shell?]]
+
+* Commodity Price Segments
+
+- [[id:FBFE686D-63A8-5138-ADD1-997F0C37024A][How do I run the commodity_price_segments commands from the shell?]]

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/commodity_price_segments/commodity_price_segment.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+commodity_price_segments list --limit 1

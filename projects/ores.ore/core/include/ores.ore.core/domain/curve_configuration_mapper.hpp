@@ -22,6 +22,8 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/commodity_curve.hpp"
+#include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
@@ -56,6 +58,8 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::equity_curve> equity_curves;
     std::vector<refdata::domain::inflation_curve> inflation_curves;
     std::vector<refdata::domain::default_curve> default_curves;
+    std::vector<refdata::domain::commodity_curve> commodity_curves;
+    std::vector<refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<refdata::domain::default_curve_configuration> default_curve_configurations;
     std::vector<refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::vector<refdata::domain::curve_security> securities;
@@ -70,8 +74,8 @@ struct mapped_curve_configuration {
  * @brief Maps between an ORE CurveConfiguration document and the refdata curve
  * entities.
  *
- * The yield curve, default curve, equity curve, inflation curve, security, FX
- * spot and intraday power curve sections are mapped; the other sections are mapped only when they hold no
+ * The yield curve, default curve, equity curve, inflation curve, commodity
+ * curve, security, FX spot and intraday power curve sections are mapped; the other sections are mapped only when they hold no
  * entries, which records that the document wrote them. A section
  * with entries the mapper cannot hold yet, or a report configuration, is
  * refused rather than dropped, because a dropped entry would pass as a round

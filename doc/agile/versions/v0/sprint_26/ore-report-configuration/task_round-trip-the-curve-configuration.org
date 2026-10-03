@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2556
+#+pr: 2557
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -185,6 +185,17 @@ Step 3c, decided while building it:
   written. =SourceCurves= and =SwitchDates= appear in no corpus document and are
   refused, as inflation segments are.
 
+Step 3d, decided while building it:
+
+- A commodity curve's =BasisConfiguration= is one per curve, so its settings
+  are =basis_= columns on =commodity_curve=; its =PriceSegments= are rows of
+  =commodity_price_segment=. Each appears in one corpus document.
+- A quote's owner can now also be a price segment, and a parent that writes
+  more than one quote list names the list: =curve_quote.quote_list= is
+  =BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=, and null for the main
+  =Quotes=. That is the fourth way a quote attaches, and step 4 should decide
+  whether a single owner reference reads better than four nullable columns.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -200,6 +211,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2557][#2557]] | [refdata] Map the commodity curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2556][#2556]] | [refdata] Map the default curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2555][#2555]] | [refdata] Map the inflation curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2554][#2554]] | [refdata] Map the equity, security, FX spot and power curve sections |

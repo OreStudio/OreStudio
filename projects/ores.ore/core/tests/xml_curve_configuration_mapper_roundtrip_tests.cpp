@@ -32,7 +32,8 @@
  * @brief The curve configuration document, mapped and mapped back.
  *
  * The mapper models the yield curve, default curve, equity curve, inflation
- * curve, security, FX spot and intraday power curve sections so far, so the walk compares each corpus
+ * curve, commodity curve, security, FX spot and intraday power curve sections
+ * so far, so the walk compares each corpus
  * document projected onto them: every section element is kept, the entries of
  * the other sections are cleared, and the report configuration is dropped. The cases below the walk cover what the projection
  * hides: the refusal of entries the mapper cannot hold, and every segment
@@ -67,8 +68,6 @@ curveconfiguration modelled_only(curveconfiguration d) {
         d.EquityVolatilities->EquityVolatility.clear();
     if (d.BaseCorrelations)
         d.BaseCorrelations->BaseCorrelation.clear();
-    if (d.CommodityCurves)
-        d.CommodityCurves->CommodityCurve.clear();
     if (d.CommodityVolatilities)
         d.CommodityVolatilities->CommodityVolatility.clear();
     if (d.Correlations)
@@ -264,8 +263,8 @@ TEST_CASE("a yield curve with every segment element round trips", tags) {
 
 TEST_CASE("entries of a section the mapper does not model are refused", tags) {
     curveconfiguration d;
-    d.CommodityCurves = simCommodityCurves{};
-    d.CommodityCurves->CommodityCurve.push_back(simCommodityCurve{});
+    d.Correlations = correlations{};
+    d.Correlations->Correlation.push_back(correlation{});
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 

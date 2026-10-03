@@ -339,6 +339,10 @@
 \ir ./refdata_default_curves_notify_trigger_create.sql
 \ir ./refdata_default_curve_configurations_create.sql
 \ir ./refdata_default_curve_configurations_notify_trigger_create.sql
+\ir ./refdata_commodity_curves_create.sql
+\ir ./refdata_commodity_curves_notify_trigger_create.sql
+\ir ./refdata_commodity_price_segments_create.sql
+\ir ./refdata_commodity_price_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql

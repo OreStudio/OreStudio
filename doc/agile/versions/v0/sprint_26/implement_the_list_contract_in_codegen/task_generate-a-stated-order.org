@@ -8,7 +8,7 @@
 #+filetags: :codegen:protocol:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-a-stated-order
-#+pr:
+#+pr: 2575
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2575][#2575]] | [codegen] Generate a stated order for every list |
 
 * Review
 

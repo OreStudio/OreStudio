@@ -37,6 +37,7 @@ export interface ReportType {
     name: string;
     description: string;
     display_order: number;
+    workflow_type: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

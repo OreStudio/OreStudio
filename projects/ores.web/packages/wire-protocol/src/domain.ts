@@ -192,11 +192,11 @@ export const tenantDetailSchema = tenantSummarySchema.extend({
 export type TenantDetail = z.infer<typeof tenantDetailSchema>;
 
 /**
- * One party of a tenant, as the tenant's screen lists it.
+ * One party of the session's tenant, as the parties screen lists it.
  *
  * `category` is `System` for the party every tenant is given and `Operational`
- * for a business party. `parentName` is resolved from the same answer, and is
- * `null` for a root or when the parent was not on the page.
+ * for a business party. `parentName` is the parent's name when the parent is
+ * on the same page, and `null` for a root or a parent on another page.
  */
 export const tenantPartySchema = z.object({
     id: uuidSchema,
@@ -211,20 +211,24 @@ export const tenantPartySchema = z.object({
 
 export type TenantParty = z.infer<typeof tenantPartySchema>;
 
-/** One tenant's screen: the tenant, its setup run and its parties. */
+/** One page of the session's own parties, and how many it holds in all. */
+export const partyPageSchema = z.object({
+    parties: z.array(tenantPartySchema),
+    totalCount: z.int().nonnegative(),
+});
+
+export type PartyPage = z.infer<typeof partyPageSchema>;
+
+/**
+ * One tenant's screen in system administration: the tenant and its setup run.
+ *
+ * The tenant's own data, its parties among it, is read from inside the tenant
+ * and not from here.
+ */
 export const tenantDetailResponseSchema = z.object({
     tenant: tenantDetailSchema,
     /** Whether the runs could not be read; `tenant.setup` is then empty. */
     setupUnavailable: z.boolean().default(false),
-    parties: z.array(tenantPartySchema),
-    /** How many current parties the tenant holds in all. */
-    partyCount: z.int().nonnegative(),
-    /**
-     * Whether the parties could not be read. The tenant is still the
-     * registry's answer, so a failed party read empties the list and says so
-     * here rather than failing the screen.
-     */
-    partiesUnavailable: z.boolean().default(false),
 });
 
 export type TenantDetailResponse = z.infer<typeof tenantDetailResponseSchema>;

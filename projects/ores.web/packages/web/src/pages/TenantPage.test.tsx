@@ -32,9 +32,9 @@ import { TenantPage } from './TenantPage.js';
  * One tenant's screen, as a reader sees it.
  *
  * The read is seeded in the query cache, so the screen renders its loaded
- * state without a server. What is checked is the screen: the three panels, the
- * words each says when its part is missing, and the answer to a code no tenant
- * holds.
+ * state without a server. What is checked is the screen: the details, the
+ * run, what each says when its part is missing, the way inside the tenant, and
+ * the answer to a code no tenant holds.
  */
 
 const RUN = '55555555-5555-5555-5555-555555555555';
@@ -58,30 +58,6 @@ const loaded: TenantDetailResponse = {
         recordedAt: '2026-10-02 21:39:00Z',
     },
     setupUnavailable: false,
-    parties: [
-        {
-            id: '66666666-6666-6666-6666-666666666666',
-            code: 'system',
-            name: 'Acme System',
-            category: 'System',
-            type: 'Internal',
-            status: 'Active',
-            parentId: null,
-            parentName: null,
-        },
-        {
-            id: '77777777-7777-7777-7777-777777777777',
-            code: 'acme_group',
-            name: 'Acme Group',
-            category: 'Operational',
-            type: 'Corporate',
-            status: 'Active',
-            parentId: '66666666-6666-6666-6666-666666666666',
-            parentName: 'Acme System',
-        },
-    ],
-    partyCount: 2,
-    partiesUnavailable: false,
 };
 
 function render(seed: (client: QueryClient) => void, code = 'acme_corporation'): string {
@@ -96,7 +72,10 @@ function render(seed: (client: QueryClient) => void, code = 'acme_corporation'):
             <TranslationProvider>
                 <MemoryRouter initialEntries={[`/tenants/${code}`]}>
                     <Routes>
-                        <Route path="/tenants/:code" element={<TenantPage />} />
+                        <Route
+                            path="/tenants/:code"
+                            element={<TenantPage onEnterTenant={async () => undefined} />}
+                        />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -121,24 +100,15 @@ describe('TenantPage', () => {
         expect(html).toContain('href="/tenants"');
     });
 
-    it('lists the parties with each parent by name', () => {
-        const html = renderLoaded(loaded);
-
-        expect(html).toContain('acme_group');
-        expect(html).toContain('>Acme System</td>');
-        expect(html).toContain('2 parties');
-        expect(html).not.toContain('No business party exists yet');
+    it('offers to act in the tenant', () => {
+        expect(renderLoaded(loaded)).toContain('Act in this tenant');
     });
 
-    it('says when the tenant holds only its system party', () => {
-        const first = loaded.parties[0];
-        const html = renderLoaded({
-            ...loaded,
-            parties: first === undefined ? [] : [first],
-            partyCount: 1,
-        });
+    it('reads no party, and says the parties are read inside the tenant', () => {
+        const html = renderLoaded(loaded);
 
-        expect(html).toContain('No business party exists yet');
+        expect(html).toContain('Act in this tenant to read them.');
+        expect(html).not.toContain('<table');
     });
 
     /*
@@ -186,18 +156,11 @@ describe('TenantPage', () => {
         expect(renderLoaded(loaded)).toContain('No setup run is on record for this tenant.');
     });
 
-    it('says which part could not be read, and still shows the tenant', () => {
-        const html = renderLoaded({
-            ...loaded,
-            setupUnavailable: true,
-            partiesUnavailable: true,
-            parties: [],
-            partyCount: 0,
-        });
+    it('says the run could not be read, and still shows the tenant', () => {
+        const html = renderLoaded({ ...loaded, setupUnavailable: true });
 
         expect(html).toContain('Acme Corporation');
         expect(html).toContain('The provisioning runs could not be read.');
-        expect(html).toContain('The parties could not be read.');
     });
 
     it('says no tenant has the code, and leads back to the roster', () => {

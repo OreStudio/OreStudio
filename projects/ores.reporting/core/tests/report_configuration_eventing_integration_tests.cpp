@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -39,10 +43,16 @@
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/service/report_configuration_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_reporting_report_definitions_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+// Grand-parent seeding (ores_reporting_report_types_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too.
+#include "ores.reporting.api/generators/report_type_generator.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
 // Soft-FK parent seeding (ores_reporting_configuration_types_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.reporting.api/generators/configuration_type_generator.hpp"
@@ -136,6 +146,19 @@ TEST_CASE("write_report_configuration_publishes_an_event", tags) {
     auto report_definition_id_parent =
         ores::reporting::generators::generate_synthetic_report_definition(ctx);
     report_definition_id_parent.change_reason_code = "system.test";
+    // report_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::reporting::repository::report_type_repository
+            report_definition_id_parent_report_type_parent_repo;
+        const auto report_definition_id_parent_report_type_parent_catalogue =
+            report_definition_id_parent_report_type_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(report_definition_id_parent_report_type_parent_catalogue.empty());
+        report_definition_id_parent.report_type =
+            report_definition_id_parent_report_type_parent_catalogue.front().code;
+    }
     ores::reporting::repository::report_definition_repository report_definition_id_repo;
     report_definition_id_repo.write(party_ctx, report_definition_id_parent);
     v.report_definition_id = report_definition_id_parent.id;

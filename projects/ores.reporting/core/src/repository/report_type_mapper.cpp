@@ -41,6 +41,7 @@ domain::report_type report_type_mapper::map(const report_type_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.workflow_type = v.workflow_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -61,6 +62,7 @@ report_type_entity report_type_mapper::map(const domain::report_type& v) {
     r.name = v.name;
     r.description = v.description;
     r.display_order = v.display_order;
+    r.workflow_type = v.workflow_type;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

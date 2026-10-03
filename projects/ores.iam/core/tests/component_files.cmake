@@ -52,6 +52,7 @@ set(files
     "service_tenant_code_check_tests.cpp"
     "service_tenant_hostname_check_tests.cpp"
     "service_tenant_presence_tests.cpp"
+    "service_tenant_session_service_tests.cpp"
     "tenant_eventing_integration_tests.cpp"
     "tenant_status_eventing_integration_tests.cpp"
     "tenant_type_eventing_integration_tests.cpp"

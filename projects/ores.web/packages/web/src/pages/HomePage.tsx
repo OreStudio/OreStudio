@@ -47,6 +47,11 @@ export interface HomePageProps {
     readonly partyName: string;
     /** The context the session runs in, which decides what this page shows. */
     readonly mode: SessionMode;
+    /**
+     * Whether the session only reads, as it does inside a tenant a system
+     * administrator entered. A read-only session is offered no change.
+     */
+    readonly readOnly?: boolean;
 }
 
 export function HomePage({
@@ -55,6 +60,7 @@ export function HomePage({
     tenantName,
     partyName,
     mode,
+    readOnly = false,
 }: HomePageProps): ReactNode {
     const areas = areasFor(mode);
 
@@ -68,6 +74,7 @@ export function HomePage({
             email={email}
             tenantName={tenantName}
             partyName={partyName}
+            readOnly={readOnly}
         />
     );
 }
@@ -145,7 +152,8 @@ function SessionCard({
     email,
     tenantName,
     partyName,
-}: Omit<HomePageProps, 'mode'>): ReactNode {
+    readOnly,
+}: Omit<HomePageProps, 'mode' | 'readOnly'> & { readonly readOnly: boolean }): ReactNode {
     const { t } = useTranslation();
 
     return (
@@ -163,9 +171,14 @@ function SessionCard({
              * one is created, and this card is shown to sessions that cannot.
              */}
             <div className="mt-6 flex flex-wrap gap-3">
-                <LinkButton to="/parties/new" variant="secondary">
-                    {t('home.newParty')}
+                <LinkButton to="/parties" variant="secondary">
+                    {t('home.parties')}
                 </LinkButton>
+                {!readOnly && (
+                    <LinkButton to="/parties/new" variant="secondary">
+                        {t('home.newParty')}
+                    </LinkButton>
+                )}
             </div>
         </div>
     );

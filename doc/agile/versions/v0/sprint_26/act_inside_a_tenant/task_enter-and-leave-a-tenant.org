@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :web:tenancy:act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/enter-and-leave-a-tenant
+#+pr: 2534
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -76,12 +76,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2534][#2534]] | [web] Enter and leave a tenant, and say so on every screen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | Test files are left out of the web typecheck, so a fixture missing a new field went unnoticed | =AppRoutes.test.tsx= | Accept | The fixture gains =actingIn=; the typecheck scope is a separate matter, left as it is. |
+| L2 | The roster row's menu was to offer the entry too | =TenantsPage.tsx= | Decline | *Open* already leads to the tenant's screen, which offers it; the journey says so. |
+| R1.1 | Two entries at once can store the first's tenant token as the way out | =client.ts= | Accept | The client holds the entry under way and refuses a second; a test covers it, and the BFF route inherits it. |
+| R1.2 | A failed exit record leaves the browser showing the tenant | =server.ts= | Accept | The route logs the failed record and answers the session as it now reads, outside; a test covers it. |
+| R1.3 | Reads in flight can refill the cache after a rescope | =SessionProvider.tsx= | Accept | Rescoping cancels the other queries before removing them. |
+| R1.4 | The synthetic party's fixed fields need a word | =sessions.ts= | Accept | A comment says so. |
+| R1.5 | The guard's key falls back to the raw URL | =server.ts= | Decline | An unmatched route fails closed, which is the safe direction. |
+| R1.6 | Leave after the outside token expired is not tested | =client.ts= | Decline | The restored token takes the ordinary refresh path, which its own tests cover. |
 
 * Result
+
+=OresClient= enters and leaves a tenant, holding the entered tenant and the
+token it entered from in one field; a lapsed tenant session returns to that
+token without asking the server and throws =TenantSessionEndedError=. The BFF
+serves =POST= and =DELETE= on =/api/session/tenant=, reads the session's
+tenant, party and mode from the client, answers a lapse with 409
+=tenant-session-ended=, and refuses every change while inside before the route
+runs, except leaving, signing out and watching for changes. The tenant's screen
+offers *Act in this tenant*; every screen inside carries a banner naming the
+tenant and the administrator, saying it is read only, with *Leave the tenant*,
+which returns to the tenant's screen. The home screen offers no change to a
+read-only session.
+
+Tests: four client cases (enter, refused entry, leave, lapse), six BFF route
+cases with a stub proof of the guard, and banner, button and home screen
+cases in the web suite. Live, the run in Issue a session inside a tenant
+covers these routes, 15 of 15.
+

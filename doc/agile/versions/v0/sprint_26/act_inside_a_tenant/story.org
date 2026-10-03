@@ -21,11 +21,11 @@ A system administrator can enter one tenant on purpose, see on every screen that
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | All tasks done.                        |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-03                               |
 
 * Acceptance
@@ -43,11 +43,26 @@ A system administrator can enter one tenant on purpose, see on every screen that
 |------+-------+-------+-----+-------------|
 | [[id:C3C1A72A-C50C-4C4E-9BC3-08C0C5050C78][Scaffold story: Act inside a tenant]] | DONE | 2026-10-03 | 2026-10-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:41A46D59-D62F-4805-B8ED-C014D9F87A47][Write the act inside a tenant journey]] | DONE | 2026-10-03 | 2026-10-03 | Initial task for: Act inside a tenant |
-| [[id:31596B62-7CA7-4B67-AE79-613429ECCD80][Issue a session inside a tenant]] | BACKLOG | | | An iam operation that gives a system administrator a session scoped to one tenant: it checks iam::tenants:impersonate, refuses the system tenant, and records the entry in the audit trail. |
-| [[id:A4D22DF4-E42E-463A-9451-F1A0D274B4E3][Enter and leave a tenant in the web]] | BACKLOG | | | The tenant screen offers Act in this tenant; while in it, every screen says so and offers the way out; leaving returns to system administration. |
-| [[id:AABD139C-4579-4C77-A670-05E4EAD0F1B0][Read a tenant's parties from inside it]] | BACKLOG | | | Read the tenant's parties with the ordinary paged refdata.v1.parties.list in the tenant's session, and remove the cross-tenant read and its 1000 cap. |
+| [[id:31596B62-7CA7-4B67-AE79-613429ECCD80][Issue a session inside a tenant]] | DONE | 2026-10-03 | 2026-10-03 | An iam operation that gives a system administrator a session scoped to one tenant: it checks iam::tenants:impersonate, refuses the system tenant, and records the entry in the audit trail. |
+| [[id:A4D22DF4-E42E-463A-9451-F1A0D274B4E3][Enter and leave a tenant in the web]] | DONE | 2026-10-03 | 2026-10-03 | The tenant screen offers Act in this tenant; while in it, every screen says so and offers the way out; leaving returns to system administration. |
+| [[id:AABD139C-4579-4C77-A670-05E4EAD0F1B0][Read a tenant's parties from inside it]] | DONE | 2026-10-03 | 2026-10-03 | Read the tenant's parties with the ordinary paged refdata.v1.parties.list in the tenant's session, and remove the cross-tenant read and its 1000 cap. |
 
 * Decisions
+
+- A tenant's data is read from inside the tenant, in a session scoped to it;
+  no read takes a tenant parameter, and row-level security scopes the
+  ordinary reads from the token.
+- Inside a tenant, data is read only. The token carries only the read
+  permissions the administrator holds, and the BFF refuses every change before
+  the route runs. A system administrator changes a tenant only by deleting all
+  of it.
+- Entering checks =iam::tenants:impersonate= against the database, because a
+  person's token carries no permissions.
+- The tenant session is not refreshed; when it lapses, the browser returns to
+  the system session without a sign-in.
+- The client owns the entered tenant and its outside token; the BFF session
+  reads from it, so there is one source of truth.
+- Entering and leaving are recorded in the entered tenant's own audit trail.
 
 * Out of scope
 

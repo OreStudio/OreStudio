@@ -199,6 +199,20 @@ result store, =ignore= records only that the engine produced them.
 std::string("execute")
 #+end_src
 
+* Foreign keys
+
+** report_type
+:PROPERTIES:
+:table:             ores_reporting_report_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid report_type: %. No active report type found with this code.
+:END:
+
+Report types are a system-wide lookup seeded for the system tenant only, so
+the check reads that tenant whatever tenant owns the definition.
+
 * SQL
 
 ** Flags

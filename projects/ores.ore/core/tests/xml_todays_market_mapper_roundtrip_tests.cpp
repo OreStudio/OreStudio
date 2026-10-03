@@ -60,7 +60,7 @@ using namespace ores::ore::domain;
 
 template <typename Wrapper, typename Entry>
 void add(xsd::vector<Wrapper>& collections,
-         xsd::vector<Entry> Wrapper::* entries,
+         xsd::vector<Entry> Wrapper::*entries,
          const char* id,
          std::vector<Entry> values) {
     Wrapper w;
@@ -97,49 +97,82 @@ Entry keyed(std::optional<std::string> key,
 // allows, so the absent id is proven to stay absent.
 todaysmarket every_collection() {
     todaysmarket d;
-    add(d.YieldCurves, &yieldCurvesType::YieldCurve, "default",
+    add(d.YieldCurves,
+        &yieldCurvesType::YieldCurve,
+        "default",
         {named<yieldCurvesType_YieldCurve_t>("EUR1D", "Yield/EUR/EUR1D")});
-    add(d.IndexForwardingCurves, &indexForwardingCurvesType::Index, "default",
+    add(d.IndexForwardingCurves,
+        &indexForwardingCurvesType::Index,
+        "default",
         {named<indexForwardingCurvesType_Index_t>("EUR-EURIBOR-6M", "Yield/EUR/EUR6M")});
-    add(d.ZeroInflationIndexCurves, &zeroInflationIndexCurvesType::ZeroInflationIndexCurve,
+    add(d.ZeroInflationIndexCurves,
+        &zeroInflationIndexCurvesType::ZeroInflationIndexCurve,
         "default",
         {named<zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t>("EUHICPXT",
-                                                                        "Inflation/EUHICPXT/ZC")});
-    add(d.YYInflationIndexCurves, &yyInflationIndexCurvesType::YYInflationIndexCurve, "default",
+                                                                       "Inflation/EUHICPXT/ZC")});
+    add(d.YYInflationIndexCurves,
+        &yyInflationIndexCurvesType::YYInflationIndexCurve,
+        "default",
         {named<yyInflationIndexCurvesType_YYInflationIndexCurve_t>("EUHICPXT",
-                                                                    "Inflation/EUHICPXT/YY")});
-    add(d.YieldVolatilities, &yieldVolatilitiesType::YieldVolatility, "default",
+                                                                   "Inflation/EUHICPXT/YY")});
+    add(d.YieldVolatilities,
+        &yieldVolatilitiesType::YieldVolatility,
+        "default",
         {named<yieldVolatilitiesType_YieldVolatility_t>("BOND", "YieldVolatility/BOND")});
-    add(d.CDSVolatilities, &cdsVolatilitiesType::CDSVolatility, "default",
+    add(d.CDSVolatilities,
+        &cdsVolatilitiesType::CDSVolatility,
+        "default",
         {named<cdsVolatilitiesType_CDSVolatility_t>("CPTY_A", "CDSVolatility/CPTY_A")});
-    add(d.DefaultCurves, &defaultCurvesType::DefaultCurve, "default",
+    add(d.DefaultCurves,
+        &defaultCurvesType::DefaultCurve,
+        "default",
         {named<defaultCurvesType_DefaultCurve_t>("CPTY_A", "Default/USD/CPTY_A")});
-    add(d.EquityCurves, &equityCurvesType::EquityCurve, "default",
+    add(d.EquityCurves,
+        &equityCurvesType::EquityCurve,
+        "default",
         {named<equityCurvesType_EquityCurve_t>("SP5", "Equity/USD/SP5")});
-    add(d.EquityVolatilities, &equityVolatilitiesType::EquityVolatility, "default",
+    add(d.EquityVolatilities,
+        &equityVolatilitiesType::EquityVolatility,
+        "default",
         {named<equityVolatilitiesType_EquityVolatility_t>("SP5", "EquityVolatility/USD/SP5")});
-    add(d.Securities, &securitiesType::Security, nullptr,
+    add(d.Securities,
+        &securitiesType::Security,
+        nullptr,
         {named<securitiesType_Security_t>("BOND1", "Security/BOND1")});
-    add(d.BaseCorrelations, &baseCorrelationsType::BaseCorrelation, "default",
+    add(d.BaseCorrelations,
+        &baseCorrelationsType::BaseCorrelation,
+        "default",
         {named<baseCorrelationsType_BaseCorrelation_t>("CDXIG", "BaseCorrelation/CDXIG")});
-    add(d.CommodityCurves, &commodityCurvesType::CommodityCurve, "default",
+    add(d.CommodityCurves,
+        &commodityCurvesType::CommodityCurve,
+        "default",
         {named<commodityCurvesType_CommodityCurve_t>("GOLD", "Commodity/USD/GOLD")});
-    add(d.CommodityVolatilities, &commodityVolatilitiesType::CommodityVolatility, "default",
+    add(d.CommodityVolatilities,
+        &commodityVolatilitiesType::CommodityVolatility,
+        "default",
         {named<commodityVolatilitiesType_CommodityVolatility_t>("GOLD",
-                                                                 "CommodityVolatility/USD/GOLD")});
-    add(d.Correlations, &correlationsType::Correlation, "default",
+                                                                "CommodityVolatility/USD/GOLD")});
+    add(d.Correlations,
+        &correlationsType::Correlation,
+        "default",
         {named<correlationsType_Correlation_t>("A&B", "Correlation/A&B")});
-    add(d.BondFutureVolatilities, &bondFutureVolatilitiesType::BondFutureVolatility, "default",
-        {named<bondFutureVolatilitiesType_BondFutureVolatility_t>("TY", "BondFutureVolatility/TY")});
-    add(d.IntradayPowerPriceCurves, &intradayPowerPriceCurvesType::IntradayPowerPriceCurve,
+    add(d.BondFutureVolatilities,
+        &bondFutureVolatilitiesType::BondFutureVolatility,
+        "default",
+        {named<bondFutureVolatilitiesType_BondFutureVolatility_t>("TY",
+                                                                  "BondFutureVolatility/TY")});
+    add(d.IntradayPowerPriceCurves,
+        &intradayPowerPriceCurvesType::IntradayPowerPriceCurve,
         "default",
         {named<intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t>("PJM", "Power/PJM")});
     add(d.ZeroInflationCapFloorVolatilities,
-        &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility, "default",
+        &zeroInflationCapFloorVolatilitiesType::ZeroInflationCapFloorVolatility,
+        "default",
         {named<zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t>(
             "EUHICPXT", "InflationCapFloorVolatility/EUHICPXT")});
     add(d.YYInflationCapFloorVolatilities,
-        &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility, "default",
+        &yyInflationCapFloorVolatilitiesType::YYInflationCapFloorVolatility,
+        "default",
         {named<yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t>(
             "EUHICPXT", "YYInflationCapFloorVolatility/EUHICPXT")});
 
@@ -161,12 +194,16 @@ todaysmarket every_collection() {
 
     // Both optional attributes present, the key written empty, and both absent.
     using swaption = swaptionVolatilitiesType_SwaptionVolatility_t;
-    add(d.SwaptionVolatilities, &swaptionVolatilitiesType::SwaptionVolatility, "default",
+    add(d.SwaptionVolatilities,
+        &swaptionVolatilitiesType::SwaptionVolatility,
+        "default",
         {keyed<swaption>("EUR-EURIBOR-6M", currencyCode::EUR, "SwaptionVolatility/EUR/A"),
          keyed<swaption>("", std::nullopt, "SwaptionVolatility/EUR/B"),
          keyed<swaption>(std::nullopt, std::nullopt, "SwaptionVolatility/EUR/C")});
     using cap_floor = capFloorVolatilitiesType_CapFloorVolatility_t;
-    add(d.CapFloorVolatilities, &capFloorVolatilitiesType::CapFloorVolatility, "default",
+    add(d.CapFloorVolatilities,
+        &capFloorVolatilitiesType::CapFloorVolatility,
+        "default",
         {keyed<cap_floor>(std::nullopt, currencyCode::USD, "CapFloorVolatility/USD")});
 
     swapIndexCurvesType_SwapIndex_t swap_index;
@@ -184,7 +221,8 @@ todaysmarket every_collection() {
         configurationType_ZeroInflationIndexCurvesId_t(std::string("default"));
     c.ZeroInflationCapFloorVolatilitiesId =
         configurationType_ZeroInflationCapFloorVolatilitiesId_t(std::string("default"));
-    c.YYInflationIndexCurvesId = configurationType_YYInflationIndexCurvesId_t(std::string("default"));
+    c.YYInflationIndexCurvesId =
+        configurationType_YYInflationIndexCurvesId_t(std::string("default"));
     c.FxSpotsId = configurationType_FxSpotsId_t(std::string("default"));
     c.BaseCorrelationsId = configurationType_BaseCorrelationsId_t(std::string("default"));
     c.FxVolatilitiesId = configurationType_FxVolatilitiesId_t(std::string("default"));
@@ -201,7 +239,8 @@ todaysmarket every_collection() {
     c.CommodityCurvesId = configurationType_CommodityCurvesId_t(std::string("default"));
     c.CommodityVolatilitiesId = configurationType_CommodityVolatilitiesId_t(std::string("default"));
     c.CorrelationsId = configurationType_CorrelationsId_t(std::string("default"));
-    c.BondFutureVolatilitiesId = configurationType_BondFutureVolatilitiesId_t(std::string("default"));
+    c.BondFutureVolatilitiesId =
+        configurationType_BondFutureVolatilitiesId_t(std::string("default"));
     c.IntradayPowerPriceCurvesId =
         configurationType_IntradayPowerPriceCurvesId_t(std::string("default"));
     d.Configuration.push_back(std::move(c));

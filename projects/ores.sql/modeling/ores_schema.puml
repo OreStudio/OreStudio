@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T08:47:19.506945Z
+' Generated: 2026-10-03T10:20:46.679522Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10203,6 +10203,33 @@ package "reporting" #E0F7FA {
     mean inventing a canonical form ORE does not have.
     end note
 
+    entity ores_reporting_report_type_configuration_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * report_type_code : text <<PK>>
+        * configuration_type_code : text <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_type_configuration_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Report Type Configuration Type Table
+    Many-to-many junction between report types and configuration types: one row
+    for each configuration type a run of the report type cannot start without. A
+    risk report needs pricing engines, today's market, curve configuration and
+    conventions whatever its analytics; a configuration type is needed by more than
+    one report type. Starting a report checks that its definition binds one
+    configuration of every type its report type requires.
+    end note
+
     entity ores_reporting_report_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -10211,6 +10238,7 @@ package "reporting" #E0F7FA {
         * name : text
         * description : text
         * display_order : integer
+        * workflow_type : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10225,9 +10253,10 @@ package "reporting" #E0F7FA {
     To modify, update the template and regenerate.
     Report Type Table
     Reference data table defining valid report type classifications.
-    Examples: 'risk', 'grid'.
-    Report types are managed by the system tenant and drive which
-    configuration block is used when creating a report definition.
+    Example: 'risk'.
+    Report types are managed by the system tenant. A report type names the
+    workflow its reports run and, through the report type configuration type
+    junction, the configuration types a run requires.
     end note
 
     entity ores_reporting_risk_report_config_books_tbl <<junction>> #ECECEC {

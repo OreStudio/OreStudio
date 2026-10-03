@@ -39,5 +39,6 @@ set(files
     "repository_report_type_repository_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
+    "service_run_requirements_tests.cpp"
     "service_scheduling_plan_tests.cpp"
 )

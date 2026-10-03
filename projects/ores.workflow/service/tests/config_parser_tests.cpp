@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.workflow.service/config/parser.hpp"
-#include "ores.workflow.service/config/parser_exception.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
+#include "ores.workflow.service/config/parser.hpp"
+#include "ores.workflow.service/config/parser_exception.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
@@ -134,7 +134,8 @@ TEST_CASE("parse_help_returns_empty", tags) {
 
     const std::string output = info.str();
     CHECK_FALSE(result.has_value());
-    CHECK(output.starts_with("Workflow orchestration microservice\n\nUsage: ores.workflow.service [options]"));
+    CHECK(output.starts_with(
+        "Workflow orchestration microservice\n\nUsage: ores.workflow.service [options]"));
     CHECK(output.find("--help") != std::string::npos);
     CHECK(output.find("Display usage and exit.") != std::string::npos);
     CHECK(err.str().empty());

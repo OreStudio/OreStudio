@@ -33,6 +33,7 @@
 \ir ./reporting_report_types_notify_trigger_create.sql
 \ir ./reporting_configuration_types_create.sql
 \ir ./reporting_configuration_types_notify_trigger_create.sql
+\ir ./reporting_report_type_configuration_type_create.sql
 \ir ./reporting_analytic_types_create.sql
 \ir ./reporting_analytic_types_notify_trigger_create.sql
 \ir ./reporting_report_run_setups_create.sql

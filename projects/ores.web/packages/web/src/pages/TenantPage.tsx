@@ -20,26 +20,35 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import type { TenantDetailResponse, TenantParty } from '@ores/wire-protocol/browser';
+import type { TenantDetailResponse } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
-import { Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 
 /**
- * One tenant, opened from the roster: what it is, how its setup went, and the
- * parties it holds.
+ * One tenant, opened from the roster: what it is and how its setup went.
  *
  * The address names the tenant's code, its stable name in a request, so a link
- * opens the same tenant again. The screen writes nothing. A run or a party list
- * the server could not read empties its own panel and says so; the tenant is
- * still the registry's answer.
+ * opens the same tenant again. The screen writes nothing. A run the server
+ * could not read empties its own panel and says so. The tenant's own data,
+ * its parties among it, is read after entering the tenant.
  */
-export function TenantPage(): ReactNode {
+export interface TenantPageProps {
+    /**
+     * Enters the tenant, reading only. The wiring owns the session, so the
+     * screen asks for the entry rather than making it.
+     */
+    readonly onEnterTenant: (tenantId: string) => Promise<void>;
+}
+
+export function TenantPage({ onEnterTenant }: TenantPageProps): ReactNode {
     const { t } = useTranslation();
+    const [entering, setEntering] = useState(false);
+    const [entryRefused, setEntryRefused] = useState<string | null>(null);
     const { code = '' } = useParams();
     const read = useQuery({
         queryKey: ['tenant', code],
@@ -79,7 +88,31 @@ export function TenantPage(): ReactNode {
 
     return (
         <div>
-            <PageHeader title={tenant.name} description={t('tenants.detail.lead')} actions={back} />
+            <PageHeader
+                title={tenant.name}
+                description={t('tenants.detail.lead')}
+                actions={
+                    <>
+                        <Button
+                            disabled={entering}
+                            onClick={() => {
+                                setEntering(true);
+                                setEntryRefused(null);
+                                onEnterTenant(tenant.id).catch((error: unknown) => {
+                                    setEntering(false);
+                                    setEntryRefused(
+                                        error instanceof Error ? error.message : String(error),
+                                    );
+                                });
+                            }}
+                        >
+                            {t('tenants.detail.enter')}
+                        </Button>
+                        {back}
+                    </>
+                }
+            />
+            {entryRefused !== null && <Notice tone="error">{entryRefused}</Notice>}
 
             <section className="card mb-6 p-6">
                 <h2 className="mb-4 text-sm font-semibold">{t('tenants.detail.details')}</h2>
@@ -138,10 +171,7 @@ export function TenantPage(): ReactNode {
                 <SetupPanel detail={read.data} />
             </section>
 
-            <section className="card p-6">
-                <h2 className="mb-4 text-sm font-semibold">{t('tenants.detail.parties')}</h2>
-                <PartiesPanel detail={read.data} />
-            </section>
+            <Notice tone="info">{t('tenants.detail.readInside')}</Notice>
         </div>
     );
 }
@@ -174,56 +204,6 @@ function SetupPanel({ detail }: { readonly detail: TenantDetailResponse }): Reac
             >
                 {t('tenants.resumeSetup')}
             </Link>
-        </div>
-    );
-}
-
-/**
- * The parties the tenant holds: its system party first, then the others by
- * name. A tenant with only its system party has no business party yet.
- */
-function PartiesPanel({ detail }: { readonly detail: TenantDetailResponse }): ReactNode {
-    const { t, plural } = useTranslation();
-    if (detail.partiesUnavailable) {
-        return <Notice tone="warn">{t('tenants.detail.partiesUnavailable')}</Notice>;
-    }
-    const business = detail.parties.filter((party) => party.category !== 'System');
-    return (
-        <div>
-            {business.length === 0 && (
-                <p className="mb-4 text-sm text-ink-muted">{t('tenants.detail.onlySystemParty')}</p>
-            )}
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            <th className="py-2 pr-4 font-medium">{t('tenants.code')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('tenants.name')}</th>
-                            <th className="py-2 pr-4 font-medium">
-                                {t('tenants.detail.category')}
-                            </th>
-                            <th className="py-2 pr-4 font-medium">{t('tenants.type')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('tenants.status')}</th>
-                            <th className="py-2 font-medium">{t('tenants.detail.parent')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {detail.parties.map((party: TenantParty) => (
-                            <tr key={party.id} className="border-b border-line-subtle">
-                                <td className="py-2.5 pr-4 font-mono text-xs">{party.code}</td>
-                                <td className="py-2.5 pr-4">{party.name}</td>
-                                <td className="py-2.5 pr-4">{party.category}</td>
-                                <td className="py-2.5 pr-4">{party.type}</td>
-                                <td className="py-2.5 pr-4">{party.status}</td>
-                                <td className="py-2.5">{party.parentName ?? ''}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <p className="mt-4 text-sm text-ink-muted">
-                {plural('tenants.detail.partyCount', detail.partyCount)}
-            </p>
         </div>
     );
 }

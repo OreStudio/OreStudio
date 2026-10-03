@@ -40,13 +40,13 @@
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
-#include "ores.refdata.core/messaging/csa_eligible_currency_registrar.hpp"
-#include "ores.refdata.core/messaging/csa_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_eligible_currency_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_country_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_currency_group_registrar.hpp"
@@ -91,7 +91,6 @@
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
 #include "ores.refdata.core/messaging/series_subclass_code_registrar.hpp"
 #include "ores.refdata.core/messaging/swap_convention_registrar.hpp"
-#include "ores.refdata.core/messaging/tenant_party_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_anchor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_convention_resolution_registrar.hpp"
@@ -135,12 +134,12 @@
 #include "ores.refdata.core/messaging/counterparty_contact_information_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/csa_eligible_currency_history_provider_registrar.hpp"
-#include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/country_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_eligible_currency_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_group_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_history_provider_registrar.hpp"
@@ -234,7 +233,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_date_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
-    append(register_tenant_party_handlers(nats, ctx, verifier));
     append(register_calendar_adjustment_handlers(nats, ctx, verifier));
     append(register_calendar_event_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));

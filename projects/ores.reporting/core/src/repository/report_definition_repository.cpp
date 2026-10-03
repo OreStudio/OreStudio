@@ -238,6 +238,7 @@ std::optional<domain::report_definition> report_definition_repository::read_at_v
     return entities.front();
 }
 
+
 report_definition_repository::remove_status report_definition_repository::remove(
     context ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report definition. " << "id: " << id;

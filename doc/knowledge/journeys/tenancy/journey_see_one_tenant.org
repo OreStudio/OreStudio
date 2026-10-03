@@ -21,8 +21,9 @@ each step needs.
 
 "I want to see everything about this one tenant in one place." The system
 administrator opens a tenant from the roster and reads one screen. The journey
-is done when the screen answers three questions: what the tenant is, how its
-setup went, and which parties it holds.
+is done when the screen answers two questions: what the tenant is, and how its
+setup went. The tenant's own data, its parties among it, is read from inside
+the tenant in [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]].
 
 * Actor and trigger
 
@@ -58,24 +59,25 @@ This journey writes nothing.
    When the run did not complete, the screen links to the run's page, where
    the administrator can watch it or retry it. A tenant with no run, such as a
    tenant created before runs were recorded, says so.
-5. *Read the parties.* The system lists the tenant's parties: the code, the
-   name, the category, the type, the status and the parent. The system party
-   is listed and marked, because every tenant has one. A tenant with only its
-   system party says that no business party exists yet.
+5. *Go inside for the tenant's data.* The screen says that the tenant's
+   parties, accounts and sign-ins are read inside the tenant, and offers *Act
+   in this tenant*. Row-level security scopes every read from the session's
+   token, so no read here names the tenant.
 6. *A tenant that does not exist.* The address names a code that no tenant
    holds, or the system tenant. The screen says that no such tenant exists and
    links back to the roster. It does not show the system tenant, for the same
    reason the roster does not.
-7. *Leave, or go on.* The administrator goes back to the roster, or picks an
-   action on the tenant. The actions are the roster's: resume setup, and
-   retire or reset when that journey exists.
+7. *Leave, or go on.* The administrator goes back to the roster, enters the
+   tenant, or picks an action on it: resume setup, and retire or reset when
+   that journey exists.
 
 * Screens and wireframes
 
-One screen with three panels: the details, the setup run and the parties. The
-panels are one answer about one tenant, so they sit together on one page.
+One screen with two panels, the details and the setup run, and the way inside
+the tenant for its own data. The panels are one answer about one tenant, so
+they sit together on one page.
 
-#+caption: See one tenant: the details with provenance, the setup run, and the parties.
+#+caption: See one tenant: the details with provenance, the setup run, and the way inside.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/tenancy/wireframe_see_one_tenant.png]]
 
@@ -88,7 +90,6 @@ panels are one answer about one tenant, so they sit together on one page.
 | =tenant_type= | The type badge | [[id:0B64E03F-1EDE-43E9-BEDA-96CDF9822B3F][ores.iam.tenant_type]] |
 | =tenant_status= | The status badge | [[id:22C2020E-E745-4D7B-B2BF-C17659DFCE6E][ores.iam.tenant_status]] |
 | =workflow_instance= | The setup run's status, step and error | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] |
-| =party= | Code, name, category, type, status and parent of each party | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
 
 * Operations and messages
 
@@ -98,23 +99,20 @@ panels are one answer about one tenant, so they sit together on one page.
 | Read the details | Read one tenant by its code | =iam.v1.tenants.get= | exists |
 | Read the provenance | Carried by the tenant row | =iam.v1.tenants.get= | exists |
 | Read the setup run | Read the runs that target the tenant | =workflow.v1.instances.list=, filtered on the tenant as target | exists |
-| Read the parties | List the parties of one named tenant | =refdata.v1.parties.list-of-tenant= | exists |
+| Go inside for the tenant's data | Enter the tenant, reading only | =iam.v1.ops.enter_tenant= | exists |
 | A tenant that does not exist | Answer an empty read | =iam.v1.tenants.get= | exists |
 
 The browser reads the screen through one BFF route, =GET /api/tenants/:code=.
 It refuses a session outside system administration, as =/api/tenants= does.
-It joins the tenant, its setup run and its parties into one answer.
+It joins the tenant and its setup run into one answer.
 
 * What is missing
 
-1. *Closed: a party read for one named tenant.* Every other party read
-   answers the caller's own tenant, and a system administrator's tenant is the
-   system tenant. =refdata.v1.parties.list-of-tenant=, declared in the
-   operation model =ores.refdata.tenant_party_messages=, names the tenant. The
-   service refuses a caller outside the system tenant and refuses the system
-   tenant as a target. It checks =refdata::parties:read= and reads with a
-   context scoped to the named tenant, so the party table's policy admits that
-   tenant's rows and no others.
+1. *Closed: the tenant's parties.* A first version read them here through a
+   cross-tenant read that named the tenant. That read is removed. The parties
+   are read from inside the tenant with the ordinary =refdata.v1.parties.list=,
+   which row-level security scopes from the session's token, in
+   [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]].
 2. *The tenant read checks no permission.* =iam.v1.tenants.get= checks none,
    like =iam.v1.tenants.list=. The BFF's refusal of a session outside system
    administration is the boundary, as on the roster.
@@ -127,6 +125,7 @@ It joins the tenant, its setup run and its parties into one answer.
 - [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] — the destructive action on the tenant read here
 - [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — adds a business party to a tenant that holds only its system party
 - [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the same tenant row, read by its own administrator
+- [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]] — where the tenant's parties, accounts and sign-ins are read
 
 * Related knowledge
 

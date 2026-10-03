@@ -20,13 +20,13 @@
 #include "ores.ore.core/domain/netting_set_mapper.hpp"
 #include "ores.ore.core/domain/ore_code_tables.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/functional/hash.hpp>
 #include <algorithm>
 #include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <boost/functional/hash.hpp>
 
 namespace ores::ore::domain {
 
@@ -79,10 +79,9 @@ std::optional<std::string> csa_type_text(const xsd::optional<csaType>& v) {
 }
 
 csaType parse_csa_type(const std::string& s) {
-    static const std::map<std::string, csaType> types = {
-        {"Bilateral", csaType::Bilateral},
-        {"CallOnly", csaType::CallOnly},
-        {"PostOnly", csaType::PostOnly}};
+    static const std::map<std::string, csaType> types = {{"Bilateral", csaType::Bilateral},
+                                                         {"CallOnly", csaType::CallOnly},
+                                                         {"PostOnly", csaType::PostOnly}};
     if (auto it = types.find(s); it != types.end())
         return it->second;
     throw std::runtime_error("Invalid CSA type: " + s);
@@ -110,7 +109,8 @@ void put(xsd::optional<T>& target, const std::optional<T>& v) {
 }
 
 refdata::domain::csa map_csa(const nettingsetdefinitions_NettingSet_t_CSADetails_t& d,
-                             const boost::uuids::uuid& set_id, bool active) {
+                             const boost::uuids::uuid& set_id,
+                             bool active) {
     refdata::domain::csa r;
     r.id = new_uuid();
     r.netting_set_id = set_id;
@@ -166,8 +166,8 @@ reverse_csa(const refdata::domain::csa& c,
         d.IndependentAmount = std::move(amount);
     }
     if (c.call_frequency.has_value() != c.post_frequency.has_value())
-        throw std::runtime_error(
-            "A CSA states one margining frequency; ORE needs both the call and the post frequency.");
+        throw std::runtime_error("A CSA states one margining frequency; ORE needs both the call "
+                                 "and the post frequency.");
     if (c.call_frequency) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t frequency;
         static_cast<xsd::string&>(frequency.CallFrequency) = *c.call_frequency;
@@ -180,8 +180,7 @@ reverse_csa(const refdata::domain::csa& c,
     if (!currencies.empty()) {
         nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t collaterals;
         for (const auto* currency : currencies)
-            collaterals.Currencies.Currency.push_back(
-                parse_currency_code(currency->currency_code));
+            collaterals.Currencies.Currency.push_back(parse_currency_code(currency->currency_code));
         d.EligibleCollaterals = std::move(collaterals);
     }
     put(d.ApplyInitialMargin, c.apply_initial_margin);
@@ -254,7 +253,8 @@ nettingsetdefinitions netting_set_mapper::reverse(const mapped_netting_sets& v) 
     for (const auto& c : v.csas)
         csa_by_set.emplace(c.netting_set_id, &c);
     std::unordered_map<boost::uuids::uuid,
-                       std::vector<const refdata::domain::csa_eligible_currency*>, uuid_hash>
+                       std::vector<const refdata::domain::csa_eligible_currency*>,
+                       uuid_hash>
         currencies_by_csa;
     for (const auto& e : v.eligible_currencies)
         currencies_by_csa[e.csa_id].push_back(&e);

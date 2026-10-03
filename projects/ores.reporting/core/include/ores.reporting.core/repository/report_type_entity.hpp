@@ -48,6 +48,7 @@ struct report_type_entity {
     std::string name;
     std::string description;
     int display_order = 0;
+    std::string workflow_type;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

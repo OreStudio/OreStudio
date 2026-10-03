@@ -23,15 +23,16 @@ A report definition's configuration is a set of strongly typed entities rather t
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Seven of the seventeen document kinds round trip through entities: the run document, credit simulation, stress test, today's market, pricing engines, and the conventions, currencies and calendar adjustments in refdata. Credit simulation, stress test, today's market and pricing engines reach their reporting configuration by =configuration_id=. |
+| Now           | Seven of the seventeen document kinds round trip through entities: the run document, credit simulation, stress test, today's market, pricing engines, and the conventions, currencies and calendar adjustments in refdata. Credit simulation, stress test, today's market and pricing engines reach their reporting configuration by =configuration_id=. The =risk= report type names its workflow and the four configuration types a run requires, and a trigger refuses a definition that binds fewer. |
 | Waiting on    | Nothing.                               |
-| Next          | Bind the report types, so a report type names the configuration types a run of it needs. Then finish the curve configuration, which needs its binding generated first, before simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
-| Last touched  | 2026-10-02                               |
+| Next          | Finish the curve configuration, which needs its binding generated first, before simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
+| Last touched  | 2026-10-03                               |
 
 The seventeen configuration types are seeded, so a configuration can be
 registered. What a report still cannot do: no definition points at a
-configuration yet, report types do not name the configuration types they need,
-and no run is built from the entities. Counterparty, netting set, reference data and IBOR fallback
+configuration yet, so the trigger refuses every seeded definition until it binds
+the four configurations a risk run requires, and no run is built from the
+entities. Counterparty, netting set, reference data and IBOR fallback
 documents are not modelled as entities.
 
 * Acceptance
@@ -66,7 +67,7 @@ documents are not modelled as entities.
 | [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
 | [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | BACKLOG | | | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
 | [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | DONE | 2026-09-28 | 2026-09-28 | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
-| [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | BACKLOG | | | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
+| [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | DONE | 2026-10-03 | 2026-10-03 | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
 | [[id:8A0973B9-A595-45D1-97EC-E83ECCCF5B27][Round trip the conventions configuration]] | DONE | 2026-09-28 | 2026-09-29 | conventions.xml carries twenty-six convention categories and the mapper models nine, skipping the rest silently. Fourteen unmodelled categories and some missing fields on the modelled ones stand between the corpus and a round trip. |
 | [[id:A436B63F-778C-4EE5-BD9C-9BAB5133316A][Model the convention categories the mapper skips]] | DONE | 2026-09-29 | 2026-09-29 | Fourteen convention categories the corpus uses have no entity and no mapper, so sixty-three of the seventy-two conventions files cannot round trip. |
 | [[id:C12CE087-BB30-4169-8F73-543D2F91B9CE][Carry ORE's currency type on the refdata currency]] | DONE | 2026-09-28 | 2026-09-29 | The currency mapper translates ORE's free-text CurrencyType into the refdata monetary_nature, and Major and Minor both become fiat, so the export cannot recover which one the document held. Give the currency a column that carries ORE's own value. |
@@ -231,6 +232,12 @@ documents are not modelled as entities.
   file under =create=, =drop= and =populate=, reached from the tree roots and the
   bootstrap scripts, and CI fails on it. A file a person or another tool runs
   directly goes in =validation_ignore.txt= with what runs it.
+- **A report type selects the workflow and names the run's required
+  configuration.** The workflow is a column on the type, and the required
+  configuration types are a junction, both read under the system tenant where
+  the lookups are seeded. The trigger refuses a definition that binds fewer, so
+  a run that cannot finish never creates an instance. Analytic-specific
+  configuration belongs on the analytic types, not the report type.
 - **Soft foreign keys impose no creation order.** An insert trigger resolves its
   parent table when it runs, so generated aggregates need only a table before
   its trigger and hand files that name tables after the tables.

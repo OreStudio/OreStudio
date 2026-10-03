@@ -66,7 +66,7 @@ import {
     readTenantStatuses,
     readTenantTypes,
     readTenant,
-    readTenantParties,
+    readPartiesPage,
     readTenantSetups,
     searchTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -76,15 +76,16 @@ import {
     setAccountLocked,
     signupRequestSchema,
     signupResultSchema,
+    partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
+    OperationFailedError,
     type LoginOutcome,
     type PartySummary,
-    type TenantParty,
     type TenantSetup,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
@@ -132,6 +133,15 @@ const SESSION_COOKIE = 'ores_web_session';
  * the door must not spend the attempts they need to sign in with.
  */
 const POLICY_READS_PER_MINUTE = 120;
+
+/** One page of parties, as the browser asks for it. */
+const partyPageQuerySchema = z.object({
+    offset: z.int().nonnegative(),
+    limit: z.int().min(1).max(1000),
+});
+
+/** What the browser sends to enter a tenant. */
+const enterTenantBodySchema = z.object({ tenantId: z.string().min(1) });
 
 export interface ServerDependencies {
     readonly config: Config;
@@ -231,6 +241,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             availableParties: session.availableParties,
             accessLifetimeSeconds: session.accessLifetimeSeconds,
             passwordResetRequired: session.passwordResetRequired,
+            actingIn:
+                session.actingIn === null
+                    ? null
+                    : {
+                          tenantId: session.actingIn.tenantId,
+                          tenantCode: session.actingIn.tenantCode,
+                          tenantName: session.actingIn.tenantName,
+                      },
         });
     }
 
@@ -288,6 +306,36 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 .header('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS')
                 .header('Access-Control-Allow-Headers', 'Content-Type');
             await reply.status(204).send();
+        }
+    });
+
+    /**
+     * Inside a tenant, data is read only.
+     *
+     * The tenant session's token already carries read permissions only, so a
+     * write handler refuses it. This refuses earlier and for every change,
+     * including a handler that checks no permission, so a system administrator
+     * changes a tenant in one way only: by deleting the whole tenant from
+     * system administration. Leaving, signing out and watching for changes
+     * are not changes to the tenant.
+     */
+    const changesAllowedInsideATenant = new Set([
+        'DELETE /api/session/tenant',
+        'DELETE /api/session',
+        'POST /api/events/watch',
+    ]);
+    server.addHook('preHandler', async (request) => {
+        if (request.method === 'GET' || request.method === 'HEAD') {
+            return;
+        }
+        const route = `${request.method} ${request.routeOptions.url ?? request.url}`;
+        if (changesAllowedInsideATenant.has(route)) {
+            return;
+        }
+        const id = readSessionId(request);
+        const session = id === undefined ? undefined : sessions.get(id);
+        if (session?.actingIn != null) {
+            throw notPermitted('Data is read only inside a tenant. Leave the tenant to change it.');
         }
     });
 
@@ -660,6 +708,54 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * Enter one tenant from system administration, reading only.
+     *
+     * The session's token becomes one scoped to the tenant, and the session
+     * reads as the tenant's from then on: its tenant, its party and the tenant
+     * administration mode. The server checks the permission and records the
+     * entry; this route only refuses a session that is not in system
+     * administration, as the tenant screens do.
+     */
+    server.post('/api/session/tenant', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration' || session.actingIn !== null) {
+            throw notPermitted('A tenant is entered from system administration.');
+        }
+        const parsed = enterTenantBodySchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('A tenantId is required.');
+        }
+        try {
+            await session.client.enterTenant(parsed.data.tenantId);
+        } catch (error) {
+            if (error instanceof OperationFailedError) {
+                throw notPermitted(error.message);
+            }
+            throw error;
+        }
+        return sessionResponse(requireSession(request));
+    });
+
+    /** Leave the tenant and return to system administration. */
+    server.delete('/api/session/tenant', async (request) => {
+        const session = requireSession(request);
+        if (session.actingIn === null) {
+            throw invalidRequest('The session is not inside a tenant.');
+        }
+        /*
+         * The client is back outside whether or not the exit was recorded, so
+         * the answer is the session as it now reads; a failed record is logged
+         * rather than left to keep the browser showing the tenant.
+         */
+        try {
+            await session.client.leaveTenant();
+        } catch (error) {
+            request.log.warn({ err: error }, 'The exit from the tenant was not recorded.');
+        }
+        return sessionResponse(requireSession(request));
+    });
+
+    /**
      * The signed-in account's own password.
      *
      * A person who must change their password has a session already: they
@@ -955,13 +1051,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * One tenant's screen: the tenant, the run that set it up, and its parties.
+     * One tenant's screen: the tenant and the run that set it up.
      *
      * The tenant is read by its code, which is how the registry's get keys it.
      * The system tenant is the deployment's own bookkeeping, so it is answered
-     * as no tenant, as the roster leaves it out. The run and the parties are
-     * read beside the tenant, and a failure to read either is not a failure to
-     * read the tenant: the answer says which is missing.
+     * as no tenant, as the roster leaves it out. The run is read beside the
+     * tenant, and a failure to read it is not a failure to read the tenant.
+     * The tenant's own data is read from inside the tenant, not from here.
      */
     server.get('/api/tenants/:code', async (request) => {
         const session = requireSession(request);
@@ -984,25 +1080,35 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             setupUnavailable = true;
         }
 
-        let parties: readonly TenantParty[] = [];
-        let partyCount = 0;
-        let partiesUnavailable = false;
-        try {
-            const read = await readTenantParties(session.client, tenant.id);
-            parties = read.parties;
-            partyCount = read.total;
-        } catch (error) {
-            request.log.warn({ err: error }, 'The parties were not read.');
-            partiesUnavailable = true;
-        }
-
         return tenantDetailResponseSchema.parse({
             tenant: { ...tenant, setup },
             setupUnavailable,
-            parties,
-            partyCount,
-            partiesUnavailable,
         });
+    });
+
+    /**
+     * One page of the parties of the session's own tenant.
+     *
+     * Row-level security scopes the read from the session's token, so the
+     * route names no tenant. A system administrator's own tenant is the system
+     * tenant, which the party policy lets read every tenant's parties, so the
+     * route refuses system administration: a tenant's parties are read from
+     * inside it.
+     */
+    server.get('/api/parties', async (request) => {
+        const session = requireSession(request);
+        if (session.mode === 'system-administration') {
+            throw notPermitted("A tenant's parties are read from inside the tenant.");
+        }
+        const query = request.query as Record<string, string | undefined>;
+        const page = partyPageQuerySchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 20),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return partyPageSchema.parse(await readPartiesPage(session.client, page.data));
     });
 
     /**

@@ -33,6 +33,7 @@
 \ir ./reporting_concurrency_policies_notify_trigger_drop.sql
 \ir ./reporting_concurrency_policies_drop.sql
 \ir ./reporting_concurrency_policies_validate_fn_drop.sql
+\ir ./reporting_report_type_configuration_type_drop.sql
 \ir ./reporting_report_types_notify_trigger_drop.sql
 \ir ./reporting_report_types_drop.sql
 \ir ./reporting_report_types_validate_fn_drop.sql

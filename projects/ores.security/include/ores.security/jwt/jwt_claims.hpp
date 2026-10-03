@@ -112,6 +112,17 @@ struct jwt_claims final {
     std::vector<std::string> visible_party_ids;
 
     /**
+     * @brief The tenant the subject acts from, when the session is inside
+     * another tenant.
+     *
+     * A system administrator who enters a tenant gets a token whose tenant is
+     * the one entered and whose subject is still the administrator. This claim
+     * names the tenant the administrator belongs to, so a reader can tell the
+     * session is not one of the tenant's own.
+     */
+    std::optional<std::string> acting_from_tenant_id;
+
+    /**
      * @brief Create a claims object with issued_at set to now and
      *        expires_at set to now + ttl.
      *

@@ -44,6 +44,7 @@ struct report_type_write {
     std::string name;
     std::string description;
     int display_order;
+    std::string workflow_type;
 };
 
 struct report_type_change {

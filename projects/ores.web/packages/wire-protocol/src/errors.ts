@@ -107,6 +107,19 @@ export class OperationFailedError extends ProtocolError {
     }
 }
 
+/**
+ * The session inside a tenant ended, because it is never refreshed.
+ *
+ * The client is back in the session it entered from by the time this is
+ * thrown, so the caller reports the change and goes on rather than signing in
+ * again.
+ */
+export class TenantSessionEndedError extends ProtocolError {
+    constructor() {
+        super('The time inside the tenant ended; the session is back where it entered from.');
+    }
+}
+
 /** The session token is expired, or the session outlived its maximum. */
 export class SessionExpiredError extends ServerError {
     constructor(code: 'token_expired' | 'max_session_exceeded', subject: string) {

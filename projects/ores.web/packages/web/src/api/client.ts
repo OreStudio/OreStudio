@@ -34,6 +34,7 @@ import {
     seedProfilesResponseSchema,
     sessionViewSchema,
     signupResultSchema,
+    partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
     tenantStatusesResponseSchema,
@@ -60,6 +61,7 @@ import {
     type SessionView,
     type SignupRequest,
     type SignupResult,
+    type PartyPage,
     type TenantDetailResponse,
     type TenantPage,
     type TenantStatus,
@@ -363,7 +365,18 @@ export const api = {
         return tenantPageSchema.parse(await request(`/api/tenants${suffix}`, { method: 'GET' }));
     },
 
-    /** One tenant by its code: the tenant, its setup run and its parties. */
+    /** One page of the parties of the session's own tenant. */
+    async parties(query: { readonly offset: number; readonly limit: number }): Promise<PartyPage> {
+        const params = new URLSearchParams({
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        return partyPageSchema.parse(
+            await request(`/api/parties?${params.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /** One tenant by its code: the tenant and its setup run. */
     async tenant(code: string): Promise<TenantDetailResponse> {
         return tenantDetailResponseSchema.parse(
             await request(`/api/tenants/${encodeURIComponent(code)}`, { method: 'GET' }),
@@ -400,6 +413,26 @@ export const api = {
             body: JSON.stringify({ partyId }),
         });
         return sessionViewSchema.parse(payload);
+    },
+
+    /**
+     * Enters one tenant from system administration, reading only.
+     *
+     * The answer is the session as it now reads: the tenant's, in tenant
+     * administration, with the tenant named in `actingIn`.
+     */
+    async enterTenant(tenantId: string): Promise<SessionView> {
+        const payload = await request('/api/session/tenant', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ tenantId }),
+        });
+        return sessionViewSchema.parse(payload);
+    },
+
+    /** Leaves the tenant; the answer is the session back in its own tenant. */
+    async leaveTenant(): Promise<SessionView> {
+        return sessionViewSchema.parse(await request('/api/session/tenant', { method: 'DELETE' }));
     },
 
     /**

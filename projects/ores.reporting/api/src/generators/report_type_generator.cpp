@@ -49,6 +49,7 @@ domain::report_type generate_synthetic_report_type(utility::generation::generati
     r.name = std::string(faker::word::adjective()) + " Report";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
+    r.workflow_type = std::string("report_execution_workflow");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

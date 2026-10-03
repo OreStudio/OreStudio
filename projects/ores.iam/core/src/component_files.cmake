@@ -134,6 +134,7 @@ set(files
     "service/session_service.cpp"
     "service/signup_service.cpp"
     "service/tenant_service.cpp"
+    "service/tenant_session_service.cpp"
     "service/tenant_status_service.cpp"
     "service/tenant_type_service.cpp"
 )
@@ -188,6 +189,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_provisioning_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_roster_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_session_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_status_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_status_registrar.hpp"
@@ -291,6 +293,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_presence.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_provisioning_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_session_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_status_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/tenant_type_service.hpp"
 )

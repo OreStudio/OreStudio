@@ -191,6 +191,11 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(const std::stri
             }
         }
 
+        if (decoded.has_payload_claim("acting_from_tenant_id")) {
+            claims.acting_from_tenant_id =
+                decoded.get_payload_claim("acting_from_tenant_id").as_string();
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: " << claims.subject
                                    << ", roles: " << claims.roles.size();
 
@@ -313,6 +318,9 @@ jwt_authenticator::validate_allow_expired(const std::string& token) const {
             for (const auto& v : decoded.get_payload_claim("visible_party_ids").as_array())
                 claims.visible_party_ids.push_back(std::string(v.as_string()));
         }
+        if (decoded.has_payload_claim("acting_from_tenant_id"))
+            claims.acting_from_tenant_id =
+                decoded.get_payload_claim("acting_from_tenant_id").as_string();
 
         BOOST_LOG_SEV(lg(), debug)
             << "JWT claims extracted (allow expired), subject: " << claims.subject;
@@ -425,6 +433,12 @@ std::optional<std::string> jwt_authenticator::create_token(const jwt_claims& cla
             }
             token = token.set_payload_claim("visible_party_ids",
                                             ::jwt::basic_claim<json_traits>(vpids_array));
+        }
+
+        if (claims.acting_from_tenant_id) {
+            token = token.set_payload_claim(
+                "acting_from_tenant_id",
+                ::jwt::basic_claim<json_traits>(std::string(*claims.acting_from_tenant_id)));
         }
 
         std::string signed_token;

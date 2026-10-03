@@ -34,6 +34,9 @@ const fr: SourceCatalogue = {
         accounts: 'Comptes',
         notifications: 'Notifications',
         alerts: 'Alertes',
+        actingIn: 'Vous agissez dans {tenant} en tant que {username}',
+        readOnly: 'Lecture seule',
+        leaveTenant: 'Quitter le locataire',
         signOut: 'Se déconnecter',
         signIn: 'Se connecter',
         menu: 'Menu',
@@ -101,8 +104,6 @@ const fr: SourceCatalogue = {
         open: 'Ouvrir',
         resumeSetup: 'Reprendre la mise en place',
         retireOrReset: 'Retirer ou réinitialiser',
-        previous: 'Précédent',
-        next: 'Suivant',
         code: 'Code',
         name: 'Nom',
         hostname: 'Nom d’hôte',
@@ -126,7 +127,10 @@ const fr: SourceCatalogue = {
             done: 'L’exécution est terminée. Le locataire est prêt.',
         },
         detail: {
-            lead: 'Un locataire de ce déploiement : ce qu’il est, comment sa mise en place s’est passée, et les parties qu’il contient.',
+            readInside:
+                'Ses parties, ses comptes et ses connexions se lisent dans le locataire. Agissez dans ce locataire pour les lire.',
+            enter: 'Agir dans ce locataire',
+            lead: 'Un locataire de ce déploiement : ce qu’il est, et comment sa mise en place s’est passée.',
             back: 'Retour aux locataires',
             notFound: 'Aucun locataire n’a ce code.',
             failed: 'Le locataire n’a pas pu être lu.',
@@ -145,17 +149,27 @@ const fr: SourceCatalogue = {
             setupUnavailable: 'Les exécutions de provisionnement n’ont pas pu être lues.',
             noRun: 'Aucune exécution de provisionnement n’est enregistrée pour ce locataire.',
             runCompleted: 'L’exécution de provisionnement est terminée.',
-            parties: 'Parties',
-            partiesUnavailable: 'Les parties n’ont pas pu être lues.',
-            onlySystemParty:
-                'Ce locataire ne contient que sa partie système. Aucune partie métier n’existe encore.',
-            category: 'Catégorie',
-            parent: 'Parent',
-            partyCount: { one: '{count} partie', other: '{count} parties' },
         },
         empty: {
             title: 'Ce déploiement ne détient encore aucun locataire propre.',
             body: 'L’administrateur système existe, donc le déploiement est configuré. Un locataire est l’étape suivante, et le premier se crée comme tous les autres.',
+        },
+    },
+
+    parties: {
+        title: 'Parties',
+        description: 'Les parties de ce locataire, une page à la fois.',
+        failed: 'Les parties n’ont pas pu être lues.',
+        code: 'Code',
+        name: 'Nom',
+        category: 'Catégorie',
+        type: 'Type',
+        status: 'Statut',
+        parent: 'Parent',
+        parentElsewhere: 'Sur une autre page',
+        showing: {
+            one: '{first}–{last} sur {count} partie',
+            other: '{first}–{last} sur {count} parties',
         },
     },
 
@@ -399,6 +413,7 @@ const fr: SourceCatalogue = {
         email: 'Courriel',
         tenant: 'Locataire',
         party: 'Partie',
+        parties: 'Parties',
         newParty: 'Nouvelle partie',
     },
 

@@ -65,6 +65,14 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- An official report reads no sandbox.
+    if ores_reporting_config_is_official_fn(new.tenant_id, new.risk_report_config_id)
+       and ores_reporting_portfolio_is_sandbox_fn(new.tenant_id, new.portfolio_id) then
+        raise exception 'Invalid portfolio_id: %. An official report cannot include a sandbox portfolio.',
+            new.portfolio_id
+            using errcode = '23514';
+    end if;
+
     -- Close any existing active association for this config + portfolio pair
     update "ores_reporting_risk_report_config_portfolios_tbl"
     set valid_to = current_timestamp

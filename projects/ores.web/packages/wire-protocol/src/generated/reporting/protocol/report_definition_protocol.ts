@@ -45,6 +45,7 @@ export interface ReportDefinitionWrite {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    is_official: boolean;
 }
 
 export interface ReportDefinitionChange {

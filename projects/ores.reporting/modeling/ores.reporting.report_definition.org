@@ -199,6 +199,26 @@ result store, =ignore= records only that the engine produced them.
 std::string("execute")
 #+end_src
 
+** is_official
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       true
+:default_value: true
+:END:
+
+Whether the report is an official one.
+
+An official report never reads a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandbox]]: its scope cannot name a
+sandbox portfolio or a virtual book, and the books it resolves never
+include one. A definition defaults to official, so a report reads only
+official data unless it is set up otherwise.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
 * Foreign keys
 
 ** report_type
@@ -219,6 +239,21 @@ the check reads that tenant whatever tenant owns the definition.
 :PROPERTIES:
 :tablename:        ores_reporting_report_definitions_tbl
 :END:
+
+* Insert trigger
+
+#+begin_src sql :name official_scope_check :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- An official definition reads no sandbox: it cannot become official
+    -- while the scope of one of its risk report configurations names a
+    -- sandbox portfolio or a virtual book.
+    if NEW.is_official
+       and ores_reporting_definition_scope_has_sandbox_fn(NEW.tenant_id, NEW.id) then
+        raise exception 'Invalid is_official: report definition % has sandbox portfolios or virtual books in its scope.',
+            NEW.id
+            using errcode = '23514';
+    end if;
+
+#+end_src
 
 * C++
 

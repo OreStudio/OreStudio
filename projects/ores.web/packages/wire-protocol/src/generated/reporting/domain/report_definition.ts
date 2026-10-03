@@ -46,6 +46,7 @@ export interface ReportDefinition {
     pre_processing: string;
     prepared_input_key: string;
     post_processing: string;
+    is_official: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

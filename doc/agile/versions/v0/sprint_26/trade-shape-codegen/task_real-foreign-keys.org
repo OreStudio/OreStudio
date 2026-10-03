@@ -8,7 +8,7 @@
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/real-foreign-keys
-#+pr:
+#+pr: 2529
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2529][#2529]] | [codegen] Generate real foreign keys into immutable entities |
 
 * Review
 

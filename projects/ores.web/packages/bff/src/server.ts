@@ -736,7 +736,16 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (session.actingIn === null) {
             throw invalidRequest('The session is not inside a tenant.');
         }
-        await session.client.leaveTenant();
+        /*
+         * The client is back outside whether or not the exit was recorded, so
+         * the answer is the session as it now reads; a failed record is logged
+         * rather than left to keep the browser showing the tenant.
+         */
+        try {
+            await session.client.leaveTenant();
+        } catch (error) {
+            request.log.warn({ err: error }, 'The exit from the tenant was not recorded.');
+        }
         return sessionResponse(requireSession(request));
     });
 

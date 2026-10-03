@@ -244,6 +244,8 @@ export class OresClient {
      * way back, or outside with nothing to restore.
      */
     #inside: { readonly tenant: EnteredTenant; readonly outsideToken: string } | undefined;
+    /** An entry under way, so a second one cannot take the first's token as its own. */
+    #entering: Promise<EnteredTenant> | undefined;
 
     constructor(options: OresClientOptions) {
         this.#transport = options.transport;
@@ -799,11 +801,19 @@ export class OresClient {
      * session is already inside a tenant.
      */
     async enterTenant(tenantId: string): Promise<EnteredTenant> {
-        const session = this.#requireSession();
         const subject = tenantSessionSubjects.enter_tenant_request;
-        if (this.#inside !== undefined) {
+        if (this.#inside !== undefined || this.#entering !== undefined) {
             throw new OperationFailedError(subject, 'The session is already inside a tenant.');
         }
+        this.#entering = this.#enter(tenantId).finally(() => {
+            this.#entering = undefined;
+        });
+        return this.#entering;
+    }
+
+    async #enter(tenantId: string): Promise<EnteredTenant> {
+        const session = this.#requireSession();
+        const subject = tenantSessionSubjects.enter_tenant_request;
         const request: EnterTenantRequest = { tenant_id: tenantId };
         const reply = await this.#authenticatedCall(subject, request, enterTenantResponseSchema, {
             timeoutMs: this.#timeouts.fastMs,

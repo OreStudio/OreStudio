@@ -84,6 +84,7 @@ function buildTestServer(
         readonly mode?: SessionMode;
         readonly refuseEntry?: string;
         readonly lapseOnRead?: boolean;
+        readonly failLeaveRecord?: boolean;
     } = {},
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
@@ -103,6 +104,9 @@ function buildTestServer(
         async leaveTenant(): Promise<void> {
             stub.calls.push('leave');
             stub.entered = undefined;
+            if (options.failLeaveRecord === true) {
+                throw new Error('The exit was not recorded.');
+            }
         },
         async callAuthenticated(
             subject: string,
@@ -268,6 +272,22 @@ describe('entering and leaving a tenant', () => {
         });
         expect(stub.calls).toContain('leave');
         expect(again.statusCode).toBe(400);
+    });
+
+    it('answers the session outside even when the exit is not recorded', async () => {
+        const { server, cookies } = buildTestServer({ failLeaveRecord: true });
+        await server.inject({
+            method: 'POST',
+            url: '/api/session/tenant',
+            cookies,
+            payload: { tenantId: ACME.tenantId },
+        });
+
+        const left = await server.inject({ method: 'DELETE', url: '/api/session/tenant', cookies });
+        await server.close();
+
+        expect(left.statusCode).toBe(200);
+        expect(left.json()).toMatchObject({ mode: 'system-administration', actingIn: null });
     });
 
     it('says the time inside ended, and the session is back outside', async () => {

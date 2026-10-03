@@ -222,9 +222,12 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
      */
     const rescope = useCallback(
         (session: SessionView) => {
-            queryClient.removeQueries({
-                predicate: (query) => query.queryKey[0] !== SESSION_QUERY_KEY[0],
-            });
+            const others = {
+                predicate: (query: { readonly queryKey: readonly unknown[] }) =>
+                    query.queryKey[0] !== SESSION_QUERY_KEY[0],
+            };
+            void queryClient.cancelQueries(others);
+            queryClient.removeQueries(others);
             queryClient.setQueryData(SESSION_QUERY_KEY, session);
             setState({ status: 'authenticated', session });
         },

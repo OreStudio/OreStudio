@@ -185,6 +185,10 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
         if (entered === null) {
             return own;
         }
+        /*
+         * The party the tenant session acts as. Its category is always System;
+         * no screen reads its business centre.
+         */
         const party: PartySummary = {
             id: entered.partyId,
             name: entered.partyName,

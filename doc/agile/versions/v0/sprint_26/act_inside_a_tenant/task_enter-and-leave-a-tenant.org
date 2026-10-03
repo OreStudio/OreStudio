@@ -84,6 +84,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | L1 | Test files are left out of the web typecheck, so a fixture missing a new field went unnoticed | =AppRoutes.test.tsx= | Accept | The fixture gains =actingIn=; the typecheck scope is a separate matter, left as it is. |
 | L2 | The roster row's menu was to offer the entry too | =TenantsPage.tsx= | Decline | *Open* already leads to the tenant's screen, which offers it; the journey says so. |
+| R1.1 | Two entries at once can store the first's tenant token as the way out | =client.ts= | Accept | The client holds the entry under way and refuses a second; a test covers it, and the BFF route inherits it. |
+| R1.2 | A failed exit record leaves the browser showing the tenant | =server.ts= | Accept | The route logs the failed record and answers the session as it now reads, outside; a test covers it. |
+| R1.3 | Reads in flight can refill the cache after a rescope | =SessionProvider.tsx= | Accept | Rescoping cancels the other queries before removing them. |
+| R1.4 | The synthetic party's fixed fields need a word | =sessions.ts= | Accept | A comment says so. |
+| R1.5 | The guard's key falls back to the raw URL | =server.ts= | Decline | An unmatched route fails closed, which is the safe direction. |
+| R1.6 | Leave after the outside token expired is not tested | =client.ts= | Decline | The restored token takes the ordinary refresh path, which its own tests cover. |
 
 * Result
 

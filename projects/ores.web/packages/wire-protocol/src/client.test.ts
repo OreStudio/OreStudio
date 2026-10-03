@@ -371,6 +371,26 @@ describe('OresClient inside a tenant', () => {
         expect(client.token).toBe('token-one');
     });
 
+    /*
+     * Two entries at once would let the second keep the first's tenant token
+     * as the token to return to, stranding the session inside a tenant.
+     */
+    it('refuses a second entry while the first is under way', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [{ body: entered }, { body: entered }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const first = client.enterTenant(ACME);
+        await expect(client.enterTenant(ACME)).rejects.toThrow(OperationFailedError);
+        await first;
+        await client.leaveTenant().catch(() => undefined);
+
+        expect(client.token).toBe('token-one');
+    });
+
     it('leaves with the tenant token and returns to its own', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],

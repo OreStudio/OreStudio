@@ -43,6 +43,7 @@ struct curve_volatility_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string kind;
+    bool is_wrapped;
     std::optional<int> priority;
     std::optional<std::string> quote_type;
     std::optional<std::string> volatility_type;
@@ -56,6 +57,19 @@ struct curve_volatility_config_write {
     std::optional<std::string> time_extrapolation_variance;
     std::optional<std::string> strike_extrapolation;
     std::optional<std::string> calendar;
+    std::optional<std::string> quote;
+    std::optional<std::string> interpolation;
+    std::optional<bool> enforce_monotone_variance;
+    std::optional<std::string> delta_type;
+    std::optional<std::string> atm_type;
+    std::optional<std::string> atm_delta_type;
+    std::optional<std::string> put_deltas;
+    std::optional<std::string> call_deltas;
+    std::optional<std::string> future_price_correction;
+    std::optional<std::string> proxy_volatility_curve;
+    std::optional<std::string> fx_volatility_curve;
+    std::optional<std::string> correlation_curve;
+    std::optional<std::string> cds_volatility_curve;
     int position;
 };
 

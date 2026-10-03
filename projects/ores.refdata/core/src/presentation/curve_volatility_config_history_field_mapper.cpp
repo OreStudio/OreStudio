@@ -38,6 +38,7 @@ render_curve_volatility_config_fields(const domain::curve_volatility_config& v) 
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Kind", .value = v.kind});
+    fields.push_back({.name = "Is Wrapped", .value = v.is_wrapped ? "true" : "false"});
     fields.push_back(
         {.name = "Priority", .value = v.priority ? std::to_string(*v.priority) : std::string{}});
     fields.push_back({.name = "Quote Type", .value = v.quote_type.value_or(std::string{})});
@@ -58,6 +59,27 @@ render_curve_volatility_config_fields(const domain::curve_volatility_config& v) 
     fields.push_back(
         {.name = "Strike Extrapolation", .value = v.strike_extrapolation.value_or(std::string{})});
     fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
+    fields.push_back({.name = "Quote", .value = v.quote.value_or(std::string{})});
+    fields.push_back({.name = "Interpolation", .value = v.interpolation.value_or(std::string{})});
+    fields.push_back({.name = "Enforce Monotone Variance",
+                      .value = v.enforce_monotone_variance ?
+                                   (*v.enforce_monotone_variance ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Delta Type", .value = v.delta_type.value_or(std::string{})});
+    fields.push_back({.name = "Atm Type", .value = v.atm_type.value_or(std::string{})});
+    fields.push_back({.name = "Atm Delta Type", .value = v.atm_delta_type.value_or(std::string{})});
+    fields.push_back({.name = "Put Deltas", .value = v.put_deltas.value_or(std::string{})});
+    fields.push_back({.name = "Call Deltas", .value = v.call_deltas.value_or(std::string{})});
+    fields.push_back({.name = "Future Price Correction",
+                      .value = v.future_price_correction.value_or(std::string{})});
+    fields.push_back({.name = "Proxy Volatility Curve",
+                      .value = v.proxy_volatility_curve.value_or(std::string{})});
+    fields.push_back(
+        {.name = "FX Volatility Curve", .value = v.fx_volatility_curve.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Correlation Curve", .value = v.correlation_curve.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cds Volatility Curve", .value = v.cds_volatility_curve.value_or(std::string{})});
     fields.push_back({.name = "Position", .value = std::to_string(v.position)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

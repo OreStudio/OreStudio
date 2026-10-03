@@ -87,30 +87,39 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <curve_definition_id> <kind> <priority> <quote_type> <volatility_type>
-     * <exercise_type> <strikes> <expiries> <time_interpolation> <strike_interpolation>
-     * <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation>
-     * <calendar> <position> <reason> <commentary>
+     * @brief add <curve_definition_id> <kind> <is_wrapped> <priority> <quote_type>
+     * <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation>
+     * <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance>
+     * <strike_extrapolation> <calendar> <quote> <interpolation> <enforce_monotone_variance>
+     * <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <future_price_correction>
+     * <proxy_volatility_curve> <fx_volatility_curve> <correlation_curve> <cds_volatility_curve>
+     * <position> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <curve_definition_id> <kind> <priority> <quote_type> <volatility_type>
-     * <exercise_type> <strikes> <expiries> <time_interpolation> <strike_interpolation>
-     * <extrapolation> <time_extrapolation> <time_extrapolation_variance> <strike_extrapolation>
-     * <calendar> <position> <reason> <commentary> [--version <n>]
+     * @brief set <id> <curve_definition_id> <kind> <is_wrapped> <priority> <quote_type>
+     * <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation>
+     * <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance>
+     * <strike_extrapolation> <calendar> <quote> <interpolation> <enforce_monotone_variance>
+     * <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <future_price_correction>
+     * <proxy_volatility_curve> <fx_volatility_curve> <correlation_curve> <cds_volatility_curve>
+     * <position> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <curve_definition_id> <kind> <priority> <quote_type>
-     * <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation>
+     * @brief put-many --count <n> <id> <curve_definition_id> <kind> <is_wrapped> <priority>
+     * <quote_type> <volatility_type> <exercise_type> <strikes> <expiries> <time_interpolation>
      * <strike_interpolation> <extrapolation> <time_extrapolation> <time_extrapolation_variance>
-     * <strike_extrapolation> <calendar> <position> <reason> <commentary>
+     * <strike_extrapolation> <calendar> <quote> <interpolation> <enforce_monotone_variance>
+     * <delta_type> <atm_type> <atm_delta_type> <put_deltas> <call_deltas> <future_price_correction>
+     * <proxy_volatility_curve> <fx_volatility_curve> <correlation_curve> <cds_volatility_curve>
+     * <position> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

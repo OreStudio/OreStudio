@@ -63,7 +63,7 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check (("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes'))),
+    check (("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes', 'Curve', 'VolatilityConfig/Curve'))),
     check (("quote_text" is not null and "rate_quote" is null and "spread_quote" is null) or ("quote_text" is null and "rate_quote" is not null and "spread_quote" is not null)),
     check ("position" >= 0)
 );

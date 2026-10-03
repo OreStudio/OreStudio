@@ -2254,6 +2254,57 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Equity Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_equity_volatilities_tbl enable row level security;
+
+drop policy if exists equity_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_equity_volatilities_tbl;
+
+create policy equity_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_equity_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Commodity Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_volatilities_tbl enable row level security;
+
+drop policy if exists commodity_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_volatilities_tbl;
+
+create policy commodity_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_commodity_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Bond Future Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_bond_future_volatilities_tbl enable row level security;
+
+drop policy if exists bond_future_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_bond_future_volatilities_tbl;
+
+create policy bond_future_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_bond_future_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

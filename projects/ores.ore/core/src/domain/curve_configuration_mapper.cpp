@@ -55,6 +55,15 @@ constexpr std::string_view inflation_cap_floor_volatilities_section =
 constexpr std::string_view strike_surface_kind = "StrikeSurface";
 constexpr std::string_view swaption_volatilities_section = "SwaptionVolatilities";
 constexpr std::string_view cap_floor_volatilities_section = "CapFloorVolatilities";
+constexpr std::string_view equity_volatilities_section = "EquityVolatilities";
+constexpr std::string_view commodity_volatilities_section = "CommodityVolatilities";
+constexpr std::string_view bond_future_volatilities_section = "BondFutureVolatilities";
+constexpr std::string_view constant_kind = "Constant";
+constexpr std::string_view curve_kind = "Curve";
+constexpr std::string_view delta_surface_kind = "DeltaSurface";
+constexpr std::string_view proxy_surface_kind = "ProxySurface";
+constexpr std::string_view curve_quotes_list = "Curve";
+constexpr std::string_view wrapped_curve_quotes_list = "VolatilityConfig/Curve";
 
 constexpr std::string_view basis_quotes_list = "BasisQuotes";
 constexpr std::string_view off_peak_quotes_list = "OffPeakQuotes";
@@ -73,6 +82,8 @@ bool is_modelled(std::string_view section) {
            section == correlations_section || section == cds_volatilities_section ||
            section == inflation_cap_floor_volatilities_section ||
            section == swaption_volatilities_section || section == cap_floor_volatilities_section ||
+           section == equity_volatilities_section || section == commodity_volatilities_section ||
+           section == bond_future_volatilities_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -244,7 +255,7 @@ const std::vector<section_access>& sections() {
                      &curveconfiguration::InflationCapFloorVolatilities,
                      &inflationCapFloorVolatlities::InflationCapFloorVolatility),
         make_section(equity_curves_section, &curveconfiguration::EquityCurves, &equityCurves::EquityCurve),
-        make_section("EquityVolatilities",
+        make_section(equity_volatilities_section,
                      &curveconfiguration::EquityVolatilities,
                      &equityVolatilities::EquityVolatility),
         make_section(securities_section, &curveconfiguration::Securities, &securities::Security),
@@ -254,12 +265,12 @@ const std::vector<section_access>& sections() {
         make_section(commodity_curves_section,
                      &curveconfiguration::CommodityCurves,
                      &simCommodityCurves::CommodityCurve),
-        make_section("CommodityVolatilities",
+        make_section(commodity_volatilities_section,
                      &curveconfiguration::CommodityVolatilities,
                      &commodityVolatilities::CommodityVolatility),
         make_section(
             correlations_section, &curveconfiguration::Correlations, &correlations::Correlation),
-        make_section("BondFutureVolatilities",
+        make_section(bond_future_volatilities_section,
                      &curveconfiguration::BondFutureVolatilities,
                      &bondFutureVolatilities::BondFutureVolatility),
         make_section(intraday_power_curves_section,
@@ -1055,7 +1066,8 @@ void import_base_correlation(mapped_curve_configuration& out,
 void import_strike_surface(mapped_curve_configuration& out,
                            const boost::uuids::uuid& definition_id,
                            const volatilityStrikeSurfaceConfig& v,
-                           int position) {
+                           int position,
+                           bool wrapped = false) {
     if (v.ParametricSmileConfiguration)
         throw refusal("a strike surface writes a ParametricSmileConfiguration, which is not "
                       "modelled yet");
@@ -1063,6 +1075,7 @@ void import_strike_surface(mapped_curve_configuration& out,
     c.id = new_uuid();
     c.curve_definition_id = definition_id;
     c.kind = std::string(strike_surface_kind);
+    c.is_wrapped = wrapped;
     c.priority = optional_int(v.priority);
     c.quote_type = optional_text(v.QuoteType);
     c.volatility_type = optional_text(v.VolatilityType);
@@ -1101,6 +1114,353 @@ volatilityStrikeSurfaceConfig export_strike_surface(
     if (c.calendar)
         v.Calendar = *c.calendar;
     return v;
+}
+
+quoteType quote_list(const std::vector<const refdata::domain::curve_quote*>& rows,
+                     std::optional<std::string_view> list);
+
+refdata::domain::curve_volatility_config new_volatility_config(
+    const boost::uuids::uuid& definition_id, std::string_view kind, bool wrapped, int position) {
+    refdata::domain::curve_volatility_config c;
+    c.id = new_uuid();
+    c.curve_definition_id = definition_id;
+    c.kind = std::string(kind);
+    c.is_wrapped = wrapped;
+    c.position = position;
+    set_audit(c);
+    return c;
+}
+
+void import_constant(mapped_curve_configuration& out,
+                     const boost::uuids::uuid& definition_id,
+                     const constantVolatilityConfig& v,
+                     bool wrapped,
+                     int position) {
+    auto c = new_volatility_config(definition_id, constant_kind, wrapped, position);
+    c.priority = optional_int(v.priority);
+    c.quote_type = optional_text(v.QuoteType);
+    c.volatility_type = optional_text(v.VolatilityType);
+    c.exercise_type = optional_text(v.ExerciseType);
+    c.quote = text(v.Quote);
+    c.calendar = optional_text(v.Calendar);
+    out.volatility_configs.push_back(std::move(c));
+}
+
+constantVolatilityConfig export_constant(const refdata::domain::curve_volatility_config& c) {
+    constantVolatilityConfig v;
+    assign_optional_int(v.priority, c.priority);
+    assign_optional_text(v.QuoteType, c.quote_type);
+    assign_optional_text(v.VolatilityType, c.volatility_type);
+    assign_optional_text(v.ExerciseType, c.exercise_type);
+    assign_text(v.Quote, c.quote.value_or(""));
+    if (c.calendar)
+        v.Calendar = *c.calendar;
+    return v;
+}
+
+void import_volatility_curve(mapped_curve_configuration& out,
+                             const boost::uuids::uuid& definition_id,
+                             const volatilityCurveConfig& v,
+                             bool wrapped,
+                             int position) {
+    auto c = new_volatility_config(definition_id, curve_kind, wrapped, position);
+    c.priority = optional_int(v.priority);
+    c.quote_type = optional_text(v.QuoteType);
+    c.volatility_type = optional_text(v.VolatilityType);
+    c.exercise_type = optional_text(v.ExerciseType);
+    c.interpolation = to_string(v.Interpolation);
+    c.extrapolation = to_string(v.Extrapolation);
+    c.enforce_monotone_variance = optional_bool(v.EnforceMontoneVariance);
+    c.calendar = optional_text(v.Calendar);
+    out.volatility_configs.push_back(std::move(c));
+    add_commodity_quotes(out,
+                         definition_id,
+                         boost::uuids::uuid{},
+                         wrapped ? wrapped_curve_quotes_list : curve_quotes_list,
+                         v.Quotes);
+}
+
+volatilityCurveConfig export_volatility_curve(
+    const refdata::domain::curve_volatility_config& c,
+    const std::vector<const refdata::domain::curve_quote*>& entry_quotes) {
+    volatilityCurveConfig v;
+    assign_optional_int(v.priority, c.priority);
+    assign_optional_text(v.QuoteType, c.quote_type);
+    assign_optional_text(v.VolatilityType, c.volatility_type);
+    assign_optional_text(v.ExerciseType, c.exercise_type);
+    v.Quotes = quote_list(entry_quotes, c.is_wrapped ? wrapped_curve_quotes_list : curve_quotes_list);
+    v.Interpolation =
+        enum_from_text<interpolationMethodType>(c.interpolation.value_or(""), "interpolation method");
+    v.Extrapolation = enum_from_text<extrapolationType>(c.extrapolation.value_or(""), "extrapolation");
+    assign_optional_bool(v.EnforceMontoneVariance, c.enforce_monotone_variance);
+    if (c.calendar)
+        v.Calendar = *c.calendar;
+    return v;
+}
+
+void import_delta_surface(mapped_curve_configuration& out,
+                          const boost::uuids::uuid& definition_id,
+                          const volatilityDeltaSurfaceConfig& v,
+                          bool wrapped,
+                          int position) {
+    if (v.ParametricSmileConfiguration)
+        throw refusal("a delta surface writes a ParametricSmileConfiguration, which is not "
+                      "modelled yet");
+    auto c = new_volatility_config(definition_id, delta_surface_kind, wrapped, position);
+    c.priority = optional_int(v.priority);
+    c.quote_type = optional_text(v.QuoteType);
+    c.volatility_type = optional_text(v.VolatilityType);
+    c.exercise_type = optional_text(v.ExerciseType);
+    c.delta_type = to_string(v.DeltaType);
+    c.atm_type = to_string(v.AtmType);
+    c.atm_delta_type = optional_enum_text(v.AtmDeltaType);
+    c.put_deltas = text(v.PutDeltas);
+    c.call_deltas = text(v.CallDeltas);
+    c.expiries = text(v.Expiries);
+    c.time_interpolation = text(v.TimeInterpolation);
+    c.strike_interpolation = text(v.StrikeInterpolation);
+    c.extrapolation = to_string(v.Extrapolation);
+    c.time_extrapolation = to_string(v.TimeExtrapolation);
+    c.time_extrapolation_variance = optional_enum_text(v.TimeExtrapolationVariance);
+    c.strike_extrapolation = to_string(v.StrikeExtrapolation);
+    c.future_price_correction = optional_enum_text(v.FuturePriceCorrection);
+    c.calendar = optional_text(v.Calendar);
+    out.volatility_configs.push_back(std::move(c));
+}
+
+volatilityDeltaSurfaceConfig export_delta_surface(const refdata::domain::curve_volatility_config& c) {
+    volatilityDeltaSurfaceConfig v;
+    assign_optional_int(v.priority, c.priority);
+    assign_optional_text(v.QuoteType, c.quote_type);
+    assign_optional_text(v.VolatilityType, c.volatility_type);
+    assign_optional_text(v.ExerciseType, c.exercise_type);
+    v.DeltaType = enum_from_text<strikeDeltaType>(c.delta_type.value_or(""), "delta type");
+    v.AtmType = enum_from_text<strikeAtmType>(c.atm_type.value_or(""), "ATM type");
+    assign_optional_enum(v.AtmDeltaType, c.atm_delta_type, "delta type");
+    assign_text(v.PutDeltas, c.put_deltas.value_or(""));
+    assign_text(v.CallDeltas, c.call_deltas.value_or(""));
+    assign_text(v.Expiries, c.expiries.value_or(""));
+    v.TimeInterpolation = c.time_interpolation.value_or("");
+    v.StrikeInterpolation = c.strike_interpolation.value_or("");
+    v.Extrapolation = enum_from_text<bool_>(c.extrapolation.value_or(""), "ORE boolean");
+    v.TimeExtrapolation =
+        enum_from_text<extrapolationType>(c.time_extrapolation.value_or(""), "extrapolation");
+    assign_optional_enum(v.TimeExtrapolationVariance, c.time_extrapolation_variance, "ORE boolean");
+    v.StrikeExtrapolation =
+        enum_from_text<extrapolationType>(c.strike_extrapolation.value_or(""), "extrapolation");
+    assign_optional_enum(v.FuturePriceCorrection, c.future_price_correction, "ORE boolean");
+    if (c.calendar)
+        v.Calendar = *c.calendar;
+    return v;
+}
+
+void import_proxy_surface(mapped_curve_configuration& out,
+                          const boost::uuids::uuid& definition_id,
+                          const proxySurface& v,
+                          bool wrapped,
+                          int position) {
+    auto c = new_volatility_config(definition_id, proxy_surface_kind, wrapped, position);
+    c.priority = optional_int(v.priority);
+    c.proxy_volatility_curve = text(v.ProxyVolatilityCurve);
+    c.fx_volatility_curve = optional_text(v.FXVolatilityCurve);
+    c.correlation_curve = optional_text(v.CorrelationCurve);
+    c.cds_volatility_curve = optional_text(v.CDSVolatilityCurve);
+    out.volatility_configs.push_back(std::move(c));
+}
+
+proxySurface export_proxy_surface(const refdata::domain::curve_volatility_config& c) {
+    proxySurface v;
+    assign_optional_int(v.priority, c.priority);
+    assign_text(v.ProxyVolatilityCurve, c.proxy_volatility_curve.value_or(""));
+    assign_optional_text(v.FXVolatilityCurve, c.fx_volatility_curve);
+    assign_optional_text(v.CorrelationCurve, c.correlation_curve);
+    assign_optional_text(v.CDSVolatilityCurve, c.cds_volatility_curve);
+    return v;
+}
+
+// Reads the volatility configurations an entry or its VolatilityConfig element
+// writes. Each holder has at most one of each kind, and a holder whose type has
+// no slot for a kind never writes it.
+template <typename Holder>
+void import_volatility_configs(mapped_curve_configuration& out,
+                               const boost::uuids::uuid& definition_id,
+                               const std::string& curve_id,
+                               const Holder& v,
+                               bool wrapped) {
+    int position = 0;
+    if constexpr (requires { v.Constant; })
+        if (v.Constant)
+            import_constant(out, definition_id, *v.Constant, wrapped, position++);
+    if constexpr (requires { v.Curve; })
+        if (v.Curve)
+            import_volatility_curve(out, definition_id, *v.Curve, wrapped, position++);
+    if (v.StrikeSurface)
+        import_strike_surface(out, definition_id, *v.StrikeSurface, position++, wrapped);
+    if constexpr (requires { v.MoneynessSurface; })
+        if (v.MoneynessSurface)
+            throw refusal("volatility " + curve_id + " writes a MoneynessSurface, which is not "
+                          "modelled yet");
+    if constexpr (requires { v.DeltaSurface; })
+        if (v.DeltaSurface)
+            import_delta_surface(out, definition_id, *v.DeltaSurface, wrapped, position++);
+    if constexpr (requires { v.ApoFutureSurface; })
+        if (v.ApoFutureSurface)
+            throw refusal("volatility " + curve_id + " writes an ApoFutureSurface, which is not "
+                          "modelled yet");
+    if constexpr (requires { v.ProxySurface; })
+        if (v.ProxySurface)
+            import_proxy_surface(out, definition_id, *v.ProxySurface, wrapped, position++);
+}
+
+// Writes one volatility configuration back into the holder it came from.
+template <typename Holder>
+void export_volatility_config(Holder& h,
+                              const refdata::domain::curve_volatility_config& c,
+                              const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+                              const std::string& curve_id) {
+    if (c.kind == strike_surface_kind) {
+        h.StrikeSurface = export_strike_surface(c);
+        return;
+    }
+    if constexpr (requires { h.Constant; })
+        if (c.kind == constant_kind) {
+            h.Constant = export_constant(c);
+            return;
+        }
+    if constexpr (requires { h.Curve; })
+        if (c.kind == curve_kind) {
+            h.Curve = export_volatility_curve(c, entry_quotes);
+            return;
+        }
+    if constexpr (requires { h.DeltaSurface; })
+        if (c.kind == delta_surface_kind) {
+            h.DeltaSurface = export_delta_surface(c);
+            return;
+        }
+    if constexpr (requires { h.ProxySurface; })
+        if (c.kind == proxy_surface_kind) {
+            h.ProxySurface = export_proxy_surface(c);
+            return;
+        }
+    throw refusal("volatility " + curve_id + " has a volatility config of kind " + c.kind +
+                  ", which its section cannot hold");
+}
+
+template <typename Entry>
+void export_volatility_configs(Entry& r,
+                               bool has_volatility_config,
+                               const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+                               const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+                               const std::string& curve_id) {
+    if (has_volatility_config)
+        r.VolatilityConfig = volatilityConfig{};
+    for (const auto* c : configs) {
+        if (c->is_wrapped) {
+            if (!r.VolatilityConfig)
+                throw refusal("volatility " + curve_id +
+                              " has a wrapped volatility config but no VolatilityConfig element");
+            export_volatility_config(*r.VolatilityConfig, *c, entry_quotes, curve_id);
+        } else {
+            export_volatility_config(r, *c, entry_quotes, curve_id);
+        }
+    }
+}
+
+void import_equity_volatility(mapped_curve_configuration& out,
+                              const equityVolatility& v,
+                              int position) {
+    const auto d = add_definition(
+        out, equity_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.OneDimSolverConfig)
+        throw refusal("equity volatility " + d.curve_id +
+                      " writes a OneDimSolverConfig, which is not modelled yet");
+
+    refdata::domain::equity_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.equity_id = optional_text(v.EquityId);
+    r.currency = text(v.Currency);
+    r.dimension = optional_enum_text(v.Dimension);
+    r.expiries = optional_text(v.Expiries);
+    r.strikes = optional_text(v.Strikes);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.time_extrapolation = optional_enum_text(v.TimeExtrapolation);
+    r.strike_extrapolation = optional_enum_text(v.StrikeExtrapolation);
+    r.calendar = optional_text(v.Calendar);
+    r.prefer_out_of_the_money = optional_enum_text(v.PreferOutOfTheMoney);
+    r.has_volatility_config = static_cast<bool>(v.VolatilityConfig);
+    set_audit(r);
+    out.equity_volatilities.push_back(std::move(r));
+
+    import_volatility_configs(out, d.id, d.curve_id, v, false);
+    if (v.VolatilityConfig)
+        import_volatility_configs(out, d.id, d.curve_id, *v.VolatilityConfig, true);
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
+void import_commodity_volatility(mapped_curve_configuration& out,
+                                 const commodityVolatility& v,
+                                 int position) {
+    const auto d = add_definition(
+        out, commodity_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.OneDimSolverConfig)
+        throw refusal("commodity volatility " + d.curve_id +
+                      " writes a OneDimSolverConfig, which is not modelled yet");
+
+    refdata::domain::commodity_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.currency = to_string(v.Currency);
+    r.instrument_type = optional_text(v.InstrumentType);
+    r.calendar_spread_offset = optional_int(v.CalendarSpreadOffset);
+    r.calendar_spread_underlying_name = optional_text(v.CalendarSpreadUnderlyingName);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.future_conventions = optional_text(v.FutureConventions);
+    r.option_expiry_roll_days = optional_text(v.OptionExpiryRollDays);
+    r.price_curve_id = optional_text(v.PriceCurveId);
+    r.yield_curve_id = optional_text(v.YieldCurveId);
+    r.quote_suffix = optional_enum_text(v.QuoteSuffix);
+    r.prefer_out_of_the_money = optional_enum_text(v.PreferOutOfTheMoney);
+    r.has_volatility_config = static_cast<bool>(v.VolatilityConfig);
+    set_audit(r);
+    out.commodity_volatilities.push_back(std::move(r));
+
+    import_volatility_configs(out, d.id, d.curve_id, v, false);
+    if (v.VolatilityConfig)
+        import_volatility_configs(out, d.id, d.curve_id, *v.VolatilityConfig, true);
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
+void import_bond_future_volatility(mapped_curve_configuration& out,
+                                   const bondFutureVolatility& v,
+                                   int position) {
+    const auto d = add_definition(
+        out, bond_future_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.OneDimSolverConfig)
+        throw refusal("bond future volatility " + d.curve_id +
+                      " writes a OneDimSolverConfig, which is not modelled yet");
+
+    refdata::domain::bond_future_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.contract_name = text(v.ContractName);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.yield_curve_id = optional_text(v.YieldCurveId);
+    r.strike_factor = v.StrikeFactor ? std::optional<double>(*v.StrikeFactor) : std::nullopt;
+    r.use_only_put_call = optional_enum_text(v.UseOnlyPutCall);
+    r.prefer_out_of_the_money = optional_enum_text(v.PreferOutOfTheMoney);
+    r.treat_as_european = optional_enum_text(v.TreatAsEuropean);
+    r.has_volatility_config = static_cast<bool>(v.VolatilityConfig);
+    set_audit(r);
+    out.bond_future_volatilities.push_back(std::move(r));
+
+    import_volatility_configs(out, d.id, d.curve_id, v, false);
+    if (v.VolatilityConfig)
+        import_volatility_configs(out, d.id, d.curve_id, *v.VolatilityConfig, true);
 }
 
 void import_cds_volatility(mapped_curve_configuration& out, const cdsVolatility& v, int position) {
@@ -2211,6 +2571,82 @@ capFloorVolatility export_cap_floor_volatility(
     return r;
 }
 
+equityVolatility export_equity_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::equity_volatility& v,
+    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+    const refdata::domain::curve_report_configuration* report) {
+    equityVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_optional_text(r.EquityId, v.equity_id);
+    r.Currency = v.currency;
+    assign_optional_enum(r.Dimension, v.dimension, "dimension");
+    assign_optional_text(r.Expiries, v.expiries);
+    assign_optional_text(r.Strikes, v.strikes);
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    assign_optional_enum(r.TimeExtrapolation, v.time_extrapolation, "extrapolation");
+    assign_optional_enum(r.StrikeExtrapolation, v.strike_extrapolation, "extrapolation");
+    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_enum(r.PreferOutOfTheMoney, v.prefer_out_of_the_money, "ORE boolean");
+    if (report)
+        r.Report = export_report(*report);
+    return r;
+}
+
+commodityVolatility export_commodity_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::commodity_volatility& v,
+    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const std::vector<const refdata::domain::curve_quote*>& entry_quotes,
+    const refdata::domain::curve_report_configuration* report) {
+    commodityVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Currency = enum_from_text<currencyCode>(v.currency, "currency code");
+    assign_optional_text(r.InstrumentType, v.instrument_type);
+    assign_optional_int(r.CalendarSpreadOffset, v.calendar_spread_offset);
+    assign_optional_text(r.CalendarSpreadUnderlyingName, v.calendar_spread_underlying_name);
+    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_text(r.FutureConventions, v.future_conventions);
+    assign_optional_text(r.OptionExpiryRollDays, v.option_expiry_roll_days);
+    assign_optional_text(r.PriceCurveId, v.price_curve_id);
+    assign_optional_text(r.YieldCurveId, v.yield_curve_id);
+    assign_optional_enum(r.QuoteSuffix, v.quote_suffix, "quote suffix");
+    assign_optional_enum(r.PreferOutOfTheMoney, v.prefer_out_of_the_money, "ORE boolean");
+    if (report)
+        r.Report = export_report(*report);
+    return r;
+}
+
+bondFutureVolatility export_bond_future_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::bond_future_volatility& v,
+    const std::vector<const refdata::domain::curve_volatility_config*>& configs,
+    const std::vector<const refdata::domain::curve_quote*>& entry_quotes) {
+    bondFutureVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_text(r.ContractName, v.contract_name);
+    export_volatility_configs(r, v.has_volatility_config, configs, entry_quotes, d.curve_id);
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_text(r.YieldCurveId, v.yield_curve_id);
+    if (v.strike_factor)
+        r.StrikeFactor = *v.strike_factor;
+    assign_optional_enum(r.UseOnlyPutCall, v.use_only_put_call, "put or call");
+    assign_optional_enum(r.PreferOutOfTheMoney, v.prefer_out_of_the_money, "ORE boolean");
+    assign_optional_enum(r.TreatAsEuropean, v.treat_as_european, "ORE boolean");
+    return r;
+}
+
 correlation export_correlation(const refdata::domain::curve_definition& d,
                                const refdata::domain::curve_correlation& v) {
     correlation r;
@@ -2360,6 +2796,15 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.CapFloorVolatilities)
         for (const auto& e : v.CapFloorVolatilities->CapFloorVolatility)
             import_cap_floor_volatility(mapped, e, position++);
+    if (v.EquityVolatilities)
+        for (const auto& e : v.EquityVolatilities->EquityVolatility)
+            import_equity_volatility(mapped, e, position++);
+    if (v.CommodityVolatilities)
+        for (const auto& e : v.CommodityVolatilities->CommodityVolatility)
+            import_commodity_volatility(mapped, e, position++);
+    if (v.BondFutureVolatilities)
+        for (const auto& e : v.BondFutureVolatilities->BondFutureVolatility)
+            import_bond_future_volatility(mapped, e, position++);
     if (v.IntradayPowerCurves)
         for (const auto& e : v.IntradayPowerCurves->IntradayPowerCurve)
             import_intraday_power_curve(mapped, e, position++);
@@ -2436,6 +2881,9 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     const auto inflation_vol_by_definition = by_definition(v.inflation_cap_floor_volatilities);
     const auto swaption_vol_by_definition = by_definition(v.swaption_volatilities);
     const auto cap_floor_vol_by_definition = by_definition(v.cap_floor_volatilities);
+    const auto equity_vol_by_definition = by_definition(v.equity_volatilities);
+    const auto commodity_vol_by_definition = by_definition(v.commodity_volatilities);
+    const auto bond_future_vol_by_definition = by_definition(v.bond_future_volatilities);
     const auto smile_by_definition = by_definition(v.parametric_smiles);
     const auto smile_parameters = group_by(v.parametric_smile_parameters, &smile_parameter_definition);
     const auto smile_of =
@@ -2463,11 +2911,56 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     std::sort(definitions.begin(), definitions.end(), by_position<refdata::domain::curve_definition>);
 
     for (const auto* d : definitions) {
-        if (d->section_code != equity_curves_section &&
-            d->section_code != inflation_curves_section &&
-            d->section_code != commodity_curves_section && ctx.entry_quotes.contains(d->id))
+        const bool volatility_section = d->section_code == equity_volatilities_section ||
+                                        d->section_code == commodity_volatilities_section ||
+                                        d->section_code == bond_future_volatilities_section;
+        if (volatility_section) {
+            for (const auto* q : ctx.quotes_of_entry(d->id))
+                if (!q->quote_list || (*q->quote_list != curve_quotes_list &&
+                                       *q->quote_list != wrapped_curve_quotes_list))
+                    throw refusal("volatility " + d->curve_id +
+                                  " holds a quote outside a volatility curve");
+        } else if (d->section_code != equity_curves_section &&
+                   d->section_code != inflation_curves_section &&
+                   d->section_code != commodity_curves_section && ctx.entry_quotes.contains(d->id))
             throw refusal("curve " + d->curve_id + " in section " + d->section_code +
                           " holds a quote directly on its entry");
+        static const std::vector<const refdata::domain::curve_volatility_config*> no_configs_of;
+        const auto configs_it = volatility_configs.find(d->id);
+        const auto& configs_of =
+            configs_it == volatility_configs.end() ? no_configs_of : configs_it->second;
+        if (d->section_code == equity_volatilities_section) {
+            if (!document.EquityVolatilities)
+                document.EquityVolatilities = equityVolatilities{};
+            document.EquityVolatilities->EquityVolatility.push_back(
+                export_equity_volatility(*d,
+                                         settings_of(equity_vol_by_definition, *d),
+                                         configs_of,
+                                         ctx.quotes_of_entry(d->id),
+                                         report_of(*d)));
+            continue;
+        }
+        if (d->section_code == commodity_volatilities_section) {
+            if (!document.CommodityVolatilities)
+                document.CommodityVolatilities = commodityVolatilities{};
+            document.CommodityVolatilities->CommodityVolatility.push_back(
+                export_commodity_volatility(*d,
+                                            settings_of(commodity_vol_by_definition, *d),
+                                            configs_of,
+                                            ctx.quotes_of_entry(d->id),
+                                            report_of(*d)));
+            continue;
+        }
+        if (d->section_code == bond_future_volatilities_section) {
+            if (!document.BondFutureVolatilities)
+                document.BondFutureVolatilities = bondFutureVolatilities{};
+            document.BondFutureVolatilities->BondFutureVolatility.push_back(
+                export_bond_future_volatility(*d,
+                                              settings_of(bond_future_vol_by_definition, *d),
+                                              configs_of,
+                                              ctx.quotes_of_entry(d->id)));
+            continue;
+        }
         if (d->section_code == equity_curves_section) {
             if (!document.EquityCurves)
                 document.EquityCurves = equityCurves{};

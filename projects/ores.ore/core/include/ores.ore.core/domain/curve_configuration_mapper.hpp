@@ -23,11 +23,13 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/base_correlation.hpp"
+#include "ores.refdata.api/domain/bond_future_volatility.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility.hpp"
 #include "ores.refdata.api/domain/cds_volatility.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
 #include "ores.refdata.api/domain/commodity_curve.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
+#include "ores.refdata.api/domain/commodity_volatility.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
@@ -44,6 +46,7 @@
 #include "ores.refdata.api/domain/default_curve.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve.hpp"
+#include "ores.refdata.api/domain/equity_volatility.hpp"
 #include "ores.refdata.api/domain/fx_volatility.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility.hpp"
 #include "ores.refdata.api/domain/inflation_curve.hpp"
@@ -85,6 +88,9 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::cap_floor_volatility> cap_floor_volatilities;
     std::vector<refdata::domain::curve_parametric_smile> parametric_smiles;
     std::vector<refdata::domain::curve_parametric_smile_parameter> parametric_smile_parameters;
+    std::vector<refdata::domain::equity_volatility> equity_volatilities;
+    std::vector<refdata::domain::commodity_volatility> commodity_volatilities;
+    std::vector<refdata::domain::bond_future_volatility> bond_future_volatilities;
     std::vector<refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<refdata::domain::default_curve_configuration> default_curve_configurations;
     std::vector<refdata::domain::inflation_seasonality_factor> seasonality_factors;
@@ -100,12 +106,9 @@ struct mapped_curve_configuration {
  * @brief Maps between an ORE CurveConfiguration document and the refdata curve
  * entities.
  *
- * Every curve section is mapped apart from the equity, commodity and bond
- * future volatility sections; those are mapped only
- * when they hold no entries, which records that the document wrote them. A
- * section with entries the mapper cannot hold yet, or a report configuration,
- * is refused rather than dropped, because a dropped entry would pass as a
- * round trip while losing data.
+ * Every curve section is mapped. Elements of an entry the mapper cannot hold
+ * yet, and the global report configuration, are refused rather than dropped,
+ * because a dropped element would pass as a round trip while losing data.
  *
  * Segments are restored in the order the document wrote them within each
  * segment element. The binding keeps one list per element, so the order across

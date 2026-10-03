@@ -47,6 +47,7 @@ struct curve_volatility_config_entity {
     int version = 0;
     std::string curve_definition_id;
     std::string kind;
+    bool is_wrapped = false;
     std::optional<int> priority;
     std::optional<std::string> quote_type;
     std::optional<std::string> volatility_type;
@@ -60,6 +61,19 @@ struct curve_volatility_config_entity {
     std::optional<std::string> time_extrapolation_variance;
     std::optional<std::string> strike_extrapolation;
     std::optional<std::string> calendar;
+    std::optional<std::string> quote;
+    std::optional<std::string> interpolation;
+    std::optional<bool> enforce_monotone_variance;
+    std::optional<std::string> delta_type;
+    std::optional<std::string> atm_type;
+    std::optional<std::string> atm_delta_type;
+    std::optional<std::string> put_deltas;
+    std::optional<std::string> call_deltas;
+    std::optional<std::string> future_price_correction;
+    std::optional<std::string> proxy_volatility_curve;
+    std::optional<std::string> fx_volatility_curve;
+    std::optional<std::string> correlation_curve;
+    std::optional<std::string> cds_volatility_curve;
     int position = 0;
     std::string modified_by;
     std::string performed_by;

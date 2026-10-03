@@ -47,6 +47,7 @@ generate_synthetic_curve_volatility_config(utility::generation::generation_conte
     r.id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.kind = std::string("StrikeSurface");
+    r.is_wrapped = false;
     r.priority = std::nullopt;
     r.quote_type = std::nullopt;
     r.volatility_type = std::nullopt;
@@ -60,6 +61,19 @@ generate_synthetic_curve_volatility_config(utility::generation::generation_conte
     r.time_extrapolation_variance = std::nullopt;
     r.strike_extrapolation = std::nullopt;
     r.calendar = std::nullopt;
+    r.quote = std::nullopt;
+    r.interpolation = std::nullopt;
+    r.enforce_monotone_variance = std::nullopt;
+    r.delta_type = std::nullopt;
+    r.atm_type = std::nullopt;
+    r.atm_delta_type = std::nullopt;
+    r.put_deltas = std::nullopt;
+    r.call_deltas = std::nullopt;
+    r.future_price_correction = std::nullopt;
+    r.proxy_volatility_curve = std::nullopt;
+    r.fx_volatility_curve = std::nullopt;
+    r.correlation_curve = std::nullopt;
+    r.cds_volatility_curve = std::nullopt;
     r.position = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;

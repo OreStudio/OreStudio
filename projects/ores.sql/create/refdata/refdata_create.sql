@@ -369,6 +369,12 @@
 \ir ./refdata_swaption_volatilities_notify_trigger_create.sql
 \ir ./refdata_cap_floor_volatilities_create.sql
 \ir ./refdata_cap_floor_volatilities_notify_trigger_create.sql
+\ir ./refdata_equity_volatilities_create.sql
+\ir ./refdata_equity_volatilities_notify_trigger_create.sql
+\ir ./refdata_commodity_volatilities_create.sql
+\ir ./refdata_commodity_volatilities_notify_trigger_create.sql
+\ir ./refdata_bond_future_volatilities_create.sql
+\ir ./refdata_bond_future_volatilities_notify_trigger_create.sql
 \ir ./refdata_curve_segments_create.sql
 \ir ./refdata_curve_segments_notify_trigger_create.sql
 \ir ./refdata_curve_segment_curves_create.sql

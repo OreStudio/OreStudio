@@ -26,11 +26,11 @@ The anchor exists beside the wide trade as a generated immutable entity, with da
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -103,3 +103,21 @@ via its "Verifies task" field.
 | 3 | Local review: four trade pgTAP files fail on a fixture party they never create | =projects/ores.sql/test/trade_*_test.sql= | Decline | Predates this task; the wide trade's tests go with it in the last task of the story. |
 
 * Result
+
+- =trade_anchor= is generated beside the wide trade: immutable, keyed by
+  =(tenant_id, id)=, with trigger checks for party, counterparty and trade
+  type, and enforced foreign keys to three immutable lookups with no tenant.
+  A check requires a counterparty unless the scope is =intra_entity=.
+- =entry_channel=, =counterparty_scope= and =booking_nature= are C++ enums
+  whose values are the seeded lookup codes.
+- The immutable guard admits a =DELETE= only under the transaction-local purge
+  switch, which the tenant purger turns on before it deletes anchors.
+- The generator now handles a table with no tenant: the notify trigger and
+  the synthetic data generator.
+- The duplicate-to-domain-error mapping moves to task 2, where the booking
+  operation that owns it is built.
+- Verified: build clean (=linux-clang-debug-make=); ctest 90/90; pgTAP
+  =trading_trade_anchor_test.sql= 18/18; codegen tests pass; drift shows only
+  the known =trade_service.cpp= clang-format diff; sweep, paste blocks,
+  reachability, permissions, populate references, CMake, inventory, ER strict,
+  SQL hygiene, shell scripts, lint, structure notes and site page all clean.

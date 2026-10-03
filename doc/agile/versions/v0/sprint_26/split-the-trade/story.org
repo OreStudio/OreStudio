@@ -23,10 +23,10 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The immutable anchor is in, beside the wide trade. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-02                               |
+| Next          | Booking and state components keyed by the anchor. |
+| Last touched  | 2026-10-03 |
 
 * Acceptance
 
@@ -45,7 +45,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:55A6C125-F7F2-49AC-AAF3-AA9A31DE6316][Add the immutable trade anchor]] | STARTED | 2026-10-03 | | Add trade_anchor beside the wide trade: an immutable, tenant-keyed row with party, counterparty, trade type, counterparty scope, booking nature and entry channel, and the three closed lookups it references. |
+| [[id:55A6C125-F7F2-49AC-AAF3-AA9A31DE6316][Add the immutable trade anchor]] | DONE | 2026-10-03 | 2026-10-03 | Add trade_anchor beside the wide trade: an immutable, tenant-keyed row with party, counterparty, trade type, counterparty scope, booking nature and entry channel, and the three closed lookups it references. |
 
 * Decisions
 

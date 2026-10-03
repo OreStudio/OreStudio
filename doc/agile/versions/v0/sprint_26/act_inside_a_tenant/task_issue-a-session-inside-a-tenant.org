@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :iam:security:tenancy:act_inside_a_tenant:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/issue-a-session-inside-a-tenant
+#+pr: 2533
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9AD70987-64E2-44A6-B214-A2449F00C905][Act inside a tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -76,12 +76,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2533][#2533]] | [iam] Enter and leave a tenant as a system administrator |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | A person's token carries no permissions, so a token check proves nothing | =auth_handler.hpp= | Accept in part | The entry checks =iam::tenants:impersonate= against the database, and the tenant token carries an explicit read-only list. The wider gap is the capture "A token with no permissions passes every permission check", updated with what was found. |
+| L2 | No stub proof of the service's refusals | =tenant_session_service.cpp= | Decline | Each refusal has its own test that asserts its message; the classifier refused the stub edit on the previous story. |
+| R1.1 | The entry is audited before the token is signed | =tenant_session_service.cpp= | Accept | The token is signed first and the entry recorded before it is handed over. |
+| R1.2 | Leaving does not end the token | =tenant_session_service.cpp= | Accept in part | Tokens are not revoked anywhere in the system; the client discards it and it lasts one access lifetime. The journey says leaving is not a revocation. |
+| R1.3 | Leave trusts the claim without checking it names the system tenant | =tenant_session_service.cpp= | Accept | Leave now requires the claim to name the system tenant; a test covers the other case. |
+| R1.4 | The handler's permission read depends on the check order | =tenant_session_handler.hpp= | Accept | A comment says why. |
+| R1.5 | The read-only filter relies on the :read suffix | =tenant_session_service.cpp= | Decline | The catalogue's only read verb is :read: 169 :read codes, and every other verb writes, deletes or acts. |
+| R1.7 | Refresh fails these tokens with a generic message | =auth_handler.hpp= | Decline | The client never refreshes a tenant token; it returns to its own token first. |
 
 * Result
+
+=iam.v1.ops.enter_tenant= and =iam.v1.ops.leave_tenant= are generated from the
+operation model =ores.iam.tenant_session_messages= and served by
+=tenant_session_handler= through =tenant_session_service=. Entering refuses a
+caller outside the system tenant, a caller already inside, a caller without
+=iam::tenants:impersonate= (read from the database), an unreadable id, the
+system tenant, an unknown tenant and a tenant with no read permission to
+carry. The token acts as the tenant's system party with every party visible,
+carries only the read permissions the administrator holds, and names the
+tenant it acts from in the new =acting_from_tenant_id= claim. Refresh refuses
+such a token. Both events go to the tenant's own audit trail as
+=tenant_entered= and =tenant_left=. No shell command is generated, because a
+command would print a bearer token.
+
+Tests: four service tests against the database (entry, read-only filter,
+every refusal, exit) and a claim round trip in the security suite. The full
+build is clean. The full ctest passed 86 of 89; the 3 failures were a database
+older than main, and they pass on a recreated one. Live, entering Acme,
+reading, leaving and the refusals passed 15 of 15, and the trail holds the
+entry and the exit.
+

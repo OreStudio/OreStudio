@@ -278,6 +278,33 @@ TEST_CASE("jwt_authenticator_rs256_round_trip", tags) {
     REQUIRE(*validated->party_id == "party-uuid-000");
 }
 
+TEST_CASE("jwt_authenticator_round_trips_the_tenant_a_session_acts_from", tags) {
+    auto signer = jwt_authenticator::create_hs256(test_secret);
+
+    jwt_claims claims;
+    claims.subject = "admin-uuid";
+    claims.issued_at = std::chrono::system_clock::now();
+    claims.expires_at = claims.issued_at + std::chrono::hours(1);
+    claims.tenant_id = "acme-tenant-uuid";
+    claims.acting_from_tenant_id = "system-tenant-uuid";
+
+    const auto token = signer.create_token(claims);
+    REQUIRE(token.has_value());
+
+    const auto validated = signer.validate(*token);
+    REQUIRE(validated.has_value());
+    CHECK(validated->acting_from_tenant_id == "system-tenant-uuid");
+
+    const auto lenient = signer.validate_allow_expired(*token);
+    REQUIRE(lenient.has_value());
+    CHECK(lenient->acting_from_tenant_id == "system-tenant-uuid");
+
+    claims.acting_from_tenant_id.reset();
+    const auto own = signer.validate(*signer.create_token(claims));
+    REQUIRE(own.has_value());
+    CHECK_FALSE(own->acting_from_tenant_id.has_value());
+}
+
 TEST_CASE("jwt_authenticator_rs256_tamper_rejected", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";

@@ -131,6 +131,31 @@ public:
                                      const std::string& session_id);
 
     /**
+     * @brief Record a system administrator entering a tenant.
+     *
+     * The event is the entered tenant's, and its account is the
+     * administrator's, so the tenant's own trail says who looked inside it.
+     *
+     * @param party_id  The tenant's system party, which the session acts as
+     */
+    void record_tenant_entered(const std::chrono::system_clock::time_point& event_time,
+                               const std::string& tenant_id,
+                               const std::string& account_id,
+                               const std::string& username,
+                               const std::string& session_id,
+                               const std::string& party_id);
+
+    /**
+     * @brief Record a system administrator leaving a tenant.
+     */
+    void record_tenant_left(const std::chrono::system_clock::time_point& event_time,
+                            const std::string& tenant_id,
+                            const std::string& account_id,
+                            const std::string& username,
+                            const std::string& session_id,
+                            const std::string& party_id);
+
+    /**
      * @brief Record a signup success event.
      *
      * @param event_time  Timestamp of the event

@@ -30,6 +30,8 @@
 --   logout                - explicit logout
 --   token_refresh         - JWT refreshed successfully
 --   max_session_exceeded  - refresh rejected: max session duration reached
+--   tenant_entered        - a system administrator entered this tenant
+--   tenant_left           - a system administrator left this tenant
 --   signup_success        - new account created via signup
 --   signup_failure        - signup rejected
 -- =============================================================================

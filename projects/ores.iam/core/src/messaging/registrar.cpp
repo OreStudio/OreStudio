@@ -59,6 +59,7 @@
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_roster_handler.hpp"
+#include "ores.iam.core/messaging/tenant_session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_type_registrar.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
@@ -348,6 +349,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         search_tenants_request::nats_subject, qg, [trh](ores::nats::message msg) {
             trh->search(std::move(msg));
+        }));
+    // Entering and leaving a tenant are hand-written, because they issue a
+    // session rather than act on an entity. A tenant session lasts one access
+    // lifetime, read from the auth handler's current token settings.
+    auto tsh = std::make_shared<tenant_session_handler>(nats, ctx, signer, [ah] {
+        return std::chrono::seconds(ah->token_settings()->access_lifetime_s);
+    });
+    subs.push_back(nats.queue_subscribe(
+        enter_tenant_request::nats_subject, qg, [tsh](ores::nats::message msg) {
+            tsh->enter(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        leave_tenant_request::nats_subject, qg, [tsh](ores::nats::message msg) {
+            tsh->leave(std::move(msg));
         }));
     // --- Tenant provisioning ---
     // The provisioning commands are hand-written, so they are wired here

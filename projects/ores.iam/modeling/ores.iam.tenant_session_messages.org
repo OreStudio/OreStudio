@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 11C20FB1-E766-4D17-AC4C-A687A04F55C1
+:END:
+#+title: ores.iam.tenant_session_messages
+#+description: Codegen operation model for entering and leaving a tenant as a system administrator, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: tenant_session
+#+namespace: ores::iam::messaging
+#+brief: Entering and leaving a tenant as a system administrator.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+A system administrator reads a tenant's data from inside the tenant. Entering
+issues a session scoped to the tenant, so row-level security scopes every
+ordinary read from the token, and no read takes a tenant as a parameter. The
+session acts as the tenant's system party, carries read permissions only, and
+names the tenant the administrator acts from. Leaving records the exit; the
+caller returns to the session it entered from.
+
+Both are domain operations, because they act on a session and not on an
+entity. Neither generates a shell command: the shell holds one session, and a
+command that printed a bearer token would hand it to the terminal.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** enter_tenant_request
+:PROPERTIES:
+:subject: iam.v1.ops.enter_tenant
+:response: enter_tenant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Enter one tenant as a system administrator, reading only.
+ *
+ * Refused to a caller outside the system tenant, to a caller already inside a
+ * tenant, to a caller without iam::tenants:impersonate, and for the system
+ * tenant, an unknown tenant, or a tenant with no system party yet.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the tenant to enter.
+ */
+#+end_src
+
+** enter_tenant_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the entry was refused, or empty.
+ */
+#+end_src
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The session token scoped to the tenant.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant's name, which the screens show while inside.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant's system party, which the session acts as.
+ */
+#+end_src
+
+*** party_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The system party's name, which the screens show while inside.
+ */
+#+end_src
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How long the session lasts. It is not refreshed.
+ */
+#+end_src
+
+** leave_tenant_request
+:PROPERTIES:
+:subject: iam.v1.ops.leave_tenant
+:response: leave_tenant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Leave the tenant the caller's session acts in.
+ *
+ * The tenant comes from the caller's token, so the request carries nothing.
+ * Refused to a session that is not inside a tenant.
+ */
+#+end_src
+
+** leave_tenant_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:

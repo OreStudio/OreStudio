@@ -937,6 +937,17 @@ public:
                 return;
             }
 
+            // A session inside another tenant lasts one access lifetime. It is
+            // not renewed, so an administrator's time in a tenant has an end
+            // the administrator did not choose to extend.
+            if (claims_result->acting_from_tenant_id) {
+                reply(nats_,
+                      msg,
+                      refresh_response{.success = false,
+                                       .message = "A session inside a tenant is not refreshed."});
+                return;
+            }
+
             // Enforce max session ceiling using session_start_time embedded
             // in the token at login.
             const auto now = std::chrono::system_clock::now();

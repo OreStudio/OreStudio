@@ -48,6 +48,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
+#include <limits>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
@@ -244,11 +245,11 @@ private:
             response.result.outcome = ores::utility::domain::outcome::invalid;
             response.result.code = "missing_configuration";
             response.result.message =
-                std::format("Report definition {} binds no configuration of type {}, which "
-                            "report type '{}' requires.",
+                std::format("Report definition {} does not bind these configuration types, "
+                            "which report type '{}' requires: {}.",
                             definition_id,
-                            names,
-                            def->report_type);
+                            def->report_type,
+                            names);
             BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
@@ -334,11 +335,9 @@ private:
 
         service::report_configuration_service binding_svc(tenant_ctx);
         const auto definition_id = boost::uuids::to_string(def.id);
-        const auto count =
-            binding_svc.count_report_configurations_by_report_definition_id(definition_id);
         std::vector<std::string> bound;
         for (const auto& b : binding_svc.list_report_configurations_by_report_definition_id(
-                 definition_id, 0, count))
+                 definition_id, 0, std::numeric_limits<std::uint32_t>::max()))
             bound.push_back(b.configuration_type_code);
 
         return service::missing_configuration_types(required, bound);

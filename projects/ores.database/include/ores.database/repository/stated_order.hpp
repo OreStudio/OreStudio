@@ -59,6 +59,10 @@ inline sqlgen::dynamic::OrderBy make_order(std::initializer_list<std::string> or
  * only known when the request arrives. The query is turned into the statement
  * it stands for, the statement takes the order, and the session runs it, so
  * the conditions, the page and the mapping stay the query's own.
+ *
+ * This reads sqlgen's transpilation layer and the members of its read query,
+ * which are not its documented interface. Every generated paged read goes
+ * through here, so a sqlgen update that changes them fails the build.
  */
 template <typename EntityType,
           typename DomainType,

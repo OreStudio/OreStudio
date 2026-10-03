@@ -1458,7 +1458,9 @@ def apply_stated_order(domain_entity):
     ends in the key columns, so the rows that tie still page reproducibly.
 
     A scoped read keeps its own :list_by_order_by: default when the model
-    states one, and otherwise takes the entity's default order.
+    states one, and otherwise takes the entity's default order. That default
+    need not be sortable: it is the order the model chose, not a field a
+    caller states, so the allow-list does not apply to it.
 
     Args:
         domain_entity (dict): mutated in place with sortable_fields,

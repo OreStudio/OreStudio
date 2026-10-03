@@ -52,10 +52,6 @@ std::filesystem::path corpus_root() {
 
 curveconfiguration modelled_only(curveconfiguration d) {
     d.ReportConfiguration = decltype(d.ReportConfiguration){};
-    if (d.SwaptionVolatilities)
-        d.SwaptionVolatilities->SwaptionVolatility.clear();
-    if (d.CapFloorVolatilities)
-        d.CapFloorVolatilities->CapFloorVolatility.clear();
     if (d.EquityVolatilities)
         d.EquityVolatilities->EquityVolatility.clear();
     if (d.CommodityVolatilities)
@@ -251,18 +247,38 @@ TEST_CASE("a yield curve with every segment element round trips", tags) {
 
 TEST_CASE("entries of a section the mapper does not model are refused", tags) {
     curveconfiguration d;
-    d.SwaptionVolatilities = swaptionVolatilities{};
-    d.SwaptionVolatilities->SwaptionVolatility.push_back(swaptionVolatility{});
+    d.EquityVolatilities = equityVolatilities{};
+    d.EquityVolatilities->EquityVolatility.push_back(equityVolatility{});
     CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
 }
 
-TEST_CASE("an FX volatility with a parametric smile is refused", tags) {
-    curveconfiguration d;
-    d.FXVolatilities = fxVolatilities{};
+TEST_CASE("an FX volatility with a parametric smile round trips", tags) {
+    curveconfiguration original;
+    original.FXVolatilities = fxVolatilities{};
     fxVolatility v;
-    v.ParametricSmileConfiguration = parametricSmileConfig{};
-    d.FXVolatilities->FXVolatility.push_back(v);
-    CHECK_THROWS_AS(curve_configuration_mapper::map(d), std::runtime_error);
+    static_cast<std::string&>(v.CurveId) = "EURUSD";
+    parametricSmileConfig smile;
+    for (const auto* name : {"alpha", "rho"}) {
+        parametricSmileConfigParameter p;
+        static_cast<std::string&>(p.Name) = name;
+        p.InitialValue = parametricSmileConfigParameter_InitialValue_t{};
+        static_cast<std::string&>(*p.InitialValue) = "0.1";
+        p.Calibration = parametricVolatilityParameterCalibration::Calibrated;
+        smile.Parameters.Parameter.push_back(p);
+    }
+    smile.Calibration.MaxCalibrationAttempts = 3;
+    smile.Calibration.ExitEarlyErrorThreshold = 0.0005f;
+    smile.Calibration.MaxAcceptableError = 0.01f;
+    v.ParametricSmileConfiguration = smile;
+    original.FXVolatilities->FXVolatility.push_back(v);
+
+    const auto mapped = curve_configuration_mapper::map(original);
+    REQUIRE(mapped.parametric_smiles.size() == 1);
+    CHECK(mapped.parametric_smile_parameters.size() == 2);
+
+    curveconfiguration exported;
+    load_data(save_data(curve_configuration_mapper::reverse(mapped)), exported);
+    CHECK(ores::ore::xml::parsed_text_difference(original, exported, "synthetic").empty());
 }
 
 TEST_CASE("a CDS volatility with a constant volatility is refused", tags) {

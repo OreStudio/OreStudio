@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 27181728-3F7D-4D39-9934-D38E04CFC5A6
+:END:
+#+title: ores.refdata.curve_parametric_smile
+#+description: Codegen entity model for the refdata =curve_parametric_smile= table. The parametric smile configuration of an ORE volatility entry.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The parametric smile a volatility entry is calibrated with.
+#+entity_singular: curve_parametric_smile
+#+entity_plural: curve_parametric_smiles
+#+entity_title: Curve Parametric Smile
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The =ParametricSmileConfiguration= of a volatility entry: how the smile's
+parameters are calibrated, and its residual correction. FX, swaption and cap and
+floor volatilities write it on the entry, so it is one row per entry, keyed to
+the entry's =curve_definition=. Its parameters are rows of
+=curve_parametric_smile_parameter=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** max_calibration_attempts
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The number of calibration attempts.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** exit_early_error_threshold
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The calibration error below which calibration stops.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** max_acceptable_error
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The largest calibration error that is accepted.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** residual_correction_dimension
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The dimension of the residual correction, when the document gives one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_parametric_smiles_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parametric_smile
+:entity_plural_short:   parametric_smiles
+:entity_singular_words: curve parametric smile
+:entity_plural_words:   curve parametric smiles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ps
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

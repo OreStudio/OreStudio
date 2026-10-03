@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 724CBD9F-7CD3-5A89-A0EF-558B3418FDDF
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the curve_parametric_smile_parameters commands from the shell?
+#+description: Every command the curve_parametric_smile_parameters submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:curve_parametric_smile_parameters:
+
+This file documents the curve_parametric_smile_parameters resource at the shell, one section per command. Every command is a subcommand of =curve_parametric_smile_parameters=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F474A303-9A29-5688-922A-24F78E7BC790
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.list=.
+
+#+name: curve_parametric_smile_parameters-list
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-list.ores :exports none
+curve_parametric_smile_parameters list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 22FBFFB3-800A-527F-B45B-65A09F36F769
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters get <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.get=.
+
+#+name: curve_parametric_smile_parameters-get
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-get.ores :exports none
+curve_parametric_smile_parameters get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4315D066-C85F-5A32-8F32-C2C9A8C24B10
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.get_many=.
+
+#+name: curve_parametric_smile_parameters-get-many
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-get-many.ores :exports none
+curve_parametric_smile_parameters get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A567B6F7-7B3F-5DB9-B0E7-0184B4B2D4F8
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters add <curve_definition_id> <name> <initial_value> <calibration> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.put=.
+
+#+name: curve_parametric_smile_parameters-add
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-add.ores :exports none
+curve_parametric_smile_parameters add 00000000-0000-0000-0000-000000000000 __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 540F26FA-B4E9-5A98-BA39-DC2D436B4025
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters set <id> <curve_definition_id> <name> <initial_value> <calibration> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.put=.
+
+#+name: curve_parametric_smile_parameters-set
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-set.ores :exports none
+curve_parametric_smile_parameters set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CCFD72F8-5E61-5F10-AEC7-B581E927461E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters put-many --count <n> <id> <curve_definition_id> <name> <initial_value> <calibration> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.put_many=.
+
+#+name: curve_parametric_smile_parameters-put-many
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-put-many.ores :exports none
+curve_parametric_smile_parameters put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E924A91A-2FA9-54E9-BBCA-FE5615E638BF
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.delete=.
+
+#+name: curve_parametric_smile_parameters-delete
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-delete.ores :exports none
+curve_parametric_smile_parameters delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 70D3D3BC-7AB8-5622-9F46-F6FD42D1D5D0
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters.delete_many=.
+
+#+name: curve_parametric_smile_parameters-delete-many
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-delete-many.ores :exports none
+curve_parametric_smile_parameters delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F681F35A-2FBD-5B64-BEC2-BCF2B6FB212E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters_versions.list=.
+
+#+name: curve_parametric_smile_parameters-versions
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-versions.ores :exports none
+curve_parametric_smile_parameters versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 52AB4CB9-A43E-51BC-BE69-3BD0A5DF5C9E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+curve_parametric_smile_parameters version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.curve_parametric_smile_parameters_versions.get=.
+
+#+name: curve_parametric_smile_parameters-version
+#+begin_src ores-shell :tangle curve_parametric_smile_parameters-version.ores :exports none
+curve_parametric_smile_parameters version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

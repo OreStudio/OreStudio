@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/curve_parametric_smile_parameters/curve_parametric_smile_parameter.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+curve_parametric_smile_parameters versions 00000000-0000-0000-0000-000000000000 --limit 1

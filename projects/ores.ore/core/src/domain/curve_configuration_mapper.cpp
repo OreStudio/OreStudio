@@ -53,6 +53,8 @@ constexpr std::string_view cds_volatilities_section = "CDSVolatilities";
 constexpr std::string_view inflation_cap_floor_volatilities_section =
     "InflationCapFloorVolatilities";
 constexpr std::string_view strike_surface_kind = "StrikeSurface";
+constexpr std::string_view swaption_volatilities_section = "SwaptionVolatilities";
+constexpr std::string_view cap_floor_volatilities_section = "CapFloorVolatilities";
 
 constexpr std::string_view basis_quotes_list = "BasisQuotes";
 constexpr std::string_view off_peak_quotes_list = "OffPeakQuotes";
@@ -70,6 +72,7 @@ bool is_modelled(std::string_view section) {
            section == yield_volatilities_section || section == base_correlations_section ||
            section == correlations_section || section == cds_volatilities_section ||
            section == inflation_cap_floor_volatilities_section ||
+           section == swaption_volatilities_section || section == cap_floor_volatilities_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -151,15 +154,17 @@ void assign_optional_enum(xsd::optional<E>& target,
         target = enum_from_text<E>(*value, what);
 }
 
-std::optional<int> optional_int(const xsd::optional<uint64_t>& v) {
+template <typename T>
+std::optional<int> optional_int(const xsd::optional<T>& v) {
     if (!v)
         return std::nullopt;
     return static_cast<int>(*v);
 }
 
-void assign_optional_int(xsd::optional<uint64_t>& target, const std::optional<int>& value) {
+template <typename T>
+void assign_optional_int(xsd::optional<T>& target, const std::optional<int>& value) {
     if (value)
-        target = static_cast<uint64_t>(*value);
+        target = static_cast<T>(*value);
 }
 
 template <typename T>
@@ -217,13 +222,13 @@ const std::vector<section_access>& sections() {
         make_section(fx_volatilities_section,
                      &curveconfiguration::FXVolatilities,
                      &fxVolatilities::FXVolatility),
-        make_section("SwaptionVolatilities",
+        make_section(swaption_volatilities_section,
                      &curveconfiguration::SwaptionVolatilities,
                      &swaptionVolatilities::SwaptionVolatility),
         make_section(yield_volatilities_section,
                      &curveconfiguration::YieldVolatilities,
                      &yieldVolatilities::YieldVolatility),
-        make_section("CapFloorVolatilities",
+        make_section(cap_floor_volatilities_section,
                      &curveconfiguration::CapFloorVolatilities,
                      &capFloorVolatilities::CapFloorVolatility),
         make_section(cds_volatilities_section,
@@ -902,12 +907,62 @@ reportConfiguration export_report(const refdata::domain::curve_report_configurat
     return v;
 }
 
+void import_parametric_smile(mapped_curve_configuration& out,
+                             const boost::uuids::uuid& definition_id,
+                             const parametricSmileConfig& v) {
+    refdata::domain::curve_parametric_smile r;
+    r.id = new_uuid();
+    r.curve_definition_id = definition_id;
+    r.max_calibration_attempts = static_cast<int>(v.Calibration.MaxCalibrationAttempts);
+    r.exit_early_error_threshold = static_cast<double>(v.Calibration.ExitEarlyErrorThreshold);
+    r.max_acceptable_error = static_cast<double>(v.Calibration.MaxAcceptableError);
+    r.residual_correction_dimension =
+        v.ResidualCorrection ? std::optional<std::string>(to_string(v.ResidualCorrection->Dimension))
+                             : std::nullopt;
+    set_audit(r);
+    out.parametric_smiles.push_back(std::move(r));
+
+    int parameter_position = 0;
+    for (const auto& p : v.Parameters.Parameter) {
+        refdata::domain::curve_parametric_smile_parameter parameter;
+        parameter.id = new_uuid();
+        parameter.curve_definition_id = definition_id;
+        parameter.name = text(p.Name);
+        parameter.initial_value = optional_text(p.InitialValue);
+        parameter.calibration = to_string(p.Calibration);
+        parameter.position = parameter_position++;
+        set_audit(parameter);
+        out.parametric_smile_parameters.push_back(std::move(parameter));
+    }
+}
+
+parametricSmileConfig export_parametric_smile(
+    const refdata::domain::curve_parametric_smile& r,
+    const std::vector<const refdata::domain::curve_parametric_smile_parameter*>& parameters) {
+    parametricSmileConfig v;
+    for (const auto* p : parameters) {
+        parametricSmileConfigParameter parameter;
+        assign_text(parameter.Name, p->name);
+        assign_optional_text(parameter.InitialValue, p->initial_value);
+        parameter.Calibration = enum_from_text<parametricVolatilityParameterCalibration>(
+            p->calibration, "parameter calibration");
+        v.Parameters.Parameter.push_back(std::move(parameter));
+    }
+    v.Calibration.MaxCalibrationAttempts = r.max_calibration_attempts;
+    v.Calibration.ExitEarlyErrorThreshold = static_cast<float>(r.exit_early_error_threshold);
+    v.Calibration.MaxAcceptableError = static_cast<float>(r.max_acceptable_error);
+    if (r.residual_correction_dimension) {
+        parametricSmileConfigResidualCorrection correction;
+        correction.Dimension = enum_from_text<parametricSmileConfigResidualCorrection_Dimension_t>(
+            *r.residual_correction_dimension, "residual correction dimension");
+        v.ResidualCorrection = correction;
+    }
+    return v;
+}
+
 void import_fx_volatility(mapped_curve_configuration& out, const fxVolatility& v, int position) {
     const auto d = add_definition(
         out, fx_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
-    if (v.ParametricSmileConfiguration)
-        throw refusal("FX volatility " + d.curve_id +
-                      " writes a ParametricSmileConfiguration, which is not modelled yet");
 
     refdata::domain::fx_volatility r;
     r.id = new_uuid();
@@ -933,6 +988,8 @@ void import_fx_volatility(mapped_curve_configuration& out, const fxVolatility& v
     r.butterfly_error_tolerance = optional_double(v.ButterflyErrorTolerance);
     set_audit(r);
     out.fx_volatilities.push_back(std::move(r));
+    if (v.ParametricSmileConfiguration)
+        import_parametric_smile(out, d.id, *v.ParametricSmileConfiguration);
     if (v.Report)
         import_report(out, d.id, *v.Report);
 }
@@ -1126,6 +1183,108 @@ void import_inflation_cap_floor_volatility(mapped_curve_configuration& out,
         import_bootstrap(out, d.id, boost::uuids::uuid{}, *v.BootstrapConfig);
 }
 
+void import_swaption_volatility(mapped_curve_configuration& out,
+                                const swaptionVolatility& v,
+                                int position) {
+    const auto d = add_definition(
+        out, swaption_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::swaption_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.dimension = optional_enum_text(v.Dimension);
+    r.volatility_type = optional_enum_text(v.VolatilityType);
+    r.interpolation = optional_text(v.Interpolation);
+    r.extrapolation = optional_text(v.Extrapolation);
+    r.output_volatility_type = optional_text(v.OutputVolatilityType);
+    r.model_shift = optional_text(v.ModelShift);
+    r.output_shift = optional_text(v.OutputShift);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.business_day_convention = optional_enum_text(v.BusinessDayConvention);
+    r.option_tenors = optional_text(v.OptionTenors);
+    r.swap_tenors = optional_text(v.SwapTenors);
+    r.short_swap_index_base = optional_text(v.ShortSwapIndexBase);
+    r.swap_index_base = optional_text(v.SwapIndexBase);
+    r.smile_option_tenors = optional_text(v.SmileOptionTenors);
+    r.smile_swap_tenors = optional_text(v.SmileSwapTenors);
+    r.smile_spreads = optional_text(v.SmileSpreads);
+    r.quote_tag = optional_text(v.QuoteTag);
+    r.has_proxy_config = static_cast<bool>(v.ProxyConfig);
+    if (v.ProxyConfig) {
+        const auto& proxy = *v.ProxyConfig;
+        r.proxy_source_curve_id = text(proxy.Source.CurveId);
+        r.proxy_source_short_swap_index_base = text(proxy.Source.ShortSwapIndexBase);
+        r.proxy_source_swap_index_base = text(proxy.Source.SwapIndexBase);
+        r.proxy_target_short_swap_index_base = text(proxy.Target.ShortSwapIndexBase);
+        r.proxy_target_swap_index_base = text(proxy.Target.SwapIndexBase);
+    }
+    set_audit(r);
+    out.swaption_volatilities.push_back(std::move(r));
+    if (v.ParametricSmileConfiguration)
+        import_parametric_smile(out, d.id, *v.ParametricSmileConfiguration);
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
+void import_cap_floor_volatility(mapped_curve_configuration& out,
+                                 const capFloorVolatility& v,
+                                 int position) {
+    const auto d = add_definition(
+        out, cap_floor_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::cap_floor_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.volatility_type = optional_enum_text(v.VolatilityType);
+    r.output_volatility_type = optional_enum_text(v.OutputVolatilityType);
+    r.model_shift = optional_double(v.ModelShift);
+    r.output_shift = optional_double(v.OutputShift);
+    r.extrapolation = optional_enum_text(v.Extrapolation);
+    r.interpolation_method = optional_enum_text(v.InterpolationMethod);
+    r.include_atm = optional_enum_text(v.IncludeAtm);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.business_day_convention = optional_enum_text(v.BusinessDayConvention);
+    r.tenors = optional_text(v.Tenors);
+    r.strikes = optional_text(v.Strikes);
+    r.optional_quotes = optional_enum_text(v.OptionalQuotes);
+    r.ibor_index = optional_text(v.IborIndex);
+    r.index = optional_text(v.Index);
+    r.rate_computation_period = optional_text(v.RateComputationPeriod);
+    r.on_cap_settlement_days = optional_int(v.ONCapSettlementDays);
+    r.discount_curve = optional_text(v.DiscountCurve);
+    r.atm_tenors = optional_text(v.AtmTenors);
+    r.settlement_days = optional_int(v.SettlementDays);
+    r.interpolate_on = optional_enum_text(v.InterpolateOn);
+    r.time_interpolation = optional_enum_text(v.TimeInterpolation);
+    r.strike_interpolation = optional_enum_text(v.StrikeInterpolation);
+    r.input_type = optional_enum_text(v.InputType);
+    r.quote_includes_index_name = optional_enum_text(v.QuoteIncludesIndexName);
+    r.flat_first_period = optional_enum_text(v.FlatFirstPeriod);
+    r.use_effecive_volatility = optional_enum_text(v.UseEffeciveVolatility);
+    r.use_effective_volatility = optional_enum_text(v.UseEffectiveVolatility);
+    r.has_proxy_config = static_cast<bool>(v.ProxyConfig);
+    if (v.ProxyConfig) {
+        const auto& proxy = *v.ProxyConfig;
+        r.proxy_source_curve_id = text(proxy.Source.CurveId);
+        r.proxy_source_index = text(proxy.Source.Index);
+        r.proxy_source_rate_computation_period = optional_text(proxy.Source.RateComputationPeriod);
+        r.proxy_target_index = text(proxy.Target.Index);
+        r.proxy_target_rate_computation_period = optional_text(proxy.Target.RateComputationPeriod);
+        r.proxy_target_on_cap_settlement_days = optional_int(proxy.Target.ONCapSettlementDays);
+        r.proxy_scaling_factor = optional_double(proxy.ScalingFactor);
+    }
+    set_audit(r);
+    out.cap_floor_volatilities.push_back(std::move(r));
+    if (v.ParametricSmileConfiguration)
+        import_parametric_smile(out, d.id, *v.ParametricSmileConfiguration);
+    if (v.BootstrapConfig)
+        import_bootstrap(out, d.id, boost::uuids::uuid{}, *v.BootstrapConfig);
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
 void import_correlation(mapped_curve_configuration& out, const correlation& v, int position) {
     const auto d = add_definition(
         out, correlations_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -1241,6 +1400,11 @@ boost::uuids::uuid factor_definition(const refdata::domain::inflation_seasonalit
 
 boost::uuids::uuid term_definition(const refdata::domain::cds_volatility_term& t) {
     return t.curve_definition_id;
+}
+
+boost::uuids::uuid smile_parameter_definition(
+    const refdata::domain::curve_parametric_smile_parameter& p) {
+    return p.curve_definition_id;
 }
 
 boost::uuids::uuid volatility_config_definition(const refdata::domain::curve_volatility_config& c) {
@@ -1792,13 +1956,16 @@ simCommodityCurve export_commodity_curve(
 
 fxVolatility export_fx_volatility(const refdata::domain::curve_definition& d,
                                   const refdata::domain::fx_volatility& v,
-                                  const refdata::domain::curve_report_configuration* report) {
+                                  const refdata::domain::curve_report_configuration* report,
+                                  const std::optional<parametricSmileConfig>& smile) {
     fxVolatility r;
     assign_text(r.CurveId, d.curve_id);
     assign_text(r.CurveDescription, d.description.value_or(""));
     r.Dimension = enum_from_text<dimensionType>(v.dimension, "dimension");
     assign_optional_enum(r.SmileType, v.smile_type, "smile type");
     assign_optional_text(r.SmileInterpolation, v.smile_interpolation);
+    if (smile)
+        r.ParametricSmileConfiguration = *smile;
     assign_optional_text(r.Deltas, v.deltas);
     assign_optional_text(r.SmileDelta, v.smile_delta);
     assign_optional_text(r.Conventions, v.conventions);
@@ -1938,6 +2105,109 @@ inflationCapFloorVolatility export_inflation_cap_floor_volatility(
         r.Report = export_report(*report);
     if (bootstrap)
         r.BootstrapConfig = export_bootstrap(*bootstrap);
+    return r;
+}
+
+swaptionVolatility export_swaption_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::swaption_volatility& v,
+    const refdata::domain::curve_report_configuration* report,
+    const std::optional<parametricSmileConfig>& smile) {
+    swaptionVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    if (v.has_proxy_config) {
+        swaptionVolatility_ProxyConfig_t proxy;
+        assign_text(proxy.Source.CurveId, v.proxy_source_curve_id.value_or(""));
+        assign_text(proxy.Source.ShortSwapIndexBase, v.proxy_source_short_swap_index_base.value_or(""));
+        assign_text(proxy.Source.SwapIndexBase, v.proxy_source_swap_index_base.value_or(""));
+        assign_text(proxy.Target.ShortSwapIndexBase, v.proxy_target_short_swap_index_base.value_or(""));
+        assign_text(proxy.Target.SwapIndexBase, v.proxy_target_swap_index_base.value_or(""));
+        r.ProxyConfig = std::move(proxy);
+    }
+    assign_optional_enum(r.Dimension, v.dimension, "dimension");
+    assign_optional_enum(r.VolatilityType, v.volatility_type, "volatility type");
+    assign_optional_text(r.Interpolation, v.interpolation);
+    if (smile)
+        r.ParametricSmileConfiguration = *smile;
+    assign_optional_text(r.Extrapolation, v.extrapolation);
+    assign_optional_text(r.OutputVolatilityType, v.output_volatility_type);
+    assign_optional_text(r.ModelShift, v.model_shift);
+    assign_optional_text(r.OutputShift, v.output_shift);
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_enum(r.BusinessDayConvention, v.business_day_convention, "business day convention");
+    assign_optional_text(r.OptionTenors, v.option_tenors);
+    assign_optional_text(r.SwapTenors, v.swap_tenors);
+    assign_optional_text(r.ShortSwapIndexBase, v.short_swap_index_base);
+    assign_optional_text(r.SwapIndexBase, v.swap_index_base);
+    assign_optional_text(r.SmileOptionTenors, v.smile_option_tenors);
+    assign_optional_text(r.SmileSwapTenors, v.smile_swap_tenors);
+    assign_optional_text(r.SmileSpreads, v.smile_spreads);
+    assign_optional_text(r.QuoteTag, v.quote_tag);
+    if (report)
+        r.Report = export_report(*report);
+    return r;
+}
+
+capFloorVolatility export_cap_floor_volatility(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::cap_floor_volatility& v,
+    const refdata::domain::curve_report_configuration* report,
+    const refdata::domain::curve_bootstrap_config* bootstrap,
+    const std::optional<parametricSmileConfig>& smile) {
+    capFloorVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    if (v.has_proxy_config) {
+        capFloorVolatility_ProxyConfig_t proxy;
+        assign_text(proxy.Source.CurveId, v.proxy_source_curve_id.value_or(""));
+        assign_text(proxy.Source.Index, v.proxy_source_index.value_or(""));
+        assign_optional_text(proxy.Source.RateComputationPeriod, v.proxy_source_rate_computation_period);
+        assign_text(proxy.Target.Index, v.proxy_target_index.value_or(""));
+        assign_optional_text(proxy.Target.RateComputationPeriod, v.proxy_target_rate_computation_period);
+        assign_optional_int(proxy.Target.ONCapSettlementDays, v.proxy_target_on_cap_settlement_days);
+        assign_optional_double(proxy.ScalingFactor, v.proxy_scaling_factor);
+        r.ProxyConfig = std::move(proxy);
+    }
+    assign_optional_enum(r.VolatilityType, v.volatility_type, "volatility type");
+    assign_optional_enum(r.OutputVolatilityType, v.output_volatility_type, "volatility type");
+    assign_optional_double(r.ModelShift, v.model_shift);
+    assign_optional_double(r.OutputShift, v.output_shift);
+    assign_optional_enum(r.Extrapolation, v.extrapolation, "extrapolation");
+    assign_optional_enum(r.InterpolationMethod, v.interpolation_method, "interpolation method");
+    assign_optional_enum(r.IncludeAtm, v.include_atm, "ORE boolean");
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_enum(r.BusinessDayConvention, v.business_day_convention, "business day convention");
+    assign_optional_text(r.Tenors, v.tenors);
+    assign_optional_text(r.Strikes, v.strikes);
+    assign_optional_enum(r.OptionalQuotes, v.optional_quotes, "ORE boolean");
+    if (v.ibor_index)
+        r.IborIndex = *v.ibor_index;
+    if (v.index)
+        r.Index = *v.index;
+    assign_optional_text(r.RateComputationPeriod, v.rate_computation_period);
+    assign_optional_int(r.ONCapSettlementDays, v.on_cap_settlement_days);
+    assign_optional_text(r.DiscountCurve, v.discount_curve);
+    assign_optional_text(r.AtmTenors, v.atm_tenors);
+    assign_optional_int(r.SettlementDays, v.settlement_days);
+    assign_optional_enum(r.InterpolateOn, v.interpolate_on, "interpolate on");
+    assign_optional_enum(r.TimeInterpolation, v.time_interpolation, "time interpolation");
+    assign_optional_enum(r.StrikeInterpolation, v.strike_interpolation, "strike interpolation");
+    if (smile)
+        r.ParametricSmileConfiguration = *smile;
+    assign_optional_enum(r.InputType, v.input_type, "input type");
+    assign_optional_enum(r.QuoteIncludesIndexName, v.quote_includes_index_name, "ORE boolean");
+    assign_optional_enum(r.FlatFirstPeriod, v.flat_first_period, "ORE boolean");
+    assign_optional_enum(r.UseEffeciveVolatility, v.use_effecive_volatility, "ORE boolean");
+    if (bootstrap)
+        r.BootstrapConfig = export_bootstrap(*bootstrap);
+    if (report)
+        r.Report = export_report(*report);
+    assign_optional_enum(r.UseEffectiveVolatility, v.use_effective_volatility, "ORE boolean");
     return r;
 }
 
@@ -2084,6 +2354,12 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.InflationCapFloorVolatilities)
         for (const auto& e : v.InflationCapFloorVolatilities->InflationCapFloorVolatility)
             import_inflation_cap_floor_volatility(mapped, e, position++);
+    if (v.SwaptionVolatilities)
+        for (const auto& e : v.SwaptionVolatilities->SwaptionVolatility)
+            import_swaption_volatility(mapped, e, position++);
+    if (v.CapFloorVolatilities)
+        for (const auto& e : v.CapFloorVolatilities->CapFloorVolatility)
+            import_cap_floor_volatility(mapped, e, position++);
     if (v.IntradayPowerCurves)
         for (const auto& e : v.IntradayPowerCurves->IntradayPowerCurve)
             import_intraday_power_curve(mapped, e, position++);
@@ -2158,6 +2434,19 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     const auto cds_terms = group_by(v.cds_volatility_terms, &term_definition);
     const auto volatility_configs = group_by(v.volatility_configs, &volatility_config_definition);
     const auto inflation_vol_by_definition = by_definition(v.inflation_cap_floor_volatilities);
+    const auto swaption_vol_by_definition = by_definition(v.swaption_volatilities);
+    const auto cap_floor_vol_by_definition = by_definition(v.cap_floor_volatilities);
+    const auto smile_by_definition = by_definition(v.parametric_smiles);
+    const auto smile_parameters = group_by(v.parametric_smile_parameters, &smile_parameter_definition);
+    const auto smile_of =
+        [&](const refdata::domain::curve_definition& d) -> std::optional<parametricSmileConfig> {
+        const auto it = smile_by_definition.find(d.id);
+        if (it == smile_by_definition.end())
+            return std::nullopt;
+        static const std::vector<const refdata::domain::curve_parametric_smile_parameter*> none;
+        const auto p = smile_parameters.find(d.id);
+        return export_parametric_smile(*it->second, p == smile_parameters.end() ? none : p->second);
+    };
     const auto default_by_definition = by_definition(v.default_curves);
     const auto configurations = group_by(v.default_curve_configurations, &configuration_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
@@ -2189,8 +2478,8 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
         if (d->section_code == fx_volatilities_section) {
             if (!document.FXVolatilities)
                 document.FXVolatilities = fxVolatilities{};
-            document.FXVolatilities->FXVolatility.push_back(
-                export_fx_volatility(*d, settings_of(fx_vol_by_definition, *d), report_of(*d)));
+            document.FXVolatilities->FXVolatility.push_back(export_fx_volatility(
+                *d, settings_of(fx_vol_by_definition, *d), report_of(*d), smile_of(*d)));
             continue;
         }
         if (d->section_code == yield_volatilities_section) {
@@ -2219,6 +2508,25 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
                                       settings_of(cds_vol_by_definition, *d),
                                       t == cds_terms.end() ? no_terms : t->second,
                                       c == volatility_configs.end() ? no_configs : c->second));
+            continue;
+        }
+        if (d->section_code == swaption_volatilities_section) {
+            if (!document.SwaptionVolatilities)
+                document.SwaptionVolatilities = swaptionVolatilities{};
+            document.SwaptionVolatilities->SwaptionVolatility.push_back(export_swaption_volatility(
+                *d, settings_of(swaption_vol_by_definition, *d), report_of(*d), smile_of(*d)));
+            continue;
+        }
+        if (d->section_code == cap_floor_volatilities_section) {
+            const auto b = ctx.entry_bootstraps.find(d->id);
+            if (!document.CapFloorVolatilities)
+                document.CapFloorVolatilities = capFloorVolatilities{};
+            document.CapFloorVolatilities->CapFloorVolatility.push_back(export_cap_floor_volatility(
+                *d,
+                settings_of(cap_floor_vol_by_definition, *d),
+                report_of(*d),
+                b == ctx.entry_bootstraps.end() ? nullptr : b->second,
+                smile_of(*d)));
             continue;
         }
         if (d->section_code == inflation_cap_floor_volatilities_section) {

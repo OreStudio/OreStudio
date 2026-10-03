@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: E0B843CD-61D2-465E-AE9A-8D30313BB810
+:END:
+#+title: ores.refdata.curve_parametric_smile_parameter
+#+description: Codegen entity model for the refdata =curve_parametric_smile_parameter= table. One parameter of an ORE parametric smile configuration.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One parameter of a volatility entry's parametric smile.
+#+entity_singular: curve_parametric_smile_parameter
+#+entity_plural: curve_parametric_smile_parameters
+#+entity_title: Curve Parametric Smile Parameter
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One =Parameter= of a parametric smile, such as SABR's =alpha=: its name, its
+initial value and how it is calibrated, in the order the document lists them.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The parameter's name.
+
+#+begin_src cpp :name generator
+std::string("alpha")
+#+end_src
+
+** initial_value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The parameter's initial value, as the document writes it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calibration
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the parameter is =Fixed=, =Calibrated= or =Implied=.
+
+#+begin_src cpp :name generator
+std::string("Calibrated")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The parameter's place in the list, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_parametric_smile_parameters_tbl
+:END:
+
+** Checks
+
+| expression      |
+|-----------------|
+| "name" <> ''    |
+| "position" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: smile_parameter
+:entity_plural_short:   smile_parameters
+:entity_singular_words: curve parametric smile parameter
+:entity_plural_words:   curve parametric smile parameters
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sp
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

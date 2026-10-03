@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2551
+#+pr: 2554
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -142,6 +142,26 @@ Step 2, decided while building it:
   types: =EUR-EONIA=, =EUR-ESTER=, =GBP-LIBOR-3M= and =USD-LIBOR-1M=. They are
   seeded now.
 
+Step 3a, decided while building it:
+
+- Step 3 is split by section family: 3a the equity curves, securities, FX
+  spots and intraday power curves; 3b inflation; 3c default curves, whose
+  nested configurations need child rows; 3d commodity.
+- A calendar is an expression, not a name: =TARGET,UK= and
+  =JoinHolidays(TARGET, US settlement)= are both one calendar. The schema
+  lists 471 names and allows two open forms, any four-letter exchange code and
+  any =CUSTOM_= name. =calendar_name= holds the 471, and
+  =ores_refdata_validate_calendar_fn= splits an expression and checks each
+  part against them or against the two forms. The refdata =calendar= table's
+  61 codes miss most of the corpus (=XNYS=, =USD=, =weekends only=), so it is
+  not the target.
+- 101 corpus equity curves write an empty =Calendar= and three an empty
+  =Quotes=; the empty calendar is stored as empty text and the quotes element's
+  presence as =equity_curve.has_quotes=.
+- =intraday_power_curve.convention= is nullable in the table because the
+  generated event test cannot seed a convention; the mapper refuses to export
+  an entry without one.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -157,6 +177,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2554][#2554]] | [refdata] Map the equity, security, FX spot and power curve sections |
 | [[https://github.com/OreStudio/OreStudio/pull/2551][#2551]] | [refdata] Hold yield curves as typed rows and map them in both directions |
 | [[https://github.com/OreStudio/OreStudio/pull/2536][#2536]] | [refdata] Seed the curve configuration vocabulary from the schemas |
 

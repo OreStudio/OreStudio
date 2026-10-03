@@ -41,6 +41,18 @@ constexpr std::string_view audit_reason_code = "system.external_data_import";
 constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
 constexpr std::string_view yield_curves_section = "YieldCurves";
+constexpr std::string_view equity_curves_section = "EquityCurves";
+constexpr std::string_view securities_section = "Securities";
+constexpr std::string_view fx_spots_section = "FXSpots";
+constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves";
+
+// The sections whose entries the mapper holds. A section outside this set is
+// recorded only when it is empty.
+bool is_modelled(std::string_view section) {
+    return section == yield_curves_section || section == equity_curves_section ||
+           section == securities_section || section == fx_spots_section ||
+           section == intraday_power_curves_section;
+}
 
 boost::uuids::uuid new_uuid() {
     static thread_local ores::utility::uuid::uuid_v7_generator generator;
@@ -177,7 +189,7 @@ section_access make_section(std::string_view code,
 
 const std::vector<section_access>& sections() {
     static const std::vector<section_access> table = {
-        make_section("FXSpots", &curveconfiguration::FXSpots, &fxSpots::FXSpot),
+        make_section(fx_spots_section, &curveconfiguration::FXSpots, &fxSpots::FXSpot),
         make_section(
             "FXVolatilities", &curveconfiguration::FXVolatilities, &fxVolatilities::FXVolatility),
         make_section("SwaptionVolatilities",
@@ -198,11 +210,11 @@ const std::vector<section_access>& sections() {
         make_section("InflationCapFloorVolatilities",
                      &curveconfiguration::InflationCapFloorVolatilities,
                      &inflationCapFloorVolatlities::InflationCapFloorVolatility),
-        make_section("EquityCurves", &curveconfiguration::EquityCurves, &equityCurves::EquityCurve),
+        make_section(equity_curves_section, &curveconfiguration::EquityCurves, &equityCurves::EquityCurve),
         make_section("EquityVolatilities",
                      &curveconfiguration::EquityVolatilities,
                      &equityVolatilities::EquityVolatility),
-        make_section("Securities", &curveconfiguration::Securities, &securities::Security),
+        make_section(securities_section, &curveconfiguration::Securities, &securities::Security),
         make_section("BaseCorrelations",
                      &curveconfiguration::BaseCorrelations,
                      &baseCorrelations::BaseCorrelation),
@@ -215,7 +227,7 @@ const std::vector<section_access>& sections() {
         make_section("BondFutureVolatilities",
                      &curveconfiguration::BondFutureVolatilities,
                      &bondFutureVolatilities::BondFutureVolatility),
-        make_section("IntradayPowerCurves",
+        make_section(intraday_power_curves_section,
                      &curveconfiguration::IntradayPowerCurves,
                      &intradayPowerCurves::IntradayPowerCurve),
     };
@@ -473,16 +485,26 @@ void import_segments(import_context& ctx, const segmentsType& v) {
     }
 }
 
-void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, int position) {
+refdata::domain::curve_definition& add_definition(mapped_curve_configuration& out,
+                                                  std::string_view section,
+                                                  const std::string& curve_id,
+                                                  const std::string& description,
+                                                  int position) {
     refdata::domain::curve_definition d;
     d.id = new_uuid();
     d.curve_configuration_id = out.config.id;
-    d.section_code = std::string(yield_curves_section);
-    d.curve_id = text(v.CurveId);
-    d.description = text(v.CurveDescription);
+    d.section_code = std::string(section);
+    d.curve_id = curve_id;
+    d.description = description;
     d.position = position;
     set_audit(d);
-    out.definitions.push_back(d);
+    out.definitions.push_back(std::move(d));
+    return out.definitions.back();
+}
+
+void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, int position) {
+    const auto d = add_definition(
+        out, yield_curves_section, text(v.CurveId), text(v.CurveDescription), position);
 
     refdata::domain::yield_curve y;
     y.id = new_uuid();
@@ -525,6 +547,76 @@ void import_yield_curve(mapped_curve_configuration& out, const yieldCurve& v, in
     import_segments(ctx, v.Segments);
 }
 
+void import_equity_curve(mapped_curve_configuration& out, const equityCurve& v, int position) {
+    const auto d = add_definition(
+        out, equity_curves_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::equity_curve e;
+    e.id = new_uuid();
+    e.curve_definition_id = d.id;
+    e.currency = text(v.Currency);
+    e.calendar = optional_text(v.Calendar);
+    e.forecasting_curve = text(v.ForecastingCurve);
+    e.equity_type = to_string(v.Type);
+    e.exercise_style = optional_enum_text(v.ExerciseStyle);
+    e.spot_quote = text(v.SpotQuote);
+    e.has_quotes = static_cast<bool>(v.Quotes);
+    e.day_counter = optional_enum_text(v.DayCounter);
+    e.has_dividend_interpolation = static_cast<bool>(v.DividendInterpolation);
+    if (v.DividendInterpolation) {
+        e.dividend_interpolation_variable =
+            optional_enum_text(v.DividendInterpolation->InterpolationVariable);
+        e.dividend_interpolation_method =
+            optional_enum_text(v.DividendInterpolation->InterpolationMethod);
+    }
+    e.dividend_extrapolation = optional_enum_text(v.DividendExtrapolation);
+    e.extrapolation = optional_enum_text(v.Extrapolation);
+    set_audit(e);
+    out.equity_curves.push_back(std::move(e));
+
+    if (v.Quotes) {
+        import_context ctx{out, d.id};
+        ctx.quotes(boost::uuids::uuid{}, *v.Quotes);
+    }
+}
+
+void import_security(mapped_curve_configuration& out, const security& v, int position) {
+    const auto d = add_definition(
+        out, securities_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::curve_security r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.spread_quote = optional_text(v.SpreadQuote);
+    r.recovery_rate_quote = optional_text(v.RecoveryRateQuote);
+    r.cpr_quote = optional_text(v.CPRQuote);
+    r.price_quote = optional_text(v.PriceQuote);
+    r.conversion_factor = optional_text(v.ConversionFactor);
+    set_audit(r);
+    out.securities.push_back(std::move(r));
+}
+
+void import_fx_spot(mapped_curve_configuration& out, const fxSpot& v, int position) {
+    add_definition(out, fx_spots_section, text(v.CurveId), text(v.CurveDescription), position);
+}
+
+void import_intraday_power_curve(mapped_curve_configuration& out,
+                                 const intradayPowerCurve& v,
+                                 int position) {
+    const auto d = add_definition(
+        out, intraday_power_curves_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::intraday_power_curve r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.currency = to_string(v.Currency);
+    r.daily_average_price_curve = text(v.DailyAveragePriceCurve);
+    r.shape_quote_name = text(v.ShapeQuoteName);
+    r.convention = text(v.Convention);
+    set_audit(r);
+    out.intraday_power_curves.push_back(std::move(r));
+}
+
 template <typename Row>
 bool by_position(const Row* lhs, const Row* rhs) {
     if (lhs->position != rhs->position)
@@ -551,6 +643,10 @@ boost::uuids::uuid parent_segment(const refdata::domain::curve_segment_curve& c)
     return c.curve_segment_id;
 }
 
+boost::uuids::uuid quote_definition(const refdata::domain::curve_quote& q) {
+    return q.curve_definition_id;
+}
+
 boost::uuids::uuid definition_of(const refdata::domain::curve_segment& s) {
     return s.curve_definition_id;
 }
@@ -563,6 +659,14 @@ std::runtime_error refusal(const std::string& what) {
 // so building a segment finds its quotes and curves by id.
 struct export_context {
     std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>> quotes;
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>> entry_quotes;
+
+    const std::vector<const refdata::domain::curve_quote*>& quotes_of_entry(
+        const boost::uuids::uuid& definition_id) const {
+        static const std::vector<const refdata::domain::curve_quote*> none;
+        const auto it = entry_quotes.find(definition_id);
+        return it == entry_quotes.end() ? none : it->second;
+    }
     std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_segment_curve*>> curves;
 
     const std::vector<const refdata::domain::curve_quote*>& quotes_of(
@@ -849,6 +953,96 @@ yieldCurve export_yield_curve(const refdata::domain::curve_definition& d,
     return r;
 }
 
+equityCurve export_equity_curve(const refdata::domain::curve_definition& d,
+                                const refdata::domain::equity_curve& e,
+                                const export_context& ctx) {
+    equityCurve r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Currency = e.currency;
+    if (e.calendar)
+        r.Calendar = *e.calendar;
+    assign_text(r.ForecastingCurve, e.forecasting_curve);
+    r.Type = enum_from_text<equityType>(e.equity_type, "equity curve type");
+    assign_optional_enum(r.ExerciseStyle, e.exercise_style, "exercise style");
+    assign_text(r.SpotQuote, e.spot_quote);
+    if (e.has_quotes) {
+        quoteType quotes;
+        for (const auto* q : ctx.quotes_of_entry(d.id)) {
+            quoteType_Quote_t item;
+            assign_text(item, q->quote_text.value_or(""));
+            if (q->optional_flag)
+                item.optional = *q->optional_flag;
+            quotes.Quote.push_back(std::move(item));
+        }
+        r.Quotes = std::move(quotes);
+    }
+    assign_optional_enum(r.DayCounter, e.day_counter, "day counter");
+    if (e.has_dividend_interpolation) {
+        dividendInterpolation di;
+        assign_optional_enum(
+            di.InterpolationVariable, e.dividend_interpolation_variable, "interpolation variable");
+        assign_optional_enum(
+            di.InterpolationMethod, e.dividend_interpolation_method, "interpolation method");
+        r.DividendInterpolation = std::move(di);
+    }
+    assign_optional_enum(r.DividendExtrapolation, e.dividend_extrapolation, "ORE boolean");
+    assign_optional_enum(r.Extrapolation, e.extrapolation, "ORE boolean");
+    return r;
+}
+
+security export_security(const refdata::domain::curve_definition& d,
+                         const refdata::domain::curve_security& v) {
+    security r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_optional_text(r.SpreadQuote, v.spread_quote);
+    assign_optional_text(r.RecoveryRateQuote, v.recovery_rate_quote);
+    assign_optional_text(r.CPRQuote, v.cpr_quote);
+    assign_optional_text(r.PriceQuote, v.price_quote);
+    assign_optional_text(r.ConversionFactor, v.conversion_factor);
+    return r;
+}
+
+fxSpot export_fx_spot(const refdata::domain::curve_definition& d) {
+    fxSpot r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    return r;
+}
+
+intradayPowerCurve export_intraday_power_curve(const refdata::domain::curve_definition& d,
+                                               const refdata::domain::intraday_power_curve& v) {
+    intradayPowerCurve r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Currency = enum_from_text<currencyCode>(v.currency, "currency code");
+    assign_text(r.DailyAveragePriceCurve, v.daily_average_price_curve);
+    assign_text(r.ShapeQuoteName, v.shape_quote_name);
+    if (!v.convention)
+        throw refusal("intraday power curve " + d.curve_id + " has no convention");
+    assign_text(r.Convention, *v.convention);
+    return r;
+}
+
+template <typename Row>
+std::map<boost::uuids::uuid, const Row*> by_definition(const std::vector<Row>& rows) {
+    std::map<boost::uuids::uuid, const Row*> out;
+    for (const auto& r : rows)
+        out.emplace(r.curve_definition_id, &r);
+    return out;
+}
+
+template <typename Row>
+const Row& settings_of(const std::map<boost::uuids::uuid, const Row*>& rows,
+                       const refdata::domain::curve_definition& d) {
+    const auto it = rows.find(d.id);
+    if (it == rows.end())
+        throw refusal("curve " + d.curve_id + " in section " + d.section_code +
+                      " has no settings row");
+    return *it->second;
+}
+
 }
 
 mapped_curve_configuration curve_configuration_mapper::map(const curveconfiguration& v) {
@@ -866,7 +1060,7 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     for (const auto& s : sections()) {
         if (!s.present(v))
             continue;
-        if (s.code != yield_curves_section && s.entries(v) > 0)
+        if (!is_modelled(s.code) && s.entries(v) > 0)
             throw refusal("section " + std::string(s.code) + " holds " +
                           std::to_string(s.entries(v)) + " entries, which are not modelled yet");
         refdata::domain::curve_configuration_section row;
@@ -877,11 +1071,22 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
         mapped.sections.push_back(std::move(row));
     }
 
-    if (v.YieldCurves) {
-        int position = 0;
-        for (const auto& y : v.YieldCurves->YieldCurve)
-            import_yield_curve(mapped, y, position++);
-    }
+    int position = 0;
+    if (v.FXSpots)
+        for (const auto& e : v.FXSpots->FXSpot)
+            import_fx_spot(mapped, e, position++);
+    if (v.YieldCurves)
+        for (const auto& e : v.YieldCurves->YieldCurve)
+            import_yield_curve(mapped, e, position++);
+    if (v.EquityCurves)
+        for (const auto& e : v.EquityCurves->EquityCurve)
+            import_equity_curve(mapped, e, position++);
+    if (v.Securities)
+        for (const auto& e : v.Securities->Security)
+            import_security(mapped, e, position++);
+    if (v.IntradayPowerCurves)
+        for (const auto& e : v.IntradayPowerCurves->IntradayPowerCurve)
+            import_intraday_power_curve(mapped, e, position++);
 
     return mapped;
 }
@@ -908,12 +1113,17 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
         bootstrap_by_definition.emplace(b.curve_definition_id, &b);
 
     export_context ctx;
-    ctx.quotes = group_by(v.quotes, &segment_of);
+    std::vector<refdata::domain::curve_quote> segment_quotes;
+    std::vector<refdata::domain::curve_quote> entry_quotes;
+    for (const auto& q : v.quotes)
+        (q.curve_segment_id == boost::uuids::uuid{} ? entry_quotes : segment_quotes).push_back(q);
+    ctx.quotes = group_by(segment_quotes, &segment_of);
+    ctx.entry_quotes = group_by(entry_quotes, &quote_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
     const auto segments = group_by(v.segments, &definition_of);
-
-    if (ctx.quotes.contains(boost::uuids::uuid{}))
-        throw refusal("a quote sits directly on a curve entry, which no mapped section holds");
+    const auto equity_by_definition = by_definition(v.equity_curves);
+    const auto security_by_definition = by_definition(v.securities);
+    const auto power_by_definition = by_definition(v.intraday_power_curves);
 
     std::vector<const refdata::domain::curve_definition*> definitions;
     for (const auto& d : v.definitions)
@@ -921,6 +1131,36 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     std::sort(definitions.begin(), definitions.end(), by_position<refdata::domain::curve_definition>);
 
     for (const auto* d : definitions) {
+        if (d->section_code != equity_curves_section && ctx.entry_quotes.contains(d->id))
+            throw refusal("curve " + d->curve_id + " in section " + d->section_code +
+                          " holds a quote directly on its entry");
+        if (d->section_code == equity_curves_section) {
+            if (!document.EquityCurves)
+                document.EquityCurves = equityCurves{};
+            document.EquityCurves->EquityCurve.push_back(
+                export_equity_curve(*d, settings_of(equity_by_definition, *d), ctx));
+            continue;
+        }
+        if (d->section_code == securities_section) {
+            if (!document.Securities)
+                document.Securities = securities{};
+            document.Securities->Security.push_back(
+                export_security(*d, settings_of(security_by_definition, *d)));
+            continue;
+        }
+        if (d->section_code == fx_spots_section) {
+            if (!document.FXSpots)
+                document.FXSpots = fxSpots{};
+            document.FXSpots->FXSpot.push_back(export_fx_spot(*d));
+            continue;
+        }
+        if (d->section_code == intraday_power_curves_section) {
+            if (!document.IntradayPowerCurves)
+                document.IntradayPowerCurves = intradayPowerCurves{};
+            document.IntradayPowerCurves->IntradayPowerCurve.push_back(
+                export_intraday_power_curve(*d, settings_of(power_by_definition, *d)));
+            continue;
+        }
         if (d->section_code != yield_curves_section)
             throw refusal("curve " + d->curve_id + " is in section " + d->section_code +
                           ", which is not modelled yet");

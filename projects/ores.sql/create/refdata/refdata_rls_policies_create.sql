@@ -1845,6 +1845,74 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Calendar Names
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_names_tbl enable row level security;
+
+drop policy if exists calendar_names_tbl_tenant_isolation_policy
+    on ores_refdata_calendar_names_tbl;
+
+create policy calendar_names_tbl_tenant_isolation_policy
+on ores_refdata_calendar_names_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Securities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_securities_tbl enable row level security;
+
+drop policy if exists curve_securities_tbl_tenant_isolation_policy
+    on ores_refdata_curve_securities_tbl;
+
+create policy curve_securities_tbl_tenant_isolation_policy
+on ores_refdata_curve_securities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Intraday Power Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_intraday_power_curves_tbl enable row level security;
+
+drop policy if exists intraday_power_curves_tbl_tenant_isolation_policy
+    on ores_refdata_intraday_power_curves_tbl;
+
+create policy intraday_power_curves_tbl_tenant_isolation_policy
+on ores_refdata_intraday_power_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Equity Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_equity_curves_tbl enable row level security;
+
+drop policy if exists equity_curves_tbl_tenant_isolation_policy
+    on ores_refdata_equity_curves_tbl;
+
+create policy equity_curves_tbl_tenant_isolation_policy
+on ores_refdata_equity_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

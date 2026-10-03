@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-todays_market_entries add <todays_market_config_id> <todays_market_collection_id> <key_attribute> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>
+todays_market_entries add <todays_market_config_id> <todays_market_collection_id> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.todays_market_entries.put=.
 
 #+name: todays_market_entries-add
 #+begin_src ores-shell :tangle todays_market_entries-add.ores :exports none
-todays_market_entries add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - __none__ - 0 system.new_record generated_script
+todays_market_entries add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-todays_market_entries set <id> <todays_market_config_id> <todays_market_collection_id> <key_attribute> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary> [--version <n>]
+todays_market_entries set <id> <todays_market_config_id> <todays_market_collection_id> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =analytics.v1.todays_market_entries.put=.
 
 #+name: todays_market_entries-set
 #+begin_src ores-shell :tangle todays_market_entries-set.ores :exports none
-todays_market_entries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - __none__ - 0 system.new_record generated_script
+todays_market_entries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-todays_market_entries put-many --count <n> <id> <todays_market_config_id> <todays_market_collection_id> <key_attribute> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>
+todays_market_entries put-many --count <n> <id> <todays_market_config_id> <todays_market_collection_id> <key_value> <key_value_2> <target> <discounting> <position> <reason> <commentary>
 #+end_example
 
 It is addressed at =analytics.v1.todays_market_entries.put_many=.
 
 #+name: todays_market_entries-put-many
 #+begin_src ores-shell :tangle todays_market_entries-put-many.ores :exports none
-todays_market_entries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ - - __none__ - 0 system.new_record generated_script
+todays_market_entries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

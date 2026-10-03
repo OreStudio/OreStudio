@@ -43,7 +43,6 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
     r.todays_market_collection_id =
         boost::lexical_cast<boost::uuids::uuid>(v.todays_market_collection_id);
-    r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2;
     r.target = v.target;
@@ -68,7 +67,6 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.version = v.version;
     r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
     r.todays_market_collection_id = boost::uuids::to_string(v.todays_market_collection_id);
-    r.key_attribute = v.key_attribute;
     r.key_value = v.key_value;
     r.key_value_2 = v.key_value_2;
     r.target = v.target;

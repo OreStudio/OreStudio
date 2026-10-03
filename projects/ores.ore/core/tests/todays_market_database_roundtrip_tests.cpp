@@ -164,3 +164,21 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     INFO(difference);
     CHECK(difference.empty());
 }
+
+TEST_CASE("a collection naming a kind ORE does not have is refused", tags) {
+    scoped_database_helper h;
+
+    const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
+    todaysmarket original;
+    ores::ore::domain::load_data(file::read_content(f), original);
+
+    auto mapped = todays_market_mapper::map(original);
+    REQUIRE(!mapped.collections.empty());
+    auto collection = mapped.collections.front();
+    collection.collection = "YieldCurve";
+    // Document names are unique in a tenant, and the round trip case shares it.
+    mapped.config.name = "unknown kind refusal";
+
+    todays_market_config_repository().write(h.context(), mapped.config);
+    CHECK_THROWS(todays_market_collection_repository().write(h.context(), collection));
+}

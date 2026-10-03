@@ -44,8 +44,8 @@ namespace ores::analytics::domain {
  * The attribute is not one name. It is name for nineteen collections,
  * currency for DiscountingCurves, pair for the two FX collections and the
  * literal string key for SwaptionVolatilities and CapFloorVolatilities.
- * key_attribute records which one this row used, so a column named key_value
- * does not have to pretend the attribute is always the same word.
+ * Which one is a fact about the collection's kind, so it is held once on
+ * todays_market_collection_kind rather than repeated on every entry.
  *
  * SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
  * once, so key_value_2 carries the second. SwapIndexCurves is the only
@@ -78,14 +78,6 @@ struct todays_market_entry final {
      * @brief The collection this entry belongs to.
      */
     boost::uuids::uuid todays_market_collection_id;
-
-    /**
-     * @brief The attribute the entry identified itself by.
-     *
-     * One of 'name', 'currency', 'pair' or 'key'. Recorded rather than assumed, because one
-     * document uses more than one of them.
-     */
-    std::string key_attribute;
 
     /**
      * @brief The value of that attribute.

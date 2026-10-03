@@ -115,6 +115,18 @@ The order the document wrote the collection in.
 
 * Foreign keys
 
+** collection
+:PROPERTIES:
+:table:             ores_analytics_todays_market_collection_kinds_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid collection: %. No active collection kind found with this code.
+:END:
+
+The collection kinds are an ORE vocabulary seeded for the system tenant, so the
+check reads that tenant whatever tenant owns the row.
+
 ** todays_market_config_id
 :PROPERTIES:
 :table:         ores_analytics_todays_market_configs_tbl

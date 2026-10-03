@@ -144,6 +144,7 @@ public:
     std::optional<domain::todays_market_configuration_binding>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest today's market configuration bindings filtered by
      * todays_market_configuration_id, with pagination.

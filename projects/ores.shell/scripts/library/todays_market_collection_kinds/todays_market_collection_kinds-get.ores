@@ -1,0 +1,6 @@
+# =get=
+#
+# GENERATED from doc/recipes/shell/todays_market_collection_kinds/todays_market_collection_kind.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+todays_market_collection_kinds get __none__

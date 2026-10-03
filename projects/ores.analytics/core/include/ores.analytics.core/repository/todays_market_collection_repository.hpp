@@ -141,6 +141,7 @@ public:
     std::optional<domain::todays_market_collection>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest today's market collections filtered by todays_market_config_id, with
      * pagination.

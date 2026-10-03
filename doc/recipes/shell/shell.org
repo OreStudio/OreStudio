@@ -1208,3 +1208,7 @@ tangled into the runnable script library
 * Portfolio Rights
 
 - [[id:B0D65F25-06B1-5B18-8202-16E4741931BD][How do I run the portfolio_rights commands from the shell?]]
+
+* Todays Market Collection Kinds
+
+- [[id:A316A676-9785-58F9-9882-F4AA3CF1CAAC][How do I run the todays_market_collection_kinds commands from the shell?]]

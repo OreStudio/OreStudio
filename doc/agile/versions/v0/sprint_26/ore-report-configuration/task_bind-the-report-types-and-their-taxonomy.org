@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/bind-the-report-types-and-their-taxonomy
-#+pr:
+#+pr: 2530
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2530][#2530]] | [reporting] Bind report types to their workflow and required configuration |
 
 * Review
 

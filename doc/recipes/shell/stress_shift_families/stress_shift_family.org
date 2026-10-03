@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: A4F5D900-7ACF-5BAB-9672-5E9868F148DF
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the stress_shift_families commands from the shell?
+#+description: Every command the stress_shift_families submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:stress_shift_families:
+
+This file documents the stress_shift_families resource at the shell, one section per command. Every command is a subcommand of =stress_shift_families=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A587B209-C6A8-5D11-8325-FFD02400218D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.list=.
+
+#+name: stress_shift_families-list
+#+begin_src ores-shell :tangle stress_shift_families-list.ores :exports none
+stress_shift_families list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A6E08A35-ECD5-554F-B03D-BED4EEFFF604
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families get <code>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.get=.
+
+#+name: stress_shift_families-get
+#+begin_src ores-shell :tangle stress_shift_families-get.ores :exports none
+stress_shift_families get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: CEC5BBD8-5E13-5798-9E42-DFBA1342770E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.get_many=.
+
+#+name: stress_shift_families-get-many
+#+begin_src ores-shell :tangle stress_shift_families-get-many.ores :exports none
+stress_shift_families get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7AC3640B-6CFB-5B43-A5E2-CCB074BF8AFB
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families add <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.put=.
+
+#+name: stress_shift_families-add
+#+begin_src ores-shell :tangle stress_shift_families-add.ores :exports none
+stress_shift_families add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E29C288E-BA6A-55A3-AD73-C331E7B7448F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families set <code> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.put=.
+
+#+name: stress_shift_families-set
+#+begin_src ores-shell :tangle stress_shift_families-set.ores :exports none
+stress_shift_families set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0779A87C-6B1D-537C-8CFC-995062DE07DA
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families put-many --count <n> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.put_many=.
+
+#+name: stress_shift_families-put-many
+#+begin_src ores-shell :tangle stress_shift_families-put-many.ores :exports none
+stress_shift_families put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CB230FB8-CB94-58B1-8497-2BA033F6816C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.delete=.
+
+#+name: stress_shift_families-delete
+#+begin_src ores-shell :tangle stress_shift_families-delete.ores :exports none
+stress_shift_families delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 194EFF35-5D7B-53D8-905C-051FA51AF74B
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families.delete_many=.
+
+#+name: stress_shift_families-delete-many
+#+begin_src ores-shell :tangle stress_shift_families-delete-many.ores :exports none
+stress_shift_families delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 0EE568D3-F217-5AD8-923F-BEEC7C80D78A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families_versions.list=.
+
+#+name: stress_shift_families-versions
+#+begin_src ores-shell :tangle stress_shift_families-versions.ores :exports none
+stress_shift_families versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D2D54849-78CF-564C-8C58-E8770245FA86
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stress_shift_families version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.stress_shift_families_versions.get=.
+
+#+name: stress_shift_families-version
+#+begin_src ores-shell :tangle stress_shift_families-version.ores :exports none
+stress_shift_families version __none__ --version 1
+#+end_src
+

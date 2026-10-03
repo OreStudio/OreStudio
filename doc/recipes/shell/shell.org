@@ -1197,6 +1197,14 @@ tangled into the runnable script library
 
 - [[id:0844FFAF-8E10-5875-9A96-4853A0E595DD][How do I run the day_counters commands from the shell?]]
 
+* Shift Types
+
+- [[id:97F888A9-E662-5950-9C3D-706C3D0F616D][How do I run the shift_types commands from the shell?]]
+
+* Stress Shift Families
+
+- [[id:A4F5D900-7ACF-5BAB-9672-5E9868F148DF][How do I run the stress_shift_families commands from the shell?]]
+
 * Portfolio Rights
 
 - [[id:B0D65F25-06B1-5B18-8202-16E4741931BD][How do I run the portfolio_rights commands from the shell?]]

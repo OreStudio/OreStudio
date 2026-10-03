@@ -35,6 +35,10 @@
 \ir ./analytics_pricing_model_configs_notify_trigger_drop.sql
 \ir ./analytics_pricing_model_configs_drop.sql
 
+\ir ./analytics_shift_types_notify_trigger_drop.sql
+\ir ./analytics_shift_types_drop.sql
+\ir ./analytics_stress_shift_families_notify_trigger_drop.sql
+\ir ./analytics_stress_shift_families_drop.sql
 \ir ./analytics_pricing_engine_types_notify_trigger_drop.sql
 \ir ./analytics_pricing_engine_types_drop.sql
 

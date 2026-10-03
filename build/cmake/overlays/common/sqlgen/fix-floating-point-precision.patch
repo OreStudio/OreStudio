@@ -1,0 +1,27 @@
+--- a/include/sqlgen/parsing/Parser_default.hpp
++++ b/include/sqlgen/parsing/Parser_default.hpp
+@@ -1,6 +1,7 @@
+ #ifndef SQLGEN_PARSING_PARSER_DEFAULT_HPP_
+ #define SQLGEN_PARSING_PARSER_DEFAULT_HPP_
+ 
++#include <charconv>
+ #include <ranges>
+ #include <rfl.hpp>
+ #include <string>
+@@ -70,6 +71,16 @@
+           _t.reflection());
+     } else if constexpr (std::is_enum_v<Type>) {
+       return rfl::enum_to_string(_t);
++    } else if constexpr (std::is_floating_point_v<Type>) {
++      // std::to_string keeps six decimal places, so 1e-12 would be written
++      // as 0.000000. std::to_chars writes the shortest text that reads back
++      // as the same value.
++      char buffer[64];
++      const auto [end, ec] = std::to_chars(buffer, buffer + sizeof(buffer), _t);
++      if (ec != std::errc{}) {
++        return std::nullopt;
++      }
++      return std::string(buffer, end);
+     } else {
+       return std::to_string(_t);
+     }

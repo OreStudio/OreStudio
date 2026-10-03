@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 97F888A9-E662-5950-9C3D-706C3D0F616D
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the shift_types commands from the shell?
+#+description: Every command the shift_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:shift_types:
+
+This file documents the shift_types resource at the shell, one section per command. Every command is a subcommand of =shift_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 761CE33A-759C-5804-A49B-3C80475CD8FF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.list=.
+
+#+name: shift_types-list
+#+begin_src ores-shell :tangle shift_types-list.ores :exports none
+shift_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0648197B-E14C-506B-8109-653A560575DF
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types get <code>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.get=.
+
+#+name: shift_types-get
+#+begin_src ores-shell :tangle shift_types-get.ores :exports none
+shift_types get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F7591E7C-D009-5498-974C-88096107FD4B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types get-many <code>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.get_many=.
+
+#+name: shift_types-get-many
+#+begin_src ores-shell :tangle shift_types-get-many.ores :exports none
+shift_types get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 19ADAD79-1F25-5250-8F8A-9FC7CB51104E
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types add <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.put=.
+
+#+name: shift_types-add
+#+begin_src ores-shell :tangle shift_types-add.ores :exports none
+shift_types add __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AAC167E7-1017-5DD1-8557-FB3DF79F11F7
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types set <code> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.put=.
+
+#+name: shift_types-set
+#+begin_src ores-shell :tangle shift_types-set.ores :exports none
+shift_types set __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1F3B918D-4639-5A82-9F7E-66E942786A38
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types put-many --count <n> <code> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.put_many=.
+
+#+name: shift_types-put-many
+#+begin_src ores-shell :tangle shift_types-put-many.ores :exports none
+shift_types put-many --count 1 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 70EE78CE-C50D-5189-BA03-D6F1A618C3A9
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.delete=.
+
+#+name: shift_types-delete
+#+begin_src ores-shell :tangle shift_types-delete.ores :exports none
+shift_types delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F2D3ECF9-85C7-5C20-9A95-F28067817C3C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types.delete_many=.
+
+#+name: shift_types-delete-many
+#+begin_src ores-shell :tangle shift_types-delete-many.ores :exports none
+shift_types delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 13594E0D-2FFF-5609-B8D2-D7782A29467A
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =analytics.v1.shift_types_versions.list=.
+
+#+name: shift_types-versions
+#+begin_src ores-shell :tangle shift_types-versions.ores :exports none
+shift_types versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 5880FCEB-5C7C-5C99-8B0D-6AF92E20B79C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+shift_types version <code> --version <n>
+#+end_example
+
+It is addressed at =analytics.v1.shift_types_versions.get=.
+
+#+name: shift_types-version
+#+begin_src ores-shell :tangle shift_types-version.ores :exports none
+shift_types version __none__ --version 1
+#+end_src
+

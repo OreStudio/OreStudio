@@ -24,10 +24,18 @@ import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
 import type { PartySummary } from './domain.js';
 import {
+    subjects as tenantSessionSubjects,
+    type EnterTenantRequest,
+    type EnterTenantResponse,
+    type LeaveTenantRequest,
+    type LeaveTenantResponse,
+} from './generated/iam/protocol/tenant_session_protocol.js';
+import {
     NotAuthenticatedError,
     OperationFailedError,
     ServerError,
     SessionExpiredError,
+    TenantSessionEndedError,
     type ProtocolError,
     type ServerErrorCode,
 } from './errors.js';
@@ -97,7 +105,7 @@ import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
-import { LIVE_WORKSPACE_ID } from './primitives.js';
+import { LIVE_WORKSPACE_ID, uuid, type Uuid } from './primitives.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -180,6 +188,33 @@ export interface WorkspaceContext {
     readonly resolutionOrder?: readonly string[];
 }
 
+/** A tenant the session entered from system administration, reading only. */
+export interface EnteredTenant {
+    readonly tenantId: string;
+    readonly tenantCode: string;
+    readonly tenantName: string;
+    readonly partyId: Uuid;
+    readonly partyName: string;
+    readonly accessLifetimeSeconds: number;
+}
+
+const enterTenantResponseSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    token: z.string().default(''),
+    tenant_id: z.string().default(''),
+    tenant_code: z.string().default(''),
+    tenant_name: z.string().default(''),
+    party_id: z.string().default(''),
+    party_name: z.string().default(''),
+    access_lifetime_s: z.int().default(0),
+}) satisfies z.ZodType<EnterTenantResponse>;
+
+const leaveTenantResponseSchema = z.object({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+}) satisfies z.ZodType<LeaveTenantResponse>;
+
 interface SessionState {
     token: string;
     /** IAM session id, forwarded as `Nats-Session-Id` on every authenticated call. */
@@ -202,6 +237,15 @@ export class OresClient {
     readonly #now: () => Date;
     readonly #generateId: IdGenerator;
     #session: SessionState | undefined;
+    /**
+     * The tenant the session entered, with the token it entered from.
+     *
+     * One field holds both, so the client is either inside one tenant with a
+     * way back, or outside with nothing to restore.
+     */
+    #inside: { readonly tenant: EnteredTenant; readonly outsideToken: string } | undefined;
+    /** An entry under way, so a second one cannot take the first's token as its own. */
+    #entering: Promise<EnteredTenant> | undefined;
 
     constructor(options: OresClientOptions) {
         this.#transport = options.transport;
@@ -718,6 +762,7 @@ export class OresClient {
             }).catch(() => undefined);
         }
         this.#session = undefined;
+        this.#inside = undefined;
     }
 
     /**
@@ -731,10 +776,90 @@ export class OresClient {
      */
     async refresh(): Promise<string> {
         const session = this.#requireSession();
+        if (this.#inside !== undefined) {
+            this.#returnOutside(session);
+            throw new TenantSessionEndedError();
+        }
         session.refreshInFlight ??= this.#performRefresh(session).finally(() => {
             session.refreshInFlight = undefined;
         });
         return session.refreshInFlight;
+    }
+
+    /** The tenant the session is inside, or `undefined` in its own tenant. */
+    get enteredTenant(): EnteredTenant | undefined {
+        return this.#inside?.tenant;
+    }
+
+    /**
+     * Enters one tenant from system administration, reading only.
+     *
+     * The session's token becomes one scoped to the tenant, and the token it
+     * replaces is kept so {@link leaveTenant} needs no sign-in.
+     *
+     * @throws {OperationFailedError} when the server refuses the entry, or the
+     * session is already inside a tenant.
+     */
+    async enterTenant(tenantId: string): Promise<EnteredTenant> {
+        const subject = tenantSessionSubjects.enter_tenant_request;
+        if (this.#inside !== undefined || this.#entering !== undefined) {
+            throw new OperationFailedError(subject, 'The session is already inside a tenant.');
+        }
+        this.#entering = this.#enter(tenantId).finally(() => {
+            this.#entering = undefined;
+        });
+        return this.#entering;
+    }
+
+    async #enter(tenantId: string): Promise<EnteredTenant> {
+        const session = this.#requireSession();
+        const subject = tenantSessionSubjects.enter_tenant_request;
+        const request: EnterTenantRequest = { tenant_id: tenantId };
+        const reply = await this.#authenticatedCall(subject, request, enterTenantResponseSchema, {
+            timeoutMs: this.#timeouts.fastMs,
+        });
+        if (!reply.success || reply.token.length === 0) {
+            throw new OperationFailedError(subject, reply.message);
+        }
+        const tenant: EnteredTenant = {
+            tenantId: reply.tenant_id,
+            tenantCode: reply.tenant_code,
+            tenantName: reply.tenant_name,
+            partyId: uuid(reply.party_id),
+            partyName: reply.party_name,
+            accessLifetimeSeconds: reply.access_lifetime_s,
+        };
+        this.#inside = { tenant, outsideToken: session.token };
+        session.token = reply.token;
+        return tenant;
+    }
+
+    /**
+     * Leaves the tenant and returns to the session it was entered from.
+     *
+     * The return happens even when the exit cannot be recorded, because a
+     * session must never be left inside a tenant its holder asked to leave.
+     */
+    async leaveTenant(): Promise<void> {
+        const session = this.#requireSession();
+        if (this.#inside === undefined) {
+            return;
+        }
+        const request: LeaveTenantRequest = {};
+        try {
+            await this.#authenticatedCall(
+                tenantSessionSubjects.leave_tenant_request,
+                request,
+                leaveTenantResponseSchema,
+                { timeoutMs: this.#timeouts.fastMs },
+            );
+        } catch (error) {
+            if (!(error instanceof TenantSessionEndedError)) {
+                this.#returnOutside(session);
+                throw error;
+            }
+        }
+        this.#returnOutside(session);
     }
 
     /**
@@ -826,6 +951,7 @@ export class OresClient {
 
     async close(): Promise<void> {
         this.#session = undefined;
+        this.#inside = undefined;
         await this.#transport.close();
     }
 
@@ -930,6 +1056,13 @@ export class OresClient {
             throw new NotAuthenticatedError('No session: call login() first');
         }
         return this.#session;
+    }
+
+    #returnOutside(session: SessionState): void {
+        if (this.#inside !== undefined) {
+            session.token = this.#inside.outsideToken;
+            this.#inside = undefined;
+        }
     }
 
     #replaceToken(token: string): void {

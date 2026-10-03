@@ -20,7 +20,13 @@
  */
 
 import { createHash, randomBytes } from 'node:crypto';
-import type { ActiveSession, OresClient, PartySummary, SessionMode } from '@ores/wire-protocol';
+import type {
+    ActiveSession,
+    EnteredTenant,
+    OresClient,
+    PartySummary,
+    SessionMode,
+} from '@ores/wire-protocol';
 
 /**
  * Server-side browser sessions.
@@ -76,6 +82,14 @@ export interface LiveSession {
     readonly passwordResetRequired: boolean;
     /** The IAM session id, forwarded as `Nats-Session-Id`. */
     readonly sessionId: string;
+    /**
+     * The tenant a system administrator entered, or `null`.
+     *
+     * The client owns it with the token it entered from, so the session reads
+     * it rather than keeping a copy: when the client returns outside, this
+     * session is back in its own tenant with nothing to reconcile.
+     */
+    readonly actingIn: EnteredTenant | null;
 }
 
 export interface SessionStore {
@@ -150,7 +164,8 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
     }
 
     function toLive(id: string, record: SessionRecord): LiveSession {
-        return {
+        const entered = record.client.enteredTenant ?? null;
+        const own = {
             id,
             client: record.client,
             username: record.username,
@@ -165,6 +180,30 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accessLifetimeSeconds: record.accessLifetimeSeconds,
             passwordResetRequired: record.passwordResetRequired,
             sessionId: record.sessionId,
+            actingIn: null,
+        };
+        if (entered === null) {
+            return own;
+        }
+        /*
+         * The party the tenant session acts as. Its category is always System;
+         * no screen reads its business centre.
+         */
+        const party: PartySummary = {
+            id: entered.partyId,
+            name: entered.partyName,
+            partyCategory: 'System',
+            businessCenterCode: '',
+        };
+        return {
+            ...own,
+            tenantId: entered.tenantId,
+            tenantName: entered.tenantName,
+            mode: 'tenant-administration',
+            party,
+            availableParties: [party],
+            accessLifetimeSeconds: entered.accessLifetimeSeconds,
+            actingIn: entered,
         };
     }
 

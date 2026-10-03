@@ -40,6 +40,9 @@ export const en: SourceCatalogue = {
         accounts: 'Accounts',
         notifications: 'Notifications',
         alerts: 'Alerts',
+        actingIn: 'Acting in {tenant} as {username}',
+        readOnly: 'Read only',
+        leaveTenant: 'Leave the tenant',
         signOut: 'Sign out',
         signIn: 'Sign in',
         menu: 'Menu',
@@ -128,6 +131,7 @@ export const en: SourceCatalogue = {
             done: 'The run completed. The tenant is ready.',
         },
         detail: {
+            enter: 'Act in this tenant',
             lead: 'One tenant of this deployment: what it is, how its setup went, and the parties it holds.',
             back: 'Back to tenants',
             notFound: 'No tenant has this code.',

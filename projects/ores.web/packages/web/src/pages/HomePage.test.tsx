@@ -99,6 +99,26 @@ describe('a mode with no journeys yet', () => {
      * Only system administration creates a tenant, and this card is what every
      * other mode lands on, so it must not offer a journey the server refuses.
      */
+    it('offers no change to a session that only reads', () => {
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                <MemoryRouter>
+                    <HomePage
+                        username="admin"
+                        email="admin@example.com"
+                        tenantName="Acme Corporation"
+                        partyName="System Party"
+                        mode="tenant-administration"
+                        readOnly
+                    />
+                </MemoryRouter>
+            </TranslationProvider>,
+        );
+
+        expect(html).not.toContain('href="/parties/new"');
+        expect(html).toContain('Acme Corporation');
+    });
+
     it('does not offer a new tenant', () => {
         const html = landing('tenant-administration');
 

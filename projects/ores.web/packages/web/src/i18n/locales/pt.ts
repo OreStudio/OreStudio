@@ -39,6 +39,9 @@ const pt: SourceCatalogue = {
         accounts: 'Contas',
         notifications: 'Notificações',
         alerts: 'Alertas',
+        actingIn: 'A agir em {tenant} como {username}',
+        readOnly: 'Só de leitura',
+        leaveTenant: 'Sair do inquilino',
         signOut: 'Terminar sessão',
         signIn: 'Iniciar sessão',
         menu: 'Menu',
@@ -131,6 +134,7 @@ const pt: SourceCatalogue = {
             done: 'A execução terminou. O inquilino está pronto.',
         },
         detail: {
+            enter: 'Agir neste inquilino',
             lead: 'Um inquilino deste ambiente: o que é, como correu a sua configuração, e as partes que contém.',
             back: 'Voltar aos inquilinos',
             notFound: 'Nenhum inquilino tem este código.',

@@ -82,6 +82,7 @@ import {
     tenantTypesResponseSchema,
     workflowProgressSchema,
     NotAuthenticatedError,
+    OperationFailedError,
     type LoginOutcome,
     type PartySummary,
     type TenantParty,
@@ -132,6 +133,9 @@ const SESSION_COOKIE = 'ores_web_session';
  * the door must not spend the attempts they need to sign in with.
  */
 const POLICY_READS_PER_MINUTE = 120;
+
+/** What the browser sends to enter a tenant. */
+const enterTenantBodySchema = z.object({ tenantId: z.string().min(1) });
 
 export interface ServerDependencies {
     readonly config: Config;
@@ -231,6 +235,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             availableParties: session.availableParties,
             accessLifetimeSeconds: session.accessLifetimeSeconds,
             passwordResetRequired: session.passwordResetRequired,
+            actingIn:
+                session.actingIn === null
+                    ? null
+                    : {
+                          tenantId: session.actingIn.tenantId,
+                          tenantCode: session.actingIn.tenantCode,
+                          tenantName: session.actingIn.tenantName,
+                      },
         });
     }
 
@@ -288,6 +300,36 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 .header('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS')
                 .header('Access-Control-Allow-Headers', 'Content-Type');
             await reply.status(204).send();
+        }
+    });
+
+    /**
+     * Inside a tenant, data is read only.
+     *
+     * The tenant session's token already carries read permissions only, so a
+     * write handler refuses it. This refuses earlier and for every change,
+     * including a handler that checks no permission, so a system administrator
+     * changes a tenant in one way only: by deleting the whole tenant from
+     * system administration. Leaving, signing out and watching for changes
+     * are not changes to the tenant.
+     */
+    const changesAllowedInsideATenant = new Set([
+        'DELETE /api/session/tenant',
+        'DELETE /api/session',
+        'POST /api/events/watch',
+    ]);
+    server.addHook('preHandler', async (request) => {
+        if (request.method === 'GET' || request.method === 'HEAD') {
+            return;
+        }
+        const route = `${request.method} ${request.routeOptions.url ?? request.url}`;
+        if (changesAllowedInsideATenant.has(route)) {
+            return;
+        }
+        const id = readSessionId(request);
+        const session = id === undefined ? undefined : sessions.get(id);
+        if (session?.actingIn != null) {
+            throw notPermitted('Data is read only inside a tenant. Leave the tenant to change it.');
         }
     });
 
@@ -657,6 +699,54 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw new NotAuthenticatedError('Session ended during party switch');
         }
         return sessionResponse(switched);
+    });
+
+    /**
+     * Enter one tenant from system administration, reading only.
+     *
+     * The session's token becomes one scoped to the tenant, and the session
+     * reads as the tenant's from then on: its tenant, its party and the tenant
+     * administration mode. The server checks the permission and records the
+     * entry; this route only refuses a session that is not in system
+     * administration, as the tenant screens do.
+     */
+    server.post('/api/session/tenant', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration' || session.actingIn !== null) {
+            throw notPermitted('A tenant is entered from system administration.');
+        }
+        const parsed = enterTenantBodySchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest('A tenantId is required.');
+        }
+        try {
+            await session.client.enterTenant(parsed.data.tenantId);
+        } catch (error) {
+            if (error instanceof OperationFailedError) {
+                throw notPermitted(error.message);
+            }
+            throw error;
+        }
+        return sessionResponse(requireSession(request));
+    });
+
+    /** Leave the tenant and return to system administration. */
+    server.delete('/api/session/tenant', async (request) => {
+        const session = requireSession(request);
+        if (session.actingIn === null) {
+            throw invalidRequest('The session is not inside a tenant.');
+        }
+        /*
+         * The client is back outside whether or not the exit was recorded, so
+         * the answer is the session as it now reads; a failed record is logged
+         * rather than left to keep the browser showing the tenant.
+         */
+        try {
+            await session.client.leaveTenant();
+        } catch (error) {
+            request.log.warn({ err: error }, 'The exit from the tenant was not recorded.');
+        }
+        return sessionResponse(requireSession(request));
     });
 
     /**

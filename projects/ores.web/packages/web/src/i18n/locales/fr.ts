@@ -34,6 +34,9 @@ const fr: SourceCatalogue = {
         accounts: 'Comptes',
         notifications: 'Notifications',
         alerts: 'Alertes',
+        actingIn: 'Vous agissez dans {tenant} en tant que {username}',
+        readOnly: 'Lecture seule',
+        leaveTenant: 'Quitter le locataire',
         signOut: 'Se déconnecter',
         signIn: 'Se connecter',
         menu: 'Menu',
@@ -126,6 +129,7 @@ const fr: SourceCatalogue = {
             done: 'L’exécution est terminée. Le locataire est prêt.',
         },
         detail: {
+            enter: 'Agir dans ce locataire',
             lead: 'Un locataire de ce déploiement : ce qu’il est, comment sa mise en place s’est passée, et les parties qu’il contient.',
             back: 'Retour aux locataires',
             notFound: 'Aucun locataire n’a ce code.',

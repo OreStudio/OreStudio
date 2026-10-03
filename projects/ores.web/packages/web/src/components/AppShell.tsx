@@ -62,6 +62,15 @@ export interface AppShellProps {
      */
     readonly width?: ShellWidth;
     readonly onSignOut: () => void;
+    /**
+     * The tenant a system administrator entered, or `null`.
+     *
+     * While set, every screen says so above its content and offers the way
+     * out, because the person reads another tenant's data and must not lose
+     * track of that.
+     */
+    readonly actingIn?: { readonly tenantName: string } | null;
+    readonly onLeaveTenant?: () => void;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
     readonly children: ReactNode;
@@ -74,6 +83,8 @@ export function AppShell({
     mode,
     width = 'column',
     onSignOut,
+    actingIn = null,
+    onLeaveTenant,
     serverVersion,
     children,
 }: AppShellProps): ReactNode {
@@ -130,6 +141,23 @@ export function AppShell({
                     </div>
                 </div>
             </header>
+            {actingIn !== null && (
+                <div
+                    role="status"
+                    className="flex items-center gap-3 border-b border-warn/50 bg-warn/10 px-5 py-2 text-sm text-ink"
+                >
+                    <span>{t('nav.actingIn', { tenant: actingIn.tenantName, username })}</span>
+                    <span className="text-xs text-ink-muted">{t('nav.readOnly')}</span>
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="ml-auto"
+                        onClick={onLeaveTenant}
+                    >
+                        {t('nav.leaveTenant')}
+                    </Button>
+                </div>
+            )}
             {/*
              * The screen is bounded and centred, and the scroll area is not.
              * A journey that stands something up draws the same banner the

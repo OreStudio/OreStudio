@@ -25,11 +25,8 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
 #define ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
 
-#include "ores.marketdata.api/domain/market_data_identifier.hpp"
 #include <optional>
 #include <string_view>
-#include <type_traits>
-#include <variant>
 
 namespace ores::marketdata::domain {
 
@@ -81,43 +78,6 @@ asset_class_for_authority(std::string_view authority) {
     if (authority == "power")
         return std::string_view{"commodity"};
     return std::nullopt;
-}
-
-/**
- * @brief The refdata asset class a resolved oresmd identifier belongs to.
- *
- * The identifier's alternative is the authority it was parsed as, so the
- * mapping is read from the type rather than from a string a caller rebuilt.
- * Nullopt where the authority names no class.
- */
-[[nodiscard]] inline std::optional<std::string_view>
-asset_class_for_identifier(const market_data_identifier& identifier) {
-    return std::visit(
-        [](const auto& concrete) -> std::optional<std::string_view> {
-            using identifier_type = std::decay_t<decltype(concrete)>;
-            if constexpr (std::is_same_v<identifier_type, ir_market_data_identifier>)
-                return std::string_view{"interest_rates"};
-            if constexpr (std::is_same_v<identifier_type, credit_market_data_identifier>)
-                return std::string_view{"credit"};
-            if constexpr (std::is_same_v<identifier_type, equity_market_data_identifier>)
-                return std::string_view{"equity"};
-            if constexpr (std::is_same_v<identifier_type, commodity_market_data_identifier>)
-                return std::string_view{"commodity"};
-            if constexpr (std::is_same_v<identifier_type, fx_market_data_identifier>)
-                return std::string_view{"fx"};
-            if constexpr (std::is_same_v<identifier_type, inflation_market_data_identifier>)
-                return std::string_view{"inflation"};
-            if constexpr (std::is_same_v<identifier_type, security_market_data_identifier>)
-                return std::string_view{"bond"};
-            if constexpr (std::is_same_v<identifier_type, shape_profile_market_data_identifier>)
-                return std::string_view{"commodity"};
-            if constexpr (std::is_same_v<identifier_type, rating_market_data_identifier>)
-                return std::string_view{"credit"};
-            if constexpr (std::is_same_v<identifier_type, power_market_data_identifier>)
-                return std::string_view{"commodity"};
-            return std::nullopt;
-        },
-        identifier);
 }
 
 }

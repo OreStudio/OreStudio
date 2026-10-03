@@ -1,0 +1,66 @@
+{"key":"EQ-SP5","accepted":"true","class":"QuantExt::EquityIndex2","name":"SP5","familyName":"SP5"}
+{"key":"EQ-RIC:.SPX","accepted":"true","class":"QuantExt::EquityIndex2","name":"RIC:.SPX","familyName":"RIC:.SPX"}
+{"key":"EQ-Lufthansa AG","accepted":"true","class":"QuantExt::EquityIndex2","name":"Lufthansa AG","familyName":"Lufthansa AG"}
+{"key":"EQ-NAME-WITH-HYPHENS","accepted":"true","class":"QuantExt::EquityIndex2","name":"NAME-WITH-HYPHENS","familyName":"NAME-WITH-HYPHENS"}
+{"key":"EQ-","accepted":"true","class":"QuantExt::EquityIndex2","name":"","familyName":""}
+{"key":"BOND-ISIN:IE00BH3SQ895","accepted":"true","class":"QuantExt::BondIndex","name":"BOND-ISIN:IE00BH3SQ895","securityName":"ISIN:IE00BH3SQ895"}
+{"key":"BOND-ISIN:IE00BH3SQ895-2025-08","accepted":"true","class":"QuantExt::BondFuturesIndex","name":"BOND-ISIN:IE00BH3SQ895-2025-08","futureContract":"ISIN:IE00BH3SQ895","futureExpiryDate":"2025-08-01"}
+{"key":"BOND-ISIN:IE00BH3SQ895-2025-08-15","accepted":"true","class":"QuantExt::BondFuturesIndex","name":"BOND-ISIN:IE00BH3SQ895-2025-08","futureContract":"ISIN:IE00BH3SQ895","futureExpiryDate":"2025-08-15"}
+{"key":"BOND-SEC-WITH-HYPHENS","accepted":"true","class":"QuantExt::BondIndex","name":"BOND-SEC-WITH-HYPHENS","securityName":"SEC-WITH-HYPHENS"}
+{"key":"BOND-","accepted":"true","class":"QuantExt::BondIndex","name":"BOND-","securityName":""}
+{"key":"BOND_FUTURE-TYM26","accepted":"true","class":"QuantExt::BondFuturesIndex","name":"BOND_FUTURE-TYM26","futureContract":"TYM26","futureExpiryDate":"null"}
+{"key":"COMM-GOLD","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-GOLD","underlyingName":"GOLD","isFuturesIndex":"false","expiryDate":"null"}
+{"key":"COMM-NYMEX:CL-2025-01","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-01","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-01-01"}
+{"key":"COMM-NYMEX:CL-2025-01-15","accepted":"true","class":"QuantExt::CommodityFuturesIndex","name":"COMM-NYMEX:CL-2025-01","underlyingName":"NYMEX:CL","isFuturesIndex":"true","expiryDate":"2025-01-15"}
+{"key":"COMM-ICE:B","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-ICE:B","underlyingName":"ICE:B","isFuturesIndex":"false","expiryDate":"null"}
+{"key":"COMM-PJM-WH-RT","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-PJM-WH-RT","underlyingName":"PJM-WH-RT","isFuturesIndex":"false","expiryDate":"null"}
+{"key":"COMM-","accepted":"true","class":"QuantExt::CommoditySpotIndex","name":"COMM-","underlyingName":"","isFuturesIndex":"false","expiryDate":"null"}
+{"key":"POWER-ICE:PDQ-2021-01-01-3600-7200","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-01-3600-7200","deliveryDate":"2021-01-01"}
+{"key":"POWER-ICE:PDQ-2021-01-04","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-2021-01-04","deliveryDate":"2021-01-04"}
+{"key":"POWER-ICE:PDQ","accepted":"true","class":"QuantExt::IntradayPowerIndex","name":"POWER-ICE:PDQ-1901-01-01","deliveryDate":"1901-01-01"}
+{"key":"FX-ECB-EUR-USD","accepted":"true","class":"QuantExt::FxIndex","name":"ECB EUR/USD","familyName":"ECB","sourceCurrency":"EUR","targetCurrency":"USD"}
+{"key":"FX-TR20H-GBP-USD","accepted":"true","class":"QuantExt::FxIndex","name":"TR20H GBP/USD","familyName":"TR20H","sourceCurrency":"GBP","targetCurrency":"USD"}
+{"key":"FX-Reuters-USD-EUR","accepted":"true","class":"QuantExt::FxIndex","name":"Reuters USD/EUR","familyName":"Reuters","sourceCurrency":"USD","targetCurrency":"EUR"}
+{"key":"FX-ECB-EUR","accepted":"false","error":"parseIndex \"FX-ECB-EUR\" not recognized"}
+{"key":"FX-ECB-EUR-USD-X","accepted":"false","error":"parseIndex \"FX-ECB-EUR-USD-X\" not recognized"}
+{"key":"FX-ECB-EUR-XXX","accepted":"false","error":"parseIndex \"FX-ECB-EUR-XXX\" not recognized"}
+{"key":"GENERIC-JuniorNote","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-JuniorNote","expiry":"null"}
+{"key":"GENERIC-PortfolioBasket#1","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-PortfolioBasket#1","expiry":"null"}
+{"key":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C","accepted":"true","class":"QuantExt::GenericIndex","name":"GENERIC-MD/EQUITY_OPTION/PRICE/RIC:.SPX/USD/2025-10-03/3300/C","expiry":"null"}
+{"key":"CMB-US-TREASURY-10Y","accepted":"false","error":"no currency data provided"}
+{"key":"CMB-BUND-5Y","accepted":"false","error":"no currency data provided"}
+{"key":"CMB-BUND","accepted":"false","error":"parseIndex \"CMB-BUND\" not recognized"}
+{"key":"EUR-EURIBOR-6M","accepted":"true","class":"QuantLib::Euribor","name":"Euribor6M Actual/360","familyName":"Euribor","tenor":"6M","currency":"EUR"}
+{"key":"EUR-EURIBOR-1W","accepted":"true","class":"QuantLib::Euribor","name":"Euribor1W Actual/360","familyName":"Euribor","tenor":"1W","currency":"EUR"}
+{"key":"EUR-ESTER","accepted":"true","class":"QuantLib::OvernightIndex","name":"ESTRON Actual/360","overnight":"true","familyName":"ESTR","tenor":"1D","currency":"EUR"}
+{"key":"USD-SOFR","accepted":"true","class":"QuantLib::OvernightIndex","name":"SOFRON Actual/360","overnight":"true","familyName":"SOFR","tenor":"1D","currency":"USD"}
+{"key":"USD-SOFR-3M","accepted":"true","class":"QuantExt::SofrTerm","name":"USD-SOFRTerm3M Actual/360","familyName":"USD-SOFRTerm","tenor":"3M","currency":"USD"}
+{"key":"GBP-SONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"SoniaON Actual/365 (Fixed)","overnight":"true","familyName":"Sonia","tenor":"1D","currency":"GBP"}
+{"key":"USD-FedFunds","accepted":"true","class":"QuantLib::OvernightIndex","name":"FedFundsON Actual/360","overnight":"true","familyName":"FedFunds","tenor":"1D","currency":"USD"}
+{"key":"USD-SIFMA","accepted":"true","class":"QuantExt::BMAIndexWrapper","name":"BMA1W Actual/Actual (ISDA)","familyName":"BMA1W Actual/Actual (ISDA)","tenor":"1W","currency":"USD"}
+{"key":"JPY-TONAR","accepted":"true","class":"QuantLib::OvernightIndex","name":"TonarON Actual/365 (Fixed)","overnight":"true","familyName":"Tonar","tenor":"1D","currency":"JPY"}
+{"key":"CZK-CZEONIA","accepted":"true","class":"QuantLib::OvernightIndex","name":"CZK-CZEONIAON Actual/365 (Fixed)","overnight":"true","familyName":"CZK-CZEONIA","tenor":"1D","currency":"CZK"}
+{"key":"MXN-FTIIE","accepted":"true","class":"QuantLib::OvernightIndex","name":"MXN-FTIIEON Actual/360","overnight":"true","familyName":"MXN-FTIIE","tenor":"1D","currency":"MXN"}
+{"key":"MXN-TIIE-28D","accepted":"true","class":"QuantExt::MXNTiie","name":"MXN-TIIE4W Actual/360","familyName":"MXN-TIIE","tenor":"4W","currency":"MXN"}
+{"key":"CNY-REPOFIX-7D","accepted":"true","class":"QuantExt::CNYRepoFix","name":"CNY-REPOFIX1W Actual/365 (Fixed)","familyName":"CNY-REPOFIX","tenor":"1W","currency":"CNY"}
+{"key":"EUR-EURIBOR-6X","accepted":"false","error":"parseIndex \"EUR-EURIBOR-6X\" not recognized"}
+{"key":"EUR","accepted":"false","error":"parseIndex \"EUR\" not recognized"}
+{"key":"EUR-EURIBOR-6M-X","accepted":"false","error":"parseIndex \"EUR-EURIBOR-6M-X\" not recognized"}
+{"key":"EURO-EURIBOR-6M","accepted":"false","error":"parseIndex \"EURO-EURIBOR-6M\" not recognized"}
+{"key":"EUR-CMS-10Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix10Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"10Y","currency":"EUR"}
+{"key":"USD-CMS-5Y","accepted":"true","class":"QuantLib::SwapIndex","name":"USDLiborSwapIsdaFix5Y Actual/365 (Fixed)","familyName":"USDLiborSwapIsdaFix","tenor":"5Y","currency":"USD"}
+{"key":"EUR-CMS-30Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix30Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"30Y","currency":"EUR"}
+{"key":"EUR-CMS-1Y","accepted":"true","class":"QuantLib::SwapIndex","name":"EURLiborSwapIsdaFix1Y 30/360 (US)","familyName":"EURLiborSwapIsdaFix","tenor":"1Y","currency":"EUR"}
+{"key":"EUR-CMS","accepted":"false","error":"parseIndex \"EUR-CMS\" not recognized"}
+{"key":"EUR-CMS-10X","accepted":"false","error":"parseIndex \"EUR-CMS-10X\" not recognized"}
+{"key":"UKRPI","accepted":"true","class":"QuantLib::UKRPI","name":"UK RPI","familyName":"RPI","currency":"GBP","region":"UK"}
+{"key":"UK RPI","accepted":"true","class":"QuantLib::UKRPI","name":"UK RPI","familyName":"RPI","currency":"GBP","region":"UK"}
+{"key":"EUHICPXT","accepted":"true","class":"QuantLib::EUHICPXT","name":"EU HICPXT","familyName":"HICPXT","currency":"EUR","region":"EU"}
+{"key":"EU HICPXT","accepted":"true","class":"QuantLib::EUHICPXT","name":"EU HICPXT","familyName":"HICPXT","currency":"EUR","region":"EU"}
+{"key":"EUHICP","accepted":"true","class":"QuantLib::EUHICP","name":"EU HICP","familyName":"HICP","currency":"EUR","region":"EU"}
+{"key":"FRHICP","accepted":"true","class":"QuantLib::FRHICP","name":"France HICP","familyName":"HICP","currency":"EUR","region":"France"}
+{"key":"USCPI","accepted":"true","class":"QuantLib::USCPI","name":"USA CPI","familyName":"CPI","currency":"USD","region":"USA"}
+{"key":"ZACPI","accepted":"true","class":"QuantLib::ZACPI","name":"South Africa CPI","familyName":"CPI","currency":"ZAR","region":"South Africa"}
+{"key":"AUCPI","accepted":"true","class":"QuantLib::AUCPI","name":"Australia CPI","familyName":"CPI","currency":"AUD","region":"Australia"}
+{"key":"DECPI","accepted":"true","class":"QuantExt::DECPI","name":"Germany CPI","familyName":"CPI","currency":"EUR","region":"Germany"}
+{"key":"NOSUCHCPI","accepted":"false","error":"parseIndex \"NOSUCHCPI\" not recognized"}

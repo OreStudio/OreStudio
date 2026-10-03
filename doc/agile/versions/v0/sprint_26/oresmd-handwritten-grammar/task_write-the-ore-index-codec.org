@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-ore-index-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A fixing is named by a hand-written index codec that reads every index name ORE 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -75,6 +75,40 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Decisions agreed on 2026-10-03
+
+- *Decomposed fixing URIs*, in the pattern of quote URIs: the authority is the
+  asset class, the path the index's subject, and the query =type=fixing=,
+  =index=<family>= and the family's own fields.
+
+  #+begin_example
+  EUR-EURIBOR-6M     oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M
+  FX-ECB-EUR-USD     oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD
+  COMM-NYMEX:CL-2025-01
+                     oresmd://commodity/NYMEX:CL?type=fixing&index=commodity&expiry=2025-01
+  #+end_example
+- *Structural acceptance.* ORE reads any IBOR or inflation index a conventions
+  file defines, such as =CZK-CZEONIA= and =MXN-FTIIE= in the corpus, so the
+  codec accepts any name of the right shape. The catalogue harness loads the
+  corpus's conventions, so ORE stays the oracle.
+- *A generic authority.* =GENERIC-*= indices take a new =generic= asset class,
+  which maps to no refdata class, like =correlation=.
+
+** What ORE's parseIndex reads
+
+Eleven families, tried in this order: equity (=EQ-*=), bond (=BOND-ID[-YYYY-MM[-DD]]=,
+a bond future when dated), bond future (=BOND_FUTURE-*=), commodity
+(=COMM-NAME[-YYYY-MM[-DD]]=), intraday power (=POWER-NAME-DATE[-START-END]=), FX
+(=FX-SOURCE-CCY1-CCY2=), generic (=GENERIC-*=), constant maturity bond
+(=CMB-FAMILY-TENOR=), IBOR and overnight (=CCY-NAME[-TENOR]=), CMS swap
+(=CCY-CMS[-TAG]-TENOR=), and zero inflation (a fixed list with spaced aliases
+such as =UK RPI=, or a convention). QuantLib's =name()= is an internal label
+(=Euribor6M Actual/360=), not an ORE name, so the harness reports the family's
+inspectors rather than a canonical spelling.
+
+Without conventions ORE accepts 156 of the 158 corpus index names; with
+=examples/Products/Input/conventions.xml= it accepts all 158.
 
 * Test Scenarios
 

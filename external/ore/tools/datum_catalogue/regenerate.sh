@@ -31,6 +31,12 @@ python3 "${here}/extract_enum_tokens.py" "${ore_source}" InstrumentType > "${out
 python3 "${here}/extract_enum_tokens.py" "${ore_source}" QuoteType > "${out}/quote_types.txt"
 python3 "${here}/generate_quote_matrix.py" "${out}/forms.jsonl" "${out}/quote_types.txt" \
     | "${work}/build/datum_catalogue" > "${out}/quote_matrix.jsonl"
+# ORE reads an index a conventions file defines only once that file is loaded,
+# and the corpus's own examples define some, so the index catalogue loads them.
+conventions="${ore_root}/examples/Products/Input/conventions.xml"
+"${work}/build/index_catalogue" "${conventions}" < "${here}/index_forms.txt" > "${out}/index_forms.jsonl"
+python3 "${here}/extract_corpus_index_names.py" "${ore_root}/examples" \
+    | "${work}/build/index_catalogue" "${conventions}" > "${out}/index_corpus.jsonl"
 python3 "${here}/extract_corpus_keys.py" "${ore_root}/examples" > "${work}/corpus_keys.txt"
 "${work}/build/datum_catalogue" < "${work}/corpus_keys.txt" | gzip -n -9 > "${out}/corpus.jsonl.gz"
 

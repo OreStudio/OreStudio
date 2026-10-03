@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: A130326D-E72B-4956-8E3B-A3A19CBE0F35
+:END:
+#+title: ores.refdata.commodity_price_segment
+#+description: Codegen entity model for the refdata =commodity_price_segment= table. One price segment of an ORE commodity curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: One price segment an ORE commodity curve is built from.
+#+entity_singular: commodity_price_segment
+#+entity_plural: commodity_price_segments
+#+entity_title: Commodity Price Segment
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One =PriceSegment= of a commodity curve: the kind of instrument the segment's
+prices come from, its priority, its convention, and its quotes. An off peak
+power segment lists its off peak and peak quotes separately, as rows of
+=curve_quote= with the list names =OffPeakQuotes= and =PeakQuotes=.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** segment_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The segment's =Type=: =Future=, =AveragingFuture=, =AveragingSpot=,
+=AveragingOffPeakPower= or =OffPeakPowerDaily=.
+
+#+begin_src cpp :name generator
+std::string("Future")
+#+end_src
+
+** priority
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The segment's priority when two segments' pillars meet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** conventions
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The convention the segment's prices follow, by its id. ORE requires it, and
+the mapper refuses to write a segment without one; the column is nullable only
+so a row can be written before its convention exists, as the generated tests
+do.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_quotes
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the segment writes a =Quotes= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** peak_price_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The peak price curve of an off peak power segment.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** peak_price_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar of the peak hours, as the document spells it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** has_off_peak_daily
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the segment writes an =OffPeakDaily= element.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The segment's place in its list, which the export restores.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| conventions          | ores_refdata_validate_convention_id_fn        |
+| peak_price_calendar  | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_commodity_price_segments_tbl
+:END:
+
+** Checks
+
+| expression           |
+|----------------------|
+| "segment_type" <> '' |
+| "position" >= 0      |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: price_segment
+:entity_plural_short:   price_segments
+:entity_singular_words: commodity price segment
+:entity_plural_words:   commodity price segments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ps
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -42,6 +42,8 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     "curve_definition_id" uuid not null,
     "curve_segment_id" uuid null,
     "default_curve_configuration_id" uuid null,
+    "commodity_price_segment_id" uuid null,
+    "quote_list" text null,
     "quote_text" text null,
     "optional_flag" text null,
     "rate_quote" text null,
@@ -61,6 +63,7 @@ create table if not exists "ores_refdata_curve_quotes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
+    check (("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes'))),
     check (("quote_text" is not null and "rate_quote" is null and "spread_quote" is null) or ("quote_text" is null and "rate_quote" is not null and "spread_quote" is not null)),
     check ("position" >= 0)
 );
@@ -119,6 +122,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.', NEW.default_curve_configuration_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate commodity_price_segment_id (optional soft FK to ores_refdata_commodity_price_segments_tbl)
+    if NEW.commodity_price_segment_id is not null then
+        if not exists (
+            select 1 from ores_refdata_commodity_price_segments_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.commodity_price_segment_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid commodity_price_segment_id: %. No active commodity price segment found with this id.', NEW.commodity_price_segment_id
                 using errcode = '23503';
         end if;
     end if;

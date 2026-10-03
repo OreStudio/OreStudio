@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 67BB4D29-FC85-5442-BD68-2C706628C607
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the base_correlations commands from the shell?
+#+description: Every command the base_correlations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:base_correlations:
+
+This file documents the base_correlations resource at the shell, one section per command. Every command is a subcommand of =base_correlations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4E063760-E2F6-5BD1-B68B-6664A681C9A1
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.list=.
+
+#+name: base_correlations-list
+#+begin_src ores-shell :tangle base_correlations-list.ores :exports none
+base_correlations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8386CFE5-66F6-5BBC-8AED-BBEDB7764B9E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations get <id>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.get=.
+
+#+name: base_correlations-get
+#+begin_src ores-shell :tangle base_correlations-get.ores :exports none
+base_correlations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 4B0C7CA7-C2DF-506F-9DF2-1F03049B6D9B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.get_many=.
+
+#+name: base_correlations-get-many
+#+begin_src ores-shell :tangle base_correlations-get-many.ores :exports none
+base_correlations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 038C1F26-B398-52A5-980A-DFA1CF97DA1A
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations add <curve_definition_id> <terms> <detachment_points> <settlement_days> <calendar> <business_day_convention> <day_counter> <extrapolate> <quote_name> <start_date> <rule> <adjust_for_losses> <index_term> <index_spread> <currency> <calibrate_constituents_to_index_spread> <use_assumed_recovery> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.put=.
+
+#+name: base_correlations-add
+#+begin_src ores-shell :tangle base_correlations-add.ores :exports none
+base_correlations add 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8F0BCBF7-0B17-5806-863D-BDBC220B0904
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations set <id> <curve_definition_id> <terms> <detachment_points> <settlement_days> <calendar> <business_day_convention> <day_counter> <extrapolate> <quote_name> <start_date> <rule> <adjust_for_losses> <index_term> <index_spread> <currency> <calibrate_constituents_to_index_spread> <use_assumed_recovery> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.put=.
+
+#+name: base_correlations-set
+#+begin_src ores-shell :tangle base_correlations-set.ores :exports none
+base_correlations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: EF97BC00-C22B-5463-9723-6F75103FE9AD
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations put-many --count <n> <id> <curve_definition_id> <terms> <detachment_points> <settlement_days> <calendar> <business_day_convention> <day_counter> <extrapolate> <quote_name> <start_date> <rule> <adjust_for_losses> <index_term> <index_spread> <currency> <calibrate_constituents_to_index_spread> <use_assumed_recovery> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.put_many=.
+
+#+name: base_correlations-put-many
+#+begin_src ores-shell :tangle base_correlations-put-many.ores :exports none
+base_correlations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ 0 __none__ __none__ __none__ - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 085321FF-2427-5E95-9DD5-85D0B96B89BC
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.delete=.
+
+#+name: base_correlations-delete
+#+begin_src ores-shell :tangle base_correlations-delete.ores :exports none
+base_correlations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A6F27530-2CC0-57C7-B742-A9478791480E
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations.delete_many=.
+
+#+name: base_correlations-delete-many
+#+begin_src ores-shell :tangle base_correlations-delete-many.ores :exports none
+base_correlations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 999890A1-D7EF-5B74-972B-B95BC63B5177
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations_versions.list=.
+
+#+name: base_correlations-versions
+#+begin_src ores-shell :tangle base_correlations-versions.ores :exports none
+base_correlations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E64564CF-C412-5F74-9568-40D5D5897246
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+base_correlations version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.base_correlations_versions.get=.
+
+#+name: base_correlations-version
+#+begin_src ores-shell :tangle base_correlations-version.ores :exports none
+base_correlations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

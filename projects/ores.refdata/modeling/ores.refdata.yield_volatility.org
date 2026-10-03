@@ -1,0 +1,247 @@
+:PROPERTIES:
+:ID: 99C4733C-DD77-46BB-A2FF-C2B25E59D0EF
+:END:
+#+title: ores.refdata.yield_volatility
+#+description: Codegen entity model for the refdata =yield_volatility= table. The settings of one ORE yield volatility.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The settings of one ORE yield volatility entry.
+#+entity_singular: yield_volatility
+#+entity_plural: yield_volatilities
+#+entity_title: Yield Volatility
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The settings of one =YieldVolatility= entry of a =curveconfig.xml=, one row per
+=curve_definition= in the =YieldVolatilities= section: a bond yield volatility
+surface over option tenors and bond tenors.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** qualifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The qualifier the surface's quotes are named with.
+
+#+begin_src cpp :name generator
+std::string("BOND")
+#+end_src
+
+** dimension
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface is =ATM= only or has a =Smile=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** volatility_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the volatility is normal, lognormal or shifted lognormal.
+
+#+begin_src cpp :name generator
+std::string("Normal")
+#+end_src
+
+** extrapolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the surface extrapolates.
+
+#+begin_src cpp :name generator
+std::string("Flat")
+#+end_src
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The day counter of the surface, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("A365")
+#+end_src
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The surface's calendar, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** business_day_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The business day convention of the surface's dates.
+
+#+begin_src cpp :name generator
+std::string("Following")
+#+end_src
+
+** option_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The option tenors, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** bond_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The bond tenors, as ORE's comma separated text.
+
+#+begin_src cpp :name generator
+std::string("5Y")
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+** day_counter
+:PROPERTIES:
+:table:         ores_refdata_day_counters_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid day_counter: %. No active day counter found with this spelling.
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                           |
+|----------------------+-----------------------------------------------|
+| calendar             | ores_refdata_validate_calendar_fn             |
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_yield_volatilities_tbl
+:END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "qualifier" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: yield_volatility
+:entity_plural_short:   yield_volatilities
+:entity_singular_words: yield volatility
+:entity_plural_words:   yield volatilities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: yv
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/round-trip-the-curve-configuration
-#+pr: 2556
+#+pr: 2558
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -185,6 +185,34 @@ Step 3c, decided while building it:
   written. =SourceCurves= and =SwitchDates= appear in no corpus document and are
   refused, as inflation segments are.
 
+Step 3d, decided while building it:
+
+- A commodity curve's =BasisConfiguration= is one per curve, so its settings
+  are =basis_= columns on =commodity_curve=; its =PriceSegments= are rows of
+  =commodity_price_segment=. Each appears in one corpus document.
+- A quote's owner can now also be a price segment, and a parent that writes
+  more than one quote list names the list: =curve_quote.quote_list= is
+  =BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=, and null for the main
+  =Quotes=. That is the fourth way a quote attaches, and step 4 should decide
+  whether a single owner reference reads better than four nullable columns.
+
+Step 4a, decided while building it:
+
+- Step 4 is split by surface shape: 4a the flat sections (FX volatilities,
+  yield volatilities, base correlations, correlations), whose entries have no
+  child lists; 4b CDS and inflation cap and floor volatilities; 4c swaption and
+  cap and floor volatilities; 4d equity, commodity and bond future volatilities
+  and the global =ReportConfiguration=.
+- Ten entry types carry the same =Report= element, so it is one table,
+  =curve_report_configuration=, keyed to the entry's =curve_definition=. A row
+  exists exactly when the entry writes the element. No corpus entry writes its
+  own =Report=; the database test adds one to an FX volatility.
+- =ParametricSmileConfiguration= on an FX volatility, and =RecoveryGrid=,
+  =RecoveryProbabilities= and =QuoteTypes= on a base correlation, appear in no
+  corpus document and are refused.
+- The FX smile interpolation is free text in the schema, not an enumeration,
+  and is held as written.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -200,6 +228,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2558][#2558]] | [refdata] Map the flat volatility and correlation sections |
+| [[https://github.com/OreStudio/OreStudio/pull/2557][#2557]] | [refdata] Map the commodity curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2556][#2556]] | [refdata] Map the default curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2555][#2555]] | [refdata] Map the inflation curve section |
 | [[https://github.com/OreStudio/OreStudio/pull/2554][#2554]] | [refdata] Map the equity, security, FX spot and power curve sections |

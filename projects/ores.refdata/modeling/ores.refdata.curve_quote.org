@@ -88,6 +88,34 @@ belongs to the curve entry or one of its segments.
 boost::uuids::nil_uuid()
 #+end_src
 
+** commodity_price_segment_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The commodity price segment whose list holds the quote, or nil.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+** quote_list
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The list the quote belongs to when its parent writes more than one:
+=BasisQuotes=, =OffPeakQuotes= or =PeakQuotes=. Null for the parent's =Quotes=
+list.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** quote_text
 :PROPERTIES:
 :type:     text
@@ -184,6 +212,15 @@ what the export restores.
 :error_message: Invalid default_curve_configuration_id: %. No active default curve configuration found with this id.
 :END:
 
+** commodity_price_segment_id
+:PROPERTIES:
+:table:         ores_refdata_commodity_price_segments_tbl
+:target_column: id
+:parent_entity: commodity_price_segment
+:nullable:      true
+:error_message: Invalid commodity_price_segment_id: %. No active commodity price segment found with this id.
+:END:
+
 * SQL
 
 ** Flags
@@ -195,6 +232,7 @@ what the export restores.
 
 | expression                                                                                                                                                           |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ("quote_list" is null or "quote_list" in ('BasisQuotes', 'OffPeakQuotes', 'PeakQuotes'))                                                                             |
 | ("quote_text" is not null and "rate_quote" is null and "spread_quote" is null) or ("quote_text" is null and "rate_quote" is not null and "spread_quote" is not null) |
 | "position" >= 0                                                                                                                                                      |
 

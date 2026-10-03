@@ -1,0 +1,8 @@
+== after
+login party-selection-required
+refresh refused: SessionExpiredError
+== person and refresh
+{"outcome":"party-selection-required","roles":[]}
+{"afterSelect":["*"]}
+{"afterSwitch":["*"]}
+{"afterRefresh":["*"]}

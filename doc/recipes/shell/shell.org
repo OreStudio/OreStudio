@@ -1272,3 +1272,31 @@ tangled into the runnable script library
 * Default Curves
 
 - [[id:6C38EA7F-1EA6-58DD-B8DD-104F79921131][How do I run the default_curves commands from the shell?]]
+
+* Commodity Curves
+
+- [[id:0B639743-18A1-5347-94C3-EBD27AFB32F4][How do I run the commodity_curves commands from the shell?]]
+
+* Commodity Price Segments
+
+- [[id:FBFE686D-63A8-5138-ADD1-997F0C37024A][How do I run the commodity_price_segments commands from the shell?]]
+
+* Base Correlations
+
+- [[id:67BB4D29-FC85-5442-BD68-2C706628C607][How do I run the base_correlations commands from the shell?]]
+
+* Curve Correlations
+
+- [[id:33E8AE3D-44FA-5CCF-B6EA-E3F8E6548EF0][How do I run the curve_correlations commands from the shell?]]
+
+* Curve Report Configurations
+
+- [[id:9971E745-EC2C-56DF-B416-C298B5AA5330][How do I run the curve_report_configurations commands from the shell?]]
+
+* Fx Volatilities
+
+- [[id:BFC9D5EC-8A05-5B3F-8B37-2C590C45F5FD][How do I run the fx_volatilities commands from the shell?]]
+
+* Yield Volatilities
+
+- [[id:B41CF7F7-C607-5141-9E55-3905AFB64B83][How do I run the yield_volatilities commands from the shell?]]

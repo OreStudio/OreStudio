@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: DAF5C102-BD47-4031-98F0-3220FEE745E0
+:END:
+#+title: ores.refdata.curve_report_configuration
+#+description: Codegen entity model for the refdata =curve_report_configuration= table. The report settings of one ORE volatility entry.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The grids one ORE volatility entry is reported on.
+#+entity_singular: curve_report_configuration
+#+entity_plural: curve_report_configurations
+#+entity_title: Curve Report Configuration
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+The =Report= element of a volatility or correlation entry: which grids the
+built surface is reported on, and the points of each. Ten section types carry
+the same element, so it is one table keyed to the entry. A row exists exactly
+when the entry writes the element. The grids are comma separated lists in
+ORE's own text, held as written.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key:   true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+Surrogate key for the row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The curve entry this row belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** report_on_delta_grid
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface is reported on a delta grid, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** report_on_moneyness_grid
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface is reported on a moneyness grid, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** report_on_strike_grid
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface is reported on a strike grid, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** report_on_strike_spread_grid
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Whether the surface is reported on a strike spread grid, as the ORE boolean the document wrote.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** deltas
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The deltas of the delta grid.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** moneyness
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The moneyness levels of the moneyness grid.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strikes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The strikes of the strike grid.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** strike_spreads
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The strike spreads of the strike spread grid.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** expiries
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The expiries reported on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** pillar_dates
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The pillar dates reported on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** underlying_tenors
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The underlying tenors reported on.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** continuation_expiry
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The expiry a continuation contract is reported at.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** curve_definition_id
+:PROPERTIES:
+:table:         ores_refdata_curve_definitions_tbl
+:target_column: id
+:parent_entity: curve_definition
+:nullable:      false
+:error_message: Invalid curve_definition_id: %. No active curve definition found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_curve_report_configurations_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: report_configuration
+:entity_plural_short:   report_configurations
+:entity_singular_words: curve report configuration
+:entity_plural_words:   curve report configurations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rc
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:09555e86-1d84-4707-ad68-9b141b3cbce8][ores.refdata.curve_definition]] — the curve entry this row belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

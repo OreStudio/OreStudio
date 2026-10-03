@@ -44,6 +44,15 @@ constexpr std::string_view yield_curves_section = "YieldCurves";
 constexpr std::string_view equity_curves_section = "EquityCurves";
 constexpr std::string_view inflation_curves_section = "InflationCurves";
 constexpr std::string_view default_curves_section = "DefaultCurves";
+constexpr std::string_view commodity_curves_section = "CommodityCurves";
+constexpr std::string_view fx_volatilities_section = "FXVolatilities";
+constexpr std::string_view yield_volatilities_section = "YieldVolatilities";
+constexpr std::string_view base_correlations_section = "BaseCorrelations";
+constexpr std::string_view correlations_section = "Correlations";
+
+constexpr std::string_view basis_quotes_list = "BasisQuotes";
+constexpr std::string_view off_peak_quotes_list = "OffPeakQuotes";
+constexpr std::string_view peak_quotes_list = "PeakQuotes";
 constexpr std::string_view securities_section = "Securities";
 constexpr std::string_view fx_spots_section = "FXSpots";
 constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves";
@@ -53,6 +62,9 @@ constexpr std::string_view intraday_power_curves_section = "IntradayPowerCurves"
 bool is_modelled(std::string_view section) {
     return section == yield_curves_section || section == equity_curves_section ||
            section == inflation_curves_section || section == default_curves_section ||
+           section == commodity_curves_section || section == fx_volatilities_section ||
+           section == yield_volatilities_section || section == base_correlations_section ||
+           section == correlations_section ||
            section == securities_section || section == fx_spots_section ||
            section == intraday_power_curves_section;
 }
@@ -197,12 +209,13 @@ section_access make_section(std::string_view code,
 const std::vector<section_access>& sections() {
     static const std::vector<section_access> table = {
         make_section(fx_spots_section, &curveconfiguration::FXSpots, &fxSpots::FXSpot),
-        make_section(
-            "FXVolatilities", &curveconfiguration::FXVolatilities, &fxVolatilities::FXVolatility),
+        make_section(fx_volatilities_section,
+                     &curveconfiguration::FXVolatilities,
+                     &fxVolatilities::FXVolatility),
         make_section("SwaptionVolatilities",
                      &curveconfiguration::SwaptionVolatilities,
                      &swaptionVolatilities::SwaptionVolatility),
-        make_section("YieldVolatilities",
+        make_section(yield_volatilities_section,
                      &curveconfiguration::YieldVolatilities,
                      &yieldVolatilities::YieldVolatility),
         make_section("CapFloorVolatilities",
@@ -224,15 +237,17 @@ const std::vector<section_access>& sections() {
                      &curveconfiguration::EquityVolatilities,
                      &equityVolatilities::EquityVolatility),
         make_section(securities_section, &curveconfiguration::Securities, &securities::Security),
-        make_section("BaseCorrelations",
+        make_section(base_correlations_section,
                      &curveconfiguration::BaseCorrelations,
                      &baseCorrelations::BaseCorrelation),
-        make_section(
-            "CommodityCurves", &curveconfiguration::CommodityCurves, &simCommodityCurves::CommodityCurve),
+        make_section(commodity_curves_section,
+                     &curveconfiguration::CommodityCurves,
+                     &simCommodityCurves::CommodityCurve),
         make_section("CommodityVolatilities",
                      &curveconfiguration::CommodityVolatilities,
                      &commodityVolatilities::CommodityVolatility),
-        make_section("Correlations", &curveconfiguration::Correlations, &correlations::Correlation),
+        make_section(
+            correlations_section, &curveconfiguration::Correlations, &correlations::Correlation),
         make_section("BondFutureVolatilities",
                      &curveconfiguration::BondFutureVolatilities,
                      &bondFutureVolatilities::BondFutureVolatility),
@@ -749,6 +764,256 @@ void import_default_curve(mapped_curve_configuration& out, const defaultCurve& v
     out.default_curve_configurations.push_back(std::move(r));
 }
 
+// A commodity quote's owner is the entry, one of its price segments, or one of
+// the named lists the entry or a segment writes beside its Quotes.
+void add_commodity_quotes(mapped_curve_configuration& out,
+                          const boost::uuids::uuid& definition_id,
+                          const boost::uuids::uuid& price_segment_id,
+                          std::optional<std::string_view> list,
+                          const quoteType& v) {
+    int position = 0;
+    for (const auto& q : v.Quote) {
+        refdata::domain::curve_quote r;
+        r.id = new_uuid();
+        r.curve_definition_id = definition_id;
+        r.commodity_price_segment_id = price_segment_id;
+        if (list)
+            r.quote_list = std::string(*list);
+        r.quote_text = text(q);
+        if (q.optional)
+            r.optional_flag = std::string(*q.optional);
+        r.position = position++;
+        set_audit(r);
+        out.quotes.push_back(std::move(r));
+    }
+}
+
+void import_commodity_curve(mapped_curve_configuration& out,
+                            const simCommodityCurve& v,
+                            int position) {
+    const auto d = add_definition(
+        out, commodity_curves_section, text(v.CurveId), text(v.CurveDescription), position);
+    const boost::uuids::uuid none{};
+
+    refdata::domain::commodity_curve r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.currency = to_string(v.Currency);
+    r.base_price_curve = optional_text(v.BasePriceCurve);
+    r.base_yield_curve = optional_text(v.BaseYieldCurve);
+    r.yield_curve = optional_text(v.YieldCurve);
+    r.spot_quote = optional_text(v.SpotQuote);
+    r.has_quotes = static_cast<bool>(v.Quotes);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.interpolation_method = optional_enum_text(v.InterpolationMethod);
+    r.conventions = optional_text(v.Conventions);
+    r.extrapolation = optional_enum_text(v.Extrapolation);
+    r.has_basis_configuration = static_cast<bool>(v.BasisConfiguration);
+    if (v.BasisConfiguration) {
+        const auto& b = *v.BasisConfiguration;
+        r.basis_base_price_curve = text(b.BasePriceCurve);
+        r.basis_base_price_conventions = text(b.BasePriceConventions);
+        r.basis_conventions = text(b.BasisConventions);
+        r.basis_day_counter = optional_enum_text(b.DayCounter);
+        r.basis_interpolation_method = optional_enum_text(b.InterpolationMethod);
+        r.basis_add_basis = optional_enum_text(b.AddBasis);
+        r.basis_month_offset = optional_int(b.MonthOffset);
+        r.basis_average_base = optional_enum_text(b.AverageBase);
+        r.basis_price_as_historical_fixing = optional_enum_text(b.PriceAsHistoricalFixing);
+        add_commodity_quotes(out, d.id, none, basis_quotes_list, b.BasisQuotes);
+    }
+    r.has_price_segments = static_cast<bool>(v.PriceSegments);
+    if (v.PriceSegments) {
+        int at = 0;
+        for (const auto& g : v.PriceSegments->PriceSegment) {
+            refdata::domain::commodity_price_segment p;
+            p.id = new_uuid();
+            p.curve_definition_id = d.id;
+            p.segment_type = to_string(g.Type);
+            p.priority = optional_int(g.Priority);
+            p.conventions = text(g.Conventions);
+            p.has_quotes = static_cast<bool>(g.Quotes);
+            p.peak_price_curve_id = optional_text(g.PeakPriceCurveId);
+            p.peak_price_calendar = optional_text(g.PeakPriceCalendar);
+            p.has_off_peak_daily = static_cast<bool>(g.OffPeakDaily);
+            p.position = at++;
+            set_audit(p);
+            if (g.Quotes)
+                add_commodity_quotes(out, d.id, p.id, std::nullopt, *g.Quotes);
+            if (g.OffPeakDaily) {
+                add_commodity_quotes(
+                    out, d.id, p.id, off_peak_quotes_list, g.OffPeakDaily->OffPeakQuotes);
+                add_commodity_quotes(out, d.id, p.id, peak_quotes_list, g.OffPeakDaily->PeakQuotes);
+            }
+            out.commodity_price_segments.push_back(std::move(p));
+        }
+    }
+    set_audit(r);
+    out.commodity_curves.push_back(std::move(r));
+
+    if (v.Quotes)
+        add_commodity_quotes(out, d.id, none, std::nullopt, *v.Quotes);
+    if (v.BootstrapConfig)
+        import_bootstrap(out, d.id, none, *v.BootstrapConfig);
+}
+
+void import_report(mapped_curve_configuration& out,
+                   const boost::uuids::uuid& definition_id,
+                   const reportConfiguration& v) {
+    refdata::domain::curve_report_configuration r;
+    r.id = new_uuid();
+    r.curve_definition_id = definition_id;
+    r.report_on_delta_grid = optional_enum_text(v.ReportOnDeltaGrid);
+    r.report_on_moneyness_grid = optional_enum_text(v.ReportOnMoneynessGrid);
+    r.report_on_strike_grid = optional_enum_text(v.ReportOnStrikeGrid);
+    r.report_on_strike_spread_grid = optional_enum_text(v.ReportOnStrikeSpreadGrid);
+    r.deltas = optional_text(v.Deltas);
+    r.moneyness = optional_text(v.Moneyness);
+    r.strikes = optional_text(v.Strikes);
+    r.strike_spreads = optional_text(v.StrikeSpreads);
+    r.expiries = optional_text(v.Expiries);
+    r.pillar_dates = optional_text(v.PillarDates);
+    r.underlying_tenors = optional_text(v.UnderlyingTenors);
+    r.continuation_expiry = optional_text(v.ContinuationExpiry);
+    set_audit(r);
+    out.report_configurations.push_back(std::move(r));
+}
+
+reportConfiguration export_report(const refdata::domain::curve_report_configuration& r) {
+    reportConfiguration v;
+    assign_optional_enum(v.ReportOnDeltaGrid, r.report_on_delta_grid, "ORE boolean");
+    assign_optional_enum(v.ReportOnMoneynessGrid, r.report_on_moneyness_grid, "ORE boolean");
+    assign_optional_enum(v.ReportOnStrikeGrid, r.report_on_strike_grid, "ORE boolean");
+    assign_optional_enum(v.ReportOnStrikeSpreadGrid, r.report_on_strike_spread_grid, "ORE boolean");
+    assign_optional_text(v.Deltas, r.deltas);
+    assign_optional_text(v.Moneyness, r.moneyness);
+    assign_optional_text(v.Strikes, r.strikes);
+    assign_optional_text(v.StrikeSpreads, r.strike_spreads);
+    assign_optional_text(v.Expiries, r.expiries);
+    assign_optional_text(v.PillarDates, r.pillar_dates);
+    assign_optional_text(v.UnderlyingTenors, r.underlying_tenors);
+    assign_optional_text(v.ContinuationExpiry, r.continuation_expiry);
+    return v;
+}
+
+void import_fx_volatility(mapped_curve_configuration& out, const fxVolatility& v, int position) {
+    const auto d = add_definition(
+        out, fx_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.ParametricSmileConfiguration)
+        throw refusal("FX volatility " + d.curve_id +
+                      " writes a ParametricSmileConfiguration, which is not modelled yet");
+
+    refdata::domain::fx_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.dimension = to_string(v.Dimension);
+    r.smile_type = optional_enum_text(v.SmileType);
+    r.smile_interpolation = optional_text(v.SmileInterpolation);
+    r.deltas = optional_text(v.Deltas);
+    r.smile_delta = optional_text(v.SmileDelta);
+    r.conventions = optional_text(v.Conventions);
+    r.expiries = optional_text(v.Expiries);
+    r.fx_spot_id = optional_text(v.FXSpotID);
+    r.fx_foreign_curve_id = optional_text(v.FXForeignCurveID);
+    r.fx_domestic_curve_id = optional_text(v.FXDomesticCurveID);
+    r.calendar = optional_text(v.Calendar);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.fx_index_tag = optional_text(v.FXIndexTag);
+    r.base_volatility_1 = optional_text(v.BaseVolatility1);
+    r.base_volatility_2 = optional_text(v.BaseVolatility2);
+    r.smile_extrapolation = optional_enum_text(v.SmileExtrapolation);
+    r.time_interpolation = optional_text(v.TimeInterpolation);
+    r.time_weighting = optional_text(v.TimeWeighting);
+    r.butterfly_error_tolerance = optional_double(v.ButterflyErrorTolerance);
+    set_audit(r);
+    out.fx_volatilities.push_back(std::move(r));
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
+void import_yield_volatility(mapped_curve_configuration& out,
+                             const yieldVolatility& v,
+                             int position) {
+    const auto d = add_definition(
+        out, yield_volatilities_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::yield_volatility r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.qualifier = text(v.Qualifier);
+    r.dimension = optional_enum_text(v.Dimension);
+    r.volatility_type = to_string(v.VolatilityType);
+    r.extrapolation = to_string(v.Extrapolation);
+    r.day_counter = to_string(v.DayCounter);
+    r.calendar = text(v.Calendar);
+    r.business_day_convention = to_string(v.BusinessDayConvention);
+    r.option_tenors = text(v.OptionTenors);
+    r.bond_tenors = text(v.BondTenors);
+    set_audit(r);
+    out.yield_volatilities.push_back(std::move(r));
+    if (v.Report)
+        import_report(out, d.id, *v.Report);
+}
+
+void import_base_correlation(mapped_curve_configuration& out,
+                             const baseCorrelation& v,
+                             int position) {
+    const auto d = add_definition(
+        out, base_correlations_section, text(v.CurveId), text(v.CurveDescription), position);
+    if (v.RecoveryGrid || v.RecoveryProbabilities || v.QuoteTypes)
+        throw refusal("base correlation " + d.curve_id +
+                      " writes RecoveryGrid, RecoveryProbabilities or QuoteTypes, which are not "
+                      "modelled yet");
+
+    refdata::domain::base_correlation r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.terms = text(v.Terms);
+    r.detachment_points = text(v.DetachmentPoints);
+    r.settlement_days = static_cast<double>(v.SettlementDays);
+    r.calendar = text(v.Calendar);
+    r.business_day_convention = to_string(v.BusinessDayConvention);
+    r.day_counter = to_string(v.DayCounter);
+    r.extrapolate = optional_enum_text(v.Extrapolate);
+    r.quote_name = optional_text(v.QuoteName);
+    r.start_date = optional_text(v.StartDate);
+    r.rule = optional_enum_text(v.Rule);
+    r.adjust_for_losses = optional_enum_text(v.AdjustForLosses);
+    r.index_term = optional_text(v.IndexTerm);
+    r.index_spread = optional_text(v.IndexSpread);
+    r.currency = optional_text(v.Currency);
+    r.calibrate_constituents_to_index_spread =
+        optional_enum_text(v.CalibrateConstituentsToIndexSpread);
+    r.use_assumed_recovery = optional_enum_text(v.UseAssumedRecovery);
+    set_audit(r);
+    out.base_correlations.push_back(std::move(r));
+}
+
+void import_correlation(mapped_curve_configuration& out, const correlation& v, int position) {
+    const auto d = add_definition(
+        out, correlations_section, text(v.CurveId), text(v.CurveDescription), position);
+
+    refdata::domain::curve_correlation r;
+    r.id = new_uuid();
+    r.curve_definition_id = d.id;
+    r.correlation_type = to_string(v.CorrelationType);
+    r.index_1 = optional_text(v.Index1);
+    r.index_2 = optional_text(v.Index2);
+    r.conventions = optional_text(v.Conventions);
+    r.swaption_volatility = optional_text(v.SwaptionVolatility);
+    r.discount_curve = optional_text(v.DiscountCurve);
+    r.currency = optional_enum_text(v.Currency);
+    r.dimension = optional_enum_text(v.Dimension);
+    r.quote_type = optional_enum_text(v.QuoteType);
+    r.extrapolation = optional_enum_text(v.Extrapolation);
+    r.day_counter = optional_enum_text(v.DayCounter);
+    r.calendar = optional_text(v.Calendar);
+    r.business_day_convention = optional_enum_text(v.BusinessDayConvention);
+    r.option_tenors = optional_text(v.OptionTenors);
+    set_audit(r);
+    out.correlations.push_back(std::move(r));
+}
+
 void import_security(mapped_curve_configuration& out, const security& v, int position) {
     const auto d = add_definition(
         out, securities_section, text(v.CurveId), text(v.CurveDescription), position);
@@ -816,6 +1081,14 @@ boost::uuids::uuid quote_definition(const refdata::domain::curve_quote& q) {
     return q.curve_definition_id;
 }
 
+boost::uuids::uuid quote_price_segment(const refdata::domain::curve_quote& q) {
+    return q.commodity_price_segment_id;
+}
+
+boost::uuids::uuid price_segment_definition(const refdata::domain::commodity_price_segment& p) {
+    return p.curve_definition_id;
+}
+
 boost::uuids::uuid quote_configuration(const refdata::domain::curve_quote& q) {
     return q.default_curve_configuration_id;
 }
@@ -842,6 +1115,10 @@ struct export_context {
         configuration_quotes;
     std::map<boost::uuids::uuid, const refdata::domain::curve_bootstrap_config*>
         configuration_bootstraps;
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>>
+        price_segment_quotes;
+    std::map<boost::uuids::uuid, std::vector<const refdata::domain::curve_quote*>> basis_quotes;
+    std::map<boost::uuids::uuid, const refdata::domain::curve_bootstrap_config*> entry_bootstraps;
 
     const std::vector<const refdata::domain::curve_quote*>& quotes_of_entry(
         const boost::uuids::uuid& definition_id) const {
@@ -1282,6 +1559,195 @@ defaultCurve export_default_curve(
     return r;
 }
 
+quoteType quote_list(const std::vector<const refdata::domain::curve_quote*>& rows,
+                     std::optional<std::string_view> list) {
+    quoteType quotes;
+    for (const auto* q : rows) {
+        const bool same = list ? (q->quote_list && *q->quote_list == *list) : !q->quote_list;
+        if (!same)
+            continue;
+        quoteType_Quote_t item;
+        assign_text(item, q->quote_text.value_or(""));
+        if (q->optional_flag)
+            item.optional = *q->optional_flag;
+        quotes.Quote.push_back(std::move(item));
+    }
+    return quotes;
+}
+
+simCommodityCurve export_commodity_curve(
+    const refdata::domain::curve_definition& d,
+    const refdata::domain::commodity_curve& v,
+    const std::vector<const refdata::domain::commodity_price_segment*>& segments,
+    const export_context& ctx) {
+    static const std::vector<const refdata::domain::curve_quote*> none;
+    const auto quotes_of = [&](const auto& map, const boost::uuids::uuid& id)
+        -> const std::vector<const refdata::domain::curve_quote*>& {
+        const auto it = map.find(id);
+        return it == map.end() ? none : it->second;
+    };
+
+    simCommodityCurve r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Currency = enum_from_text<currencyCode>(v.currency, "currency code");
+    assign_optional_text(r.BasePriceCurve, v.base_price_curve);
+    assign_optional_text(r.BaseYieldCurve, v.base_yield_curve);
+    assign_optional_text(r.YieldCurve, v.yield_curve);
+    assign_optional_text(r.SpotQuote, v.spot_quote);
+    if (v.has_quotes)
+        r.Quotes = quote_list(quotes_of(ctx.entry_quotes, d.id), std::nullopt);
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    assign_optional_enum(r.InterpolationMethod, v.interpolation_method, "interpolation method");
+    assign_optional_text(r.Conventions, v.conventions);
+    if (v.has_basis_configuration) {
+        commodityBasisConfig b;
+        assign_text(b.BasePriceCurve, v.basis_base_price_curve.value_or(""));
+        assign_text(b.BasePriceConventions, v.basis_base_price_conventions.value_or(""));
+        b.BasisQuotes = quote_list(quotes_of(ctx.basis_quotes, d.id), basis_quotes_list);
+        assign_text(b.BasisConventions, v.basis_conventions.value_or(""));
+        assign_optional_enum(b.DayCounter, v.basis_day_counter, "day counter");
+        assign_optional_enum(b.InterpolationMethod, v.basis_interpolation_method, "interpolation method");
+        assign_optional_enum(b.AddBasis, v.basis_add_basis, "ORE boolean");
+        assign_optional_int(b.MonthOffset, v.basis_month_offset);
+        assign_optional_enum(b.AverageBase, v.basis_average_base, "ORE boolean");
+        assign_optional_enum(b.PriceAsHistoricalFixing, v.basis_price_as_historical_fixing, "ORE boolean");
+        r.BasisConfiguration = std::move(b);
+    }
+    if (v.has_price_segments) {
+        priceSegmentsType list;
+        for (const auto* p : segments) {
+            priceSegmentType g;
+            g.Type = enum_from_text<priceSegmentTypeType>(p->segment_type, "price segment type");
+            assign_optional_int(g.Priority, p->priority);
+            if (!p->conventions)
+                throw refusal("price segment of " + d.curve_id + " has no conventions");
+            assign_text(g.Conventions, *p->conventions);
+            const auto& rows = quotes_of(ctx.price_segment_quotes, p->id);
+            if (p->has_quotes)
+                g.Quotes = quote_list(rows, std::nullopt);
+            assign_optional_text(g.PeakPriceCurveId, p->peak_price_curve_id);
+            assign_optional_text(g.PeakPriceCalendar, p->peak_price_calendar);
+            if (p->has_off_peak_daily) {
+                offPeakDailyType o;
+                o.OffPeakQuotes = quote_list(rows, off_peak_quotes_list);
+                o.PeakQuotes = quote_list(rows, peak_quotes_list);
+                g.OffPeakDaily = std::move(o);
+            }
+            list.PriceSegment.push_back(std::move(g));
+        }
+        r.PriceSegments = std::move(list);
+    }
+    assign_optional_enum(r.Extrapolation, v.extrapolation, "ORE boolean");
+    const auto b = ctx.entry_bootstraps.find(d.id);
+    if (b != ctx.entry_bootstraps.end())
+        r.BootstrapConfig = export_bootstrap(*b->second);
+    return r;
+}
+
+fxVolatility export_fx_volatility(const refdata::domain::curve_definition& d,
+                                  const refdata::domain::fx_volatility& v,
+                                  const refdata::domain::curve_report_configuration* report) {
+    fxVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.Dimension = enum_from_text<dimensionType>(v.dimension, "dimension");
+    assign_optional_enum(r.SmileType, v.smile_type, "smile type");
+    assign_optional_text(r.SmileInterpolation, v.smile_interpolation);
+    assign_optional_text(r.Deltas, v.deltas);
+    assign_optional_text(r.SmileDelta, v.smile_delta);
+    assign_optional_text(r.Conventions, v.conventions);
+    assign_optional_text(r.Expiries, v.expiries);
+    assign_optional_text(r.FXSpotID, v.fx_spot_id);
+    assign_optional_text(r.FXForeignCurveID, v.fx_foreign_curve_id);
+    assign_optional_text(r.FXDomesticCurveID, v.fx_domestic_curve_id);
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    assign_optional_text(r.FXIndexTag, v.fx_index_tag);
+    assign_optional_text(r.BaseVolatility1, v.base_volatility_1);
+    assign_optional_text(r.BaseVolatility2, v.base_volatility_2);
+    if (report)
+        r.Report = export_report(*report);
+    assign_optional_enum(r.SmileExtrapolation, v.smile_extrapolation, "extrapolation");
+    assign_optional_text(r.TimeInterpolation, v.time_interpolation);
+    assign_optional_text(r.TimeWeighting, v.time_weighting);
+    assign_optional_double(r.ButterflyErrorTolerance, v.butterfly_error_tolerance);
+    return r;
+}
+
+yieldVolatility export_yield_volatility(const refdata::domain::curve_definition& d,
+                                        const refdata::domain::yield_volatility& v,
+                                        const refdata::domain::curve_report_configuration* report) {
+    yieldVolatility r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_text(r.Qualifier, v.qualifier);
+    assign_optional_enum(r.Dimension, v.dimension, "dimension");
+    r.VolatilityType = enum_from_text<volatilityType>(v.volatility_type, "volatility type");
+    r.Extrapolation = enum_from_text<extrapolationType>(v.extrapolation, "extrapolation");
+    r.DayCounter = enum_from_text<dayCounter>(v.day_counter, "day counter");
+    r.Calendar = v.calendar;
+    r.BusinessDayConvention =
+        enum_from_text<businessDayConvention>(v.business_day_convention, "business day convention");
+    assign_text(r.OptionTenors, v.option_tenors);
+    assign_text(r.BondTenors, v.bond_tenors);
+    if (report)
+        r.Report = export_report(*report);
+    return r;
+}
+
+baseCorrelation export_base_correlation(const refdata::domain::curve_definition& d,
+                                        const refdata::domain::base_correlation& v) {
+    baseCorrelation r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    assign_text(r.Terms, v.terms);
+    assign_text(r.DetachmentPoints, v.detachment_points);
+    r.SettlementDays = static_cast<float>(v.settlement_days);
+    r.Calendar = v.calendar;
+    r.BusinessDayConvention =
+        enum_from_text<businessDayConvention>(v.business_day_convention, "business day convention");
+    r.DayCounter = enum_from_text<dayCounter>(v.day_counter, "day counter");
+    assign_optional_enum(r.Extrapolate, v.extrapolate, "ORE boolean");
+    assign_optional_text(r.QuoteName, v.quote_name);
+    if (v.start_date)
+        r.StartDate = *v.start_date;
+    assign_optional_enum(r.Rule, v.rule, "date rule");
+    assign_optional_enum(r.AdjustForLosses, v.adjust_for_losses, "ORE boolean");
+    assign_optional_text(r.IndexTerm, v.index_term);
+    assign_optional_text(r.IndexSpread, v.index_spread);
+    assign_optional_text(r.Currency, v.currency);
+    assign_optional_enum(r.CalibrateConstituentsToIndexSpread,
+                         v.calibrate_constituents_to_index_spread,
+                         "ORE boolean");
+    assign_optional_enum(r.UseAssumedRecovery, v.use_assumed_recovery, "ORE boolean");
+    return r;
+}
+
+correlation export_correlation(const refdata::domain::curve_definition& d,
+                               const refdata::domain::curve_correlation& v) {
+    correlation r;
+    assign_text(r.CurveId, d.curve_id);
+    assign_text(r.CurveDescription, d.description.value_or(""));
+    r.CorrelationType = enum_from_text<correlationType>(v.correlation_type, "correlation type");
+    assign_optional_text(r.Index1, v.index_1);
+    assign_optional_text(r.Index2, v.index_2);
+    assign_optional_text(r.Conventions, v.conventions);
+    assign_optional_text(r.SwaptionVolatility, v.swaption_volatility);
+    assign_optional_text(r.DiscountCurve, v.discount_curve);
+    assign_optional_enum(r.Currency, v.currency, "currency code");
+    assign_optional_enum(r.Dimension, v.dimension, "dimension");
+    assign_optional_enum(r.QuoteType, v.quote_type, "correlation quote type");
+    assign_optional_enum(r.Extrapolation, v.extrapolation, "ORE boolean");
+    assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
+    if (v.calendar)
+        r.Calendar = *v.calendar;
+    assign_optional_enum(r.BusinessDayConvention, v.business_day_convention, "business day convention");
+    assign_optional_text(r.OptionTenors, v.option_tenors);
+    return r;
+}
+
 security export_security(const refdata::domain::curve_definition& d,
                          const refdata::domain::curve_security& v) {
     security r;
@@ -1381,6 +1847,21 @@ mapped_curve_configuration curve_configuration_mapper::map(const curveconfigurat
     if (v.Securities)
         for (const auto& e : v.Securities->Security)
             import_security(mapped, e, position++);
+    if (v.CommodityCurves)
+        for (const auto& e : v.CommodityCurves->CommodityCurve)
+            import_commodity_curve(mapped, e, position++);
+    if (v.FXVolatilities)
+        for (const auto& e : v.FXVolatilities->FXVolatility)
+            import_fx_volatility(mapped, e, position++);
+    if (v.YieldVolatilities)
+        for (const auto& e : v.YieldVolatilities->YieldVolatility)
+            import_yield_volatility(mapped, e, position++);
+    if (v.BaseCorrelations)
+        for (const auto& e : v.BaseCorrelations->BaseCorrelation)
+            import_base_correlation(mapped, e, position++);
+    if (v.Correlations)
+        for (const auto& e : v.Correlations->Correlation)
+            import_correlation(mapped, e, position++);
     if (v.IntradayPowerCurves)
         for (const auto& e : v.IntradayPowerCurves->IntradayPowerCurve)
             import_intraday_power_curve(mapped, e, position++);
@@ -1414,20 +1895,43 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
     std::vector<refdata::domain::curve_quote> segment_quotes;
     std::vector<refdata::domain::curve_quote> entry_quotes;
     std::vector<refdata::domain::curve_quote> configuration_quotes;
+    std::vector<refdata::domain::curve_quote> price_segment_quotes;
+    std::vector<refdata::domain::curve_quote> basis_quotes;
     for (const auto& q : v.quotes) {
         if (q.default_curve_configuration_id != boost::uuids::uuid{})
             configuration_quotes.push_back(q);
         else if (q.curve_segment_id != boost::uuids::uuid{})
             segment_quotes.push_back(q);
+        else if (q.commodity_price_segment_id != boost::uuids::uuid{})
+            price_segment_quotes.push_back(q);
+        else if (q.quote_list && *q.quote_list == basis_quotes_list)
+            basis_quotes.push_back(q);
         else
             entry_quotes.push_back(q);
     }
+    ctx.price_segment_quotes = group_by(price_segment_quotes, &quote_price_segment);
+    ctx.basis_quotes = group_by(basis_quotes, &quote_definition);
     ctx.quotes = group_by(segment_quotes, &segment_of);
     ctx.entry_quotes = group_by(entry_quotes, &quote_definition);
     ctx.configuration_quotes = group_by(configuration_quotes, &quote_configuration);
-    for (const auto& b : v.bootstrap_configs)
+    for (const auto& b : v.bootstrap_configs) {
         if (b.default_curve_configuration_id != boost::uuids::uuid{})
             ctx.configuration_bootstraps.emplace(b.default_curve_configuration_id, &b);
+        else
+            ctx.entry_bootstraps.emplace(b.curve_definition_id, &b);
+    }
+    const auto commodity_by_definition = by_definition(v.commodity_curves);
+    const auto fx_vol_by_definition = by_definition(v.fx_volatilities);
+    const auto yield_vol_by_definition = by_definition(v.yield_volatilities);
+    const auto base_correlation_by_definition = by_definition(v.base_correlations);
+    const auto correlation_by_definition = by_definition(v.correlations);
+    const auto report_by_definition = by_definition(v.report_configurations);
+    const auto report_of = [&](const refdata::domain::curve_definition& d)
+        -> const refdata::domain::curve_report_configuration* {
+        const auto it = report_by_definition.find(d.id);
+        return it == report_by_definition.end() ? nullptr : it->second;
+    };
+    const auto price_segments = group_by(v.commodity_price_segments, &price_segment_definition);
     const auto default_by_definition = by_definition(v.default_curves);
     const auto configurations = group_by(v.default_curve_configurations, &configuration_definition);
     ctx.curves = group_by(v.segment_curves, &parent_segment);
@@ -1445,7 +1949,8 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
 
     for (const auto* d : definitions) {
         if (d->section_code != equity_curves_section &&
-            d->section_code != inflation_curves_section && ctx.entry_quotes.contains(d->id))
+            d->section_code != inflation_curves_section &&
+            d->section_code != commodity_curves_section && ctx.entry_quotes.contains(d->id))
             throw refusal("curve " + d->curve_id + " in section " + d->section_code +
                           " holds a quote directly on its entry");
         if (d->section_code == equity_curves_section) {
@@ -1453,6 +1958,46 @@ curveconfiguration curve_configuration_mapper::reverse(const mapped_curve_config
                 document.EquityCurves = equityCurves{};
             document.EquityCurves->EquityCurve.push_back(
                 export_equity_curve(*d, settings_of(equity_by_definition, *d), ctx));
+            continue;
+        }
+        if (d->section_code == fx_volatilities_section) {
+            if (!document.FXVolatilities)
+                document.FXVolatilities = fxVolatilities{};
+            document.FXVolatilities->FXVolatility.push_back(
+                export_fx_volatility(*d, settings_of(fx_vol_by_definition, *d), report_of(*d)));
+            continue;
+        }
+        if (d->section_code == yield_volatilities_section) {
+            if (!document.YieldVolatilities)
+                document.YieldVolatilities = yieldVolatilities{};
+            document.YieldVolatilities->YieldVolatility.push_back(export_yield_volatility(
+                *d, settings_of(yield_vol_by_definition, *d), report_of(*d)));
+            continue;
+        }
+        if (d->section_code == base_correlations_section) {
+            if (!document.BaseCorrelations)
+                document.BaseCorrelations = baseCorrelations{};
+            document.BaseCorrelations->BaseCorrelation.push_back(
+                export_base_correlation(*d, settings_of(base_correlation_by_definition, *d)));
+            continue;
+        }
+        if (d->section_code == correlations_section) {
+            if (!document.Correlations)
+                document.Correlations = correlations{};
+            document.Correlations->Correlation.push_back(
+                export_correlation(*d, settings_of(correlation_by_definition, *d)));
+            continue;
+        }
+        if (d->section_code == commodity_curves_section) {
+            static const std::vector<const refdata::domain::commodity_price_segment*> no_segments;
+            const auto g = price_segments.find(d->id);
+            if (!document.CommodityCurves)
+                document.CommodityCurves = simCommodityCurves{};
+            document.CommodityCurves->CommodityCurve.push_back(
+                export_commodity_curve(*d,
+                                       settings_of(commodity_by_definition, *d),
+                                       g == price_segments.end() ? no_segments : g->second,
+                                       ctx));
             continue;
         }
         if (d->section_code == default_curves_section) {

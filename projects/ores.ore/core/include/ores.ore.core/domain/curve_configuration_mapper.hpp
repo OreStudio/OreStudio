@@ -22,21 +22,28 @@
 
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/base_correlation.hpp"
+#include "ores.refdata.api/domain/commodity_curve.hpp"
+#include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
+#include "ores.refdata.api/domain/curve_correlation.hpp"
 #include "ores.refdata.api/domain/curve_quote.hpp"
+#include "ores.refdata.api/domain/curve_report_configuration.hpp"
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_security.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
 #include "ores.refdata.api/domain/default_curve.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve.hpp"
+#include "ores.refdata.api/domain/fx_volatility.hpp"
 #include "ores.refdata.api/domain/inflation_curve.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve.hpp"
 #include "ores.refdata.api/domain/yield_curve.hpp"
+#include "ores.refdata.api/domain/yield_volatility.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
@@ -56,6 +63,13 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::equity_curve> equity_curves;
     std::vector<refdata::domain::inflation_curve> inflation_curves;
     std::vector<refdata::domain::default_curve> default_curves;
+    std::vector<refdata::domain::commodity_curve> commodity_curves;
+    std::vector<refdata::domain::fx_volatility> fx_volatilities;
+    std::vector<refdata::domain::yield_volatility> yield_volatilities;
+    std::vector<refdata::domain::base_correlation> base_correlations;
+    std::vector<refdata::domain::curve_correlation> correlations;
+    std::vector<refdata::domain::curve_report_configuration> report_configurations;
+    std::vector<refdata::domain::commodity_price_segment> commodity_price_segments;
     std::vector<refdata::domain::default_curve_configuration> default_curve_configurations;
     std::vector<refdata::domain::inflation_seasonality_factor> seasonality_factors;
     std::vector<refdata::domain::curve_security> securities;
@@ -70,8 +84,9 @@ struct mapped_curve_configuration {
  * @brief Maps between an ORE CurveConfiguration document and the refdata curve
  * entities.
  *
- * The yield curve, default curve, equity curve, inflation curve, security, FX
- * spot and intraday power curve sections are mapped; the other sections are mapped only when they hold no
+ * Every curve section is mapped apart from the swaption, cap and floor, CDS,
+ * inflation cap and floor, equity, commodity and bond future volatility
+ * sections; the other sections are mapped only when they hold no
  * entries, which records that the document wrote them. A section
  * with entries the mapper cannot hold yet, or a report configuration, is
  * refused rather than dropped, because a dropped entry would pass as a round

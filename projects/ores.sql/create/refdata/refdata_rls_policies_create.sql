@@ -1999,6 +1999,125 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Commodity Curves
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_curves_tbl enable row level security;
+
+drop policy if exists commodity_curves_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_curves_tbl;
+
+create policy commodity_curves_tbl_tenant_isolation_policy
+on ores_refdata_commodity_curves_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Commodity Price Segments
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_commodity_price_segments_tbl enable row level security;
+
+drop policy if exists commodity_price_segments_tbl_tenant_isolation_policy
+    on ores_refdata_commodity_price_segments_tbl;
+
+create policy commodity_price_segments_tbl_tenant_isolation_policy
+on ores_refdata_commodity_price_segments_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Report Configurations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_report_configurations_tbl enable row level security;
+
+drop policy if exists curve_report_configurations_tbl_tenant_isolation_policy
+    on ores_refdata_curve_report_configurations_tbl;
+
+create policy curve_report_configurations_tbl_tenant_isolation_policy
+on ores_refdata_curve_report_configurations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- FX Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_fx_volatilities_tbl enable row level security;
+
+drop policy if exists fx_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_fx_volatilities_tbl;
+
+create policy fx_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_fx_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Yield Volatilities
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_yield_volatilities_tbl enable row level security;
+
+drop policy if exists yield_volatilities_tbl_tenant_isolation_policy
+    on ores_refdata_yield_volatilities_tbl;
+
+create policy yield_volatilities_tbl_tenant_isolation_policy
+on ores_refdata_yield_volatilities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Base Correlations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_base_correlations_tbl enable row level security;
+
+drop policy if exists base_correlations_tbl_tenant_isolation_policy
+    on ores_refdata_base_correlations_tbl;
+
+create policy base_correlations_tbl_tenant_isolation_policy
+on ores_refdata_base_correlations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Curve Correlations
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_curve_correlations_tbl enable row level security;
+
+drop policy if exists curve_correlations_tbl_tenant_isolation_policy
+    on ores_refdata_curve_correlations_tbl;
+
+create policy curve_correlations_tbl_tenant_isolation_policy
+on ores_refdata_curve_correlations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Curve Configurations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_curve_configurations_tbl enable row level security;

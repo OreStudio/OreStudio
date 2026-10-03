@@ -153,6 +153,9 @@ private:
             .party_id = claims->party_id,
             .acting_from_tenant_id = claims->acting_from_tenant_id,
             .permissions = {}};
+        // A session already inside a tenant carries no permissions here: the
+        // service refuses its entry as already inside before it reads them,
+        // and leaving needs none.
         if (!caller.acting_from_tenant_id) {
             caller.permissions =
                 service::authorization_service(ctx_.with_tenant(*tenant, caller.username))

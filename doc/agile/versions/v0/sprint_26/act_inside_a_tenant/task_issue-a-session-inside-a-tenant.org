@@ -84,6 +84,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | L1 | A person's token carries no permissions, so a token check proves nothing | =auth_handler.hpp= | Accept in part | The entry checks =iam::tenants:impersonate= against the database, and the tenant token carries an explicit read-only list. The wider gap is the capture "A token with no permissions passes every permission check", updated with what was found. |
 | L2 | No stub proof of the service's refusals | =tenant_session_service.cpp= | Decline | Each refusal has its own test that asserts its message; the classifier refused the stub edit on the previous story. |
+| R1.1 | The entry is audited before the token is signed | =tenant_session_service.cpp= | Accept | The token is signed first and the entry recorded before it is handed over. |
+| R1.2 | Leaving does not end the token | =tenant_session_service.cpp= | Accept in part | Tokens are not revoked anywhere in the system; the client discards it and it lasts one access lifetime. The journey says leaving is not a revocation. |
+| R1.3 | Leave trusts the claim without checking it names the system tenant | =tenant_session_service.cpp= | Accept | Leave now requires the claim to name the system tenant; a test covers the other case. |
+| R1.4 | The handler's permission read depends on the check order | =tenant_session_handler.hpp= | Accept | A comment says why. |
+| R1.5 | The read-only filter relies on the :read suffix | =tenant_session_service.cpp= | Decline | The catalogue's only read verb is :read: 169 :read codes, and every other verb writes, deletes or acts. |
+| R1.7 | Refresh fails these tokens with a generic message | =auth_handler.hpp= | Decline | The client never refreshes a tenant token; it returns to its own token first. |
 
 * Result
 

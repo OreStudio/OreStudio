@@ -152,6 +152,11 @@ TEST_CASE("leaving_records_the_exit_and_is_refused_outside_a_tenant", tags) {
 
     CHECK_FALSE(svc.leave(administrator()).success);
 
+    auto from_elsewhere = administrator();
+    from_elsewhere.tenant_id = h.tenant_id();
+    from_elsewhere.acting_from_tenant_id = h.tenant_id().to_string();
+    CHECK_FALSE(svc.leave(from_elsewhere).success);
+
     auto inside = administrator();
     inside.tenant_id = h.tenant_id();
     inside.acting_from_tenant_id = tenant_id::system().to_string();

@@ -143,14 +143,6 @@ tenant_session_service::enter(const tenant_session_caller& caller,
         "Reading the parties the tenant's system party sees");
 
     const auto now = std::chrono::system_clock::now();
-    repository::auth_event_repository(target_ctx)
-        .record_tenant_entered(now,
-                               target_id,
-                               boost::uuids::to_string(caller.account_id),
-                               caller.username,
-                               caller.session_id,
-                               party_id);
-
     security::jwt::jwt_claims claims;
     claims.subject = boost::uuids::to_string(caller.account_id);
     claims.username = caller.username;
@@ -169,6 +161,17 @@ tenant_session_service::enter(const tenant_session_caller& caller,
         return {.success = false, .message = "The session could not be issued."};
     }
 
+    // The entry is recorded once the session exists and before it is handed
+    // over, so the trail never names an entry that did not happen and no
+    // session leaves without its record.
+    repository::auth_event_repository(target_ctx)
+        .record_tenant_entered(now,
+                               target_id,
+                               boost::uuids::to_string(caller.account_id),
+                               caller.username,
+                               caller.session_id,
+                               party_id);
+
     BOOST_LOG_SEV(lg(), info) << caller.username << " entered tenant " << tenant.code;
     return {.success = true,
             .token = *token,
@@ -181,7 +184,11 @@ tenant_session_service::enter(const tenant_session_caller& caller,
 }
 
 messaging::leave_tenant_response tenant_session_service::leave(const tenant_session_caller& caller) {
-    if (!caller.acting_from_tenant_id) {
+    const auto from_system = caller.acting_from_tenant_id &&
+                             utility::uuid::tenant_id::from_string(*caller.acting_from_tenant_id)
+                                 .transform([](const auto& id) { return id.is_system(); })
+                                 .value_or(false);
+    if (!from_system) {
         return {.success = false,
                 .message = std::string(describe(tenant_session_refusal::not_inside_a_tenant))};
     }

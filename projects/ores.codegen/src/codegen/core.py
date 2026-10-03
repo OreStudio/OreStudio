@@ -1719,6 +1719,19 @@ def _column_member_prefixes(de: dict[str, Any]) -> dict[str, str]:
     return prefixes
 
 
+def _immutable_tenant_key(de: dict[str, Any]) -> bool:
+    """Whether an immutable table keys on (tenant_id, primary key).
+
+    A foreign key that matches its own tenant references both columns, and
+    a constraint can only reference a key, so a tenant-scoped immutable
+    table puts tenant_id in its key.
+    """
+    sql = de.get('sql') or {}
+    return bool(sql.get('immutable') and de.get('has_tenant_id')
+                and not sql.get('system_scope')
+                and not sql.get('nullable_tenant_id'))
+
+
 @functools.lru_cache(maxsize=None)
 def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     """Raw model metadata of a soft-FK parent entity (no enrichment).
@@ -1758,6 +1771,8 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'component': de.get('component'),
         'column_prefixes': prefixes,
         'mandatory_fks': mandatory,
+        'immutable': bool((de.get('sql') or {}).get('immutable')),
+        'immutable_tenant_key': _immutable_tenant_key(de),
     }
 
 
@@ -3736,6 +3751,42 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     _name = _column.get('name') or _column.get('column')
                     if _name:
                         _prefix_by_column[_name] = _column.get('group_prefix') or ''
+            # A REFERENCES constraint is checked against every row, so it can
+            # only name a table whose rows never change; a temporal table holds
+            # closed versions a constraint would accept as current.
+            for fk in fks:
+                if not fk.get('enforce'):
+                    continue
+                parent = _parent_entity_info(
+                    (org_by_table.get(fk.get('table')) or {}).get('org'))
+                if not parent:
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        f":enforce: true but no model declares the table "
+                        f"{fk.get('table')}.")
+                if not parent['immutable']:
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        f":enforce: true but {fk.get('table')} is not an "
+                        "immutable entity; leave it a trigger check.")
+                if fk.get('use_system_tenant'):
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        ":enforce: true and :use_system_tenant: true; a "
+                        "constraint can only match the row's own tenant.")
+                fk['matches_tenant'] = not fk.get('use_no_tenant')
+                if fk['matches_tenant'] != (
+                        parent['immutable_tenant_key']
+                        and bool(domain_entity.get('has_tenant_id'))):
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        ":enforce: true but its tenant scope does not match "
+                        f"the key of {fk.get('table')}; a key that matches "
+                        "the tenant needs both tables tenant-scoped, and "
+                        ":use_no_tenant: needs a target without tenant_id.")
+                fk['skip_check'] = True
+            domain_entity['enforced_foreign_keys'] = [
+                fk for fk in fks if fk.get('enforce')]
             for fk in fks:
                 fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
                 if fk.get('nullable'):
@@ -3908,6 +3959,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # A current-state table keys on the model's own primary key alone --
         # tenant_id stays a column, but out of the key.
         has_tenant_id = domain_entity.get('has_tenant_id', False)
+        domain_entity['immutable_tenant_key'] = _immutable_tenant_key(
+            domain_entity)
         domain_entity['has_tenant_in_pk'] = (
             has_tenant_id
             and not current_state
@@ -3964,6 +4017,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if len(sql_name_base) + longest_suffix > 63:
             sql_name_base = sql_name_base[:63 - longest_suffix]
         domain_entity['sql_name_base'] = sql_name_base
+        for fk in domain_entity.get('enforced_foreign_keys') or []:
+            fk['constraint_name'] = f"{sql_name_base}_{fk['column']}_fk"
+            if len(fk['constraint_name']) > 63:
+                raise ValueError(
+                    f"{model_path}: constraint {fk['constraint_name']} is "
+                    "longer than 63 characters and PostgreSQL would truncate "
+                    "it; shorten the table name or the column name.")
         # RLS policy names are composed from the short table base
         # (market_series_tbl_tenant_isolation_policy), the dominant
         # hand-written shape, while sql_name_base carries the full

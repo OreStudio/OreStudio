@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "datum_catalogue.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cmath>
 #include <format>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,7 +55,9 @@ using ores::marketdata::test::accepted_by_ore;
 using ores::marketdata::test::canonical_key;
 using ores::marketdata::test::catalogue_corpus;
 using ores::marketdata::test::catalogue_forms;
+using ores::marketdata::test::catalogue_enum;
 using ores::marketdata::test::catalogue_line;
+using ores::marketdata::test::catalogue_quote_matrix;
 
 // --- What ORE prints ------------------------------------------------------
 
@@ -75,22 +78,22 @@ std::string ore_period(const std::string& text) {
         ++parts;
         last_unit = unit;
         switch (unit) {
-        case 'D':
-            days += n;
-            day_units = true;
-            break;
-        case 'W':
-            weeks += n;
-            day_units = true;
-            break;
-        case 'M':
-            months += n;
-            month_units = true;
-            break;
-        default:
-            years += n;
-            month_units = true;
-            break;
+            case 'D':
+                days += n;
+                day_units = true;
+                break;
+            case 'W':
+                weeks += n;
+                day_units = true;
+                break;
+            case 'M':
+                months += n;
+                month_units = true;
+                break;
+            default:
+                years += n;
+                month_units = true;
+                break;
         }
     }
     if (parts == 1 && last_unit == 'W')
@@ -146,18 +149,18 @@ std::string ore_date_from(const std::string& period_text) {
             static_cast<char>(std::toupper(static_cast<unsigned char>(period_text[i++])));
         const year_month_day current{result};
         switch (unit) {
-        case 'D':
-            result += days{n};
-            break;
-        case 'W':
-            result += days{7 * n};
-            break;
-        case 'M':
-            result = sys_days{current.year() / (current.month() + months{n}) / current.day()};
-            break;
-        default:
-            result = sys_days{(current.year() + years{n}) / current.month() / current.day()};
-            break;
+            case 'D':
+                result += days{n};
+                break;
+            case 'W':
+                result += days{7 * n};
+                break;
+            case 'M':
+                result = sys_days{current.year() / (current.month() + months{n}) / current.day()};
+                break;
+            default:
+                result = sys_days{(current.year() + years{n}) / current.month() / current.day()};
+                break;
         }
     }
     const weekday wd{result};
@@ -181,8 +184,12 @@ struct expected {
     double scale = 1.0;
 };
 
-expected exact(std::string s) { return {std::move(s)}; }
-expected number_of(const std::string& s, double scale = 1.0) { return {s, true, scale}; }
+expected exact(std::string s) {
+    return {std::move(s)};
+}
+expected number_of(const std::string& s, double scale = 1.0) {
+    return {s, true, scale};
+}
 
 bool same(const expected& e, const std::string& ore) {
     if (!e.numeric)
@@ -203,7 +210,9 @@ bool none_in(const market_datum& d, field f) {
     return std::holds_alternative<none_t>(d.at(f));
 }
 
-std::string period_of(const market_datum& d, field f) { return ore_period(str(d, f)); }
+std::string period_of(const market_datum& d, field f) {
+    return ore_period(str(d, f));
+}
 
 std::string bool_of(const std::string& token) {
     const bool truth = token == "Y" || token == "YES" || token == "TRUE" || token == "True" ||
@@ -236,7 +245,8 @@ expected strike_of(const market_datum& d, field f) {
                    ore_real(a.delta);
         }
         std::string operator()(const moneyness_strike& a) const {
-            return "ore::data::MoneynessStrike:MNY/" + a.moneyness_type + "/" + ore_real(a.moneyness);
+            return "ore::data::MoneynessStrike:MNY/" + a.moneyness_type + "/" +
+                   ore_real(a.moneyness);
         }
     };
     return exact(std::visit(printer{}, s->which()));
@@ -246,12 +256,12 @@ expected strike_of(const market_datum& d, field f) {
 std::string expiry_object_of(const market_datum& d, field f) {
     const auto* t = std::get_if<term>(&d.at(f));
     switch (t->which()) {
-    case term::kind::date:
-        return "ore::data::ExpiryDate:" + ore_date(t->text());
-    case term::kind::continuation:
-        return "ore::data::FutureContinuationExpiry:" + t->text();
-    default:
-        return "ore::data::ExpiryPeriod:" + ore_period(t->text());
+        case term::kind::date:
+            return "ore::data::ExpiryDate:" + ore_date(t->text());
+        case term::kind::continuation:
+            return "ore::data::FutureContinuationExpiry:" + t->text();
+        default:
+            return "ore::data::ExpiryPeriod:" + ore_period(t->text());
     }
 }
 
@@ -288,289 +298,294 @@ std::map<std::string, expected> ore_view(const market_datum& d) {
     using it = instrument_type;
     using fl = field;
     std::map<std::string, expected> v;
-    const auto ccy_or_empty = [&](fl f) { return exact(none_in(d, f) ? "" : str(d, f)); };
+    const auto ccy_or_empty = [&](fl f) {
+        return exact(none_in(d, f) ? "" : str(d, f));
+    };
 
     switch (d.type()) {
-    case it::zero:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["dayCounter"] = exact(day_counter_of(str(d, fl::day_counter)));
-        v["date"] = exact(is_date(d, fl::term) ? ore_date(str(d, fl::term)) : "null");
-        v["tenor"] = exact(is_date(d, fl::term) ? "0D" : period_of(d, fl::term));
-        v["tenorBased"] = exact(is_date(d, fl::term) ? "false" : "true");
-        break;
-    case it::discount:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["date"] = exact(is_date(d, fl::term) ? ore_date(str(d, fl::term)) : "null");
-        v["tenor"] = exact(is_date(d, fl::term) ? "0D" : period_of(d, fl::term));
-        break;
-    case it::mm:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["indexName"] = ccy_or_empty(fl::index_name);
-        v["fwdStart"] = exact(period_of(d, fl::fwd_start));
-        v["term"] = exact(period_of(d, fl::term));
-        break;
-    case it::mm_future:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["expiry"] = exact(str(d, fl::contract_month));
-        v["contract"] = exact(str(d, fl::contract));
-        v["tenor"] = exact(period_of(d, fl::tenor));
-        break;
-    case it::oi_future:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["contractMonth"] = exact(str(d, fl::contract_month));
-        v["contract"] = exact(str(d, fl::contract));
-        v["tenor"] = exact(period_of(d, fl::tenor));
-        break;
-    case it::fra:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["fwdStart"] = exact(period_of(d, fl::fwd_start));
-        v["term"] = exact(period_of(d, fl::term));
-        break;
-    case it::imm_fra:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["imm1"] = exact(str(d, fl::imm1));
-        v["imm2"] = exact(str(d, fl::imm2));
-        break;
-    case it::ir_swap: {
-        const bool dated = is_date(d, fl::fwd_start);
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["indeName"] = ccy_or_empty(fl::index_name);
-        v["tenor"] = exact(period_of(d, fl::tenor));
-        v["fwdStart"] = exact(dated ? "0D" : period_of(d, fl::fwd_start));
-        v["term"] = exact(dated ? "0D" : period_of(d, fl::term));
-        v["startDate"] = exact(dated ? ore_date(str(d, fl::fwd_start)) : "null");
-        v["maturityDate"] = exact(dated ? ore_date(str(d, fl::term)) : "null");
-        break;
-    }
-    case it::basis_swap:
-        v["flatTerm"] = exact(period_of(d, fl::flat_term));
-        v["term"] = exact(period_of(d, fl::term));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["maturity"] = exact(period_of(d, fl::maturity));
-        break;
-    case it::bma_swap:
-        v["term"] = exact(period_of(d, fl::term));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["maturity"] = exact(period_of(d, fl::maturity));
-        break;
-    case it::cc_basis_swap:
-        v["flatCcy"] = exact(str(d, fl::flat_ccy));
-        v["flatTerm"] = exact(period_of(d, fl::flat_term));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["term"] = exact(period_of(d, fl::term));
-        v["maturity"] = exact(period_of(d, fl::maturity));
-        break;
-    case it::cc_fix_float_swap:
-        v["floatCurrency"] = exact(str(d, fl::float_ccy));
-        v["floatTenor"] = exact(period_of(d, fl::float_tenor));
-        v["fixedCurrency"] = exact(str(d, fl::fixed_ccy));
-        v["fixedTenor"] = exact(period_of(d, fl::fixed_tenor));
-        v["maturity"] = exact(period_of(d, fl::maturity));
-        break;
-    case it::cds:
-        v["underlyingName"] = exact(str(d, fl::underlying_name));
-        v["seniority"] = ccy_or_empty(fl::seniority);
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["docClause"] = ccy_or_empty(fl::doc_clause);
-        v["term"] = exact(none_in(d, fl::term) ? "0D" : period_of(d, fl::term));
-        v["runningSpread"] = none_in(d, fl::running_spread)
-                                 ? exact("null")
-                                 : number_of(str(d, fl::running_spread), 10000.0);
-        break;
-    case it::hazard_rate:
-        v["underlyingName"] = exact(str(d, fl::underlying_name));
-        v["seniority"] = exact(str(d, fl::seniority));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["docClause"] = ccy_or_empty(fl::doc_clause);
-        v["term"] = exact(period_of(d, fl::term));
-        break;
-    case it::recovery_rate:
-    case it::assumed_recovery_rate:
-        v["underlyingName"] = exact(str(d, fl::underlying_name));
-        v["seniority"] = ccy_or_empty(fl::seniority);
-        v["ccy"] = ccy_or_empty(fl::ccy);
-        v["docClause"] = ccy_or_empty(fl::doc_clause);
-        break;
-    case it::cds_index:
-    case it::index_cds_tranche:
-        v["cdsIndexName"] = exact(str(d, fl::cds_index_name));
-        v["term"] = exact(period_of(d, fl::term));
-        v["attachmentPoint"] = d.type() == it::cds_index || none_in(d, fl::attachment_point)
-                                   ? number_of("0")
-                                   : number_of(str(d, fl::attachment_point));
-        v["detachmentPoint"] = number_of(str(d, fl::detachment_point));
-        break;
-    case it::fx_spot:
-        v["unitCcy"] = exact(str(d, fl::unit_ccy));
-        v["ccy"] = exact(str(d, fl::ccy));
-        break;
-    case it::fx_fwd: {
-        v["unitCcy"] = exact(str(d, fl::unit_ccy));
-        v["ccy"] = exact(str(d, fl::ccy));
-        const auto* t = d.get<fl::term>();
-        v["term"] = exact(t->which() == term::kind::fx_tenor ? t->text() : term_text(d, fl::term));
-        v["conversionFactor"] = number_of("1");
-        break;
-    }
-    case it::fx_option:
-        v["unitCcy"] = exact(str(d, fl::unit_ccy));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["expiry"] = exact(period_of(d, fl::expiry));
-        v["strike"] = exact(str(d, fl::strike_label));
-        break;
-    case it::swaption:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["quoteTag"] = ccy_or_empty(fl::quote_tag);
-        v["term"] = exact(period_of(d, fl::term));
-        if (!none_in(d, fl::expiry)) {
-            v["expiry"] = exact(period_of(d, fl::expiry));
-            v["dimension"] = exact(str(d, fl::dimension));
-            v["strike"] = number_of(none_in(d, fl::strike_level) ? "0" : str(d, fl::strike_level));
-            v["isPayer"] = exact(str(d, fl::payer_receiver) == "R" ? "false" : "true");
-        }
-        break;
-    case it::capfloor:
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["indexName"] = ccy_or_empty(fl::index_name);
-        if (none_in(d, fl::term)) {
-            v["indexTenor"] = exact(period_of(d, fl::index_tenor));
-        } else {
-            v["term"] = exact(period_of(d, fl::term));
-            v["underlying"] = exact(period_of(d, fl::index_tenor));
-            v["atm"] = exact(bool_of(str(d, fl::atm)));
-            v["relative"] = exact(bool_of(str(d, fl::relative)));
-            v["strike"] = number_of(str(d, fl::strike_level));
-            v["isCap"] = exact(str(d, fl::cap_floor) == "F" ? "false" : "true");
-        }
-        break;
-    case it::bond_option:
-        v["qualifier"] = exact(str(d, fl::qualifier));
-        v["term"] = exact(period_of(d, fl::term));
-        if (!none_in(d, fl::expiry))
-            v["expiry"] = exact(period_of(d, fl::expiry));
-        break;
-    case it::zc_inflation_swap:
-    case it::yy_inflation_swap:
-        v["index"] = exact(str(d, fl::index));
-        v["term"] = exact(period_of(d, fl::term));
-        break;
-    case it::zc_inflation_capfloor:
-    case it::yy_inflation_capfloor:
-        v["index"] = exact(str(d, fl::index));
-        v["term"] = exact(period_of(d, fl::term));
-        v["isCap"] = exact(str(d, fl::cap_floor) == "C" ? "true" : "false");
-        v["strike"] = exact(str(d, fl::strike_level));
-        break;
-    case it::seasonality:
-        v["index"] = exact(str(d, fl::index));
-        v["type"] = exact(str(d, fl::seasonality_type));
-        v["month"] = exact(str(d, fl::month));
-        break;
-    case it::equity_spot:
-        v["eqName"] = exact(str(d, fl::eq_name));
-        v["ccy"] = exact(str(d, fl::ccy));
-        break;
-    case it::equity_fwd:
-    case it::equity_dividend: {
-        v["eqName"] = exact(str(d, fl::eq_name));
-        v["ccy"] = exact(str(d, fl::ccy));
-        const auto date = is_date(d, fl::expiry) ? ore_date(str(d, fl::expiry))
-                                                 : ore_date_from(str(d, fl::expiry));
-        v[d.type() == it::equity_fwd ? "expiryDate" : "tenorDate"] = exact(date);
-        break;
-    }
-    case it::equity_option:
-        v["eqName"] = exact(str(d, fl::eq_name));
-        v["ccy"] = exact(str(d, fl::ccy));
-        v["expiry"] = exact(str(d, fl::expiry));
-        v["strike"] = strike_of(d, fl::strike);
-        v["isCall"] = exact(str(d, fl::option_type) == "P" ? "false" : "true");
-        break;
-    case it::bond:
-    case it::cpr:
-        v["securityID"] = exact(str(d, fl::security_id));
-        break;
-    case it::bond_future:
-        v["securityID"] = exact(str(d, fl::security_id));
-        if (!none_in(d, fl::future_contract))
-            v["futureContract"] = exact(str(d, fl::future_contract));
-        break;
-    case it::bond_future_option:
-        v["contractName"] = exact(str(d, fl::contract_name));
-        v["expiry"] = exact(str(d, fl::expiry));
-        v["strike"] = strike_of(d, fl::strike);
-        v["isCall"] = exact(str(d, fl::option_type) == "P" ? "false" : "true");
-        break;
-    case it::index_cds_option:
-        v["indexName"] = exact(str(d, fl::index_name));
-        v["indexTerm"] = ccy_or_empty(fl::index_term);
-        v["expiry"] = exact(expiry_object_of(d, fl::expiry));
-        v["strike"] = strike_of(d, fl::strike);
-        v["side"] = exact(str(d, fl::side) == "Seller" || str(d, fl::side) == "S" ||
-                                  str(d, fl::side) == "Receiver"
-                              ? "Seller"
-                              : "Buyer");
-        break;
-    case it::commodity_spot:
-        v["commodityName"] = exact(str(d, fl::commodity_name));
-        v["quoteCurrency"] = exact(str(d, fl::ccy));
-        break;
-    case it::commodity_fwd: {
-        v["commodityName"] = exact(str(d, fl::commodity_name));
-        v["quoteCurrency"] = exact(str(d, fl::ccy));
-        const auto* t = d.get<fl::expiry>();
-        if (t->which() == term::kind::fx_tenor) {
-            v["expiryDate"] = exact("null");
-            v["tenor"] = exact("1D");
-            v["startTenor"] =
-                exact(t->text() == "ON" ? "0D" : t->text() == "TN" ? "1D" : "none");
-            v["tenorBased"] = exact("true");
-        } else if (t->which() == term::kind::date) {
-            v["expiryDate"] = exact(ore_date(t->text()));
-            v["tenor"] = exact("0D");
-            v["startTenor"] = exact("none");
-            v["tenorBased"] = exact("false");
-        } else {
-            v["expiryDate"] = exact("null");
-            v["tenor"] = exact(ore_period(t->text()));
-            v["startTenor"] = exact("none");
-            v["tenorBased"] = exact("true");
-        }
-        break;
-    }
-    case it::commodity_option:
-    case it::commodity_calendar_spread_option:
-        v["commodityName"] = exact(str(d, fl::commodity_name));
-        if (d.quote() == quote_type::shift)
+        case it::zero:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["dayCounter"] = exact(day_counter_of(str(d, fl::day_counter)));
+            v["date"] = exact(is_date(d, fl::term) ? ore_date(str(d, fl::term)) : "null");
+            v["tenor"] = exact(is_date(d, fl::term) ? "0D" : period_of(d, fl::term));
+            v["tenorBased"] = exact(is_date(d, fl::term) ? "false" : "true");
             break;
-        v["quoteCurrency"] = exact(str(d, fl::ccy));
-        v["expiry"] = exact(expiry_object_of(d, fl::expiry));
-        v["strike"] = strike_of(d, fl::strike);
-        if (d.type() == it::commodity_option)
-            v["optionType"] = exact(str(d, fl::option_type) == "P" ? "Put" : "Call");
-        else {
-            v["offset"] = exact(str(d, fl::offset));
-            v["optionType"] = exact("Call");
+        case it::discount:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["date"] = exact(is_date(d, fl::term) ? ore_date(str(d, fl::term)) : "null");
+            v["tenor"] = exact(is_date(d, fl::term) ? "0D" : period_of(d, fl::term));
+            break;
+        case it::mm:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["indexName"] = ccy_or_empty(fl::index_name);
+            v["fwdStart"] = exact(period_of(d, fl::fwd_start));
+            v["term"] = exact(period_of(d, fl::term));
+            break;
+        case it::mm_future:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["expiry"] = exact(str(d, fl::contract_month));
+            v["contract"] = exact(str(d, fl::contract));
+            v["tenor"] = exact(period_of(d, fl::tenor));
+            break;
+        case it::oi_future:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["contractMonth"] = exact(str(d, fl::contract_month));
+            v["contract"] = exact(str(d, fl::contract));
+            v["tenor"] = exact(period_of(d, fl::tenor));
+            break;
+        case it::fra:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["fwdStart"] = exact(period_of(d, fl::fwd_start));
+            v["term"] = exact(period_of(d, fl::term));
+            break;
+        case it::imm_fra:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["imm1"] = exact(str(d, fl::imm1));
+            v["imm2"] = exact(str(d, fl::imm2));
+            break;
+        case it::ir_swap: {
+            const bool dated = is_date(d, fl::fwd_start);
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["indeName"] = ccy_or_empty(fl::index_name);
+            v["tenor"] = exact(period_of(d, fl::tenor));
+            v["fwdStart"] = exact(dated ? "0D" : period_of(d, fl::fwd_start));
+            v["term"] = exact(dated ? "0D" : period_of(d, fl::term));
+            v["startDate"] = exact(dated ? ore_date(str(d, fl::fwd_start)) : "null");
+            v["maturityDate"] = exact(dated ? ore_date(str(d, fl::term)) : "null");
+            break;
         }
-        break;
-    case it::correlation:
-        v["index1"] = exact(str(d, fl::index1));
-        v["index2"] = exact(str(d, fl::index2));
-        v["expiry"] = exact(str(d, fl::expiry));
-        v["strike"] = exact(str(d, fl::strike_label));
-        break;
-    case it::rating:
-        v["id"] = exact(str(d, fl::rating_name));
-        v["fromRating"] = exact(str(d, fl::from_rating));
-        v["toRating"] = exact(str(d, fl::to_rating));
-        break;
-    case it::shape_profile:
-        v["quoteName"] = exact(str(d, fl::quote_name));
-        v["deliveryDate"] = exact(ore_date(str(d, fl::delivery_date)));
-        v["startTimeInSec"] = exact(str(d, fl::start_time_in_sec));
-        v["timeUnit"] = exact(time_unit_of(str(d, fl::time_unit)));
-        v["isDST"] = exact(none_in(d, fl::dst) ? "false" : "true");
-        break;
+        case it::basis_swap:
+            v["flatTerm"] = exact(period_of(d, fl::flat_term));
+            v["term"] = exact(period_of(d, fl::term));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["maturity"] = exact(period_of(d, fl::maturity));
+            break;
+        case it::bma_swap:
+            v["term"] = exact(period_of(d, fl::term));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["maturity"] = exact(period_of(d, fl::maturity));
+            break;
+        case it::cc_basis_swap:
+            v["flatCcy"] = exact(str(d, fl::flat_ccy));
+            v["flatTerm"] = exact(period_of(d, fl::flat_term));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["term"] = exact(period_of(d, fl::term));
+            v["maturity"] = exact(period_of(d, fl::maturity));
+            break;
+        case it::cc_fix_float_swap:
+            v["floatCurrency"] = exact(str(d, fl::float_ccy));
+            v["floatTenor"] = exact(period_of(d, fl::float_tenor));
+            v["fixedCurrency"] = exact(str(d, fl::fixed_ccy));
+            v["fixedTenor"] = exact(period_of(d, fl::fixed_tenor));
+            v["maturity"] = exact(period_of(d, fl::maturity));
+            break;
+        case it::cds:
+            v["underlyingName"] = exact(str(d, fl::underlying_name));
+            v["seniority"] = ccy_or_empty(fl::seniority);
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["docClause"] = ccy_or_empty(fl::doc_clause);
+            v["term"] = exact(none_in(d, fl::term) ? "0D" : period_of(d, fl::term));
+            v["runningSpread"] = none_in(d, fl::running_spread) ?
+                                     exact("null") :
+                                     number_of(str(d, fl::running_spread), 10000.0);
+            break;
+        case it::hazard_rate:
+            v["underlyingName"] = exact(str(d, fl::underlying_name));
+            v["seniority"] = exact(str(d, fl::seniority));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["docClause"] = ccy_or_empty(fl::doc_clause);
+            v["term"] = exact(period_of(d, fl::term));
+            break;
+        case it::recovery_rate:
+        case it::assumed_recovery_rate:
+            v["underlyingName"] = exact(str(d, fl::underlying_name));
+            v["seniority"] = ccy_or_empty(fl::seniority);
+            v["ccy"] = ccy_or_empty(fl::ccy);
+            v["docClause"] = ccy_or_empty(fl::doc_clause);
+            break;
+        case it::cds_index:
+        case it::index_cds_tranche:
+            v["cdsIndexName"] = exact(str(d, fl::cds_index_name));
+            v["term"] = exact(period_of(d, fl::term));
+            v["attachmentPoint"] = d.type() == it::cds_index || none_in(d, fl::attachment_point) ?
+                                       number_of("0") :
+                                       number_of(str(d, fl::attachment_point));
+            v["detachmentPoint"] = number_of(str(d, fl::detachment_point));
+            break;
+        case it::fx_spot:
+            v["unitCcy"] = exact(str(d, fl::unit_ccy));
+            v["ccy"] = exact(str(d, fl::ccy));
+            break;
+        case it::fx_fwd: {
+            v["unitCcy"] = exact(str(d, fl::unit_ccy));
+            v["ccy"] = exact(str(d, fl::ccy));
+            const auto* t = d.get<fl::term>();
+            v["term"] =
+                exact(t->which() == term::kind::fx_tenor ? t->text() : term_text(d, fl::term));
+            v["conversionFactor"] = number_of("1");
+            break;
+        }
+        case it::fx_option:
+            v["unitCcy"] = exact(str(d, fl::unit_ccy));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["expiry"] = exact(period_of(d, fl::expiry));
+            v["strike"] = exact(str(d, fl::strike_label));
+            break;
+        case it::swaption:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["quoteTag"] = ccy_or_empty(fl::quote_tag);
+            v["term"] = exact(period_of(d, fl::term));
+            if (!none_in(d, fl::expiry)) {
+                v["expiry"] = exact(period_of(d, fl::expiry));
+                v["dimension"] = exact(str(d, fl::dimension));
+                v["strike"] =
+                    number_of(none_in(d, fl::strike_level) ? "0" : str(d, fl::strike_level));
+                v["isPayer"] = exact(str(d, fl::payer_receiver) == "R" ? "false" : "true");
+            }
+            break;
+        case it::capfloor:
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["indexName"] = ccy_or_empty(fl::index_name);
+            if (none_in(d, fl::term)) {
+                v["indexTenor"] = exact(period_of(d, fl::index_tenor));
+            } else {
+                v["term"] = exact(period_of(d, fl::term));
+                v["underlying"] = exact(period_of(d, fl::index_tenor));
+                v["atm"] = exact(bool_of(str(d, fl::atm)));
+                v["relative"] = exact(bool_of(str(d, fl::relative)));
+                v["strike"] = number_of(str(d, fl::strike_level));
+                v["isCap"] = exact(str(d, fl::cap_floor) == "F" ? "false" : "true");
+            }
+            break;
+        case it::bond_option:
+            v["qualifier"] = exact(str(d, fl::qualifier));
+            v["term"] = exact(period_of(d, fl::term));
+            if (!none_in(d, fl::expiry))
+                v["expiry"] = exact(period_of(d, fl::expiry));
+            break;
+        case it::zc_inflation_swap:
+        case it::yy_inflation_swap:
+            v["index"] = exact(str(d, fl::index));
+            v["term"] = exact(period_of(d, fl::term));
+            break;
+        case it::zc_inflation_capfloor:
+        case it::yy_inflation_capfloor:
+            v["index"] = exact(str(d, fl::index));
+            v["term"] = exact(period_of(d, fl::term));
+            v["isCap"] = exact(str(d, fl::cap_floor) == "C" ? "true" : "false");
+            v["strike"] = exact(str(d, fl::strike_level));
+            break;
+        case it::seasonality:
+            v["index"] = exact(str(d, fl::index));
+            v["type"] = exact(str(d, fl::seasonality_type));
+            v["month"] = exact(str(d, fl::month));
+            break;
+        case it::equity_spot:
+            v["eqName"] = exact(str(d, fl::eq_name));
+            v["ccy"] = exact(str(d, fl::ccy));
+            break;
+        case it::equity_fwd:
+        case it::equity_dividend: {
+            v["eqName"] = exact(str(d, fl::eq_name));
+            v["ccy"] = exact(str(d, fl::ccy));
+            const auto date = is_date(d, fl::expiry) ? ore_date(str(d, fl::expiry)) :
+                                                       ore_date_from(str(d, fl::expiry));
+            v[d.type() == it::equity_fwd ? "expiryDate" : "tenorDate"] = exact(date);
+            break;
+        }
+        case it::equity_option:
+            v["eqName"] = exact(str(d, fl::eq_name));
+            v["ccy"] = exact(str(d, fl::ccy));
+            v["expiry"] = exact(str(d, fl::expiry));
+            v["strike"] = strike_of(d, fl::strike);
+            v["isCall"] = exact(str(d, fl::option_type) == "P" ? "false" : "true");
+            break;
+        case it::bond:
+        case it::cpr:
+            v["securityID"] = exact(str(d, fl::security_id));
+            break;
+        case it::bond_future:
+            v["securityID"] = exact(str(d, fl::security_id));
+            if (!none_in(d, fl::future_contract))
+                v["futureContract"] = exact(str(d, fl::future_contract));
+            break;
+        case it::bond_future_option:
+            v["contractName"] = exact(str(d, fl::contract_name));
+            v["expiry"] = exact(str(d, fl::expiry));
+            v["strike"] = strike_of(d, fl::strike);
+            v["isCall"] = exact(str(d, fl::option_type) == "P" ? "false" : "true");
+            break;
+        case it::index_cds_option:
+            v["indexName"] = exact(str(d, fl::index_name));
+            v["indexTerm"] = ccy_or_empty(fl::index_term);
+            v["expiry"] = exact(expiry_object_of(d, fl::expiry));
+            v["strike"] = strike_of(d, fl::strike);
+            v["side"] = exact(str(d, fl::side) == "Seller" || str(d, fl::side) == "S" ||
+                                      str(d, fl::side) == "Receiver" ?
+                                  "Seller" :
+                                  "Buyer");
+            break;
+        case it::commodity_spot:
+            v["commodityName"] = exact(str(d, fl::commodity_name));
+            v["quoteCurrency"] = exact(str(d, fl::ccy));
+            break;
+        case it::commodity_fwd: {
+            v["commodityName"] = exact(str(d, fl::commodity_name));
+            v["quoteCurrency"] = exact(str(d, fl::ccy));
+            const auto* t = d.get<fl::expiry>();
+            if (t->which() == term::kind::fx_tenor) {
+                v["expiryDate"] = exact("null");
+                v["tenor"] = exact("1D");
+                v["startTenor"] = exact(t->text() == "ON" ? "0D" :
+                                        t->text() == "TN" ? "1D" :
+                                                            "none");
+                v["tenorBased"] = exact("true");
+            } else if (t->which() == term::kind::date) {
+                v["expiryDate"] = exact(ore_date(t->text()));
+                v["tenor"] = exact("0D");
+                v["startTenor"] = exact("none");
+                v["tenorBased"] = exact("false");
+            } else {
+                v["expiryDate"] = exact("null");
+                v["tenor"] = exact(ore_period(t->text()));
+                v["startTenor"] = exact("none");
+                v["tenorBased"] = exact("true");
+            }
+            break;
+        }
+        case it::commodity_option:
+        case it::commodity_calendar_spread_option:
+            v["commodityName"] = exact(str(d, fl::commodity_name));
+            if (d.quote() == quote_type::shift)
+                break;
+            v["quoteCurrency"] = exact(str(d, fl::ccy));
+            v["expiry"] = exact(expiry_object_of(d, fl::expiry));
+            v["strike"] = strike_of(d, fl::strike);
+            if (d.type() == it::commodity_option)
+                v["optionType"] = exact(str(d, fl::option_type) == "P" ? "Put" : "Call");
+            else {
+                v["offset"] = exact(str(d, fl::offset));
+                v["optionType"] = exact("Call");
+            }
+            break;
+        case it::correlation:
+            v["index1"] = exact(str(d, fl::index1));
+            v["index2"] = exact(str(d, fl::index2));
+            v["expiry"] = exact(str(d, fl::expiry));
+            v["strike"] = exact(str(d, fl::strike_label));
+            break;
+        case it::rating:
+            v["id"] = exact(str(d, fl::rating_name));
+            v["fromRating"] = exact(str(d, fl::from_rating));
+            v["toRating"] = exact(str(d, fl::to_rating));
+            break;
+        case it::shape_profile:
+            v["quoteName"] = exact(str(d, fl::quote_name));
+            v["deliveryDate"] = exact(ore_date(str(d, fl::delivery_date)));
+            v["startTimeInSec"] = exact(str(d, fl::start_time_in_sec));
+            v["timeUnit"] = exact(time_unit_of(str(d, fl::time_unit)));
+            v["isDST"] = exact(none_in(d, fl::dst) ? "false" : "true");
+            break;
     }
     return v;
 }
@@ -630,7 +645,18 @@ struct tally {
 /// a token and drops the rest, so no datum could write the key back.
 const std::map<std::string, std::string> deliberately_refused{
     {"INDEX_CDS_OPTION/RATE_LNVOL/CDXIG/5Y/1Y",
-     "ORE reads 1Y as a strike of 1, not as the expiry after an index term"}};
+     "ORE reads 1Y as a strike of 1, not as the expiry after an index term"},
+    {"BOND_FUTURE/PRICE/ISIN0001/TYM26",
+     "ORE ignores every token after the security of a bond future price"},
+    {"INDEX_CDS_TRANCHE/BASE_CORRELATION/CDXIG/5Y/0.03/0.07",
+     "ORE reads 0.03 as the detachment point and drops 0.07"}};
+
+/// The quote token of @p key, with an alias in its canonical spelling.
+std::string quote_token_of(const std::string& key) {
+    const auto canonical = canonical_key(key);
+    const auto first = canonical.find('/');
+    return canonical.substr(first + 1, canonical.find('/', first + 1) - first - 1);
+}
 
 /// Checks every catalogue line: refusals, write-back and ORE's fields.
 tally check(const std::vector<catalogue_line>& lines) {
@@ -639,9 +665,17 @@ tally check(const std::vector<catalogue_line>& lines) {
         ++t.lines;
         const auto& key = line.at("key");
         const auto datum = ore_key_codec::read(key);
-        if (deliberately_refused.contains(key)) {
+        if (const auto it = deliberately_refused.find(canonical_key(key));
+            it != deliberately_refused.end()) {
             if (datum)
-                t.fail(key, "the codec should refuse it: " + deliberately_refused.at(key));
+                t.fail(key, "the codec should refuse it: " + it->second);
+            continue;
+        }
+        if (accepted_by_ore(line) && line.at("quoteType") != quote_token_of(key)) {
+            if (datum)
+                t.fail(key,
+                       "ORE ignores its quote token and records " + line.at("quoteType") +
+                           ", so the codec should refuse it");
             continue;
         }
         if (!accepted_by_ore(line)) {
@@ -680,6 +714,56 @@ TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", tags) {
     for (const auto& f : t.failures)
         UNSCOPED_INFO(f);
     CHECK(t.failures.empty());
+}
+
+TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form", tags) {
+    const auto t = check(catalogue_quote_matrix());
+    CHECK(t.lines == catalogue_quote_matrix().size());
+    for (const auto& f : t.failures)
+        UNSCOPED_INFO(f);
+    CHECK(t.failures.empty());
+}
+
+TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read", tags) {
+    // Each token ORE's parser reads must open a key that both ORE and the
+    // codec accept, so an alias or a type with no documented form fails here.
+    std::set<std::string> instrument_tokens;
+    std::set<std::string> quote_tokens;
+    for (const auto* lines : {&catalogue_forms(), &catalogue_quote_matrix()}) {
+        for (const auto& line : *lines) {
+            const auto& key = line.at("key");
+            if (!accepted_by_ore(line) || !ore_key_codec::read(key))
+                continue;
+            const auto first = key.find('/');
+            const auto second = key.find('/', first + 1);
+            instrument_tokens.insert(key.substr(0, first));
+            quote_tokens.insert(key.substr(first + 1, second - first - 1));
+        }
+    }
+
+    const auto instruments = catalogue_enum("instrument_types.txt");
+    CHECK(instruments.size() == instrument_type_count);
+    for (const auto& m : instruments) {
+        INFO("ORE instrument type: " << m.name);
+        CHECK(instrument_type_named(m.name));
+        CHECK_FALSE(m.tokens.empty());
+        for (const auto& token : m.tokens) {
+            INFO("token: " << token);
+            CHECK(instrument_tokens.contains(token));
+        }
+    }
+
+    const auto quotes = catalogue_enum("quote_types.txt");
+    CHECK(quotes.size() == quote_type_count);
+    for (const auto& m : quotes) {
+        INFO("ORE quote type: " << m.name);
+        const auto named = m.name == "NONE" ? quote_type_named("NULL") : quote_type_named(m.name);
+        CHECK(named);
+        for (const auto& token : m.tokens) {
+            INFO("token: " << token);
+            CHECK(quote_tokens.contains(token));
+        }
+    }
 }
 
 TEST_CASE("an_alias_reads_as_its_type_and_writes_canonically", tags) {

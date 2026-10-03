@@ -77,6 +77,37 @@ inline const std::vector<catalogue_line>& catalogue_corpus() {
     return result;
 }
 
+/// Every accepted form with each of ORE's quote tokens in turn.
+inline const std::vector<catalogue_line>& catalogue_quote_matrix() {
+    static const auto result = catalogue_lines_of(
+        ores::platform::filesystem::file::read_content(catalogue_dir() / "quote_matrix.jsonl"));
+    return result;
+}
+
+/// One member of an ORE enum and the key tokens ORE's parser reads as it.
+struct enum_member {
+    std::string name;
+    std::vector<std::string> tokens;
+};
+
+/// The members of instrument_types.txt or quote_types.txt.
+inline std::vector<enum_member> catalogue_enum(const std::string& file) {
+    std::vector<enum_member> result;
+    std::istringstream stream(
+        ores::platform::filesystem::file::read_content(catalogue_dir() / file));
+    std::string line;
+    while (std::getline(stream, line)) {
+        std::istringstream words(line);
+        enum_member m;
+        words >> m.name;
+        for (std::string token; words >> token;)
+            m.tokens.push_back(token);
+        if (!m.name.empty())
+            result.push_back(std::move(m));
+    }
+    return result;
+}
+
 inline bool accepted_by_ore(const catalogue_line& line) {
     return line.at("accepted") == "true";
 }

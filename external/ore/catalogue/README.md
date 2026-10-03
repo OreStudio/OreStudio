@@ -9,7 +9,9 @@ the class declares, or ORE's error for a key it refuses. The oresmd key codec in
 |------|---------------|
 | `forms.jsonl` | One line per key in `tools/datum_catalogue/forms.txt`: every form ORE's parser documents, and keys it refuses |
 | `corpus.jsonl.gz` | One line per distinct key in the example corpus under `examples/` |
+| `quote_matrix.jsonl` | One line per accepted form in `forms.jsonl` with each quote token in turn: most of ORE's parser cases never check the quote type, so this records which quote types each form admits |
 | `instrument_types.txt` | ORE's `InstrumentType` enum, each member with the key tokens its parser reads as it |
+| `quote_types.txt` | ORE's `QuoteType` enum, each member with the key tokens its parser reads as it; `HAZARD_RATE` has none, and `NULL` names `NONE` |
 | `ore_version.txt` | The ORE tag and commit the catalogue came from, and the gzip that compressed it |
 
 Every value is a string. The as-of date is QuantLib's earliest date, so a key

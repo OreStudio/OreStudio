@@ -87,44 +87,44 @@ market_datum read_shape_profile(quote_type q, tokens rest) {
 
 market_datum read_securities(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::bond:
-        // BOND/PRICE|YIELD_SPREAD/securityID
-        require_quote(q, {quote_type::price, quote_type::yield_spread});
-        require_size(rest, {1});
-        return datum_builder(t, q).set(f::security_id, text(rest[0])).build();
-    case it::bond_future:
-        return read_bond_future(q, rest);
-    case it::bond_future_option:
-        return read_bond_future_option(q, rest);
-    case it::correlation:
-        // CORRELATION/RATE|PRICE/index1/index2/expiry/strike, the strike a
-        // label ORE keeps as text.
-        require_quote(q, {quote_type::rate, quote_type::price});
-        require_size(rest, {4});
-        return datum_builder(t, q)
-            .set(f::index1, text(rest[0]))
-            .set(f::index2, text(rest[1]))
-            .set(f::expiry, period_or_date(rest[2]))
-            .set(f::strike_label, text(rest[3]))
-            .build();
-    case it::cpr:
-        // CPR/RATE/securityID
-        require_quote(q, {quote_type::rate});
-        require_size(rest, {1});
-        return datum_builder(t, q).set(f::security_id, text(rest[0])).build();
-    case it::rating:
-        // RATING/TRANSITION_PROBABILITY/name/from/to
-        require_quote(q, {quote_type::transition_probability});
-        require_size(rest, {3});
-        return datum_builder(t, q)
-            .set(f::rating_name, text(rest[0]))
-            .set(f::from_rating, text(rest[1]))
-            .set(f::to_rating, text(rest[2]))
-            .build();
-    case it::shape_profile:
-        return read_shape_profile(q, rest);
-    default:
-        throw std::logic_error("read_securities called for a type it does not read");
+        case it::bond:
+            // BOND/PRICE|YIELD_SPREAD/securityID
+            require_quote(q, {quote_type::price, quote_type::yield_spread});
+            require_size(rest, {1});
+            return datum_builder(t, q).set(f::security_id, text(rest[0])).build();
+        case it::bond_future:
+            return read_bond_future(q, rest);
+        case it::bond_future_option:
+            return read_bond_future_option(q, rest);
+        case it::correlation:
+            // CORRELATION/RATE|PRICE/index1/index2/expiry/strike, the strike a
+            // label ORE keeps as text.
+            require_quote(q, {quote_type::rate, quote_type::price});
+            require_size(rest, {4});
+            return datum_builder(t, q)
+                .set(f::index1, text(rest[0]))
+                .set(f::index2, text(rest[1]))
+                .set(f::expiry, period_or_date(rest[2]))
+                .set(f::strike_label, text(rest[3]))
+                .build();
+        case it::cpr:
+            // CPR/RATE/securityID
+            require_quote(q, {quote_type::rate});
+            require_size(rest, {1});
+            return datum_builder(t, q).set(f::security_id, text(rest[0])).build();
+        case it::rating:
+            // RATING/TRANSITION_PROBABILITY/name/from/to
+            require_quote(q, {quote_type::transition_probability});
+            require_size(rest, {3});
+            return datum_builder(t, q)
+                .set(f::rating_name, text(rest[0]))
+                .set(f::from_rating, text(rest[1]))
+                .set(f::to_rating, text(rest[2]))
+                .build();
+        case it::shape_profile:
+            return read_shape_profile(q, rest);
+        default:
+            throw std::logic_error("read_securities called for a type it does not read");
     }
 }
 

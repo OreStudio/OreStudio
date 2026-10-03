@@ -62,26 +62,29 @@ market_datum read_equity_option(quote_type q, tokens rest) {
 
 market_datum read_equity(instrument_type t, quote_type q, tokens rest) {
     switch (t) {
-    case it::equity_spot:
-        // EQUITY/PRICE/name/ccy
-        require_quote(q, {quote_type::price});
-        require_size(rest, {2});
-        return datum_builder(t, q).set(f::eq_name, text(rest[0])).set(f::ccy, text(rest[1])).build();
-    case it::equity_fwd:
-    case it::equity_dividend:
-        // EQUITY_FWD/PRICE/name/ccy/expiry and EQUITY_DIVIDEND/RATE/name/ccy/expiry,
-        // the expiry a period or a date.
-        require_quote(q, {t == it::equity_fwd ? quote_type::price : quote_type::rate});
-        require_size(rest, {3});
-        return datum_builder(t, q)
-            .set(f::eq_name, text(rest[0]))
-            .set(f::ccy, text(rest[1]))
-            .set(f::expiry, period_or_date(rest[2]))
-            .build();
-    case it::equity_option:
-        return read_equity_option(q, rest);
-    default:
-        throw std::logic_error("read_equity called for a type it does not read");
+        case it::equity_spot:
+            // EQUITY/PRICE/name/ccy
+            require_quote(q, {quote_type::price});
+            require_size(rest, {2});
+            return datum_builder(t, q)
+                .set(f::eq_name, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .build();
+        case it::equity_fwd:
+        case it::equity_dividend:
+            // EQUITY_FWD/PRICE/name/ccy/expiry and EQUITY_DIVIDEND/RATE/name/ccy/expiry,
+            // the expiry a period or a date.
+            require_quote(q, {t == it::equity_fwd ? quote_type::price : quote_type::rate});
+            require_size(rest, {3});
+            return datum_builder(t, q)
+                .set(f::eq_name, text(rest[0]))
+                .set(f::ccy, text(rest[1]))
+                .set(f::expiry, period_or_date(rest[2]))
+                .build();
+        case it::equity_option:
+            return read_equity_option(q, rest);
+        default:
+            throw std::logic_error("read_equity called for a type it does not read");
     }
 }
 

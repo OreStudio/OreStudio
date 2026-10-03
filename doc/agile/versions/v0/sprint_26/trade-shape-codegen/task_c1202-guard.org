@@ -8,7 +8,7 @@
 #+filetags: :trade-shape-codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/c1202-guard
-#+pr:
+#+pr: 2532
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2532][#2532]] | [agile] Abandon the C1202 guard and close the code generator story |
 
 * Review
 

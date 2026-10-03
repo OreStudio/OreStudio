@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:nats:messaging:protocol:specification:
 #+created: 2026-09-21
-#+updated: 2026-09-21
+#+updated: 2026-10-03
 
 * Summary
 
@@ -308,17 +308,90 @@ Three rules make the contract unambiguous.
   have.
 - *Ordering is stated, never implied.* A page of an unordered set is not
   reproducible, so the request names its sort and the service honours it. Where
-  a caller asks for no particular order, the order is by key, so that paging is
-  stable across calls.
-- *Filtering is a record, not a query language.* A filter is a record with one
-  optional member per filterable field, each carrying the field's own type.
-  There is no free-text query string and no expression to parse. A resource
-  that supports no filtering simply has no filter record.
+  a caller asks for no particular order, the order is the model's default, and
+  the key always breaks a tie, so that paging is stable across calls. See *The
+  stated order*.
+- *Filtering is a record, not a query language.* A filter is a record with
+  optional, typed members. There is no expression to parse and no operator a
+  caller chooses. A resource that supports no filtering simply has no filter
+  record. See *The filter record*.
 
 =list= replaces every read that returned a filtered set: an entity's versions
 and the entities beneath a node in a hierarchy are scoped reads of collections
 in their own right, and they differ from the plain case only in how the scope is
 named.
+
+*** The stated order
+
+#+begin_src
+order {
+    field      : string   -- empty means the default order
+    descending : bool     -- default false
+}
+#+end_src
+
+The model states which fields a list can be ordered by. A column declares
+=:sortable: true=, and the entity declares =:default_order:= in its flags: a
+sortable column, optionally followed by =desc=. An entity that declares no
+default order is ordered by its key.
+
+- *An empty field is the default order.* =descending= with an empty field
+  reverses the default order.
+- *A sortable field is honoured.* The page is ordered by that field, in the
+  direction stated.
+- *Any other field is refused.* The outcome is =invalid= with the code
+  =order_not_supported=, and the message names the field. A field that is not
+  sortable is never ignored, because a caller that asked for an order and got
+  another one pages through rows it cannot reproduce.
+- *The key is the last tie-break.* Rows with equal values in the ordered field
+  are ordered by the key, ascending, whatever the stated direction. Two reads
+  of the same set therefore return the same pages.
+
+The allow-list is the model's and not the caller's, because an order by a
+column with no index is a full sort of the table on every page. A model makes a
+column sortable when it is prepared to index it.
+
+*** The filter record
+
+=<resource>_filter= has three kinds of member. Every member is optional. A
+member that is absent sets no condition, and the members that are set must all
+hold for a row to match.
+
+#+begin_src
+<resource>_filter {
+    <column>        : optional of <column type>          -- equals
+    <column>_one_of : optional of list of <column type>  -- is one of
+    search          : optional of string                 -- contains
+}
+#+end_src
+
+- *Equals.* Each filterable column has a member of the column's own type, and a
+  row matches when its column equals the value. The filterable columns are the
+  ones the model already reads by: the column the entity declares in
+  =:list_filter_column:=, and every relation column a scoped read is declared
+  for.
+- *Is one of.* The primary key column and every relation column have a member
+  that carries a list of the column's type. A row matches when its column
+  equals any value in the list. This is how a screen reads the rows for the
+  keys on its current page in one call -- the parent of each party on a page,
+  or the provisioning runs of the tenants on a page -- with no fixed cap on the
+  read. An empty list matches no row. A list carries at most =1000= values, the
+  bound a key set carries (see *get_many*), and a longer list is =invalid= with
+  the code =filter_too_large=. The page still applies, so a caller sets
+  =limit= to at least the length of the list when it wants every match.
+- *Contains.* A column declares =:searchable: true=, and an entity with one or
+  more searchable columns has a =search= member. A row matches when any
+  searchable column contains the text, ignoring case. The text is matched
+  literally, so =%= and =_= are not wildcards. An empty string sets no
+  condition.
+
+=search= is not a query language. It is one typed member with one fixed
+meaning, and a caller cannot combine terms, choose columns or choose an
+operator. It exists because a person looking for a row knows part of its name,
+and a read by exact value cannot find it.
+
+The filter applies before the page and before the count, so =total= is the
+number of rows the filter matches.
 
 *** Resolving a row at an instant
 
@@ -871,6 +944,10 @@ to nest in and a subject does not, so the sub-resource is named in the resource
 segment instead. The verbs, the keys, the filters and the outcomes are the same
 on both sides.
 
+Order and filter become query parameters. =order= names the field and
+=descending=true= reverses it. An equals member is =<column>=<value>=, a one-of
+member repeats =<column>_one_of= once per value, and =search= carries the text.
+
 The projection does not restate the contract. The key in the path is the key in
 the request, the filter is the filter record, and the =result= is the HTTP
 status: a caller reading the status learns exactly what a caller reading the
@@ -891,7 +968,8 @@ A conforming message has a subject with four segments whose component owns it
 and whose last segment is in the verb set; a key that carries every identifying
 column with its own type; a response that carries a =result= and no data
 outside =ok=; a list whose =offset=, =limit= and =total= are unconditional, and
-whose order and filter it states; a write record with no server-owned field and
+whose order is from the model's sortable fields with the key as the last
+tie-break, and whose filter members are the ones the model declares; a write record with no server-owned field and
 no tenancy; a single-entity verb that comes with its batch form; a batch whose
 every element carries its own precondition; a batch or page within its bound; a
 collection subordinated to an entity that is named as a sub-resource rather than

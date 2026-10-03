@@ -7,41 +7,53 @@
 #+level: s1
 #+filetags: :protocol:docs:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/amend-the-list-contract-specification
 #+pr: 2547
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The specification states the whole list contract the generator will build:
+how a model declares sortable columns and a default order, what the service
+does with a stated order, and the three kinds of filter member (equals, is one
+of, contains).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- The specification states how a model declares sortable columns, searchable
+  columns and a default order.
+- It states the service's answer to an empty, a sortable and an undeclared
+  order field, and that the key breaks every tie.
+- It states the equals, one-of and search members of the filter record, with
+  their bounds and their outcomes.
+- The HTTP projection states the query parameters for order and filter.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Amend [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] in place: the two list rules point
+at two new subsections, *The stated order* and *The filter record*, and the
+HTTP projection and Conformance sections follow them. The model attributes
+follow the existing convention: column properties (=:sortable:=,
+=:searchable:=) and entity flags (=:default_order:=, and the existing
+=:list_filter_column:=).
 
 * Measurements
 
@@ -83,3 +95,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The specification now states the list contract in full:
+
+- *Order.* A column declares =:sortable: true= and the entity
+  =:default_order:=. An empty field is the default order, a sortable field is
+  honoured, and any other field is =invalid= with =order_not_supported=. The
+  key, ascending, is the last tie-break.
+- *Filter.* Equals members for the list filter column and relation columns;
+  =<column>_one_of= members for the primary key and relation columns, at most
+  1000 values, an empty list matching nothing, a longer list =invalid= with
+  =filter_too_large=; a =search= member over =:searchable:= columns, a
+  case-insensitive literal substring match.
+- *HTTP.* =order=, =descending=, =<column>=, repeated =<column>_one_of= and
+  =search= query parameters.

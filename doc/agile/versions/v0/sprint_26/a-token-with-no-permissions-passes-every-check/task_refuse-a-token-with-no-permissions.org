@@ -8,7 +8,7 @@
 #+filetags: :service:security:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
 #+branch: feature/refuse-a-token-with-no-permissions
-#+pr:
+#+pr: 2565
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2565][#2565]] | [service] Refuse a token with no permissions |
 
 * Review
 

@@ -44,9 +44,11 @@ select set_config('app.visible_party_ids',
 
 create temp table t_ctx on commit drop as
 select (select id from ores_refdata_parties_tbl
-        where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id,
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id,
        (select id from ores_refdata_counterparties_tbl
-        where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as counterparty_id;
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as counterparty_id;
 
 create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scope text,
     p_nature text default 'actual', p_channel text default 'manual',

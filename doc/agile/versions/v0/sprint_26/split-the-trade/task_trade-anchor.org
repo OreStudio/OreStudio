@@ -101,6 +101,13 @@ via its "Verifies task" field.
 | 1 | Local review: the lookup generator emits codes outside the closed set | =*_type_generator.cpp= | Decline | The template does this for every lookup; nothing generates synthetic lookup rows. |
 | 2 | Local review: notify triggers and event registrars of the immutable lookups never fire | lookup notify triggers | Decline | The facet emits them for every entity; they cost nothing. |
 | 3 | Local review: four trade pgTAP files fail on a fixture party they never create | =projects/ores.sql/test/trade_*_test.sql= | Decline | Predates this task; the wide trade's tests go with it in the last task of the story. |
+| 4 | @claude: the purge switch helper has no execute revoke | =utility_functions_create.sql= | Decline | Any role can call =set_config= on the setting itself, so a revoke on the helper closes nothing; the version replace signal is the same. Table delete grants are the boundary. |
+| 5 | @claude: the switch stays on for the rest of the purge transaction | =iam_tenant_purger_create.sql= | Accept | The purger turns it off right after the anchor delete. |
+| 6 | @claude: the trigger re-checks no tenant scope under the switch | immutable guard | Decline | The purger's delete is tenant-scoped; the guard decides only whether a delete may happen. |
+| 7 | @claude: the trigger comment overstates who can reach the branch | template | Accept | Reworded. |
+| 8 | @claude: track the stale trade pgTAP files | =trade_*_test.sql= | Decline | See row 3. |
+| 9 | @claude: test that the switch does not leak into the next transaction | pgTAP | Decline | A pgTAP file is one transaction; the transaction-local =set_config= is the PostgreSQL guarantee. |
+| 10 | Rerun: the anchor test fixture took a party from another tenant | =trading_trade_anchor_test.sql= | Accept | The fixture now reads the system tenant's party and counterparty. |
 
 * Result
 

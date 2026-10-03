@@ -166,6 +166,7 @@ begin
     -- that reference an anchor with a foreign key are deleted before it.
     perform ores_utility_allow_immutable_purge_fn();
     delete from ores_trading_trade_anchors_tbl where tenant_id = p_tenant_id;
+    perform set_config('ores.utility.allow_immutable_purge', 'off', true);
 
     raise notice 'Tenant data purge complete: % (id: %)', v_tenant_code, p_tenant_id;
 end;

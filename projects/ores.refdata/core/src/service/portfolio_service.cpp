@@ -92,6 +92,7 @@ domain::portfolio to_domain(const messaging::portfolio_write& write) {
     v.purpose_type = write.purpose_type;
     v.aggregation_ccy = write.aggregation_ccy;
     v.is_virtual = write.is_virtual;
+    v.sandbox_id = write.sandbox_id;
     v.status = write.status;
     return v;
 }
@@ -108,8 +109,51 @@ portfolio_service::list_portfolios(const messaging::list_portfolios_request& req
             "This store pages in key order and cannot order by a stated field.";
         return response;
     }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
     response.portfolios = repo_.read_latest(ctx_, request.offset, request.limit);
     response.total = repo_.get_total_portfolio_count(ctx_);
+    return response;
+}
+
+messaging::list_by_sandbox_id_portfolios_response portfolio_service::list_by_sandbox_id_portfolios(
+    const messaging::list_by_sandbox_id_portfolios_request& request) {
+    messaging::list_by_sandbox_id_portfolios_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "order_not_supported";
+        response.result.message =
+            "This store pages in key order and cannot order by a stated field.";
+        return response;
+    }
+    if (request.filter) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_not_supported";
+        response.result.message = "Filtering is not served for this resource yet.";
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "scope_not_supported";
+        response.result.message = "This resource reads its direct members; it has no subtree.";
+        return response;
+    }
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
+    if (!request.sandbox_id) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "relation_required";
+        response.result.message = "This read is scoped by sandbox_id, and the request states none.";
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(*request.sandbox_id);
+    response.portfolios =
+        repo_.read_latest_by_sandbox_id(ctx_, relation, request.offset, request.limit);
+    response.total = repo_.get_total_portfolio_count_by_sandbox_id(ctx_, relation);
     return response;
 }
 
@@ -396,6 +440,31 @@ std::vector<domain::portfolio> portfolio_service::list_portfolios(std::uint32_t 
 std::uint32_t portfolio_service::count_portfolios() {
     BOOST_LOG_SEV(lg(), debug) << "Getting total portfolios count";
     return repo_.get_total_portfolio_count(ctx_);
+}
+
+
+std::vector<domain::portfolio> portfolio_service::list_portfolios_by_sandbox_id(
+    const std::string& sandbox_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing portfolios by sandbox_id: " << sandbox_id;
+    return repo_.read_latest_by_sandbox_id(ctx_, sandbox_id, offset, limit);
+}
+
+std::uint32_t portfolio_service::count_portfolios_by_sandbox_id(const std::string& sandbox_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolios count by sandbox_id: " << sandbox_id;
+    return repo_.get_total_portfolio_count_by_sandbox_id(ctx_, sandbox_id);
+}
+
+std::vector<domain::portfolio> portfolio_service::list_portfolios_by_sandbox_id(
+    const boost::uuids::uuid& sandbox_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing portfolios by sandbox_id: " << sandbox_id;
+    return repo_.read_latest_by_sandbox_id(
+        ctx_, boost::uuids::to_string(sandbox_id), offset, limit);
+}
+
+std::uint32_t
+portfolio_service::count_portfolios_by_sandbox_id(const boost::uuids::uuid& sandbox_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolios count by sandbox_id: " << sandbox_id;
+    return repo_.get_total_portfolio_count_by_sandbox_id(ctx_, boost::uuids::to_string(sandbox_id));
 }
 
 

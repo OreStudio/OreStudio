@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T12:43:03.964923Z
+' Generated: 2026-10-03T13:11:22.388166Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3916,6 +3916,7 @@ package "refdata" #FFF3E0 {
         * purpose_type : text
           aggregation_ccy : text
         * is_virtual : boolean
+          sandbox_id : uuid <<FK>>
         * status : text
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -4056,6 +4057,78 @@ package "refdata" #FFF3E0 {
     Values match xs:enumeration in ORE's currencyconfig.xsd.
     Rounding types are managed by the system tenant and are used to
     specify how currency amounts are rounded in financial calculations.
+    end note
+
+    entity ores_refdata_sandbox_members_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * sandbox_id : uuid <<FK>>
+        * account_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_sandbox_members_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Sandbox Member Table
+    One row per account a [[id:64BBDDFE-A118-4B46-BAF1-9532BED64C76][sandbox]] is shared with by name. Members
+    see the sandbox when its visibility is members; the owner needs no row.
+    end note
+
+    entity ores_refdata_sandboxes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * purpose : text
+        * anchor_portfolio_id : uuid <<FK>>
+        * owner_account_id : uuid <<FK>>
+        * visibility : text
+        * status : text
+        * review_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_sandboxes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Sandbox Table
+    A sandbox is a space where actions have no effect outside it: users import
+    samples, try what-ifs and run reports there without touching official data
+    (see [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]).
+    The anchor is the node of the official [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][portfolio]] tree the sandbox
+    belongs to. It decides who may open the sandbox and who may see it; it
+    does not place the sandbox in the official tree. The sandbox's own
+    portfolios carry its id, and a portfolio always shares its parent's
+    sandbox, so no official portfolio contains a sandbox portfolio.
+    Opening a sandbox needs the open_sandbox [[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][portfolio right]] at
+    an official anchor; the check runs again when the owner changes.
+    ores_refdata_account_sees_sandbox_fn answers whether an account may see a
+    sandbox: its owner always may; anyone with read at the anchor may when it
+    is shared; its [[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][members]] may when it is shared with members. A restrictive
+    row-level security policy on portfolios applies it to the session's actor
+    through ores_refdata_actor_sees_sandbox_fn, so a sandbox's portfolios are
+    read and written only by those who may see the sandbox, and a session with
+    no actor sees none of them.
+    Closing a sandbox does not close its portfolios, as for every soft foreign
+    key in the schema. Handing a sandbox to a new owner needs the right at the
+    anchor on the new owner's side; the new owner's consent is not recorded.
     end note
 
     entity ores_refdata_series_subclass_codes_tbl <<temporal>> #C6F0D8 {

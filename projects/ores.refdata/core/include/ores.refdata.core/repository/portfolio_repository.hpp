@@ -139,6 +139,25 @@ public:
 
 
     /**
+     * @brief Reads latest portfolios filtered by sandbox_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param sandbox_id The sandbox_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::portfolio> read_latest_by_sandbox_id(context ctx,
+                                                             const std::string& sandbox_id,
+                                                             std::uint32_t offset,
+                                                             std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active portfolios filtered by sandbox_id.
+     */
+    std::uint32_t get_total_portfolio_count_by_sandbox_id(context ctx,
+                                                          const std::string& sandbox_id);
+
+
+    /**
      * @brief Reads latest portfolios with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip

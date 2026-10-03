@@ -1212,3 +1212,11 @@ tangled into the runnable script library
 * Todays Market Collection Kinds
 
 - [[id:A316A676-9785-58F9-9882-F4AA3CF1CAAC][How do I run the todays_market_collection_kinds commands from the shell?]]
+
+* Sandbox Members
+
+- [[id:FC8CEBB6-D814-562E-96CA-1DA80EC783CC][How do I run the sandbox_members commands from the shell?]]
+
+* Sandboxes
+
+- [[id:7BAC8479-7066-5B7C-A103-B466F1B44D85][How do I run the sandboxes commands from the shell?]]

@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/portfolio_rights/portfolio_right.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+portfolio_rights version __none__ --version 1

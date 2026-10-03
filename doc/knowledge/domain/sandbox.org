@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:book:sandbox:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-03
 
 * Summary
 
@@ -255,6 +255,10 @@ never a source for official P&L, capital or regulatory figures.
 ** What follows for the model
 
 This section is analysis rather than reported practice.
+
+The sandbox is modelled as [[id:64BBDDFE-A118-4B46-BAF1-9532BED64C76][ores.refdata.sandbox]], its members as
+[[id:6B3A0A06-EE24-411F-BF99-BBEF04A43E06][ores.refdata.sandbox_member]], and the rights at a node as
+[[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][ores.refdata.portfolio_right]].
 
 - =sandbox= is an entity: name, purpose, anchor (an official
   portfolio), owner, visibility, members, status and review date. Its

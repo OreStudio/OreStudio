@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: 6B3A0A06-EE24-411F-BF99-BBEF04A43E06
+:END:
+#+title: ores.refdata.sandbox_member
+#+description: Codegen entity model for the refdata =sandbox_member= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: An account a sandbox is shared with.
+#+entity_singular: sandbox_member
+#+entity_plural: sandbox_members
+#+entity_title: Sandbox Member
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One row per account a [[id:64BBDDFE-A118-4B46-BAF1-9532BED64C76][sandbox]] is shared with by name. Members
+see the sandbox when its visibility is =members=; the owner needs no row.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this membership.
+
+Surrogate key for the sandbox member record.
+
+** sandbox_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:fixed:       true
+:END:
+
+The sandbox shared.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** account_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:fixed:       true
+:END:
+
+The account it is shared with.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_sandbox_members_tbl
+:END:
+
+* Foreign keys
+
+** sandbox_id
+:PROPERTIES:
+:table:         ores_refdata_sandboxes_tbl
+:nullable:      false
+:error_message: Invalid sandbox_id: %. No active sandbox found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+The seed opens a sandbox the way a user would: an anchor portfolio, an
+owner holding =open_sandbox= there, then the sandbox, which the insert
+trigger refuses without the right.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/portfolio_generator.hpp"
+#include "ores.refdata.api/generators/portfolio_right_generator.hpp"
+#include "ores.refdata.api/generators/sandbox_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.refdata.core/repository/portfolio_repository.hpp"
+#include "ores.refdata.core/repository/portfolio_right_repository.hpp"
+#include "ores.refdata.core/repository/sandbox_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        namespace gen = ores::refdata::generators;
+        namespace repo = ores::refdata::repository;
+
+        auto party = gen::generate_synthetic_party(ctx);
+        party.change_reason_code = "system.test";
+        for (const auto& e : repo::party_repository().read_latest(party_ctx)) {
+            if (e.tenant_id == party.tenant_id) {
+                party.parent_party_id = e.id;
+                break;
+            }
+        }
+        repo::party_repository().write(party_ctx, party);
+
+        auto currency = gen::generate_synthetic_currency(ctx);
+        currency.iso_code = "X-0";
+        repo::currency_repository().write(party_ctx, {currency});
+
+        auto anchor = gen::generate_synthetic_portfolio(ctx);
+        anchor.party_id = party.id;
+        anchor.change_reason_code = "system.test";
+        repo::portfolio_repository().write(party_ctx, anchor);
+
+        auto owner = ores::iam::generators::generate_synthetic_account(ctx);
+        owner.account_type = "service";
+        owner.change_reason_code = "system.test";
+        ores::iam::repository::account_repository().write(party_ctx, owner);
+
+        auto right = gen::generate_synthetic_portfolio_right(ctx);
+        right.account_id = owner.id;
+        right.portfolio_id = anchor.id;
+        right.right_code = "open_sandbox";
+        right.change_reason_code = "system.test";
+        repo::portfolio_right_repository().write(party_ctx, right);
+
+        auto sandbox = gen::generate_synthetic_sandbox(ctx);
+        sandbox.anchor_portfolio_id = anchor.id;
+        sandbox.owner_account_id = owner.id;
+        sandbox.change_reason_code = "system.test";
+        repo::sandbox_repository().write(party_ctx, sandbox);
+        v.sandbox_id = sandbox.id;
+    }
+#+end_src
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:error_message: Invalid account_id: %. No account found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+The seed is a service account, which leaves the test tenant in bootstrap.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto member = ores::iam::generators::generate_synthetic_account(ctx);
+        member.account_type = "service";
+        member.change_reason_code = "system.test";
+        ores::iam::repository::account_repository().write(party_ctx, member);
+        v.account_id = member.id;
+    }
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: sandbox_member
+:entity_plural_short:   sandbox_members
+:entity_singular_words: sandbox member
+:entity_plural_words:   sandbox members
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sm
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| sandbox_id  | Sandbox     |
+| account_id  | Account     |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/sandbox_member.hpp
+:domain_class:            refdata::domain::sandbox_member
+:protocol_include:        ores.refdata.api/messaging/sandbox_member_protocol.hpp
+:collection_name:         sandbox_members
+:key_field:               id
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field      | label   | widget         | type      | is_key | is_required | placeholder |
+|------------+---------+----------------+-----------+--------+-------------+-------------|
+| account_id | Account | accountIdEdit  | line_edit | false  | true        | Account id  |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Version    | version     | Version     | int       |    80 |
+| ModifiedBy | modified_by | Modified By | string    |   120 |
+| RecordedAt | recorded_at | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:64BBDDFE-A118-4B46-BAF1-9532BED64C76][ores.refdata.sandbox]] — the sandbox shared.

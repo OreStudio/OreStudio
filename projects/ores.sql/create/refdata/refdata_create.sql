@@ -200,6 +200,12 @@
 -- Rights accounts hold at portfolio nodes
 \ir ./refdata_portfolio_rights_create.sql
 \ir ./refdata_portfolio_rights_notify_trigger_create.sql
+
+-- Sandboxes, anchored on the official tree, and their members
+\ir ./refdata_sandboxes_create.sql
+\ir ./refdata_sandboxes_notify_trigger_create.sql
+\ir ./refdata_sandbox_members_create.sql
+\ir ./refdata_sandbox_members_notify_trigger_create.sql
 \ir ./refdata_books_create.sql
 \ir ./refdata_books_notify_trigger_create.sql
 

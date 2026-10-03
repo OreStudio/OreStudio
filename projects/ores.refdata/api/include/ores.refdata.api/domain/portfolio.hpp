@@ -123,6 +123,15 @@ struct portfolio final {
     bool is_virtual = false;
 
     /**
+     * @brief The sandbox the portfolio belongs to; absent for an official portfolio.
+     *
+     * A portfolio belongs to the same sandbox as its parent, or both to none, so no official
+     * portfolio contains a sandbox portfolio and no official aggregation can reach one. A sandbox's
+     * root portfolios have no parent. Fixed for the portfolio's life.
+     */
+    std::optional<boost::uuids::uuid> sandbox_id;
+
+    /**
      * @brief Current lifecycle status (Active, Inactive, Closed). No dedicated lookup table exists
      * yet (unlike book_status) -- a fixed three-value list, defaulting to Active for the same
      * reason as purpose_type/book's book_status: a freshly-constructed portfolio always carries a

@@ -90,6 +90,8 @@ public:
     delete_portfolio(const messaging::delete_portfolio_request& request);
     messaging::delete_many_portfolios_response
     delete_many_portfolios(const messaging::delete_many_portfolios_request& request);
+    messaging::list_by_sandbox_id_portfolios_response
+    list_by_sandbox_id_portfolios(const messaging::list_by_sandbox_id_portfolios_request& request);
     messaging::list_portfolio_versions_response
     list_portfolio_versions(const messaging::list_portfolio_versions_request& request);
     messaging::get_portfolio_version_response
@@ -111,6 +113,46 @@ public:
      * @return Total number of active portfolios.
      */
     std::uint32_t count_portfolios();
+
+
+    /**
+     * @brief Lists portfolios filtered by sandbox_id, with pagination.
+     *
+     * @param sandbox_id The sandbox_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching portfolios for the requested page.
+     */
+    std::vector<domain::portfolio> list_portfolios_by_sandbox_id(const std::string& sandbox_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active portfolios filtered by sandbox_id.
+     *
+     * @param sandbox_id The sandbox_id to filter by.
+     * @return Total number of matching portfolios.
+     */
+    std::uint32_t count_portfolios_by_sandbox_id(const std::string& sandbox_id);
+
+    /**
+     * @brief Lists portfolios filtered by sandbox_id, with pagination.
+     *
+     * @param sandbox_id The sandbox_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching portfolios for the requested page.
+     */
+    std::vector<domain::portfolio> list_portfolios_by_sandbox_id(
+        const boost::uuids::uuid& sandbox_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active portfolios filtered by sandbox_id.
+     *
+     * @param sandbox_id The sandbox_id to filter by.
+     * @return Total number of matching portfolios.
+     */
+    std::uint32_t count_portfolios_by_sandbox_id(const boost::uuids::uuid& sandbox_id);
 
 
     /**

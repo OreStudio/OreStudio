@@ -57,6 +57,9 @@ domain::portfolio portfolio_mapper::map(const portfolio_entity& v) {
     r.purpose_type = v.purpose_type;
     r.aggregation_ccy = v.aggregation_ccy.value_or("");
     r.is_virtual = v.is_virtual;
+    r.sandbox_id = v.sandbox_id.has_value() ?
+                       std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.sandbox_id)) :
+                       std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -91,6 +94,9 @@ portfolio_entity portfolio_mapper::map(const domain::portfolio& v) {
     r.purpose_type = v.purpose_type;
     r.aggregation_ccy = v.aggregation_ccy.empty() ? std::nullopt : std::optional(v.aggregation_ccy);
     r.is_virtual = v.is_virtual;
+    r.sandbox_id = v.sandbox_id.has_value() ?
+                       std::optional(boost::uuids::to_string(*v.sandbox_id)) :
+                       std::nullopt;
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

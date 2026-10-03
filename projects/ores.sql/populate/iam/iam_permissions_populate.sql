@@ -387,6 +387,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::portfolio_rights:write',               'Create and modify portfolio rights');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::portfolio_rights:delete',              'Delete portfolio rights');
 
+    -- Sandboxes permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandboxes:read',                       'View sandboxes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandboxes:write',                      'Create and modify sandboxes');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandboxes:delete',                     'Delete sandboxes');
+
+    -- Sandbox members permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandbox_members:read',                 'View sandbox members');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandbox_members:write',                'Create and modify sandbox members');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::sandbox_members:delete',               'Delete sandbox members');
+
     -- Curve sections permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:read',                     'View curve sections');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:write',                    'Create and modify curve sections');

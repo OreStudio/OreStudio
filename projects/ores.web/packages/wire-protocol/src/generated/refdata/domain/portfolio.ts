@@ -43,6 +43,7 @@ export interface Portfolio {
     purpose_type: string;
     aggregation_ccy: string;
     is_virtual: boolean;
+    sandbox_id: string | null;
     status: string;
     modified_by: string;
     performed_by: string;

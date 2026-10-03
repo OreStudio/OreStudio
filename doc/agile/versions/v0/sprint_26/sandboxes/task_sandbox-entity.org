@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 9F4588CF-9024-48FC-A53B-ADF333327B8A
+:END:
+#+title: Task: Model sandboxes
+#+description: Generate sandbox and sandbox_member in ores.refdata, give portfolios a sandbox so each sandbox has its own tree, and check the right to open one at its anchor.
+#+type: task
+#+level: s1
+#+filetags: :sandboxes:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sandbox-entity
+#+pr: 2550
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let a user open a sandbox where the work belongs, with its own portfolio tree that no official portfolio contains.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- sandbox and sandbox_member are generated in ores.refdata: purpose, anchor, owner, visibility, status and review date.
+- A portfolio belongs to the same sandbox as its parent, or both to none, so no official portfolio contains a sandbox portfolio.
+- Opening a sandbox needs the open_sandbox right at an official anchor; a function answers whether an account may see a sandbox.
+
+* Plan
+
+- =sandbox=: name, purpose (experiment, sample, import), anchor portfolio
+  (fixed), owner account, visibility (private, shared, members), status
+  (open, archived), review date. Its insert trigger refuses an anchor that
+  is itself a sandbox portfolio, and asks for =open_sandbox= at the anchor
+  when the sandbox is opened or changes owner; a version that keeps the
+  owner, such as archiving, does not ask again.
+- =sandbox_member=: a sandbox and an account, for visibility =members=.
+- =portfolio.sandbox_id=: optional and fixed. The portfolio trigger keeps a
+  portfolio in its parent's sandbox, or both in none, so a sandbox's
+  portfolios form their own tree and no official portfolio contains one.
+- =ores_refdata_account_sees_sandbox_fn=: the owner always sees a sandbox;
+  anyone with =read= at the anchor sees a shared one; members see a
+  members one. PL/pgSQL, with the caller's rights.
+- The generated tests open a sandbox the way a user would, through seed
+  snippets that create a service account and grant it =open_sandbox= at
+  the seeded anchor.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2550][#2550]] | [refdata] Model sandboxes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Sandbox portfolios leak into official reads | refdata RLS | Fix | A restrictive policy on portfolios shows and accepts a sandbox's portfolios only for an actor who may see the sandbox; a session with no actor sees none. Covers every generated read, the count and list-by-sandbox. |
+| 2 | Anyone with write can write into another's sandbox | refdata RLS | Fix | The same policy's check refuses the write. |
+| 3 | Member rows can move between sandboxes | sandbox_member | Fix | Both columns are fixed. |
+| 4 | Archived sandboxes stay writable | portfolio | Fix | The portfolio trigger refuses a write into an archived sandbox. |
+| 5 | Closing a sandbox orphans its portfolios | sandbox | Document | The soft-key convention; the model says so. |
+| 6 | Owner change without the new owner's consent | sandbox | Document | The model says consent is not recorded. |
+| 7 | Anchor check reveals sandbox portfolios | sandbox | Keep | Ids are UUIDs and the anchor must be readable to be named. |
+| 8 | list_portfolios refuses a stated filter | portfolio | Keep | That comes from main's list contract, applied by regeneration; no caller states a filter. |
+| 9 | (CI) Shell scripts not tangled | shell scripts | Fix | Tangled; the portfolio right scripts PR 2544 missed come along. |
+| 10 | (Found) The refdata service cannot read iam accounts | portfolio_right, sandbox | Fix | Account liveness and the actor's account resolve through narrow security definer helpers, so the invoker functions work under any service role. |
+
+* Result
+
+- =sandbox= and =sandbox_member= are generated in =ores.refdata= and wired
+  by hand like the earlier refdata entities, with tenant row-level
+  security. =portfolio= gains =sandbox_id= and a list-by-sandbox read.
+- In Postgres, in a transaction that rolled back, with the portfolio
+  trigger live:
+  - an account holding =open_sandbox= on desk A opened a sandbox anchored
+    at A's sub-desk; without the right it was refused (42501);
+  - an official portfolio under a sandbox one, and a sandbox portfolio
+    under an official one, were refused (23514);
+  - a sandbox anchored at a sandbox portfolio was refused (23514);
+  - moving a portfolio out of its sandbox was refused (23514, fixed column);
+  - visibility held as specified: the owner sees a private sandbox and
+    another account does not; a shared one is seen with =read= at the
+    anchor and not without; a members one is seen by a member and not by a
+    non-member.
+- The generated sandbox and member tests open a sandbox through seed
+  snippets that grant =open_sandbox= first, and pass.
+- After review, as the refdata service role in a transaction that rolled
+  back: the owner saw the sandbox portfolio, another account and a session
+  with no actor saw none, another account's write was refused (42501, row
+  security), and a write into an archived sandbox was refused (23514).
+- Build clean; ctest 89 of 89 on a recreated database.

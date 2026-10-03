@@ -107,6 +107,8 @@ set(files
     "purpose_type_commands_tests.cpp"
     "regulatory_book_type_commands_tests.cpp"
     "rounding_type_commands_tests.cpp"
+    "sandbox_commands_tests.cpp"
+    "sandbox_member_commands_tests.cpp"
     "series_subclass_code_commands_tests.cpp"
     "swap_convention_commands_tests.cpp"
     "swap_index_convention_commands_tests.cpp"

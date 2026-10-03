@@ -1051,6 +1051,27 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
+-- Sandbox isolation: a sandbox's portfolios are read and written only by
+-- those who may see the sandbox, so they never reach an official read, a
+-- report run by a system process, or a writer the sandbox is not shared
+-- with. Official portfolios have no sandbox and pass. FOR ALL with a check,
+-- unlike party isolation: official bulk inserts carry no sandbox, so the
+-- check does not touch them.
+drop policy if exists portfolios_sandbox_isolation_policy
+    on ores_refdata_portfolios_tbl;
+
+create policy portfolios_sandbox_isolation_policy
+on ores_refdata_portfolios_tbl
+as restrictive
+for all using (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+)
+with check (
+    sandbox_id is null
+    or ores_refdata_actor_sees_sandbox_fn(tenant_id, sandbox_id)
+);
+
 -- -----------------------------------------------------------------------------
 -- Books
 -- -----------------------------------------------------------------------------
@@ -1972,6 +1993,38 @@ drop policy if exists portfolio_rights_tenant_isolation_policy
     on ores_refdata_portfolio_rights_tbl;
 
 create policy portfolio_rights_tenant_isolation_policy on ores_refdata_portfolio_rights_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Sandboxes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_sandboxes_tbl enable row level security;
+
+drop policy if exists sandboxes_tenant_isolation_policy
+    on ores_refdata_sandboxes_tbl;
+
+create policy sandboxes_tenant_isolation_policy on ores_refdata_sandboxes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Sandbox members
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_sandbox_members_tbl enable row level security;
+
+drop policy if exists sandbox_members_tenant_isolation_policy
+    on ores_refdata_sandbox_members_tbl;
+
+create policy sandbox_members_tenant_isolation_policy on ores_refdata_sandbox_members_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

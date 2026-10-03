@@ -8,7 +8,7 @@
 #+filetags: :iam:security:sprint_26:v0:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,11 +23,11 @@ it says for a person as well as for a service.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Design done.                           |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Issue tokens with their permissions.   |
 | Last touched  | 2026-10-03                               |
 
 * Acceptance
@@ -46,12 +46,47 @@ it says for a person as well as for a service.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9056525B-7B7A-4530-ACBE-A47EDE51D52A][Decide what a person's token carries]] | BACKLOG | | | Design note: the permission list in each token, its size, how a role change reaches the next token, and how party switching and the tenant session fit. |
+| [[id:9056525B-7B7A-4530-ACBE-A47EDE51D52A][Decide what a person's token carries]] | DONE | 2026-10-03 | 2026-10-03 | Design note: the permission list in each token, its size, how a role change reaches the next token, and how party switching and the tenant session fit. |
 | [[id:CF478751-4C76-4238-8235-731373FA05DC][Issue tokens with their permissions]] | BACKLOG | | | Login, party selection, party switching and refresh fill the token's permissions from the database, and a role change reaches the next token. |
 | [[id:D0C66840-F2A2-4F30-A39C-C1587763EF0D][Refuse a token with no permissions]] | BACKLOG | | | has_permission refuses an empty permission list instead of passing it, with tests; any caller that relied on the pass-through is found and fixed. |
 | [[id:D1EAE179-FD17-4CFB-82C9-A436CBCEF23F][Walk each role through its journeys]] | BACKLOG | | | SuperAdmin, TenantAdmin and an ordinary member are walked through their journeys against the running deployment; every refusal is one that should happen, and missing seeded permissions are fixed. |
 
 * Decisions
+
+1. *Every person's token carries their permissions.* Login with one party,
+   party selection, party switching and refresh read the account's effective
+   permission codes from the database and put them in the token. Refresh reads
+   them again rather than copying the old token's, so a role change reaches the
+   token at the next refresh. The token that only lets a person choose a party
+   carries none. It needs none: the party selection handler checks no
+   permission and accepts only that token's =select_party_only= audience, and
+   the standard verifier rejects that audience everywhere else.
+   The tenant session keeps what it carries now: the administrator's read
+   codes, read from the database when the tenant is entered.
+2. *The codes are carried as granted, wildcards included.* =*= and =x::*= stay
+   as they are, so a token holds at most a handful of codes: the largest seeded
+   role grants 17.
+3. *A role change takes effect within one access lifetime.* With the default
+   of 1800 s, a revoked permission stops working within 30 minutes. The
+   maximum session of 28800 s does not lengthen this, because every refresh
+   reads the permissions again. Pushing the change to live sessions is out of
+   scope; the in-process event that announces a change has no listener outside
+   the service.
+4. *One rule matches a permission.* The token check understands =*= and =x::*=;
+   the database check =authorization_service::check_permission= understands only
+   =*=, so a role granted =refdata::*= passes one and fails the other. Both use
+   one matching function that understands both.
+5. *An empty list refuses; no token trusts, by name.* The request context's
+   permissions become optional. A context built from a token carries the
+   token's list, and an empty list refuses every check. A context that carries
+   no list passes, as it does now, but only a named constructor builds one, so
+   no code path reaches it by leaving a field unset. The services' base
+   contexts and the tests use it; the request path never does in production,
+   because every domain service builds a verifier and so validates a token.
+6. *Order.* Issue tokens with their permissions first, then refuse an empty
+   list, then walk each role. A token issued before the change carries an empty
+   list; its next refresh reads the permissions, so nobody is locked out longer
+   than one access lifetime.
 
 * Out of scope
 

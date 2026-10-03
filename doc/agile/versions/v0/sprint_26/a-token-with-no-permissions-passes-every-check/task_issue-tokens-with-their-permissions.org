@@ -87,7 +87,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| R1.1 | Refreshing a party-choice token would hand back a full token | =auth_handler.hpp= | Accept | Real: no signer or verifier sets an audience, so refresh accepted it (probe, before). =auth_refresh_refusal= now refuses the =select_party_only= audience; a service token, which names no party, still refreshes. Tests and the probe cover both. The design's claim that other verifiers reject that audience was wrong and is corrected; refusing it in request contexts moves to the next task. |
+| R1.2 | A failure inside refresh must still reply | =auth_handler.hpp= | Accept | Confirmed: the body is inside a try whose catch replies with a failure; a test covers the two throwing cases. |
+| R1.3 | The two party handlers repeat the permission read | =account_operations_handler.hpp= | Decline | Both read in the tenant context they already built; a helper would wrap one call. |
+| R1.4 | Use the UUID string generator instead of lexical_cast | =auth_handler.hpp= | Accept | Done; the include is gone. |
+| R1.5 | Format the long lines | both handlers | Accept | git clang-format on this branch's lines only. |
+| R1.7 | No automated test | =messaging_auth_refresh_tests.cpp= | Accept | Five cases: which tokens refresh renews, and the read refusing a token it cannot place. |
 
 * Result
 
@@ -113,5 +118,7 @@ they go (=evidence/refresh_rereads.out=). The build is clean with no warnings,
 =ores.iam.core.tests= passes 187 of 187, and the tenant live check passes 15 of
 15.
 
-Until the next task, an empty list still passes the token check, so a token
-issued before this change keeps working until its next refresh fills it.
+Refresh refuses the party-choice token, which before this change it renewed
+into a full token (=evidence/party_choice_refresh.out=). Until the next task, an
+empty list still passes the token check, so a token issued before this change
+keeps working until its next refresh fills it.

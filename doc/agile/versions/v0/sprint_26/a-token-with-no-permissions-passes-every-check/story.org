@@ -59,8 +59,11 @@ it says for a person as well as for a service.
    them again rather than copying the old token's, so a role change reaches the
    token at the next refresh. The token that only lets a person choose a party
    carries none. It needs none: the party selection handler checks no
-   permission and accepts only that token's =select_party_only= audience, and
-   the standard verifier rejects that audience everywhere else.
+   permission and accepts only that token's =select_party_only= audience.
+   Refresh refuses that audience, so it cannot be renewed into a full token.
+   No signer or verifier sets an audience, so a service's request context
+   accepts such a token as an ordinary tenant-scoped one; refusing that
+   audience there belongs with refusing an empty list.
    The tenant session keeps what it carries now: the administrator's read
    codes, read from the database when the tenant is entered.
 2. *The codes are carried as granted, wildcards included.* =*= and =x::*= stay

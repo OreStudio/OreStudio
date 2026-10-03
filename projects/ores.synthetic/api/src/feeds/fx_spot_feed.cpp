@@ -22,8 +22,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -56,7 +56,6 @@ std::string date_part(std::chrono::system_clock::time_point tp) {
 // Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
 // mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
 // (from its ore_key), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
-// An FX spot carries no coordinate, so its datum URI is its series URI.
 //
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
@@ -67,25 +66,21 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
                ", date=" + cfg.vintage_date + ", datum=" + cfg.ore_key + ".";
     };
 
-    // The series is found by the identity its key projects to: the projection the
-    // marketdata service's ingest loop applies to a tick's key, so the vintage read
-    // and the tick that follows it name one series.
-    const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(cfg.ore_key);
-    if (!identifier)
-        throw vintage_data_missing_error("oresmd names no series for ORE key '" + cfg.ore_key +
-                                         "'.");
-
-    // The row the vintage is read from is the datum the series URI names, and for
-    // an FX spot that is the series URI itself: the class's key carries no
-    // coordinate of its own.
-    const auto datum_uri = ores::marketdata::core::oresmd_parser::to_uri(*identifier).value;
+    // The series and the row are found by the URIs the key's datum writes as: the
+    // same codecs the marketdata service's ingest loop applies to a tick's key, so
+    // the vintage read and the tick that follows it name one series.
+    const auto datum = ores::marketdata::datum::ore_key_codec::read(cfg.ore_key);
+    if (!datum)
+        throw vintage_data_missing_error("ORE key '" + cfg.ore_key + "': " + datum.error());
+    const auto datum_uri = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
+    const auto series_uri =
+        ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*datum))
+            .value();
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    auto series = md_client.find_series_by_uri(
-        ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value,
-        boost::uuids::to_string(cfg.party_id));
+    auto series = md_client.find_series_by_uri(series_uri, boost::uuids::to_string(cfg.party_id));
     if (!series)
         throw vintage_data_missing_error("Failed to look up series for '" + cfg.ore_key +
                                          "': " + series.error());
@@ -195,11 +190,11 @@ fx_spot_feed::fx_spot_feed(
     if (ticks_per_hour_ <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
 
-    if (const auto key =
-            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key_);
-        key) {
-        qualifier_ = key->qualifier;
-    }
+    // The qualifier is what follows the key's type and quote, such as EUR/USD.
+    const auto first = ore_key_.find('/');
+    const auto second = first == std::string::npos ? first : ore_key_.find('/', first + 1);
+    if (second != std::string::npos)
+        qualifier_ = ore_key_.substr(second + 1);
 }
 
 const std::string& fx_spot_feed::source_name() const {

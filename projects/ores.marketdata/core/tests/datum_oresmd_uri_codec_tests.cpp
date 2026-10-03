@@ -20,10 +20,14 @@
 #include "datum_catalogue.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <optional>
 #include <random>
+#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -334,4 +338,40 @@ TEST_CASE("no_field_is_named_like_a_reserved_query_key", tags) {
         INFO("key: " << key);
         CHECK_FALSE(field_named(key));
     }
+}
+
+TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", tags) {
+    // The seeds state URIs in SQL, which cannot call the codec, so a seed written
+    // in another spelling would name a series no reader finds.
+    const auto root = ores::testing::project_root::resolve("projects/ores.sql/populate");
+    const std::regex literal("'(oresmd://[^']*)'");
+    std::size_t checked = 0;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (entry.path().extension() != ".sql")
+            continue;
+        const auto text = ores::platform::filesystem::file::read_content(entry.path());
+        for (std::sregex_iterator it(text.begin(), text.end(), literal), end; it != end; ++it) {
+            const auto uri = (*it)[1].str();
+            if (!uri.contains('?'))
+                continue;
+            INFO(entry.path().filename().string() << ": " << uri);
+            const auto d = oresmd_uri_codec::read(uri);
+            CHECK(d);
+            if (!d)
+                UNSCOPED_INFO(d.error());
+            ++checked;
+        }
+    }
+    CHECK(checked > 0);
+}
+
+TEST_CASE("the_sql_seed_spelling_of_an_fx_spot_uri_is_the_codecs", tags) {
+    // The FX driver rate seeds build both URIs from a pair such as EUR/USD as
+    // 'oresmd://fx/' || base || '?type=<type>&instrument=fx_spot&quote=rate&ccy=' || quote.
+    const auto d = ore_key_codec::read("FX/RATE/EUR/USD");
+    REQUIRE(d);
+    CHECK(oresmd_uri_codec::write(series_of(*d)) ==
+          "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
+    CHECK(oresmd_uri_codec::write(*d) ==
+          "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 }

@@ -189,16 +189,14 @@ begin
         v_dataset_id,
         v_tenant_id,
         0,
-        -- The row is an ORE FX spot quote, so its key is the ORE key for the pair the
-        -- release names and its identity is that key's series: the pair, with the SPOT
-        -- point left off because a spot's key carries none. Both are stated here rather
-        -- than derived, because the projection from a key to its identity is the C++
-        -- grammar's and SQL has no way back to it.
-        'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
+        -- The row is an ORE FX spot quote: its key is the ORE key for the pair the
+        -- release names, its series is the unit currency with the quote currency in
+        -- the query, and its datum is the same with type=quote, because an FX spot
+        -- has no coordinate. This is the oresmd URI codec's spelling, which the
+        -- marketdata core tests pin against this pattern.
+        'oresmd://fx/' || split_part(r.qualifier, '/', 1) || '?type=series&instrument=fx_spot&quote=rate&ccy=' || split_part(r.qualifier, '/', 2),
         'FX/RATE/' || r.qualifier,
-        -- An FX spot carries no coordinate of its own, so the datum names the same
-        -- URI the series does.
-        'oresmd://fx/' || lower(replace(r.qualifier, '/', '')) || '?type=quote&quote=spot',
+        'oresmd://fx/' || split_part(r.qualifier, '/', 1) || '?type=quote&instrument=fx_spot&quote=rate&ccy=' || split_part(r.qualifier, '/', 2),
         r.observation_date,
         r.value,
         'fed.h10.' || r.observation_date::text,

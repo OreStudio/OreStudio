@@ -41,6 +41,7 @@
 namespace {
 
 using ores::marketdata::core::make_pillar_quote_key;
+using ores::marketdata::core::pillar_datum_uri;
 using ores::marketdata::core::pillar_series_uri;
 
 constexpr auto spot_start = std::chrono::year{2026} / 1 / 28;
@@ -49,15 +50,20 @@ constexpr auto second_end = std::chrono::year{2026} / 4 / 29;
 
 }
 
-TEST_CASE("a_pillar_that_starts_at_spot_keys_0d_in_its_start_slot", "[oresmd][pillar]") {
+TEST_CASE("a_pillar_that_starts_at_spot_keys_0d_and_the_days_to_its_end", "[oresmd][pillar]") {
+    // ORE reads a swap's start and end as two periods or two dates, so a spot
+    // pillar's end is the days it lies after spot: 2026-01-28 to 2026-03-19 is 50.
     const auto key = make_pillar_quote_key("USD", "SPOT", spot_start, first_end);
 
     CHECK(key.series_type == "IR_SWAP");
     CHECK(key.metric == "RATE");
     CHECK(key.qualifier == "USD/0D/1D");
-    CHECK(key.point == "20260319");
+    CHECK(key.point == "50D");
     CHECK(pillar_series_uri(key) ==
-          "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+          "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D");
+    CHECK(pillar_datum_uri(key) ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"
+          "&term=50D");
 }
 
 TEST_CASE("a_pillar_that_starts_on_a_meeting_keys_the_date_it_starts_on", "[oresmd][pillar]") {
@@ -66,7 +72,7 @@ TEST_CASE("a_pillar_that_starts_on_a_meeting_keys_the_date_it_starts_on", "[ores
     CHECK(key.qualifier == "USD/20260128/1D");
     CHECK(key.point == "20260319");
     CHECK(pillar_series_uri(key) ==
-          "oresmd://ir/usd?tenor=1d&settle=20260128&type=quote&metric=rate&quote=ir_swap");
+          "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=20260128&tenor=1D");
 }
 
 TEST_CASE("a_pillars_end_date_is_its_point_and_not_part_of_its_series", "[oresmd][pillar]") {
@@ -84,7 +90,7 @@ TEST_CASE("two_pillars_are_two_series", "[oresmd][pillar]") {
 
     CHECK(pillar_series_uri(spot) != pillar_series_uri(dated));
     CHECK(pillar_series_uri(spot) ==
-          "oresmd://ir/usd?tenor=1d&settle=0D&type=quote&metric=rate&quote=ir_swap");
+          "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D");
     CHECK(pillar_series_uri(dated) ==
-          "oresmd://ir/usd?tenor=1d&settle=20260128&type=quote&metric=rate&quote=ir_swap");
+          "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=20260128&tenor=1D");
 }

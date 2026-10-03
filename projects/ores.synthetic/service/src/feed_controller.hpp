@@ -24,8 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -488,18 +488,19 @@ private:
         if (caller_bearer_token.empty())
             return;
 
-        // The binding names the series by its identity, and the caller supplies the
-        // ORE key, so the key is projected here -- the same projection the tick's own
-        // key goes through in the ingest loop. A key the grammar cannot name has no
-        // series for a binding to name.
-        const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(ore_key);
-        if (!identifier) {
+        // The binding names the series by its URI, and the caller supplies the ORE
+        // key, so the series URI is written from the key's datum here -- the same
+        // codecs the tick's own key goes through in the ingest loop. A key the codec
+        // refuses has no series for a binding to name.
+        const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key);
+        if (!datum) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Not binding " << ore_key << ": oresmd names no series for it";
+                << "Not binding " << ore_key << ": " << datum.error();
             return;
         }
-        const auto oresmd_uri =
-            ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value;
+        const auto oresmd_uri = ores::marketdata::datum::oresmd_uri_codec::write(
+                                    ores::marketdata::datum::series_of(*datum))
+                                    .value();
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -556,16 +557,15 @@ private:
                    ".";
         };
 
-        const auto identifier = ores::marketdata::core::oresmd_projections::from_ore_key(ore_key);
-        if (!identifier) {
-            error_detail = "oresmd names no series for ORE key '" + ore_key + "'.";
+        const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key);
+        if (!datum) {
+            error_detail = "ORE key '" + ore_key + "': " + datum.error();
             return false;
         }
-        const auto oresmd_uri =
-            ores::marketdata::core::oresmd_parser::to_series_uri(*identifier).value;
-        // An FX spot carries no coordinate of its own, so the row the vintage is
-        // read from is the datum the series URI names.
-        const auto datum_uri = ores::marketdata::core::oresmd_parser::to_uri(*identifier).value;
+        const auto oresmd_uri = ores::marketdata::datum::oresmd_uri_codec::write(
+                                    ores::marketdata::datum::series_of(*datum))
+                                    .value();
+        const auto datum_uri = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);

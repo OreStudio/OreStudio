@@ -21,10 +21,9 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.marketdata.api/domain/oresmd_uri.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -215,32 +214,31 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     };
 
     // The row the vintage is read from is the anchor pillar's own datum: the series
-    // the config names, with the pillar's point put back as the coordinate key the
-    // writer stored. The grammar composes both, so the read and the write agree
-    // without either side decomposing the key by hand.
-    ores::marketdata::domain::market_data_identifier series_identifier;
-    try {
-        series_identifier = ores::marketdata::core::oresmd_parser::parse(
-            ores::marketdata::domain::oresmd_uri{cfg.vintage_series_uri});
-    } catch (const std::exception& e) {
-        throw vintage_data_missing_error("oresmd cannot read the vintage series URI '" +
-                                         cfg.vintage_series_uri + "': " + e.what());
-    }
-    const auto anchor_datum =
-        ores::marketdata::core::oresmd_parser::with_point(series_identifier, anchor->point_id);
+    // the config names at the pillar's point. The codecs compose both, so the read
+    // and the write agree without either side decomposing the key by hand.
+    namespace datum = ores::marketdata::datum;
+    const auto series_datum = datum::oresmd_uri_codec::read(cfg.vintage_series_uri);
+    if (!series_datum || !series_datum->is_series())
+        throw vintage_data_missing_error("'" + cfg.vintage_series_uri + "' is not a series URI" +
+                                         (series_datum ? "" : ": " + series_datum.error()));
+    const auto anchor_datum = datum::datum_at_point(*series_datum, anchor->point_id);
     if (!anchor_datum)
-        throw vintage_data_missing_error("oresmd names no datum for series '" +
-                                         cfg.vintage_series_uri + "' at point '" +
-                                         anchor->point_id + "'.");
-    const auto anchor_uri = ores::marketdata::core::oresmd_parser::to_uri(*anchor_datum).value;
+        throw vintage_data_missing_error("no datum for series '" + cfg.vintage_series_uri +
+                                         "' at point '" + anchor->point_id +
+                                         "': " + anchor_datum.error());
+    const auto anchor_uri = datum::oresmd_uri_codec::write(*anchor_datum);
+    if (!anchor_uri)
+        throw vintage_data_missing_error("no URI for series '" + cfg.vintage_series_uri +
+                                         "' at point '" + anchor->point_id +
+                                         "': " + anchor_uri.error());
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    // The series is the one the config names, looked up by its identity: the dataset
-    // that publishes the vintage names its rows' own ORE keys, so the deposit grid
-    // the config reads is a real MM series rather than a name no projection can
-    // rebuild. Which observation of it is the vintage is vintage_source/vintage_date.
+    // The series is the one the config names, looked up by its URI: the dataset that
+    // publishes the vintage names its rows' own ORE keys, so the deposit grid the
+    // config reads is a real MM series. Which observation of it is the vintage is
+    // vintage_source/vintage_date.
     auto series =
         md_client.find_series_by_uri(cfg.vintage_series_uri, boost::uuids::to_string(cfg.party_id));
     if (!series)
@@ -261,7 +259,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                              cfg.vintage_series_uri + "': " + observations.error());
         }
         for (const auto& obs : *observations) {
-            if (obs.source == cfg.vintage_source && obs.oresmd_uri == anchor_uri &&
+            if (obs.source == cfg.vintage_source && obs.oresmd_uri == *anchor_uri &&
                 date_part(obs.observation_datetime) == cfg.vintage_date) {
                 try {
                     return std::stod(obs.value);

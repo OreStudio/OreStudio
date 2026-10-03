@@ -24,6 +24,8 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
@@ -42,6 +44,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
+#include <expected>
 #include <map>
 #include <optional>
 #include <rfl/enums.hpp>
@@ -117,73 +120,76 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
     return pairs;
 }
 
-// What oresmd makes of one parsed key: the canonical spelling it projects back
-// to, the registry's decomposition of that spelling into the columns a series
-// and its observations are stored under, and whether the difference between the
-// two is the FX convention checker reversing the pair.
-//
-// The last one is worth separating. A spelling difference is the grammar
-// tidying up after the producer; a reversed pair means the file stored the
-// instrument the wrong way round against refdata, and the operator is the only
-// one who can fix the file. Reporting both as "not canonical" hides the second.
+// What the import makes of one key: the datum it names, with an FX pair the
+// checker found reversed already corrected, and the key, series URI and datum
+// URI that datum writes as.
 struct named_key final {
+    datum::market_datum datum;
     std::string canonical;
-    ores::ore::market::decomposed_key decomposition;
-    /// The identity the key projects to, as a URI. This is what the series is meant
-    /// to be read by; the canonical spelling beside it is what the file's key
-    /// becomes, which a consumer of ORE keys still needs.
-    std::string uri;
-    /// The datum's own URI: the same identity with the observation's coordinate
-    /// keys left in. The row stores this, so the row and the URI name the same
-    /// coordinate in the same syntax and nothing has to translate between them.
-    std::string datum;
+    std::string series_uri;
+    std::string datum_uri;
     bool fx_pair_reversed = false;
 };
 
-// Whether the convention checker is what moved this key's currencies, as opposed
-// to a spelling the grammar corrected. Only an FX identifier carries a pair, and
-// only a reversed pair makes the checker change it.
-bool fx_pair_moved(const std::string& key, const domain::market_data_identifier& corrected) {
-    const auto* after = std::get_if<domain::fx_market_data_identifier>(&corrected);
-    if (!after)
+// The datum with its FX spot pair put the way refdata knows it. Only an FX spot
+// rate is checked, as the vendored ORE files that store a pair reversed only do
+// so there; the value is never touched.
+bool correct_fx_pair(datum::market_datum& d,
+                     const ores::ore::market::fx_quote_convention_checker& checker) {
+    using datum::field;
+    if (d.type() != datum::instrument_type::fx_spot || d.quote() != datum::quote_type::rate)
         return false;
-    const auto before = core::oresmd_projections::from_ore_key(key);
-    if (!before)
+    const auto unit = *d.get<field::unit_ccy>();
+    const auto ccy = *d.get<field::ccy>();
+    const auto result = checker.check(unit, ccy);
+    if (result.base_currency == unit && result.quote_currency == ccy)
         return false;
-    const auto* was = std::get_if<domain::fx_market_data_identifier>(&*before);
-    return was && was->pair != after->pair;
+    d = datum::market_datum::make(
+            d.type(),
+            d.quote(),
+            {{field::unit_ccy, result.base_currency}, {field::ccy, result.quote_currency}})
+            .value();
+    return true;
 }
 
-// The oresmd grammar is the authority for what an ORE key means. A key it can
-// name is stored under its canonical spelling, so two spellings of one
-// instrument reach one series rather than two; a key it cannot name returns
-// nullopt, and the caller drops the row rather than filing it under a series
-// with no identity. Every key the corpus carries names, so this is the guard
-// for a file that carries one the grammar has no class for.
-std::optional<named_key>
-canonical_key(const std::string& key,
-              const ores::ore::market::series_key_registry& registry,
-              const ores::ore::market::fx_quote_convention_checker* fx_checker) {
-    const auto identifier = fx_checker ? core::oresmd_projections::from_ore_key(key, *fx_checker) :
-                                         core::oresmd_projections::from_ore_key(key);
-    if (!identifier)
-        return std::nullopt;
-    auto canonical = core::oresmd_projections::to_quote_key(*identifier);
-    if (!canonical)
-        return std::nullopt;
-    named_key result;
-    result.decomposition = registry.decompose(*canonical);
+// The ORE key codec is the authority for what an ORE key means. A key it reads is
+// stored under the canonical spelling its datum writes, so two spellings of one
+// instrument reach one series; a key it refuses returns the reason, and the
+// caller drops the row rather than filing it under a series with no identity.
+std::expected<named_key, std::string>
+name_key(const std::string& key, const ores::ore::market::fx_quote_convention_checker* fx_checker) {
+    auto read = datum::ore_key_codec::read(key);
+    if (!read)
+        return std::unexpected(read.error());
+    named_key result{std::move(*read), {}, {}, {}, false};
+    if (fx_checker)
+        result.fx_pair_reversed = correct_fx_pair(result.datum, *fx_checker);
+    auto canonical = datum::ore_key_codec::write(result.datum);
+    auto datum_uri = datum::oresmd_uri_codec::write(result.datum);
+    auto series_uri = datum::oresmd_uri_codec::write(datum::series_of(result.datum));
+    if (!canonical || !datum_uri || !series_uri)
+        return std::unexpected("the datum this key names has no canonical spelling");
     result.canonical = std::move(*canonical);
-    // The file's key names one datum, and the series is the datum's identity with
-    // its point dropped: the series is what the row above holds, and its points are
-    // the observations beneath it.
-    result.uri = core::oresmd_parser::to_series_uri(*identifier).value;
-    result.datum = core::oresmd_parser::to_uri(*identifier).value;
-    // Only asked when there is a difference to explain, so the second projection
-    // costs nothing on the keys that already read back as they arrived.
-    result.fx_pair_reversed =
-        fx_checker && result.canonical != key && fx_pair_moved(key, *identifier);
+    result.datum_uri = std::move(*datum_uri);
+    result.series_uri = std::move(*series_uri);
     return result;
+}
+
+// The three facts the classification rules are keyed by, from the datum: the
+// key's first token, its quote token and, for a correlation, its two indices.
+struct classification_key final {
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
+};
+
+classification_key classification_key_of(const datum::market_datum& d) {
+    classification_key k{std::string(datum::ore_key_codec::token_of(d.type())),
+                         std::string(datum::ore_name(d.quote())),
+                         {}};
+    if (d.type() == datum::instrument_type::correlation)
+        k.qualifier = *d.get<datum::field::index1>() + "/" + *d.get<datum::field::index2>();
+    return k;
 }
 
 } // namespace
@@ -213,15 +219,14 @@ import_service::import(const messaging::import_market_data_request& req) {
     // carries neither payload never pays for it.
     std::optional<core::series_classifier> classifier;
 
-    // The identity the series is given: the oresmd URI its key or index name
-    // projects to. Every caller has one, because a row whose key the grammar cannot
-    // name is not imported at all.
+    // The identity the series is given: the series URI of the datum its key names,
+    // or the oresmd URI of its index name. Every caller has one, because a row the
+    // codecs cannot name is not imported at all.
     auto find_or_create_series = [&](const std::string& series_type,
                                      const std::string& metric,
                                      const std::string& qualifier,
                                      const std::string& oresmd_uri) -> boost::uuids::uuid {
-        // The identity is what the series is, so the cache is keyed by it rather
-        // than by the triple the registry decomposed the same key into.
+        // The identity is what the series is, so the cache is keyed by it.
         const auto key = oresmd_uri;
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
@@ -292,45 +297,32 @@ import_service::import(const messaging::import_market_data_request& req) {
         append_issues(resp.warnings, report.warnings, "market data");
         append_issues(resp.errors, report.errors, "market data");
 
-        // Best-effort: a reversed FX/RATE key (e.g. some vendored ORE
-        // example market.txt files store GBP/USD under FX/RATE/USD/GBP —
-        // see fx_quote_convention_checker's docs) is detected against
-        // ores.refdata's currency_pair reference data and corrected before
-        // persistence, so every downstream consumer (including the series
-        // this creates) sees the canonical key. The checker swaps the
-        // identifier's =pair= field and the projection emits the corrected
-        // key, so the value is never touched and this can never introduce
-        // floating-point error. The reference data is read once, and only
-        // when a key in the batch would actually consult it.
+        // Best-effort: a reversed FX spot key (some vendored ORE example
+        // market.txt files store GBP/USD under FX/RATE/USD/GBP; see
+        // fx_quote_convention_checker) is corrected against ores.refdata's
+        // currency pairs before persistence, so the series and the row hold
+        // the corrected pair only. The reference data is read once, and only
+        // when a key in the batch would consult it.
         std::optional<ores::ore::market::fx_quote_convention_checker> fx_checker;
         if (std::any_of(data.begin(), data.end(), [](const auto& d) {
-                return d.series_type == "FX" && d.metric == "RATE";
+                return d.key.starts_with("FX/RATE/") || d.key.starts_with("FX_SPOT/RATE/");
             }))
             fx_checker.emplace(known_pairs_ ? known_pairs_() :
                                               fetch_known_currency_pairs(auth_nats_));
 
         // parse_market_data already de-duplicated repeated (date, key)
-        // pairs (last-line-wins) — see duplicate_policy. In error mode,
+        // pairs (last-line-wins) -- see duplicate_policy. In error mode,
         // skip persisting this content rather than silently importing
         // data the caller asked to be told about instead.
         if (report.errors.empty()) {
             std::vector<domain::market_observation> observations;
             observations.reserve(data.size());
             for (const auto& d : data) {
-                const auto named =
-                    canonical_key(d.key, registry, fx_checker ? &*fx_checker : nullptr);
-                // A key oresmd cannot name has no identity for the series to carry,
-                // and the identity is what the catalog is keyed by, so the row is
-                // reported and dropped rather than filed under a series nothing can
-                // find.
+                const auto named = name_key(d.key, fx_checker ? &*fx_checker : nullptr);
                 if (!named) {
-                    resp.warnings.push_back(d.key + " = " + d.value +
-                                            " skipped: oresmd names no series for this key.");
+                    resp.warnings.push_back(d.key + " = " + d.value + " skipped: " + named.error());
                     continue;
                 }
-                const auto series_type = named->decomposition.series_type;
-                const auto metric = named->decomposition.metric;
-                const auto qualifier = named->decomposition.qualifier;
 
                 if (named->canonical != d.key)
                     resp.warnings.push_back(
@@ -340,8 +332,9 @@ import_service::import(const messaging::import_market_data_request& req) {
                              "reversed relative to refdata's canonical currency pair." :
                              "not the canonical spelling of this key."));
 
-                const auto series =
-                    find_or_create_series(series_type, metric, qualifier, named->uri);
+                const auto ck = classification_key_of(named->datum);
+                const auto series = find_or_create_series(
+                    ck.series_type, ck.metric, ck.qualifier, named->series_uri);
 
                 domain::market_observation obs;
                 obs.id = gen();
@@ -349,13 +342,10 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.party_id = ctx_.party_id().value_or(boost::uuids::uuid{});
                 obs.series_id = series;
                 obs.observation_datetime = std::chrono::sys_days{d.date};
-                // The datum's URI, not the registry's ORE-form point: the row and
-                // the URI name the coordinate the same way, and a key a consumer
-                // needs is projected from this rather than read off it.
-                obs.oresmd_uri = named->datum;
-                // The file's own text, kept because the rows above hold the
-                // canonical spelling rather than it.
-                obs.key = d.key;
+                obs.oresmd_uri = named->datum_uri;
+                // The canonical key of the datum the row holds, never the file's
+                // own text: a row names one identity.
+                obs.key = named->canonical;
                 obs.source = req.source;
                 obs.value = d.value;
                 observations.push_back(std::move(obs));

@@ -18,8 +18,8 @@
  *
  */
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
-#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include <format>
 #include <stdexcept>
 
@@ -32,36 +32,47 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
     pillar_quote_key key;
     key.series_type = "IR_SWAP";
     key.metric = "RATE";
-    key.qualifier =
-        ccy + "/" +
-        (start_tenor_code == "SPOT" ? std::string("0D") : std::format("{:%Y%m%d}", start_date)) +
-        "/1D";
-    key.point = std::format("{:%Y%m%d}", end_date);
+    // ORE reads a swap's start and end as two periods or two dates, never one of
+    // each: a spot pillar is 0D to the days its end date lies after spot, and a
+    // dated pillar is its start date to its end date.
+    if (start_tenor_code == "SPOT") {
+        key.qualifier = ccy + "/0D/1D";
+        const auto days = std::chrono::sys_days{end_date} - std::chrono::sys_days{start_date};
+        key.point = std::format("{}D", days.count());
+    } else {
+        key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/1D";
+        key.point = std::format("{:%Y%m%d}", end_date);
+    }
     return key;
 }
 
 namespace {
 
-// The grammar's own reading of the pillar's key. Both projections below start
-// here, so a key the grammar cannot name fails once, in one place.
-domain::market_data_identifier pillar_identifier(const pillar_quote_key& key) {
-    const std::string datum_key =
-        key.series_type + "/" + key.metric + "/" + key.qualifier + "/" + key.point;
-    const auto identifier = oresmd_projections::from_ore_key(datum_key);
-    if (!identifier)
-        throw std::invalid_argument("pillar key: the grammar names no series as '" + datum_key +
-                                    "'");
-    return *identifier;
+// The datum the pillar's key names. Both projections below start here, so a key
+// the codec refuses fails once, in one place.
+datum::market_datum pillar_datum(const pillar_quote_key& key) {
+    const auto text = key.series_type + "/" + key.metric + "/" + key.qualifier + "/" + key.point;
+    auto d = datum::ore_key_codec::read(text);
+    if (!d)
+        throw std::invalid_argument("pillar key: " + d.error());
+    return std::move(*d);
 }
 
-} // namespace
+std::string uri_of(const datum::market_datum& d) {
+    auto uri = datum::oresmd_uri_codec::write(d);
+    if (!uri)
+        throw std::invalid_argument("pillar key: " + uri.error());
+    return std::move(*uri);
+}
+
+}
 
 std::string pillar_series_uri(const pillar_quote_key& key) {
-    return oresmd_parser::to_series_uri(pillar_identifier(key)).value;
+    return uri_of(datum::series_of(pillar_datum(key)));
 }
 
 std::string pillar_datum_uri(const pillar_quote_key& key) {
-    return oresmd_parser::to_uri(pillar_identifier(key)).value;
+    return uri_of(pillar_datum(key));
 }
 
 }

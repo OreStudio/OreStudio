@@ -134,6 +134,31 @@ private:
  */
 ORES_MARKETDATA_API_EXPORT market_datum series_of(const market_datum& d);
 
+/**
+ * @brief The datum of @p series at @p coordinates: the series' identity fields
+ * and the coordinate fields given, with any coordinate not given holding none.
+ *
+ * The inverse of series_of, for a writer that holds a series and a point rather
+ * than a key, such as a curve bootstrap writing its pillars.
+ */
+ORES_MARKETDATA_API_EXPORT std::expected<market_datum, std::string>
+datum_at(const market_datum& series, std::vector<field_value> coordinates);
+
+/**
+ * @brief The datum of @p series at @p point: the text of its one coordinate,
+ * such as a curve pillar's tenor. A series with more or fewer than one
+ * coordinate has no single point, and the error says so.
+ */
+ORES_MARKETDATA_API_EXPORT std::expected<market_datum, std::string>
+datum_at_point(const market_datum& series, std::string_view point);
+
+/**
+ * @brief The value field @p f holds when written as @p text, read by the field's
+ * value kind; the error names what the text is not.
+ */
+ORES_MARKETDATA_API_EXPORT std::expected<value, std::string> parse_value(field f,
+                                                                         std::string_view text);
+
 }
 
 #endif

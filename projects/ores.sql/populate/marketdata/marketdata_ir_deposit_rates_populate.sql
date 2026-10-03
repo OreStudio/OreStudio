@@ -177,10 +177,10 @@ begin
         -- FX driver rates dataset's own reference date. The row IS the MM quote ORE's own file
         -- carries, so the key is that file's key and the identity is the series it belongs to:
         -- the currency and the spot lag, with the DEPOSIT entry's end_tenor_code (see
-        -- select_vintage_anchor_entry) as the maturity coordinate. datum_uri is that
-        -- coordinate left on the series URI, which is what the observation stores.
-        ('oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm', 'MM/RATE/USD/2D/3M',
-         'oresmd://ir/usd?tenor=2d&type=quote&metric=rate&quote=mm&maturity=3m',
+        -- select_vintage_anchor_entry) as the term coordinate. datum_uri is the series at
+        -- that term, which is what the observation stores.
+        ('oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D', 'MM/RATE/USD/2D/3M',
+         'oresmd://ir/USD?type=quote&instrument=mm&quote=rate&fwd_start=2D&term=3M',
          date '2016-02-05', 0.007961,
          'external/ore/examples/Legacy/Example_56/Input/market.txt (MM/RATE/USD/2D/3M)')
     ) as r(oresmd_uri, key, datum_uri, observation_date, value, source_url);

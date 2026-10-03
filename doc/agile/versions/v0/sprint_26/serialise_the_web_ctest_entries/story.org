@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 47BF4D70-7118-4E86-BF9E-C5BBE47FE33E
+:END:
+#+title: Story: Stop the web typecheck racing the web tests
+#+description: ctest runs ores.web.typecheck and ores.web.tests together; tsc --build --force rewrites the wire package's dist while the BFF tests load it, so 18 suites fail with an undefined import on linux-clang-release.
+#+type: story
+#+level: s2
+#+filetags: :ci:web:ctest:sprint_26:v0:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The two ores.web ctest entries never run at the same time, so the BFF tests never load the wire package's dist while tsc rewrites it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Done.                                  |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing; the story is closed.          |
+| Last touched  | 2026-10-03                               |
+
+* Acceptance
+
+- ores.web.typecheck and ores.web.tests share a ctest resource lock.
+- A parallel ctest run of the two entries shows them serialised.
+- Continuous Linux linux-clang-release passes the web tests.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5C43C85E-E3C1-4EE2-A2B2-D3B5BC7F19CA][Scaffold story: Stop the web typecheck racing the web tests]] | DONE | 2026-10-03 | 2026-10-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9B3BFF2B-AC0B-4316-94B5-19138223FFDC][Serialise the two web ctest entries]] | DONE | 2026-10-03 | 2026-10-03 | Initial task for: Stop the web typecheck racing the web tests |
+
+* Decisions
+
+* Out of scope
+
+-

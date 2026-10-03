@@ -67,6 +67,11 @@ if(ORES_WEB_ENABLED)
     #
     # They carry a label because the memcheck run excludes it: valgrind follows
     # child processes, and the suites are Node processes it cannot check.
+    #
+    # They share a resource lock so ctest never runs them together. The
+    # typecheck rebuilds the wire package's dist with tsc --build --force, and
+    # the BFF suites import that dist; run side by side, a suite loads a module
+    # while tsc rewrites it and reads its exports as undefined.
     add_test(NAME ores.web.typecheck
         COMMAND ${ORES_NPM_EXECUTABLE} run typecheck
         WORKING_DIRECTORY ${ORES_WEB_DIR})
@@ -77,5 +82,6 @@ if(ORES_WEB_ENABLED)
 
     set_tests_properties(ores.web.typecheck ores.web.tests PROPERTIES
         PROCESSORS 1
+        RESOURCE_LOCK ores_web_dist
         LABELS web)
 endif()

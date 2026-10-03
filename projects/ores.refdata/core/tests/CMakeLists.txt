@@ -29,6 +29,8 @@ set_target_properties(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.iam.api.lib
+        ores.iam.core.lib
         ores.telemetry.core.lib
         ores.utility.lib
         ores.platform.lib

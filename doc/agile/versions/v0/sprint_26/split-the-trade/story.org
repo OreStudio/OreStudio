@@ -39,6 +39,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 - The anchor is the first immutable entity, so its build compiles the generated insert-only repository write, and the booking operation maps a second write of the same trade id to a domain error rather than a raw unique-key violation.
 - A tenant purge that removes trades has a sanctioned path past the anchor's immutability guard, in the manner of the version-replace session switch; nothing else may update, delete or truncate an anchor.
 - The drop and tenant purge scripts remove the tables that reference the anchor with an enforced foreign key before the anchor itself.
+- A booking names a virtual book only while its trade is a pre-agreement draft, a test or a hypothetical; going live needs a real book in the same write.
 
 * Tasks
 

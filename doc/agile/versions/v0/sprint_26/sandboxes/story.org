@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:v0:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Let users import and experiment without disturbing official data, as the Sandbox
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -32,16 +32,23 @@ Let users import and experiment without disturbing official data, as the Sandbox
 
 - A sandbox is an entity with purpose, anchor, owner, visibility, status and review date, and its own portfolio tree that no official portfolio contains.
 - Opening a sandbox needs the right at its anchor; visibility follows the anchor's permissions or named members.
-- A virtual book belongs to exactly one sandbox, has no ledger book, and a booking names it only for a pre-agreement draft, a test or a hypothetical.
+- A virtual book belongs to exactly one sandbox and has no ledger book.
 - Official reports cannot select a sandbox.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:B83FC239-CD20-41D9-9244-B07188940E58][Grant rights at portfolio nodes]] | DONE | 2026-10-03 | 2026-10-03 | Let an account hold a named right at a node of the portfolio tree, inherited by everything below it, starting with the rights to read a node and to open sandboxes there. |
 
 * Decisions
+
+- Rights at a node of the portfolio tree did not exist; the story adds the
+  smallest model that meets its acceptance: an account holds a named right
+  at a node, inherited down the tree. General book access adopts it later.
+- The rule that a booking names a virtual book only for a draft, a test or
+  a hypothetical moves to the story that splits the trade, which creates
+  the booking.
 
 * Out of scope
 

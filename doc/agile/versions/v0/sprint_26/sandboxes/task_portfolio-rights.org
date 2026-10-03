@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: B83FC239-CD20-41D9-9244-B07188940E58
+:END:
+#+title: Task: Grant rights at portfolio nodes
+#+description: Let an account hold a named right at a node of the portfolio tree, inherited by everything below it, starting with the rights to read a node and to open sandboxes there.
+#+type: task
+#+level: s1
+#+filetags: :sandboxes:sprint_26:v0:
+#+owner: marco
+#+branch: feature/portfolio-rights
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give sandboxes the node-level rights they need: who may open one at a node, and who may read what a node holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- portfolio_right is generated in ores.refdata: an account, a portfolio node and a right.
+- A function answers whether an account holds a right at a node, directly or through an ancestor.
+- A test shows a right held at a desk applying to its sub-desks and not to a sibling desk.
+
+* Plan
+
+- No rights at portfolio nodes existed: an account reached data only
+  through the parties it was linked to. The user chose the smallest model
+  that meets the sandbox story: one refdata entity, =portfolio_right=,
+  pairing an account, a node and a named right.
+- Two rights, the ones sandboxes need: =read= and =open_sandbox=, held to
+  that list by a check.
+- A right held at a node applies below it. A SQL function,
+  =ores_refdata_account_holds_portfolio_right_fn=, walks up the tree from
+  the node and answers whether the account holds the right on the way; the
+  walk stops at a depth of 64 so a cycle cannot loop. The model's trailing
+  paste block creates it and its extra drop statements remove it.
+- Wired by hand like the netting entities, with tenant row-level security.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =portfolio_right= is generated in =ores.refdata= and wired by hand like
+  the netting entities, with tenant row-level security.
+- =ores_refdata_account_holds_portfolio_right_fn= answers whether an
+  account holds a right at a node, directly or through an ancestor.
+- In Postgres, in a transaction that rolled back, with =open_sandbox=
+  granted on desk A: the right held at A and at its sub-desk A1, not at
+  sibling desk B; =read= was not held at A1; an unknown right was refused
+  (23514).
+- Two codegen defects surfaced and were fixed at the generator, not in the
+  model:
+  - A generator declared its =idx= counter for any text natural key, even
+    one marked =:no_generator_suffix:=, leaving an unused variable that
+    fails the build. It now declares it only when a suffixed key or a
+    snippet reads it (=test_generator_counter.py=).
+  - A foreign key's =parent_seed= snippet ran beside the derived parent
+    seeding rather than in place of it. It now replaces it, as its
+    documentation said. The generated test for this entity seeds a service
+    account: a seeded user account ended the test tenant's bootstrap and
+    made five other refdata tests fail. The one existing snippet user, a
+    synthetic test, loses two redundant includes.
+- The refdata core tests link =ores.iam.api= and =ores.iam.core=, which
+  the account seed needs; =ores.iam.core= already depends on refdata, so no
+  library cycle forms.
+- Build clean; ctest 89 of 89 on a recreated database.

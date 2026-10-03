@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T02:23:36.619784Z
+' Generated: 2026-10-03T08:47:19.506945Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3806,6 +3806,37 @@ package "refdata" #FFF3E0 {
 
     note right of ores_refdata_person_roles_tbl
     Indicates the role of a person in a transaction.
+    end note
+
+    entity ores_refdata_portfolio_rights_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * account_id : uuid <<FK>>
+        * portfolio_id : uuid <<FK>>
+        * right_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_portfolio_rights_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Portfolio Right Table
+    A portfolio right says that one account holds one named right at one node
+    of the [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][portfolio]] tree. A right held at a node applies to every node
+    below it, so a right granted on a desk covers its sub-desks and not its
+    sibling desks.
+    Two rights exist, the ones [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][sandboxes]] need: read, to see what a
+    node holds, and open_sandbox, to open a sandbox anchored at the node.
+    ores_refdata_account_holds_portfolio_right_fn answers whether an account
+    holds a right at a node, directly or through an ancestor.
     end note
 
     entity ores_refdata_portfolios_tbl <<temporal>> #C6F0D8 {

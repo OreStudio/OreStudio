@@ -196,6 +196,10 @@
 \ir ./refdata_business_units_notify_trigger_create.sql
 \ir ./refdata_portfolios_create.sql
 \ir ./refdata_portfolios_notify_trigger_create.sql
+
+-- Rights accounts hold at portfolio nodes
+\ir ./refdata_portfolio_rights_create.sql
+\ir ./refdata_portfolio_rights_notify_trigger_create.sql
 \ir ./refdata_books_create.sql
 \ir ./refdata_books_notify_trigger_create.sql
 

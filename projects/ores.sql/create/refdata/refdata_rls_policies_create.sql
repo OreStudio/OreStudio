@@ -1928,3 +1928,19 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Portfolio rights
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_portfolio_rights_tbl enable row level security;
+
+drop policy if exists portfolio_rights_tenant_isolation_policy
+    on ores_refdata_portfolio_rights_tbl;
+
+create policy portfolio_rights_tenant_isolation_policy on ores_refdata_portfolio_rights_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

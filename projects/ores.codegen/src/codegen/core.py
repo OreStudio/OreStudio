@@ -3547,11 +3547,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
             nks = domain_entity['natural_keys']
             domain_entity['has_multiple_natural_keys'] = len(nks) > 1
-            # Flag: UUID-PK entities with text natural keys need an idx counter in the generator
+            # A UUID-PK generator declares its idx counter only when something
+            # reads it: a text natural key that takes the "-<idx>" suffix, or a
+            # generator snippet that names idx. Declaring it otherwise is an
+            # unused variable, which the warning gate turns into a build error.
+            uses_idx = re.compile(r'\bidx\b')
             domain_entity['has_text_natural_keys'] = any(
                 not k.get('is_uuid') and not k.get('is_int')
                 and not k.get('is_timestamp') and not k.get('is_date')
+                and not (k.get('generator_expr') and k.get('no_generator_suffix'))
                 for k in nks
+            ) or any(
+                uses_idx.search(c.get('generator_expr') or '')
+                for c in [*nks, *domain_entity.get('columns', [])]
             )
             domain_entity['has_date_natural_keys'] = any(k.get('is_date') for k in nks)
             domain_entity['has_date_or_timestamp_natural_keys'] = any(
@@ -3907,7 +3915,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk for fk in fks if fk.get('enforce')]
             for fk in fks:
                 fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
-                if fk.get('nullable'):
+                # A parent seed snippet stands in place of the derived
+                # seeding: the model knows how its parent must be seeded, so
+                # the generated write is not emitted beside it.
+                if fk.get('nullable') or fk.get('parent_seed_snippet'):
                     continue
                 parent = _parent_entity_info(
                     (org_by_table.get(fk.get('table')) or {}).get('org'))

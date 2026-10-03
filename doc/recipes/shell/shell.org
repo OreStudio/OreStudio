@@ -1188,3 +1188,7 @@ tangled into the runnable script library
 * Csas
 
 - [[id:A5CDA5E7-E6D9-5B5B-AFA3-B8CFFABD462F][How do I run the csas commands from the shell?]]
+
+* Portfolio Rights
+
+- [[id:B0D65F25-06B1-5B18-8202-16E4741931BD][How do I run the portfolio_rights commands from the shell?]]

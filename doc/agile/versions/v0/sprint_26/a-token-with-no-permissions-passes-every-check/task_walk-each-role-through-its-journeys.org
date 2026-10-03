@@ -7,35 +7,40 @@
 #+level: s1
 #+filetags: :iam:security:web:a-token-with-no-permissions-passes-every-check:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/walk-each-role-through-its-journeys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Prove against the running deployment that every role a person can hold meets
+the refusals its grant calls for and no others, now that tokens carry their
+permissions and an empty list refuses, and record the matrix in the story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:31644F1D-5A51-4742-BF6B-1E72F4697229][Give a person's token the permissions they hold]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- Each person role is signed in and walked through the same routes.
+- Every refusal matches the role's grant, and every failure that is not a
+  refusal is fixed or captured.
+- The story holds the permission matrix as an org table.
 
 * Plan
 
@@ -80,6 +85,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| #2565.1 | Share the party-choice audience as one constant | =jwt_claims.hpp= | Accept | =party_selection_audience=, used by the signer, the refresh rule, party selection, party switching and the request context. |
+| #2565.4 | Say that a missing verifier yields the service's own context | =request_context.hpp= | Accept | The documentation says so, and that no production service runs without one. |
+| #2565.5 | Test that a workspace scope keeps the list | =handler_helpers_tests.cpp= | Accept | Added. |
 
 * Result
+
+Five accounts, one per narrower person role, were created in Acme with
+=evidence/walk_setup.mjs=, and =evidence/walk_roles.py= signed in as each role
+and both administrators and called the same twelve routes. The matrix is in
+the story's Permission matrix section. Every refusal matches the role's grant,
+and no role holding a permission was refused it.
+
+The walk turned up three failures that are not refusals:
+
+- =GET /api/change-reasons= answered 502 for every role, because the BFF sent
+  the request without its =order= field and the server's decoder requires
+  every field. Fixed here: the request is the generated type, and a test pins
+  its body; removing the field fails the test. It now answers 200 for every
+  role.
+- SuperAdmin's lock of an Acme account answers success but changes nothing,
+  because row-level security keeps the system session out of the tenant's
+  rows. Captured.
+- Reading a session that still has to choose a party answers 500. Captured.
+
+This task also carries the three review follow-ups from #2565, recorded in the
+Review table. ctest passes the service, security and iam suites. The web
+service logs to the journal already: its unit sets no redirection and the BFF
+logs JSON to stdout; the file =ores.web.service.0.log= under the log directory
+is left over from an earlier run and nothing writes it now.

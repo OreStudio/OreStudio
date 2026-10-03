@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3190AB29-45B7-46BC-8E73-701875EEB89B
+:END:
+#+title: Locking an account reports success when it changed nothing
+#+description: As SuperAdmin, POST /api/accounts/:id/lock on an Acme account answers success true, but row-level security keeps the system session out of Acme's rows, so the account stays unlocked. The iam lock and unlock report success without checking that a row changed. Found by the role walk in Give a person's token the permissions they hold.
+#+type: capture
+#+level: cross
+#+filetags: :iam:security:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

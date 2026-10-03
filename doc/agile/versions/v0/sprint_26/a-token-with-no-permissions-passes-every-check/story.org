@@ -23,11 +23,11 @@ it says for a person as well as for a service.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Design done.                           |
+| Now           | All tasks done.                        |
 | Waiting on    | Nothing.                               |
-| Next          | Issue tokens with their permissions.   |
+| Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-03                               |
 
 * Acceptance
@@ -49,7 +49,55 @@ it says for a person as well as for a service.
 | [[id:9056525B-7B7A-4530-ACBE-A47EDE51D52A][Decide what a person's token carries]] | DONE | 2026-10-03 | 2026-10-03 | Design note: the permission list in each token, its size, how a role change reaches the next token, and how party switching and the tenant session fit. |
 | [[id:CF478751-4C76-4238-8235-731373FA05DC][Issue tokens with their permissions]] | DONE | 2026-10-03 | 2026-10-03 | Login, party selection, party switching and refresh fill the token's permissions from the database, and a role change reaches the next token. |
 | [[id:D0C66840-F2A2-4F30-A39C-C1587763EF0D][Refuse a token with no permissions]] | DONE | 2026-10-03 | 2026-10-03 | has_permission refuses an empty permission list instead of passing it, with tests; any caller that relied on the pass-through is found and fixed. |
-| [[id:D1EAE179-FD17-4CFB-82C9-A436CBCEF23F][Walk each role through its journeys]] | BACKLOG | | | SuperAdmin, TenantAdmin and an ordinary member are walked through their journeys against the running deployment; every refusal is one that should happen, and missing seeded permissions are fixed. |
+| [[id:D1EAE179-FD17-4CFB-82C9-A436CBCEF23F][Walk each role through its journeys]] | DONE | 2026-10-03 | 2026-10-03 | SuperAdmin, TenantAdmin and an ordinary member are walked through their journeys against the running deployment; every refusal is one that should happen, and missing seeded permissions are fixed. |
+
+* Permission matrix
+
+What each role a person can hold grants, and what the BFF answered each role
+when the walk signed in as it and called the same routes, on 2026-10-03 after
+tokens carry their permissions and an empty list refuses. The grants come from
+=projects/ores.sql/populate/iam/iam_roles_populate.sql=; the walk is
+=evidence/walk_roles.py= and its raw output =evidence/walk_roles.out=. Every
+walk account except the two administrators works in Acme's top operational
+party. Service roles are left out: they belong to service accounts, not people.
+
+** Grants
+
+| Role | Tenant | Grants |
+|------+--------+--------|
+| SuperAdmin | system | =*=, and the system codes =iam::system:reset=, =iam::system:reset-tenant=, =iam::tenants:create=, =:delete=, =:impersonate=, =:read=, =:suspend=, =:terminate=, =:update= |
+| TenantAdmin | a tenant | =*= |
+| Viewer | a tenant | =refdata::currencies:read=, =variability::flags:read=, =workspace::workspaces:read= |
+| Trading | a tenant | Viewer's three, and =workspace::workspaces:write=, =:archive=, =:delete= |
+| Sales | a tenant | =refdata::currencies:read=, =variability::flags:read= |
+| Support | a tenant | =iam::accounts:read=, =iam::login_info:read=, =iam::roles:read=, =refdata::currencies:read=, =variability::flags:read= |
+| Operations | a tenant | =iam::accounts:read=, =variability::flags:read=, and read, write and delete on currencies, currency calendars, currency countries, currency groups and currency pair calendars |
+
+** What each role was answered
+
+| Route | SuperAdmin | TenantAdmin | Viewer | Trading | Sales | Support | Operations | Why |
+|-------+------------+-------------+--------+---------+-------+---------+------------+-----|
+| Sign in | 200 | 200 | 200 | 200 | 200 | 200 | 200 | |
+| =GET /api/session= | 200 | 200 | 200 | 200 | 200 | 200 | 200 | |
+| =GET /api/parties= | 403 | 200 | 200 | 200 | 200 | 200 | 200 | A party read checks no permission; system administration reads a tenant's parties from inside it |
+| =GET /api/accounts= | 200 | 200 | 403 | 403 | 403 | 200 | 200 | Needs =iam::accounts:read= |
+| =GET /api/login-info= | 200 | 200 | 403 | 403 | 403 | 200 | 403 | Needs =iam::login_info:read= |
+| =GET /api/sessions= | 200 | 200 | 403 | 403 | 403 | 403 | 403 | Needs =iam::sessions:read=, which no narrow role holds |
+| =GET /api/change-reasons= | 200 | 200 | 200 | 200 | 200 | 200 | 200 | Checks no permission; answered 502 for every role until this task fixed the request |
+| =GET /api/seed-profiles= | 200 | 200 | 200 | 200 | 200 | 200 | 200 | Checks no permission |
+| =GET /api/tenants= | 200 | 403 | 403 | 403 | 403 | 403 | 403 | The roster is system administration's |
+| =POST /api/accounts/:id/lock= | 200 | 200 | 403 | 403 | 403 | 403 | 403 | Needs =iam::accounts:lock=; SuperAdmin's 200 changed nothing (see below) |
+| =POST /api/accounts/:id/unlock= | 200 | 200 | 403 | 403 | 403 | 403 | 403 | Needs =iam::accounts:unlock= |
+| =POST /api/provision-party= | 200 | 200 | 403 | 403 | 403 | 403 | 403 | Needs =refdata::parties:write= |
+
+Every refusal is one the role's grant calls for, and no role holding a
+permission was refused it. Two findings the walk turned up are captured rather
+than fixed here: SuperAdmin's lock of an Acme account answers success but
+changes nothing, because row-level security keeps the system session out of
+the tenant's rows
+([[id:3190AB29-45B7-46BC-8E73-701875EEB89B][Locking an account reports success when it changed nothing]]),
+and reading a session that still has to choose a party answers 500
+([[id:31DA10EB-A132-4288-94B1-1F778A8ADA0A][Reading a session that still has to choose a party answers 500]]).
 
 * Decisions
 

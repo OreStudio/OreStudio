@@ -68,14 +68,15 @@ struct csa_eligible_currency final {
     /**
      * @brief The ISO code of the eligible currency.
      *
-     * A CSA lists a currency once.
+     * A CSA lists a currency once. Not checked against the currencies table: like the currency
+     * columns of the instrument models, it holds what the ORE document states.
      */
     std::string currency_code;
 
     /**
      * @brief The currency's place in ORE's list.
      *
-     * Zero-based.
+     * Zero-based; two currencies of one CSA never share a position.
      */
     int position = 0;
 

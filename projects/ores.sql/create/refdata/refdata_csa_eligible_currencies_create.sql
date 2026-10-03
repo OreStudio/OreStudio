@@ -71,6 +71,10 @@ create index if not exists csa_eligible_currencies_tenant_idx
 on "ores_refdata_csa_eligible_currencies_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists csa_eligible_currencies_csa_position_idx
+on "ores_refdata_csa_eligible_currencies_tbl" (csa_id, position)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
 create or replace function ores_refdata_csa_eligible_currencies_insert_fn()
 returns trigger as $$
 declare

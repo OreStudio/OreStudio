@@ -93,7 +93,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Currency codes not validated | csa, csa_eligible_currency | Document | Kept as plain text, like the instrument models' currency columns; the models say so. |
+| 2 | Closing a set leaves its CSA | csa | Decline | Every soft foreign key in the schema behaves this way, as the agreement model states. |
+| 3 | 23505 on reactivation needs a readable error | service | Decline | The generated services map every unique violation the same way; nothing CSA-specific. |
+| 4 | FIXED check may be too narrow | csa | Decline | It is the whole of ORE's independentAmountType enumeration. |
+| 5 | No checked-in test of the rules | codegen tests | Accept | =test_csa_rules.py= renders the real models and asserts both unique indexes. |
+| 6 | Two currencies can share a position | csa_eligible_currency | Accept | Unique index on (csa_id, position) over current rows. |
 
 * Result
 
@@ -106,10 +111,15 @@ via its "Verifies task" field.
   thresholds and minimum transfer amounts to zero and above.
 - A unique index on the set over current, active rows allows at most one
   active CSA per set.
+- A second unique index keeps each position of a CSA's currency list
+  once; =test_csa_rules.py= guards both indexes against the models.
 - In Postgres, in a transaction that rolled back: a second active CSA on a
   set was refused (23505, =csas_active_set_idx=); an inactive CSA beside it
   was accepted; an unknown Bilateral value and a negative threshold were
   refused (23514); a currency listed twice for one CSA was refused (23505).
+  After review: a second currency at a taken position was refused (23505,
+  =csa_eligible_currencies_csa_position_idx=); at the next position it was
+  accepted.
 - Build: linux-clang-debug-make clean after making the eligible currency
   generator use its counter for =position=, which the warning gate caught.
   ctest: 89 of 89 binaries passed on a recreated database, including the

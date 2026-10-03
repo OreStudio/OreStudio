@@ -63,7 +63,9 @@ ctx.generate_uuid()
 
 The ISO code of the eligible currency.
 
-A CSA lists a currency once.
+A CSA lists a currency once. Not checked against the currencies table:
+like the currency columns of the instrument models, it holds what the ORE
+document states.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -77,7 +79,7 @@ std::string("EUR")
 
 The currency's place in ORE's list.
 
-Zero-based.
+Zero-based; two currencies of one CSA never share a position.
 
 #+begin_src cpp :name generator
 static_cast<int>(idx)
@@ -95,6 +97,12 @@ static_cast<int>(idx)
 | expression        |
 |-------------------|
 | "position" >= 0   |
+
+** Indexes
+
+| name         | columns          | unique | current_only | where_extra |
+|--------------+------------------+--------+--------------+-------------|
+| csa_position | csa_id, position | true   | true         |             |
 
 * Foreign keys
 

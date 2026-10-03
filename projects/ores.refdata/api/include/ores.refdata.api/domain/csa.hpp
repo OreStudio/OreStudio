@@ -92,7 +92,8 @@ struct csa final {
     /**
      * @brief The currency the CSA is denominated in.
      *
-     * An ISO currency code.
+     * An ISO currency code. Not checked against the currencies table: like the currency columns of
+     * the instrument models, it holds what the ORE document states.
      */
     std::optional<std::string> csa_currency;
 

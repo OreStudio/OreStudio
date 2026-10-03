@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trade-identifiers
-#+pr:
+#+pr: 2578
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2578][#2578]] | [trading] Key identifiers, party roles and additional fields by the anchor |
 
 * Review
 

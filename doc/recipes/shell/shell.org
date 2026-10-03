@@ -1180,3 +1180,11 @@ tangled into the runnable script library
 * Netting Sets
 
 - [[id:9993B255-2A0E-5AD9-B8F0-3CE5F85E6356][How do I run the netting_sets commands from the shell?]]
+
+* Csa Eligible Currencies
+
+- [[id:D19E448B-CD4A-5F3A-818C-E21EFB7CE3A1][How do I run the csa_eligible_currencies commands from the shell?]]
+
+* Csas
+
+- [[id:A5CDA5E7-E6D9-5B5B-AFA3-B8CFFABD462F][How do I run the csas commands from the shell?]]

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: F53DCDBB-C2B1-4CFA-B015-D2D173239402
+:END:
+#+title: Task: Model the credit support annex
+#+description: Generate csa and its eligible collateral currencies in ores.refdata, carrying ORE's CSA details, with at most one active CSA per netting set.
+#+type: task
+#+level: s1
+#+filetags: :netting-agreements:sprint_26:v0:
+#+owner: marco
+#+branch: feature/credit-support-annex
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Hold the collateral terms of a netting set as their own entity, so a CSA can be added, changed or switched off without touching the set's trades.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- csa and csa_eligible_currency are generated in ores.refdata across every layer the codegen covers.
+- A CSA carries every field of ORE's CSA details.
+- A netting set has at most one active CSA, enforced by the database.
+
+* Plan
+
+- Survey ORE's examples first: 99 files hold 191 netting sets; 189 carry
+  CSA details and 83 of those are switched off. A CSA therefore exists on
+  its own, and the active flag is the CSA's, not the set's.
+- =csa=: the netting set (required), the active flag, and every field of
+  ORE's =CSADetails= as a nullable column, so a round trip keeps what ORE
+  leaves out. Checks: the two Bilateral-type columns against ORE's three
+  values, the independent amount type against FIXED, thresholds and
+  minimum transfer amounts not negative.
+- =csa_eligible_currency=: one row per eligible currency, with its
+  position in ORE's list so an export keeps the order.
+- One active CSA per set: a unique index on the set over current, active
+  rows.
+- Wire by hand as for the netting entities, including tenant row-level
+  security; neither table has a legal entity column, so no party policy.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =csa= and =csa_eligible_currency= are generated in =ores.refdata= across
+  every layer, and wired by hand into the SQL lists, permission seeds,
+  core registrar, shell menu, CMake lists and tenant row-level security.
+- =csa= carries the netting set, the active flag and every field of ORE's
+  =CSADetails= as a nullable column. Checks hold the Bilateral-type
+  columns to ORE's three values, the independent amount type to FIXED, and
+  thresholds and minimum transfer amounts to zero and above.
+- A unique index on the set over current, active rows allows at most one
+  active CSA per set.
+- In Postgres, in a transaction that rolled back: a second active CSA on a
+  set was refused (23505, =csas_active_set_idx=); an inactive CSA beside it
+  was accepted; an unknown Bilateral value and a negative threshold were
+  refused (23514); a currency listed twice for one CSA was refused (23505).
+- Build: linux-clang-debug-make clean after making the eligible currency
+  generator use its counter for =position=, which the warning gate caught.
+  ctest: 89 of 89 binaries passed on a recreated database, including the
+  two generated CSA eventing integration tests.

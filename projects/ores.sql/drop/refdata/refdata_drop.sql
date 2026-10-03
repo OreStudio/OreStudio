@@ -129,6 +129,12 @@
 \ir ./refdata_business_unit_types_notify_trigger_drop.sql
 \ir ./refdata_business_unit_types_drop.sql
 
+-- Eligible collateral, then the CSAs it belongs to (before netting sets)
+\ir ./refdata_csa_eligible_currencies_notify_trigger_drop.sql
+\ir ./refdata_csa_eligible_currencies_drop.sql
+\ir ./refdata_csas_notify_trigger_drop.sql
+\ir ./refdata_csas_drop.sql
+
 -- Netting sets, then the agreements they reference (before parties/counterparties)
 \ir ./refdata_netting_sets_notify_trigger_drop.sql
 \ir ./refdata_netting_sets_drop.sql

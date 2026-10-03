@@ -51,6 +51,8 @@ set(files
     "crm_topology_config_commands_tests.cpp"
     "cross_currency_basis_convention_commands_tests.cpp"
     "cross_currency_fix_float_convention_commands_tests.cpp"
+    "csa_commands_tests.cpp"
+    "csa_eligible_currency_commands_tests.cpp"
     "currency_calendar_commands_tests.cpp"
     "currency_commands_tests.cpp"
     "currency_country_commands_tests.cpp"

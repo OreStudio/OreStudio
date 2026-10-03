@@ -1896,3 +1896,35 @@ as restrictive
 for select using (
     party_id is null or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
+
+-- -----------------------------------------------------------------------------
+-- CSAs
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_csas_tbl enable row level security;
+
+drop policy if exists csas_tenant_isolation_policy
+    on ores_refdata_csas_tbl;
+
+create policy csas_tenant_isolation_policy on ores_refdata_csas_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- CSA eligible currencies
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_csa_eligible_currencies_tbl enable row level security;
+
+drop policy if exists csa_eligible_currencies_tenant_isolation_policy
+    on ores_refdata_csa_eligible_currencies_tbl;
+
+create policy csa_eligible_currencies_tenant_isolation_policy on ores_refdata_csa_eligible_currencies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

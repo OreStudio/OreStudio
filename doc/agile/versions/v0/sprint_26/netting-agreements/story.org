@@ -39,6 +39,7 @@ Model the legal and credit grouping trades net under, as the Netting sets note a
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:66026B70-2557-48A0-A3B9-74BDA4384B31][Model netting agreements and netting sets]] | DONE | 2026-10-03 | 2026-10-03 | Generate netting_agreement and netting_set in ores.refdata, with the set's counterparty and legal entity pinned to its agreement. |
+| [[id:F53DCDBB-C2B1-4CFA-B015-D2D173239402][Model the credit support annex]] | DONE | 2026-10-03 | 2026-10-03 | Generate csa and its eligible collateral currencies in ores.refdata, carrying ORE's CSA details, with at most one active CSA per netting set. |
 
 * Decisions
 

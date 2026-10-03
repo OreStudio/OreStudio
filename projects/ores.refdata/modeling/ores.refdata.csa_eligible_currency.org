@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 25090994-3093-470E-BB3F-7832EDCA26A4
+:END:
+#+title: ores.refdata.csa_eligible_currency
+#+description: Codegen entity model for the refdata =csa_eligible_currency= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A currency a CSA accepts as collateral.
+#+entity_singular: csa_eligible_currency
+#+entity_plural: csa_eligible_currencies
+#+entity_title: CSA Eligible Currency
+#+created: 2026-10-03
+#+updated: 2026-10-03
+
+One row per currency a [[id:29A8E20A-0F02-4D54-830E-8DDD668E86C0][CSA]] accepts as collateral. ORE lists them
+under the CSA's =EligibleCollaterals=, in order; the position keeps that
+order so a CSA written back to ORE lists them as it read them.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this row.
+
+Surrogate key for the eligible currency record.
+
+** csa_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The CSA that accepts the currency.
+
+References the CSAs table.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** currency_code
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
+:END:
+
+The ISO code of the eligible currency.
+
+A CSA lists a currency once.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:END:
+
+The currency's place in ORE's list.
+
+Zero-based.
+
+#+begin_src cpp :name generator
+static_cast<int>(idx)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_csa_eligible_currencies_tbl
+:END:
+
+** Checks
+
+| expression        |
+|-------------------|
+| "position" >= 0   |
+
+* Foreign keys
+
+** csa_id
+:PROPERTIES:
+:table:         ores_refdata_csas_tbl
+:parent_entity: csa
+:nullable:      false
+:error_message: Invalid csa_id: %. No active CSA found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: csa_eligible_currency
+:entity_plural_short:   csa_eligible_currencies
+:entity_singular_words: CSA eligible currency
+:entity_plural_words:   CSA eligible currencies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ec
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| currency_code | Currency    |
+| position      | Position    |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/csa_eligible_currency.hpp
+:domain_class:            refdata::domain::csa_eligible_currency
+:protocol_include:        ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp
+:collection_name:         csa_eligible_currencies
+:key_field:               currency_code
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field         | label    | widget           | type      | is_key | is_required | placeholder       |
+|---------------+----------+------------------+-----------+--------+-------------+-------------------|
+| currency_code | Currency | currencyCodeEdit | line_edit | true   | true        | ISO currency code |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| CurrencyCode | currency_code | Currency    | string    |    80 |
+| Position     | position      | Position    | int       |    70 |
+| Version      | version       | Version     | int       |    80 |
+| ModifiedBy   | modified_by   | Modified By | string    |   120 |
+| RecordedAt   | recorded_at   | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:29A8E20A-0F02-4D54-830E-8DDD668E86C0][ores.refdata.csa]] — the CSA the currency belongs to.

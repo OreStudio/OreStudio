@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: A5CDA5E7-E6D9-5B5B-AFA3-B8CFFABD462F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the csas commands from the shell?
+#+description: Every command the csas submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:csas:
+
+This file documents the csas resource at the shell, one section per command. Every command is a subcommand of =csas=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: D0B8F80E-1F40-58CA-8380-762A2EEDFBFC
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csas.list=.
+
+#+name: csas-list
+#+begin_src ores-shell :tangle csas-list.ores :exports none
+csas list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E7ED895A-C81A-5DE1-ADD7-48D5BB53E08A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas get <id>
+#+end_example
+
+It is addressed at =refdata.v1.csas.get=.
+
+#+name: csas-get
+#+begin_src ores-shell :tangle csas-get.ores :exports none
+csas get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 9F4B800F-79A0-576F-854C-681BACEDDCB0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.csas.get_many=.
+
+#+name: csas-get-many
+#+begin_src ores-shell :tangle csas-get-many.ores :exports none
+csas get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0B9DC614-5DD8-5224-B4D9-57EC19359A25
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas add <netting_set_id> <is_active> <bilateral> <csa_currency> <index_name> <threshold_pay> <threshold_receive> <minimum_transfer_amount_pay> <minimum_transfer_amount_receive> <independent_amount_held> <independent_amount_type> <call_frequency> <post_frequency> <margin_period_of_risk> <collateral_compounding_spread_receive> <collateral_compounding_spread_pay> <apply_initial_margin> <initial_margin_type> <calculate_im_amount> <calculate_vm_amount> <non_exempt_im_regulations> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csas.put=.
+
+#+name: csas-add
+#+begin_src ores-shell :tangle csas-add.ores :exports none
+csas add 00000000-0000-0000-0000-000000000000 false - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 1F50CC20-15CD-5FD3-B1F4-B222C459D43B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas set <id> <netting_set_id> <is_active> <bilateral> <csa_currency> <index_name> <threshold_pay> <threshold_receive> <minimum_transfer_amount_pay> <minimum_transfer_amount_receive> <independent_amount_held> <independent_amount_type> <call_frequency> <post_frequency> <margin_period_of_risk> <collateral_compounding_spread_receive> <collateral_compounding_spread_pay> <apply_initial_margin> <initial_margin_type> <calculate_im_amount> <calculate_vm_amount> <non_exempt_im_regulations> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.csas.put=.
+
+#+name: csas-set
+#+begin_src ores-shell :tangle csas-set.ores :exports none
+csas set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4130051D-304A-5B5E-959A-0DAFA6F27E50
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas put-many --count <n> <id> <netting_set_id> <is_active> <bilateral> <csa_currency> <index_name> <threshold_pay> <threshold_receive> <minimum_transfer_amount_pay> <minimum_transfer_amount_receive> <independent_amount_held> <independent_amount_type> <call_frequency> <post_frequency> <margin_period_of_risk> <collateral_compounding_spread_receive> <collateral_compounding_spread_pay> <apply_initial_margin> <initial_margin_type> <calculate_im_amount> <calculate_vm_amount> <non_exempt_im_regulations> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csas.put_many=.
+
+#+name: csas-put-many
+#+begin_src ores-shell :tangle csas-put-many.ores :exports none
+csas put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 false - - - - - - - - - - - - - - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1005A398-9CC5-5386-9D9E-EA02B88A6D4F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.csas.delete=.
+
+#+name: csas-delete
+#+begin_src ores-shell :tangle csas-delete.ores :exports none
+csas delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 698843A7-56D2-5EB9-89E5-62A08274AECC
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.csas.delete_many=.
+
+#+name: csas-delete-many
+#+begin_src ores-shell :tangle csas-delete-many.ores :exports none
+csas delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-netting-set-id=
+:PROPERTIES:
+:ID: 246193B9-CEDE-59E1-8F7E-B527768D141A
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas by-netting-set-id <netting_set_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csas.list_by_netting_set_id=.
+
+#+name: csas-by-netting-set-id
+#+begin_src ores-shell :tangle csas-by-netting-set-id.ores :exports none
+csas by-netting-set-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4723DAE4-F516-5F2F-80D8-10956CA6CDF1
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.csas_versions.list=.
+
+#+name: csas-versions
+#+begin_src ores-shell :tangle csas-versions.ores :exports none
+csas versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: CB3A3B43-A4BD-5014-9A2F-434971792458
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+csas version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.csas_versions.get=.
+
+#+name: csas-version
+#+begin_src ores-shell :tangle csas-version.ores :exports none
+csas version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

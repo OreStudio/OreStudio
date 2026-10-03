@@ -372,6 +372,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_sets:write',                   'Create and modify netting sets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_sets:delete',                  'Delete netting sets');
 
+    -- CSAs permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csas:read',                            'View CSAs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csas:write',                           'Create and modify CSAs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csas:delete',                          'Delete CSAs');
+
+    -- CSA eligible currencies permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csa_eligible_currencies:read',         'View CSA eligible currencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csa_eligible_currencies:write',        'Create and modify CSA eligible currencies');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csa_eligible_currencies:delete',       'Delete CSA eligible currencies');
+
     -- Curve sections permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:read',                     'View curve sections');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_sections:write',                    'Create and modify curve sections');

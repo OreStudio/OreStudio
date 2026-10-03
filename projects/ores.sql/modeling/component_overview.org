@@ -27,16 +27,11 @@ schema with the =ores_= prefix and domain sub-prefix (=ores_iam_*=,
 enforcing strict service table isolation. Helper scripts handle database
 creation, reset, teardown, and SQL execution.
 
-*Schema upgrade policy:* there is no incremental migration runner; the
-supported path for fresh databases is destroying and recreating them
-with =compass db recreate -y -k=, and the =create/= scripts carry the
-canonical schema. Persistent environments that predate a schema change
-may additionally need the matching one-shot =ALTER TABLE= script from
-=migration/=, applied by hand — no tool executes those files. A one-shot
-migration must be idempotent and guarded (a no-op when the change is
-already present) and must document its preconditions in the file
-header; the =create/= scripts always carry the final canonical
-definition.
+*Schema upgrade policy:* a database is never migrated. A schema change
+edits the =create/= scripts, which carry the canonical schema, and the
+database is destroyed and recreated with =compass db recreate -y -k=.
+There are no migration scripts and no backwards compatibility code:
+nothing keeps an old table, column, name or permission code alive.
 
 * Inputs
 

@@ -48,6 +48,10 @@ Let components, links and participants reference the trade anchor with constrain
   =<table>_<column>_fk foreign key (column) references target (target_column)=,
   in both the temporal and the current-state table bodies. It sets
   =skip_check=, so the trigger check for that column is not generated.
+- A key that matches its tenant names =tenant_id= on both sides, and a
+  tenant-scoped immutable table keys on =(tenant_id, id)=. Without this, a
+  constraint on =id= alone would let a row reference another tenant's
+  anchor, which the trigger check it replaces does not allow.
 - Keys over several columns belong to the composite pinned keys task.
 
 * Measurements
@@ -87,20 +91,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Constraint name could exceed 63 characters | core.py | Accept | The generator builds the name once and refuses one over 63 characters. |
+| 2 | Constraint name is unquoted | template | Decline | Every generated function, trigger and index name is unquoted; the name is lower snake case by construction. |
+| 3 | Unknown target table gives a misleading error | core.py | Accept | Separate refusal naming the table no model declares. |
+| 4 | No test of nullable, multi-column or current-state keys | tests | Partly accept | Added a current-state child test. Postgres skips a null key itself, so a nullable key needs no generator code. Multi-column keys are the next task. |
+| 5 | Drop order must remove children first | — | Record | Added to the acceptance of the anchor story, the first consumer. |
+| 6 | (Own finding) A constraint on id alone ignores the tenant | core.py, template | Fix | The key matches the tenant, and a tenant-scoped immutable table keys on (tenant_id, id). |
 
 * Result
 
 - A foreign key node with =:enforce: true= renders a named =REFERENCES=
   constraint and no trigger check. A node without it stays a trigger check.
 - The generator refuses =:enforce:= when the target model is not immutable.
-- Four tests in =projects/ores.codegen/tests/test_enforced_foreign_key.py=
-  cover the constraint, the absent trigger check, the unenforced key and the
-  refusal.
+- A key that matches its tenant names =tenant_id= on both sides, and a
+  tenant-scoped immutable table keys on =(tenant_id, id)=.
+- The generator also refuses an unknown target table, =:use_system_tenant:=,
+  tenant scopes that differ, and a constraint name longer than 63
+  characters.
+- Twelve tests in =projects/ores.codegen/tests/test_enforced_foreign_key.py=
+  cover the tenant and untenanted constraints, a current-state child, the
+  absent trigger check, the unenforced key and each refusal.
 - In Postgres, a rendered parent and child ran in a transaction that rolled
   back. An insert that named an unknown anchor was refused with SQLSTATE
   23503 by =ores_testcomp_child_records_anchor_id_fk=. An insert that named
-  a known anchor was accepted.
+  a known anchor was accepted. With both tables tenant-scoped, a row in
+  another tenant that named the anchor was refused by the same constraint,
+  with the child's triggers off so that only the constraint could refuse it.
 - The SQL meta-model page and the variability index now document
   =:immutable:=, which the previous task added. The meta-model page also
   documents =:enforce:=.

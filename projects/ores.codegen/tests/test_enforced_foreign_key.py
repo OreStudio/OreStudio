@@ -8,7 +8,8 @@ A foreign key is normally a trigger check against the parent's current
 row. A key into an immutable entity can instead be a REFERENCES constraint,
 because the parent row never changes and has no closed versions for the
 constraint to mistake for current ones. The trade's components reference
-the trade anchor this way.
+the trade anchor this way. A key that matches its own tenant references
+the tenant as well, so a row cannot name another tenant's anchor.
 """
 import sys
 from pathlib import Path
@@ -45,7 +46,7 @@ A row written once that other rows reference by key.
 :product:       ores
 :component:     testcomp
 :subcomponent:  api
-:has_tenant_id: false
+:has_tenant_id: {tenant}
 :read_only:     true
 :END:
 
@@ -89,7 +90,7 @@ A row that references an anchor.
 :product:       ores
 :component:     testcomp
 :subcomponent:  api
-:has_tenant_id: false
+:has_tenant_id: {tenant}
 :END:
 
 * Columns
@@ -118,57 +119,124 @@ The anchor this row belongs to.
 :PROPERTIES:
 :table:         ores_testcomp_anchor_records_tbl
 :error_message: Invalid anchor_id: %. Anchor must exist.
-:use_no_tenant: true
-{enforce}:END:
+{fk_flags}:END:
 
 * SQL
 ** Flags
 :PROPERTIES:
 :tablename: ores_testcomp_child_records_tbl
-:END:
+{child_sql_flags}:END:
 """
 
 
-def _child_sql(tmp_path, parent_immutable=True, enforce=True):
+ENFORCE = ":enforce:       true\n"
+NO_TENANT = ":use_no_tenant: true\n"
+SYSTEM_TENANT = ":use_system_tenant: true\n"
+
+
+def _render(tmp_path, parent_flags=":immutable:     true\n",
+            fk_flags=ENFORCE, parent_tenant=True, child_tenant=True,
+            child_sql_flags="", edit_child=lambda body: body):
     modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
     modeling.mkdir(parents=True)
-    (modeling / "ores.testcomp.anchor_record.org").write_text(
-        PARENT.format(immutable=":immutable:     true\n" if parent_immutable else ""),
+    parent = modeling / "ores.testcomp.anchor_record.org"
+    parent.write_text(
+        PARENT.format(immutable=parent_flags,
+                      tenant=str(parent_tenant).lower()),
         encoding="utf-8")
     child = modeling / "ores.testcomp.child_record.org"
     child.write_text(
-        CHILD.format(enforce=":enforce:       true\n" if enforce else ""),
+        edit_child(CHILD.format(fk_flags=fk_flags,
+                                tenant=str(child_tenant).lower(),
+                                child_sql_flags=child_sql_flags)),
         encoding="utf-8")
-    output_dir = tmp_path / "out"
-    output_dir.mkdir()
-    generate_from_model(
-        str(child), DATA_DIR, TEMPLATES_DIR, output_dir,
-        is_processing_batch=True,
-        target_template="sql_schema_domain_entity_create.mustache",
-        target_output="child_records_create.sql")
-    return (output_dir / "child_records_create.sql").read_text(encoding="utf-8")
+    sql = {}
+    for name, model in (("parent", parent), ("child", child)):
+        output_dir = tmp_path / name
+        output_dir.mkdir()
+        generate_from_model(
+            str(model), DATA_DIR, TEMPLATES_DIR, output_dir,
+            is_processing_batch=True,
+            target_template="sql_schema_domain_entity_create.mustache",
+            target_output="create.sql")
+        sql[name] = (output_dir / "create.sql").read_text(encoding="utf-8")
+    return sql
 
 
-def test_an_enforced_key_is_a_references_constraint(tmp_path):
-    sql = _child_sql(tmp_path)
+def test_an_enforced_key_matches_the_tenant(tmp_path):
+    sql = _render(tmp_path)
 
     assert ('constraint ores_testcomp_child_records_anchor_id_fk foreign key '
-            '("anchor_id") references "ores_testcomp_anchor_records_tbl" ("id")') in sql
+            '("tenant_id", "anchor_id") references '
+            '"ores_testcomp_anchor_records_tbl" ("tenant_id", "id")') in sql["child"]
+    assert "primary key (tenant_id, id)" in sql["parent"]
+
+
+def test_an_enforced_key_without_tenants_names_one_column(tmp_path):
+    sql = _render(tmp_path, fk_flags=ENFORCE + NO_TENANT,
+                  parent_tenant=False, child_tenant=False)
+
+    assert ('constraint ores_testcomp_child_records_anchor_id_fk foreign key '
+            '("anchor_id") references "ores_testcomp_anchor_records_tbl" ("id")'
+            ) in sql["child"]
+    assert "primary key (id)" in sql["parent"]
+
+
+def test_a_current_state_table_carries_the_constraint(tmp_path):
+    sql = _render(tmp_path, child_sql_flags=":current_state: true\n")
+
+    assert "valid_from" not in sql["child"]
+    assert ('constraint ores_testcomp_child_records_anchor_id_fk foreign key '
+            '("tenant_id", "anchor_id")') in sql["child"]
 
 
 def test_an_enforced_key_has_no_trigger_check(tmp_path):
-    sql = _child_sql(tmp_path)
+    sql = _render(tmp_path)
 
-    assert "Validate anchor_id" not in sql
+    assert "Validate anchor_id" not in sql["child"]
 
 
 def test_an_unenforced_key_stays_a_trigger_check(tmp_path):
-    sql = _child_sql(tmp_path, enforce=False)
+    sql = _render(tmp_path, fk_flags="")
 
-    assert "Validate anchor_id" in sql
-    assert "_fk foreign key" not in sql
+    assert "Validate anchor_id" in sql["child"]
+    assert "_fk foreign key" not in sql["child"]
 
 
 def test_an_enforced_key_into_a_mutable_table_is_refused(tmp_path):
     with pytest.raises(ValueError, match="is not an immutable entity"):
-        _child_sql(tmp_path, parent_immutable=False)
+        _render(tmp_path, parent_flags="")
+
+
+def test_an_enforced_key_into_the_system_tenant_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="can only match the row's own tenant"):
+        _render(tmp_path, fk_flags=ENFORCE + SYSTEM_TENANT)
+
+
+@pytest.mark.parametrize("fk_flags,parent_tenant,child_tenant", [
+    (ENFORCE + NO_TENANT, True, True),
+    (ENFORCE, False, True),
+    (ENFORCE, True, False),
+])
+def test_an_enforced_key_whose_tenant_scope_differs_is_refused(
+        tmp_path, fk_flags, parent_tenant, child_tenant):
+    with pytest.raises(ValueError, match="tenant scope does not match"):
+        _render(tmp_path, fk_flags=fk_flags, parent_tenant=parent_tenant,
+                child_tenant=child_tenant)
+
+
+def test_an_enforced_key_into_an_unknown_table_is_refused(tmp_path):
+    def edit(body):
+        return body.replace(":table:         ores_testcomp_anchor_records_tbl",
+                            ":table:         ores_testcomp_missing_tbl")
+
+    with pytest.raises(ValueError, match="no model declares the table"):
+        _render(tmp_path, edit_child=edit)
+
+
+def test_a_constraint_name_postgres_would_truncate_is_refused(tmp_path):
+    def edit(body):
+        return body.replace("anchor_id", "anchor_id_" + "x" * 30)
+
+    with pytest.raises(ValueError, match="longer than 63 characters"):
+        _render(tmp_path, edit_child=edit)

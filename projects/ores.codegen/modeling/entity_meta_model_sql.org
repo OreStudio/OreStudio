@@ -215,8 +215,15 @@ current row, because a temporal target holds closed versions that a
 =REFERENCES= constraint would accept as current. An immutable target has
 no closed versions, so a foreign key declared with =:enforce: true= in the
 =* Foreign keys= section renders a named =REFERENCES= constraint
-(=<table>_<column>_fk=) and no trigger check. The generator refuses
-=:enforce:= when the target table's model is not immutable.
+(=<table>_<column>_fk=) and no trigger check. A key that matches its own
+tenant, the default, names =tenant_id= on both sides, so a row cannot
+reference another tenant's row; a tenant-scoped immutable table therefore
+keys on =(tenant_id, <primary key>)=. A key with =:use_no_tenant:= names one
+column and needs a target without =tenant_id=. The generator refuses
+=:enforce:= when the target table's model is unknown or not immutable, when
+the key uses =:use_system_tenant:=, when the tenant scopes of the two tables
+differ, and when the constraint name is longer than PostgreSQL's 63
+characters.
 
 *Tenant-scoping is a policy, not three booleans.* =:system_scope:= and
 =:nullable_tenant_id:= are mutually exclusive with the default

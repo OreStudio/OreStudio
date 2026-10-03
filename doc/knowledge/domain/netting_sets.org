@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:netting:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-03
 
 * Summary
 
@@ -177,7 +177,9 @@ id" column conflates:
 
 The agreement is the legal fact; the netting set is the credit
 grouping the agreement makes possible; the CSA is a term sheet
-attached to the set. Each has a lifecycle of its own: an agreement is
+attached to the set. The first two are modelled as
+[[id:6AADB1A7-1229-4D10-8951-58446788957F][ores.refdata.netting_agreement]] and
+[[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]]. Each has a lifecycle of its own: an agreement is
 signed, amended and terminated, a set is opened under it, and a CSA is
 added, changed or switched off without touching the trades.
 

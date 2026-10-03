@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 66026B70-2557-48A0-A3B9-74BDA4384B31
+:END:
+#+title: Task: Model netting agreements and netting sets
+#+description: Generate netting_agreement and netting_set in ores.refdata, with the set's counterparty and legal entity pinned to its agreement.
+#+type: task
+#+level: s1
+#+filetags: :netting-agreements:sprint_26:v0:
+#+owner: marco
+#+branch: feature/netting-agreements-and-sets
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-03
+#+updated: 2026-10-03
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give every netting set an identity of its own and tie it to the legal agreement that makes netting enforceable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-03                               |
+
+* Acceptance
+
+- netting_agreement and netting_set are generated in ores.refdata across every layer the codegen covers.
+- A netting set with an agreement has that agreement's counterparty and legal entity, enforced by a pinned key.
+- A set without an agreement is allowed and records that its trades do not net.
+
+* Plan
+
+- Two models in =projects/ores.refdata/modeling=, on the
+  =uuid-identified-lookup= profile (tenant-scoped, no workspace, since
+  the trade shape design removes workspaces).
+- =netting_agreement=: agreement number (natural key), the firm's legal
+  entity and the counterparty (both required, fixed for the agreement's
+  life), agreement type checked against ISDA, AFB, FBF and OTHER, and
+  governing law.
+- =netting_set=: code (ORE's netting set id, natural key), the agreement,
+  the counterparty and the legal entity, call type, initial margin type
+  and risk weight. The agreement and the two parties are optional,
+  because an ORE document names a set by code alone. A check requires
+  both parties when the set has an agreement, so the pinned key to the
+  agreement is never skipped by a null.
+- Generate every layer with =compass codegen entity generate=, then wire
+  by hand what no generator owns: the SQL create and drop lists, the
+  permission seeds, the core registrar, the shell menu and the CMake file
+  lists.
+- The credit limit the note names as part of a set's identity has no
+  entity yet, so it is left out.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =netting_agreement= and =netting_set= are generated in =ores.refdata=:
+  SQL schema and notify triggers, domain types, repository, service,
+  protocol, handlers, history providers, eventing, generators, shell
+  commands and TypeScript wire types.
+- Wired by hand: the refdata SQL create and drop lists, the permission
+  seeds, the refdata core registrar, the shell refdata menu and the CMake
+  file lists of the four components touched.
+- A netting set with an agreement must carry both parties, by a check, and
+  they must be the agreement's, by a pinned key. A set without an agreement
+  is accepted.
+- In Postgres, in a transaction that rolled back, with stub counterparties
+  inserted with their own triggers off: an unknown agreement type was
+  refused by its check (23514); a set naming another counterparty than its
+  agreement's was refused by the pin (23503); a set with an agreement and
+  no parties was refused by the check (23514); a set without an agreement
+  and a matching set were accepted.
+- Build: linux-clang-debug-make clean. ctest: 89 of 89 binaries passed on a
+  database recreated from this branch, including the two generated eventing
+  integration tests and 38 generated shell command cases.

@@ -68,6 +68,8 @@
 #include "ores.refdata.core/messaging/ledger_feed_type_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_registrar.hpp"
+#include "ores.refdata.core/messaging/netting_agreement_registrar.hpp"
+#include "ores.refdata.core/messaging/netting_set_registrar.hpp"
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
@@ -155,6 +157,8 @@
 #include "ores.refdata.core/messaging/ledger_feed_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/leg_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/netting_agreement_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/netting_set_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/ois_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_history_provider_registrar.hpp"
@@ -259,6 +263,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_ledger_feed_type_handlers(nats, ctx, verifier));
     append(register_leg_type_handlers(nats, ctx, verifier));
     append(register_monetary_nature_handlers(nats, ctx, verifier));
+    append(register_netting_agreement_handlers(nats, ctx, verifier));
+    append(register_netting_set_handlers(nats, ctx, verifier));
     append(register_ois_convention_handlers(nats, ctx, verifier));
     append(register_overnight_index_convention_handlers(nats, ctx, verifier));
     append(register_party_handlers(nats, ctx, verifier));
@@ -390,6 +396,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_ledger_feed_type_history_provider(hist_registry);
         register_leg_type_history_provider(hist_registry);
         register_monetary_nature_history_provider(hist_registry);
+        register_netting_agreement_history_provider(hist_registry);
+        register_netting_set_history_provider(hist_registry);
         register_ois_convention_history_provider(hist_registry);
         register_overnight_index_convention_history_provider(hist_registry);
         register_party_history_provider(hist_registry);

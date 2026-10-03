@@ -36,22 +36,23 @@ namespace ores::marketdata::test {
  * that is silently different in one of them changes what "the corpus" means
  * without changing any test's name.
  *
- * The exclusions, in order: a fixing file is a different payload; the file must
- * name "market"; it must be text or CSV; todaysmarketcalibration.csv is a
- * calibration dump that would invent a pseudo-type per curve name it lists; and
- * the dated MD_*.csv dumps are the same thing under another name.
+ * A market payload is a text or CSV file that names "market", or a dated MD_*
+ * dump, which carries market rows in the DD.MM.YY form. A fixing file is a
+ * different payload, and nothing under ExpectedOutput is an input: ORE writes
+ * its own results there, such as todaysmarketcalibration.csv, which names
+ * "market" but lists curves rather than quotes.
  */
 inline bool is_market_payload(const std::string& path) {
     const auto name = std::filesystem::path(path).filename().string();
-    if (name.find("fixing") != std::string::npos)
-        return false;
-    if (name.find("market") == std::string::npos)
-        return false;
     if (!name.ends_with(".txt") && !name.ends_with(".csv"))
         return false;
     if (path.find("ExpectedOutput") != std::string::npos)
         return false;
-    return name.rfind("MD_", 0) != 0;
+    if (name.rfind("MD_", 0) == 0)
+        return true;
+    if (name.find("fixing") != std::string::npos)
+        return false;
+    return name.find("market") != std::string::npos;
 }
 
 /**
@@ -78,11 +79,12 @@ inline std::vector<std::filesystem::path> market_payloads(const std::filesystem:
  * corpus the reader never saw.
  *
  * The name is the only thing that says which reader a file feeds, so the two
- * predicates are stated one beside the other and each is the other's complement.
+ * predicates are stated one beside the other and each is the other's complement:
+ * a file naming "fixing", or a dated FD_* dump, is a fixing payload.
  */
 inline bool is_fixing_payload(const std::string& path) {
     const auto name = std::filesystem::path(path).filename().string();
-    if (name.find("fixing") == std::string::npos)
+    if (name.find("fixing") == std::string::npos && name.rfind("FD_", 0) != 0)
         return false;
     if (!name.ends_with(".txt") && !name.ends_with(".csv"))
         return false;

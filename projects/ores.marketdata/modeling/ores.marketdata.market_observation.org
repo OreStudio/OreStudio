@@ -91,36 +91,13 @@ ctx.past_timepoint()
 :natural_key: true
 :END:
 
-The datum's canonical oresmd URI: the series' URI plus the coordinate keys of
-this observation, e.g. =oresmd://ir/usd?tenor=3m&type=quote&quote=ir_swap&metric=rate&maturity=5y=.
+The datum's canonical oresmd URI: the series' URI with =type=quote= and the
+coordinate fields of this observation, e.g.
+=oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y=.
 
-It is the same syntax the series' own =oresmd_uri= uses, so a reader needs no
-translation between the row and the URI: the coordinate keys the series does not
-carry are the ones this row adds. The ORE-form point the registry derives
-(=1Y=, =5y,2y,atm=) is a spelling of the key, not of the URI, and is read from
-the decomposition where a key is projected rather than stored here.
-
-** key
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-The instrument key exactly as the producer wrote it, when the producer wrote
-one.
-
-An import sets this from the key it parsed off the line. It is kept because
-the import deliberately rewrites that key: a key oresmd can name is stored
-under the canonical spelling its own projection emits, and an FX/RATE key
-refdata reports as reversed is stored under the corrected pair. The series'
-columns therefore hold the importer's text, not the file's, and rebuilding a
-key from them returns the canonical spelling -- the right thing to query by,
-the wrong thing to write back. This is the file's text.
-
-Null for an observation no file produced: a tick from a feed or a curve
-bootstrap has no producer key to preserve, and an export rebuilds its key
-from the series, which is exact for every row the import did not rewrite.
+It is the row's only identity. The ORE key is not stored: =ore_key_codec=
+writes it from the datum this URI names, so a row cannot hold two identities
+that disagree.
 
 ** value
 :PROPERTIES:

@@ -27,7 +27,6 @@
 #include <filesystem>
 #include <optional>
 #include <random>
-#include <regex>
 #include <set>
 #include <string>
 #include <vector>
@@ -344,14 +343,15 @@ TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", tags) {
     // The seeds state URIs in SQL, which cannot call the codec, so a seed written
     // in another spelling would name a series no reader finds.
     const auto root = ores::testing::project_root::resolve("projects/ores.sql/populate");
-    const std::regex literal("'(oresmd://[^']*)'");
     std::size_t checked = 0;
     for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
         if (entry.path().extension() != ".sql")
             continue;
         const auto text = ores::platform::filesystem::file::read_content(entry.path());
-        for (std::sregex_iterator it(text.begin(), text.end(), literal), end; it != end; ++it) {
-            const auto uri = (*it)[1].str();
+        for (auto start = text.find("'oresmd://"); start != std::string::npos;
+             start = text.find("'oresmd://", start + 1)) {
+            const auto end = text.find('\'', start + 1);
+            const auto uri = text.substr(start + 1, end - start - 1);
             if (!uri.contains('?'))
                 continue;
             INFO(entry.path().filename().string() << ": " << uri);

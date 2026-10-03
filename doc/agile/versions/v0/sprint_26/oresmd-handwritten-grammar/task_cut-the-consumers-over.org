@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/cut-the-consumers-over
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ tests prove values by key.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Part 1 raised: the readers and writers. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Part 2: drop the key column.           |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -46,8 +46,35 @@ tests prove values by key.
 
 * Plan
 
-Cut over one consumer at a time behind the same tests. Recreate the database
-and re-import; write no migration.
+Every reader of a stored quote URI must move in the same change as every writer:
+a URI the new codec writes is one the old parser cannot read, and the seeds hold
+URIs too. So the cut-over is two PRs, each one green on its own.
+
+1. *Readers and writers move together.* The import, the export, the
+   classifier's inputs, the feed ingest loop, the curve republish service, the
+   curve pillar reader and the two synthetic feeds read and write quote URIs
+   through =ore_key_codec= and =oresmd_uri_codec=. The SQL seeds that hold
+   quote URIs (the FOMC series, the FX driver rates, the deposit rates and the
+   synthetic curve configs' vintage series) are rewritten in the new form. The
+   API gains one operation: a datum built from a series and its coordinate
+   values, which the curve republish and the synthetic curve feed need where
+   they used =with_point=. A reversed FX pair is reported and stored corrected.
+   Fixings keep the old grammar, as the story's decision 9 allows: an index is
+   not a quote.
+2. *The raw key goes.* =market_observations.key= is dropped through the model
+   and regenerated; the corpus tests compare values by key, read the =MD_*= and
+   =FD_*= files, and share the production tokeniser.
+
+Recreate the database and re-import; write no migration.
+
+The map of consumers, taken from =grep= of =oresmd_parser=,
+=oresmd_projections=, =pillar_quote_key=, =market_data_identifier= and
+=series_key_registry= outside the old grammar and its tests:
+=import_service.cpp=, =ore_export_service.cpp=, =series_classifier.cpp=,
+=feed_ingest_loop.cpp/.hpp=, =curve_republish_service.cpp=,
+=curve_pillar_reader.cpp=, =fx_spot_feed.cpp=, =ir_curve_feed.cpp=,
+=feed_controller.hpp=. The remaining hits are the old grammar's own API
+headers, a comment in =ores.iam=, and the test seed for the shape table.
 
 * Measurements
 
@@ -61,12 +88,61 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Old-grammar calls left in production code | the fixing paths of the import and the export only | =grep= of =oresmd_parser=, =oresmd_projections=, =with_point= outside =src/oresmd/= | b1623fa8ab |
+| Whole suite after recreating the database | 89 of 89 passed (part 1) | =compass test run= | b1623fa8ab |
+| Marketdata core suite | 453 cases passed, 452 s, including the corpus import compared by canonical key and the export round trip | =compass test run -- -R marketdata= | b1623fa8ab |
+| Spot pillar key ORE accepts | =IR_SWAP/RATE/USD/0D/1D/20260319= refused; =.../0D/1D/7W= and =.../20260128/1D/20260319= accepted | catalogue harness on the local ORE build | b1623fa8ab |
 
 * Notes
 
 See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 2, "The ORE export echoes the input text" and "The corpus
 import compares values without their keys".
+
+** Part 1: the readers and writers
+
+Done in the first PR. Each consumer now reads and writes quote identities
+through the two codecs, and the SQL seeds hold the new form.
+
+- *A row holds one identity.* The import stores the datum URI and the
+  canonical key of that datum, never the file's own text. The export writes
+  every key from the stored URI, so it no longer reads the =key= column at all.
+- *A reversed FX pair.* The FX convention checker is applied to the datum's two
+  currencies, for an FX spot rate only, as before. The row holds the corrected
+  pair, and the import reports it.
+- *Classification.* The rule table is keyed by the key's first token, its
+  quote token and, for a correlation, its two indices. All three now come from
+  the datum, so the shape table's decomposition is not read.
+- *Fixings stay on the old grammar.* An index is not a quote, and the story's
+  decision 9 keeps fixings and curves on the richer contract. The export tells
+  the two apart: a series URI the datum codec reads is a quote series.
+- *Series plus point.* The curve republish and the synthetic curve feed built
+  a datum from a series and a pillar point through =with_point=. The API now
+  has =datum_at= and =datum_at_point= for that, with no per-type code.
+
+** Two behaviour changes
+
+- *The spot pillar key.* =make_pillar_quote_key= wrote
+  =IR_SWAP/RATE/USD/0D/1D/20260319= for a pillar that starts at spot: a
+  period start with a date end. ORE refuses it ("Expect swap quote with
+  start/end as either periods or dates", checked with the catalogue harness),
+  and the strict codec does too; the old grammar accepted a key ORE cannot
+  read. A spot pillar is now =0D= to the days its end lies after spot, such as
+  =50D=, which ORE reads as the same swap. This keeps one spot series across
+  days. Writing the spot date instead would be ORE-valid too, but would make a
+  new series every day.
+- *Currency case.* The old grammar upper-cased a currency, so
+  =FX/RATE/gbp/jpy= became =GBP/JPY=. The datum model keeps every token as ORE
+  wrote it, and ORE does not change it either, so the lower-case key is now its
+  own series and no respelling is reported. An alias such as =FX_SPOT= is still
+  respelled and reported.
+
+** What part 2 holds
+
+=market_observations.key= still exists and holds the canonical key; part 2
+drops it through the model. The corpus tests already compare by canonical key;
+part 2 adds the =MD_*= and =FD_*= files and the shared tokeniser. The import
+still passes the shape registry to the tokeniser, which fills decomposition
+fields nothing reads now; the retire task removes both.
 
 * Test Scenarios
 

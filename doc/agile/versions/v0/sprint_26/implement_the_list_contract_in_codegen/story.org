@@ -8,7 +8,7 @@
 #+filetags: :codegen:protocol:paging:sprint_26:v0:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -43,7 +43,7 @@ uses a one-of member in place of a single read capped at 1000.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -67,12 +67,30 @@ uses a one-of member in place of a single read capped at 1000.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A24A43C8-804F-43DA-9334-4225C57D9854][Amend the list contract specification]] | BACKLOG | | | State the searchable and one-of filter members in the NATS entity protocol specification, and how a model declares sortable columns and a default order. |
+| [[id:A24A43C8-804F-43DA-9334-4225C57D9854][Amend the list contract specification]] | DONE | 2026-10-03 | 2026-10-03 | State the searchable and one-of filter members in the NATS entity protocol specification, and how a model declares sortable columns and a default order. |
 | [[id:A8A5C4E4-67EB-4CD5-8786-1C4F790EA18B][Generate a stated order]] | BACKLOG | | | Sortable columns and a default order in the model; the generated repository orders by an allow-list with the key as tie-break, and the service refuses an undeclared field. |
 | [[id:28598EF6-342E-434A-A329-71324C973B49][Generate the filter record, search and one-of members]] | BACKLOG | | | The generated repository applies each set filter member, a searchable text member, and list-typed one-of members for keys and relations. |
 | [[id:C6D29D53-2E3E-4557-A469-6FD755ABF151][Move the tenant reads onto the contract]] | BACKLOG | | | The roster reads iam.v1.tenants.list with a filter and the search function goes; the roster's run read and the parties page's parent names use one-of members with no fixed cap. |
 
 * Decisions
+
+1. *The model owns the order allow-list.* A column declares =:sortable: true=
+   and the entity =:default_order:=. An undeclared field is refused with
+   =order_not_supported=, never ignored. The key, ascending, breaks every tie.
+2. *Three filter members, all typed.* Equals for the filterable columns,
+   =<column>_one_of= for the primary key and relation columns, and one
+   =search= member over =:searchable:= columns. Set members must all hold.
+3. *One-of has the key-set bound.* At most 1000 values, like =get_many=; an
+   empty list matches no row; the page still applies.
+4. *Search is literal.* A case-insensitive substring match; =%= and =_= are
+   not wildcards; an empty string sets no condition.
+5. *Equals members need no new flag.* A column is filterable when the model
+   already reads by it: =:list_filter_column:= and the scoped-read relation
+   columns. Sorting and searching have flags because no existing declaration
+   states them.
+6. *Query parameter names are reserved.* =offset=, =limit=, =order=,
+   =descending=, =search=, =scope=, =as_of= and =keys=; the generator refuses a
+   filter member with one of them.
 
 * Out of scope
 

@@ -23,7 +23,6 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -80,9 +79,6 @@ struct parse_report {
  * duplicate_policy for how the repeat is reported.
  *
  * @param in Input stream positioned at the start of the file.
- * @param registry The key grammar that splits each key into its parts. Read
- *        once by the caller and passed down, so a batch costs one read of the
- *        shape table rather than one per key.
  * @param on_duplicate How to bucket a repeated (date, key) pair in *report.
  * @param report If non-null, appended with one issue per duplicate found.
  * @return Parsed, de-duplicated market data entries in file order.
@@ -93,7 +89,6 @@ struct parse_report {
  */
 ORES_ORE_CORE_EXPORT std::vector<market_datum>
 parse_market_data(std::istream& in,
-                  const series_key_registry& registry,
                   duplicate_policy on_duplicate = duplicate_policy::warn,
                   parse_report* report = nullptr);
 

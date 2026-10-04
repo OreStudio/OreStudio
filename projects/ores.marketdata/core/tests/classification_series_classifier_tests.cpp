@@ -20,21 +20,19 @@
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
+#include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/series_classification_rule_seed.hpp"
-#include "ores.testing/series_key_shape_seed.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
-#include <iterator>
 #include <map>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -79,19 +77,7 @@ constexpr std::size_t min_distinct_keys = 100000;
 constexpr std::size_t min_distinct_types = 40;
 constexpr std::size_t min_parsed_files = 130;
 
-/// The eight types this task added to the shape table. A registry without
-/// them is the grammar the compiled table carried, which is what the census
-/// of distinct series is compared against.
-const std::set<std::string> k_added_types{"BOND_OPTION",
-                                          "CPR",
-                                          "FIXING",
-                                          "GENERIC-MD",
-                                          "INDEX_CDS_TRANCHE",
-                                          "OI_FUTURE",
-                                          "RATING",
-                                          "SHAPE_PROFILE"};
-
-/// One distinct market data key, split as the parser split it.
+/// One distinct market data key, with the classification key the import gives it.
 struct corpus_entry {
     std::string key;
     std::string series_type;
@@ -125,19 +111,9 @@ struct corpus_survey {
     std::size_t files_seen = 0;
     std::size_t unreadable_files = 0;
     std::string first_read_error;
-
-    /// Distinct series, which is the market_series natural key and so the
-    /// number of rows an import of this corpus would write.
-    std::size_t distinct_series() const {
-        std::set<std::tuple<std::string, std::string, std::string>> series;
-        for (const auto& [key, entry] : entries)
-            series.insert({entry.series_type, entry.metric, entry.qualifier});
-        return series.size();
-    }
 };
 
-/// Every regular file under the corpus. Read once per process: the walk runs
-/// once per registry, and reading 3,500 files twice buys no new information.
+/// Every regular file under the corpus, read once per process.
 const std::vector<corpus_file>& corpus_files() {
     static const auto files = [] {
         std::vector<corpus_file> result;
@@ -176,8 +152,10 @@ bool named_as_fixings(const std::string& path) {
     return std::filesystem::path(path).filename().string().rfind("fixings", 0) == 0;
 }
 
-/// One pass of the corpus under a given key grammar.
-corpus_survey walk_with(const ores::ore::market::series_key_registry& registry) {
+/// One pass of the corpus, naming each market data key as the import does: the
+/// ORE key codec reads it, and a key the codec refuses is skipped, because the
+/// import skips it too.
+corpus_survey walk() {
     corpus_survey s;
     s.files_seen = corpus_files().size();
 
@@ -211,8 +189,12 @@ corpus_survey walk_with(const ores::ore::market::series_key_registry& registry) 
 
         std::istringstream market_data{file.content};
         try {
-            for (const auto& d : ores::ore::market::parse_market_data(market_data, registry)) {
-                s.entries[d.key] = corpus_entry{d.key, d.series_type, d.metric, d.qualifier};
+            for (const auto& d : ores::ore::market::parse_market_data(market_data)) {
+                const auto datum = ores::marketdata::datum::ore_key_codec::read(d.key);
+                if (!datum)
+                    continue;
+                const auto ck = ores::marketdata::core::classification_key_of(*datum);
+                s.entries[d.key] = corpus_entry{d.key, ck.series_type, ck.metric, ck.qualifier};
                 from_this_file.insert(d.key);
             }
         } catch (const std::invalid_argument&) {
@@ -225,10 +207,9 @@ corpus_survey walk_with(const ores::ore::market::series_key_registry& registry) 
     return s;
 }
 
-/// The walk every case in this file shares, under the grammar the shape table
-/// carries.
+/// The walk every case in this file shares.
 const corpus_survey& survey() {
-    static const auto result = walk_with(ores::testing::seed_registry());
+    static const auto result = walk();
     return result;
 }
 
@@ -353,36 +334,6 @@ TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
     CHECK(unknown.empty());
 }
 
-TEST_CASE("the_classifier_and_the_key_registry_name_the_same_series_types", tags) {
-    const auto from_classifier = seed_classifier().known_series_types();
-    const auto from_registry = ores::testing::seed_registry().known_series_types();
-
-    // Reported separately in each direction, because which table gained a type
-    // is what says where the row is missing. The two must agree: a type with a
-    // shape row and no classification row aborts an import, and a type with a
-    // classification row and no shape row folds every key into its qualifier.
-    std::vector<std::string> classifier_only;
-    std::vector<std::string> registry_only;
-    std::set_difference(from_classifier.begin(),
-                        from_classifier.end(),
-                        from_registry.begin(),
-                        from_registry.end(),
-                        std::back_inserter(classifier_only));
-    std::set_difference(from_registry.begin(),
-                        from_registry.end(),
-                        from_classifier.begin(),
-                        from_classifier.end(),
-                        std::back_inserter(registry_only));
-
-    for (const auto& type : classifier_only)
-        INFO("classifiable but with no shape row: " << type);
-    for (const auto& type : registry_only)
-        INFO("shape row but not classifiable: " << type);
-
-    CHECK(classifier_only.empty());
-    CHECK(registry_only.empty());
-}
-
 TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue", tags) {
     std::set<std::string> asset_classes;
     std::set<std::string> subclasses;
@@ -497,24 +448,6 @@ TEST_CASE("the_classification_rule_seed_is_well_formed", tags) {
     REQUIRE(generic != rules.end());
     CHECK(generic->metric == "EQUITY_OPTION");
     CHECK(generic->asset_class_code == "equity");
-}
-
-TEST_CASE("the_eight_added_rows_collapse_the_census_of_distinct_series", tags) {
-    // The grammar the compiled table carried: every row the shape table holds
-    // today, less the eight this task added. A key of one of those types folded
-    // its whole remainder into the qualifier, so each distinct key became a
-    // series of its own.
-    auto before = ores::testing::seed_shapes();
-    std::erase_if(before,
-                  [](const auto& shape) { return k_added_types.count(shape.series_type) > 0; });
-    REQUIRE(before.size() + k_added_types.size() == ores::testing::seed_shapes().size());
-
-    const ores::ore::market::series_key_registry compiled{before};
-    const auto after = survey().distinct_series();
-    const auto prior = walk_with(compiled).distinct_series();
-
-    WARN("distinct series: " << prior << " before the eight rows, " << after << " after");
-    CHECK(after < prior);
 }
 
 // =============================================================================

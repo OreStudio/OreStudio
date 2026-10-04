@@ -21,52 +21,10 @@ title ores.ore data model
 
 set namespaceSeparator ::
 
-legend right
-  <<orm>>: a persisted table, generated from the entity model.
-  The temporal columns are versioned: a row is never updated in
-  place, and valid_from/valid_to carry the interval it held for.
-  The registry holds one shape per series type, and is
-  built from the table at the start of an import.
-endlegend
-
-namespace ores #F2F2F2 {
-    namespace ore #F2F2F2 {
-        namespace domain #F2F2F2 {
-            class series_key_shape <<struct>> <<orm>> #99CB99 {
-                +version : int
-                +tenant_id : tenant_id
-                +series_type : string <<pk>>
-                +qualifier_depth : int
-                +has_point_dimension : bool
-                +default_point : string
-                +description : string
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +valid_from : timestamp
-                +valid_to : timestamp
-            }
-        }
-        namespace market #F2F2F2 {
-            class series_key_registry {
-                +decompose(key) : decomposed_key
-                +has_point_dimension(series_type) : bool
-                +default_point_for(series_type) : string
-                +known_series_types() : vector<string>
-            }
-            class decomposed_key <<struct>> {
-                +series_type : string
-                +metric : string
-                +qualifier : string
-                +point_id : optional<string>
-            }
-        }
-    }
-}
-
-ores::ore::market::series_key_registry o-- ores::ore::domain::series_key_shape : knows
-ores::ore::market::series_key_registry ..> ores::ore::market::decomposed_key : produces
+note as OresOreDataModel
+  ores.ore persists no tables. It reads and writes ORE's
+  files; the market data it imports is stored by ores.marketdata.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.puml"

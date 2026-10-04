@@ -5,11 +5,9 @@ Run::
     python3 -m pytest projects/ores.codegen/tests/test_asset_class_catalogue.py
 
 The catalogue is the single source for the refdata product taxonomy, the
-oresmd market-data namespace and the mapping between them. Two properties
-matter and both are silent when they break: the mapping must state the
-authority-to-class relationship the classifier reads, and an oresmd spec
-that names an authority the namespace does not hold must fail the codegen
-run rather than generate a namespace nothing else knows.
+oresmd market-data namespace and the mapping between them. The mapping
+must state the authority-to-class relationship the classifier reads, and
+nothing else notices when it does not.
 """
 import sys
 from pathlib import Path
@@ -19,19 +17,13 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
-import codegen.org_loader as org_loader  # noqa: E402
 from codegen.org_loader import (  # noqa: E402
-    asset_class_catalogue_authorities,
     load_org_asset_class_catalogue_model,
-    load_org_oresmd_quote_type_model,
 )
 
 CATALOGUE = (
     REPO_ROOT / "projects/ores.refdata/modeling"
     / "ores.refdata.asset_class_catalogue.org"
-)
-ORESMD_MANIFEST = (
-    REPO_ROOT / "projects/ores.marketdata/modeling/oresmd/model.org"
 )
 
 
@@ -56,8 +48,6 @@ def test_the_namespace_holds_the_twelve_authorities():
         "ir", "credit", "equity", "commodity", "fx", "inflation",
         "correlation", "security", "shape_profile", "rating", "power",
         "generic"]
-    assert asset_class_catalogue_authorities() == frozenset(
-        entry["authority"] for entry in namespace)
 
 
 def test_the_mapping_states_the_authority_to_class_relationship():
@@ -83,26 +73,10 @@ def test_every_taxonomy_class_the_mapping_names_is_a_taxonomy_row():
     assert named <= codes
 
 
-def test_the_real_oresmd_manifest_passes_the_authority_check():
-    model = load_org_oresmd_quote_type_model(ORESMD_MANIFEST)
-    assert len(model["oresmd_quote_types"]) == len(
-        asset_class_catalogue_authorities())
 
 
-def test_a_spec_with_an_unknown_authority_is_refused(monkeypatch):
-    monkeypatch.setattr(
-        org_loader, "asset_class_catalogue_authorities",
-        lambda: frozenset({"fx"}))
-    with pytest.raises(ValueError, match=r"does not hold"):
-        load_org_oresmd_quote_type_model(ORESMD_MANIFEST)
 
 
-def test_a_declared_authority_with_no_spec_is_refused(monkeypatch):
-    monkeypatch.setattr(
-        org_loader, "asset_class_catalogue_authorities",
-        lambda: asset_class_catalogue_authorities() | frozenset({"ghost"}))
-    with pytest.raises(ValueError, match=r"ghost"):
-        load_org_oresmd_quote_type_model(ORESMD_MANIFEST)
 
 
 CATALOGUE_TEMPLATE = """\
@@ -174,13 +148,6 @@ def test_a_duplicate_taxonomy_code_is_refused(tmp_path):
         load_org_asset_class_catalogue_model(path)
 
 
-def test_a_spec_without_an_authority_is_refused(monkeypatch):
-    monkeypatch.setattr(
-        org_loader, "asset_class_catalogue_authorities",
-        lambda: frozenset({"fx"}))
-    with pytest.raises(ValueError, match=r"names no oresmd authority"):
-        org_loader._reject_unknown_oresmd_authorities(
-            [{"source_file": "ghost_quote_type.org", "authority": ""}])
 
 
 def test_the_sql_prose_folds_to_one_line_and_doubles_its_quotes(tmp_path):

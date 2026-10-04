@@ -83,7 +83,6 @@ NO_VARIABILITY = frozenset({
     "component_catalogue",
     "field_group",
     "module",
-    "oresmd_quote_type",
     "service_registry",
 })
 

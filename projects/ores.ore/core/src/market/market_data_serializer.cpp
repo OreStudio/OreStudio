@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/market/market_data_serializer.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <ostream>
 #include <vector>
@@ -27,14 +26,7 @@ namespace ores::ore::market {
 
 void serialize_market_data(std::ostream& out, const std::vector<market_datum>& data) {
     for (const auto& d : data) {
-        // Reconstruct the key from decomposed components to validate that
-        // decomposition is lossless.  Falls back to the verbatim key for
-        // entries where decomposition was not attempted (series_type empty).
-        const std::string emitted_key =
-            d.series_type.empty() ?
-                d.key :
-                reconstruct_key({d.series_type, d.metric, d.qualifier, d.point_id});
-        out << ores::platform::time::time_utils::format_date_compact(d.date) << '\t' << emitted_key
+        out << ores::platform::time::time_utils::format_date_compact(d.date) << '\t' << d.key
             << '\t' << d.value << '\n';
     }
 }

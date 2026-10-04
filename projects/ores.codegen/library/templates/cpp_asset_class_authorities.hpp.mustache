@@ -3,11 +3,8 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
 #define ORES_MARKETDATA_API_DOMAIN_ASSET_CLASS_AUTHORITIES_HPP
 
-#include "ores.marketdata.api/domain/market_data_identifier.hpp"
 #include <optional>
 #include <string_view>
-#include <type_traits>
-#include <variant>
 
 namespace ores::marketdata::domain {
 
@@ -45,31 +42,6 @@ asset_class_for_authority(std::string_view authority) {
 {{/namespace}}
 {{/asset_class_catalogue}}
     return std::nullopt;
-}
-
-/**
- * @brief The refdata asset class a resolved oresmd identifier belongs to.
- *
- * The identifier's alternative is the authority it was parsed as, so the
- * mapping is read from the type rather than from a string a caller rebuilt.
- * Nullopt where the authority names no class.
- */
-[[nodiscard]] inline std::optional<std::string_view>
-asset_class_for_identifier(const market_data_identifier& identifier) {
-    return std::visit(
-        [](const auto& concrete) -> std::optional<std::string_view> {
-            using identifier_type = std::decay_t<decltype(concrete)>;
-{{#asset_class_catalogue}}
-{{#namespace}}
-{{#refdata_code}}
-            if constexpr (std::is_same_v<identifier_type, {{authority}}_market_data_identifier>)
-                return std::string_view{"{{refdata_code}}"};
-{{/refdata_code}}
-{{/namespace}}
-{{/asset_class_catalogue}}
-            return std::nullopt;
-        },
-        identifier);
 }
 
 }

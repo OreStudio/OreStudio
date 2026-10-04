@@ -149,8 +149,6 @@ note as OresTestingFreeFunctions
     make_nats_options() : nats_options
     sql_values_rows(sql : string, path : string) : vector<vector<string>>
     seed_classification_rules() : const vector<series_classification_rule>&
-    seed_shapes() : const vector<series_key_shape>&
-    seed_registry() : const series_key_registry&
 end note
 
 ' Local Variables:

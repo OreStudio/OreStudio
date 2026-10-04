@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-03T23:19:46.848391Z
+' Generated: 2026-10-03T23:57:41.935968Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -12748,61 +12748,6 @@ package "marketdata" #E3F2FD {
     The reader rejects an empty table, because an empty table aborts the
     first import that reads it and the message should name the table rather
     than the first series it met.
-    end note
-
-}
-
-'
-' ==================== ore (ORE Engine Integration) ====================
-'
-package "ore" #E0F2F1 {
-    entity ores_ore_series_key_shapes_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * series_type : text <<PK>>
-        --
-        * version : integer
-        * qualifier_depth : integer
-        * has_point_dimension : boolean
-        * default_point : text
-        * description : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_ore_series_key_shapes_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Series Key Shape Table
-    The key grammar of ORE market data, one row per series type. Every ORE
-    key follows the skeleton TYPE/METRIC/[QUALIFIER...]/[POINT_ID], and
-    this table says where the split falls: qualifier_depth counts the
-    segments after the metric that identify the series and stay stable
-    across market dates, and every remaining segment is the point (a tenor,
-    a strike, a surface coordinate).
-    The table belongs to ores.ore because the grammar it records is
-    ORE's, not ours: ORE defines the file format and we only read it. It
-    replaces a compiled C++ table, so a type ORE adds later, or one a user
-    brings, is an inserted row rather than a rebuild. A type with no row is
-    not an error -- its key folds whole into the qualifier and still
-    reconstructs verbatim -- so an uncatalogued type never aborts an
-    import.
-    Two invariants hold. The reader rejects an empty table, because an
-    empty table silently degrades every key into a series of its own. A row
-    that claims a point dimension and also carries a default point is
-    contradictory and is rejected, both by the reader and by the check
-    constraint below.
-    The table carries an entity, a repository and its SQL, and nothing
-    else. It is a reference table that reads like configuration: one seeded
-    row per series type ORE defines. Nothing sends its subjects, serves its
-    handlers or drives its commands, so every facet that would build a
-    surface for them is disabled, and the repository the component keeps is
-    the whole of its use of this entity. ores.marketdata, the one real
-    consumer, reads it through that repository, in process.
     end note
 
 }

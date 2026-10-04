@@ -163,6 +163,30 @@ TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
 }
 
+TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+
+    // The file reader no longer splits keys, so a key with no type and metric
+    // reaches the key codec, which refuses that row alone.
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 NOTAKEY 1.0\n"
+                              "20160205 FX/RATE/EUR/USD 1.09\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    CHECK(resp.success);
+    CHECK(resp.errors.empty());
+    CHECK(resp.observation_count == 1);
+    REQUIRE(resp.warnings.size() == 1);
+    CHECK(resp.warnings[0].contains("NOTAKEY"));
+    CHECK(resp.warnings[0].contains("skipped"));
+}
+
 TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
     auto lg(make_logger(test_suite));
 

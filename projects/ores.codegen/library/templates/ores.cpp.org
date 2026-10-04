@@ -51,7 +51,6 @@ do not edit by hand.
 | [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] | 1 | NATS changed-event publishers. |
 | [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]] | 1 | NATS subscription handlers. |
 | [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] | 2 | Per-entity NATS sub-registrar pair wiring an entity's subjects to its handler. |
-| [[id:F1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6][ores.cpp.oresmd]] | 8 | oresmd quote-type codegen: enums, identifier/requirement structs, parser, projections, resolver, and tests. |
 | [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] | 2 | Server-side rendering of a domain type for display: history field mapper. |
 | [[id:06B4D0EE-9FD7-4616-83E9-B3CDDA1C7246][ores.cpp.protocol]] | 1 | Protocol (de)serialisation. |
 | [[id:50246CF5-EB61-4261-890F-4E75D3241863][ores.cpp.repository]] | 6 | Repository layer: entity, mapper, CRUD. |

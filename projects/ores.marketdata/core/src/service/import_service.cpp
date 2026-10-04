@@ -36,8 +36,6 @@
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
-#include "ores.ore.core/repository/series_key_shape_repository.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
@@ -179,23 +177,6 @@ std::expected<named_key, std::string> name_key(const std::string& key,
     return result;
 }
 
-// The three facts the classification rules are keyed by, from the datum: the
-// key's first token, its quote token and, for a correlation, its two indices.
-struct classification_key final {
-    std::string series_type;
-    std::string metric;
-    std::string qualifier;
-};
-
-classification_key classification_key_of(const datum::market_datum& d) {
-    classification_key k{std::string(datum::ore_key_codec::token_of(d.type())),
-                         std::string(datum::ore_name(d.quote())),
-                         {}};
-    if (d.type() == datum::instrument_type::correlation)
-        k.qualifier = *d.get<datum::field::index1>() + "/" + *d.get<datum::field::index2>();
-    return k;
-}
-
 } // namespace
 
 import_service::import_service(context ctx,
@@ -293,11 +274,7 @@ import_service::import(const messaging::import_market_data_request& req) {
     if (!req.market_data_content.empty()) {
         std::istringstream in(req.market_data_content);
         ores::ore::market::parse_report report;
-        // Read the key grammar once for the whole batch. A fixings-only
-        // import never gets here, so it never pays for the read.
-        const ores::ore::market::series_key_registry registry{
-            ores::ore::repository::series_key_shape_repository{}.read_latest(ctx_)};
-        auto data = ores::ore::market::parse_market_data(in, registry, on_duplicate, &report);
+        auto data = ores::ore::market::parse_market_data(in, on_duplicate, &report);
         append_issues(resp.warnings, report.warnings, "market data");
         append_issues(resp.errors, report.errors, "market data");
 
@@ -338,7 +315,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                              "reversed relative to refdata's canonical currency pair." :
                              "not the canonical spelling of this key."));
 
-                const auto ck = classification_key_of(named->datum);
+                const auto ck = core::classification_key_of(named->datum);
                 const auto series = find_or_create_series(
                     ck.series_type, ck.metric, ck.qualifier, named->series_uri);
 

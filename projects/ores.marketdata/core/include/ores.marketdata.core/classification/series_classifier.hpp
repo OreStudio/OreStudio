@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_CLASSIFICATION_SERIES_CLASSIFIER_HPP
 #define ORES_MARKETDATA_CORE_CLASSIFICATION_SERIES_CLASSIFIER_HPP
 
+#include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <optional>
@@ -28,6 +29,32 @@
 #include <vector>
 
 namespace ores::marketdata::core {
+
+/**
+ * @brief The three facts the classification rules are keyed by.
+ */
+struct classification_key final {
+    /**
+     * @brief The ORE key's first token (e.g. FX, DISCOUNT, CORRELATION).
+     */
+    std::string series_type;
+
+    /**
+     * @brief The ORE key's quote token (e.g. RATE, PRICE, RATE_LNVOL).
+     */
+    std::string metric;
+
+    /**
+     * @brief A correlation's two indices, INDEX1/INDEX2; empty otherwise.
+     */
+    std::string qualifier;
+};
+
+/**
+ * @brief The classification key of the datum an ORE key names.
+ */
+[[nodiscard]] ORES_MARKETDATA_CORE_EXPORT classification_key
+classification_key_of(const datum::market_datum& d);
 
 /**
  * @brief Taxonomy assigned to one ORE market data series.
@@ -70,11 +97,6 @@ struct series_classification {
  * The asset class and series subclass codes this emits are validated by
  * ores.marketdata's tables against the refdata catalogues, so a code that
  * exists only here is a defect the corpus test catches.
- *
- * Structural facts about the key — whether it carries a point dimension, and
- * so whether its observations name a point_id of their own — are not
- * classification and are not decided here. ores.ore.core's
- * series_key_registry owns them.
  */
 class ORES_MARKETDATA_CORE_EXPORT series_classifier final {
 public:

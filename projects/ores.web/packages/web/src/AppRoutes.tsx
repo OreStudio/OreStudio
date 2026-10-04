@@ -95,10 +95,6 @@ export interface AppRoutesProps {
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
-    /** Enters a tenant from its screen in system administration. */
-    readonly onEnterTenant: (tenantId: string) => Promise<void>;
-    /** Leaves the tenant the session is inside. */
-    readonly onLeaveTenant: () => void;
     readonly onRetryBootstrap: () => void;
 }
 
@@ -113,11 +109,9 @@ export function AppRoutes({
     onSignIn,
     onChooseParty,
     onSignOut,
-    onEnterTenant,
-    onLeaveTenant,
     onRetryBootstrap,
 }: AppRoutesProps): ReactNode {
-    const shell: ShellActions = { onSignOut, onLeaveTenant };
+    const shell: ShellActions = { onSignOut };
     const { t } = useTranslation();
 
     if (gate.status === 'loading' || session.status === 'loading') {
@@ -189,7 +183,6 @@ export function AppRoutes({
                         tenantName={view.tenantName}
                         partyName={view.party.name}
                         mode={view.mode}
-                        readOnly={view.actingIn !== null}
                     />
                 ))}
             />
@@ -253,7 +246,7 @@ export function AppRoutes({
             <Route
                 path="/tenants/:code"
                 element={signedIn(gate.version, session, shell, () => (
-                    <TenantPage onEnterTenant={onEnterTenant} />
+                    <TenantPage />
                 ))}
             />
             <Route
@@ -280,7 +273,7 @@ export function AppRoutes({
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
-    const { state: session, signIn, chooseParty, signOut, enterTenant, leaveTenant } = useSession();
+    const { state: session, signIn, chooseParty, signOut } = useSession();
     const server = useJourneyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
@@ -335,25 +328,6 @@ export function ConnectedApp(): ReactNode {
             onSignOut={() => {
                 void signOut();
             }}
-            onEnterTenant={async (tenantId) => {
-                await enterTenant(tenantId);
-                navigate('/parties');
-            }}
-            onLeaveTenant={() => {
-                /*
-                 * Leaving returns to the tenant's own screen, where the
-                 * administrator entered from.
-                 */
-                const code =
-                    session.status === 'authenticated'
-                        ? session.session.actingIn?.tenantCode
-                        : undefined;
-                void leaveTenant().then(() =>
-                    navigate(
-                        code === undefined ? '/tenants' : `/tenants/${encodeURIComponent(code)}`,
-                    ),
-                );
-            }}
             onRetryBootstrap={() => {
                 void recheck();
             }}
@@ -370,7 +344,6 @@ export function ConnectedApp(): ReactNode {
 /** What the shell around every signed-in screen can do. */
 interface ShellActions {
     readonly onSignOut: () => void;
-    readonly onLeaveTenant: () => void;
 }
 
 function signedIn(
@@ -399,8 +372,6 @@ function signedIn(
             width={width}
             serverVersion={version}
             onSignOut={shell.onSignOut}
-            actingIn={view.actingIn}
-            onLeaveTenant={shell.onLeaveTenant}
         >
             {screen(view)}
         </AppShell>

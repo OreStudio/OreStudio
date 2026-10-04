@@ -20,7 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -114,7 +114,7 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
     ores::marketdata::repository::market_series_repository series_repo;
-    ores::marketdata::repository::market_observations_repository obs_repo;
+    ores::marketdata::repository::market_observation_repository obs_repo;
 
     ores::marketdata::messaging::import_market_data_request req;
     req.market_data_content = "20160205 FX/RATE/EUR/USD 1.132337\n";
@@ -131,7 +131,7 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
                         "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     REQUIRE(series.size() == 1);
 
-    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
+    const auto observations = obs_repo.read_latest_for_series(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
     CHECK(observations.front().oresmd_uri ==
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
@@ -268,7 +268,7 @@ TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tag
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
     ores::marketdata::repository::market_series_repository series_repo;
-    ores::marketdata::repository::market_observations_repository obs_repo;
+    ores::marketdata::repository::market_observation_repository obs_repo;
 
     ores::marketdata::messaging::import_market_data_request req;
     req.market_data_content = "20160205 FX_SPOT/RATE/EUR/USD 1.09\n";
@@ -287,7 +287,7 @@ TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tag
                         h.context(),
                         "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
     REQUIRE(series.size() == 1);
-    const auto observations = obs_repo.read_latest(h.context(), series.front().id);
+    const auto observations = obs_repo.read_latest_for_series(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
     CHECK(ores::marketdata::datum::ore_key_codec::write(
               ores::marketdata::datum::oresmd_uri_codec::read(observations.front().oresmd_uri)

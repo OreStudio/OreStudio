@@ -40,9 +40,6 @@ export const en: SourceCatalogue = {
         accounts: 'Accounts',
         notifications: 'Notifications',
         alerts: 'Alerts',
-        actingIn: 'Acting in {tenant} as {username}',
-        readOnly: 'Read only',
-        leaveTenant: 'Leave the tenant',
         signOut: 'Sign out',
         signIn: 'Sign in',
         menu: 'Menu',
@@ -128,9 +125,20 @@ export const en: SourceCatalogue = {
             done: 'The run completed. The tenant is ready.',
         },
         detail: {
-            readInside:
-                'Its parties, accounts and sign-ins are read inside the tenant. Act in this tenant to read them.',
-            enter: 'Act in this tenant',
+            viewOnly: 'View only',
+            viewOnlyHint:
+                "Changes to this tenant's parties and people are made by its own administrators.",
+            tab: { overview: 'Overview', parties: 'Parties', people: 'People' },
+            noParties: 'This tenant has no parties yet.',
+            noPeople: 'Nobody can sign in to this tenant yet.',
+            topOfGroup: 'Top of the group',
+            person: 'Name',
+            username: 'Username',
+            email: 'Email',
+            showingPeople: {
+                one: 'Showing {first}–{last} of {count} person',
+                other: 'Showing {first}–{last} of {count} people',
+            },
             lead: 'One tenant of this deployment: what it is, and how its setup went.',
             back: 'Back to tenants',
             notFound: 'No tenant has this code.',
@@ -167,7 +175,7 @@ export const en: SourceCatalogue = {
         type: 'Type',
         status: 'Status',
         parent: 'Parent',
-        parentElsewhere: 'On another page',
+        parentElsewhere: 'Not one you can see',
         showing: {
             one: 'Showing {first}–{last} of {count} party',
             other: 'Showing {first}–{last} of {count} parties',

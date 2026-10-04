@@ -27,7 +27,7 @@
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
@@ -113,13 +113,13 @@ read_discount_curve(ores::database::context ctx,
                     const boost::uuids::uuid& output_series_id,
                     std::chrono::system_clock::time_point as_of,
                     const curve_republish_refdata_context& refctx) {
-    repository::market_observations_repository obs_repo;
+    repository::market_observation_repository obs_repo;
     std::vector<ores::analytics::quant::service::bootstrapped_point> points;
     for (const auto& obs : obs_repo.read_as_of(ctx, output_series_id, as_of)) {
         ores::analytics::quant::service::bootstrapped_point p;
         p.point_id = discount_point_of(obs);
         p.date = resolve_tenor_date(refctx, p.point_id);
-        p.discount_factor = std::stod(obs.value);
+        p.discount_factor = observation_value(obs);
         points.push_back(p);
     }
     std::sort(points.begin(), points.end(), [](const auto& a, const auto& b) {
@@ -361,8 +361,8 @@ void curve_republish_service::republish(context ctx,
         lineages.push_back(std::move(lin));
     }
 
-    repository::market_observations_repository obs_repo;
-    obs_repo.write(ctx, observations);
+    repository::market_observation_repository obs_repo;
+    obs_repo.insert(ctx, observations);
 
     ores::marketdata::service::observation_lineage_service lineage_service(ctx);
     lineage_service.save_observation_lineages(lineages);

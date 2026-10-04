@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 22B17BA5-C6FE-438B-A878-F76022832A3B
+:END:
+#+title: Feature: append_insert
+#+description: Append-only series: the repository gains an insert that writes rows without the per-row claim a write makes.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:append_insert:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+The repository gains =insert(ctx, v)= and =insert(ctx, vector)=. Both write the
+rows as they are, in one statement, without the claim =write= states for each
+row. A claim reads the current row to stamp its version, which is one query per
+row; an append-only series never edits a row in place, so it has no row to
+claim, and a bulk load of a hundred thousand rows becomes one write instead of a
+hundred thousand reads. =write= stays, with its claims, for the rare edit.
+
+The value is read from the model's =* SQL ** Flags= drawer. It cannot be set
+together with [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]]: a
+current-state table replaces its rows rather than appending them, and codegen
+refuses the model.
+
+* Structural consequence
+
+None in the table. The repository class gains the two =insert= members.
+
+* Used by
+
+No profile sets it. =ores.marketdata.market_observation= and
+=ores.marketdata.market_fixing= set it in their models: the import and the feed
+ingest loop append observations and fixings in bulk.
+
+* See also
+
+- [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]] — the table shape this feature excludes.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

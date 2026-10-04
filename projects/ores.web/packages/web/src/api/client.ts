@@ -387,6 +387,41 @@ export const api = {
         );
     },
 
+    /** One page of a tenant's parties, read inside it from system administration. */
+    async tenantParties(
+        code: string,
+        query: { readonly offset: number; readonly limit: number },
+    ): Promise<PartyPage> {
+        const params = new URLSearchParams({
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        return partyPageSchema.parse(
+            await request(`/api/tenants/${encodeURIComponent(code)}/parties?${params.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One page of a tenant's people, read inside it from system administration. */
+    async tenantPeople(
+        code: string,
+        query: { readonly offset: number; readonly limit: number },
+    ): Promise<{ readonly accounts: readonly Account[]; readonly totalCount: number }> {
+        const params = new URLSearchParams({
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        return z
+            .object({ accounts: z.array(accountSchema), totalCount: z.int().nonnegative() })
+            .parse(
+                await request(
+                    `/api/tenants/${encodeURIComponent(code)}/people?${params.toString()}`,
+                    { method: 'GET' },
+                ),
+            );
+    },
+
     /** One tenant by its code: the tenant and its setup run. */
     async tenant(code: string): Promise<TenantDetailResponse> {
         return tenantDetailResponseSchema.parse(
@@ -424,26 +459,6 @@ export const api = {
             body: JSON.stringify({ partyId }),
         });
         return sessionViewSchema.parse(payload);
-    },
-
-    /**
-     * Enters one tenant from system administration, reading only.
-     *
-     * The answer is the session as it now reads: the tenant's, in tenant
-     * administration, with the tenant named in `actingIn`.
-     */
-    async enterTenant(tenantId: string): Promise<SessionView> {
-        const payload = await request('/api/session/tenant', {
-            method: 'POST',
-            headers: JSON_HEADERS,
-            body: JSON.stringify({ tenantId }),
-        });
-        return sessionViewSchema.parse(payload);
-    },
-
-    /** Leaves the tenant; the answer is the session back in its own tenant. */
-    async leaveTenant(): Promise<SessionView> {
-        return sessionViewSchema.parse(await request('/api/session/tenant', { method: 'DELETE' }));
     },
 
     /**

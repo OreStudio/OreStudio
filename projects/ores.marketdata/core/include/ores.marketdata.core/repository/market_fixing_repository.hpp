@@ -104,6 +104,18 @@ public:
                const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
+     * @brief Appends market fixings without the claim a write makes.
+     *
+     * The table is an append-only series: a row is never edited in place, so
+     * an insert reads no current row first. A bulk load is one statement, not
+     * one claim query per row.
+     */
+    /**@{*/
+    void insert(context ctx, const domain::market_fixing& v);
+    void insert(context ctx, const std::vector<domain::market_fixing>& v);
+    /**@}*/
+
+    /**
      * @brief Reads latest market fixings, possibly filtered by primary key.
      */
     /**@{*/
@@ -183,6 +195,8 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    std::vector<domain::market_fixing> read_latest_for_series(context ctx,
+                                                              const boost::uuids::uuid& series_id);
 
 private:
     /**

@@ -19,12 +19,21 @@
  */
 #include "curve_pillar_reader.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
 
 namespace ores::marketdata::service {
+
+double observation_value(const domain::market_observation& obs) {
+    const auto value = ores::platform::numeric::parse_double(obs.value);
+    if (!value)
+        throw std::runtime_error("observation " + boost::uuids::to_string(obs.id) +
+                                 " holds a value that is not a number: '" + obs.value + "'");
+    return *value;
+}
 
 pillar_read
 read_pillar_rates(ores::database::context ctx,
@@ -35,7 +44,7 @@ read_pillar_rates(ores::database::context ctx,
     namespace core = ores::marketdata::core;
 
     repository::market_series_repository series_repo;
-    repository::market_observations_repository obs_repo;
+    repository::market_observation_repository obs_repo;
 
     pillar_read out;
     for (const auto& p : pillars) {
@@ -56,7 +65,7 @@ read_pillar_rates(ores::database::context ctx,
         bool found = false;
         for (const auto& obs : obs_repo.read_as_of(ctx, series.front().id, as_of))
             if (obs.oresmd_uri == datum_uri) {
-                out.rates_by_point_id.emplace(p.end_tenor_code, std::stod(obs.value));
+                out.rates_by_point_id.emplace(p.end_tenor_code, observation_value(obs));
                 found = true;
             }
         if (found)

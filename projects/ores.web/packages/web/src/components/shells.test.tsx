@@ -85,43 +85,6 @@ describe('the public shell', () => {
  * screen says so and offers the way out, and a session in its own tenant
  * carries no such banner.
  */
-describe('the application shell inside a tenant', () => {
-    function render(actingIn: { readonly tenantName: string } | null): string {
-        return renderToStaticMarkup(
-            <TranslationProvider>
-                <MemoryRouter>
-                    <AppShell
-                        username="admin"
-                        tenantName="Acme Corporation"
-                        partyName="System Party"
-                        mode="tenant-administration"
-                        onSignOut={() => undefined}
-                        actingIn={actingIn}
-                        onLeaveTenant={() => undefined}
-                    >
-                        <p>the screen</p>
-                    </AppShell>
-                </MemoryRouter>
-            </TranslationProvider>,
-        );
-    }
-
-    it('says whose data it is, that it is read only, and how to leave', () => {
-        const html = render({ tenantName: 'Acme Corporation' });
-
-        expect(html).toContain('Acting in Acme Corporation as admin');
-        expect(html).toContain('Read only');
-        expect(html).toContain('Leave the tenant');
-    });
-
-    it("shows no banner in the session's own tenant", () => {
-        const html = render(null);
-
-        expect(html).not.toContain('Acting in');
-        expect(html).not.toContain('Leave the tenant');
-    });
-});
-
 describe('the application shell', () => {
     function renderAppShell(
         partyName: string,

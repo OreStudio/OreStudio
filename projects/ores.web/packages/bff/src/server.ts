@@ -146,8 +146,6 @@ const partyPageQuerySchema = z.object({
     limit: z.int().min(1).max(1000),
 });
 
-/** What the browser sends to enter a tenant. */
-
 export interface ServerDependencies {
     readonly config: Config;
     readonly site: LoadedSiteConfiguration;
@@ -1189,10 +1187,28 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (tenant === null || tenant.id === SYSTEM_TENANT_ID) {
             throw notFound('No tenant has this code.');
         }
+        /*
+         * Only a refused entry is a refusal. A read that fails inside the
+         * tenant is carried out as itself, so the browser is not told it may
+         * not look when the server simply failed to answer.
+         */
+        let failedRead: { readonly error: unknown } | undefined;
         try {
-            return await session.client.readInsideTenant(tenant.id, read);
+            return await session.client.readInsideTenant(
+                tenant.id,
+                async (caller) => {
+                    try {
+                        return await read(caller);
+                    } catch (error) {
+                        failedRead = { error };
+                        throw error;
+                    }
+                },
+                (error) =>
+                    request.log.warn({ err: error }, 'The exit from the tenant was not recorded.'),
+            );
         } catch (error) {
-            if (error instanceof OperationFailedError) {
+            if (failedRead === undefined && error instanceof OperationFailedError) {
                 throw notPermitted(error.message);
             }
             throw error;

@@ -775,14 +775,17 @@ export class OresClient {
      * and left after it, whether or not the read succeeds. Its token is never
      * put on the session, so a call the session makes meanwhile keeps the
      * session's own token, and every call the read makes carries the tenant's.
-     * A tenant session is not refreshed, so a read that outlives it fails
-     * rather than reading outside the tenant.
+     * A tenant session is not refreshed, so a read that outlives it fails as
+     * an ordinary failed read, and the session it was entered from goes on.
+     * `onExitFailure` hears of an exit that could not be recorded.
      *
-     * @throws {OperationFailedError} when the server refuses the entry.
+     * @throws {OperationFailedError} when the server refuses the entry, or the
+     * tenant session ended during the read.
      */
     async readInsideTenant<T>(
         tenantId: string,
         read: (caller: AuthenticatedCaller) => Promise<T>,
+        onExitFailure: (error: unknown) => void = () => undefined,
     ): Promise<T> {
         const subject = tenantSessionSubjects.enter_tenant_request;
         const request: EnterTenantRequest = { tenant_id: tenantId };
@@ -809,7 +812,7 @@ export class OresClient {
                 tenantSessionSubjects.leave_tenant_request,
                 leave,
                 leaveTenantResponseSchema,
-            ).catch(() => undefined);
+            ).catch(onExitFailure);
         }
     }
 
@@ -828,6 +831,17 @@ export class OresClient {
             this.#timeouts.fastMs,
         );
         const serverError = serverErrorCode(reply.headers);
+        if (serverError === 'token_expired') {
+            /*
+             * The tenant token lapsed, not the session's own: reporting it as
+             * an expired session would sign the person out of a session that
+             * is still good.
+             */
+            throw new OperationFailedError(
+                subject,
+                'The time inside the tenant ended. Read again.',
+            );
+        }
         if (serverError !== undefined) {
             throw errorForServerCode(serverError, subject);
         }

@@ -431,8 +431,10 @@ describe('OresClient reading inside a tenant', () => {
     });
 
     /*
-     * A tenant session is never refreshed. A read that outlives it fails, and
-     * the session's own token is not renewed on its account.
+     * A tenant session is never refreshed. A read that outlives it fails as an
+     * ordinary failed read, not as an expired session, so the session it was
+     * entered from is neither renewed nor ended on its account. The exit that
+     * cannot be recorded is reported.
      */
     it('fails a read whose tenant session lapsed, without refreshing', async () => {
         const transport = new ScriptedTransport({
@@ -444,11 +446,16 @@ describe('OresClient reading inside a tenant', () => {
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
 
-        await expect(
-            client.readInsideTenant(ACME, (caller) =>
-                caller.callAuthenticated('iam.v1.accounts.list', {}, anything),
-            ),
-        ).rejects.toThrow(SessionExpiredError);
+        const exitFailures: unknown[] = [];
+        const read = client.readInsideTenant(
+            ACME,
+            (caller) => caller.callAuthenticated('iam.v1.accounts.list', {}, anything),
+            (error) => exitFailures.push(error),
+        );
+
+        await expect(read).rejects.toThrow(OperationFailedError);
+        await expect(read).rejects.not.toThrow(SessionExpiredError);
+        expect(exitFailures).toHaveLength(1);
         expect(transport.calls.map((call) => call.subject)).not.toContain('iam.v1.auth.refresh');
         expect(client.token).toBe('token-one');
     });

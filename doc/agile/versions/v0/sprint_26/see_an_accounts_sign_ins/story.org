@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: B43E22C1-DBFA-4A7A-BB71-D613F588DD41
+:END:
+#+title: Story: See an account's sign-ins
+#+description: An administrator opens any account, a platform service's included, and reads its type, its sign-in state and its sessions; the system administrator does so for the system tenant's accounts.
+#+type: story
+#+level: s2
+#+filetags: :web:iam:credentials:directory:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An administrator who opens an account reads what kind of account it is, whether it can sign in, and the sessions it has had, newest first. The system administrator does the same for the system tenant, where the platform's own services sign in.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- The See who has access and Audit sign-ins journeys name the system administrator over the system tenant and describe an account's sign-ins.
+- The server lists the sessions of one account, newest first.
+- A person's page and a tenant's People tab open an account showing its type, sign-in state and sessions.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D8F93A88-DE13-4497-AE01-BF540A9822B1][Scaffold story: See an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:84D5E596-DEF1-4B16-9D64-951F582B3DE4][Extend the journeys for an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: See an account's sign-ins |
+
+* Decisions
+
+* Out of scope
+
+-

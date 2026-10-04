@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 8421A419-0311-4CC8-9384-D1097477813F
+:END:
+#+title: Story: Remove workspaces from every component
+#+description: Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system.
+#+type: story
+#+level: s2
+#+filetags: :workspace:sandbox:codegen:cleanup:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No component carries a workspace: no table has a workspace_id, no request or session carries a workspace context, and ores.workspace is gone. Sandboxes and virtual books, which replaced workspaces in the trade shape design, are the only way to keep work apart from official data.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Removing =ores.workspace= waits on [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]], which drops the trading workspace references. |
+| Next          | Inventory and sequence the workspace removal. |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- No codegen profile or model sets has_workspace_id, and no generated or hand-written table has a workspace_id column.
+- No request context, NATS header, session or database setting carries a workspace; ores_utility_live_workspace_id_fn and its kin are gone.
+- The ores.workspace component, its tables, protocol, shell and web surfaces are removed, with no references left.
+- Every component builds and its tests pass after each step; main is never half migrated.
+- The trading part is done by the trade shape story, Split the trade into an anchor and its components; this story covers the rest.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5FC28F73-62D7-4124-9EC8-55B51EC5C31A][Scaffold story: Remove workspaces from every component]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:507EC593-8A63-46BE-A741-B9E172144C14][Inventory and sequence the workspace removal]] | BACKLOG | | | Initial task for: Remove workspaces from every component |
+
+* Decisions
+
+- Workspaces are removed, not reworked (owner's choice). Section 13 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]] replaced them with
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]es and virtual books, which shipped in
+  [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]]. A layered workspace is an
+  application-level database branch that pushes a workspace into every key,
+  query and foreign key.
+- Trading is removed by [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]],
+  whose acceptance already requires that no trading entity carries a
+  workspace. This story removes the rest and then the component.
+
+* Inventory
+
+Measured at commit 4dc01d5a6c on main.
+
+| What | Where | Count |
+|------+-------+-------|
+| Tables with a =workspace_id= column | refdata | 26 |
+| | trading (the trade shape story) | 35 |
+| | analytics | 3 |
+| | reporting | 2 |
+| | marketdata | 1 |
+| Models declaring =has_workspace_id= | analytics (2), marketdata (1), reporting (1), trading (1) | 5 |
+| Codegen profiles setting it | fk_scoped_child, trading_instrument, workspace_scoped_lookup, trading_record | 4 |
+| Hand-written C++ and TypeScript files naming =workspace_id= | refdata 131, trading 149, analytics 15, marketdata 10, reporting 10, nats 3, service 2, shell 2, database 1, utility 1 | 324 |
+| =ores.workspace= component files | | 81 |
+
+Most refdata and trading hits are generated repositories and generators, so
+a profile and field group change carries them. The plumbing (database,
+nats, service, utility) is the request context.
+
+* Proposed sequence
+
+1. Inventory and sequence: confirm the counts, find every reader of the
+   workspace context, and decide each task below.
+2. Drop =has_workspace_id= from the remaining profiles and models, one
+   component at a time (refdata, analytics, reporting, marketdata), each a
+   regeneration and a build.
+3. Remove the workspace from the request context, NATS headers, sessions
+   and database settings.
+4. Remove =ores.workspace=: its tables, protocol, service, shell and web
+   surfaces.
+
+* Out of scope
+
+- The trading tables and code, which [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] removes.
+- Migrating rows of workspaces other than the live one: the databases are
+  recreated, so no data is carried across.

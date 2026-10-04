@@ -19,6 +19,7 @@
  *
  */
 
+import type { ListBadgeDefinitionsRequest as GeneratedListBadgeDefinitionsRequest } from './generated/dq/protocol/badge_definition_protocol.js';
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { BadgePresentation } from './domain.js';
@@ -60,7 +61,8 @@ export const listBadgeDefinitionsRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(200),
     order: orderSchema.default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListBadgeDefinitionsRequest>;
 
 /** The catalogue, keyed by the badge's own code. */
 export type BadgeCatalogue = Readonly<Record<string, BadgePresentation>>;

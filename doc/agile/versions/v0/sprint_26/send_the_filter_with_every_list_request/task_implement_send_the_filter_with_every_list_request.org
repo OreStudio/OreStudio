@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 408E31B8-FBA0-44C3-8494-BFB6D5407AE8
+:END:
+#+title: Task: Send the filter with every web list request
+#+description: Initial task for: Send the filter with every web list request
+#+type: task
+#+level: s1
+#+filetags: :send_the_filter_with_every_list_request:sprint_26:v0:
+#+owner: marco
+#+branch: feature/implement-send-the-filter-with-every-list-request
+#+pr: 2590
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94DE38EB-1544-4BBE-84B6-C7957CEC691B][Send the filter with every web list request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every list request the web client builds by hand states the filter, and its schema is held to the generated request type so a member the protocol adds fails the typecheck instead of the live read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:94DE38EB-1544-4BBE-84B6-C7957CEC691B][Send the filter with every web list request]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The hand-written list request schemas carry the filter and satisfy the generated request types.
+- The accounts, login info, sessions, seed profiles, tenant types, tenant statuses and badge routes answer live.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2590][#2590]] | [web] Send the filter with every web list request |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The web client states the filter in every list request it builds by hand.
+
+- *Cause.* PR #2588 gave almost every generated list request an optional
+  =filter= member. The server's decoder requires every member, optional or
+  not, so a request that leaves it out is refused as =bad_request=. The web
+  routes for accounts, login info, sessions, seed profiles, tenant types,
+  tenant statuses and badges built their requests from hand-written schemas
+  with no filter, and each answered 502. The web server tests stub the server,
+  so none of them saw it; the routes were last read live before #2588.
+- *Fix.* Each of the seven hand-written list request schemas sends
+  =filter: null=, and so does the client's paged party read.
+- *Guard.* Each schema now =satisfies= its generated request type, so a member
+  the protocol adds fails the typecheck instead of the live read. Removing the
+  filter from the tenant types schema fails the typecheck (TS1360).
+- *Verified live.* Signed in as the system administrator against the running
+  deployment: =/api/accounts=, =/api/login-info=, =/api/sessions=,
+  =/api/seed-profiles=, =/api/tenant-types=, =/api/tenant-statuses= and
+  =/api/change-reasons= all answer 200; before the fix all but the last
+  answered 502. Web tests: 124 BFF, 229 web, 66 wire protocol, all passing.

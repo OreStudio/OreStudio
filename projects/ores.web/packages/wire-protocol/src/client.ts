@@ -19,6 +19,7 @@
  *
  */
 
+import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -453,7 +454,12 @@ export class OresClient {
         for (let offset = 0; ; offset += PAGE_SIZE) {
             const reply = await this.#authenticatedCall(
                 SUBJECTS.listParties,
-                { offset, limit: PAGE_SIZE, order: { field: '', descending: false } },
+                {
+                    offset,
+                    limit: PAGE_SIZE,
+                    order: { field: '', descending: false },
+                    filter: null,
+                } satisfies ListPartiesRequest,
                 listPartiesReplySchema,
                 { timeoutMs: this.#timeouts.fastMs },
             );

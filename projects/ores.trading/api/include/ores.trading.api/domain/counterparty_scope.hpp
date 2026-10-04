@@ -68,7 +68,8 @@ inline std::ostream& operator<<(std::ostream& s, counterparty_scope v) {
  *
  * Returns @c std::nullopt for an unrecognised code.
  */
-[[nodiscard]] inline std::optional<counterparty_scope> counterparty_scope_from_string(std::string_view sv) {
+[[nodiscard]] inline std::optional<counterparty_scope>
+counterparty_scope_from_string(std::string_view sv) {
     if (sv == "external")
         return counterparty_scope::external;
     if (sv == "inter_entity")
@@ -84,7 +85,8 @@ inline std::ostream& operator<<(std::ostream& s, counterparty_scope v) {
  * The shell command-token reader finds this overload by argument-dependent
  * lookup, so the shell header needs no include of this one.
  */
-[[nodiscard]] inline std::optional<counterparty_scope> parse_token(std::string_view sv, counterparty_scope) {
+[[nodiscard]] inline std::optional<counterparty_scope> parse_token(std::string_view sv,
+                                                                   counterparty_scope) {
     return counterparty_scope_from_string(sv);
 }
 

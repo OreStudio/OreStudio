@@ -21,8 +21,8 @@
 #define ORES_ORE_CORE_DOMAIN_PARTY_SCOPE_HPP
 
 #include <boost/uuid/uuid.hpp>
-#include <rfl.hpp>
 #include <optional>
+#include <rfl.hpp>
 #include <type_traits>
 #include <vector>
 
@@ -42,11 +42,18 @@ template <typename T>
 void assign_party(T& v, const boost::uuids::uuid& party) {
     if constexpr (requires { v.party_id = party; }) {
         v.party_id = party;
-    } else if constexpr (requires { v.begin(); v.end(); typename T::value_type; }) {
+    } else if constexpr (requires {
+                             v.begin();
+                             v.end();
+                             typename T::value_type;
+                         }) {
         if constexpr (!std::is_same_v<typename T::value_type, char>)
             for (auto& e : v)
                 assign_party(e, party);
-    } else if constexpr (requires { v.has_value(); *v; }) {
+    } else if constexpr (requires {
+                             v.has_value();
+                             *v;
+                         }) {
         if (v)
             assign_party(*v, party);
     } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T>) {

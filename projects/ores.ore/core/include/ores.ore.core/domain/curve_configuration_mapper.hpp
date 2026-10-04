@@ -33,17 +33,17 @@
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
+#include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
 #include "ores.refdata.api/domain/curve_global_report.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
-#include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_quote.hpp"
 #include "ores.refdata.api/domain/curve_report_configuration.hpp"
-#include "ores.refdata.api/domain/curve_volatility_config.hpp"
-#include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_security_config.hpp"
+#include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
@@ -84,7 +84,8 @@ struct mapped_curve_configuration {
     std::vector<refdata::domain::cds_volatility_config> cds_volatilities;
     std::vector<refdata::domain::cds_volatility_term> cds_volatility_terms;
     std::vector<refdata::domain::curve_volatility_config> volatility_configs;
-    std::vector<refdata::domain::inflation_cap_floor_volatility_config> inflation_cap_floor_volatilities;
+    std::vector<refdata::domain::inflation_cap_floor_volatility_config>
+        inflation_cap_floor_volatilities;
     std::vector<refdata::domain::swaption_volatility_config> swaption_volatilities;
     std::vector<refdata::domain::cap_floor_volatility_config> cap_floor_volatilities;
     std::vector<refdata::domain::curve_parametric_smile> parametric_smiles;
@@ -134,7 +135,7 @@ public:
      * @throws std::runtime_error for a row the document has no place for: an
      * unknown section or segment type, a detail or child row whose parent is
      * absent, or a quote directly on an entry whose section holds quotes only on
- * its segments.
+     * its segments.
      */
     static curveconfiguration reverse(const mapped_curve_configuration& v);
 };

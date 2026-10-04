@@ -22,7 +22,6 @@
 #include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
-#include "party_fixture.hpp"
 #include "ores.reporting.core/repository/analytic_type_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
 #include "ores.reporting.core/repository/parameter_value_domain_repository.hpp"
@@ -32,6 +31,7 @@
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "party_fixture.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>

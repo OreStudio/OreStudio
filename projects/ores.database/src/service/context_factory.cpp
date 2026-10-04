@@ -50,7 +50,8 @@ recorded_schema read_recorded_schema(const context& ctx, logging::logger_t& lg) 
             lg,
             "Reading the database schema fingerprint");
         if (rows.empty())
-            return {"", "has no ores_database_info_tbl row; it was not built by compass db recreate"};
+            return {"",
+                    "has no ores_database_info_tbl row; it was not built by compass db recreate"};
         const auto& row = rows.front();
         return {row[0].value_or(""),
                 "was built from commit " + row[1].value_or("?") + " at " + row[2].value_or("?")};
@@ -61,8 +62,7 @@ recorded_schema read_recorded_schema(const context& ctx, logging::logger_t& lg) 
 
 }
 
-void context_factory::verify_schema_fingerprint(const context& ctx,
-                                                const std::string& database) {
+void context_factory::verify_schema_fingerprint(const context& ctx, const std::string& database) {
     const std::string expected = ORES_SCHEMA_FINGERPRINT;
     const auto recorded = read_recorded_schema(ctx, lg());
     const std::string actual = recorded.fingerprint.empty() ? "(none)" : recorded.fingerprint;
@@ -77,7 +77,8 @@ void context_factory::verify_schema_fingerprint(const context& ctx,
 
     const std::string rule(78, '=');
     std::ostringstream msg;
-    msg << "\n" << rule << "\n"
+    msg << "\n"
+        << rule << "\n"
         << "REFUSING TO START: the database schema does not match this build.\n"
         << "  Expected schema fingerprint (this build): " << expected << "\n"
         << "  Actual schema fingerprint (database)    : " << actual << "\n"

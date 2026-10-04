@@ -103,8 +103,8 @@ struct fixture final {
 TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     fixture f;
     auto req = f.request();
-    const auto executed_at = std::chrono::floor<std::chrono::seconds>(
-        std::chrono::system_clock::now());
+    const auto executed_at =
+        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     req.booking.execution_timestamp = executed_at;
     const auto id = boost::uuids::to_string(req.anchor.id);
 
@@ -120,8 +120,7 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     CHECK(bookings.front().party_id == *f.ctx.party_id());
     REQUIRE(bookings.front().execution_timestamp.has_value());
     CHECK(*bookings.front().execution_timestamp == executed_at);
-    REQUIRE(ores::trading::repository::trade_state_repository().read_latest(f.ctx, id).size() ==
-            1);
+    REQUIRE(ores::trading::repository::trade_state_repository().read_latest(f.ctx, id).size() == 1);
 }
 
 TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", tags) {

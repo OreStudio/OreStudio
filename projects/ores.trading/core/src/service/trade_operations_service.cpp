@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/trade_operations_service.hpp"
-
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -39,7 +38,8 @@ std::string optional_uuid(const std::optional<boost::uuids::uuid>& v) {
 
 }
 
-trade_operations_service::trade_operations_service(context ctx) : ctx_(std::move(ctx)) {}
+trade_operations_service::trade_operations_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 messaging::book_trade_response
 trade_operations_service::book_trade(const messaging::book_trade_request& request) {
@@ -86,8 +86,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     if (booked.front() == "false") {
         response.result.outcome = outcome::conflict;
         response.result.code = "already_exists";
-        response.result.message = "Trade " + boost::uuids::to_string(anchor.id) +
-                                  " is already booked.";
+        response.result.message =
+            "Trade " + boost::uuids::to_string(anchor.id) + " is already booked.";
     }
     return response;
 }

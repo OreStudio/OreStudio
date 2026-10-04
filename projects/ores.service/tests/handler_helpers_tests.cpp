@@ -122,9 +122,8 @@ TEST_CASE("a context scoped to a workspace keeps its permissions", tags) {
     ores::testing::database_helper h;
     const auto request = h.context().with_roles({"refdata::parties:read"});
 
-    const auto scoped =
-        request.with_workspace("33333333-3333-3333-3333-333333333333")
-            .with_workspace_resolution({"44444444-4444-4444-4444-444444444444"});
+    const auto scoped = request.with_workspace("33333333-3333-3333-3333-333333333333")
+                            .with_workspace_resolution({"44444444-4444-4444-4444-444444444444"});
 
     REQUIRE(scoped.roles() == request.roles());
     REQUIRE_FALSE(has_permission(scoped, "iam::accounts:create"));

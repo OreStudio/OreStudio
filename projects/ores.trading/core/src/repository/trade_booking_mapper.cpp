@@ -52,7 +52,10 @@ domain::trade_booking trade_booking_mapper::map(const trade_booking_entity& v) {
         v.netting_set_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_set_id)) :
             std::nullopt;
-    r.trade_date = ores::platform::time::datetime::from_iso8601_date(v.trade_date);
+    r.trade_date =
+        v.trade_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
+            std::nullopt;
     r.execution_timestamp = v.execution_timestamp.has_value() ?
                                 std::optional(timestamp_to_timepoint(*v.execution_timestamp)) :
                                 std::nullopt;
@@ -81,7 +84,10 @@ trade_booking_entity trade_booking_mapper::map(const domain::trade_booking& v) {
     r.netting_set_id = v.netting_set_id.has_value() ?
                            std::optional(boost::uuids::to_string(*v.netting_set_id)) :
                            std::nullopt;
-    r.trade_date = ores::platform::time::datetime::to_iso8601_date(v.trade_date);
+    r.trade_date =
+        v.trade_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :
+            std::nullopt;
     r.execution_timestamp =
         v.execution_timestamp.has_value() ?
             std::optional(ores::platform::time::datetime::to_db_string(*v.execution_timestamp)) :

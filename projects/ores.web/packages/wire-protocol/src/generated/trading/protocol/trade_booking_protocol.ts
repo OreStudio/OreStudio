@@ -37,7 +37,7 @@ export interface TradeBookingWrite {
     counterparty_id: string | null;
     book_id: string;
     netting_set_id: string | null;
-    trade_date: string;
+    trade_date: string | null;
     execution_timestamp: string | null;
 }
 

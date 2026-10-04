@@ -109,11 +109,12 @@ std::nullopt
 ** trade_date
 :PROPERTIES:
 :type:     date
-:cpp_type: std::chrono::year_month_day
-:nullable: false
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
 :END:
 
-The date the trade was agreed.
+The date the trade was agreed. Absent when the source does not state it, as
+an ORE document does not.
 
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::year{2025}/1/15}

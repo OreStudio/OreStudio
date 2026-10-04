@@ -26,7 +26,10 @@
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
@@ -88,14 +91,18 @@
 #include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
+#include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <format>
@@ -282,6 +289,153 @@ save_envelope(Nats& nats,
         }
     }
 
+    return {};
+}
+
+/**
+ * @brief The counterparty an ORE envelope's CounterParty names.
+ *
+ * An ORE document names a counterparty by a string of its own, so the name is
+ * resolved as an ORE identifier of a counterparty first, then as a short code.
+ *
+ * @return The counterparty's id, or nullopt when the name matches none; on a
+ * failed read, nullopt with out_error set.
+ */
+template <typename Nats>
+std::optional<boost::uuids::uuid>
+resolve_counterparty(Nats& nats, const std::string& name, std::string& out_error) {
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::refdata::messaging::get_counterparty_identifier_request alias_req;
+    alias_req.key.id_value = name;
+    auto alias = nats_call(nats, alias_req, error);
+    if (!alias) {
+        out_error = error;
+        return std::nullopt;
+    }
+    if (alias->result.outcome == outcome::ok && alias->counterparty_identifier &&
+        alias->counterparty_identifier->id_scheme == "ORE")
+        return alias->counterparty_identifier->counterparty_id;
+
+    error.clear();
+    ores::refdata::messaging::get_counterparty_request code_req;
+    code_req.key.short_code = name;
+    auto counterparty = nats_call(nats, code_req, error);
+    if (!counterparty) {
+        out_error = error;
+        return std::nullopt;
+    }
+    if (counterparty->result.outcome == outcome::ok && counterparty->counterparty)
+        return counterparty->counterparty->id;
+    return std::nullopt;
+}
+
+/**
+ * @brief The netting set an ORE envelope's NettingSetId names, created when
+ * the tenant holds none with that code.
+ *
+ * ORE treats a netting set id no definition declares as a set of its own, so
+ * the import creates it under the trade's counterparty. A set that exists is
+ * used as it is; the booking's pin refuses one held by another counterparty.
+ *
+ * @return The netting set's id, or nullopt with out_error set.
+ */
+template <typename Nats>
+std::optional<boost::uuids::uuid>
+resolve_netting_set(Nats& nats,
+                    const std::string& code,
+                    const std::optional<boost::uuids::uuid>& counterparty_id,
+                    std::string& out_error) {
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::refdata::messaging::get_netting_set_request get_req;
+    get_req.key.code = code;
+    auto existing = nats_call(nats, get_req, error);
+    if (!existing) {
+        out_error = error;
+        return std::nullopt;
+    }
+    if (existing->result.outcome == outcome::ok && existing->netting_set)
+        return existing->netting_set->id;
+
+    error.clear();
+    ores::refdata::messaging::put_netting_set_request put_req;
+    put_req.change.write.id = boost::uuids::random_generator()();
+    put_req.change.write.code = code;
+    put_req.change.write.counterparty_id = counterparty_id;
+    put_req.change.write.description =
+        "Created by an ORE import: the document names this netting set.";
+    auto created = nats_call(nats, put_req, error);
+    if (!created || created->result.outcome != outcome::ok) {
+        out_error = error.empty() ? "save_netting_set failed" : error;
+        return std::nullopt;
+    }
+    return put_req.change.write.id;
+}
+
+/**
+ * @brief Books an imported trade into its anchor and components.
+ *
+ * The anchor, booking and state are one write. ORE's Trade/@id becomes an
+ * identifier under the ORE scheme, and each envelope additional field a row
+ * of its own, in the document's order.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string
+book_imported_trade(Nats& nats,
+                    const ores::trading::domain::trade& trade,
+                    const std::optional<boost::uuids::uuid>& counterparty_id,
+                    const std::optional<boost::uuids::uuid>& netting_set_id,
+                    const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
+    using namespace ores::trading::domain;
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::trading::messaging::book_trade_request book_req;
+    book_req.anchor.id = trade.identity.id;
+    book_req.anchor.counterparty_id = counterparty_id;
+    book_req.anchor.trade_type = trade.classification.trade_type;
+    book_req.anchor.counterparty_scope =
+        counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
+    book_req.anchor.booking_nature = booking_nature::actual;
+    book_req.anchor.entry_channel = entry_channel::stp;
+    book_req.booking.book_id = trade.parties.book_id;
+    book_req.booking.netting_set_id = netting_set_id;
+    book_req.booking.trade_date = trade.lifecycle.trade_date;
+    book_req.booking.execution_timestamp = trade.lifecycle.execution_timestamp;
+    book_req.booking.change_reason_code = "system.external_data_import";
+    book_req.activity_type_code = "new_booking";
+    auto booked = nats_call(nats, book_req, error);
+    if (!booked || booked->result.outcome != outcome::ok)
+        return error.empty() ? "book_trade failed" : error;
+
+    error.clear();
+    ores::trading::messaging::put_trade_identifier_request id_req;
+    id_req.change.write.trade_id = trade.identity.id;
+    id_req.change.write.id_type = "ORE";
+    id_req.change.write.id_value = trade.identity.external_id;
+    auto identified = nats_call(nats, id_req, error);
+    if (!identified || identified->result.outcome != outcome::ok)
+        return error.empty() ? "save_trade_identifier failed" : error;
+
+    if (envelope && envelope->additional_fields) {
+        int sequence_number = 0;
+        for (const auto& field : *envelope->additional_fields) {
+            error.clear();
+            ores::trading::messaging::put_trade_additional_field_request field_req;
+            field_req.change.write.trade_id = trade.identity.id;
+            field_req.change.write.sequence_number = ++sequence_number;
+            field_req.change.write.name = field.name;
+            field_req.change.write.value = field.value;
+            auto saved = nats_call(nats, field_req, error);
+            if (!saved || saved->result.outcome != outcome::ok)
+                return error.empty() ? "save_trade_additional_field failed" : error;
+        }
+    }
     return {};
 }
 
@@ -1675,6 +1829,48 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             continue;
         }
 
+        // The envelope names the counterparty in the document's own words. A
+        // name that resolves to no counterparty rejects the trade before
+        // anything is written; the import's default applies only when the
+        // envelope names none.
+        auto counterparty_id = item.trade.parties.counterparty_id;
+        const auto& envelope = item.envelope;
+        if (envelope && envelope->counter_party && !envelope->counter_party->empty()) {
+            std::string resolve_error;
+            const auto resolved =
+                resolve_counterparty(delegated_nats, *envelope->counter_party, resolve_error);
+            if (!resolved) {
+                const auto failure =
+                    resolve_error.empty() ?
+                        std::format("Counterparty {} matches no counterparty: give one an ORE "
+                                    "identifier with this name.",
+                                    *envelope->counter_party) :
+                        resolve_error;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "ore.import.execute counterparty unresolved | corr=" << req.correlation_id
+                    << " trade_id=" << tid << " source=" << src << " error=" << failure;
+                result.item_errors.push_back(
+                    {.source_file = src, .item_id = ext_id, .message = failure});
+                continue;
+            }
+            counterparty_id = resolved;
+        }
+
+        std::optional<boost::uuids::uuid> netting_set_id;
+        if (envelope && envelope->netting_set_id && !envelope->netting_set_id->empty()) {
+            std::string netting_error;
+            netting_set_id = resolve_netting_set(
+                delegated_nats, *envelope->netting_set_id, counterparty_id, netting_error);
+            if (!netting_set_id) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "ore.import.execute netting set unresolved | corr=" << req.correlation_id
+                    << " trade_id=" << tid << " source=" << src << " error=" << netting_error;
+                result.item_errors.push_back(
+                    {.source_file = src, .item_id = ext_id, .message = netting_error});
+                continue;
+            }
+        }
+
         ores::trading::messaging::put_many_trades_request save_req;
         {
             ores::trading::messaging::trade_change change;
@@ -1685,7 +1881,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             change.write.portfolio_id = trade.parties.portfolio_id;
             change.write.successor_trade_id = trade.parties.successor_trade_id;
             change.write.trade_type = trade.classification.trade_type;
-            change.write.counterparty_id = trade.parties.counterparty_id;
+            change.write.counterparty_id = counterparty_id;
             change.write.product_type =
                 ores::trading::domain::to_string(trade.classification.product_type);
             change.write.asset_class = trade.classification.asset_class;
@@ -1717,6 +1913,15 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     << " trade_id=" << tid << " source=" << src << " error=" << envelope_error;
                 result.item_errors.push_back(
                     {.source_file = src, .item_id = ext_id, .message = envelope_error});
+            }
+            const auto booking_error = book_imported_trade(
+                delegated_nats, item.trade, counterparty_id, netting_set_id, item.envelope);
+            if (!booking_error.empty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "ore.import.execute trade booking failed | corr=" << req.correlation_id
+                    << " trade_id=" << tid << " source=" << src << " error=" << booking_error;
+                result.item_errors.push_back(
+                    {.source_file = src, .item_id = ext_id, .message = booking_error});
             }
         }
     }

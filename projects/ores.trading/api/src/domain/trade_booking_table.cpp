@@ -25,9 +25,22 @@
 #include "ores.trading.api/domain/trade_booking_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<trade_booking>& v) {
     fort::char_table table;
@@ -36,8 +49,8 @@ std::string convert_to_table(const std::vector<trade_booking>& v) {
     table << fort::header << "Trade Id" << "Book" << "Trade Date" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& tb : v) {
-        table << tb.trade_id << boost::uuids::to_string(tb.book_id) << tb.trade_date << tb.version
-              << fort::endr;
+        table << tb.trade_id << boost::uuids::to_string(tb.book_id) << opt_str(tb.trade_date)
+              << tb.version << fort::endr;
     }
     return table.to_string();
 }

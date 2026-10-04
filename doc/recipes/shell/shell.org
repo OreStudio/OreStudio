@@ -1356,3 +1356,7 @@ tangled into the runnable script library
 * Counterparty Aliases
 
 - [[id:F3534049-1E98-5474-B121-24A69AB6CC39][How do I run the counterparty_aliases commands from the shell?]]
+
+* Netting Set Identifiers
+
+- [[id:5906C072-05A5-5A3E-B9AB-5B34089834D4][How do I run the netting_set_identifiers commands from the shell?]]

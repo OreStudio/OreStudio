@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 5906C072-05A5-5A3E-B9AB-5B34089834D4
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the netting_set_identifiers commands from the shell?
+#+description: Every command the netting_set_identifiers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:netting_set_identifiers:
+
+This file documents the netting_set_identifiers resource at the shell, one section per command. Every command is a subcommand of =netting_set_identifiers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9A08757D-9D68-5732-A9A0-62455B778520
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.list=.
+
+#+name: netting_set_identifiers-list
+#+begin_src ores-shell :tangle netting_set_identifiers-list.ores :exports none
+netting_set_identifiers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 747BFF7E-B32E-57BE-841C-C9C3E21283F9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers get <id_value>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.get=.
+
+#+name: netting_set_identifiers-get
+#+begin_src ores-shell :tangle netting_set_identifiers-get.ores :exports none
+netting_set_identifiers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C5659B35-79F6-59B9-A6E1-F0803500217A
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers get-many <id_value>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.get_many=.
+
+#+name: netting_set_identifiers-get-many
+#+begin_src ores-shell :tangle netting_set_identifiers-get-many.ores :exports none
+netting_set_identifiers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 0DEE52DA-F8D1-5451-8013-379F8CFA18CC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers add <netting_set_id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.put=.
+
+#+name: netting_set_identifiers-add
+#+begin_src ores-shell :tangle netting_set_identifiers-add.ores :exports none
+netting_set_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 625DFAC0-DDB6-5119-8717-498C63B64E8F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers set <id> <netting_set_id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.put=.
+
+#+name: netting_set_identifiers-set
+#+begin_src ores-shell :tangle netting_set_identifiers-set.ores :exports none
+netting_set_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 043E4F6F-EF9A-56AF-8114-9547F6B88DC6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers put-many --count <n> <id> <netting_set_id> <id_scheme> <id_value> <description> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.put_many=.
+
+#+name: netting_set_identifiers-put-many
+#+begin_src ores-shell :tangle netting_set_identifiers-put-many.ores :exports none
+netting_set_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: E63B1BFB-D76C-5A1F-BD8E-FB32FEE39A11
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers delete <id_value> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.delete=.
+
+#+name: netting_set_identifiers-delete
+#+begin_src ores-shell :tangle netting_set_identifiers-delete.ores :exports none
+netting_set_identifiers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AD7CFC0C-DEA1-57B7-9B8C-7DE293ACE653
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers delete-many <id_value> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.delete_many=.
+
+#+name: netting_set_identifiers-delete-many
+#+begin_src ores-shell :tangle netting_set_identifiers-delete-many.ores :exports none
+netting_set_identifiers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-netting-set-id=
+:PROPERTIES:
+:ID: 52BB1C39-8AE7-52C8-B582-0C214A039563
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers by-netting-set-id <netting_set_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers.list_by_netting_set_id=.
+
+#+name: netting_set_identifiers-by-netting-set-id
+#+begin_src ores-shell :tangle netting_set_identifiers-by-netting-set-id.ores :exports none
+netting_set_identifiers by-netting-set-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C862F86D-EB68-5E26-B2C2-D236D75BA447
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers versions <id_value> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers_versions.list=.
+
+#+name: netting_set_identifiers-versions
+#+begin_src ores-shell :tangle netting_set_identifiers-versions.ores :exports none
+netting_set_identifiers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 022A28C1-1671-5181-A8D3-D2D72FB4F44D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_identifiers version <id_value> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.netting_set_identifiers_versions.get=.
+
+#+name: netting_set_identifiers-version
+#+begin_src ores-shell :tangle netting_set_identifiers-version.ores :exports none
+netting_set_identifiers version __none__ --version 1
+#+end_src
+

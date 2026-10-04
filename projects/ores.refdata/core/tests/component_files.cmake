@@ -112,6 +112,7 @@ set(files
     "monetary_nature_eventing_integration_tests.cpp"
     "netting_agreement_eventing_integration_tests.cpp"
     "netting_set_eventing_integration_tests.cpp"
+    "netting_set_identifier_eventing_integration_tests.cpp"
     "ois_convention_eventing_integration_tests.cpp"
     "overnight_index_convention_eventing_integration_tests.cpp"
     "party_contact_information_eventing_integration_tests.cpp"

@@ -215,6 +215,8 @@
 \ir ./refdata_csas_drop.sql
 
 -- Netting sets, then the agreements they reference (before parties/counterparties)
+\ir ./refdata_netting_set_identifiers_notify_trigger_drop.sql
+\ir ./refdata_netting_set_identifiers_drop.sql
 \ir ./refdata_netting_sets_notify_trigger_drop.sql
 \ir ./refdata_netting_sets_drop.sql
 \ir ./refdata_netting_agreements_notify_trigger_drop.sql

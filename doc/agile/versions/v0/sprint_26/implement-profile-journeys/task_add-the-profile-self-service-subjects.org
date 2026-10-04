@@ -8,7 +8,7 @@
 #+filetags: :implement-profile-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/add-the-profile-self-service-subjects
-#+pr:
+#+pr: 2632
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2632][#2632]] | [iam] Add the profile self-service writes for members |
 
 * Review
 

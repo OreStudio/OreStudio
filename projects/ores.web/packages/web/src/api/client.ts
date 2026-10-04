@@ -95,6 +95,14 @@ export interface Credentials {
     readonly password: string;
 }
 
+/** A page's offset and limit as a query string. */
+function pageQuery(page: { readonly offset: number; readonly limit: number }): string {
+    return new URLSearchParams({
+        offset: String(page.offset),
+        limit: String(page.limit),
+    }).toString();
+}
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -208,13 +216,9 @@ export const api = {
         username: string,
         page: { readonly offset: number; readonly limit: number },
     ): Promise<AccountSignIns> {
-        const params = new URLSearchParams({
-            offset: String(page.offset),
-            limit: String(page.limit),
-        });
         return accountSignInsSchema.parse(
             await request(
-                `/api/accounts/${encodeURIComponent(username)}/sign-ins?${params.toString()}`,
+                `/api/accounts/${encodeURIComponent(username)}/sign-ins?${pageQuery(page)}`,
                 { method: 'GET' },
             ),
         );
@@ -226,13 +230,9 @@ export const api = {
         username: string,
         page: { readonly offset: number; readonly limit: number },
     ): Promise<AccountSignIns> {
-        const params = new URLSearchParams({
-            offset: String(page.offset),
-            limit: String(page.limit),
-        });
         return accountSignInsSchema.parse(
             await request(
-                `/api/tenants/${encodeURIComponent(code)}/accounts/${encodeURIComponent(username)}/sign-ins?${params.toString()}`,
+                `/api/tenants/${encodeURIComponent(code)}/accounts/${encodeURIComponent(username)}/sign-ins?${pageQuery(page)}`,
                 { method: 'GET' },
             ),
         );

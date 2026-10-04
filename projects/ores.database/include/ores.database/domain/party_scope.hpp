@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_DOMAIN_PARTY_SCOPE_HPP
-#define ORES_ORE_CORE_DOMAIN_PARTY_SCOPE_HPP
+#ifndef ORES_DATABASE_DOMAIN_PARTY_SCOPE_HPP
+#define ORES_DATABASE_DOMAIN_PARTY_SCOPE_HPP
 
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -26,14 +26,14 @@
 #include <type_traits>
 #include <vector>
 
-namespace ores::ore::domain {
+namespace ores::database::domain {
 
 /**
  * @brief Stamps the owning party on every row of a mapped document.
  *
- * A configuration document belongs to one party, and every row it maps to
- * carries that party's id. The mappers know nothing of parties, as they know
- * nothing of tenants, so whoever persists a mapped document stamps it first.
+ * A document belongs to one party, and every row it holds carries that
+ * party's id. Whoever persists a document stamps it with the session's party
+ * first, since the rows themselves know nothing of the session.
  *
  * Walks the value: a row with a party_id is stamped; a vector, an optional or
  * a struct of rows is walked into; anything else is left alone.

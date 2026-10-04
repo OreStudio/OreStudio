@@ -38,6 +38,8 @@ export interface TradeBooking {
     counterparty_id: string | null;
     book_id: string;
     netting_set_id: string | null;
+    counterparty_identifier_id: string | null;
+    netting_set_identifier_id: string | null;
     trade_date: string | null;
     execution_timestamp: string | null;
     modified_by: string;

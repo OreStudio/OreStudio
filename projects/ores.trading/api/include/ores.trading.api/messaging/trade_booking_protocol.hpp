@@ -44,6 +44,8 @@ struct trade_booking_write {
     std::optional<boost::uuids::uuid> counterparty_id;
     boost::uuids::uuid book_id;
     std::optional<boost::uuids::uuid> netting_set_id;
+    std::optional<boost::uuids::uuid> counterparty_identifier_id;
+    std::optional<boost::uuids::uuid> netting_set_identifier_id;
     std::optional<std::chrono::year_month_day> trade_date;
     std::optional<std::chrono::system_clock::time_point> execution_timestamp;
 };

@@ -141,23 +141,25 @@ void trade_booking_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <counterparty_id> <book_id> <netting_set_id> <trade_date> <execution_timestamp> "
-        "<reason> <commentary>");
+        "add <counterparty_id> <book_id> <netting_set_id> <counterparty_identifier_id> "
+        "<netting_set_identifier_id> <trade_date> <execution_timestamp> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <counterparty_id> <book_id> <netting_set_id> <trade_date> "
-        "<execution_timestamp> <reason> <commentary> [--version <n>]");
+        "set <trade_id> <counterparty_id> <book_id> <netting_set_id> <counterparty_identifier_id> "
+        "<netting_set_identifier_id> <trade_date> <execution_timestamp> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <counterparty_id> <book_id> <netting_set_id> <trade_date> "
+        "put-many --count <n> <trade_id> <counterparty_id> <book_id> <netting_set_id> "
+        "<counterparty_identifier_id> <netting_set_identifier_id> <trade_date> "
         "<execution_timestamp> <reason> <commentary>");
 
     menu->Insert(
@@ -352,8 +354,8 @@ void trade_booking_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -362,6 +364,12 @@ void trade_booking_commands::process_add(std::ostream& out,
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.book_id, parsed->positionals[next++], "book_id");
         read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        read_token(req.change.write.counterparty_identifier_id,
+                   parsed->positionals[next++],
+                   "counterparty_identifier_id");
+        read_token(req.change.write.netting_set_identifier_id,
+                   parsed->positionals[next++],
+                   "netting_set_identifier_id");
         read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
         read_token(req.change.write.execution_timestamp,
                    parsed->positionals[next++],
@@ -408,8 +416,8 @@ void trade_booking_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -418,6 +426,12 @@ void trade_booking_commands::process_set(std::ostream& out,
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.book_id, parsed->positionals[next++], "book_id");
         read_token(req.change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+        read_token(req.change.write.counterparty_identifier_id,
+                   parsed->positionals[next++],
+                   "counterparty_identifier_id");
+        read_token(req.change.write.netting_set_identifier_id,
+                   parsed->positionals[next++],
+                   "netting_set_identifier_id");
         read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
         read_token(req.change.write.execution_timestamp,
                    parsed->positionals[next++],
@@ -476,8 +490,8 @@ void trade_booking_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -488,6 +502,12 @@ void trade_booking_commands::process_put_many(std::ostream& out,
                 change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
             read_token(change.write.book_id, parsed->positionals[next++], "book_id");
             read_token(change.write.netting_set_id, parsed->positionals[next++], "netting_set_id");
+            read_token(change.write.counterparty_identifier_id,
+                       parsed->positionals[next++],
+                       "counterparty_identifier_id");
+            read_token(change.write.netting_set_identifier_id,
+                       parsed->positionals[next++],
+                       "netting_set_identifier_id");
             read_token(change.write.trade_date, parsed->positionals[next++], "trade_date");
             read_token(change.write.execution_timestamp,
                        parsed->positionals[next++],

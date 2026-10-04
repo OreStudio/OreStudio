@@ -87,16 +87,17 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <counterparty_id> <book_id> <netting_set_id> <trade_date> <execution_timestamp>
-     * <reason> <commentary>
+     * @brief add <counterparty_id> <book_id> <netting_set_id> <counterparty_identifier_id>
+     * <netting_set_identifier_id> <trade_date> <execution_timestamp> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <counterparty_id> <book_id> <netting_set_id> <trade_date>
-     * <execution_timestamp> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <counterparty_id> <book_id> <netting_set_id>
+     * <counterparty_identifier_id> <netting_set_identifier_id> <trade_date> <execution_timestamp>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <counterparty_id> <book_id> <netting_set_id>
-     * <trade_date> <execution_timestamp> <reason> <commentary>
+     * <counterparty_identifier_id> <netting_set_identifier_id> <trade_date> <execution_timestamp>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

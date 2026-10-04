@@ -37,9 +37,11 @@ namespace ores::trading::service {
  * the trade table one trade at a time would pay three queries per trade.
  * This reader takes the trades as a set and issues one query per table.
  *
- * A trade whose document stated no envelope is absent from the result,
- * which is how the caller tells that case from an envelope the document
- * stated empty.
+ * A booked trade's envelope comes from its anchor and components: the
+ * counterparty and netting set names the booking recorded and the trade's
+ * additional fields. A trade with no anchor keeps the envelope its own tables
+ * hold, and a trade with neither is absent from the result. The portfolio ids
+ * come from the envelope tables for every trade.
  */
 class ORES_TRADING_CORE_EXPORT trade_envelope_reader {
 private:
@@ -66,6 +68,10 @@ public:
     read_envelopes(const std::vector<std::string>& trade_ids) const;
 
 private:
+    void read_booked_envelopes(
+        const std::vector<std::string>& trade_ids,
+        std::unordered_map<std::string, domain::trade_envelope_data>& envelopes) const;
+
     context ctx_;
 };
 

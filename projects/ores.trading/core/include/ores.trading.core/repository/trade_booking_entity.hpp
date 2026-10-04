@@ -49,6 +49,8 @@ struct trade_booking_entity {
     std::optional<std::string> counterparty_id;
     std::string book_id;
     std::optional<std::string> netting_set_id;
+    std::optional<std::string> counterparty_identifier_id;
+    std::optional<std::string> netting_set_identifier_id;
     std::optional<std::string> trade_date;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> execution_timestamp;
     std::string modified_by;

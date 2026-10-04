@@ -49,6 +49,8 @@ generate_synthetic_trade_booking(utility::generation::generation_context& ctx) {
     r.counterparty_id = std::nullopt;
     r.book_id = ctx.generate_uuid();
     r.netting_set_id = std::nullopt;
+    r.counterparty_identifier_id = std::nullopt;
+    r.netting_set_identifier_id = std::nullopt;
     r.trade_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.execution_timestamp = std::nullopt;
     r.modified_by = modified_by;

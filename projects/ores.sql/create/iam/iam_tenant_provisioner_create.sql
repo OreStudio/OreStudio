@@ -39,10 +39,14 @@
 --   - day_count_fraction_types: Day count fraction conventions
 --   - day_counters, calendar_names, curve_sections, curve_segment_types: ORE
 --     curve configuration vocabulary
+--   - diary_entry_types: Calendar event kinds (e.g. central_bank_meeting)
 --   - rounding_types: Rounding method definitions
 --   - monetary_natures, currency_market_tiers: Currency classification
 --   - tenor_anchors, tenors, tenor_conventions, tenor_convention_resolutions:
---     Tenor labels and their per-convention resolution rules
+--     Tenor labels and their per-convention resolution rules. A resolution's
+--     schedule_code and schedule_step_count are not copied: the tenor
+--     schedules they name arrive later, from the refdata.tenor_schedules
+--     dataset, whose publish sets them.
 --
 -- Transactional reference data (currencies, countries, parties, etc.)
 -- is NOT copied during provisioning. Tenants populate that data via the
@@ -418,6 +422,23 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % calendar names', v_copied_count;
+
+    -- Diary entry types (e.g. central_bank_meeting), the vocabulary that
+    -- calendar events and tenor schedules published later refer to
+    insert into ores_refdata_diary_entry_types_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_diary_entry_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % diary entry types', v_copied_count;
 
     -- ORE curve configuration sections (e.g. YieldCurves, DefaultCurves)
     insert into ores_refdata_curve_sections_tbl (

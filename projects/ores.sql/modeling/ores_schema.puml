@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T20:18:34.410761Z
+' Generated: 2026-10-04T21:14:18.841887Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6256,6 +6256,24 @@ package "dq_staging" #F3E5F5 {
     Represents internal organizational units (e.g., desks, departments, branches). Supports hierarchical structure via self-referencing parent_business_unit_id. Each unit belongs to a top-level legal entity (party). - Artefact Table
     end note
 
+    entity ores_dq_calendar_events_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * calendar_code : text
+        * event_date : date
+        * diary_entry_type : text
+        * name : text
+          description : text
+          source : text
+    }
+
+    note right of ores_dq_calendar_events_artefact_tbl
+    One row per dated diary entry on a [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]: a central-bank meeting, a scheduled data release, or an open-ended other event. One table for all event kinds -- never a table per calendar or per type (settled 2026-08-09, story Decision D1; see [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]). The diary_entry_type column classifies the entry via the open-ended [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][diary_entry_type]] vocabulary (holiday, central_bank_meeting, data_release, other). Holidays themselves keep their existing machinery (calendar_rules, calendar_exceptions, calendar_date) -- the holiday type stays in the vocabulary so the whole classification lives in one place, even though its physical home is elsewhere. Template/Instance: an event row is an *instance*; its template is the (calendar, diary_entry_type, name) triple. A worked case: the FOMC's eight regularly scheduled meetings per year are entered as a short run of central_bank_meeting instances on the US.FOMC calendar, transcribed from the Fed's published calendar with source='federalreserve.gov'. Formulaic recurrence generation is deferred; calendar_rules's grammar can later feed a template link if a consumer needs it. - Artefact Table
+    end note
+
     entity ores_dq_calendar_types_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -6961,6 +6979,24 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_tags_artefact_tbl
     A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
+    end note
+
+    entity ores_dq_tenor_schedules_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * schedule_source : text
+          calendar_code : text
+          diary_entry_type : text
+    }
+
+    note right of ores_dq_tenor_schedules_artefact_tbl
+    A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]] resolves along (story Decision D2: anchor + calendar offset + n steps). Two kinds today, distinguished by schedule_source: - CLOSED_FORM: the dates come from a closed-form rule evaluated code-side. ROLL_QUARTER is the only instance: the first business day after the 20th of March/June/September/December (the IMM quarterly rule). - EVENT_LOOKUP: the dates come from [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] rows on a named calendar, filtered by diary entry type. FOMC_MEETING is the only instance: central_bank_meeting events on US.FOMC. calendar_code and diary_entry_type are null for closed-form schedules (no event store involved) and required for event-lookup ones -- but the binding is documented, not enforced in the schema. - Artefact Table
     end note
 
 }

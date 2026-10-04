@@ -47,6 +47,8 @@
 \ir ./dq_business_units_artefact_drop.sql
 \ir ./dq_ip2country_artefact_drop.sql
 \ir ./dq_countries_artefact_drop.sql
+\ir ./dq_tenor_schedules_artefact_drop.sql
+\ir ./dq_calendar_events_artefact_drop.sql
 \ir ./dq_calendars_artefact_drop.sql
 \ir ./dq_calendar_types_artefact_drop.sql
 \ir ./dq_currency_calendars_artefact_drop.sql

@@ -16,34 +16,23 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(name "ores.ore.api")
-set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
+# Headers only: the source glob has nothing to compile, so the part is an
+# INTERFACE library that carries its include path and the libraries its
+# headers name, with no compiled body.
+add_library(${lib_target_name} INTERFACE)
 
-set(lib_files ${files})
-add_library(${lib_target_name} ${lib_files})
-target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_API_LIBRARY)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${lib_target_name} PRIVATE
-        -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
-set_target_properties(${lib_target_name} PROPERTIES
-    OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-
-target_include_directories(${lib_target_name} PUBLIC
+target_include_directories(${lib_target_name} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
-    PUBLIC
+    INTERFACE
         ores.platform.lib
         ores.storage.api.lib
         ores.logging.lib
         ores.workflow.api.lib
         ores.eventing.api.lib
-    PRIVATE
         ores.utility.lib)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name})

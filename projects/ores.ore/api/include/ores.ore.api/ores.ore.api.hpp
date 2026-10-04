@@ -23,11 +23,9 @@
 /**
  * @brief ORE integration contract
  *
- * The shared contract of the ORE integration component: the series key shape
- * entity with its JSON and table I/O, its generated NATS protocol, change
- * events and sample generator; the protocols for importing an ORE directory
- * and for locating the import tarball in object storage; and the workflow
- * registration the ORE import runs under.
+ * The shared contract of the ORE integration component: the protocols for
+ * importing an ORE directory and for locating the import tarball in object
+ * storage, and the workflow registration the ORE import runs under.
  */
 namespace ores::ore.api {}
 

@@ -38,8 +38,6 @@ produced by a generator outside the build. See
   calendar adjustments and conventions.
 - ORE market data text files (=-market*.txt=, =fixings*.txt=) and the
   =oresmd= series keys they carry.
-- The series key shape reference rows, from which the key registry is
-  built at construction.
 - ORES trading and reference data objects to serialise back to ORE XML.
 
 * Outputs
@@ -49,20 +47,17 @@ produced by a generator outside the build. See
 - Reference data objects: currencies, calendar adjustments, portfolios
   and books.
 - Regenerated ORE XML documents, mirrored by the round trip.
-- The series key shape entity, through the generated repository.
 
 * Entry points
 
 - =include/ores.ore.core/domain/= — the =xsdcpp= bindings and the mappers.
 - =include/ores.ore.core/xml/= — the importer, the exporter and the round trip.
-- =include/ores.ore.core/market/= — the ORE market data readers, the series
-  key registry and the FX quote convention checker.
+- =include/ores.ore.core/market/= — the ORE market data readers and the FX
+  quote convention checker.
 - =include/ores.ore.core/scanner/= — the directory walk that classifies ORE
   files by root element.
 - =include/ores.ore.core/planner/= — the import plan and its choices.
 - =include/ores.ore.core/hierarchy/= — the portfolio and book node builder.
-- =include/ores.ore.core/repository/= — the generated series key shape
-  entity and its repository.
 - =include/ores.ore.core/log/= — the ORE engine log line parser.
 
 * Dependencies

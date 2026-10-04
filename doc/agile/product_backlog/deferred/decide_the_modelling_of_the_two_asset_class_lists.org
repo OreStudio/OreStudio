@@ -56,7 +56,7 @@ in one manifest that assumes the product taxonomy is somewhere else.
 - [[id:B9B8E238-F32B-40AC-88F2-6C210879B67A][An asset class is two lists, not one]] — the fact this decision is about.
 - [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Task: Declare the asset class lists once]] — the consolidation that must land first, and the census both lists are drawn from.
 - [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][ores.refdata.asset_class_code]] — the authoritative product taxonomy.
-- [[id:A0B1C2D3-E4F5-A6B7-C8D9-E0F1A2B3C4D5][oresmd quote types — all asset classes]] — the market data namespace's manifest.
+- =ores.marketdata.api/datum/schema.hpp= — the market data namespace, hand-written since the oresmd quote-type models were retired.
 
 * See also
 

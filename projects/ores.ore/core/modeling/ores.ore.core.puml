@@ -122,26 +122,6 @@ namespace ores #F2F2F2 {
                 +date : chrono::year_month_day
                 +key : string
                 +value : string
-                +series_type : string
-                +metric : string
-                +qualifier : string
-                +point_id : optional<string>
-            }
-            class decomposed_key <<struct>> {
-                +series_type : string
-                +metric : string
-                +qualifier : string
-                +point_id : optional<string>
-            }
-            class series_key_registry {
-                -by_type_ : unordered_map<string, domain::series_key_shape>
-            }
-        }
-        namespace messaging #F2F2F2 {
-            class series_key_shape_handler {
-                -nats_ : ores::nats::service::client&
-                -ctx_ : ores::database::context
-                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
             }
         }
         namespace planner #F2F2F2 {
@@ -198,29 +178,6 @@ namespace ores #F2F2F2 {
                 +message : string
             }
         }
-        namespace repository #F2F2F2 {
-            class series_key_shape_entity <<struct>> {
-                +schema : constexpr static const char*
-                +tablename : constexpr static const char*
-                +series_type : sqlgen::PrimaryKey<string>
-                +tenant_id : string
-                +version : int
-                +qualifier_depth : int
-                +has_point_dimension : bool
-                +default_point : string
-                +description : string
-                +modified_by : string
-                +performed_by : string
-                +change_reason_code : string
-                +change_commentary : string
-                +valid_from : db_timestamp
-                +valid_to : db_timestamp
-            }
-            class series_key_shape_mapper {
-            }
-            class series_key_shape_repository {
-            }
-        }
         namespace scanner #F2F2F2 {
             class ore_directory_scanner {
                 -root_ : filesystem::path
@@ -231,12 +188,6 @@ namespace ores #F2F2F2 {
                 +currency_files : vector<filesystem::path>
                 +portfolio_files : vector<filesystem::path>
                 +ignored_files : vector<filesystem::path>
-            }
-        }
-        namespace service #F2F2F2 {
-            class series_key_shape_service {
-                -ctx_ : context
-                -repo_ : repository::series_key_shape_repository
             }
         }
         namespace xml #F2F2F2 {
@@ -281,7 +232,7 @@ namespace ores #F2F2F2 {
 ' Most of the public surface is free functions over plain structs, which the
 ' automated pass cannot show: load_data, parse_market_data, parse_fixings,
 ' parse_ore_log and roundtrip. Only the mappers, the importer, the exporter,
-' the planner, the scanner and the generated entity stack are classes.
+' the planner and the scanner are classes.
 
 ' trade_mapper dispatches one ORE trade to the instrument mapper that owns its
 ' asset class. Each instrument mapper carries a forward_* and a reverse_* pair
@@ -340,20 +291,8 @@ ores::ore::scanner::ore_directory_scanner ..> ores::ore::xml::document_kind : cl
 
 ' The parsers are free functions, so they have no class to hang off:
 ' parse_market_data and parse_fixings both take an istream, return
-' market_datum, and report each problem through parse_report. Both resolve
-' every key through the registry, which is built once from the entity rows.
-note right of "ores::ore::market::series_key_registry"
-    Built once at construction from the series key shape rows. Every
-    market data key is decomposed and resolved through it, so an
-    unknown key becomes a parse issue rather than an exception.
-end note
-
-' --- The generated entity stack ---
-
-ores::ore::service::series_key_shape_service o-- ores::ore::repository::series_key_shape_repository : owns
-ores::ore::repository::series_key_shape_repository ..> ores::ore::repository::series_key_shape_mapper : uses
-ores::ore::repository::series_key_shape_mapper --> ores::ore::repository::series_key_shape_entity : maps
-ores::ore::messaging::series_key_shape_handler ..> ores::ore::service::series_key_shape_service : uses
+' market_datum, and report each problem through parse_report. Neither
+' splits a key: what a key names is the marketdata key codec's to say.
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.ore.core.puml"

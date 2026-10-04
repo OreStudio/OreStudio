@@ -90,7 +90,6 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.junction",
     "ores.codegen.lookup_entity",
     "ores.codegen.operation",
-    "ores.codegen.oresmd_quote_type",
     "ores.codegen.service_registry",
     "ores.codegen.component",
     "ores.codegen.asset_class_catalogue",
@@ -134,16 +133,7 @@ def discover_models(
     if comp.modeling_dir:
         modeling_dir = project_root / comp.modeling_dir
         if modeling_dir.is_dir():
-            # Direct children plus one level of subdirectories -- facet
-            # spec files live in modeling/<facet>/ (e.g. the oresmd
-            # quote-type specs in modeling/oresmd/). Deeper nesting is
-            # not scanned; the type filter below keeps any non-codegen
-            # org file out regardless of depth.
-            candidates: set = set()
-            for org_path in (
-                list(modeling_dir.glob("*.org"))
-                + list(modeling_dir.glob("*/*.org"))
-            ):
+            for org_path in modeling_dir.glob("*.org"):
                 if not org_path.is_file():
                     continue
                 org_type = _org_type(org_path)
@@ -152,19 +142,7 @@ def discover_models(
                 short_type = org_type.removeprefix("ores.codegen.")
                 if apply_exclusions and short_type in comp.exclude_org_types:
                     continue
-                candidates.add(org_path)
-            # A directory with a batch manifest is generated through the manifest
-            # alone. The manifest's loader reads every sibling spec itself, so
-            # rendering a spec separately writes the same umbrella outputs once
-            # more per spec and whichever path sorts last wins -- which is how
-            # adding one spec file can silently replace the whole generated file
-            # set. The oresmd quote-type specs are the case this exists for.
-            manifest_dirs = {p.parent for p in candidates if p.name == "model.org"}
-            matches = {
-                p
-                for p in candidates
-                if p.name == "model.org" or p.parent not in manifest_dirs
-            }
+                matches.add(org_path)
     return sorted(matches)
 
 

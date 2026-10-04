@@ -21,17 +21,12 @@
 -- =============================================================================
 -- ORE Component Master Population File
 --
--- Seeds the ORE series key shapes, the grammar of an ORE market data key, and
--- then ORE-specific reference data: catalog, coding scheme dataset, and asset
+-- Seeds ORE-specific reference data: catalog, coding scheme dataset, and asset
 -- class artefacts. After staging, publishes ORE (and FpML) asset classes to
 -- ores_refdata_asset_classes_tbl so that market data series validation works
 -- from initial database setup.
 -- =============================================================================
 
-\echo '--- ORE Series Key Shapes ---'
-\ir ore_series_key_shapes_populate.sql
-
-\echo ''
 \echo '--- ORE Catalog ---'
 \ir ore_catalog_populate.sql
 
@@ -79,11 +74,7 @@ select * from ores_refdata_publish_asset_classes_from_dq_fn(
 \echo ''
 \echo '--- ORE Population Summary ---'
 
-select 'Ore: Series Key Shapes' as entity, count(*) as count
-from ores_ore_series_key_shapes_tbl
-where valid_to = ores_utility_infinity_timestamp_fn()
-union all
-select 'DQ: ORE Asset Class Artefacts', count(*)
+select 'DQ: ORE Asset Class Artefacts' as entity, count(*) as count
 from ores_dq_asset_classes_artefact_tbl
 where dataset_id = (
     select id from ores_dq_datasets_tbl

@@ -66,7 +66,7 @@ already drifted, so a change to either list has no single place to land.
 * References
 
 - [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][ores.refdata.asset_class_code]] — the authoritative product taxonomy, and the table that owns the validator every other entity calls.
-- [[id:A0B1C2D3-E4F5-A6B7-C8D9-E0F1A2B3C4D5][oresmd quote types — all asset classes]] — the market data namespace's manifest, which is the one place its members are authored.
+- =ores.marketdata.api/datum/schema.hpp= — the market data namespace, hand-written since the oresmd quote-type models were retired.
 - [[id:E205D30E-3DD3-4E04-BC27-424C3376550B][Task: Declare the asset class lists once]] — the census of both lists' hand-written copies, the drift already in them, and the plan to generate the copies from one model per axis.
 
 * See also

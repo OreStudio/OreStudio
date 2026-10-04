@@ -97,7 +97,7 @@ that holds a document. Nothing is stored as JSON.
 | =ores_inbox_notification_arguments_tbl= | PK (=notification_id=, =name=); FK to the notifications | The values the message names, one row each: the role, the tenant, the step |
 | =ores_inbox_notification_recipients_tbl= | PK (=notification_id=, =account_id=); FKs to the notifications and the accounts | Who receives it, and when they read or cleared it |
 | =ores_inbox_notification_channels_tbl= | PK =code= | The ways a person is reached: =in_app=, =mail= |
-| =ores_inbox_notification_deliveries_tbl= | PK =id=; FKs (=notification_id=, =account_id=) to the recipients, =channel_code= to the channels | One attempt to reach one recipient through one channel: when, and whether it arrived or why not; a recipient has many |
+| =ores_inbox_notification_deliveries_tbl= | PK =id=; FKs (=notification_id=, =account_id=) to the recipients, =channel_code= to the channels | One attempt to reach one recipient through one channel: when, and its =outcome=, an enum of =pending=, =delivered= and =failed= (with the reason); a recipient has many |
 | =ores_inbox_notification_preferences_tbl= | PK (=account_id=, =kind_code=, =channel_code=); FKs to the accounts, the kinds and the channels | Whether a channel is used for a kind, per person |
 
 A permission audience is resolved into recipient rows when the notification is

@@ -145,7 +145,8 @@ package "ores.inbox: notifications" {
     * account_id : uuid <<FK>>
     * channel_code : text <<FK>>
     * attempted_at : timestamptz
-    * outcome : text
+    * outcome : delivery_outcome <<enum>>
+    failure_reason : text
   }
   entity ores_inbox_notification_preferences_tbl <<temporal>> #C6F0D8 {
     * account_id : uuid <<PK>> <<FK>>

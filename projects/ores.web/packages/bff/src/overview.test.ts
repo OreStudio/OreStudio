@@ -168,7 +168,10 @@ function buildTestServer(
                 const request = body as { status_filter: string; target_ids_filter: string[] };
                 const instances =
                     request.status_filter === 'failed'
-                        ? [wireRun('run-globex', GLOBEX, 'failed', 4, 'Publishing failed.')]
+                        ? [
+                              wireRun('run-globex', GLOBEX, 'failed', 4, 'Publishing failed.'),
+                              wireRun('run-acme-first', ACME, 'failed', 2, 'Timed out.'),
+                          ]
                         : request.target_ids_filter.length > 0
                           ? [wireRun('run-acme', ACME, 'completed', 6)]
                           : [
@@ -211,6 +214,10 @@ function buildTestServer(
 }
 
 describe('GET /api/overview', () => {
+    /*
+     * Acme's first setup failed and a second one set it up, so its old failed
+     * run is still in the engine. It needs no attention: it is active.
+     */
     it('answers the counts, the attention list, the first tenants and the newest setups', async () => {
         const { server, cookies } = buildTestServer();
 

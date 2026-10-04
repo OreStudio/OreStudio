@@ -1113,18 +1113,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         let setups: ReadonlyMap<string, TenantSetup> = new Map();
         let activityUnavailable = false;
         try {
-            const [recent, failed, firstSetups] = await Promise.all([
+            const [recent, failed] = await Promise.all([
                 readProvisioningRuns(session.client, { limit: OVERVIEW_ACTIVITY }),
                 readProvisioningRuns(session.client, {
                     status: 'failed',
                     limit: OVERVIEW_ATTENTION,
                 }),
-                readTenantSetups(
-                    session.client,
-                    first.tenants.map((tenant) => tenant.id),
-                ),
             ]);
-            setups = firstSetups.setups;
             const ids = [...new Set([...recent, ...failed].map((run) => run.tenantId))];
             const named =
                 ids.length === 0
@@ -1153,10 +1148,19 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                           },
                       ];
             });
+            /*
+             * A failed run stays in the engine after a second attempt sets the
+             * tenant up, so a failed run needs attention only while its tenant
+             * is still bootstrapping.
+             */
             const seen = new Set<string>();
             failedSetups = failed.flatMap((run) => {
                 const tenant = byId.get(run.tenantId);
-                if (tenant === undefined || seen.has(tenant.id)) {
+                if (
+                    tenant === undefined ||
+                    tenant.status !== 'bootstrapping' ||
+                    seen.has(tenant.id)
+                ) {
                     return [];
                 }
                 seen.add(tenant.id);
@@ -1177,7 +1181,23 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             request.log.warn({ err: error }, 'The provisioning runs were not read.');
             activityUnavailable = true;
         }
+        try {
+            setups = (
+                await readTenantSetups(
+                    session.client,
+                    first.tenants.map((tenant) => tenant.id),
+                )
+            ).setups;
+        } catch (error) {
+            request.log.warn({ err: error }, "The first tenants' setups were not read.");
+        }
 
+        /*
+         * Setting up is the bootstrapping tenants less the ones whose setup
+         * failed. When the runs cannot be read, no failure can be named, so
+         * the figure counts the stalled setups too, and the page says the
+         * activity is unavailable.
+         */
         const stalled = failedSetups.filter((tenant) => tenant.status === 'bootstrapping').length;
         return deploymentOverviewSchema.parse({
             inService,

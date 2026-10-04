@@ -89,7 +89,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed run can flag a tenant a later setup recovered | server.ts | Accept | A failed run needs attention only while its tenant is bootstrapping; the overview test now carries an old failed run for an active tenant, and fails without the fix. |
+| 2 | Setting up over-counts past ten failures or with no runs | server.ts | Accept in part | Documented: with no runs read, the figure counts stalled setups too, and the page says activity is unavailable. Ten failed setups at once is outside the short list. |
+| 3 | Run order is assumed | tenants.ts | Decline | The workflow handler sorts by its audit timestamp, newest first; every provisioning run names its tenant. |
+| 4 | A setups read failure hides under the activity message | server.ts | Accept | The first tenants' setups have their own try. |
+| 5 | The attention list has no total | server.ts | Decline | A short list by design; the roster's status filter shows every suspended tenant. |
+| 6 | Typed reason strings, unexported schemas | server.ts | Decline | The schema parse validates the reasons; nothing else needs the schemas. |
 
 * Result
 

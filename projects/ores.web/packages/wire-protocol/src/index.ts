@@ -95,16 +95,14 @@ export {
     PROVISION_TENANT_TARGET_KIND,
     PROVISION_TENANT_WORKFLOW_TYPE,
     TENANT_SUBJECTS,
-    listTenantsRequestSchema,
     TENANT_SETUP_READ_LIMIT,
+    listTenantsPage,
     readTenant,
     readTenantSetups,
-    searchTenantsPage,
-    readTenantsPage,
     wireTenantPageSchema,
     wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type { ListTenantsRequest, TenantSearch, WireTenantPage } from './tenants.js';
+export type { TenantListQuery, WireTenantPage } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
 export type { PartyPageQuery } from './party-page.js';
 

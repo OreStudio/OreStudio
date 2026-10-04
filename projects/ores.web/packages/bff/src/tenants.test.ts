@@ -117,6 +117,31 @@ function wireRun(
     };
 }
 
+/** The deployment's tenant types, as the type list answers them. */
+const TYPES = {
+    types: [
+        { type: 'production', name: 'Production', display_order: 1 },
+        { type: 'evaluation', name: 'Evaluation', display_order: 2 },
+        { type: 'automation', name: 'Automation', display_order: 3 },
+        { type: 'system', name: 'System', display_order: 4 },
+    ],
+};
+
+/** The calls the roster made to the tenant list, in order. */
+function tenantLists(calls: readonly { subject: string; body: unknown }[]): unknown[] {
+    return calls.filter((call) => call.subject === 'iam.v1.tenants.list').map((call) => call.body);
+}
+
+/** A filter with nothing set, which each case overrides. */
+const NO_FILTER = {
+    type: null,
+    status: null,
+    id_one_of: null,
+    type_one_of: null,
+    status_one_of: null,
+    search: null,
+};
+
 function buildTestServer(
     reply: unknown,
     mode: 'system-administration' | 'application' = 'system-administration',
@@ -135,6 +160,12 @@ function buildTestServer(
             schema: { parse: (value: unknown) => unknown },
         ): Promise<unknown> {
             calls.push({ subject, body });
+            if (subject === 'iam.v1.tenant_types.list') {
+                return schema.parse(TYPES);
+            }
+            if (subject === 'dq.v1.badge_definitions.list') {
+                return schema.parse({});
+            }
             if (subject === 'workflow.v1.instances.list') {
                 if (runs instanceof Error) {
                     throw runs;
@@ -177,7 +208,7 @@ function buildTestServer(
 describe('GET /api/tenants', () => {
     it('lists one page of the tenants the search answers', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            success: true,
+            result: { outcome: 'ok' },
             tenants: [wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active')],
             total: 1,
         });
@@ -207,32 +238,35 @@ describe('GET /api/tenants', () => {
             setupUnavailable: false,
             hiddenTestCount: 1,
         });
-        // The page leaves test infrastructure out, a second search counts what
-        // that hid, and the run read follows.
-        expect(calls).toHaveLength(3);
-        expect(calls[0]?.subject).toBe('iam.v1.tenants.search');
-        expect(calls[0]?.body).toEqual({
-            search: '',
-            type_filter: '',
-            status_filter: '',
-            exclude_type_filter: 'automation',
-            offset: 0,
-            limit: 100,
-        });
-        expect(calls[1]?.subject).toBe('iam.v1.tenants.search');
-        expect(calls[1]?.body).toMatchObject({ type_filter: 'automation', limit: 1 });
+        /*
+         * The page names the types it shows, which leaves the system tenant and
+         * test infrastructure out; a second read counts what the second hid.
+         */
+        expect(tenantLists(calls)).toEqual([
+            {
+                offset: 0,
+                limit: 100,
+                order: { field: 'code', descending: false },
+                filter: { ...NO_FILTER, type_one_of: ['production', 'evaluation'] },
+            },
+            {
+                offset: 0,
+                limit: 1,
+                order: { field: 'code', descending: false },
+                filter: { ...NO_FILTER, type_one_of: ['automation'] },
+            },
+        ]);
 
         await server.close();
     });
 
     /*
-     * The search, the page and the total are the server's, which leaves the
-     * system tenant out beside the registry; the route passes the person's
-     * search and page through and corrects nothing.
+     * The search, the page and the total are the server's; the route passes the
+     * person's search and page through and corrects nothing.
      */
     it('passes the search and the page to the server and its total back', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            success: true,
+            result: { outcome: 'ok' },
             tenants: [wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active')],
             total: 37,
         });
@@ -245,20 +279,24 @@ describe('GET /api/tenants', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ totalCount: 37 });
-        expect(calls[0]?.body).toMatchObject({ search: 'acme', offset: 20, limit: 10 });
+        expect(tenantLists(calls)[0]).toMatchObject({
+            offset: 20,
+            limit: 10,
+            filter: { search: 'acme' },
+        });
 
         await server.close();
     });
 
     /*
      * Test infrastructure is hidden by default, so a person asking to see it,
-     * or asking for that type by name, gets the search with nothing left out
-     * and no hidden count to report.
+     * or asking for that type by name, gets it in the page and no hidden count
+     * to report. The system tenant stays out either way.
      */
     it('leaves nothing out when test tenants are asked for', async () => {
         for (const url of ['/api/tenants?includeTest=true', '/api/tenants?type=automation']) {
             const { server, sessionId, calls } = buildTestServer({
-                success: true,
+                result: { outcome: 'ok' },
                 tenants: [],
                 total: 0,
             });
@@ -271,19 +309,21 @@ describe('GET /api/tenants', () => {
 
             expect(response.statusCode).toBe(200);
             expect(response.json()).toMatchObject({ hiddenTestCount: 0 });
-            expect(calls[0]?.body).toMatchObject({ exclude_type_filter: '' });
-            // No second search: nothing was hidden, so there is nothing to count.
-            expect(calls.filter((call) => call.subject === 'iam.v1.tenants.search')).toHaveLength(
-                1,
-            );
+            expect(tenantLists(calls)).toEqual([
+                expect.objectContaining({
+                    filter: expect.objectContaining({
+                        type_one_of: ['production', 'evaluation', 'automation'],
+                    }),
+                }),
+            ]);
 
             await server.close();
         }
     });
 
-    it('passes the type and status filters to the search', async () => {
+    it('passes the type and status filters to the list', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            success: true,
+            result: { outcome: 'ok' },
             tenants: [],
             total: 0,
         });
@@ -295,10 +335,12 @@ describe('GET /api/tenants', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toMatchObject({
-            type_filter: 'evaluation',
-            status_filter: 'suspended',
-            exclude_type_filter: 'automation',
+        expect(tenantLists(calls)[0]).toMatchObject({
+            filter: {
+                type: 'evaluation',
+                status: 'suspended',
+                type_one_of: ['production', 'evaluation'],
+            },
         });
 
         await server.close();
@@ -306,7 +348,7 @@ describe('GET /api/tenants', () => {
 
     it('refuses a page that is not a whole number', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            success: true,
+            result: { outcome: 'ok' },
             tenants: [],
             total: 0,
         });
@@ -323,8 +365,33 @@ describe('GET /api/tenants', () => {
         await server.close();
     });
 
+    it('never asks for the system tenant, even by its type', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            result: { outcome: 'ok' },
+            tenants: [],
+            total: 0,
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants?type=system',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(tenantLists(calls)[0]).toMatchObject({
+            filter: { type: 'system', type_one_of: ['production', 'evaluation'] },
+        });
+
+        await server.close();
+    });
+
     it('answers an empty roster for a deployment that holds no tenant of its own', async () => {
-        const { server, sessionId } = buildTestServer({ success: true, tenants: [], total: 0 });
+        const { server, sessionId } = buildTestServer({
+            result: { outcome: 'ok' },
+            tenants: [],
+            total: 0,
+        });
 
         const response = await server.inject({
             method: 'GET',
@@ -351,7 +418,7 @@ describe('GET /api/tenants', () => {
     it('joins each tenant with the latest run that provisions it', async () => {
         const { server, sessionId, calls } = buildTestServer(
             {
-                success: true,
+                result: { outcome: 'ok' },
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],
@@ -382,17 +449,17 @@ describe('GET /api/tenants', () => {
             stepCount: 7,
             error: 'Seeding failed.',
         });
-        expect(calls[2]?.subject).toBe('workflow.v1.instances.list');
         /*
          * Every filter is on the wire, because the server refuses a request
          * that leaves one out; the ones not in use are empty.
          */
-        expect(calls[2]?.body).toEqual({
+        expect(calls.find((call) => call.subject === 'workflow.v1.instances.list')?.body).toEqual({
             limit: 1000,
             status_filter: '',
             type_filter: 'provision_tenant_workflow',
             target_kind_filter: 'tenant',
             target_id_filter: '',
+            target_ids_filter: [ACME_TENANT],
         });
 
         await server.close();
@@ -401,7 +468,7 @@ describe('GET /api/tenants', () => {
     it('answers the roster and says so when the runs cannot be read', async () => {
         const { server, sessionId } = buildTestServer(
             {
-                success: true,
+                result: { outcome: 'ok' },
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],
@@ -427,7 +494,7 @@ describe('GET /api/tenants', () => {
     });
 
     it('refuses a request with no session', async () => {
-        const { server } = buildTestServer({ success: true, tenants: [], total: 0 });
+        const { server } = buildTestServer({ result: { outcome: 'ok' }, tenants: [], total: 0 });
 
         const response = await server.inject({ method: 'GET', url: '/api/tenants' });
 
@@ -444,7 +511,7 @@ describe('GET /api/tenants', () => {
     it('refuses a session that is acting inside a tenant', async () => {
         const { server, sessionId, calls } = buildTestServer(
             {
-                success: true,
+                result: { outcome: 'ok' },
                 tenants: [
                     wireTenant(ACME_TENANT, 'acme_corporation', 'Acme Corporation', 'active'),
                 ],

@@ -33,6 +33,7 @@ Tenants are identified by:
 :profile:                uuid-identified-lookup
 :system_tenant_visible:  true
 :default_order:          name
+:guard_reads:            true
 :END:
 
 =:system_tenant_visible:= is stated because a tenant row is stored under the
@@ -41,6 +42,12 @@ Tenants are identified by:
 is filtered to =tenant_id = <the caller's tenant>=, which no row of this table
 satisfies, so a tenant can be listed but never read by key -- and a read by key
 is what a history request, a delete and a single-record read all do.
+
+=:guard_reads:= is stated because the registry names every tenant the
+deployment holds. The roster reads it through =iam.v1.tenants.list=, and a
+read of every tenant is the deployment's to give: the list and the get need
+=iam::tenants:read=, which a person holds only in system administration and
+the reporting service holds to schedule each tenant's reports.
 
 It is not a widening of what a caller may see. The row that filter excluded is
 the caller's own tenant, and a tenant admin is the one person who should see it.
@@ -117,6 +124,7 @@ std::string(faker::company::companyName())
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:filterable: true
 :END:
 
 Tenant type classification (FK to tenant_types). The synthetic
@@ -162,6 +170,7 @@ std::string(faker::word::noun()) + ".example.com"
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:filterable: true
 :END:
 
 Tenant lifecycle status (FK to tenant_statuses).

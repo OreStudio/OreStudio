@@ -42,7 +42,6 @@ set(files
     "session_samples_operations_commands_tests.cpp"
     "signup_operations_commands_tests.cpp"
     "tenant_commands_tests.cpp"
-    "tenant_roster_operations_commands_tests.cpp"
     "tenant_status_commands_tests.cpp"
     "tenant_type_commands_tests.cpp"
 )

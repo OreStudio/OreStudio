@@ -127,43 +127,44 @@ last edited the row.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the roster | List the tenants the deployment holds | =iam.v1.tenants.search= | exists |
-| Read the tenants | Read the row's code, name, hostname, type and status | carried by =iam.v1.tenants.search= | exists |
-| An installation with none | Answer an empty page | carried by =iam.v1.tenants.search= | exists |
-| A tenant that is not active | Read the lifecycle status | carried by =iam.v1.tenants.search= | exists |
-| Find one among many | Page, search and filter the roster | =iam.v1.tenants.search= | exists |
-| Leave test tenants out | Hide the automation type unless asked | =iam.v1.tenants.search= | exists |
+| Open the roster | List the tenants the deployment holds | =iam.v1.tenants.list= | exists |
+| Read the tenants | Read the row's code, name, hostname, type and status | carried by =iam.v1.tenants.list= | exists |
+| An installation with none | Answer an empty page | carried by =iam.v1.tenants.list= | exists |
+| A tenant that is not active | Read the lifecycle status | carried by =iam.v1.tenants.list= | exists |
+| Find one among many | Page, search and filter the roster | =iam.v1.tenants.list= | exists |
+| Leave test tenants out | Hide the automation type unless asked | =iam.v1.tenants.list= | exists |
 | Leave, or go on | Read the chosen tenant for the next operation | =iam.v1.tenants.get= | exists |
 
-=iam.v1.tenants.search= is declared in the operation model
-=ores.iam.tenant_roster_messages=, requires a session and checks
-=iam::tenants:read=. Its request carries a search, a type filter, a status
-filter, a type to leave out, an offset and a limit; its response carries one
-page of tenants and the total that match. The system tenant is never in the
-answer.
+=iam.v1.tenants.list= is the generated list of the tenant registry, on the
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][list contract]]. The model guards its reads, so it checks =iam::tenants:read=.
+Its filter record carries a search over the code, the name and the hostname,
+a type and a status, and a list of the types a row may have; its response
+carries one page in code order and the total that match.
 
-The browser reads it through the BFF route =GET /api/tenants=, which hides the
-automation type unless asked and reports how many tenants that hid, and the
-type and status rows through =GET /api/tenant-types= and
-=GET /api/tenant-statuses=.
+The browser reads it through the BFF route =GET /api/tenants=. The route names
+the types a row may have from the deployment's own type rows, leaving out the
+system type, so the system tenant is never in the answer, and the automation
+type unless asked, reporting how many tenants that hid. It reads the type and
+status rows through =GET /api/tenant-types= and =GET /api/tenant-statuses=,
+and each row's provisioning run with one read that names the tenants on the
+page.
 =iam.v1.tenants.get= is the read the next operation uses to take up the tenant
 the roster chose.
 
 * What is missing
 
-1. *Closed: search, filters and paging.* =iam.v1.tenants.search= searches the
-   code, the name and the hostname, filters by type and status, leaves a type
-   out, pages and counts every match
+1. *Closed: search, filters and paging.* =iam.v1.tenants.list= searches the
+   code, the name and the hostname, filters by type and status, keeps the types
+   it is given, pages and counts every match
    ([[id:4A15EFC1-447A-4573-9BF1-5B9E69A9C7D7][Search and page the tenant roster]],
    [[id:49E680DA-EC29-42A7-89BD-0D40481539A5][Filter the tenant roster by type and status]]).
-2. *Closed: the system tenant is left out by the server.* The search function
-   leaves it out beside the registry, so a caller of the search cannot see it
-   and the BFF no longer corrects the page. The generic list subject still
-   answers it.
-3. *The generic list read checks no permission.* The search checks
-   =iam::tenants:read=; =iam.v1.tenants.list= still checks none, so the BFF's
-   refusal of a session outside system administration remains the boundary for
-   that subject.
+2. *Closed: the system tenant is left out of the roster.* The route names the
+   types a row may have and never the system type, so the server leaves the
+   system tenant out and the page and its total agree. A caller of the list
+   that names no types still reads it; that caller holds =iam::tenants:read=.
+3. *Closed: the list read checks the permission.* The tenant model guards its
+   reads, so =iam.v1.tenants.list= and =iam.v1.tenants.get= check
+   =iam::tenants:read=, as the search did.
 4. *The roster cannot show the tenant's administrator.* The tenant row carries
    no administrator, and no read joins a tenant to the account that runs it.
    So "who runs this tenant" is not answerable from the roster, and a review

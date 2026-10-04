@@ -372,10 +372,11 @@ hold for a row to match.
 
 - *Equals.* Each filterable column has a member of the column's own type, and a
   row matches when its column equals the value. The filterable columns are the
-  ones the model already reads by: the column the entity declares in
+  ones the model already reads by -- the column the entity declares in
   =:list_filter_column:=, and every relation column a scoped read is declared
-  for.
-- *Is one of.* The primary key column and every relation column have a member
+  for -- and every column that declares =:filterable: true=.
+- *Is one of.* The primary key column, every relation column and every
+  filterable column have a member
   that carries a list of the column's type. A row matches when its column
   equals any value in the list. The primary key has a one-of member and no
   equals member, because one key is a =get=. This is how a screen reads the

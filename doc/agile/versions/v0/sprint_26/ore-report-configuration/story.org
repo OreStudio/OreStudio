@@ -53,6 +53,7 @@ documents are not modelled as entities.
 | [[id:DB247C1C-038E-4C39-ACA2-09C687EB2244][Model the curve configuration entities]] | DONE | 2026-10-01 | 2026-10-03 | The curve recipes ORE builds from, currently only partly held as ir_curve_bootstrap_config: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes. |
 | [[id:C1EEE20C-6B2D-488F-9256-0596C8C8D38E][Model the shared reference configuration]] | BACKLOG | | | The ORE configuration the reference and trading components own: conventions, calendars and adjustments, currencies, counterparties, netting set definitions and IBOR fallback, referenced by a run rather than copied into reporting. |
 | [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]] | BACKLOG | | | Replace the workflow-shaped columns on the report definition with a classification that selects the registered workflow and the parameter block it reads. |
+| [[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] | DONE | 2026-10-04 | 2026-10-04 | Store a run document and the configuration documents it names against a report definition, and load them back as the files ORE reads, through one store per document kind. |
 | [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]] | BACKLOG | | | Build the ORE run document and the configuration documents it names from the entities, replacing the current package step that emits trades.msgpack and market_data.msgpack. |
 | [[id:D7968725-7267-44B7-A423-7E3AD5BC06A5][Implement the report configuration registry]] | DONE | | 2026-09-28 | The reporting half as real tables: the definition, its slots, the configuration sets, the parameters and the value domains, with every discriminator a foreign key to a seeded lookup. |
 | [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]] | DONE | 2026-10-02 | 2026-10-02 | The domain vocabularies every configuration file discriminates on: configuration and report kinds, analytic types, value domains, shift families, shift types and shift schemes, risk classes, and the ORE element each maps to. |
@@ -261,6 +262,15 @@ documents are not modelled as entities.
   column in the primary key, unique indexes, exclusion constraint and
   versioning triggers but not in the repository or protocol key, so a party
   supplied by the session lets two parties hold the same convention id.
+
+- **A run's configuration moves through one store per document kind.**
+  =ores.ore.core/store= writes and reads each mapped document, and the run
+  store imports an ORE input directory against a report definition and exports
+  it back as the files the run document names. A binding to conventions means
+  the conventions the session sees, since conventions have no header.
+- **Reporting lookups are read in the system tenant.** Configuration types,
+  analytic types and parameter definitions are seeded once, for the system
+  tenant, so every foreign key to them carries =:use_system_tenant:=.
 
 * Out of scope
 

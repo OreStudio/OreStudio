@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 0170DEC3-FA2E-410E-99BF-7B4029FC9478
+:END:
+#+title: Task: Import a run's configuration from an ORE input directory
+#+description: Store a run document and the configuration documents it names against a report definition, and load them back as the files ORE reads, through one store per document kind.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/import-a-run-configuration-from-an-ore-input-directory
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report definition's whole configuration gets into the database from an ORE input directory, and comes back out as the same files, without writing code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- One store per document kind writes a mapped document and reads it back by its header; the round-trip tests use it rather than their own copies.
+- Importing ORE-Python Example_1 against a report definition stores the run document, the four documents the risk report requires, a configuration row for each and the definition's bindings.
+- Exporting that definition yields ore.xml and the four files, each equal to the original once parsed; conventions may add the world conventions the tenant holds.
+- World conventions are added only when the tenant does not hold them; an import never changes a world row.
+
+* Plan
+
+The reporting overview of 2026-10-03 found the documents modelled but no way in
+or out: only tests wrote them, and nothing read them back to build a run. This
+task builds the way in and the core of the way out; [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input
+from the entities]] puts the way out into the package step.
+
+1. *Stores.* =ores.ore.core/store/document_store= holds one write and one read
+   per document kind, lifted from the round-trip tests, which then use it. A
+   write stamps the session's party; a read selects one document under the
+   session.
+2. *Run store.* =import_run= stores =ore.xml= against a report definition,
+   then each document the run setup names: a configuration row, the document
+   with that configuration's id and name on its header, and a binding in the
+   definition's slot. =export_run= walks the chain back and names each file as
+   the run setup does.
+3. *Fixture.* ORE-Python Example_1, whose run document names exactly the four
+   documents the risk report requires.
+
+Decisions:
+
+- The reporting lookups (configuration types, analytic types, parameter
+  definitions) are seeded for the system tenant only, but five tables checked
+  them in the row's tenant, so no tenant could write a configuration, an
+  analytic or a parameter. Their foreign keys now carry =:use_system_tenant:=,
+  as the report type already did.
+- A binding to conventions means the conventions the session sees: the party's
+  instrument conventions and the tenant's world conventions. Conventions have
+  no header, as the world data capture explains.
+- An import replaces a party convention with the same id and adds a missing
+  world convention, but never changes one the tenant holds. FX conventions are
+  not stored: [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]] gives them a store.
+- Each configuration is named =<import name>/<file>=, and that name goes on the
+  document's header too, so two imports under one party do not collide on the
+  header's natural key.
+- Stress test and credit simulation stores are left for the analytics that
+  bind them; no report type binds them yet.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A report definition's configuration now goes into the database from an ORE input
+directory and comes back out as the same files, through =ores.ore.core/store=.
+
+- =document_store= writes and reads pricing engines, today's market, curve
+  configuration and conventions. The three round-trip tests use it in place of
+  their own copies; the run document round trip moved to the run store test.
+- =run_store::import_run= stores ORE-Python Example_1 against a risk report
+  definition: the run document, the four documents the risk report requires, a
+  configuration row each and the four bindings. =export_run= rebuilds the five
+  files; pricing engines, today's market and curve configuration are equal to
+  the originals once parsed, the run document's setup, markets and analytics
+  match, and the conventions hold every convention the document did.
+- Two model gaps the import exposed are fixed: five reporting tables checked
+  system-tenant lookups in their own tenant, and the yield curve refused the
+  empty =DiscountCurve= ORE allows.
+
+Not done: FX conventions are skipped until [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]];
+an import is not one transaction, so a failure part way leaves what it wrote;
+no service operation or shell command calls the store yet, which [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the
+engine's input from the entities]] adds with the package step.

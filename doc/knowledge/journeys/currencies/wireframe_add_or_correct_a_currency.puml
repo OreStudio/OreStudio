@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+@startuml
+
+salt
+{
+  <b>CURRENCY: EUR (EURO)</b> | [ Back to currencies ]
+  --
+  {#
+    Currency | Value
+    ISO code / numeric | EUR / 978
+    Name | Euro
+    Symbol / fraction symbol | E / c
+    Fractions per unit | 100
+    Rounding type | ^Closest^
+    Rounding precision | 2
+    Monetary nature | ^Fiat^
+    Market tier | ^G10^
+    ORE currency type | ^Major^
+    Spot days / day basis | 2 / 360
+    Change reason | ^Correction^
+  }
+  [ Save currency ]
+  --
+  {
+    {#
+      Countries | Name
+      DE | Germany
+      FR | France
+      IT | Italy
+    } | {#
+      Calendars | Name
+      TARGET | TARGET (Euro area)
+    } | {#
+      Desk groups | Name
+      G11 | Group of eleven
+    }
+  }
+  [ Add country ] | [ Add calendar ] | [ Add to group ]
+  --
+  {#
+    History | Version | Changed by | When | What changed
+    . | 3 | alice | 2026-10-01 | Rounding precision 3 -> 2
+    . | 2 | bob | 2026-07-14 | Market tier G20 -> G10
+    . | 1 | system | 2026-06-26 | Created
+  }
+  [ Open version read-only ] | [ Revert to this version ]
+}
+
+@enduml

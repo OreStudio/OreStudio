@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 9D60A92B-A65F-4474-896C-1C1E751FDEA3
+:END:
+#+title: Currencies and FX journeys
+#+description: Currencies, the countries and calendars they belong to, currency pairs, and the desk groups that gather them.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A currency is reference data many other things lean on: amounts round by it,
+dates settle on its calendars, and desks group it. This group holds the
+journeys that keep a currency and the records around it correct, so that the
+person corrects a currency on one screen instead of visiting one list per
+table.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] | tenant administrator | A currency with its countries, calendars and desk groups, its history, and ORE exchange |
+
+Two more journeys are agreed and not yet written: /Set up a currency pair/ (the
+pair, its convention, the convention's calendars and its classification) and
+/Group currencies for the desk/ (a desk group and its members).
+
+* Related
+
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

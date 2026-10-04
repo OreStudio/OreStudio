@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 8D2C0A98-83B9-4C24-89F0-900DF14B2936
+:END:
+#+title: User Journey: Maintain a classification list
+#+description: A reference data administrator picks one of the short code lists that classify reference data and keeps its rows correct.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator picks one of the short code lists that classify reference data and keeps its rows correct.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the codes that classify our reference data to hold exactly the values we
+use, with names people understand, in the order they expect." The journey is
+done when the chosen list reads correctly and its history shows why it changed.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. No narrower role holds these permissions today.
+The trigger is a value a picker does not offer, a wrong or unclear name, or a
+code the tenant no longer uses. The journey starts at *Classifications*, or at a
+"correct this list" link beside any picker that reads one of these lists, and
+ends when the person leaves the list.
+
+These lists have no goal of their own, so a plain list with its edit form is the
+right screen, as in [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]]. The difference is scale: there are 28
+lists, so the person first chooses which one.
+
+* Steps
+
+1. *Choose the list.* The person opens *Classifications*. The system shows the
+   lists grouped by topic: currencies, calendars, parties, books and
+   portfolios, products and ORE codes, tenors, and market data. The person
+   picks one, or arrives with one already chosen from a picker's link.
+2. *Read the list.* The system lists the rows. Most lists carry a code, a
+   name, a description and a display order. Four lists carry only a code and a
+   description: calendar names, day counters, floating index types and leg
+   types. Tenor anchors carry a code, a description and an order, but no name.
+   The columns follow the list.
+3. *Add a row.* The person enters a new code and the other columns the list
+   carries, states a change reason, and saves. The form follows the list, so a
+   code-only list asks for no name and no order. The system writes it with
+   =must_not_exist=, so a duplicate code is refused instead of overwritten.
+4. *Correct a row.* The person changes the name, description or order. The code
+   is the key and does not change. The system writes it with
+   =must_match_version=.
+5. *Reorder.* On a list that carries an order, the person moves rows. The
+   system writes each moved row's new order. A list without an order is sorted
+   by code and offers no reordering.
+6. *Remove a row.* The person removes a code the tenant no longer uses. The
+   system closes the row; it stays in the history. See /What is missing/ for
+   codes still in use.
+7. *Check the history.* The person opens a row's history. The system shows every
+   version with the field-level difference from the one before, and the person
+   can revert to an older version, which the system writes as a new version.
+8. *Leave.* The person goes back. Every picker that reads the list offers the
+   values it now holds.
+
+No step waits on the server after its reply, and the journey keeps no state.
+
+* Screens and wireframes
+
+One screen with two parts: the lists by topic on the left, and the chosen list
+with its edit form on the right. The person can move between lists without
+leaving the screen.
+
+#+caption: Classifications: the lists by topic, and the chosen list with its edit form and history.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/classifications/wireframe_maintain_a_classification_list.png]]
+
+* Entities composed
+
+The 28 lists, by topic. Every one is versioned and registers a history
+provider; every one has =list=, =get=, =put= and =delete= under the subject
+prefix shown.
+
+#+ATTR_HTML: :class hug-leading
+| Topic | List | Order | Subject prefix |
+|-------+------+-------+----------------|
+| Currencies | [[id:7DD42682-6914-4F4E-907C-D57DBBB89B8A][Monetary Nature]] | order | =monetary_natures= |
+| Currencies | [[id:1DE2BE9C-A783-42A6-988B-96DFA6A0DA08][Rounding Type]] | order | =rounding_types= |
+| Currencies | [[id:284D8D40-D243-4E75-885F-FDA5591FB22F][Currency Market Tier]] | order | =currency_market_tiers= |
+| Currencies | [[id:5D216C96-35D1-47DA-A348-EF639461E57B][Currency Pair Classification]] | order | =currency_pair_classifications= |
+| Calendars | [[id:1A454661-81B5-4F8F-93A6-06547412DD84][Calendar Type]] | order | =calendar_types= |
+| Calendars | [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][Diary Entry Type]] | order | =diary_entry_types= |
+| Calendars | [[id:E4C6E92B-1625-43AE-8129-D01165AB89D8][Calendar Name]] | no order | =calendar_names= |
+| Calendars | [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][Business Day Convention Type]] | order | =business_day_convention_types= |
+| Parties | [[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][Party Type]] | order | =party_types= |
+| Parties | [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][Party Status]] | order | =party_statuses= |
+| Parties | [[id:EB3BE18B-A99C-464E-992B-C98AC421A7B9][Contact Type]] | order | =contact_types= |
+| Books and portfolios | [[id:7D4A2C19-E8B1-4F3A-9C6D-1A5E8B2F7D03][Book Status]] | order | =book_statuses= |
+| Books and portfolios | [[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][Book Purpose Type]] | order | =book_purpose_types= |
+| Books and portfolios | [[id:3C284FE3-1DFC-46BA-A242-33F9A9A634C1][Ledger Feed Type]] | order | =ledger_feed_types= |
+| Books and portfolios | [[id:03728847-1C53-4B1D-AFB1-E83B2C3F3E14][Regulatory Book Type]] | order | =regulatory_book_types= |
+| Books and portfolios | [[id:770F93B6-4363-413A-B923-3BC399125957][Purpose Type]] | order | =purpose_types= |
+| Products and ORE codes | [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][Asset Class Code]] | order | =asset_class_codes= |
+| Products and ORE codes | [[id:40DDDC9B-1913-4B8C-A313-E2D694C5B156][Leg Type]] | no order | =leg_types= |
+| Products and ORE codes | [[id:C5687EB6-A1E5-4E60-BD9A-DA324C91A2C9][Floating Index Type]] | no order | =floating_index_types= |
+| Products and ORE codes | [[id:971124D8-FE93-422C-AE6F-742BAF83FD7A][Day Counter]] | no order | =day_counters= |
+| Products and ORE codes | [[id:D639B3AB-7421-4A7C-A17A-02000709E22F][Day Count Fraction Type]] | order | =day_count_fraction_types= |
+| Products and ORE codes | [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]] | order | =curve_roles= |
+| Tenors | [[id:E63689F3-92E1-48C7-8772-AA6FA6C45D40][Tenor Kind]] | order | =tenor_kinds= |
+| Tenors | [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][Tenor Unit]] | order | =tenor_units= |
+| Tenors | [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][Tenor Anchor]] | order | =tenor_anchors= |
+| Tenors | [[id:28587424-CF9B-40C6-A48C-F26B83861124][Tenor Resolution Algorithm]] | order | =tenor_resolution_algorithms= |
+| Market data | [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][Derivation Kind]] | order | =derivation_kinds= |
+| Market data | [[id:465F0207-EAFD-46EC-851B-6912F86DC2D0][Series Subclass Code]] | order | =series_subclass_codes= |
+
+Currency groups are not here. A group has members, so it is a journey of its
+own in the [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] group.
+
+* Operations and messages
+
+The subjects below are given for one list; every list has the same set under
+its own prefix.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the list | List the rows | =refdata.v1.rounding_types.list= | exists |
+| Add a row | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Add a row | Write a new row | =refdata.v1.rounding_types.put= | exists |
+| Correct a row | Write the changed row | =refdata.v1.rounding_types.put= | exists |
+| Reorder | Write the moved rows | =refdata.v1.rounding_types.put_many= | exists |
+| Remove a row | Close the row | =refdata.v1.rounding_types.delete= | partial |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.rounding_type=) | exists |
+| Check the history | Revert by writing the old values | =refdata.v1.rounding_types.put= | exists |
+
+* What is missing
+
+1. *Removing a code still in use is not refused.* A delete closes the row
+   without checking who refers to it. A currency that uses a removed rounding
+   type keeps the code, and its next save fails, because the currency's
+   validator checks that the code exists. The same holds for every list a
+   record points at. The candidate is an in-use check on delete that names the
+   records still using the code. Until it exists, the screen warns before every
+   removal that records may still use the code.
+2. *Lists ORE defines are editable like any other.* =day_counter=,
+   =calendar_name=, =floating_index_type=, =leg_type= and
+   =business_day_convention_type= hold spellings an ORE document must write
+   exactly. Changing or removing one can produce a document ORE rejects.
+   Calendars mark this with =is_editable=; these lists have no such marker. The
+   candidate is the same marker on the ORE vocabularies. Until then the screen
+   shows these lists read-only, and says why.
+3. *Order is not unique.* On the lists that carry it, =display_order= is a free integer, so two rows may
+   share it and the list order is then undefined. The candidate is a unique
+   index per list, or a stated tie-break by code.
+4. *Only a tenant administrator can run this journey.* No role below
+   =TenantAdmin= holds these permissions.
+
+* Related journeys
+
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — its rounding type, monetary nature and market tier pickers read lists from here
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] — its calendar type and diary entry type pickers read lists from here
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the same pattern for the identity lookups
+
+* Related knowledge
+
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+
+* See also
+
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

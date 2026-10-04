@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 85930439-D6B2-4811-81FB-C28DD3F45F75
+:END:
+#+title: Classifications journeys
+#+description: The short code lists that classify reference data: types, statuses, kinds and the vocabularies ORE documents write.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Reference data is classified by short code lists: types, statuses, kinds, and
+the vocabularies ORE documents write. These lists have no goal of their own, so
+this group is the exception the extraction standard allows: one plain list
+screen, with its edit form and history, serves every list. The person chooses
+the list by topic.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] | tenant administrator | Pick one of 28 code lists by topic and keep its rows correct |
+
+* Related
+
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the same pattern for the identity lookups
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

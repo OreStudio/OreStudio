@@ -211,8 +211,19 @@ mark.hit { background: var(--accent-dim); color: var(--accent-bright); border-ra
 .compare { padding: 1rem 1.25rem; display: grid; gap: 0.875rem; align-content: start; }
 .compare-head { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; align-items: flex-start; }
 .why-line { font-size: 13px; color: var(--ink-muted); }
-.del { background: #3d1418; color: #ffb4ad; text-decoration: line-through; border-radius: 2px; }
-.ins { background: #12361d; color: #aff5b4; border-radius: 2px; }
+.diff { display: grid; gap: 1px; font-size: 13px; }
+.diff .line { display: grid; grid-template-columns: 1.25rem 1fr; padding: 0.125rem 0.5rem; border-radius: 3px; }
+.diff .line .sign { color: var(--ink-faint); user-select: none; }
+.diff .old { background: rgba(248, 81, 73, 0.15); }
+.diff .new { background: rgba(46, 160, 67, 0.15); }
+.diff .old mark { background: rgba(248, 81, 73, 0.45); color: inherit; border-radius: 2px; }
+.diff .new mark { background: rgba(46, 160, 67, 0.45); color: inherit; border-radius: 2px; }
+tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.reason-chip { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 0.0625rem 0.5rem; border-radius: 4px; background: #3a2a0a; color: #f2cc60; border: 1px solid #6b4e12; }
+.note-line { font-style: italic; color: #b3a6e6; font-size: 12px; }
+.compare-pick { display: inline-flex; gap: 0.375rem; align-items: center; font-size: 13px; color: var(--ink-muted); }
+.compare-pick select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.5rem; }
+.check { display: flex; gap: 0.375rem; align-items: center; font-size: 12px; color: var(--ink-faint); }
 td.unchanged { color: var(--ink-faint); }
 </style>
 </head>
@@ -278,7 +289,7 @@ td.unchanged { color: var(--ink-faint); }
   ];
   const REASON_TEXT = Object.fromEntries([...AMEND_REASONS, ...DELETE_REASONS, ['system.new_record', 'New record created during normal operations']].map((r) => [r[0], r[1]]));
 
-  const state = { persona: 'writer', screen: 'home', list: null, code: null, tab: 'details', filter: '', search: '', reordering: null, version: null, onlyChanges: true };
+  const state = { persona: 'writer', screen: 'home', list: null, code: null, tab: 'details', filter: '', search: '', reordering: null, version: null, from: null, onlyChanges: false };
 
   /* History lives here: every row starts at version 1, written by the seed. A few rows carry later versions so the
      History tab has something to compare on first open; any edit made in the prototype adds another. */
@@ -293,7 +304,7 @@ td.unchanged { color: var(--ink-faint); }
   function historyOf(list, row) {
     const key = list.key + '/' + row.code;
     if (!history[key]) {
-      history[key] = [{ version: 1, by: 'ores_iam_service', at: '2026-10-04 22:48', reason: 'system.new_record', note: 'Seeded with the tenant', fields: fieldsOf(list, row) }];
+      history[key] = [{ version: 1, by: 'ores_iam_service', performed: 'ores_refdata_service', at: '2026-10-04 22:48', reason: 'system.new_record', note: 'Seeded with the tenant', fields: fieldsOf(list, row) }];
     }
     return history[key];
   }
@@ -467,47 +478,48 @@ td.unchanged { color: var(--ink-faint); }
       tabs + (state.tab === 'history' ? renderHistory(l, r, h, writer) : details);
   }
 
-  /* The changed characters of a value, the way the server's diff spans mark them: common prefix and suffix kept,
-     the middle struck out or added. */
+  /* The changed characters of a value, the way the server's diff spans mark them: the common prefix and suffix
+     stay plain, the middle is marked on the old line and on the new one. */
   function spans(before, after) {
     let p = 0; while (p < before.length && p < after.length && before[p] === after[p]) p++;
     let s = 0; while (s < before.length - p && s < after.length - p && before[before.length - 1 - s] === after[after.length - 1 - s]) s++;
-    const mid = (t) => t.slice(p, t.length - s);
-    return {
-      before: esc(before.slice(0, p)) + (mid(before) ? '<span class="del">' + esc(mid(before)) + '</span>' : '') + esc(before.slice(before.length - s)),
-      after: esc(after.slice(0, p)) + (mid(after) ? '<span class="ins">' + esc(mid(after)) + '</span>' : '') + esc(after.slice(after.length - s)),
-    };
+    const mark = (t) => esc(t.slice(0, p)) + (t.slice(p, t.length - s) ? '<mark>' + esc(t.slice(p, t.length - s)) + '</mark>' : '') + esc(t.slice(t.length - s));
+    return { before: mark(before), after: mark(after) };
   }
+  function ago(at) { return at === 'Just now' ? 'just now' : at; }
   function renderHistory(l, r, h, writer) {
     const newest = h[h.length - 1].version;
-    const chosen = h.find((v) => v.version === state.version) || h[h.length - 1];
-    const previous = h.find((v) => v.version === chosen.version - 1);
-    const versions = [...h].reverse().map((v) => {
-      const prev = h.find((x) => x.version === v.version - 1);
-      const changed = prev ? v.fields.filter(([k, val], i) => prev.fields[i] && prev.fields[i][1] !== val).map(([k]) => k) : [];
-      return '<button class="version" data-version="' + v.version + '" aria-selected="' + (v.version === chosen.version) + '">' +
-        '<span class="v">v' + v.version + (v.version === newest ? ' <span class="chip active">current</span>' : '') + '</span>' +
-        '<span class="muted">' + esc(v.by) + ' · ' + esc(v.at) + '</span>' +
-        '<span class="faint">' + esc(prev ? changed.join(', ') || 'No field changed' : 'Created') + '</span></button>';
-    }).join('');
+    const to = h.find((v) => v.version === state.version) || h[h.length - 1];
+    const fromVersion = state.from !== null && state.from < to.version ? state.from : to.version - 1;
+    const from = h.find((v) => v.version === fromVersion);
+    const timeline = [...h].reverse().map((v) =>
+      '<button class="version" data-version="' + v.version + '" aria-selected="' + (v.version === to.version) + '">' +
+        '<span class="v">v' + v.version + ' · ' + esc(ago(v.at)) + (v.version === newest ? ' <span class="chip active">current</span>' : '') + '</span>' +
+        '<span class="muted">Modified by ' + esc(v.by) + '</span>' +
+        '<span class="faint">Performed by ' + esc(v.performed || 'ores_refdata_service') + '</span>' +
+        '<span><span class="reason-chip" title="' + esc(REASON_TEXT[v.reason] || '') + '">' + esc(v.reason) + '</span></span>' +
+        (v.note ? '<span class="note-line">“' + esc(v.note) + '”</span>' : '') +
+      '</button>').join('');
     let table;
-    if (!previous) {
-      table = '<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>' + chosen.fields.map(([k, v]) => '<tr><td class="muted">' + esc(k) + '</td><td>' + esc(v) + '</td></tr>').join('') + '</tbody></table>';
+    if (!from) {
+      table = '<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>' + to.fields.map(([k, v]) => '<tr><td class="muted">' + esc(k) + '</td><td>' + esc(v) + '</td></tr>').join('') + '</tbody></table>';
     } else {
-      const rows = chosen.fields.map(([k, v], i) => {
-        const before = previous.fields[i] ? previous.fields[i][1] : '';
-        if (before === v) return state.onlyChanges ? '' : '<tr><td class="muted">' + esc(k) + '</td><td class="unchanged">' + esc(before) + '</td><td class="unchanged">' + esc(v) + '</td></tr>';
+      const rows = to.fields.map(([k, v], i) => {
+        const before = from.fields[i] ? from.fields[i][1] : '';
+        if (before === v) return state.onlyChanges ? '' : '<tr><td class="muted">' + esc(k) + '</td><td>' + esc(v) + '</td></tr>';
         const d = spans(before, v);
-        return '<tr><td class="muted">' + esc(k) + '</td><td>' + d.before + '</td><td>' + d.after + '</td></tr>';
+        return '<tr class="changed"><td class="muted">' + esc(k) + '</td><td><div class="diff">' +
+          '<div class="line old"><span class="sign">−</span><span>' + d.before + '</span></div>' +
+          '<div class="line new"><span class="sign">+</span><span>' + d.after + '</span></div></div></td></tr>';
       }).join('');
-      table = '<table><thead><tr><th>Field</th><th>Before (v' + previous.version + ')</th><th>After (v' + chosen.version + ')</th></tr></thead><tbody>' + (rows || '<tr><td colspan="3" class="muted">No field changed in this version.</td></tr>') + '</tbody></table>';
+      table = '<table><thead><tr><th style="width:12rem">Field</th><th>Value diff</th></tr></thead><tbody>' + (rows || '<tr><td colspan="2" class="muted">No field changed between these versions.</td></tr>') + '</tbody></table>';
     }
-    const toggle = previous ? '<span class="toggle">' + [['1', 'Only changes'], ['0', 'All fields']].map(([v, t]) => '<button data-only="' + v + '" aria-pressed="' + (state.onlyChanges === (v === '1')) + '">' + t + '</button>').join('') + '</span>' : '';
-    const revert = writer && chosen.version !== newest ? '<button class="btn" data-act="revert" data-v="' + chosen.version + '">Revert to this version</button>' : '';
-    return '<section class="card history"><div class="versions" role="listbox" aria-label="Versions">' + versions + '</div>' +
-      '<div class="compare"><div class="compare-head"><div><h3>' + (previous ? 'What changed in v' + chosen.version : 'v' + chosen.version + ', as created') + '</h3>' +
-      '<p class="why-line">' + esc(chosen.by) + ' · ' + esc(chosen.at) + ' · ' + esc(REASON_TEXT[chosen.reason] || chosen.reason) + (chosen.note ? ' — “' + esc(chosen.note) + '”' : '') + '</p></div>' +
-      '<div class="actions">' + toggle + revert + '</div></div><div class="table-wrap">' + table + '</div></div></section>';
+    const pick = (id, value, max) => '<select id="' + id + '">' + h.filter((v) => v.version <= max).map((v) => '<option value="' + v.version + '"' + (v.version === value ? ' selected' : '') + '>v' + v.version + '</option>').join('') + '</select>';
+    const compare = from ? '<span class="compare-pick">Compare ' + pick('cmp-from', from.version, to.version - 1) + ' → ' + pick('cmp-to', to.version, newest) + '</span>' : '<span class="compare-pick">v' + to.version + ', as created</span>';
+    const toggle = from ? '<span class="toggle">' + [['0', 'All fields'], ['1', 'Only changes']].map(([v, t]) => '<button data-only="' + v + '" aria-pressed="' + (state.onlyChanges === (v === '1')) + '">' + t + '</button>').join('') + '</span>' : '';
+    const revert = writer && to.version !== newest ? '<button class="btn" data-act="revert" data-v="' + to.version + '">Revert to v' + to.version + '</button>' : '';
+    return '<section class="card history"><div class="versions" role="listbox" aria-label="History timeline">' + timeline + '</div>' +
+      '<div class="compare"><div class="compare-head">' + compare + '<div class="actions">' + toggle + revert + '</div></div><div class="table-wrap">' + table + '</div></div></section>';
   }
 
   /* Dialogs */
@@ -521,7 +533,12 @@ td.unchanged { color: var(--ink-faint); }
     const sel = $('dialog-host').querySelector('select[id^="r-"]');
     const sync = () => { if (!sel) return; const need = sel.selectedOptions[0].dataset.need === 'true'; const tag = $(sel.id + '-need'); if (tag) tag.textContent = need ? 'required for this reason' : 'optional'; };
     if (sel) { sel.addEventListener('change', sync); sync(); }
-    const pick = $('f-badge'); if (pick) pick.addEventListener('change', () => { $('f-badge-preview').innerHTML = badge(pick.value); });
+    const pick = $('f-badge');
+    if (pick) {
+      const l = list(state.list);
+      pick.addEventListener('change', () => { $('f-badge-preview').innerHTML = badge(pick.value); });
+      $('f-badge-all').addEventListener('change', (e) => { const v = pick.value; pick.innerHTML = labelOptions(l, v, e.target.checked); pick.value = v; });
+    }
     $('dialog-host').querySelector('[data-dlg="cancel"]').onclick = closeDialog;
     $('dialog-host').querySelector('[data-dlg="ok"]').onclick = () => {
       if (sel && sel.selectedOptions[0].dataset.need === 'true' && !$(sel.id + '-note').value.trim()) { const e = $('dlg-err'); e.textContent = 'This reason needs a commentary.'; e.hidden = false; return; }
@@ -538,10 +555,35 @@ td.unchanged { color: var(--ink-faint); }
       '<div class="field"><label for="f-desc">Description</label><input id="f-desc" value="' + esc(r?.description) + '"></div>' +
       (labelled(l) ? labelField(l, r) : '');
   }
+  /* The labels a picker offers: the ones this list's code domain already uses, then, only when asked, the rest of
+     the catalogue grouped by the domain that uses them. A label belongs to the catalogue, so a list may borrow
+     another's, but the default choice is its own. */
+  function domainBadges(domain) { return [...new Set(Object.values(BADGE_MAPS[domain] || {}))]; }
+  function labelOptions(l, current, all) {
+    const own = domainBadges(domainOf(l));
+    const opt = (code) => '<option value="' + esc(code) + '"' + (code === current ? ' selected' : '') + '>' + esc((BADGES[code] || BADGES.__unmapped__).name) + '</option>';
+    let html = '<optgroup label="' + esc(l.label) + '">' + ['__unmapped__', ...own].map(opt).join('') + '</optgroup>';
+    if (all) {
+      const seen = new Set(['__unmapped__', ...own]);
+      const groups = {};
+      for (const [domain, m] of Object.entries(BADGE_MAPS)) {
+        if (domain === domainOf(l)) continue;
+        for (const code of new Set(Object.values(m))) { if (!seen.has(code) && BADGES[code]) { (groups[domain] = groups[domain] || []).push(code); seen.add(code); } }
+      }
+      const unused = Object.keys(BADGES).filter((code) => !seen.has(code));
+      html += Object.entries(groups).sort().map(([domain, codes]) => '<optgroup label="' + esc(domain.replace(/_/g, ' ')) + '">' + codes.map(opt).join('') + '</optgroup>').join('');
+      if (unused.length) html += '<optgroup label="Not used by any list">' + unused.map(opt).join('') + '</optgroup>';
+    } else if (current !== '__unmapped__' && !own.includes(current)) {
+      html += '<optgroup label="Current">' + opt(current) + '</optgroup>';
+    }
+    return html;
+  }
   function labelField(l, r) {
     const current = r ? badgeOf(l, r.code) : '__unmapped__';
-    const options = Object.entries(BADGES).map(([code, d]) => '<option value="' + esc(code) + '"' + (code === current ? ' selected' : '') + '>' + esc(d.name) + '</option>').join('');
-    return '<div class="field"><label for="f-badge">Label <span class="faint">from the shared label catalogue</span></label><select id="f-badge">' + options + '</select><span id="f-badge-preview">' + badge(current) + '</span></div>';
+    return '<div class="field"><label for="f-badge">Label <span class="faint">from the shared label catalogue</span></label>' +
+      '<select id="f-badge">' + labelOptions(l, current, false) + '</select>' +
+      '<div class="check"><input type="checkbox" id="f-badge-all"><label for="f-badge-all">Show labels from other lists</label></div>' +
+      '<span id="f-badge-preview">' + badge(current) + '</span></div>';
   }
   function setLabel(l, code, badgeCode) {
     const m = BADGE_MAPS[domainOf(l)] || (BADGE_MAPS[domainOf(l)] = {});
@@ -549,7 +591,7 @@ td.unchanged { color: var(--ink-faint); }
   }
   function record(l, r, reason, note) {
     const h = historyOf(l, r);
-    h.push({ version: h[h.length - 1].version + 1, by: PEOPLE[state.persona].name.split(' ')[0].toLowerCase(), at: 'Just now', reason, note, fields: fieldsOf(l, r) });
+    h.push({ version: h[h.length - 1].version + 1, by: PEOPLE[state.persona].name.split(' ')[0].toLowerCase(), performed: 'ores_refdata_service', at: 'Just now', reason, note, fields: fieldsOf(l, r) });
   }
   function addRow(l) {
     dialog('Add a row to ' + l.label, rowFields(l, null) + '<p class="faint">The row is recorded as a new record; no reason is needed.</p>', 'Add row', 'primary', () => {
@@ -608,10 +650,10 @@ td.unchanged { color: var(--ink-faint); }
     'A row opens on its own page with Details and History tabs, the way a tenant opens with its tabs. Its address names the list, the row and the tab.',
     'Edit and Remove are dialogs with the reason and commentary, the way a role is renamed. The always-open form under the table is gone.',
     'Reorder is a mode with Save order and Cancel. The arrows no longer sit on every row.',
-    'History shows the versions on the left and what changed on the right: Before and After per field, the changed characters marked. Who, when, the reason and the commentary head the version instead of appearing as changed fields.',
-    'Only changes or All fields; Revert to this version on an older version.',
+    'History follows the desktop history dialog: a timeline of versions with who modified and performed each, the reason code and the commentary; Compare picks any two versions; each changed field shows a red old line and a green new line, the changed characters marked, as a code review does.',
+    'All fields or Only changes; Revert on an older version.',
     'A person who may only read sees no Edit, Remove, Add or Reorder, and is told why.',
-    'Labels come from the shared label catalogue, the badge definitions and mappings the tenant screens already paint with. Seventeen of the lists have seeded labels; a row with none shows Unmapped. Edit lets the label be chosen from the catalogue.',
+    'Labels come from the shared label catalogue, the badge definitions and mappings the tenant screens already paint with. Seventeen of the lists have seeded labels; a row with none shows Unmapped. Edit offers the labels this list already uses; the rest of the catalogue only on request, grouped by the list that uses them.',
     'Assumed, to confirm: a row opens on a page rather than a drawer, and a tenant administrator sees Reference data too.',
   ];
   function renderWhy(open) {
@@ -625,6 +667,9 @@ td.unchanged { color: var(--ink-faint); }
     const view = { home: renderHome, refdata: renderArea, classifications: renderIndex, list: renderList, row: renderRow }[state.screen];
     $('app').innerHTML = view();
     const s = $('search'); if (s) { s.oninput = () => { state.search = s.value; const pos = s.selectionStart; render(); const n = $('search'); n.focus(); n.setSelectionRange(pos, pos); }; }
+    const cf = $('cmp-from'), ct = $('cmp-to');
+    if (cf) cf.onchange = () => { state.from = Number(cf.value); render(); };
+    if (ct) ct.onchange = () => { state.version = Number(ct.value); if (state.from !== null && state.from >= state.version) state.from = null; render(); };
     const f = $('filter'); if (f) { f.oninput = () => { state.filter = f.value; const pos = f.selectionStart; render(); const n = $('filter'); n.focus(); n.setSelectionRange(pos, pos); }; }
   }
 
@@ -640,7 +685,7 @@ td.unchanged { color: var(--ink-faint); }
     const l = state.list && list(state.list);
     if (t.matches('tr[data-row]') && !state.reordering) { go('row', { code: t.dataset.row, tab: 'details' }); return; }
     if (t.dataset.tab) { state.tab = t.dataset.tab; state.version = null; writeHash(); render(); return; }
-    if (t.dataset.version) { state.version = Number(t.dataset.version); render(); return; }
+    if (t.dataset.version) { state.version = Number(t.dataset.version); state.from = null; render(); return; }
     if (t.dataset.only) { state.onlyChanges = t.dataset.only === '1'; render(); return; }
     if (t.dataset.mv) { const i = Number(t.dataset.i), d = Number(t.dataset.mv); const rows = [...state.reordering]; [rows[i], rows[i + d]] = [rows[i + d], rows[i]]; state.reordering = rows; render(); return; }
     switch (t.dataset.act) {

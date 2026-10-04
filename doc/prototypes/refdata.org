@@ -41,11 +41,14 @@ directly, for example =refdata/#screen=list&list=rounding-type= or
   *Label* column. Clicking a row opens it.
 - *One row* opens with *Details* and *History* tabs. *Edit* and *Remove* are
   dialogs that ask for the reason and the commentary; *Edit* also chooses the
-  row's label from the catalogue.
-- *History* lists the versions on the left and shows what changed in the chosen
-  one on the right: each changed field before and after, with the changed
-  characters marked. Who, when, the reason and the commentary head the version.
-  *Only changes* or *All fields*, and *Revert to this version* on an older one.
+  row's label. The picker offers the labels this list already uses; the rest of
+  the catalogue, grouped by the list that uses each label, only on request.
+- *History* follows the desktop history dialog the user manual shows: a
+  timeline of versions, each with who modified and performed it, its reason
+  code and its commentary; *Compare* picks any two versions; and each changed
+  field shows the old value on a red line and the new one on a green line, the
+  changed characters marked, as a code review shows a diff. *All fields* or
+  *Only changes*, and *Revert* on an older version.
 - The bar at the bottom switches between a person who may change reference data
   and one who may only read it; the reader sees no actions and is told why.
 

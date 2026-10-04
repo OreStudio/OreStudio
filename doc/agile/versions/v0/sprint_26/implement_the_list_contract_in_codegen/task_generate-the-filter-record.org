@@ -106,7 +106,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | has_filter and has_filter_record could disagree | core.py, templates | Decline | They differ only when the protocol is off, and the service includes the protocol header, so no model has a service without the record. |
+| 2 | _protocol_enabled parses the model again | core.py | Decline | One parse per entity per run; threading the document through the enrichment costs more than it saves. |
+| 3 | Search has no length bound | service template | Accept | At most 256 characters, refused with filter_too_large; spec and a tenant test. |
+| 4 | Folding depends on the database locale | list_filter.hpp | Accept | Comment says a C ctype folds ASCII alone. |
+| 5 | A one-of list cannot ask for null | task | Accept | Recorded as a decision; an equals member asks for null. |
+| 6 | Two places use sqlgen internals | stated_order.hpp | Decline | Every generated paged read and count compiles through them, so an upgrade that breaks them fails the build. |
+| 7 | Namespace closing comments | list_filter.hpp | Decline | The repository closes namespaces with a bare brace. |
+| 8 | Inline call-argument fragments in the template | service template | Decline | Matches the conditional arguments the template already uses for the order. |
 
 * Result
 
@@ -135,6 +142,11 @@ A generated list now applies its filter record.
   members combined, totals, the service and its bound).
 - *Verified:* full build with no errors or warnings; ctest 90 of 90 after the
   database was recreated for main's schema.
+- *A one-of list holds values, not null.* Its element type is the column's
+  value type, so it cannot ask for "this value or null"; an equals member set
+  to null asks for null.
+- *Search is bounded.* At most 256 characters, refused with
+  =filter_too_large=, because each searchable column is scanned whole.
 - *Left for the next task:* the roster's type and status filters are not
   relations, so they have no equals member; moving the roster decides how it
   narrows by them.

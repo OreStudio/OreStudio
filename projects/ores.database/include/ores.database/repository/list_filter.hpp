@@ -127,7 +127,9 @@ inline sqlgen::dynamic::Condition one_of(const std::string& column,
  * Both sides are folded by the database, so letters outside ASCII fold as
  * the database folds them, and the text is matched literally: removing every
  * occurrence of it shortens the column exactly when the column contains it,
- * so no character in it is a wildcard. A null column contains nothing.
+ * so no character in it is a wildcard. A null column contains nothing. The
+ * folding is the database's lower, which follows its locale: a database whose
+ * ctype is C folds ASCII letters alone.
  */
 inline sqlgen::dynamic::Condition contains_any(std::initializer_list<std::string> columns,
                                                const std::string& text) {

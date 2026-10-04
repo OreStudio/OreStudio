@@ -187,3 +187,17 @@ TEST_CASE("the service refuses a one-of list longer than 1000 values", tags) {
     CHECK(r.result.code == "filter_too_large");
     CHECK(r.tenants.empty());
 }
+
+TEST_CASE("the service refuses a search longer than 256 characters", tags) {
+    database_helper h;
+    ores::iam::service::tenant_service service(system_context(h));
+
+    ores::iam::messaging::list_tenants_request request;
+    request.filter = tenants_filter{.search = std::string(257, 'a')};
+    const auto r = service.list_tenants(request);
+    CHECK(r.result.outcome == ores::utility::domain::outcome::invalid);
+    CHECK(r.result.code == "filter_too_large");
+
+    request.filter = tenants_filter{.search = std::string(256, 'a')};
+    CHECK(service.list_tenants(request).result.outcome == ores::utility::domain::outcome::ok);
+}

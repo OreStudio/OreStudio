@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trading-without-workspaces
-#+pr:
+#+pr: 2620
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2620][#2620]] | [trading] Remove the workspace from every trading entity |
 
 * Review
 

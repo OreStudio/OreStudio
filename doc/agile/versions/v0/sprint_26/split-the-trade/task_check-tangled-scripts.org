@@ -82,6 +82,9 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Found in PR 2603: three earlier pull requests added recipes whose tangled scripts were never committed, and CI passed them. | shell-script-drift.yml | Accept | =git diff= ignores untracked files; the check now lists them too. |
+| 2 | PR 2605 review: the job comment still says only "a diff". | shell-script-drift.yml | Accept | It names untracked scripts too. |
+| 3 | PR 2605 review: a stale script stops the step before the untracked list prints. | shell-script-drift.yml | Decline | CI fails either way, and the local check shows both. |
+| 4 | PR 2605 review: the workflow does not run on a modeling-only change. | shell-script-drift.yml | Decline | A regenerated recipe changes doc/recipes/shell, which the filter covers; codegen drift catches an unregenerated model. |
 
 * Result
 

@@ -40,7 +40,8 @@ at a link from a currency, and ends when the person leaves the pair.
 2. *Name the pair.* For a new pair, the person picks the base and the quote
    currency. The system builds the pair code as =BASE/QUOTE=. If the quote
    currency has the higher base precedence, the system offers to swap the
-   legs, because the pair code is stored in base-precedence order. The person
+   legs. Base-precedence order is the stored convention, and this screen
+   enforces it; the server does not (see /What is missing/). The person
    picks the classification: major, minor or exotic.
 3. *Set the convention.* The person sets the quoting convention on the same
    screen: the pip factor, the tick size in pips, the decimal places for
@@ -120,7 +121,10 @@ register a history provider.
    exists without the convention it is meant to have one of. The candidate is
    one operation that writes both in one transaction. Until then the screen
    writes the pair, then the convention, and if the second write fails it says
-   so and keeps the convention form open for a retry.
+   so and keeps the convention form open for a retry. A pair found later
+   without a convention opens with an empty convention form and a notice that
+   the convention is missing, so the half-written pair can be completed from
+   *Find the pair*.
 2. *The pair code is not checked against its legs.* The insert validates that
    the base, the quote and the classification exist, but not that the pair code
    is =BASE/QUOTE=, that the legs differ, or that they are in base-precedence

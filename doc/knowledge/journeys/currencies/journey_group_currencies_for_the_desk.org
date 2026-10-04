@@ -48,8 +48,10 @@ leaves the groups.
 5. *Remove a member.* The person removes a currency from the group. The system
    deletes that row; the currency itself is untouched.
 6. *Remove a group.* The person removes a group the desk no longer uses. The
-   system first removes its members, then closes the group. See
-   /What is missing/.
+   system first removes its members, then closes the group. The order matters:
+   the two calls are not atomic, and a failure between them leaves an open group
+   with no members, which is safe and can be retried. The reverse order would
+   leave members pointing at a closed group. See /What is missing/.
 7. *Check the history.* The person opens a group's history. The system shows
    every version of the group with the field-level difference from the one
    before, and the person can revert to an older version.

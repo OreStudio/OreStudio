@@ -112,6 +112,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/messaging/series_classification_rule_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/ores.marketdata.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/oresmd/pillar_quote_key.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/presentation/feed_binding_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/presentation/market_fixing_history_field_mapper.hpp"

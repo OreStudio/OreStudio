@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: EE61043C-CBCE-44B5-85E9-A3E433FBA3EF
+:END:
+#+title: ores.inbox
+#+description: Approval requests and notifications: what waits on a person's decision, and what a person is told.
+#+type: ores.codegen.component
+#+component_kind: composite
+#+parts: api core service
+#+level: cross
+#+filetags: :inbox:component:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+name: inbox
+#+full_name: ores.inbox
+#+brief: Approvals and notifications
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.inbox component diagram
+#+caption: ores.inbox
+[[file:ores.inbox.png][file:ores.inbox.png]]
+
+* Summary
+
+=ores.inbox= holds what waits on a person and what a person is told. Its
+approval requests are one record and one queue for anything in the system that
+needs a decision: a member asking for a role, a trade awaiting operational
+authorisation, a change awaiting a second authoriser. Its notifications are
+raised by any component, about any activity, to named people or to everyone
+who holds a permission. The two are designed in [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]].
+
+* Inputs
+
+- Approval requests raised by any component, and the decisions people make on
+  them.
+- Notifications raised by any component.
+
+* Outputs
+
+- The approval queue and each person's own requests, over NATS.
+- Each person's notifications, their unread count and their read state.
+- Change events on every entity, which the owning component of an approval
+  kind listens to in order to apply an approval.
+
+* Entry points
+
+- =api/= — domain types, JSON I/O and the NATS protocol.
+- =core/= — repositories, services and NATS handlers.
+- =service/= — the NATS service entry point.
+
+* Dependencies
+
+- =ores.iam= — accounts and permissions, which requests and notifications name.
+- =ores.service= — the NATS service host.
+- =ores.database= — persistence.
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the design of the approval record.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the design of the notifications.

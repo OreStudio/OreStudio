@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 8B89B1C4-0410-4967-BBE1-02F6630B8A35
+:ores.cpp.scaffold.enabled: true
+:END:
+#+title: ores.inbox.core
+#+description: Approval requests and notifications: repositories, services and NATS handlers.
+#+type: ores.codegen.component
+#+component_kind: core
+#+level: cross
+#+filetags: :inbox:core:component:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+name: inbox.core
+#+full_name: ores.inbox.core
+#+brief: Approval and notification core
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.inbox.core component diagram
+#+caption: ores.inbox.core
+[[file:ores.inbox.core.png][file:ores.inbox.core.png]]
+
+* Summary
+
+=ores.inbox.core= implements the inbox: the repositories over the approval and
+notification tables, the services that enforce the approval rules and resolve a
+notification's audience, and the NATS handlers that serve them.
+
+* Inputs
+
+- NATS requests on the inbox subjects.
+- The approval and notification tables in PostgreSQL.
+
+* Outputs
+
+- Replies to the inbox subjects, and change events on every entity.
+
+* Entry points
+
+- =include/ores.inbox.core/repository/= — the generated repositories.
+- =include/ores.inbox.core/service/= — the services.
+- =include/ores.inbox.core/messaging/= — the NATS handlers and their registrar.
+
+* Dependencies
+
+- =ores.inbox.api= — the contract.
+- =ores.iam.core= — the request context and permission checks.
+- =ores.database= — persistence.
+
+* See also
+
+- =ores.inbox.service= — the process that hosts these handlers.

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: CE14C6C8-1D26-40A2-9BC4-1476C7BB5BC5
+:END:
+#+title: Task: Scaffold the ores.inbox component
+#+description: Initial task for: Build approval requests and notifications
+#+type: task
+#+level: s1
+#+filetags: :build_approvals_and_notifications:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-approvals-and-notifications
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One component, ores.inbox, holds the approval requests and the notifications as designed: a relational schema generated from codegen models, the approval rules enforced in the database and the service, notifications raised by any component, and the role request built as the first kind with its screens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- ores.inbox is a standard codegen component: overviews, generated CMake, C++, SQL, protocol and web types.
+- The approval and notification tables match the accepted schema, with keys and foreign keys and no JSON.
+- A member asks for a role, an administrator answers from the queue, and both are told through in-application notifications.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -242,12 +242,33 @@ describe('the classification writes', () => {
             },
         );
         expect(response.statusCode).toBe(409);
+        expect(response.json()).toMatchObject({ message: 'Stale.' });
         expect(calls[0]?.body).toMatchObject({
             change: {
                 write: { code: 'Up' },
                 precondition: { kind: 'must_match_version', version: 1 },
             },
         });
+    });
+
+    it('says what a conflict means when the server sends no words', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.rounding_types.put': {
+                result: { outcome: 'conflict', code: '', message: '' },
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/classifications/rounding-type/rows',
+            {
+                code: 'Up',
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(409);
+        expect((response.json() as { message: string }).message).toContain('Reload and try again');
     });
 
     it('writes a new order in one call', async () => {

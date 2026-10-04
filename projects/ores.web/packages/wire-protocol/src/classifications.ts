@@ -72,6 +72,8 @@ import { resultEnvelopeSchema } from './operations.js';
  */
 interface ClassificationDescriptor extends ClassificationList {
     readonly rows: string;
+    /** Whether the list request carries a point-in-time field, which its decoder requires. */
+    readonly asOf?: true;
     readonly subjects: {
         readonly list: string;
         readonly put: string;
@@ -252,6 +254,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'statuses',
+        asOf: true,
         subjects: {
             list: bookStatusSubjects.list_book_statuses_request,
             put: bookStatusSubjects.put_book_status_request,
@@ -294,6 +297,7 @@ export const CLASSIFICATION_LISTS: readonly ClassificationDescriptor[] = [
         shape: 'named',
         editable: true,
         rows: 'types',
+        asOf: true,
         subjects: {
             list: regulatoryBookTypeSubjects.list_regulatory_book_types_request,
             put: regulatoryBookTypeSubjects.put_regulatory_book_type_request,
@@ -535,7 +539,12 @@ function rowsReplySchema(field: string) {
     });
 }
 
-/** Reads every row of one list, in display order where the list has one. */
+/**
+ * Reads every row of one list, in display order where the list has one.
+ *
+ * The generated list contract orders by key only, so the rows are read in key
+ * order and sorted here.
+ */
 export async function listClassificationRows(
     caller: AuthenticatedCaller,
     list: ClassificationDescriptor,
@@ -545,25 +554,30 @@ export async function listClassificationRows(
         {
             offset: 0,
             limit: ROW_PAGE,
-            order: { field: list.shape === 'plain' ? '' : 'display_order', descending: false },
+            order: { field: '', descending: false },
             filter: null,
+            ...(list.asOf === true ? { as_of: null } : {}),
         },
         rowsReplySchema(list.rows),
     );
     if (reply.result.outcome !== 'ok') {
         throw new OperationFailedError(list.subjects.list, reply.result.message);
     }
-    return reply.rows.map((row) => ({
-        code: row.code,
-        name: row.name,
-        description: row.description,
-        displayOrder: row.display_order ?? null,
-        version: row.version,
-        modifiedBy: row.modified_by,
-        recordedAt: row.recorded_at,
-        reasonCode: row.change_reason_code,
-        commentary: row.change_commentary,
-    }));
+    return reply.rows
+        .map((row) => ({
+            code: row.code,
+            name: row.name,
+            description: row.description,
+            displayOrder: row.display_order ?? null,
+            version: row.version,
+            modifiedBy: row.modified_by,
+            recordedAt: row.recorded_at,
+            reasonCode: row.change_reason_code,
+            commentary: row.change_commentary,
+        }))
+        .sort(
+            (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || a.code.localeCompare(b.code),
+        );
 }
 
 /** What a person writes for one row: the version they read, or none for a new row. */

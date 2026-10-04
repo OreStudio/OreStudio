@@ -134,7 +134,7 @@ describe('listClassificationRows', () => {
                 commentary: '',
             },
         ]);
-        expect(calls[0]?.body).toMatchObject({ order: { field: 'display_order' } });
+        expect(calls[0]?.body).toMatchObject({ order: { field: '' } });
     });
 
     it('orders a plain list by its key, which has no display order', async () => {
@@ -147,6 +147,31 @@ describe('listClassificationRows', () => {
         const rows = await listClassificationRows(caller, list('day-counter'));
         expect(rows[0]).toMatchObject({ code: 'A360', name: '', displayOrder: null });
         expect(calls[0]?.body).toMatchObject({ order: { field: '' } });
+    });
+
+    it('states no point in time to a list whose request carries one', async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.book_statuses.list': { result: ok, statuses: [] },
+            'refdata.v1.rounding_types.list': { result: ok, types: [] },
+        });
+        await listClassificationRows(caller, list('book-status'));
+        await listClassificationRows(caller, list('rounding-type'));
+        expect(calls[0]?.body).toMatchObject({ as_of: null });
+        expect(calls[1]?.body).not.toHaveProperty('as_of');
+    });
+
+    it('answers the rows in display order, whatever order they were read in', async () => {
+        const { caller } = fakeCaller({
+            'refdata.v1.rounding_types.list': {
+                result: ok,
+                types: [
+                    { version: 1, code: 'B', name: 'B', display_order: 20 },
+                    { version: 1, code: 'A', name: 'A', display_order: 10 },
+                ],
+            },
+        });
+        const rows = await listClassificationRows(caller, list('rounding-type'));
+        expect(rows.map((row) => row.code)).toEqual(['A', 'B']);
     });
 
     it('fails when the server refuses the read', async () => {

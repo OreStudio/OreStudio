@@ -106,14 +106,25 @@ function editableListFor(
     return list;
 }
 
-/** Turns a refused write into the status that says why. */
+/**
+ * Turns a refused write into the status that says why.
+ *
+ * The server sends no words with some refusals, so a conflict says what it
+ * means rather than showing the person an empty error.
+ */
 function answer(outcome: ClassificationWrite): void {
     if (outcome.done) {
         return;
     }
     switch (outcome.outcome) {
         case 'conflict':
-            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message:
+                    outcome.message === ''
+                        ? 'This row changed since it was read, or its code is already in the list. Reload and try again.'
+                        : outcome.message,
+            });
         case 'invalid':
             throw invalidRequest(outcome.message);
         case 'denied':

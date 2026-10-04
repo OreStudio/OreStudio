@@ -115,6 +115,30 @@ describe('TenantPage', () => {
         expect(html.toLowerCase()).not.toContain('leave');
     });
 
+    /*
+     * The system tenant is the system administrator's own, so nothing on its
+     * screen says another tenant's administrators make the changes.
+     */
+    it('opens the system tenant with its tabs and without the view-only label', () => {
+        const html = render(
+            (client) =>
+                client.setQueryData(['tenant', 'system'], {
+                    ...loaded,
+                    tenant: {
+                        ...loaded.tenant,
+                        id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+                        code: 'system',
+                        name: 'System',
+                        type: 'system',
+                    },
+                }),
+            'system',
+        );
+
+        expect(html).toContain('>People</button>');
+        expect(html).not.toContain('View only');
+    });
+
     it("lists the tenant's parties on the parties tab, each with the party it belongs to", () => {
         const html = render(
             (client) => {

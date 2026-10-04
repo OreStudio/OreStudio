@@ -59,8 +59,9 @@ the ordinary reads do the rest.
    Their session is system administration throughout: the menu, the home page
    and every other read are unchanged by the tabs.
 5. *Refused.* A session that is not in system administration, an account
-   without =iam::tenants:impersonate=, the system tenant, or a tenant no row
-   names is refused with a reason. A suspended or terminated tenant can be
+   without =iam::tenants:impersonate=, or a tenant no row names is refused
+   with a reason. The system tenant is the system administrator's own, so its
+   parties and people are read as the session, with nothing entered. A suspended or terminated tenant can be
    read: its data is still there, and reading it is how an administrator
    decides what to do with it.
 

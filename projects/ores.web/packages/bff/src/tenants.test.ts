@@ -32,10 +32,8 @@ import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
  * The roster the system administration area reads.
  *
  * What is asserted here is the translation from the wire's names, and the one
- * decision the route makes: the registry is system-scoped, so the system tenant
- * is a row like any other and it is the deployment's own bookkeeping rather
- * than a tenant somebody set up. A roster that lists it answers with one tenant
- * too many, and a count that includes it is off by one.
+ * decision the route makes: test tenants are hidden unless asked for. The
+ * system tenant is a row like any other, and the roster lists it.
  */
 
 const config: Config = {
@@ -239,15 +237,15 @@ describe('GET /api/tenants', () => {
             hiddenTestCount: 1,
         });
         /*
-         * The page names the types it shows, which leaves the system tenant and
-         * test infrastructure out; a second read counts what the second hid.
+         * The page names the types it shows, which leaves test infrastructure
+         * out; a second read counts what it hid.
          */
         expect(tenantLists(calls)).toEqual([
             {
                 offset: 0,
                 limit: 100,
                 order: { field: 'code', descending: false },
-                filter: { ...NO_FILTER, type_one_of: ['production', 'evaluation'] },
+                filter: { ...NO_FILTER, type_one_of: ['production', 'evaluation', 'system'] },
             },
             {
                 offset: 0,
@@ -312,7 +310,7 @@ describe('GET /api/tenants', () => {
             expect(tenantLists(calls)).toEqual([
                 expect.objectContaining({
                     filter: expect.objectContaining({
-                        type_one_of: ['production', 'evaluation', 'automation'],
+                        type_one_of: ['production', 'evaluation', 'automation', 'system'],
                     }),
                 }),
             ]);
@@ -339,7 +337,7 @@ describe('GET /api/tenants', () => {
             filter: {
                 type: 'evaluation',
                 status: 'suspended',
-                type_one_of: ['production', 'evaluation'],
+                type_one_of: ['production', 'evaluation', 'system'],
             },
         });
 
@@ -365,7 +363,7 @@ describe('GET /api/tenants', () => {
         await server.close();
     });
 
-    it('never asks for the system tenant, even by its type', async () => {
+    it('asks for the system tenant by its type', async () => {
         const { server, sessionId, calls } = buildTestServer({
             result: { outcome: 'ok' },
             tenants: [],
@@ -380,7 +378,7 @@ describe('GET /api/tenants', () => {
 
         expect(response.statusCode).toBe(200);
         expect(tenantLists(calls)[0]).toMatchObject({
-            filter: { type: 'system', type_one_of: ['production', 'evaluation'] },
+            filter: { type: 'system', type_one_of: ['production', 'evaluation', 'system'] },
         });
 
         await server.close();

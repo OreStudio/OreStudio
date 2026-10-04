@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 8EA442E6-4198-43A2-81AC-9145C69C00B8
+:END:
+#+title: Task: Show the system tenant
+#+description: List the system tenant on the Tenants roster and open it like any other tenant, reading its parties and people as the session's own tenant.
+#+type: task
+#+level: s1
+#+filetags: :web:tenancy:make_the_shell_speak_plainly:sprint_26:v0:
+#+owner: marco
+#+branch: feature/show-the-system-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A system administrator sees the system tenant on the Tenants roster and opens it like any other tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The roster lists the system tenant, and the type filter offers System.
+- The system tenant opens on its overview, parties and people tabs.
+- Its parties and people are read as the session's own tenant, with no entry into a tenant.
+- The home page counts stay those of the tenants somebody set up.
+
+* Plan
+
+- The roster, the tenant screen and the tenant tabs each refused the system
+  tenant on purpose, as the deployment's own bookkeeping. The user wants to see
+  it, so lift all three refusals.
+- The system tenant is the system administrator's own, so entering it would
+  mean entering the tenant the session already acts in. Read it as the session
+  instead: when the tenant named is the session's tenant, the read runs on the
+  session's own client.
+- Keep the home page counts as they are: they count the tenants somebody set
+  up.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The system tenant is on the roster and opens like any other tenant.
+
+- *Roster.* The roster lists the system tenant, and the type filter offers
+  *System*. Test tenants stay hidden unless asked for.
+- *Tenant screen.* =/api/tenants/system= answers the tenant, and the screen
+  shows its overview, parties and people tabs. It has no *View only* label,
+  because the system administrators are its own.
+- *Read as the session.* A tab read on the session's own tenant runs on the
+  session's client and enters nothing. Every other tenant is still entered for
+  the read.
+- *Home.* The counts and the short tenant list still leave the system tenant
+  out.
+
+Acceptance is met: BFF 136, web 232 and protocol 70 tests pass, including a
+case that reads the system tenant's parties with no entry, and a screen case
+for the system tenant. Not checked live with a sign-in.

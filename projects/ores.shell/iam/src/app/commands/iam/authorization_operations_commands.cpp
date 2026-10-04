@@ -83,7 +83,7 @@ void authorization_operations_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_assign_role(std::ref(out), std::ref(session), std::move(args));
         },
-        "assign-role <account_id> <role_id>");
+        "assign-role <account_id> <role_id> <change_reason_code> <change_commentary>");
 
     menu->Insert(
         "assign-role-by-name",
@@ -168,7 +168,7 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
         return;
     }
 
-    constexpr std::size_t positional_count = 2;
+    constexpr std::size_t positional_count = 4;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -180,6 +180,8 @@ void authorization_operations_commands::process_assign_role(std::ostream& out,
     try {
         req.account_id = parsed->positionals[next++];
         req.role_id = parsed->positionals[next++];
+        req.change_reason_code = parsed->positionals[next++];
+        req.change_commentary = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

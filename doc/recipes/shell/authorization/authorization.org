@@ -17,20 +17,20 @@ This file documents declared operations at the shell, one section per command. E
 :ID: 1798A90E-6894-519C-8B53-17F4C968C190
 :END:
 
-Sends =assign_role_request= and prints =assign_role_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =role_id=, in that order. The caller must have established a session first.
+Sends =assign_role_request= and prints =assign_role_response=, so the shape is the protocol's and the meaning is the service's. It reads =account_id=, =role_id=, =change_reason_code=, =change_commentary=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-authorization assign-role <account_id> <role_id>
+authorization assign-role <account_id> <role_id> <change_reason_code> <change_commentary>
 #+end_example
 
 It is addressed at =iam.v1.roles.assign=.
 
 #+name: authorization-assign-role
 #+begin_src ores-shell :tangle authorization-assign-role.ores :exports none
-authorization assign-role __none__ __none__
+authorization assign-role __none__ __none__ __none__ __none__
 #+end_src
 
 ** =assign-role-by-name=

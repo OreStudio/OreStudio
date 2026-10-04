@@ -37,6 +37,8 @@
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::iam::messaging {
 
@@ -95,6 +97,20 @@ using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 using ores::service::messaging::error_reply;
 
+/**
+ * @brief Why a revoke is refused, or nothing when it may go ahead.
+ *
+ * Nobody takes a role away from their own account: an administrator who did
+ * could remove the access they need to put it back, and a change to one's own
+ * access is a decision another person makes.
+ */
+inline std::optional<std::string> authorization_revoke_refusal(const boost::uuids::uuid& caller,
+                                                               const boost::uuids::uuid& account) {
+    if (caller == account)
+        return "You cannot take a role away from yourself.";
+    return std::nullopt;
+}
+
 class authorization_handler {
 public:
     authorization_handler(ores::nats::service::client& nats,
@@ -140,7 +156,12 @@ public:
                                                "Permission denied: iam::roles:assign required"});
                 return;
             }
-            svc.assign_role(sg(req->account_id), sg(req->role_id), ctx.actor());
+            svc.assign_role(sg(req->account_id),
+                            sg(req->role_id),
+                            ctx.actor(),
+                            req->change_commentary.empty() ? "Role assigned to account"
+                                                           : req->change_commentary,
+                            req->change_reason_code);
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_response{.success = true});
         } catch (const std::exception& e) {
@@ -186,7 +207,12 @@ public:
                                                "Permission denied: iam::roles:revoke required"});
                 return;
             }
-            svc.revoke_role(sg(req->account_id), sg(req->role_id));
+            const auto account_id = sg(req->account_id);
+            if (const auto refusal = authorization_revoke_refusal(*caller_id, account_id)) {
+                reply(nats_, msg, revoke_role_response{.success = false, .error_message = *refusal});
+                return;
+            }
+            svc.revoke_role(account_id, sg(req->role_id));
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_response{.success = true});
         } catch (const std::exception& e) {
@@ -519,6 +545,13 @@ public:
                 return;
             }
 
+            if (const auto refusal =
+                    authorization_revoke_refusal(*caller_id, accounts.front().id)) {
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{.success = false, .error_message = *refusal});
+                return;
+            }
             auth_svc.revoke_role(accounts.front().id, role->id);
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_by_name_response{.success = true});

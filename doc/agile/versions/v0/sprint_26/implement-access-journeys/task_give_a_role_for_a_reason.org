@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 49701581-4597-4CC8-BCDD-2CE60084037D
+:END:
+#+title: Task: Give a role for a reason
+#+description: Giving a role carries the reason and the note the administrator chose, from an access reason category, and nobody takes a role away from themselves.
+#+type: task
+#+level: s1
+#+filetags: :iam:access:implement-access-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/give-a-role-for-a-reason
+#+pr: 2616
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An administrator gives a role with a reason a person understands, the grant records it, and the server refuses taking a role away from oneself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- iam.v1.roles.assign carries a change reason code and commentary, and the grant row stores them.
+- An access change-reason category offers new joiner, role change, cover for absence and access review.
+- iam.v1.roles.revoke refuses a caller taking a role away from their own account.
+- Tests cover the stored reason, a reason nobody defined, and the self refusal.
+
+* Plan
+
+- The grant row already has =change_reason_code= and =change_commentary=, and
+  its insert trigger validates the code; only the request lacked the fields.
+  Add both to =assign_role_request= in the message model and regenerate, so
+  the protocol, the shell command, the HTTP route and the web types agree.
+- No seeded reason fits a person's access: the ones that apply to a new record
+  are =system.*=. Seed an =access= category with new joiner, role change,
+  cover for absence and access review.
+- An empty reason keeps =system.new_record=, so provisioning, sign-up and the
+  other platform callers do not change.
+- A revoke closes the grant row, which has no place for a closing reason, so
+  revoke carries none; the gap is recorded on the journey.
+- Refuse a revoke whose caller is the account, in one helper both revoke
+  subjects call.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2616][#2616]] | [iam] Give a role for a reason |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | assign-role-by-name records no reason | authorization_handler.hpp | Decline | The screens give a role by id through =iam.v1.roles.assign=; by name is the shell's and provisioning's path, which acts for the platform |
+| 2 | The shell assign-role needs four positionals | authorization_operations_commands.cpp | Decline | Generated from the message model; the generator has no optional positional, and the library recipe passes both |
+| 3 | The self guard sits in the handler, not the service | authorization_handler.hpp | Decline | The handlers are where a person's request arrives; the service's other callers act for the platform, and the guard is about a person |
+| 4 | An unknown reason is refused by the database | authorization_service.cpp | Decline | The trigger is the one place reasons are checked; the screen offers only seeded reasons and shows the server's words |
+| 5 | Standard headers sit between boost headers | authorization_handler.hpp | Accept | Moved after the boost headers |
+| 6 | Deploying needs a database recreate | ores.sql populate | Decline | Stated in the PR; the user agreed the recreate, done |
+
+* Result
+
+Giving a role carries a reason, and nobody takes a role away from themselves.
+
+- =iam.v1.roles.assign= carries =change_reason_code= and =change_commentary=,
+  stored on the grant; an empty reason records =system.new_record=. The shell's
+  =assign-role= takes both, and its recipe passes =access.new_joiner=.
+- The =access= change-reason category holds =access.new_joiner=,
+  =access.role_change=, =access.cover_for_absence= and =access.access_review=.
+- =iam.v1.roles.revoke= and =iam.v1.roles.revoke-by-name= refuse a caller
+  taking a role away from their own account.
+
+Tests, on a recreated database: iam core 208 cases (four new), shell iam 315,
+HTTP iam 22 pass. Not done: a reason on a revoke, which needs somewhere to
+store it.

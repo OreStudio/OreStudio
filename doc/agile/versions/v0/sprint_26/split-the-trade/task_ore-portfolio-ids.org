@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-portfolio-ids
-#+pr:
+#+pr: 2610
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2610][#2610]] | [trading] Resolve ORE portfolio ids to portfolios |
 
 * Review
 

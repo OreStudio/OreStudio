@@ -397,7 +397,13 @@ market_observation_repository::read_as_of_buckets(
         if (!row[0])
             throw std::runtime_error("read_as_of_buckets: a row has no bucket ordinal");
 
-        const auto ordinal = std::stoul(*row[0]);
+        std::size_t ordinal = 0;
+        try {
+            ordinal = std::stoul(*row[0]);
+        } catch (const std::logic_error&) {
+            throw std::runtime_error("read_as_of_buckets: bucket ordinal '" + *row[0] +
+                                     "' is not a number");
+        }
         if (ordinal >= result.size())
             throw std::runtime_error("read_as_of_buckets: bucket ordinal " + *row[0] +
                                      " is outside the " + std::to_string(result.size()) +

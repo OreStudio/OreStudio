@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 8866D24E-D95B-43C6-A65B-546807E049DD
+:END:
+#+title: No service reads or writes another component's tables
+#+description: A service touches only its own component's tables and reaches other components through their NATS operations; cross-service table access is an architectural error.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A service reads and writes only its own component's tables. It reaches another component's data only through that component's NATS operations, and the service registry grants it DML on its own prefix alone. Code that needs several components' data, such as a mapper or an importer, orchestrates their operations; it never links their core libraries to call their repositories.
+
+*Why:* On 2026-10-04 the operator ruled that cross-service table access is an architectural error, after the run store in ores.ore.core wrote reporting, analytics and refdata tables directly and the ORE service needed DML grants on all three to run live. The tests passed only because they connect as a privileged user, so the error surfaced in the live shell test, not in ctest.
+
+*How to apply:* Before a service calls a repository, check the table's component is the service's own. When a feature spans components, add document or entity operations to each owner and orchestrate them, with a workflow saga where writes must be undone together. A grant beyond a service's own prefix in projects/modeling/service_registry.org is a sign of this error, not a fix for it.

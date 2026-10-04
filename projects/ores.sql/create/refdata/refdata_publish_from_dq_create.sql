@@ -4205,7 +4205,9 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- A calendar event's natural key is (calendar_code, event_date,
 -- diary_entry_type). Its id belongs to the tenant: an event the tenant
 -- already has keeps its id, and a new one gets a fresh id, so the
--- artefact's own id never reaches a tenant.
+-- artefact's own id never reaches a tenant. replace_all closes only the
+-- events the dataset does not carry, after the upsert, so it keeps the
+-- ids of the events it carries.
 create or replace function ores_refdata_publish_calendar_events_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4238,15 +4240,6 @@ begin
 
     if p_mode not in ('upsert', 'insert_only', 'replace_all') then
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
-    end if;
-
-    if p_mode = 'replace_all' then
-        update ores_refdata_calendar_events_tbl
-        set valid_to = current_timestamp
-        where tenant_id = p_target_tenant_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
-
-        get diagnostics v_deleted = row_count;
     end if;
 
     for r in
@@ -4293,6 +4286,23 @@ begin
         end if;
     end loop;
 
+    if p_mode = 'replace_all' then
+        update ores_refdata_calendar_events_tbl e
+        set valid_to = clock_timestamp()
+        where e.tenant_id = p_target_tenant_id
+          and e.valid_to = ores_utility_infinity_timestamp_fn()
+          and not exists (
+              select 1 from ores_dq_calendar_events_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn()
+                and dq.calendar_code = e.calendar_code
+                and dq.event_date = e.event_date
+                and dq.diary_entry_type = e.diary_entry_type
+          );
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
     return query
     select 'inserted'::text, v_inserted
     where v_inserted > 0
@@ -4313,7 +4323,11 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- exists in the tenant, so it leaves their schedule_code and
 -- schedule_step_count empty. Once the schedules are published, this
 -- function sets those columns from the system tenant's rows, for every
--- resolution whose schedule the tenant now has.
+-- resolution whose schedule the tenant now has. It does so in every mode,
+-- insert_only included: the columns are derived from the schedules, and a
+-- tenant has no other way to get them. replace_all closes only the
+-- schedules the dataset does not carry, after the upsert, so no schedule a
+-- resolution names is closed while the call runs.
 create or replace function ores_refdata_publish_tenor_schedules_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4347,15 +4361,6 @@ begin
 
     if p_mode not in ('upsert', 'insert_only', 'replace_all') then
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
-    end if;
-
-    if p_mode = 'replace_all' then
-        update ores_refdata_tenor_schedules_tbl
-        set valid_to = current_timestamp
-        where tenant_id = p_target_tenant_id
-          and valid_to = ores_utility_infinity_timestamp_fn();
-
-        get diagnostics v_deleted = row_count;
     end if;
 
     for r in
@@ -4403,6 +4408,21 @@ begin
             v_updated := v_updated + 1;
         end if;
     end loop;
+
+    if p_mode = 'replace_all' then
+        update ores_refdata_tenor_schedules_tbl t
+        set valid_to = clock_timestamp()
+        where t.tenant_id = p_target_tenant_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+          and not exists (
+              select 1 from ores_dq_tenor_schedules_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn()
+                and dq.code = t.code
+          );
+
+        get diagnostics v_deleted = row_count;
+    end if;
 
     insert into ores_refdata_tenor_convention_resolutions_tbl (
         convention_code, tenant_id, tenor_code, version,

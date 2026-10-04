@@ -26,6 +26,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {

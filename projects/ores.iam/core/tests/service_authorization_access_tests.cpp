@@ -41,6 +41,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 namespace {
 
@@ -390,11 +391,12 @@ TEST_CASE("assign_role_records_the_reason_it_was_given_for", tags) {
     auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
 
     authorization_service svc(h.context());
-    svc.assign_role(member.id, r.id, "priya", "Covers the settlement desk", "access.cover_for_absence");
+    svc.assign_role(
+        member.id, r.id, h.db_user(), "Covers the settlement desk", "access.cover_for_absence");
 
     const auto access = svc.read_own_access(member.id);
     REQUIRE(access.roles.size() == 1);
-    CHECK(access.roles.front().assigned_by == "priya");
+    CHECK(access.roles.front().assigned_by == h.db_user());
     CHECK(access.roles.front().change_reason_code == "access.cover_for_absence");
     CHECK(access.roles.front().change_commentary == "Covers the settlement desk");
 }
@@ -407,7 +409,7 @@ TEST_CASE("assign_role_without_a_reason_records_a_new_record", tags) {
     auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
 
     authorization_service svc(h.context());
-    svc.assign_role(member.id, r.id, "ores.iam.service");
+    svc.assign_role(member.id, r.id, h.db_user());
 
     const auto access = svc.read_own_access(member.id);
     REQUIRE(access.roles.size() == 1);
@@ -422,7 +424,8 @@ TEST_CASE("assign_role_refuses_a_reason_nobody_defined", tags) {
     auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
 
     authorization_service svc(h.context());
-    CHECK_THROWS(svc.assign_role(member.id, r.id, "priya", "", "access.because_i_said_so"));
+    CHECK_THROWS_WITH(svc.assign_role(member.id, r.id, h.db_user(), "", "access.because_i_said_so"),
+                      Catch::Matchers::ContainsSubstring("change_reason_code"));
     CHECK(svc.read_own_access(member.id).roles.empty());
 }
 

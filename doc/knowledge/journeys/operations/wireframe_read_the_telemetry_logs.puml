@@ -1,0 +1,47 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>READ THE TELEMETRY LOGS</b>
+  --
+  {
+    ^Last hour^ | ^Any level^ | ^Any source^ | component | tag
+    "Search the message" | [ Search ]
+  }
+  --
+  {#
+    Time | Level | Source | Name | Component | Message
+    14:31:02.114 | (ERROR) | server | ores.compute.service | ores.compute.poller | fetch failed, retrying
+    14:30:58.902 | (WARN) | server | ores.compute.service | ores.compute.poller | retrying fetch
+    14:30:44.201 | (INFO) | server | ores.iam.service | ores.iam.auth | session opened
+  }
+  --
+  Showing 1-100 of 2431 entries | [ Previous ] | [ Next ]
+  --
+  <b>NOTHING MATCHES</b>
+  --
+  No entry matches the filter in this range. Widen the range or drop a filter.
+  Filters combine with AND; the store holds server lines today, so no entry
+  has the source client.
+}
+
+@enduml

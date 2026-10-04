@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: EE26E58C-F389-4E82-BF96-EC5324F9F795
+:END:
+#+title: User Journey: Watch the message bus
+#+description: A system administrator watches the message bus: the NATS server's health and each stream's stored messages over time.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator watches the message bus: the NATS server's health and each stream's stored messages over time.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know whether the message bus is healthy." The system administrator
+reads one screen and gets the NATS server's vitals and one row per stream. The
+journey is done when the administrator can say whether messages are moving,
+whether any consumer is slow, and whether a stream is growing without bound.
+
+* Actor and trigger
+
+The system administrator: an account that holds the =SuperAdmin= role and acts
+from the system tenant, in *system administration mode*. The shell offers this
+screen in the *Operations* area, so a tenant administrator cannot reach it.
+
+The trigger is a symptom one level up: results are late, a service is quiet,
+or a stream is filling a disk. The administrator opens the bus screen and
+reads the vitals and the streams. The journey ends when the bus is accounted
+for, healthy or not.
+
+This journey writes nothing. It reads samples that the telemetry service
+collects from the NATS monitoring API and stores.
+
+* Steps
+
+1. *Open the bus screen.* The administrator opens the bus screen in the
+   *Operations* area. The system shows one screen: a vitals panel, a stream
+   table with one row per stream, a time range, and a chart that follows the
+   chosen stream. The administrator expects the bus the deployment is actually
+   running, as the telemetry service sees it.
+2. *Choose the range.* The administrator sets the start and the end of the
+   window. The reads answer the samples inside it — the start inclusive, the
+   end exclusive — newest first, capped at the read's limit. Ten minutes
+   answers a live question; a day answers an incident review.
+3. *Read the vitals.* The system states the newest sample's current numbers —
+   client connections and the server's memory — and the movement across the
+   range: inbound and outbound messages and bytes. Those four counters are
+   running totals since the NATS server started, so the screen shows the
+   difference between the samples at the ends of the range. The slow-consumer
+   count reads the same way: a number that grows across the range is the
+   event the screen exists to catch.
+4. *Read the streams.* The system gives each stream its name, the messages and
+   bytes it currently stores, and its active consumers. A stream whose stored
+   bytes only grow, with no consumer moving them, is the one to look at.
+5. *Follow one stream.* The administrator opens the chart for the chosen
+   stream: messages and bytes over the range. The legacy client charted the
+   queue it ran itself; the installation no longer runs a queue of its own, so
+   the chart now reads the JetStream stream samples for the same question.
+6. *No samples yet.* The deployment is up but the range holds no sample: the
+   telemetry service's poller has not made its first pass, the range predates
+   it, or the poller stopped. The screen answers an empty range and says so.
+   The poll runs on a timer, so the way to tell a stopped poller from a quiet
+   bus is the services screen — see [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]].
+7. *Leave, or go on.* The administrator leaves the screen, or follows the
+   question behind the symptom: the services that publish, the grid whose
+   results travel this bus, or the logs the bus carried.
+
+* Screens and wireframes
+
+One screen. The vitals panel, the stream table, the range control and the
+stream chart are panels of that screen, because the administrator reads them
+as one answer. The screen is read-only: it creates nothing, changes nothing
+and destroys nothing.
+
+#+caption: Watch the message bus: the server vitals, the stream table and the chart for one stream.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_watch_the_message_bus.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =nats_server_sample= | Connections, memory, message and byte totals, and slow consumers | [[id:5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE][ores.telemetry.nats_samples]] |
+| =nats_stream_sample= | One row per stream: stored messages, stored bytes and active consumers | [[id:5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE][ores.telemetry.nats_samples]] |
+
+A sample is a point in time, not a state. The screen draws every rate from two
+samples, and the model states which fields are running totals since the server
+started and which are current at the sample time; the screen keeps the two
+kinds apart.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Before the screen: the service polls NATS and stores samples | (no subject: the poller reads the NATS monitoring API) | — | exists |
+| Open the screen | Read the server samples in a time range | =telemetry.v1.nats.server-samples.list= | exists |
+| Read the vitals | Read connections, memory, message and byte totals, slow consumers | carried by =telemetry.v1.nats.server-samples.list= | exists |
+| Read the streams | Read one stream's samples in a time range | =telemetry.v1.nats.stream-samples.list= | exists |
+| Read the streams — the names to read by | List the streams that have samples | — | missing |
+| Follow one stream | Read the chosen stream over the range | =telemetry.v1.nats.stream-samples.list= | exists |
+| No samples yet | Answer an empty list | carried by both reads | exists |
+
+Both list subjects are served by the
+[[id:5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE][nats_samples model]]. Each request
+carries a query with a start, an end and a limit; the stream query adds the
+stream name. Each reply carries =success=, =message= and the samples the query
+selected, newest first. Nothing publishes these messages: the telemetry
+service polls the NATS HTTP monitoring API on a timer and stores what it
+finds. The endpoint and the interval are configuration, with
+=http://localhost:8222= and 30 seconds as the defaults.
+
+The browser reads them through hand-written BFF routes on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
+the operations screens yet; the prototype adds =GET /api/operations/bus=,
+which reads both lists and marks the running totals.
+
+* What is missing
+
+1. *Nothing lists the streams.* The stream read names one stream, and no read
+   says which streams exist or have samples, so the table depends on names
+   from somewhere else. The candidate is a read of the stream names present in
+   the range, so the screen draws its own table.
+2. *Rates are left to the reader.* Every message and byte field is a running
+   total since the server started, so each reader subtracts two samples to get
+   a rate, and every reader must subtract the same way. The candidate is for
+   the read to answer deltas or rates over the range beside the totals.
+3. *The limit truncates in silence.* The query carries a limit — 1000 by
+   default — and no offset and no total. At the 30-second poll interval the
+   limit covers about eight hours, so a week-long range answers the newest
+   1000 samples and says nothing about the rest. The candidates are paging, a
+   total on the reply, or an explicit statement that the reply is capped.
+4. *A slow-consumer count cannot name the consumer.* The sample keeps a
+   running count, and the monitoring API knows which connection is slow. The
+   screen can show that slow consumers exist, not which ones. The candidate is
+   per-connection detail on the sample, or a current count beside the total.
+5. *The reads check no permission.* The handlers authenticate the token and
+   then serve any signed-in account. The candidate is a dedicated permission
+   the model guards, as the tenant reads guard =iam::tenants:read=.
+
+* Related journeys
+
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the telemetry service is the poller behind these samples; an empty range starts there
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the work and the results this bus carries; idle nodes and a busy bus is one situation
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the lines behind a slow consumer or a refused publish
+- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] — the build on both ends of a connection that misbehaves
+
+* Related knowledge
+
+- [[id:5B7269B0-E9F1-4985-A3A0-1B7AF9F727BE][ores.telemetry.nats_samples]]
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]]
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]]
+- [[id:A3F2E1D0-B4C5-6789-ABCD-EF0123456789][NATS Monitor Design]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]]
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]]

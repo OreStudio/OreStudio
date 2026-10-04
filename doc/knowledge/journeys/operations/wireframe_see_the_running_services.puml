@@ -1,0 +1,47 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>SEE THE RUNNING SERVICES</b>
+  --
+  {
+    Updated 14:32:05 | [ Refresh ] | Watching: every 30 s
+  }
+  {#
+    Service | Instance | Version | Last heartbeat
+    ores.compute.service | 6f2c19a1 | v0.0.25 | 4 s ago
+    ores.compute.service | c47e5508 | v0.0.24 | 21 s ago
+    ores.iam.service | 91b0f33d | v0.0.25 | 12 s ago
+    ores.telemetry.service | 2a9977f6 | v0.0.25 | 2 s ago
+  }
+  --
+  Read-only. One row per instance that reported in the last five minutes.
+  Two instances of one service are two rows. The version is the release the
+  instance sends with its heartbeat.
+  --
+  <b>NOTHING REPORTED IN THE LAST FIVE MINUTES</b>
+  --
+  No service instance has reported. The installation may be starting,
+  or the services may have stopped.
+}
+
+@enduml

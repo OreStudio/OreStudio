@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 5E970C7F-68EA-42BF-B73E-997C4A003762
+:END:
+#+title: Operations journeys
+#+description: The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The installation has a life of its own, and somebody has to be able to look at
+it: which services are up, what the compute grid is doing, whether the message
+bus is moving, what the logs recorded, and which builds sit under it all.
+These journeys are the operator's view of a running system, and they replace
+the telemetry and super-admin windows of the legacy =ores.qt= client.
+
+Four journeys belong to the system administrator. The last belongs to any
+signed-in person: the versions screen answers "what am I talking to", which a
+member asks as often as an administrator. No journey here changes anything —
+each one reads samples, summaries or lines that the installation writes about
+itself. That is also what keeps them cheap to build: the server already
+stores everything they show, with the gaps recorded below.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | system administrator | Every service instance that reported in the last five minutes: its version and its last heartbeat |
+| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | system administrator | The host and work summary, and one row per node with its tasks, bytes and heartbeat age |
+| [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | system administrator | The NATS server's vitals and one row per stream: messages, bytes and consumers over time |
+| [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | system administrator | The lines behind a symptom, found by time, level, source, component, tag or session |
+| [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | any signed-in person | The client build, the server build, and the database fingerprint |
+
+* Where the legacy screens went
+
+The legacy =ores.qt= client carried a telemetry window and a set of super-admin
+windows. Every one of them has a disposition, so no screen is lost by
+accident. *Covered* means a journey carries it; *changed* means a journey
+carries it in a new form; *deferred* means it has no journey yet, and none is
+planned here; *dropped* means a web client does not need it.
+
+#+ATTR_HTML: :class hug-leading
+| Legacy screen | What it did | Disposition |
+|---------------+-------------+-------------|
+| =TelemetryMdiWindow= | A session tree with session details, and a live log view beside it | Covered: the sessions by [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]], the logs by [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] |
+| =SessionAuditDialog= | One session's audit: activity, bytes and details | Covered by [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]], which keeps the live byte samples |
+| =AboutDialog= | Version, build metadata and system info, with a Database row hardcoded to "not connected" | Covered by [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]]; the Database row is the gap that journey records |
+| =TelemetrySettingsDialog= | Logging settings for the desktop client: level, file and console sinks | Dropped: it configures the desktop client, not the installation |
+| =ConnectionBrowserMdiWindow= | The desktop client's saved connections | Dropped: the browser holds one connection, so there is no roster to browse |
+| =EventViewerDialog= | The desktop client's internal event bus | Deferred: a developer tool with no user goal; the telemetry logs carry what a person needs |
+| =ShellMdiWindow= | The embedded REPL | Dropped: the shell runs as its own client |
+| =ComputeDashboardMdiWindow= | The grid summary | Covered by [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] |
+| =HostMdiWindow=, =HostDetailDialog= | The host registry and one host's details | Covered in part: the node rows by [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]; host maintenance by [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] |
+| =QueueMonitorMdiWindow=, =QueueChartWindow= | The client's own message queue, and one stream's charts | Changed: [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] reads the NATS stream samples, because the installation runs no queue of its own |
+| =AppVersionMdiWindow=, =AppVersionDetailDialog= | The app version registry | Deferred to [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] |
+| =ComputeConsoleWindow= | The BOINC-style console: tasks, transfers and hosts | Covered in part: the Hosts tab by [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]; tasks and transfers by [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] |
+| =SchedulerMonitorMdiWindow= | Live per-job scheduler status | Deferred: the scheduler's journeys are a later extraction |
+
+* Related
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist that read the legacy screens and agreed this catalogue
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+- [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] — the parent extraction this group belongs to
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

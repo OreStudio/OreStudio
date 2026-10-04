@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/provision-the-fomc-meeting-schedule
-#+pr:
+#+pr: 2625
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -174,7 +174,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2625][#2625]] | [refdata] Publish the FOMC meeting schedule to every tenant |
 
 * Review
 

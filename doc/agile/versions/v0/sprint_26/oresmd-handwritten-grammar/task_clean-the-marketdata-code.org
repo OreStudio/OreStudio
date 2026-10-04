@@ -150,6 +150,10 @@ via its "Verifies task" field.
 | 1 | PR 2597: =read_latest_for_series= builds the maximum timestamp on every call. | =market_observation=, =market_fixing= models | Accepted | Part 3: a static, as the other reads. |
 | 2 | PR 2597: =read_as_of= and =read_as_of_buckets= skip a short row. | =market_observation= model | Accepted | Part 3: they throw, and so does a missing or out-of-range bucket ordinal. |
 | 3 | Part 3 local review: comment-only edits change no behaviour. | hand-written marketdata | Accepted | Checked by the build, ctest =ores.marketdata= 5/5 and the marketdata drift check. |
+| 4 | PR 2630: no test reaches the new throws. | =market_observation= model | Not changed | A test needs the row mapping split from the query call; [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] takes it. |
+| 5 | PR 2630: =std::stoul= on a malformed ordinal throws without context. | =market_observation= model | Accepted | It throws the same =runtime_error= with the ordinal text. |
+| 6 | PR 2630: the templates still write =} // namespace=. | templates | Not changed | Hand-written files are not regenerated; [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]] covers the generated ones. |
+| 7 | PR 2630: one moved comment uses =///= where its neighbour uses =//=. | =curve_republish_resolver.hpp= | Accepted | It uses =//=. The comment in =crm_ingest_bridge.hpp= keeps =///=, as its neighbours do. |
 
 * Result
 

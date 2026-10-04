@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 186CA823-4F1F-4C31-BA9A-283F268D74BA
+:END:
+#+title: Show the picture wherever an account appears
+#+description: Every web screen that shows an account shows the person's picture beside it, or their initials when they have none.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Wherever ores.web shows an account (a list row, a page header, a 'given by' or 'held by' line, a dialog about a person, the signed-in person in the header) it shows that account's picture beside the name, falling back to initials when the account has no picture or it fails to load.
+
+*Why:* The user asked for it on 2026-10-04 while reviewing the access screens prototype: 'this should be a general thing, whenever there is an account the image should be displayed'.
+
+*How to apply:* Use the shared Avatar component (ores.web/packages/web/src/ui/Images.tsx) for every account a screen names; a tenant read from system administration uses the tenant image route. Check new screens and prototypes for any account named without a picture.

@@ -52,13 +52,18 @@ own prototype there.
 | Save role | The save shows what it adds and removes, and who holds the role | One save changes access for everyone who holds it |
 | Changes take effect on the next sign-in | Within 30 minutes, when the sign-in renews | Refresh reads the permissions again |
 
+Every account shows its picture: in the header, the people list, a person's
+page, who gave a role and who holds one. The user made this a general rule on
+2026-10-04, for every screen that shows an account.
+
 Two small guards are drawn: a person cannot take their own administration
 away, and a role that people hold cannot be deleted.
 
 ** What is real and what is not
 
 The permission catalogue, its descriptions and the eight human roles with
-their bundles are exported from the deployment's seed data. The people, their
+their bundles are exported from the deployment's seed data, and the five
+pictures are Acme's seeded staff photos, cropped small. The people, their
 grants and the reasons are mock.
 
 The server does not yet support everything drawn:

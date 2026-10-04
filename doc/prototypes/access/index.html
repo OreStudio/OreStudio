@@ -182,6 +182,9 @@ dd { margin: 0.125rem 0 0; }
 @media (prefers-reduced-motion: no-preference) { .tile, .btn, tbody tr { transition: border-color .15s, background .15s; } }
 @media (max-width: 40rem) { .place { display: none; } .hide-sm { display: none; } }
 /* Access */
+.face { border-radius: 50%; object-fit: cover; flex: none; background: var(--accent-dim); }
+.who-cell { display: flex; align-items: center; gap: 0.625rem; }
+.inline-face { display: inline-flex; align-items: center; gap: 0.375rem; vertical-align: middle; }
 .head > .actions { display: flex; }
 .chip[data-person-link] { color: var(--ink); }
 .held { display: grid; gap: 0; }
@@ -289,6 +292,9 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const roleOf = (name) => roles.find((r) => r.name === name);
   const personOf = (login) => people.find((p) => p.login === login);
+  /* Wherever an account is shown, its picture is shown with it. */
+  const face = (login, size) => `<img class="face" src="photos/${login}.jpg" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  const byLine = (login) => personOf(login) ? `<span class="inline-face">${face(login, 16)}${esc(personOf(login).name)}</span>` : esc(login);
 
   /* A code is component::resource:action; the two wildcards are '*' and 'component::*'. */
   function parse(code) {
@@ -345,7 +351,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     const me = PERSONAS[state.persona];
     $('place').textContent = me.place;
     $('menu').innerHTML = MENUS[state.persona].map((m) => `<button data-go="${m.id}" class="${m.soon ? 'soon' : ''}" ${state.screen === m.id || (m.id === 'people' && state.screen === 'person') || (m.id === 'roles' && state.screen === 'role') ? 'aria-current="page"' : ''}>${esc(m.label)}</button>`).join('');
-    $('me').innerHTML = `<span class="avatar">${me.initials}</span><span class="hide-sm">${esc(me.name)}</span>`;
+    $('me').innerHTML = `${face(me.login, 28)}<span class="hide-sm">${esc(me.name)}</span>`;
     $('me-menu').innerHTML = `<div class="who"><div>${esc(me.name)}</div><div class="faint" style="font-size:12px">${esc(me.place)}</div></div>
       <button data-go="mine">My access</button><button data-go="soon:Profile">Profile</button><button data-go="soon:Security">Security</button><button data-go="soon:Sign out">Sign out</button>`;
   }
@@ -373,7 +379,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
         <div class="pad" style="padding-bottom:0.5rem"><h2>Roles you hold</h2></div>
         <div class="list">${person.grants.length === 0 ? '<div class="row muted">You hold no role yet. Ask your tenant administrator.</div>' : person.grants.map((g) => `
           <div class="row"><div class="grow"><div><strong>${esc(label(g.role))}</strong> <span class="muted">· ${esc(roleOf(g.role).description)}</span></div>
-            <div class="attr">Granted by ${esc(g.by)} on ${esc(g.on)} · ${esc(g.reason)}${g.note ? ' · ' + esc(g.note) : ''}</div></div></div>`).join('')}</div>
+            <div class="attr">Given by ${byLine(g.by)} on ${esc(g.on)} · ${esc(g.reason)}${g.note ? ' · ' + esc(g.note) : ''}</div></div></div>`).join('')}</div>
       </div>
       <div class="card pad" style="display:grid;gap:0.75rem">
         <h2>Can I…?</h2>
@@ -426,7 +432,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     return `
       <div class="head"><div><h1>People</h1><p class="muted">Who can sign in to Acme Corporation, and the roles each one holds.</p></div></div>
       <div class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Roles</th><th class="hide-sm">Last signed in</th></tr></thead><tbody>
-        ${people.map((p) => `<tr data-person="${p.login}"><td><div>${esc(p.name)}</div><div class="faint" style="font-size:12px">${esc(p.login)} · ${esc(p.title)}</div></td>
+        ${people.map((p) => `<tr data-person="${p.login}"><td><div class="who-cell">${face(p.login, 36)}<div><div>${esc(p.name)}</div><div class="faint" style="font-size:12px">${esc(p.login)} · ${esc(p.title)}</div></div></div></td>
           <td><div class="chips">${p.grants.length ? p.grants.map((g) => `<span class="chip view">${esc(label(g.role))}</span>`).join('') : '<span class="faint">No role</span>'}</div></td><td class="hide-sm muted">${esc(p.last)}</td></tr>`).join('')}
       </tbody></table></div></div>`;
   }
@@ -436,13 +442,13 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     const self = p.login === PERSONAS[state.persona].login;
     return `
       <div class="crumbs"><button data-go="people">People</button><span>/</span><span>${esc(p.name)}</span></div>
-      <div class="head"><div><h1>${esc(p.name)}</h1><p class="muted">${esc(p.login)} · ${esc(p.title)}</p></div>
+      <div class="head"><div class="who-cell" style="display:flex">${face(p.login, 56)}<div><h1>${esc(p.name)}</h1><p class="muted">${esc(p.login)} · ${esc(p.title)}</p></div></div>
         <div class="actions"><button class="btn primary" id="grant">Give a role</button></div></div>
       <div class="card">
         <div class="pad" style="padding-bottom:0.5rem"><h2>Roles held</h2></div>
         <div class="table-wrap"><table><thead><tr><th>Role</th><th>Given by</th><th>On</th><th>Why</th><th></th></tr></thead><tbody>
           ${p.grants.length === 0 ? '<tr><td colspan="5" class="muted">No role. They can sign in but do nothing yet.</td></tr>' : p.grants.map((g, i) => `<tr><td><strong>${esc(label(g.role))}</strong><div class="faint" style="font-size:12px">${esc(roleOf(g.role).description)}</div></td>
-            <td>${esc(g.by)}</td><td class="muted">${esc(g.on)}</td><td>${esc(g.reason)}${g.note ? `<div class="faint" style="font-size:12px">${esc(g.note)}</div>` : ''}</td>
+            <td>${byLine(g.by)}</td><td class="muted">${esc(g.on)}</td><td>${esc(g.reason)}${g.note ? `<div class="faint" style="font-size:12px">${esc(g.note)}</div>` : ''}</td>
             <td style="text-align:right"><button class="btn danger" data-revoke="${i}" ${self && roleOf(g.role).codes.has('*') ? 'disabled title="You cannot take your own administration away"' : ''}>Take away</button></td></tr>`).join('')}
         </tbody></table></div>
       </div>
@@ -454,7 +460,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     const p = personOf(state.person);
     const offered = roles.filter((r) => !r.service);
     $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Give a role">
-      <h2>Give ${esc(p.name)} a role</h2>
+      <h2 class="who-cell">${face(p.login, 32)}Give ${esc(p.name)} a role</h2>
       <div class="picker">${offered.map((r) => { const has = p.grants.some((g) => g.role === r.name); return `
         <label class="pick ${has ? 'held-already' : ''}"><input type="radio" name="role" value="${r.name}" ${has ? 'disabled' : ''}>
           <span><strong>${esc(label(r.name))}</strong>${has ? ' <span class="faint">· already held</span>' : ''}<div class="muted" style="font-size:13px">${esc(r.description)}</div>
@@ -477,7 +483,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     const p = personOf(state.person);
     const g = p.grants[i];
     $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Take a role away">
-      <h2>Take ${esc(label(g.role))} away from ${esc(p.name)}?</h2>
+      <h2 class="who-cell">${face(p.login, 32)}Take ${esc(label(g.role))} away from ${esc(p.name)}?</h2>
       <p class="muted">The grant is closed, not deleted, so who held the role and when stays on record.</p>
       ${reasonFields()}
       <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn danger solid" id="do-revoke" disabled>Take away</button></div>
@@ -522,7 +528,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       <div class="head"><div><h1>${esc(label(r.name))}</h1><p class="muted">${esc(r.description)}</p></div>
         <div class="actions"><button class="btn" id="edit-details">Rename or describe</button><button class="btn danger" id="delete-role" ${who.length ? 'disabled title="Take it away from everyone first"' : ''}>Delete role</button></div></div>
       <div class="card pad" style="display:grid;gap:0.5rem"><h2>Held by</h2>
-        <div class="chips">${who.length ? who.map((p) => `<button class="chip view" data-person-link="${p.login}" style="cursor:pointer">${esc(p.name)}</button>`).join('') : '<span class="faint">Nobody yet.</span>'}</div></div>
+        <div class="chips">${who.length ? who.map((p) => `<button class="chip view" data-person-link="${p.login}" style="cursor:pointer;padding-left:0.125rem">${face(p.login, 20)}${esc(p.name)}</button>`).join('') : '<span class="faint">Nobody yet.</span>'}</div></div>
       ${locked ? `<div class="everything"><span class="mark">✓</span><div><strong>${r.service ? 'A service role' : 'Everything'}</strong><div class="muted" style="font-size:13px">${r.service ? 'It belongs to a platform service and is not changed here.' : 'This role grants every permission. Its bundle is not edited here.'}</div></div></div>` : `
       <div style="display:grid;gap:0.75rem">
         <div class="head"><div><h2>What it lets people do</h2><p class="muted">Tick what the role allows. "All of it" covers an area, including what is added to it later.</p></div></div>
@@ -542,7 +548,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     const line = (c) => `<li><span class="code" style="font-family:var(--mono);font-size:12px">${esc(c)}</span> <span class="faint">${esc(DESCRIPTION.get(c) || '')}</span></li>`;
     $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Save the role">
       <h2>Save ${esc(label(r.name))}?</h2>
-      ${who.length ? `<p class="muted">${who.map((p) => esc(p.name)).join(', ')} ${who.length === 1 ? 'holds' : 'hold'} this role. The change reaches them within 30 minutes.</p>` : ''}
+      ${who.length ? `<p class="muted">${who.map((p) => byLine(p.login)).join(', ')} ${who.length === 1 ? 'holds' : 'hold'} this role. The change reaches them within 30 minutes.</p>` : ''}
       ${added.length ? `<div><div class="diff"><span class="add">Allows</span></div><ul style="margin:0.25rem 0 0;padding-left:1.1rem">${added.slice(0, 8).map(line).join('')}${added.length > 8 ? `<li class="faint">and ${added.length - 8} more</li>` : ''}</ul></div>` : ''}
       ${removed.length ? `<div><div class="diff"><span class="rem">No longer allows</span></div><ul style="margin:0.25rem 0 0;padding-left:1.1rem">${removed.slice(0, 8).map(line).join('')}${removed.length > 8 ? `<li class="faint">and ${removed.length - 8} more</li>` : ''}</ul></div>` : ''}
       ${reasonFields()}
@@ -637,6 +643,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       <li><strong>Giving and taking away carry a reason.</strong> The grant row records who, when and why; the server does not yet take the reason on assign and revoke, so that is a small server change.</li>
       <li><strong>A change is stated honestly:</strong> it reaches the person within 30 minutes, when their sign-in renews, because refresh reads the permissions again.</li>
       <li><strong>Saving a role shows the difference first,</strong> and who holds it, because one save changes access for everyone with the role.</li>
+      <li><strong>Every account shows its picture</strong>: in the header, the people list, a person's page, who gave a role, and who holds a role.</li>
       <li><strong>Words, not codes.</strong> "Give a role" and "Take away" rather than assign and revoke; codes stay visible, small, for people who know them.</li>
     </ul>`;
   function setWhy(open) { const w = $('why'); w.hidden = !open; w.innerHTML = open ? WHY : ''; $('why-btn').setAttribute('aria-pressed', String(open)); $('why-btn').setAttribute('aria-expanded', String(open)); if (open) $('why-close').onclick = () => setWhy(false); }

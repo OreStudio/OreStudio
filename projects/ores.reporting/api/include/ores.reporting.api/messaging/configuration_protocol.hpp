@@ -63,6 +63,8 @@ struct configuration_lookup {
 
 struct configurations_filter {
     std::optional<std::string> configuration_type_code;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> configuration_type_code_one_of;
 };
 
 struct configuration_event {

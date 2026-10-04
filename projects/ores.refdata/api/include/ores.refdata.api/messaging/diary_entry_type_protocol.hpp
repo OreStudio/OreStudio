@@ -61,6 +61,10 @@ struct diary_entry_type_lookup {
     std::optional<ores::refdata::domain::diary_entry_type> diary_entry_type;
 };
 
+struct diary_entry_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct diary_entry_type_event {
     boost::uuids::uuid event_id;
     diary_entry_type_key key;
@@ -94,6 +98,7 @@ struct list_diary_entry_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<diary_entry_types_filter> filter;
 };
 
 struct list_diary_entry_types_response {

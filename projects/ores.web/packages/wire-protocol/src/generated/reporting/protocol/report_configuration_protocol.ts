@@ -59,6 +59,10 @@ export interface ReportConfigurationsFilter {
     report_definition_id: string | null;
     configuration_type_code: string | null;
     configuration_id: string | null;
+    id_one_of: string[] | null;
+    report_definition_id_one_of: string[] | null;
+    configuration_type_code_one_of: string[] | null;
+    configuration_id_one_of: string[] | null;
 }
 
 export interface ReportConfigurationEvent {

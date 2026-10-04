@@ -70,6 +70,41 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->credit_simulation_config_id)
+        r.push_back(equals("credit_simulation_config_id",
+                           filter_value(*filter->credit_simulation_config_id)));
+    if (filter->transition_matrix_id)
+        r.push_back(equals("transition_matrix_id", filter_value(*filter->transition_matrix_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->credit_simulation_config_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->credit_simulation_config_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("credit_simulation_config_id", std::move(values)));
+    }
+    if (filter->transition_matrix_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->transition_matrix_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("transition_matrix_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition credit_simulation_entity_config_repository::replace_claim(
@@ -293,7 +328,8 @@ credit_simulation_entity_config_repository::read_latest_by_credit_simulation_con
     const std::string& credit_simulation_config_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest credit simulation entities. credit_simulation_config_id: "
         << credit_simulation_config_id << " offset: " << offset << " limit: " << limit;
@@ -311,6 +347,7 @@ credit_simulation_entity_config_repository::read_latest_by_credit_simulation_con
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities by credit_simulation_config_id.");
@@ -318,33 +355,27 @@ credit_simulation_entity_config_repository::read_latest_by_credit_simulation_con
 
 std::uint32_t
 credit_simulation_entity_config_repository::get_total_entity_count_by_credit_simulation_config_id(
-    context ctx, const std::string& credit_simulation_config_id) {
+    context ctx,
+    const std::string& credit_simulation_config_id,
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active credit simulation entities count. credit_simulation_config_id: "
         << credit_simulation_config_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::select_from<credit_simulation_entity_config_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "credit_simulation_config_id"_c == credit_simulation_config_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<credit_simulation_entity_config_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "credit_simulation_config_id"_c == credit_simulation_config_id &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Total active credit simulation entities count by credit_simulation_config_id: "
-        << count;
-    return count;
+    return execute_count_query<credit_simulation_entity_config_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting credit simulation entities by credit_simulation_config_id");
 }
 
 
@@ -354,7 +385,8 @@ credit_simulation_entity_config_repository::read_latest_by_transition_matrix_id(
     const std::string& transition_matrix_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest credit simulation entities. transition_matrix_id: "
         << transition_matrix_id << " offset: " << offset << " limit: " << limit;
@@ -372,6 +404,7 @@ credit_simulation_entity_config_repository::read_latest_by_transition_matrix_id(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities by transition_matrix_id.");
@@ -379,31 +412,27 @@ credit_simulation_entity_config_repository::read_latest_by_transition_matrix_id(
 
 std::uint32_t
 credit_simulation_entity_config_repository::get_total_entity_count_by_transition_matrix_id(
-    context ctx, const std::string& transition_matrix_id) {
+    context ctx,
+    const std::string& transition_matrix_id,
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active credit simulation entities count. transition_matrix_id: "
         << transition_matrix_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
-        sqlgen::select_from<credit_simulation_entity_config_entity>(sqlgen::count().as<"count">()) |
+        sqlgen::read<std::vector<credit_simulation_entity_config_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-              "transition_matrix_id"_c == transition_matrix_id && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+              "transition_matrix_id"_c == transition_matrix_id && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Total active credit simulation entities count by transition_matrix_id: " << count;
-    return count;
+    return execute_count_query<credit_simulation_entity_config_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting credit simulation entities by transition_matrix_id");
 }
 
 
@@ -444,10 +473,12 @@ void credit_simulation_entity_config_repository::remove(context ctx, const std::
 }
 
 std::vector<domain::credit_simulation_entity_config>
-credit_simulation_entity_config_repository::read_latest(context ctx,
-                                                        std::uint32_t offset,
-                                                        std::uint32_t limit,
-                                                        const ores::utility::domain::order& order) {
+credit_simulation_entity_config_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit simulation entities with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -463,32 +494,25 @@ credit_simulation_entity_config_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return credit_simulation_entity_config_mapper::map(entities); },
         lg(),
         "Reading latest credit simulation entities with pagination.");
 }
 
-std::uint32_t credit_simulation_entity_config_repository::get_total_entity_count(context ctx) {
+std::uint32_t credit_simulation_entity_config_repository::get_total_entity_count(
+    context ctx, const std::optional<messaging::credit_simulation_entity_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit simulation entity count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
 
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
-        sqlgen::select_from<credit_simulation_entity_config_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<credit_simulation_entity_config_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active credit simulation entity count: " << count;
-    return count;
+    return execute_count_query<credit_simulation_entity_config_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting credit simulation entities");
 }
 
 std::vector<domain::credit_simulation_entity_config>

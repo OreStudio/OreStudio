@@ -55,6 +55,10 @@ export interface ImageLookup {
     image: Image | null;
 }
 
+export interface ImagesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ImageEvent {
     event_id: string;
     key: ImageKey;
@@ -79,6 +83,7 @@ export interface ListImagesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ImagesFilter | null;
 }
 
 export interface ListImagesResponse {

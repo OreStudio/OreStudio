@@ -62,6 +62,10 @@ struct credit_simulation_matrix_config_lookup {
         credit_simulation_matrix_config;
 };
 
+struct credit_simulation_matrix_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct credit_simulation_matrix_config_event {
     boost::uuids::uuid event_id;
     credit_simulation_matrix_config_key key;
@@ -96,6 +100,7 @@ struct list_credit_simulation_matrix_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<credit_simulation_matrix_configs_filter> filter;
 };
 
 struct list_credit_simulation_matrix_configs_response {

@@ -63,6 +63,10 @@ struct configuration_type_lookup {
     std::optional<ores::reporting::domain::configuration_type> configuration_type;
 };
 
+struct configuration_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct configuration_type_event {
     boost::uuids::uuid event_id;
     configuration_type_key key;
@@ -96,6 +100,7 @@ struct list_configuration_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<configuration_types_filter> filter;
 };
 
 struct list_configuration_types_response {

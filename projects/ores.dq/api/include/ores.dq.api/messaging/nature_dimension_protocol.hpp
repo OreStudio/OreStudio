@@ -60,6 +60,10 @@ struct nature_dimension_lookup {
     std::optional<ores::dq::domain::nature_dimension> nature_dimension;
 };
 
+struct nature_dimensions_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct nature_dimension_event {
     boost::uuids::uuid event_id;
     nature_dimension_key key;
@@ -93,6 +97,7 @@ struct list_nature_dimensions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<nature_dimensions_filter> filter;
 };
 
 struct list_nature_dimensions_response {

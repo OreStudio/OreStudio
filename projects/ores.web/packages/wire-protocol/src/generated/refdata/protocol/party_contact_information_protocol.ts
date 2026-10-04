@@ -65,6 +65,8 @@ export interface PartyContactInformationLookup {
 
 export interface PartyContactInformationsFilter {
     party_id: string | null;
+    id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface PartyContactInformationEvent {

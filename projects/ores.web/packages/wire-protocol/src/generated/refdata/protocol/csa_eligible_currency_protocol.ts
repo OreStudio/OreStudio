@@ -57,6 +57,8 @@ export interface CsaEligibleCurrencyLookup {
 
 export interface CsaEligibleCurrenciesFilter {
     csa_id: string | null;
+    id_one_of: string[] | null;
+    csa_id_one_of: string[] | null;
 }
 
 export interface CsaEligibleCurrencyEvent {

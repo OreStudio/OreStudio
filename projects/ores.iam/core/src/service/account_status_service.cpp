@@ -102,8 +102,16 @@ messaging::list_account_statuses_response account_status_service::list_account_s
             "A list of account statuses cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.statuses = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_status_count(ctx_);
+    if (request.filter && request.filter->status_one_of &&
+        request.filter->status_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in status_one_of.";
+        return response;
+    }
+    response.statuses =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_status_count(ctx_, request.filter);
     return response;
 }
 

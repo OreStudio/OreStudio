@@ -74,6 +74,10 @@ struct inflation_swap_convention_lookup {
     std::optional<ores::refdata::domain::inflation_swap_convention> inflation_swap_convention;
 };
 
+struct inflation_swap_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct inflation_swap_convention_event {
     boost::uuids::uuid event_id;
     inflation_swap_convention_key key;
@@ -107,6 +111,7 @@ struct list_inflation_swap_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<inflation_swap_conventions_filter> filter;
 };
 
 struct list_inflation_swap_conventions_response {

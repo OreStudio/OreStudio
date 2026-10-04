@@ -58,6 +58,7 @@ export interface DatasetBundleMemberLookup {
 
 export interface DatasetBundleMembersFilter {
     bundle_code: string | null;
+    bundle_code_one_of: string[] | null;
 }
 
 export interface ListDatasetBundleMembersRequest {

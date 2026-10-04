@@ -57,6 +57,10 @@ export interface RpaInstrumentLookup {
     rpa_instrument: RpaInstrument | null;
 }
 
+export interface RpaInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface RpaInstrumentEvent {
     event_id: string;
     key: RpaInstrumentKey;
@@ -81,6 +85,7 @@ export interface ListRpaInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: RpaInstrumentsFilter | null;
 }
 
 export interface ListRpaInstrumentsResponse {

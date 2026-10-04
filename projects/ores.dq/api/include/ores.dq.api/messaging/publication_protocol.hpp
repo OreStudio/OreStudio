@@ -68,6 +68,10 @@ struct publication_lookup {
     std::optional<ores::dq::domain::publication> publication;
 };
 
+struct publications_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct publication_event {
     boost::uuids::uuid event_id;
     publication_key key;
@@ -90,6 +94,7 @@ struct list_publications_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<publications_filter> filter;
 };
 
 struct list_publications_response {

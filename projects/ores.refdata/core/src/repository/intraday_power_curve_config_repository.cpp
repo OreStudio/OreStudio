@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::intraday_power_curve_configs_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition intraday_power_curve_config_repository::replace_claim(
@@ -264,10 +282,12 @@ void intraday_power_curve_config_repository::remove(context ctx, const std::stri
 }
 
 std::vector<domain::intraday_power_curve_config>
-intraday_power_curve_config_repository::read_latest(context ctx,
-                                                    std::uint32_t offset,
-                                                    std::uint32_t limit,
-                                                    const ores::utility::domain::order& order) {
+intraday_power_curve_config_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::intraday_power_curve_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest intraday power curve configs with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -281,31 +301,23 @@ intraday_power_curve_config_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return intraday_power_curve_config_mapper::map(entities); },
         lg(),
         "Reading latest intraday power curve configs with pagination.");
 }
 
-std::uint32_t
-intraday_power_curve_config_repository::get_total_intraday_power_curve_config_count(context ctx) {
+std::uint32_t intraday_power_curve_config_repository::get_total_intraday_power_curve_config_count(
+    context ctx, const std::optional<messaging::intraday_power_curve_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active intraday power curve config count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<intraday_power_curve_config_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<intraday_power_curve_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active intraday power curve config count: " << count;
-    return count;
+    return execute_count_query<intraday_power_curve_config_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting intraday power curve configs");
 }
 
 std::vector<domain::intraday_power_curve_config>

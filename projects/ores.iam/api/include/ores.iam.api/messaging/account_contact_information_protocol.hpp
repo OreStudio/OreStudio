@@ -70,6 +70,8 @@ struct account_contact_information_lookup {
 
 struct account_contact_informations_filter {
     std::optional<boost::uuids::uuid> account_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
 };
 
 struct account_contact_information_event {

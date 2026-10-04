@@ -44,6 +44,10 @@ struct synthetic_fx_spot_config_lookup {
     std::optional<ores::dq::domain::synthetic_fx_spot_config> synthetic_fx_spot_config;
 };
 
+struct synthetic_fx_spot_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct synthetic_fx_spot_config_event {
     boost::uuids::uuid event_id;
     synthetic_fx_spot_config_key key;
@@ -66,6 +70,7 @@ struct list_synthetic_fx_spot_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<synthetic_fx_spot_configs_filter> filter;
 };
 
 struct list_synthetic_fx_spot_configs_response {

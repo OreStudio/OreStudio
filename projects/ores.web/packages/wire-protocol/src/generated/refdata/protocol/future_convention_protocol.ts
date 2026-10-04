@@ -56,6 +56,10 @@ export interface FutureConventionLookup {
     future_convention: FutureConvention | null;
 }
 
+export interface FutureConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FutureConventionEvent {
     event_id: string;
     key: FutureConventionKey;
@@ -80,6 +84,7 @@ export interface ListFutureConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FutureConventionsFilter | null;
 }
 
 export interface ListFutureConventionsResponse {

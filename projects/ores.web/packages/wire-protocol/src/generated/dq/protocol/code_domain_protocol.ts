@@ -54,6 +54,10 @@ export interface CodeDomainLookup {
     code_domain: CodeDomain | null;
 }
 
+export interface CodeDomainsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CodeDomainEvent {
     event_id: string;
     key: CodeDomainKey;
@@ -78,6 +82,7 @@ export interface ListCodeDomainsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CodeDomainsFilter | null;
 }
 
 export interface ListCodeDomainsResponse {

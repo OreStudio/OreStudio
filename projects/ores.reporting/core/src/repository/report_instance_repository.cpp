@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::report_instances_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -301,11 +319,12 @@ void report_instance_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::report_instance>
-report_instance_repository::read_latest(context ctx,
-                                        std::uint32_t offset,
-                                        std::uint32_t limit,
-                                        const ores::utility::domain::order& order) {
+std::vector<domain::report_instance> report_instance_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::report_instances_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instances with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -320,32 +339,25 @@ report_instance_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return report_instance_mapper::map(entities); },
         lg(),
         "Reading latest report instances with pagination.");
 }
 
-std::uint32_t report_instance_repository::get_total_instance_count(context ctx) {
+std::uint32_t report_instance_repository::get_total_instance_count(
+    context ctx, const std::optional<messaging::report_instances_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report instance count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
 
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
-        sqlgen::select_from<report_instance_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<report_instance_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active report instance count: " << count;
-    return count;
+    return execute_count_query<report_instance_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting report instances");
 }
 
 std::vector<domain::report_instance>

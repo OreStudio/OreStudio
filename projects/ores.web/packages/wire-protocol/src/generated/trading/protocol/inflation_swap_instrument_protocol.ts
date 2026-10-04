@@ -58,6 +58,10 @@ export interface InflationSwapInstrumentLookup {
     inflation_swap_instrument: InflationSwapInstrument | null;
 }
 
+export interface InflationSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface InflationSwapInstrumentEvent {
     event_id: string;
     key: InflationSwapInstrumentKey;
@@ -82,6 +86,7 @@ export interface ListInflationSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InflationSwapInstrumentsFilter | null;
 }
 
 export interface ListInflationSwapInstrumentsResponse {

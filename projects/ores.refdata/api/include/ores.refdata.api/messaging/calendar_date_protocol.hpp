@@ -47,6 +47,7 @@ struct calendar_date_lookup {
 
 struct calendar_dates_filter {
     std::optional<std::string> calendar_code;
+    std::optional<std::vector<std::string>> calendar_code_one_of;
 };
 
 struct list_calendar_dates_request {

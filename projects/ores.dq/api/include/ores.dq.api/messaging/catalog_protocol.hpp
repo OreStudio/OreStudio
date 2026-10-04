@@ -60,6 +60,10 @@ struct catalog_lookup {
     std::optional<ores::dq::domain::catalog> catalog;
 };
 
+struct catalogs_filter {
+    std::optional<std::vector<std::string>> name_one_of;
+};
+
 struct catalog_event {
     boost::uuids::uuid event_id;
     catalog_key key;
@@ -93,6 +97,7 @@ struct list_catalogs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<catalogs_filter> filter;
 };
 
 struct list_catalogs_response {

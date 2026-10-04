@@ -68,6 +68,10 @@ export interface CrossCurrencyFixFloatConventionLookup {
     cross_currency_fix_float_convention: CrossCurrencyFixFloatConvention | null;
 }
 
+export interface CrossCurrencyFixFloatConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CrossCurrencyFixFloatConventionEvent {
     event_id: string;
     key: CrossCurrencyFixFloatConventionKey;
@@ -92,6 +96,7 @@ export interface ListCrossCurrencyFixFloatConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CrossCurrencyFixFloatConventionsFilter | null;
 }
 
 export interface ListCrossCurrencyFixFloatConventionsResponse {

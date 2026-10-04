@@ -70,6 +70,8 @@ struct portfolio_lookup {
 
 struct portfolios_filter {
     std::optional<std::optional<boost::uuids::uuid>> sandbox_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> sandbox_id_one_of;
 };
 
 struct portfolio_event {

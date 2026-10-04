@@ -57,6 +57,10 @@ export interface ArtefactTypeLookup {
     artefact_type: ArtefactType | null;
 }
 
+export interface ArtefactTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ArtefactTypeEvent {
     event_id: string;
     key: ArtefactTypeKey;
@@ -81,6 +85,7 @@ export interface ListArtefactTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ArtefactTypesFilter | null;
 }
 
 export interface ListArtefactTypesResponse {

@@ -56,6 +56,10 @@ export interface CrmEnabledDerivedPairLookup {
     crm_enabled_derived_pair: CrmEnabledDerivedPair | null;
 }
 
+export interface CrmEnabledDerivedPairsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CrmEnabledDerivedPairEvent {
     event_id: string;
     key: CrmEnabledDerivedPairKey;
@@ -80,6 +84,7 @@ export interface ListCrmEnabledDerivedPairsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CrmEnabledDerivedPairsFilter | null;
 }
 
 export interface ListCrmEnabledDerivedPairsResponse {

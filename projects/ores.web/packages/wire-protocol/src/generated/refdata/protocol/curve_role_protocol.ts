@@ -54,6 +54,10 @@ export interface CurveRoleLookup {
     curve_role: CurveRole | null;
 }
 
+export interface CurveRolesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CurveRoleEvent {
     event_id: string;
     key: CurveRoleKey;
@@ -78,6 +82,7 @@ export interface ListCurveRolesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveRolesFilter | null;
 }
 
 export interface ListCurveRolesResponse {

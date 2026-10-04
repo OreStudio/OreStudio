@@ -57,6 +57,10 @@ export interface CountryLookup {
     country: Country | null;
 }
 
+export interface CountriesFilter {
+    alpha2_code_one_of: string[] | null;
+}
+
 export interface CountryEvent {
     event_id: string;
     key: CountryKey;
@@ -81,6 +85,7 @@ export interface ListCountriesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CountriesFilter | null;
     as_of: string | null;
 }
 

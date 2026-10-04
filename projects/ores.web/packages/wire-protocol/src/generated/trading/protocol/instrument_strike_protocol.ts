@@ -57,6 +57,10 @@ export interface InstrumentStrikeLookup {
     instrument_strike: InstrumentStrike | null;
 }
 
+export interface InstrumentStrikesFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentStrikeEvent {
     event_id: string;
     key: InstrumentStrikeKey;
@@ -81,6 +85,7 @@ export interface ListInstrumentStrikesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentStrikesFilter | null;
 }
 
 export interface ListInstrumentStrikesResponse {

@@ -63,6 +63,7 @@ struct report_type_configuration_type_lookup {
 
 struct report_type_configuration_types_filter {
     std::optional<std::string> report_type_code;
+    std::optional<std::vector<std::string>> report_type_code_one_of;
 };
 
 struct list_report_type_configuration_types_request {

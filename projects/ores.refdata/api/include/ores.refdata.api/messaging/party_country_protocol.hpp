@@ -62,6 +62,7 @@ struct party_country_lookup {
 
 struct party_countries_filter {
     std::optional<boost::uuids::uuid> party_id;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
 struct list_party_countries_request {

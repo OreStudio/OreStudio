@@ -52,6 +52,10 @@ export interface FloatingIndexTypeLookup {
     floating_index_type: FloatingIndexType | null;
 }
 
+export interface FloatingIndexTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface FloatingIndexTypeEvent {
     event_id: string;
     key: FloatingIndexTypeKey;
@@ -76,6 +80,7 @@ export interface ListFloatingIndexTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FloatingIndexTypesFilter | null;
 }
 
 export interface ListFloatingIndexTypesResponse {

@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -156,18 +157,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::party_identifier>
-    read_latest_by_party_id(context ctx,
-                            const std::string& party_id,
-                            std::uint32_t offset,
-                            std::uint32_t limit,
-                            const ores::utility::domain::order& order = {});
+    std::vector<domain::party_identifier> read_latest_by_party_id(
+        context ctx,
+        const std::string& party_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::party_identifiers_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active party identifiers filtered by party_id.
      */
-    std::uint32_t get_total_party_identifier_count_by_party_id(context ctx,
-                                                               const std::string& party_id);
+    std::uint32_t get_total_party_identifier_count_by_party_id(
+        context ctx,
+        const std::string& party_id,
+        const std::optional<messaging::party_identifiers_filter>& filter = std::nullopt);
 
 
     /**
@@ -200,20 +204,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::party_identifier>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::party_identifiers_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active party identifiers.
      * @param ctx Repository context with database connection
      * @return Total number of active party identifiers
      */
-    std::uint32_t get_total_party_identifier_count(context ctx);
+    std::uint32_t get_total_party_identifier_count(
+        context ctx,
+        const std::optional<messaging::party_identifiers_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a party identifier by closing its temporal validity.

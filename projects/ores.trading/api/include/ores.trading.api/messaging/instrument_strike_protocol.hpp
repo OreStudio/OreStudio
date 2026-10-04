@@ -64,6 +64,10 @@ struct instrument_strike_lookup {
     std::optional<ores::trading::domain::instrument_strike> instrument_strike;
 };
 
+struct instrument_strikes_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct instrument_strike_event {
     boost::uuids::uuid event_id;
     instrument_strike_key key;
@@ -97,6 +101,7 @@ struct list_instrument_strikes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<instrument_strikes_filter> filter;
 };
 
 struct list_instrument_strikes_response {

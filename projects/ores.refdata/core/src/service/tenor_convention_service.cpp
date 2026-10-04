@@ -102,8 +102,16 @@ messaging::list_tenor_conventions_response tenor_convention_service::list_tenor_
             "A list of tenor conventions cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.conventions = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_convention_count(ctx_);
+    if (request.filter && request.filter->code_one_of &&
+        request.filter->code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in code_one_of.";
+        return response;
+    }
+    response.conventions =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_convention_count(ctx_, request.filter);
     return response;
 }
 

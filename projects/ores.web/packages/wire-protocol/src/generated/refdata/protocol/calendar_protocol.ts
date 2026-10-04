@@ -58,6 +58,10 @@ export interface CalendarLookup {
     calendar: Calendar | null;
 }
 
+export interface CalendarsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CalendarEvent {
     event_id: string;
     key: CalendarKey;
@@ -82,6 +86,7 @@ export interface ListCalendarsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CalendarsFilter | null;
 }
 
 export interface ListCalendarsResponse {

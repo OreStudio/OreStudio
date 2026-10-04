@@ -70,6 +70,33 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::parameter_definitions_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->parameter_value_domain_code)
+        r.push_back(equals("parameter_value_domain_code",
+                           filter_value(*filter->parameter_value_domain_code)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->parameter_value_domain_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->parameter_value_domain_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("parameter_value_domain_code", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -258,7 +285,8 @@ parameter_definition_repository::read_latest_by_parameter_value_domain_code(
     const std::string& parameter_value_domain_code,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::parameter_definitions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest parameter definitions. parameter_value_domain_code: "
         << parameter_value_domain_code << " offset: " << offset << " limit: " << limit;
@@ -274,6 +302,7 @@ parameter_definition_repository::read_latest_by_parameter_value_domain_code(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return parameter_definition_mapper::map(entities); },
         lg(),
         "Reading latest parameter definitions by parameter_value_domain_code.");
@@ -281,31 +310,26 @@ parameter_definition_repository::read_latest_by_parameter_value_domain_code(
 
 std::uint32_t
 parameter_definition_repository::get_total_parameter_count_by_parameter_value_domain_code(
-    context ctx, const std::string& parameter_value_domain_code) {
+    context ctx,
+    const std::string& parameter_value_domain_code,
+    const std::optional<messaging::parameter_definitions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active parameter definitions count. parameter_value_domain_code: "
         << parameter_value_domain_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<parameter_definition_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid &&
-              "parameter_value_domain_code"_c == parameter_value_domain_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<parameter_definition_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "parameter_value_domain_code"_c == parameter_value_domain_code &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Total active parameter definitions count by parameter_value_domain_code: " << count;
-    return count;
+    return execute_count_query<parameter_definition_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting parameter definitions by parameter_value_domain_code");
 }
 
 
@@ -342,11 +366,12 @@ void parameter_definition_repository::remove(context ctx, const std::string& id)
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::parameter_definition>
-parameter_definition_repository::read_latest(context ctx,
-                                             std::uint32_t offset,
-                                             std::uint32_t limit,
-                                             const ores::utility::domain::order& order) {
+std::vector<domain::parameter_definition> parameter_definition_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::parameter_definitions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest parameter definitions with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -359,30 +384,23 @@ parameter_definition_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return parameter_definition_mapper::map(entities); },
         lg(),
         "Reading latest parameter definitions with pagination.");
 }
 
-std::uint32_t parameter_definition_repository::get_total_parameter_count(context ctx) {
+std::uint32_t parameter_definition_repository::get_total_parameter_count(
+    context ctx, const std::optional<messaging::parameter_definitions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active parameter definition count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<parameter_definition_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<parameter_definition_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active parameter definition count: " << count;
-    return count;
+    return execute_count_query<parameter_definition_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting parameter definitions");
 }
 
 std::vector<domain::parameter_definition>

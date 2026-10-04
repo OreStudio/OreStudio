@@ -54,6 +54,10 @@ export interface RoleLookup {
     role: Role | null;
 }
 
+export interface RolesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface RoleEvent {
     event_id: string;
     key: RoleKey;
@@ -78,6 +82,7 @@ export interface ListRolesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: RolesFilter | null;
 }
 
 export interface ListRolesResponse {

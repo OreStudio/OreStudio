@@ -58,6 +58,11 @@ export interface TenantLookup {
     tenant: Tenant | null;
 }
 
+export interface TenantsFilter {
+    id_one_of: string[] | null;
+    search: string | null;
+}
+
 export interface TenantEvent {
     event_id: string;
     key: TenantKey;
@@ -82,6 +87,7 @@ export interface ListTenantsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenantsFilter | null;
 }
 
 export interface ListTenantsResponse {

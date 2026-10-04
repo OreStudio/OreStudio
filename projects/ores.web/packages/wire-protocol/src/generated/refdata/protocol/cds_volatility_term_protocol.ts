@@ -56,6 +56,10 @@ export interface CdsVolatilityTermLookup {
     cds_volatility_term: CdsVolatilityTerm | null;
 }
 
+export interface CdsVolatilityTermsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CdsVolatilityTermEvent {
     event_id: string;
     key: CdsVolatilityTermKey;
@@ -80,6 +84,7 @@ export interface ListCdsVolatilityTermsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CdsVolatilityTermsFilter | null;
 }
 
 export interface ListCdsVolatilityTermsResponse {

@@ -57,6 +57,10 @@ export interface VanillaSwapInstrumentLookup {
     vanilla_swap_instrument: VanillaSwapInstrument | null;
 }
 
+export interface VanillaSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface VanillaSwapInstrumentEvent {
     event_id: string;
     key: VanillaSwapInstrumentKey;
@@ -81,6 +85,7 @@ export interface ListVanillaSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: VanillaSwapInstrumentsFilter | null;
 }
 
 export interface ListVanillaSwapInstrumentsResponse {

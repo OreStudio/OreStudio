@@ -72,6 +72,8 @@ struct counterparty_contact_information_lookup {
 
 struct counterparty_contact_informations_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
 };
 
 struct counterparty_contact_information_event {

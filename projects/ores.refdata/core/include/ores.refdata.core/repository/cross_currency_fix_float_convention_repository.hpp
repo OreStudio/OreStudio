@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
+#include "ores.refdata.api/messaging/cross_currency_fix_float_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -140,20 +141,26 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::cross_currency_fix_float_convention>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::cross_currency_fix_float_convention> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::cross_currency_fix_float_conventions_filter>& filter =
+            std::nullopt);
 
     /**
      * @brief Gets the total count of active cross-currency fix-float conventions.
      * @param ctx Repository context with database connection
      * @return Total number of active cross-currency fix-float conventions
      */
-    std::uint32_t get_total_cross_currency_fix_float_convention_count(context ctx);
+    std::uint32_t get_total_cross_currency_fix_float_convention_count(
+        context ctx,
+        const std::optional<messaging::cross_currency_fix_float_conventions_filter>& filter =
+            std::nullopt);
 
     /**
      * @brief Deletes a cross-currency fix-float convention by closing its temporal validity.

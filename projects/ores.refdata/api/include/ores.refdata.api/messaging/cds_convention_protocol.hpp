@@ -68,6 +68,10 @@ struct cds_convention_lookup {
     std::optional<ores::refdata::domain::cds_convention> cds_convention;
 };
 
+struct cds_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct cds_convention_event {
     boost::uuids::uuid event_id;
     cds_convention_key key;
@@ -101,6 +105,7 @@ struct list_cds_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<cds_conventions_filter> filter;
 };
 
 struct list_cds_conventions_response {

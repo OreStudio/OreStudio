@@ -54,6 +54,10 @@ export interface BookStatusLookup {
     book_status: BookStatus | null;
 }
 
+export interface BookStatusesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BookStatusEvent {
     event_id: string;
     key: BookStatusKey;
@@ -78,6 +82,7 @@ export interface ListBookStatusesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BookStatusesFilter | null;
     as_of: string | null;
 }
 

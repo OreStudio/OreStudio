@@ -59,6 +59,8 @@ export interface TodaysMarketConfigLookup {
 
 export interface TodaysMarketConfigsFilter {
     configuration_id: string | null;
+    id_one_of: string[] | null;
+    configuration_id_one_of: string[] | null;
 }
 
 export interface TodaysMarketConfigEvent {

@@ -95,6 +95,10 @@ export interface ReportRunSetupLookup {
     report_run_setup: ReportRunSetup | null;
 }
 
+export interface ReportRunSetupsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ReportRunSetupEvent {
     event_id: string;
     key: ReportRunSetupKey;
@@ -119,6 +123,7 @@ export interface ListReportRunSetupsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReportRunSetupsFilter | null;
 }
 
 export interface ListReportRunSetupsResponse {

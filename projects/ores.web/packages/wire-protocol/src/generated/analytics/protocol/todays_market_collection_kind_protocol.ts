@@ -55,6 +55,10 @@ export interface TodaysMarketCollectionKindLookup {
     todays_market_collection_kind: TodaysMarketCollectionKind | null;
 }
 
+export interface TodaysMarketCollectionKindsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TodaysMarketCollectionKindEvent {
     event_id: string;
     key: TodaysMarketCollectionKindKey;
@@ -79,6 +83,7 @@ export interface ListTodaysMarketCollectionKindsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TodaysMarketCollectionKindsFilter | null;
 }
 
 export interface ListTodaysMarketCollectionKindsResponse {

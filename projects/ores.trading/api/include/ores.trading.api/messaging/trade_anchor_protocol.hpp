@@ -44,6 +44,10 @@ struct trade_anchor_lookup {
     std::optional<ores::trading::domain::trade_anchor> trade_anchor;
 };
 
+struct trade_anchors_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct trade_anchor_event {
     boost::uuids::uuid event_id;
     trade_anchor_key key;
@@ -66,6 +70,7 @@ struct list_trade_anchors_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_anchors_filter> filter;
 };
 
 struct list_trade_anchors_response {

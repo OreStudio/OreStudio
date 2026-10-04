@@ -53,6 +53,10 @@ export interface BatchLookup {
     batch: Batch | null;
 }
 
+export interface BatchesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BatchEvent {
     event_id: string;
     key: BatchKey;
@@ -77,6 +81,7 @@ export interface ListBatchesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BatchesFilter | null;
 }
 
 export interface ListBatchesResponse {

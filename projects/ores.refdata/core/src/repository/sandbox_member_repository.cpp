@@ -70,6 +70,40 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::sandbox_members_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->sandbox_id)
+        r.push_back(equals("sandbox_id", filter_value(*filter->sandbox_id)));
+    if (filter->account_id)
+        r.push_back(equals("account_id", filter_value(*filter->account_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->sandbox_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->sandbox_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("sandbox_id", std::move(values)));
+    }
+    if (filter->account_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->account_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("account_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -212,12 +246,13 @@ std::optional<domain::sandbox_member> sandbox_member_repository::read_at_version
     return entities.front();
 }
 
-std::vector<domain::sandbox_member>
-sandbox_member_repository::read_latest_by_sandbox_id(context ctx,
-                                                     const std::string& sandbox_id,
-                                                     std::uint32_t offset,
-                                                     std::uint32_t limit,
-                                                     const ores::utility::domain::order& order) {
+std::vector<domain::sandbox_member> sandbox_member_repository::read_latest_by_sandbox_id(
+    context ctx,
+    const std::string& sandbox_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox members. sandbox_id: " << sandbox_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -231,42 +266,37 @@ sandbox_member_repository::read_latest_by_sandbox_id(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return sandbox_member_mapper::map(entities); },
         lg(),
         "Reading latest sandbox members by sandbox_id.");
 }
 
 std::uint32_t sandbox_member_repository::get_total_sandbox_member_count_by_sandbox_id(
-    context ctx, const std::string& sandbox_id) {
+    context ctx,
+    const std::string& sandbox_id,
+    const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox members count. sandbox_id: "
                                << sandbox_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<sandbox_member_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<sandbox_member_entity>> |
+        where("tenant_id"_c == tid && "sandbox_id"_c == sandbox_id && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sandbox members count by sandbox_id: " << count;
-    return count;
+    return execute_count_query<sandbox_member_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sandbox members by sandbox_id");
 }
 
 
-std::vector<domain::sandbox_member>
-sandbox_member_repository::read_latest_by_account_id(context ctx,
-                                                     const std::string& account_id,
-                                                     std::uint32_t offset,
-                                                     std::uint32_t limit,
-                                                     const ores::utility::domain::order& order) {
+std::vector<domain::sandbox_member> sandbox_member_repository::read_latest_by_account_id(
+    context ctx,
+    const std::string& account_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox members. account_id: " << account_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -280,33 +310,27 @@ sandbox_member_repository::read_latest_by_account_id(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return sandbox_member_mapper::map(entities); },
         lg(),
         "Reading latest sandbox members by account_id.");
 }
 
 std::uint32_t sandbox_member_repository::get_total_sandbox_member_count_by_account_id(
-    context ctx, const std::string& account_id) {
+    context ctx,
+    const std::string& account_id,
+    const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox members count. account_id: "
                                << account_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<sandbox_member_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<sandbox_member_entity>> |
+        where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sandbox members count by account_id: " << count;
-    return count;
+    return execute_count_query<sandbox_member_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sandbox members by account_id");
 }
 
 
@@ -343,11 +367,12 @@ void sandbox_member_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::sandbox_member>
-sandbox_member_repository::read_latest(context ctx,
-                                       std::uint32_t offset,
-                                       std::uint32_t limit,
-                                       const ores::utility::domain::order& order) {
+std::vector<domain::sandbox_member> sandbox_member_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox members with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -360,30 +385,23 @@ sandbox_member_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return sandbox_member_mapper::map(entities); },
         lg(),
         "Reading latest sandbox members with pagination.");
 }
 
-std::uint32_t sandbox_member_repository::get_total_sandbox_member_count(context ctx) {
+std::uint32_t sandbox_member_repository::get_total_sandbox_member_count(
+    context ctx, const std::optional<messaging::sandbox_members_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox member count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<sandbox_member_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<sandbox_member_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sandbox member count: " << count;
-    return count;
+    return execute_count_query<sandbox_member_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sandbox members");
 }
 
 std::vector<domain::sandbox_member>

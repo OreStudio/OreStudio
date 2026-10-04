@@ -71,6 +71,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::party_contact_informations_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->party_id)
+        r.push_back(equals("party_id", filter_value(*filter->party_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->party_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->party_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("party_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -288,7 +314,8 @@ party_contact_information_repository::read_latest_by_party_id(
     const std::string& party_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact informations. party_id: "
                                << party_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -303,6 +330,7 @@ party_contact_information_repository::read_latest_by_party_id(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest party contact informations by party_id.");
@@ -310,28 +338,24 @@ party_contact_information_repository::read_latest_by_party_id(
 
 std::uint32_t
 party_contact_information_repository::get_total_party_contact_information_count_by_party_id(
-    context ctx, const std::string& party_id) {
+    context ctx,
+    const std::string& party_id,
+    const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active party contact informations count. party_id: " << party_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<party_contact_information_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<party_contact_information_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active party contact informations count by party_id: "
-                               << count;
-    return count;
+    return execute_count_query<party_contact_information_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting party contact informations by party_id");
 }
 
 
@@ -395,11 +419,12 @@ void party_contact_information_repository::remove(context ctx, const std::string
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest(context ctx,
-                                                  std::uint32_t offset,
-                                                  std::uint32_t limit,
-                                                  const ores::utility::domain::order& order) {
+std::vector<domain::party_contact_information> party_contact_information_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact informations with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -413,31 +438,23 @@ party_contact_information_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest party contact informations with pagination.");
 }
 
-std::uint32_t
-party_contact_information_repository::get_total_party_contact_information_count(context ctx) {
+std::uint32_t party_contact_information_repository::get_total_party_contact_information_count(
+    context ctx, const std::optional<messaging::party_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party contact information count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<party_contact_information_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active party contact information count: " << count;
-    return count;
+    return execute_count_query<party_contact_information_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting party contact informations");
 }
 
 std::vector<domain::party_contact_information>

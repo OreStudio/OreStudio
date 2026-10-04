@@ -83,6 +83,10 @@ struct cross_currency_basis_convention_lookup {
         cross_currency_basis_convention;
 };
 
+struct cross_currency_basis_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct cross_currency_basis_convention_event {
     boost::uuids::uuid event_id;
     cross_currency_basis_convention_key key;
@@ -117,6 +121,7 @@ struct list_cross_currency_basis_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<cross_currency_basis_conventions_filter> filter;
 };
 
 struct list_cross_currency_basis_conventions_response {

@@ -59,6 +59,10 @@ struct data_domain_lookup {
     std::optional<ores::dq::domain::data_domain> data_domain;
 };
 
+struct data_domains_filter {
+    std::optional<std::vector<std::string>> name_one_of;
+};
+
 struct data_domain_event {
     boost::uuids::uuid event_id;
     data_domain_key key;
@@ -92,6 +96,7 @@ struct list_data_domains_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<data_domains_filter> filter;
 };
 
 struct list_data_domains_response {

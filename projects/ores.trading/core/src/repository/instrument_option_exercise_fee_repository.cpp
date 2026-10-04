@@ -309,6 +309,7 @@ instrument_option_exercise_fee_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
+        std::nullopt,
         [](const auto& entities) { return instrument_option_exercise_fee_mapper::map(entities); },
         lg(),
         "Reading latest instrument option exercise fees with pagination.");
@@ -318,21 +319,12 @@ std::uint32_t instrument_option_exercise_fee_repository::get_total_exercise_fee_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument option exercise fee count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<instrument_option_exercise_fee_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<instrument_option_exercise_fee_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active instrument option exercise fee count: " << count;
-    return count;
+    return execute_count_query<instrument_option_exercise_fee_entity>(
+        ctx, query, std::nullopt, lg(), "Counting instrument option exercise fees");
 }
 
 std::vector<domain::instrument_option_exercise_fee>

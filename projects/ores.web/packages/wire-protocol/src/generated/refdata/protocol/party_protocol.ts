@@ -64,6 +64,10 @@ export interface PartyLookup {
     party: Party | null;
 }
 
+export interface PartiesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface PartyEvent {
     event_id: string;
     key: PartyKey;
@@ -88,6 +92,7 @@ export interface ListPartiesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PartiesFilter | null;
 }
 
 export interface ListPartiesResponse {

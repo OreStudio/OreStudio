@@ -58,6 +58,10 @@ export interface BadgeDefinitionLookup {
     badge_definition: BadgeDefinition | null;
 }
 
+export interface BadgeDefinitionsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BadgeDefinitionEvent {
     event_id: string;
     key: BadgeDefinitionKey;
@@ -82,6 +86,7 @@ export interface ListBadgeDefinitionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BadgeDefinitionsFilter | null;
 }
 
 export interface ListBadgeDefinitionsResponse {

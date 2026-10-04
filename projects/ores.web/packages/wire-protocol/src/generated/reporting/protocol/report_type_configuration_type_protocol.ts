@@ -56,6 +56,7 @@ export interface ReportTypeConfigurationTypeLookup {
 
 export interface ReportTypeConfigurationTypesFilter {
     report_type_code: string | null;
+    report_type_code_one_of: string[] | null;
 }
 
 export interface ListReportTypeConfigurationTypesRequest {

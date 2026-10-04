@@ -54,6 +54,10 @@ export interface CalendarTypeLookup {
     calendar_type: CalendarType | null;
 }
 
+export interface CalendarTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CalendarTypeEvent {
     event_id: string;
     key: CalendarTypeKey;
@@ -78,6 +82,7 @@ export interface ListCalendarTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CalendarTypesFilter | null;
 }
 
 export interface ListCalendarTypesResponse {

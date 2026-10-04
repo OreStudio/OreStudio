@@ -68,6 +68,8 @@ struct sandbox_lookup {
 
 struct sandboxes_filter {
     std::optional<boost::uuids::uuid> anchor_portfolio_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> anchor_portfolio_id_one_of;
 };
 
 struct sandbox_event {

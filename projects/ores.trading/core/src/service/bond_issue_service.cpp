@@ -116,8 +116,16 @@ bond_issue_service::list_bond_issues(const messaging::list_bond_issues_request& 
             "A list of bond issues cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.issues = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_issue_count(ctx_);
+    if (request.filter && request.filter->issue_id_one_of &&
+        request.filter->issue_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in issue_id_one_of.";
+        return response;
+    }
+    response.issues =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_issue_count(ctx_, request.filter);
     return response;
 }
 

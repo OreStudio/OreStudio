@@ -54,6 +54,10 @@ export interface InflationSeasonalityFactorLookup {
     inflation_seasonality_factor: InflationSeasonalityFactor | null;
 }
 
+export interface InflationSeasonalityFactorsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface InflationSeasonalityFactorEvent {
     event_id: string;
     key: InflationSeasonalityFactorKey;
@@ -78,6 +82,7 @@ export interface ListInflationSeasonalityFactorsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InflationSeasonalityFactorsFilter | null;
 }
 
 export interface ListInflationSeasonalityFactorsResponse {

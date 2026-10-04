@@ -59,6 +59,10 @@ export interface ObservationLineageLookup {
     observation_lineage: ObservationLineage | null;
 }
 
+export interface ObservationLineagesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ObservationLineageEvent {
     event_id: string;
     key: ObservationLineageKey;
@@ -83,6 +87,7 @@ export interface ListObservationLineagesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ObservationLineagesFilter | null;
 }
 
 export interface ListObservationLineagesResponse {

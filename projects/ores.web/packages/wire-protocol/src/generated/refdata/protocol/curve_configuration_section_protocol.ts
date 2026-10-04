@@ -53,6 +53,10 @@ export interface CurveConfigurationSectionLookup {
     curve_configuration_section: CurveConfigurationSection | null;
 }
 
+export interface CurveConfigurationSectionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveConfigurationSectionEvent {
     event_id: string;
     key: CurveConfigurationSectionKey;
@@ -77,6 +81,7 @@ export interface ListCurveConfigurationSectionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveConfigurationSectionsFilter | null;
 }
 
 export interface ListCurveConfigurationSectionsResponse {

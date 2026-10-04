@@ -63,6 +63,10 @@ struct trade_booking_lookup {
     std::optional<ores::trading::domain::trade_booking> trade_booking;
 };
 
+struct trade_bookings_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct trade_booking_event {
     boost::uuids::uuid event_id;
     trade_booking_key key;
@@ -96,6 +100,7 @@ struct list_trade_bookings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_bookings_filter> filter;
 };
 
 struct list_trade_bookings_response {

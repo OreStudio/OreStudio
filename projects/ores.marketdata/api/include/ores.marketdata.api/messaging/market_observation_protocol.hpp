@@ -66,6 +66,8 @@ struct market_observation_lookup {
 
 struct market_observations_filter {
     std::optional<boost::uuids::uuid> series_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> series_id_one_of;
 };
 
 struct market_observation_event {

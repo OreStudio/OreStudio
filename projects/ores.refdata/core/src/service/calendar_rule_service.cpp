@@ -109,14 +109,22 @@ calendar_rule_service::list_calendar_rules(const messaging::list_calendar_rules_
             "A list of calendar rules cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.calendar_rules = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_calendar_rule_count(ctx_);
+    if (request.filter && request.filter->calendar_code_one_of &&
+        request.filter->calendar_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in calendar_code_one_of.";
+        return response;
+    }
+    response.calendar_rules =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_calendar_rule_count(ctx_, request.filter);
     return response;
 }
 
@@ -132,10 +140,17 @@ calendar_rule_service::list_by_calendar_code_calendar_rules(
             "A list of calendar rules cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->calendar_code_one_of &&
+        request.filter->calendar_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in calendar_code_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -146,8 +161,9 @@ calendar_rule_service::list_by_calendar_code_calendar_rules(
     }
     const auto relation = request.calendar_code;
     response.calendar_rules = repo_.read_latest_by_calendar_code(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_calendar_rule_count_by_calendar_code(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_calendar_rule_count_by_calendar_code(ctx_, relation, request.filter);
     return response;
 }
 

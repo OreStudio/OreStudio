@@ -73,6 +73,10 @@ struct currency_lookup {
     std::optional<ores::refdata::domain::currency> currency;
 };
 
+struct currencies_filter {
+    std::optional<std::vector<std::string>> iso_code_one_of;
+};
+
 struct currency_event {
     boost::uuids::uuid event_id;
     currency_key key;
@@ -106,6 +110,7 @@ struct list_currencies_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<currencies_filter> filter;
     std::optional<std::string> as_of;
 };
 

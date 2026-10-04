@@ -62,6 +62,10 @@ struct trade_envelope_lookup {
     std::optional<ores::trading::domain::trade_envelope> trade_envelope;
 };
 
+struct trade_envelopes_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct trade_envelope_event {
     boost::uuids::uuid event_id;
     trade_envelope_key key;
@@ -95,6 +99,7 @@ struct list_trade_envelopes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_envelopes_filter> filter;
 };
 
 struct list_trade_envelopes_response {

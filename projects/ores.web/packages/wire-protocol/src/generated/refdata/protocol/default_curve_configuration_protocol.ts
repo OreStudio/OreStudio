@@ -76,6 +76,10 @@ export interface DefaultCurveConfigurationLookup {
     default_curve_configuration: DefaultCurveConfiguration | null;
 }
 
+export interface DefaultCurveConfigurationsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface DefaultCurveConfigurationEvent {
     event_id: string;
     key: DefaultCurveConfigurationKey;
@@ -100,6 +104,7 @@ export interface ListDefaultCurveConfigurationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DefaultCurveConfigurationsFilter | null;
 }
 
 export interface ListDefaultCurveConfigurationsResponse {

@@ -65,6 +65,10 @@ struct platform_lookup {
     std::optional<ores::compute::domain::platform> platform;
 };
 
+struct platforms_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct platform_event {
     boost::uuids::uuid event_id;
     platform_key key;
@@ -98,6 +102,7 @@ struct list_platforms_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<platforms_filter> filter;
 };
 
 struct list_platforms_response {

@@ -53,6 +53,10 @@ export interface TradeStateLookup {
     trade_state: TradeState | null;
 }
 
+export interface TradeStatesFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradeStateEvent {
     event_id: string;
     key: TradeStateKey;
@@ -77,6 +81,7 @@ export interface ListTradeStatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeStatesFilter | null;
 }
 
 export interface ListTradeStatesResponse {

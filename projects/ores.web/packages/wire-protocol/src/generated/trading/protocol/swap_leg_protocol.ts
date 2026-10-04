@@ -65,6 +65,8 @@ export interface SwapLegLookup {
 
 export interface SwapLegsFilter {
     trade_id: string | null;
+    id_one_of: string[] | null;
+    trade_id_one_of: string[] | null;
 }
 
 export interface SwapLegEvent {

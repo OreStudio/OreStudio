@@ -125,14 +125,15 @@ trade_service::list_trades(const messaging::list_trades_request& request) {
             "A list of trades cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.trades = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_trade_count(ctx_);
+    response.trades =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_trade_count(ctx_, request.filter);
     return response;
 }
 

@@ -56,6 +56,10 @@ export interface TradeBookingLookup {
     trade_booking: TradeBooking | null;
 }
 
+export interface TradeBookingsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradeBookingEvent {
     event_id: string;
     key: TradeBookingKey;
@@ -80,6 +84,7 @@ export interface ListTradeBookingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeBookingsFilter | null;
 }
 
 export interface ListTradeBookingsResponse {

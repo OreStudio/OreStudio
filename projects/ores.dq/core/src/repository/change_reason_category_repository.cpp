@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"code"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::change_reason_categories_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("code", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -249,11 +267,12 @@ void change_reason_category_repository::remove(context ctx, const std::string& c
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest(context ctx,
-                                               std::uint32_t offset,
-                                               std::uint32_t limit,
-                                               const ores::utility::domain::order& order) {
+std::vector<domain::change_reason_category> change_reason_category_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::change_reason_categories_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason categories with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -266,29 +285,22 @@ change_reason_category_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"code"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return change_reason_category_mapper::map(entities); },
         lg(),
         "Reading latest change reason categories with pagination.");
 }
 
-std::uint32_t change_reason_category_repository::get_total_category_count(context ctx) {
+std::uint32_t change_reason_category_repository::get_total_category_count(
+    context ctx, const std::optional<messaging::change_reason_categories_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change reason category count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
+    const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
+                       where("valid_to"_c == max.value());
 
-    const auto query =
-        sqlgen::select_from<change_reason_category_entity>(sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active change reason category count: " << count;
-    return count;
+    return execute_count_query<change_reason_category_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting change reason categories");
 }
 
 std::vector<domain::change_reason_category>

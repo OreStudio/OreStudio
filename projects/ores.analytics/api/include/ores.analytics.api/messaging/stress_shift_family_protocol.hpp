@@ -59,6 +59,10 @@ struct stress_shift_family_lookup {
     std::optional<ores::analytics::domain::stress_shift_family> stress_shift_family;
 };
 
+struct stress_shift_families_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct stress_shift_family_event {
     boost::uuids::uuid event_id;
     stress_shift_family_key key;
@@ -92,6 +96,7 @@ struct list_stress_shift_families_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<stress_shift_families_filter> filter;
 };
 
 struct list_stress_shift_families_response {

@@ -64,6 +64,8 @@ export interface AccountContactInformationLookup {
 
 export interface AccountContactInformationsFilter {
     account_id: string | null;
+    id_one_of: string[] | null;
+    account_id_one_of: string[] | null;
 }
 
 export interface AccountContactInformationEvent {

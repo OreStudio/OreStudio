@@ -54,6 +54,10 @@ export interface DiaryEntryTypeLookup {
     diary_entry_type: DiaryEntryType | null;
 }
 
+export interface DiaryEntryTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface DiaryEntryTypeEvent {
     event_id: string;
     key: DiaryEntryTypeKey;
@@ -78,6 +82,7 @@ export interface ListDiaryEntryTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DiaryEntryTypesFilter | null;
 }
 
 export interface ListDiaryEntryTypesResponse {

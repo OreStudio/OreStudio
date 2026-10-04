@@ -44,6 +44,10 @@ struct report_definition_lookup {
     std::optional<ores::dq::domain::report_definition> report_definition;
 };
 
+struct report_definitions_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct report_definition_event {
     boost::uuids::uuid event_id;
     report_definition_key key;
@@ -66,6 +70,7 @@ struct list_report_definitions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<report_definitions_filter> filter;
 };
 
 struct list_report_definitions_response {

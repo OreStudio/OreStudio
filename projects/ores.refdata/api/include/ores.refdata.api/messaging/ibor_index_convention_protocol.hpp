@@ -63,6 +63,10 @@ struct ibor_index_convention_lookup {
     std::optional<ores::refdata::domain::ibor_index_convention> ibor_index_convention;
 };
 
+struct ibor_index_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct ibor_index_convention_event {
     boost::uuids::uuid event_id;
     ibor_index_convention_key key;
@@ -96,6 +100,7 @@ struct list_ibor_index_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ibor_index_conventions_filter> filter;
 };
 
 struct list_ibor_index_conventions_response {

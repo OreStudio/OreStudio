@@ -55,6 +55,10 @@ export interface TenantTypeLookup {
     tenant_type: TenantType | null;
 }
 
+export interface TenantTypesFilter {
+    type_one_of: string[] | null;
+}
+
 export interface TenantTypeEvent {
     event_id: string;
     key: TenantTypeKey;
@@ -79,6 +83,7 @@ export interface ListTenantTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenantTypesFilter | null;
 }
 
 export interface ListTenantTypesResponse {

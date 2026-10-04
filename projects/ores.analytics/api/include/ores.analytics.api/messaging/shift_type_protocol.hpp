@@ -59,6 +59,10 @@ struct shift_type_lookup {
     std::optional<ores::analytics::domain::shift_type> shift_type;
 };
 
+struct shift_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct shift_type_event {
     boost::uuids::uuid event_id;
     shift_type_key key;
@@ -92,6 +96,7 @@ struct list_shift_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<shift_types_filter> filter;
 };
 
 struct list_shift_types_response {

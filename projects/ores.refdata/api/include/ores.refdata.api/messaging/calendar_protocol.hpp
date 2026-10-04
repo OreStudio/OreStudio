@@ -65,6 +65,10 @@ struct calendar_lookup {
     std::optional<ores::refdata::domain::calendar> calendar;
 };
 
+struct calendars_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct calendar_event {
     boost::uuids::uuid event_id;
     calendar_key key;
@@ -98,6 +102,7 @@ struct list_calendars_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<calendars_filter> filter;
 };
 
 struct list_calendars_response {

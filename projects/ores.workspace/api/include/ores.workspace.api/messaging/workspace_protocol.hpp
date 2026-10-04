@@ -66,6 +66,10 @@ struct workspace_lookup {
     std::optional<ores::workspace::domain::workspace> workspace;
 };
 
+struct workspaces_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct workspace_event {
     boost::uuids::uuid event_id;
     workspace_key key;
@@ -99,6 +103,7 @@ struct list_workspaces_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<workspaces_filter> filter;
 };
 
 struct list_workspaces_response {

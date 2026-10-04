@@ -44,6 +44,10 @@ struct lei_entity_lookup {
     std::optional<ores::dq::domain::lei_entity> lei_entity;
 };
 
+struct lei_entities_filter {
+    std::optional<std::vector<std::string>> lei_one_of;
+};
+
 struct lei_entity_event {
     boost::uuids::uuid event_id;
     lei_entity_key key;
@@ -66,6 +70,7 @@ struct list_lei_entities_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<lei_entities_filter> filter;
 };
 
 struct list_lei_entities_response {

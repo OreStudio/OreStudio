@@ -269,6 +269,7 @@ subject_area_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"name", "domain_name"}, false),
+        std::nullopt,
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
         "Reading latest subject areas with pagination.");
@@ -278,19 +279,11 @@ std::uint32_t subject_area_repository::get_total_area_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
+    const auto query =
+        sqlgen::read<std::vector<subject_area_entity>> | where("valid_to"_c == max.value());
 
-    const auto query = sqlgen::select_from<subject_area_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active subject area count: " << count;
-    return count;
+    return execute_count_query<subject_area_entity>(
+        ctx, query, std::nullopt, lg(), "Counting subject areas");
 }
 
 std::vector<domain::subject_area>

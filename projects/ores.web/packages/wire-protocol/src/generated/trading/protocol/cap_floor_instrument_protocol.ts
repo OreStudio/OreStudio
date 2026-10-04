@@ -55,6 +55,10 @@ export interface CapFloorInstrumentLookup {
     cap_floor_instrument: CapFloorInstrument | null;
 }
 
+export interface CapFloorInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface CapFloorInstrumentEvent {
     event_id: string;
     key: CapFloorInstrumentKey;
@@ -79,6 +83,7 @@ export interface ListCapFloorInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CapFloorInstrumentsFilter | null;
 }
 
 export interface ListCapFloorInstrumentsResponse {

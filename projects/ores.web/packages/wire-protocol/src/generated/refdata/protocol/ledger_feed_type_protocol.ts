@@ -54,6 +54,10 @@ export interface LedgerFeedTypeLookup {
     ledger_feed_type: LedgerFeedType | null;
 }
 
+export interface LedgerFeedTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface LedgerFeedTypeEvent {
     event_id: string;
     key: LedgerFeedTypeKey;
@@ -78,6 +82,7 @@ export interface ListLedgerFeedTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LedgerFeedTypesFilter | null;
 }
 
 export interface ListLedgerFeedTypesResponse {

@@ -56,6 +56,10 @@ export interface CurveParametricSmileLookup {
     curve_parametric_smile: CurveParametricSmile | null;
 }
 
+export interface CurveParametricSmilesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveParametricSmileEvent {
     event_id: string;
     key: CurveParametricSmileKey;
@@ -80,6 +84,7 @@ export interface ListCurveParametricSmilesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveParametricSmilesFilter | null;
 }
 
 export interface ListCurveParametricSmilesResponse {

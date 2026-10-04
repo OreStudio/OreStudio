@@ -65,6 +65,9 @@ struct report_analytic_parameter_lookup {
 struct report_analytic_parameters_filter {
     std::optional<boost::uuids::uuid> report_analytic_id;
     std::optional<boost::uuids::uuid> parameter_definition_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> report_analytic_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> parameter_definition_id_one_of;
 };
 
 struct report_analytic_parameter_event {

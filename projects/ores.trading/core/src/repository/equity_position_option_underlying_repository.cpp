@@ -319,6 +319,7 @@ equity_position_option_underlying_repository::read_latest(
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
+        std::nullopt,
         [](const auto& entities) {
             return equity_position_option_underlying_mapper::map(entities);
         },
@@ -332,22 +333,12 @@ equity_position_option_underlying_repository::get_total_equity_position_option_u
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity position option underlying count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<equity_position_option_underlying_entity>(
-                           sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<equity_position_option_underlying_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active equity position option underlying count: " << count;
-    return count;
+    return execute_count_query<equity_position_option_underlying_entity>(
+        ctx, query, std::nullopt, lg(), "Counting equity position option underlyings");
 }
 
 std::vector<domain::equity_position_option_underlying>

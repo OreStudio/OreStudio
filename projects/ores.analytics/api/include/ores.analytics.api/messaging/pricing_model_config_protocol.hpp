@@ -65,6 +65,8 @@ struct pricing_model_config_lookup {
 
 struct pricing_model_configs_filter {
     std::optional<boost::uuids::uuid> configuration_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
 };
 
 struct pricing_model_config_event {

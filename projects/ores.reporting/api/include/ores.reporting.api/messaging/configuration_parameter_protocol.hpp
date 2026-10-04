@@ -65,6 +65,9 @@ struct configuration_parameter_lookup {
 struct configuration_parameters_filter {
     std::optional<boost::uuids::uuid> configuration_id;
     std::optional<boost::uuids::uuid> parameter_definition_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> parameter_definition_id_one_of;
 };
 
 struct configuration_parameter_event {

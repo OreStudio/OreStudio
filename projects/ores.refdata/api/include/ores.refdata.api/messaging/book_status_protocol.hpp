@@ -61,6 +61,10 @@ struct book_status_lookup {
     std::optional<ores::refdata::domain::book_status> book_status;
 };
 
+struct book_statuses_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct book_status_event {
     boost::uuids::uuid event_id;
     book_status_key key;
@@ -94,6 +98,7 @@ struct list_book_statuses_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<book_statuses_filter> filter;
     std::optional<std::string> as_of;
 };
 

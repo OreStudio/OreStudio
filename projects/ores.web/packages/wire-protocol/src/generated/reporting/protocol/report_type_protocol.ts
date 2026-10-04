@@ -55,6 +55,10 @@ export interface ReportTypeLookup {
     report_type: ReportType | null;
 }
 
+export interface ReportTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ReportTypeEvent {
     event_id: string;
     key: ReportTypeKey;
@@ -79,6 +83,7 @@ export interface ListReportTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReportTypesFilter | null;
 }
 
 export interface ListReportTypesResponse {

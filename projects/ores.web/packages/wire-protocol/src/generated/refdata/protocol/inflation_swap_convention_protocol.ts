@@ -67,6 +67,10 @@ export interface InflationSwapConventionLookup {
     inflation_swap_convention: InflationSwapConvention | null;
 }
 
+export interface InflationSwapConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface InflationSwapConventionEvent {
     event_id: string;
     key: InflationSwapConventionKey;
@@ -91,6 +95,7 @@ export interface ListInflationSwapConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InflationSwapConventionsFilter | null;
 }
 
 export interface ListInflationSwapConventionsResponse {

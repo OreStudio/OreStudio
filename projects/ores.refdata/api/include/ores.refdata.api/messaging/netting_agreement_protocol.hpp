@@ -65,6 +65,8 @@ struct netting_agreement_lookup {
 
 struct netting_agreements_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
 };
 
 struct netting_agreement_event {

@@ -57,6 +57,10 @@ export interface CurveSegmentCurveLookup {
     curve_segment_curve: CurveSegmentCurve | null;
 }
 
+export interface CurveSegmentCurvesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveSegmentCurveEvent {
     event_id: string;
     key: CurveSegmentCurveKey;
@@ -81,6 +85,7 @@ export interface ListCurveSegmentCurvesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveSegmentCurvesFilter | null;
 }
 
 export interface ListCurveSegmentCurvesResponse {

@@ -55,6 +55,10 @@ export interface FsmStateLookup {
     fsm_state: FsmState | null;
 }
 
+export interface FsmStatesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FsmStateEvent {
     event_id: string;
     key: FsmStateKey;
@@ -79,6 +83,7 @@ export interface ListFsmStatesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FsmStatesFilter | null;
 }
 
 export interface ListFsmStatesResponse {

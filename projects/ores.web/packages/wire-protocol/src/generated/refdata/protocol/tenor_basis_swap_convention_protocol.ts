@@ -65,6 +65,10 @@ export interface TenorBasisSwapConventionLookup {
     tenor_basis_swap_convention: TenorBasisSwapConvention | null;
 }
 
+export interface TenorBasisSwapConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface TenorBasisSwapConventionEvent {
     event_id: string;
     key: TenorBasisSwapConventionKey;
@@ -89,6 +93,7 @@ export interface ListTenorBasisSwapConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorBasisSwapConventionsFilter | null;
 }
 
 export interface ListTenorBasisSwapConventionsResponse {

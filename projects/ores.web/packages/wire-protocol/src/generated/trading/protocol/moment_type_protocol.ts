@@ -52,6 +52,10 @@ export interface MomentTypeLookup {
     moment_type: MomentType | null;
 }
 
+export interface MomentTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface MomentTypeEvent {
     event_id: string;
     key: MomentTypeKey;
@@ -76,6 +80,7 @@ export interface ListMomentTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: MomentTypesFilter | null;
 }
 
 export interface ListMomentTypesResponse {

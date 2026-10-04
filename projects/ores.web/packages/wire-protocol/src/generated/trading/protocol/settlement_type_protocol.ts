@@ -52,6 +52,10 @@ export interface SettlementTypeLookup {
     settlement_type: SettlementType | null;
 }
 
+export interface SettlementTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface SettlementTypeEvent {
     event_id: string;
     key: SettlementTypeKey;
@@ -76,6 +80,7 @@ export interface ListSettlementTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SettlementTypesFilter | null;
 }
 
 export interface ListSettlementTypesResponse {

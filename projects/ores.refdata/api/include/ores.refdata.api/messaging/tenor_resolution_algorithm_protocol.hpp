@@ -61,6 +61,10 @@ struct tenor_resolution_algorithm_lookup {
     std::optional<ores::refdata::domain::tenor_resolution_algorithm> tenor_resolution_algorithm;
 };
 
+struct tenor_resolution_algorithms_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct tenor_resolution_algorithm_event {
     boost::uuids::uuid event_id;
     tenor_resolution_algorithm_key key;
@@ -94,6 +98,7 @@ struct list_tenor_resolution_algorithms_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<tenor_resolution_algorithms_filter> filter;
 };
 
 struct list_tenor_resolution_algorithms_response {

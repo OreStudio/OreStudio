@@ -62,6 +62,10 @@ struct fsm_state_lookup {
     std::optional<ores::dq::domain::fsm_state> fsm_state;
 };
 
+struct fsm_states_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct fsm_state_event {
     boost::uuids::uuid event_id;
     fsm_state_key key;
@@ -95,6 +99,7 @@ struct list_fsm_states_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fsm_states_filter> filter;
 };
 
 struct list_fsm_states_response {

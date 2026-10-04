@@ -55,6 +55,10 @@ export interface TradeTypeLookup {
     trade_type: TradeType | null;
 }
 
+export interface TradeTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TradeTypeEvent {
     event_id: string;
     key: TradeTypeKey;
@@ -79,6 +83,7 @@ export interface ListTradeTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeTypesFilter | null;
 }
 
 export interface ListTradeTypesResponse {

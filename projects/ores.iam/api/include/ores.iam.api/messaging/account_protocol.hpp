@@ -44,6 +44,10 @@ struct account_lookup {
     std::optional<ores::iam::domain::account> account;
 };
 
+struct accounts_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct account_event {
     boost::uuids::uuid event_id;
     account_key key;
@@ -77,6 +81,7 @@ struct list_accounts_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<accounts_filter> filter;
 };
 
 struct list_accounts_response {

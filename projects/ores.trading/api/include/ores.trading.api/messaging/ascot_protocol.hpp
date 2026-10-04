@@ -59,6 +59,10 @@ struct ascot_lookup {
     std::optional<ores::trading::domain::ascot> ascot;
 };
 
+struct ascots_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct ascot_event {
     boost::uuids::uuid event_id;
     ascot_key key;
@@ -92,6 +96,7 @@ struct list_ascots_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ascots_filter> filter;
 };
 
 struct list_ascots_response {

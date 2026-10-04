@@ -63,6 +63,9 @@ struct sandbox_member_lookup {
 struct sandbox_members_filter {
     std::optional<boost::uuids::uuid> sandbox_id;
     std::optional<boost::uuids::uuid> account_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> sandbox_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
 };
 
 struct sandbox_member_event {

@@ -58,6 +58,10 @@ export interface CommodityForwardConventionLookup {
     commodity_forward_convention: CommodityForwardConvention | null;
 }
 
+export interface CommodityForwardConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CommodityForwardConventionEvent {
     event_id: string;
     key: CommodityForwardConventionKey;
@@ -82,6 +86,7 @@ export interface ListCommodityForwardConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityForwardConventionsFilter | null;
 }
 
 export interface ListCommodityForwardConventionsResponse {

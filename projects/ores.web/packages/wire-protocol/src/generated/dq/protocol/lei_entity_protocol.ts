@@ -35,6 +35,10 @@ export interface LeiEntityLookup {
     lei_entity: LeiEntity | null;
 }
 
+export interface LeiEntitiesFilter {
+    lei_one_of: string[] | null;
+}
+
 export interface LeiEntityEvent {
     event_id: string;
     key: LeiEntityKey;
@@ -48,6 +52,7 @@ export interface ListLeiEntitiesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LeiEntitiesFilter | null;
 }
 
 export interface ListLeiEntitiesResponse {

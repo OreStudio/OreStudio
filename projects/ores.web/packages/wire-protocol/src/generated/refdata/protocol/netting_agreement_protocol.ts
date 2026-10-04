@@ -59,6 +59,8 @@ export interface NettingAgreementLookup {
 
 export interface NettingAgreementsFilter {
     counterparty_id: string | null;
+    id_one_of: string[] | null;
+    counterparty_id_one_of: string[] | null;
 }
 
 export interface NettingAgreementEvent {

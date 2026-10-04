@@ -62,6 +62,10 @@ struct report_market_binding_lookup {
     std::optional<ores::reporting::domain::report_market_binding> report_market_binding;
 };
 
+struct report_market_bindings_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct report_market_binding_event {
     boost::uuids::uuid event_id;
     report_market_binding_key key;
@@ -95,6 +99,7 @@ struct list_report_market_bindings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<report_market_bindings_filter> filter;
 };
 
 struct list_report_market_bindings_response {

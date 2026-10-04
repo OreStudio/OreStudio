@@ -64,6 +64,10 @@ struct bond_yield_convention_lookup {
     std::optional<ores::refdata::domain::bond_yield_convention> bond_yield_convention;
 };
 
+struct bond_yield_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct bond_yield_convention_event {
     boost::uuids::uuid event_id;
     bond_yield_convention_key key;
@@ -97,6 +101,7 @@ struct list_bond_yield_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<bond_yield_conventions_filter> filter;
 };
 
 struct list_bond_yield_conventions_response {

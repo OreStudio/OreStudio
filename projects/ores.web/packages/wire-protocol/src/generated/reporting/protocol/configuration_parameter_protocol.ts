@@ -59,6 +59,9 @@ export interface ConfigurationParameterLookup {
 export interface ConfigurationParametersFilter {
     configuration_id: string | null;
     parameter_definition_id: string | null;
+    id_one_of: string[] | null;
+    configuration_id_one_of: string[] | null;
+    parameter_definition_id_one_of: string[] | null;
 }
 
 export interface ConfigurationParameterEvent {

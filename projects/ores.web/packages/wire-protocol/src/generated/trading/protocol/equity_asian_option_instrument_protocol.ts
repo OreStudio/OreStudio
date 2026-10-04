@@ -64,6 +64,10 @@ export interface EquityAsianOptionInstrumentLookup {
     equity_asian_option_instrument: EquityAsianOptionInstrument | null;
 }
 
+export interface EquityAsianOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityAsianOptionInstrumentEvent {
     event_id: string;
     key: EquityAsianOptionInstrumentKey;
@@ -88,6 +92,7 @@ export interface ListEquityAsianOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityAsianOptionInstrumentsFilter | null;
 }
 
 export interface ListEquityAsianOptionInstrumentsResponse {

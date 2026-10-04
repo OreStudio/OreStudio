@@ -74,6 +74,10 @@ struct curve_global_report_lookup {
     std::optional<ores::refdata::domain::curve_global_report> curve_global_report;
 };
 
+struct curve_global_reports_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct curve_global_report_event {
     boost::uuids::uuid event_id;
     curve_global_report_key key;
@@ -107,6 +111,7 @@ struct list_curve_global_reports_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<curve_global_reports_filter> filter;
 };
 
 struct list_curve_global_reports_response {

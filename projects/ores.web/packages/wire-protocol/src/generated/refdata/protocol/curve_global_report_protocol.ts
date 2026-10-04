@@ -67,6 +67,10 @@ export interface CurveGlobalReportLookup {
     curve_global_report: CurveGlobalReport | null;
 }
 
+export interface CurveGlobalReportsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveGlobalReportEvent {
     event_id: string;
     key: CurveGlobalReportKey;
@@ -91,6 +95,7 @@ export interface ListCurveGlobalReportsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveGlobalReportsFilter | null;
 }
 
 export interface ListCurveGlobalReportsResponse {

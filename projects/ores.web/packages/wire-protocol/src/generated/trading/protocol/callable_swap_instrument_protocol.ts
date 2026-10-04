@@ -55,6 +55,10 @@ export interface CallableSwapInstrumentLookup {
     callable_swap_instrument: CallableSwapInstrument | null;
 }
 
+export interface CallableSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface CallableSwapInstrumentEvent {
     event_id: string;
     key: CallableSwapInstrumentKey;
@@ -79,6 +83,7 @@ export interface ListCallableSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CallableSwapInstrumentsFilter | null;
 }
 
 export interface ListCallableSwapInstrumentsResponse {

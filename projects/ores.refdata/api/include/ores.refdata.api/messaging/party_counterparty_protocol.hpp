@@ -62,6 +62,7 @@ struct party_counterparty_lookup {
 
 struct party_counterparties_filter {
     std::optional<boost::uuids::uuid> party_id;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
 struct list_party_counterparties_request {

@@ -66,6 +66,10 @@ export interface EquityBarrierOptionInstrumentLookup {
     equity_barrier_option_instrument: EquityBarrierOptionInstrument | null;
 }
 
+export interface EquityBarrierOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityBarrierOptionInstrumentEvent {
     event_id: string;
     key: EquityBarrierOptionInstrumentKey;
@@ -90,6 +94,7 @@ export interface ListEquityBarrierOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityBarrierOptionInstrumentsFilter | null;
 }
 
 export interface ListEquityBarrierOptionInstrumentsResponse {

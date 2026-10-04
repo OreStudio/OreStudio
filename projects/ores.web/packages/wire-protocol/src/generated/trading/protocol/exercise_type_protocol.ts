@@ -52,6 +52,10 @@ export interface ExerciseTypeLookup {
     exercise_type: ExerciseType | null;
 }
 
+export interface ExerciseTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ExerciseTypeEvent {
     event_id: string;
     key: ExerciseTypeKey;
@@ -76,6 +80,7 @@ export interface ListExerciseTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ExerciseTypesFilter | null;
 }
 
 export interface ListExerciseTypesResponse {

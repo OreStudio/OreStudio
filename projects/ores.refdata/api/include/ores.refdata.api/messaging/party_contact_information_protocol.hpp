@@ -71,6 +71,8 @@ struct party_contact_information_lookup {
 
 struct party_contact_informations_filter {
     std::optional<boost::uuids::uuid> party_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
 struct party_contact_information_event {

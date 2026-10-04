@@ -62,6 +62,7 @@ struct currency_currency_group_lookup {
 
 struct currency_currency_groups_filter {
     std::optional<std::string> currency_iso_code;
+    std::optional<std::vector<std::string>> currency_iso_code_one_of;
 };
 
 struct list_currency_currency_groups_request {

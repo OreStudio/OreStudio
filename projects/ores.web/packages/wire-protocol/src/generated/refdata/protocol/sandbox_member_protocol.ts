@@ -57,6 +57,9 @@ export interface SandboxMemberLookup {
 export interface SandboxMembersFilter {
     sandbox_id: string | null;
     account_id: string | null;
+    id_one_of: string[] | null;
+    sandbox_id_one_of: string[] | null;
+    account_id_one_of: string[] | null;
 }
 
 export interface SandboxMemberEvent {

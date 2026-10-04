@@ -72,6 +72,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"relationship_start_node_node_id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::lei_relationships_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->relationship_start_node_node_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->relationship_start_node_node_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("relationship_start_node_node_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -226,11 +244,12 @@ void lei_relationship_repository::remove(context ctx,
     static_cast<void>(remove(ctx, relationship_start_node_node_id, std::nullopt));
 }
 
-std::vector<domain::lei_relationship>
-lei_relationship_repository::read_latest(context ctx,
-                                         std::uint32_t offset,
-                                         std::uint32_t limit,
-                                         const ores::utility::domain::order& order) {
+std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::lei_relationships_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI relationships with offset: " << offset
                                << " and limit: " << limit;
     const auto query = sqlgen::read<std::vector<lei_relationship_entity>> | sqlgen::offset(offset) |
@@ -240,27 +259,20 @@ lei_relationship_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"relationship_start_node_node_id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return lei_relationship_mapper::map(entities); },
         lg(),
         "Reading latest LEI relationships with pagination.");
 }
 
-std::uint32_t lei_relationship_repository::get_total_relationship_count(context ctx) {
+std::uint32_t lei_relationship_repository::get_total_relationship_count(
+    context ctx, const std::optional<messaging::lei_relationships_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI relationship count";
 
-    struct count_result {
-        long long count;
-    };
+    const auto query = sqlgen::read<std::vector<lei_relationship_entity>>;
 
-    const auto query = sqlgen::select_from<lei_relationship_entity>(sqlgen::count().as<"count">()) |
-                       sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active LEI relationship count: " << count;
-    return count;
+    return execute_count_query<lei_relationship_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting LEI relationships");
 }
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(

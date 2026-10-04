@@ -62,6 +62,10 @@ export interface BondForwardLookup {
     bond_forward: BondForward | null;
 }
 
+export interface BondForwardsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondForwardEvent {
     event_id: string;
     key: BondForwardKey;
@@ -86,6 +90,7 @@ export interface ListBondForwardsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondForwardsFilter | null;
 }
 
 export interface ListBondForwardsResponse {

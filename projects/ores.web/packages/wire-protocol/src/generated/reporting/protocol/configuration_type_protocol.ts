@@ -56,6 +56,10 @@ export interface ConfigurationTypeLookup {
     configuration_type: ConfigurationType | null;
 }
 
+export interface ConfigurationTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ConfigurationTypeEvent {
     event_id: string;
     key: ConfigurationTypeKey;
@@ -80,6 +84,7 @@ export interface ListConfigurationTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ConfigurationTypesFilter | null;
 }
 
 export interface ListConfigurationTypesResponse {

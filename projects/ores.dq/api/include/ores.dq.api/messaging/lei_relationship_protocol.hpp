@@ -44,6 +44,10 @@ struct lei_relationship_lookup {
     std::optional<ores::dq::domain::lei_relationship> lei_relationship;
 };
 
+struct lei_relationships_filter {
+    std::optional<std::vector<std::string>> relationship_start_node_node_id_one_of;
+};
+
 struct lei_relationship_event {
     boost::uuids::uuid event_id;
     lei_relationship_key key;
@@ -66,6 +70,7 @@ struct list_lei_relationships_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<lei_relationships_filter> filter;
 };
 
 struct list_lei_relationships_response {

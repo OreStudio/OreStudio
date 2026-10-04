@@ -54,6 +54,10 @@ export interface DatasetBundleLookup {
     dataset_bundle: DatasetBundle | null;
 }
 
+export interface DatasetBundlesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface DatasetBundleEvent {
     event_id: string;
     key: DatasetBundleKey;
@@ -78,6 +82,7 @@ export interface ListDatasetBundlesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DatasetBundlesFilter | null;
 }
 
 export interface ListDatasetBundlesResponse {

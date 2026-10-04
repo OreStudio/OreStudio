@@ -56,6 +56,10 @@ export interface FsmTransitionLookup {
     fsm_transition: FsmTransition | null;
 }
 
+export interface FsmTransitionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FsmTransitionEvent {
     event_id: string;
     key: FsmTransitionKey;
@@ -80,6 +84,7 @@ export interface ListFsmTransitionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FsmTransitionsFilter | null;
 }
 
 export interface ListFsmTransitionsResponse {

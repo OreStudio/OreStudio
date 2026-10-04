@@ -58,6 +58,10 @@ export interface KnockOutSwapInstrumentLookup {
     knock_out_swap_instrument: KnockOutSwapInstrument | null;
 }
 
+export interface KnockOutSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface KnockOutSwapInstrumentEvent {
     event_id: string;
     key: KnockOutSwapInstrumentKey;
@@ -82,6 +86,7 @@ export interface ListKnockOutSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: KnockOutSwapInstrumentsFilter | null;
 }
 
 export interface ListKnockOutSwapInstrumentsResponse {

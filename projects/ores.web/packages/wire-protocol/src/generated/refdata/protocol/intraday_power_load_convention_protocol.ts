@@ -53,6 +53,10 @@ export interface IntradayPowerLoadConventionLookup {
     intraday_power_load_convention: IntradayPowerLoadConvention | null;
 }
 
+export interface IntradayPowerLoadConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface IntradayPowerLoadConventionEvent {
     event_id: string;
     key: IntradayPowerLoadConventionKey;
@@ -77,6 +81,7 @@ export interface ListIntradayPowerLoadConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: IntradayPowerLoadConventionsFilter | null;
 }
 
 export interface ListIntradayPowerLoadConventionsResponse {

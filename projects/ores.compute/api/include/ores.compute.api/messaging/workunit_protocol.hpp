@@ -67,6 +67,8 @@ struct workunit_lookup {
 
 struct workunits_filter {
     std::optional<boost::uuids::uuid> batch_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> batch_id_one_of;
 };
 
 struct workunit_event {

@@ -54,6 +54,10 @@ export interface CurveConfigurationLookup {
     curve_configuration: CurveConfiguration | null;
 }
 
+export interface CurveConfigurationsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveConfigurationEvent {
     event_id: string;
     key: CurveConfigurationKey;
@@ -78,6 +82,7 @@ export interface ListCurveConfigurationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveConfigurationsFilter | null;
 }
 
 export interface ListCurveConfigurationsResponse {

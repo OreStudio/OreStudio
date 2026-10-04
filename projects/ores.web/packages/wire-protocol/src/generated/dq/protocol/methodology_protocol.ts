@@ -55,6 +55,10 @@ export interface MethodologyLookup {
     methodology: Methodology | null;
 }
 
+export interface MethodologiesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface MethodologyEvent {
     event_id: string;
     key: MethodologyKey;
@@ -79,6 +83,7 @@ export interface ListMethodologiesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: MethodologiesFilter | null;
 }
 
 export interface ListMethodologiesResponse {

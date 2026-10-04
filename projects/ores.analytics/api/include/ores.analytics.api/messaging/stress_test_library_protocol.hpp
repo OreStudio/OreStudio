@@ -61,6 +61,10 @@ struct stress_test_library_lookup {
     std::optional<ores::analytics::domain::stress_test_library> stress_test_library;
 };
 
+struct stress_test_libraries_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct stress_test_library_event {
     boost::uuids::uuid event_id;
     stress_test_library_key key;
@@ -94,6 +98,7 @@ struct list_stress_test_libraries_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<stress_test_libraries_filter> filter;
 };
 
 struct list_stress_test_libraries_response {

@@ -63,6 +63,10 @@ struct crm_driver_pair_lookup {
     std::optional<ores::refdata::domain::crm_driver_pair> crm_driver_pair;
 };
 
+struct crm_driver_pairs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct crm_driver_pair_event {
     boost::uuids::uuid event_id;
     crm_driver_pair_key key;
@@ -96,6 +100,7 @@ struct list_crm_driver_pairs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<crm_driver_pairs_filter> filter;
 };
 
 struct list_crm_driver_pairs_response {

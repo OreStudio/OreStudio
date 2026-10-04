@@ -66,6 +66,10 @@ struct observation_lineage_lookup {
     std::optional<ores::marketdata::domain::observation_lineage> observation_lineage;
 };
 
+struct observation_lineages_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct observation_lineage_event {
     boost::uuids::uuid event_id;
     observation_lineage_key key;
@@ -99,6 +103,7 @@ struct list_observation_lineages_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<observation_lineages_filter> filter;
 };
 
 struct list_observation_lineages_response {

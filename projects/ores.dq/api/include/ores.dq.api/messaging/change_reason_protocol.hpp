@@ -65,6 +65,10 @@ struct change_reason_lookup {
     std::optional<ores::dq::domain::change_reason> change_reason;
 };
 
+struct change_reasons_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct change_reason_event {
     boost::uuids::uuid event_id;
     change_reason_key key;
@@ -98,6 +102,7 @@ struct list_change_reasons_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<change_reasons_filter> filter;
 };
 
 struct list_change_reasons_response {

@@ -63,6 +63,10 @@ struct business_centre_lookup {
     std::optional<ores::refdata::domain::business_centre> business_centre;
 };
 
+struct business_centres_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct business_centre_event {
     boost::uuids::uuid event_id;
     business_centre_key key;
@@ -96,6 +100,7 @@ struct list_business_centres_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<business_centres_filter> filter;
 };
 
 struct list_business_centres_response {

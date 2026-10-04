@@ -62,6 +62,7 @@ struct account_party_lookup {
 
 struct account_parties_filter {
     std::optional<boost::uuids::uuid> account_id;
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
 };
 
 struct list_account_parties_request {

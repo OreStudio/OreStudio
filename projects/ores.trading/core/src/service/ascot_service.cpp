@@ -100,8 +100,16 @@ ascot_service::list_ascots(const messaging::list_ascots_request& request) {
             "A list of ascots cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.ascots = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_ascot_count(ctx_);
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in trade_id_one_of.";
+        return response;
+    }
+    response.ascots =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_ascot_count(ctx_, request.filter);
     return response;
 }
 

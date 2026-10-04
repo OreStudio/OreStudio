@@ -61,6 +61,8 @@ export interface WorkunitLookup {
 
 export interface WorkunitsFilter {
     batch_id: string | null;
+    id_one_of: string[] | null;
+    batch_id_one_of: string[] | null;
 }
 
 export interface WorkunitEvent {

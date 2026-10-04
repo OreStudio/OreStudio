@@ -58,6 +58,10 @@ export interface BusinessUnitLookup {
     business_unit: BusinessUnit | null;
 }
 
+export interface BusinessUnitsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BusinessUnitEvent {
     event_id: string;
     key: BusinessUnitKey;
@@ -82,6 +86,7 @@ export interface ListBusinessUnitsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BusinessUnitsFilter | null;
 }
 
 export interface ListBusinessUnitsResponse {

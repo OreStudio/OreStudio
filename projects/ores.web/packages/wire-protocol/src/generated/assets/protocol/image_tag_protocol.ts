@@ -58,6 +58,7 @@ export interface ImageTagLookup {
 
 export interface ImageTagsFilter {
     image_id: string | null;
+    image_id_one_of: string[] | null;
 }
 
 export interface ListImageTagsRequest {

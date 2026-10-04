@@ -54,6 +54,10 @@ export interface ParameterValueDomainLookup {
     parameter_value_domain: ParameterValueDomain | null;
 }
 
+export interface ParameterValueDomainsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ParameterValueDomainEvent {
     event_id: string;
     key: ParameterValueDomainKey;
@@ -78,6 +82,7 @@ export interface ListParameterValueDomainsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ParameterValueDomainsFilter | null;
 }
 
 export interface ListParameterValueDomainsResponse {

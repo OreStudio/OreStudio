@@ -62,6 +62,10 @@ struct app_version_lookup {
     std::optional<ores::compute::domain::app_version> app_version;
 };
 
+struct app_versions_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct app_version_event {
     boost::uuids::uuid event_id;
     app_version_key key;
@@ -95,6 +99,7 @@ struct list_app_versions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<app_versions_filter> filter;
 };
 
 struct list_app_versions_response {

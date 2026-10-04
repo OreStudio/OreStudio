@@ -64,6 +64,10 @@ struct market_series_lookup {
     std::optional<ores::marketdata::domain::market_series> market_series;
 };
 
+struct market_series_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct market_series_event {
     boost::uuids::uuid event_id;
     market_series_key key;
@@ -97,6 +101,7 @@ struct list_market_series_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<market_series_filter> filter;
 };
 
 struct list_market_series_response {

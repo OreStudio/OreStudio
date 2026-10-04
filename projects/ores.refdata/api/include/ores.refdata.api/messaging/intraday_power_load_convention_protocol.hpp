@@ -61,6 +61,10 @@ struct intraday_power_load_convention_lookup {
         intraday_power_load_convention;
 };
 
+struct intraday_power_load_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct intraday_power_load_convention_event {
     boost::uuids::uuid event_id;
     intraday_power_load_convention_key key;
@@ -95,6 +99,7 @@ struct list_intraday_power_load_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<intraday_power_load_conventions_filter> filter;
 };
 
 struct list_intraday_power_load_conventions_response {

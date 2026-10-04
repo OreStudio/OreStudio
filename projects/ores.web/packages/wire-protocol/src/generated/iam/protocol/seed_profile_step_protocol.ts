@@ -58,6 +58,8 @@ export interface SeedProfileStepLookup {
 
 export interface SeedProfileStepsFilter {
     seed_profile_id: string | null;
+    id_one_of: string[] | null;
+    seed_profile_id_one_of: string[] | null;
 }
 
 export interface SeedProfileStepEvent {

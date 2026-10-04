@@ -35,6 +35,10 @@ export interface AccountLookup {
     account: Account | null;
 }
 
+export interface AccountsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface AccountEvent {
     event_id: string;
     key: AccountKey;
@@ -59,6 +63,7 @@ export interface ListAccountsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AccountsFilter | null;
 }
 
 export interface ListAccountsResponse {

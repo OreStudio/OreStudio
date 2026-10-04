@@ -75,6 +75,10 @@ export interface CrossCurrencyBasisConventionLookup {
     cross_currency_basis_convention: CrossCurrencyBasisConvention | null;
 }
 
+export interface CrossCurrencyBasisConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CrossCurrencyBasisConventionEvent {
     event_id: string;
     key: CrossCurrencyBasisConventionKey;
@@ -99,6 +103,7 @@ export interface ListCrossCurrencyBasisConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CrossCurrencyBasisConventionsFilter | null;
 }
 
 export interface ListCrossCurrencyBasisConventionsResponse {

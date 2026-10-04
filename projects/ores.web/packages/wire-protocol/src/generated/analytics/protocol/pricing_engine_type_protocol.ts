@@ -53,6 +53,10 @@ export interface PricingEngineTypeLookup {
     pricing_engine_type: PricingEngineType | null;
 }
 
+export interface PricingEngineTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PricingEngineTypeEvent {
     event_id: string;
     key: PricingEngineTypeKey;
@@ -77,6 +81,7 @@ export interface ListPricingEngineTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PricingEngineTypesFilter | null;
 }
 
 export interface ListPricingEngineTypesResponse {

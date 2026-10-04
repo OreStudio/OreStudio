@@ -54,6 +54,10 @@ export interface PartyStatusLookup {
     party_status: PartyStatus | null;
 }
 
+export interface PartyStatusesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PartyStatusEvent {
     event_id: string;
     key: PartyStatusKey;
@@ -78,6 +82,7 @@ export interface ListPartyStatusesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PartyStatusesFilter | null;
 }
 
 export interface ListPartyStatusesResponse {

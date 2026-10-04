@@ -59,6 +59,10 @@ export interface WorkspaceLookup {
     workspace: Workspace | null;
 }
 
+export interface WorkspacesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface WorkspaceEvent {
     event_id: string;
     key: WorkspaceKey;
@@ -83,6 +87,7 @@ export interface ListWorkspacesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: WorkspacesFilter | null;
 }
 
 export interface ListWorkspacesResponse {

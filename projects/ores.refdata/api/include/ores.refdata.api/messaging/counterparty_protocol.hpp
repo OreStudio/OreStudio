@@ -68,6 +68,10 @@ struct counterparty_lookup {
     std::optional<ores::refdata::domain::counterparty> counterparty;
 };
 
+struct counterparties_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct counterparty_event {
     boost::uuids::uuid event_id;
     counterparty_key key;
@@ -101,6 +105,7 @@ struct list_counterparties_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<counterparties_filter> filter;
 };
 
 struct list_counterparties_response {

@@ -61,6 +61,10 @@ export interface CdsConventionLookup {
     cds_convention: CdsConvention | null;
 }
 
+export interface CdsConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CdsConventionEvent {
     event_id: string;
     key: CdsConventionKey;
@@ -85,6 +89,7 @@ export interface ListCdsConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CdsConventionsFilter | null;
 }
 
 export interface ListCdsConventionsResponse {

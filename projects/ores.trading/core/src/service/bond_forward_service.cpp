@@ -110,8 +110,16 @@ bond_forward_service::list_bond_forwards(const messaging::list_bond_forwards_req
             "A list of bond forwards cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.bond_forwards = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_bond_forward_count(ctx_);
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in trade_id_one_of.";
+        return response;
+    }
+    response.bond_forwards =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_bond_forward_count(ctx_, request.filter);
     return response;
 }
 

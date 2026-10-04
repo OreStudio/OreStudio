@@ -61,6 +61,10 @@ export interface FxVanillaOptionInstrumentLookup {
     fx_vanilla_option_instrument: FxVanillaOptionInstrument | null;
 }
 
+export interface FxVanillaOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxVanillaOptionInstrumentEvent {
     event_id: string;
     key: FxVanillaOptionInstrumentKey;
@@ -85,6 +89,7 @@ export interface ListFxVanillaOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxVanillaOptionInstrumentsFilter | null;
 }
 
 export interface ListFxVanillaOptionInstrumentsResponse {

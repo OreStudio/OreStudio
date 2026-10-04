@@ -61,6 +61,10 @@ struct account_status_lookup {
     std::optional<ores::iam::domain::account_status> account_status;
 };
 
+struct account_statuses_filter {
+    std::optional<std::vector<std::string>> status_one_of;
+};
+
 struct account_status_event {
     boost::uuids::uuid event_id;
     account_status_key key;
@@ -94,6 +98,7 @@ struct list_account_statuses_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<account_statuses_filter> filter;
 };
 
 struct list_account_statuses_response {

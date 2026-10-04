@@ -56,6 +56,10 @@ export interface BondFutureLookup {
     bond_future: BondFuture | null;
 }
 
+export interface BondFuturesFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondFutureEvent {
     event_id: string;
     key: BondFutureKey;
@@ -80,6 +84,7 @@ export interface ListBondFuturesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondFuturesFilter | null;
 }
 
 export interface ListBondFuturesResponse {

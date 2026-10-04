@@ -60,6 +60,8 @@ export interface ParameterDefinitionLookup {
 
 export interface ParameterDefinitionsFilter {
     parameter_value_domain_code: string | null;
+    id_one_of: string[] | null;
+    parameter_value_domain_code_one_of: string[] | null;
 }
 
 export interface ParameterDefinitionEvent {

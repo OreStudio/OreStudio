@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/parameter_definition.hpp"
+#include "ores.reporting.api/messaging/parameter_definition_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -151,19 +152,22 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::parameter_definition>
-    read_latest_by_parameter_value_domain_code(context ctx,
-                                               const std::string& parameter_value_domain_code,
-                                               std::uint32_t offset,
-                                               std::uint32_t limit,
-                                               const ores::utility::domain::order& order = {});
+    std::vector<domain::parameter_definition> read_latest_by_parameter_value_domain_code(
+        context ctx,
+        const std::string& parameter_value_domain_code,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::parameter_definitions_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active parameter definitions filtered by
      * parameter_value_domain_code.
      */
     std::uint32_t get_total_parameter_count_by_parameter_value_domain_code(
-        context ctx, const std::string& parameter_value_domain_code);
+        context ctx,
+        const std::string& parameter_value_domain_code,
+        const std::optional<messaging::parameter_definitions_filter>& filter = std::nullopt);
 
 
     /**
@@ -179,20 +183,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::parameter_definition>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::parameter_definition> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::parameter_definitions_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active parameter definitions.
      * @param ctx Repository context with database connection
      * @return Total number of active parameter definitions
      */
-    std::uint32_t get_total_parameter_count(context ctx);
+    std::uint32_t get_total_parameter_count(
+        context ctx,
+        const std::optional<messaging::parameter_definitions_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a parameter definition by closing its temporal validity.

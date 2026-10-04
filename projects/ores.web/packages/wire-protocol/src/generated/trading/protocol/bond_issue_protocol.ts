@@ -68,6 +68,10 @@ export interface BondIssueLookup {
     bond_issue: BondIssue | null;
 }
 
+export interface BondIssuesFilter {
+    issue_id_one_of: string[] | null;
+}
+
 export interface BondIssueEvent {
     event_id: string;
     key: BondIssueKey;
@@ -92,6 +96,7 @@ export interface ListBondIssuesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondIssuesFilter | null;
 }
 
 export interface ListBondIssuesResponse {

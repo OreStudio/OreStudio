@@ -299,6 +299,7 @@ callable_swap_call_date_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
+        std::nullopt,
         [](const auto& entities) { return callable_swap_call_date_mapper::map(entities); },
         lg(),
         "Reading latest callable swap call dates with pagination.");
@@ -309,21 +310,12 @@ callable_swap_call_date_repository::get_total_callable_swap_call_date_count(cont
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active callable swap call date count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<callable_swap_call_date_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<callable_swap_call_date_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active callable swap call date count: " << count;
-    return count;
+    return execute_count_query<callable_swap_call_date_entity>(
+        ctx, query, std::nullopt, lg(), "Counting callable swap call dates");
 }
 
 std::vector<domain::callable_swap_call_date>

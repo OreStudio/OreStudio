@@ -61,6 +61,10 @@ struct purpose_type_lookup {
     std::optional<ores::refdata::domain::purpose_type> purpose_type;
 };
 
+struct purpose_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct purpose_type_event {
     boost::uuids::uuid event_id;
     purpose_type_key key;
@@ -94,6 +98,7 @@ struct list_purpose_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<purpose_types_filter> filter;
 };
 
 struct list_purpose_types_response {

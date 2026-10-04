@@ -55,6 +55,10 @@ export interface TradeEnvelopeLookup {
     trade_envelope: TradeEnvelope | null;
 }
 
+export interface TradeEnvelopesFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface TradeEnvelopeEvent {
     event_id: string;
     key: TradeEnvelopeKey;
@@ -79,6 +83,7 @@ export interface ListTradeEnvelopesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeEnvelopesFilter | null;
 }
 
 export interface ListTradeEnvelopesResponse {

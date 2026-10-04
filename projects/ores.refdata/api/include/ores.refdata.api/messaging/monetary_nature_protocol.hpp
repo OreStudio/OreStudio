@@ -61,6 +61,10 @@ struct monetary_nature_lookup {
     std::optional<ores::refdata::domain::monetary_nature> monetary_nature;
 };
 
+struct monetary_natures_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct monetary_nature_event {
     boost::uuids::uuid event_id;
     monetary_nature_key key;
@@ -94,6 +98,7 @@ struct list_monetary_natures_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<monetary_natures_filter> filter;
 };
 
 struct list_monetary_natures_response {

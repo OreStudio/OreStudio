@@ -56,6 +56,10 @@ export interface BondOptionLookup {
     bond_option: BondOption | null;
 }
 
+export interface BondOptionsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondOptionEvent {
     event_id: string;
     key: BondOptionKey;
@@ -80,6 +84,7 @@ export interface ListBondOptionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondOptionsFilter | null;
 }
 
 export interface ListBondOptionsResponse {

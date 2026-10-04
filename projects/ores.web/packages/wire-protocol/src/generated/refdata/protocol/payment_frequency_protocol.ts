@@ -56,6 +56,10 @@ export interface PaymentFrequencyLookup {
     payment_frequency: PaymentFrequency | null;
 }
 
+export interface PaymentFrequenciesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PaymentFrequencyEvent {
     event_id: string;
     key: PaymentFrequencyKey;
@@ -80,6 +84,7 @@ export interface ListPaymentFrequenciesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PaymentFrequenciesFilter | null;
 }
 
 export interface ListPaymentFrequenciesResponse {

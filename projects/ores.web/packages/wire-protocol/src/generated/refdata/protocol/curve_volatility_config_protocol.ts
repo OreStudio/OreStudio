@@ -81,6 +81,10 @@ export interface CurveVolatilityConfigLookup {
     curve_volatility_config: CurveVolatilityConfig | null;
 }
 
+export interface CurveVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveVolatilityConfigEvent {
     event_id: string;
     key: CurveVolatilityConfigKey;
@@ -105,6 +109,7 @@ export interface ListCurveVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveVolatilityConfigsFilter | null;
 }
 
 export interface ListCurveVolatilityConfigsResponse {

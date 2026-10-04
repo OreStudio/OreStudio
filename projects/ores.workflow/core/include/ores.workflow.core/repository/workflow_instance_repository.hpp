@@ -29,6 +29,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
 #include "ores.workflow.core/export.hpp"
 #include <chrono>
 #include <cstdint>
@@ -138,20 +139,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::workflow_instance>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active workflow instances.
      * @param ctx Repository context with database connection
      * @return Total number of active workflow instances
      */
-    std::uint32_t get_total_instance_count(context ctx);
+    std::uint32_t get_total_instance_count(
+        context ctx,
+        const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a workflow instance by closing its temporal validity.

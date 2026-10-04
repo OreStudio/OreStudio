@@ -64,6 +64,7 @@ struct app_version_platform_lookup {
 
 struct app_version_platforms_filter {
     std::optional<boost::uuids::uuid> app_version_id;
+    std::optional<std::vector<boost::uuids::uuid>> app_version_id_one_of;
 };
 
 struct list_app_version_platforms_request {

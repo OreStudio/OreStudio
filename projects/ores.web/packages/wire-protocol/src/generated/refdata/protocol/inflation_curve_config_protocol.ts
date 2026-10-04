@@ -69,6 +69,10 @@ export interface InflationCurveConfigLookup {
     inflation_curve_config: InflationCurveConfig | null;
 }
 
+export interface InflationCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface InflationCurveConfigEvent {
     event_id: string;
     key: InflationCurveConfigKey;
@@ -93,6 +97,7 @@ export interface ListInflationCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InflationCurveConfigsFilter | null;
 }
 
 export interface ListInflationCurveConfigsResponse {

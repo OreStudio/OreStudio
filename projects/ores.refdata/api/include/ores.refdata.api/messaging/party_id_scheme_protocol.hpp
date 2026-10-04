@@ -63,6 +63,10 @@ struct party_id_scheme_lookup {
     std::optional<ores::refdata::domain::party_id_scheme> party_id_scheme;
 };
 
+struct party_id_schemes_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct party_id_scheme_event {
     boost::uuids::uuid event_id;
     party_id_scheme_key key;
@@ -96,6 +100,7 @@ struct list_party_id_schemes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<party_id_schemes_filter> filter;
 };
 
 struct list_party_id_schemes_response {

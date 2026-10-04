@@ -60,6 +60,10 @@ struct app_lookup {
     std::optional<ores::compute::domain::app> app;
 };
 
+struct apps_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct app_event {
     boost::uuids::uuid event_id;
     app_key key;
@@ -93,6 +97,7 @@ struct list_apps_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<apps_filter> filter;
 };
 
 struct list_apps_response {

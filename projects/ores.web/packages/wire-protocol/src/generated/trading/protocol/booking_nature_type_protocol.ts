@@ -35,6 +35,10 @@ export interface BookingNatureTypeLookup {
     booking_nature_type: BookingNatureType | null;
 }
 
+export interface BookingNatureTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BookingNatureTypeEvent {
     event_id: string;
     key: BookingNatureTypeKey;
@@ -48,6 +52,7 @@ export interface ListBookingNatureTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BookingNatureTypesFilter | null;
 }
 
 export interface ListBookingNatureTypesResponse {

@@ -71,6 +71,10 @@ export interface FxVolatilityConfigLookup {
     fx_volatility_config: FxVolatilityConfig | null;
 }
 
+export interface FxVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FxVolatilityConfigEvent {
     event_id: string;
     key: FxVolatilityConfigKey;
@@ -95,6 +99,7 @@ export interface ListFxVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxVolatilityConfigsFilter | null;
 }
 
 export interface ListFxVolatilityConfigsResponse {

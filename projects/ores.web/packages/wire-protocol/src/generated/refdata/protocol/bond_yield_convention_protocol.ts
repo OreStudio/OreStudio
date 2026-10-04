@@ -57,6 +57,10 @@ export interface BondYieldConventionLookup {
     bond_yield_convention: BondYieldConvention | null;
 }
 
+export interface BondYieldConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BondYieldConventionEvent {
     event_id: string;
     key: BondYieldConventionKey;
@@ -81,6 +85,7 @@ export interface ListBondYieldConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondYieldConventionsFilter | null;
 }
 
 export interface ListBondYieldConventionsResponse {

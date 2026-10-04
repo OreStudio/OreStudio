@@ -60,6 +60,10 @@ export interface FraInstrumentLookup {
     fra_instrument: FraInstrument | null;
 }
 
+export interface FraInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FraInstrumentEvent {
     event_id: string;
     key: FraInstrumentKey;
@@ -84,6 +88,7 @@ export interface ListFraInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FraInstrumentsFilter | null;
 }
 
 export interface ListFraInstrumentsResponse {

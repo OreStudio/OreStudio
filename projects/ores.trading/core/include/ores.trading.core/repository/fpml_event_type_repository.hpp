@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.api/messaging/fpml_event_type_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -138,20 +139,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::fpml_event_type>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::fpml_event_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active FpML event types.
      * @param ctx Repository context with database connection
      * @return Total number of active FpML event types
      */
-    std::uint32_t get_total_fpml_event_type_count(context ctx);
+    std::uint32_t get_total_fpml_event_type_count(
+        context ctx,
+        const std::optional<messaging::fpml_event_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a FpML event type by closing its temporal validity.

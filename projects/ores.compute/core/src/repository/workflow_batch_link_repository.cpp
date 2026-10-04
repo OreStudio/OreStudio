@@ -221,6 +221,7 @@ workflow_batch_link_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"batch_id"}, false),
+        std::nullopt,
         [](const auto& entities) { return workflow_batch_link_mapper::map(entities); },
         lg(),
         "Reading latest workflow batch links with pagination.");
@@ -229,20 +230,10 @@ workflow_batch_link_repository::read_latest(context ctx,
 std::uint32_t workflow_batch_link_repository::get_total__count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active link count";
 
-    struct count_result {
-        long long count;
-    };
+    const auto query = sqlgen::read<std::vector<workflow_batch_link_entity>>;
 
-    const auto query =
-        sqlgen::select_from<workflow_batch_link_entity>(sqlgen::count().as<"count">()) |
-        sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active link count: " << count;
-    return count;
+    return execute_count_query<workflow_batch_link_entity>(
+        ctx, query, std::nullopt, lg(), "Counting workflow batch links");
 }
 
 std::vector<domain::workflow_batch_link>

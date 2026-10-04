@@ -61,6 +61,10 @@ export interface CurveQuoteLookup {
     curve_quote: CurveQuote | null;
 }
 
+export interface CurveQuotesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveQuoteEvent {
     event_id: string;
     key: CurveQuoteKey;
@@ -85,6 +89,7 @@ export interface ListCurveQuotesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveQuotesFilter | null;
 }
 
 export interface ListCurveQuotesResponse {

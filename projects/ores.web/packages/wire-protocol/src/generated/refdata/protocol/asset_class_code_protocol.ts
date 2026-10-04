@@ -54,6 +54,10 @@ export interface AssetClassCodeLookup {
     asset_class_code: AssetClassCode | null;
 }
 
+export interface AssetClassCodesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface AssetClassCodeEvent {
     event_id: string;
     key: AssetClassCodeKey;
@@ -78,6 +82,7 @@ export interface ListAssetClassCodesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AssetClassCodesFilter | null;
 }
 
 export interface ListAssetClassCodesResponse {

@@ -62,6 +62,10 @@ struct tenant_status_lookup {
     std::optional<ores::iam::domain::tenant_status> tenant_status;
 };
 
+struct tenant_statuses_filter {
+    std::optional<std::vector<std::string>> status_one_of;
+};
+
 struct tenant_status_event {
     boost::uuids::uuid event_id;
     tenant_status_key key;
@@ -95,6 +99,7 @@ struct list_tenant_statuses_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<tenant_statuses_filter> filter;
 };
 
 struct list_tenant_statuses_response {

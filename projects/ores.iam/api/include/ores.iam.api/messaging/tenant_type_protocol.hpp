@@ -62,6 +62,10 @@ struct tenant_type_lookup {
     std::optional<ores::iam::domain::tenant_type> tenant_type;
 };
 
+struct tenant_types_filter {
+    std::optional<std::vector<std::string>> type_one_of;
+};
+
 struct tenant_type_event {
     boost::uuids::uuid event_id;
     tenant_type_key key;
@@ -95,6 +99,7 @@ struct list_tenant_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<tenant_types_filter> filter;
 };
 
 struct list_tenant_types_response {

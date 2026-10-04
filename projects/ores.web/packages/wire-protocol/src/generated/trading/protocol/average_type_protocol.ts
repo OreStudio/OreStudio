@@ -52,6 +52,10 @@ export interface AverageTypeLookup {
     average_type: AverageType | null;
 }
 
+export interface AverageTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface AverageTypeEvent {
     event_id: string;
     key: AverageTypeKey;
@@ -76,6 +80,7 @@ export interface ListAverageTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AverageTypesFilter | null;
 }
 
 export interface ListAverageTypesResponse {

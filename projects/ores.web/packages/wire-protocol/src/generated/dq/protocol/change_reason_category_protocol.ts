@@ -52,6 +52,10 @@ export interface ChangeReasonCategoryLookup {
     change_reason_category: ChangeReasonCategory | null;
 }
 
+export interface ChangeReasonCategoriesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ChangeReasonCategoryEvent {
     event_id: string;
     key: ChangeReasonCategoryKey;
@@ -76,6 +80,7 @@ export interface ListChangeReasonCategoriesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ChangeReasonCategoriesFilter | null;
 }
 
 export interface ListChangeReasonCategoriesResponse {

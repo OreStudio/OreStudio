@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_forward.hpp"
+#include "ores.trading.api/messaging/bond_forward_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -138,19 +139,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::bond_forward> read_latest(context ctx,
-                                                  std::uint32_t offset,
-                                                  std::uint32_t limit,
-                                                  const ores::utility::domain::order& order = {});
+    std::vector<domain::bond_forward>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::bond_forwards_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active bond forwards.
      * @param ctx Repository context with database connection
      * @return Total number of active bond forwards
      */
-    std::uint32_t get_total_bond_forward_count(context ctx);
+    std::uint32_t get_total_bond_forward_count(
+        context ctx, const std::optional<messaging::bond_forwards_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a bond forward by closing its temporal validity.

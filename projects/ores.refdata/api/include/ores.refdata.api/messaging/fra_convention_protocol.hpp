@@ -59,6 +59,10 @@ struct fra_convention_lookup {
     std::optional<ores::refdata::domain::fra_convention> fra_convention;
 };
 
+struct fra_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct fra_convention_event {
     boost::uuids::uuid event_id;
     fra_convention_key key;
@@ -92,6 +96,7 @@ struct list_fra_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fra_conventions_filter> filter;
 };
 
 struct list_fra_conventions_response {

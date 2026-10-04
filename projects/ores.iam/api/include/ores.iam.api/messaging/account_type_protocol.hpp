@@ -61,6 +61,10 @@ struct account_type_lookup {
     std::optional<ores::iam::domain::account_type> account_type;
 };
 
+struct account_types_filter {
+    std::optional<std::vector<std::string>> type_one_of;
+};
+
 struct account_type_event {
     boost::uuids::uuid event_id;
     account_type_key key;
@@ -94,6 +98,7 @@ struct list_account_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<account_types_filter> filter;
 };
 
 struct list_account_types_response {

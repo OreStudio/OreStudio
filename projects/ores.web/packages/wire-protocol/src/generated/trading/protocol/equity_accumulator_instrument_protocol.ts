@@ -65,6 +65,10 @@ export interface EquityAccumulatorInstrumentLookup {
     equity_accumulator_instrument: EquityAccumulatorInstrument | null;
 }
 
+export interface EquityAccumulatorInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityAccumulatorInstrumentEvent {
     event_id: string;
     key: EquityAccumulatorInstrumentKey;
@@ -89,6 +93,7 @@ export interface ListEquityAccumulatorInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityAccumulatorInstrumentsFilter | null;
 }
 
 export interface ListEquityAccumulatorInstrumentsResponse {

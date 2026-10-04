@@ -64,6 +64,10 @@ struct vanilla_swap_instrument_lookup {
     std::optional<ores::trading::domain::vanilla_swap_instrument> vanilla_swap_instrument;
 };
 
+struct vanilla_swap_instruments_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct vanilla_swap_instrument_event {
     boost::uuids::uuid event_id;
     vanilla_swap_instrument_key key;
@@ -97,6 +101,7 @@ struct list_vanilla_swap_instruments_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<vanilla_swap_instruments_filter> filter;
 };
 
 struct list_vanilla_swap_instruments_response {

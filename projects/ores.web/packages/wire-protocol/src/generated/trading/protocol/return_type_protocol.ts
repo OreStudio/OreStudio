@@ -52,6 +52,10 @@ export interface ReturnTypeLookup {
     return_type: ReturnType | null;
 }
 
+export interface ReturnTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ReturnTypeEvent {
     event_id: string;
     key: ReturnTypeKey;
@@ -76,6 +80,7 @@ export interface ListReturnTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReturnTypesFilter | null;
 }
 
 export interface ListReturnTypesResponse {

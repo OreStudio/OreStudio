@@ -75,6 +75,10 @@ struct base_correlation_config_lookup {
     std::optional<ores::refdata::domain::base_correlation_config> base_correlation_config;
 };
 
+struct base_correlation_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct base_correlation_config_event {
     boost::uuids::uuid event_id;
     base_correlation_config_key key;
@@ -108,6 +112,7 @@ struct list_base_correlation_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<base_correlation_configs_filter> filter;
 };
 
 struct list_base_correlation_configs_response {

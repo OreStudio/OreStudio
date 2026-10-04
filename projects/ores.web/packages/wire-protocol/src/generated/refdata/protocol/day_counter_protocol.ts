@@ -52,6 +52,10 @@ export interface DayCounterLookup {
     day_counter: DayCounter | null;
 }
 
+export interface DayCountersFilter {
+    code_one_of: string[] | null;
+}
+
 export interface DayCounterEvent {
     event_id: string;
     key: DayCounterKey;
@@ -76,6 +80,7 @@ export interface ListDayCountersRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DayCountersFilter | null;
 }
 
 export interface ListDayCountersResponse {

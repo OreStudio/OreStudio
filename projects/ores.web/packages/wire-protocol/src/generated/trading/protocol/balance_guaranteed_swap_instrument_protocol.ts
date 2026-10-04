@@ -56,6 +56,10 @@ export interface BalanceGuaranteedSwapInstrumentLookup {
     balance_guaranteed_swap_instrument: BalanceGuaranteedSwapInstrument | null;
 }
 
+export interface BalanceGuaranteedSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BalanceGuaranteedSwapInstrumentEvent {
     event_id: string;
     key: BalanceGuaranteedSwapInstrumentKey;
@@ -80,6 +84,7 @@ export interface ListBalanceGuaranteedSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BalanceGuaranteedSwapInstrumentsFilter | null;
 }
 
 export interface ListBalanceGuaranteedSwapInstrumentsResponse {

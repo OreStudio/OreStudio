@@ -66,6 +66,10 @@ struct swaption_instrument_lookup {
     std::optional<ores::trading::domain::swaption_instrument> swaption_instrument;
 };
 
+struct swaption_instruments_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct swaption_instrument_event {
     boost::uuids::uuid event_id;
     swaption_instrument_key key;
@@ -99,6 +103,7 @@ struct list_swaption_instruments_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<swaption_instruments_filter> filter;
 };
 
 struct list_swaption_instruments_response {

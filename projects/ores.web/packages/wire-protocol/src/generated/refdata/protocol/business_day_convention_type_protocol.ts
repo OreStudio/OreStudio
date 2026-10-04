@@ -54,6 +54,10 @@ export interface BusinessDayConventionTypeLookup {
     business_day_convention_type: BusinessDayConventionType | null;
 }
 
+export interface BusinessDayConventionTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BusinessDayConventionTypeEvent {
     event_id: string;
     key: BusinessDayConventionTypeKey;
@@ -78,6 +82,7 @@ export interface ListBusinessDayConventionTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BusinessDayConventionTypesFilter | null;
 }
 
 export interface ListBusinessDayConventionTypesResponse {

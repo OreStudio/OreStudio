@@ -52,6 +52,10 @@ export interface FpmlEventTypeLookup {
     fpml_event_type: FpmlEventType | null;
 }
 
+export interface FpmlEventTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface FpmlEventTypeEvent {
     event_id: string;
     key: FpmlEventTypeKey;
@@ -76,6 +80,7 @@ export interface ListFpmlEventTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FpmlEventTypesFilter | null;
 }
 
 export interface ListFpmlEventTypesResponse {

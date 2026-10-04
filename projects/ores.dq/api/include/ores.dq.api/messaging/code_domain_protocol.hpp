@@ -61,6 +61,10 @@ struct code_domain_lookup {
     std::optional<ores::dq::domain::code_domain> code_domain;
 };
 
+struct code_domains_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct code_domain_event {
     boost::uuids::uuid event_id;
     code_domain_key key;
@@ -94,6 +98,7 @@ struct list_code_domains_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<code_domains_filter> filter;
 };
 
 struct list_code_domains_response {

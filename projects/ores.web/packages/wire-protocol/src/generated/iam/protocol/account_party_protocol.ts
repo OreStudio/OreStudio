@@ -56,6 +56,7 @@ export interface AccountPartyLookup {
 
 export interface AccountPartiesFilter {
     account_id: string | null;
+    account_id_one_of: string[] | null;
 }
 
 export interface ListAccountPartiesRequest {

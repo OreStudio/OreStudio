@@ -65,6 +65,10 @@ struct commodity_forward_convention_lookup {
     std::optional<ores::refdata::domain::commodity_forward_convention> commodity_forward_convention;
 };
 
+struct commodity_forward_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct commodity_forward_convention_event {
     boost::uuids::uuid event_id;
     commodity_forward_convention_key key;
@@ -99,6 +103,7 @@ struct list_commodity_forward_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<commodity_forward_conventions_filter> filter;
 };
 
 struct list_commodity_forward_conventions_response {

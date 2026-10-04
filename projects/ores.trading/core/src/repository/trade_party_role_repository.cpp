@@ -279,6 +279,7 @@ trade_party_role_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "role"}, false),
+        std::nullopt,
         [](const auto& entities) { return trade_party_role_mapper::map(entities); },
         lg(),
         "Reading latest trade party roles with pagination.");
@@ -288,21 +289,12 @@ std::uint32_t trade_party_role_repository::get_total_role_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade party role count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<trade_party_role_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active trade party role count: " << count;
-    return count;
+    return execute_count_query<trade_party_role_entity>(
+        ctx, query, std::nullopt, lg(), "Counting trade party roles");
 }
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(

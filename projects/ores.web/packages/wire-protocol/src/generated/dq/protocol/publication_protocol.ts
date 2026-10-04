@@ -61,6 +61,10 @@ export interface PublicationLookup {
     publication: Publication | null;
 }
 
+export interface PublicationsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface PublicationEvent {
     event_id: string;
     key: PublicationKey;
@@ -74,6 +78,7 @@ export interface ListPublicationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PublicationsFilter | null;
 }
 
 export interface ListPublicationsResponse {

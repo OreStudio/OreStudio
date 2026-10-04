@@ -83,6 +83,8 @@ export interface RiskReportConfigLookup {
 
 export interface RiskReportConfigsFilter {
     report_definition_id: string | null;
+    id_one_of: string[] | null;
+    report_definition_id_one_of: string[] | null;
 }
 
 export interface RiskReportConfigEvent {

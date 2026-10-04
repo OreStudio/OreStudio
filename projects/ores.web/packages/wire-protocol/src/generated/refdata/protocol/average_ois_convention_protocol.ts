@@ -61,6 +61,10 @@ export interface AverageOisConventionLookup {
     average_ois_convention: AverageOisConvention | null;
 }
 
+export interface AverageOisConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface AverageOisConventionEvent {
     event_id: string;
     key: AverageOisConventionKey;
@@ -85,6 +89,7 @@ export interface ListAverageOisConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AverageOisConventionsFilter | null;
 }
 
 export interface ListAverageOisConventionsResponse {

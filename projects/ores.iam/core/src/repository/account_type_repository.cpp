@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"type"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::account_types_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->type_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->type_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("type", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -248,7 +266,8 @@ std::vector<domain::account_type>
 account_type_repository::read_latest(context ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
-                                     const ores::utility::domain::order& order) {
+                                     const ores::utility::domain::order& order,
+                                     const std::optional<messaging::account_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account types with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -261,30 +280,23 @@ account_type_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"type"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return account_type_mapper::map(entities); },
         lg(),
         "Reading latest account types with pagination.");
 }
 
-std::uint32_t account_type_repository::get_total_type_count(context ctx) {
+std::uint32_t account_type_repository::get_total_type_count(
+    context ctx, const std::optional<messaging::account_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account type count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<account_type_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<account_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active account type count: " << count;
-    return count;
+    return execute_count_query<account_type_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting account types");
 }
 
 std::vector<domain::account_type>

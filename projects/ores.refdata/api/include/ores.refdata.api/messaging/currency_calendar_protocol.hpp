@@ -62,6 +62,7 @@ struct currency_calendar_lookup {
 
 struct currency_calendars_filter {
     std::optional<std::string> currency_iso_code;
+    std::optional<std::vector<std::string>> currency_iso_code_one_of;
 };
 
 struct list_currency_calendars_request {

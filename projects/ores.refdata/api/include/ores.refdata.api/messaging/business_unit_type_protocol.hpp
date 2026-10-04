@@ -63,6 +63,10 @@ struct business_unit_type_lookup {
     std::optional<ores::refdata::domain::business_unit_type> business_unit_type;
 };
 
+struct business_unit_types_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct business_unit_type_event {
     boost::uuids::uuid event_id;
     business_unit_type_key key;
@@ -96,6 +100,7 @@ struct list_business_unit_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<business_unit_types_filter> filter;
 };
 
 struct list_business_unit_types_response {

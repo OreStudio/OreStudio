@@ -62,6 +62,9 @@ export interface TodaysMarketEntryLookup {
 export interface TodaysMarketEntriesFilter {
     todays_market_config_id: string | null;
     todays_market_collection_id: string | null;
+    id_one_of: string[] | null;
+    todays_market_config_id_one_of: string[] | null;
+    todays_market_collection_id_one_of: string[] | null;
 }
 
 export interface TodaysMarketEntryEvent {

@@ -54,6 +54,10 @@ export interface CurrencyMarketTierLookup {
     currency_market_tier: CurrencyMarketTier | null;
 }
 
+export interface CurrencyMarketTiersFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CurrencyMarketTierEvent {
     event_id: string;
     key: CurrencyMarketTierKey;
@@ -78,6 +82,7 @@ export interface ListCurrencyMarketTiersRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrencyMarketTiersFilter | null;
 }
 
 export interface ListCurrencyMarketTiersResponse {

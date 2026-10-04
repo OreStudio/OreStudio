@@ -54,6 +54,10 @@ export interface DayCountFractionTypeLookup {
     day_count_fraction_type: DayCountFractionType | null;
 }
 
+export interface DayCountFractionTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface DayCountFractionTypeEvent {
     event_id: string;
     key: DayCountFractionTypeKey;
@@ -78,6 +82,7 @@ export interface ListDayCountFractionTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DayCountFractionTypesFilter | null;
 }
 
 export interface ListDayCountFractionTypesResponse {

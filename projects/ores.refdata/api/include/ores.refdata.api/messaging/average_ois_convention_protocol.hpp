@@ -68,6 +68,10 @@ struct average_ois_convention_lookup {
     std::optional<ores::refdata::domain::average_ois_convention> average_ois_convention;
 };
 
+struct average_ois_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct average_ois_convention_event {
     boost::uuids::uuid event_id;
     average_ois_convention_key key;
@@ -101,6 +105,7 @@ struct list_average_ois_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<average_ois_conventions_filter> filter;
 };
 
 struct list_average_ois_conventions_response {

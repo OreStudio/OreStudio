@@ -64,6 +64,10 @@ export interface CurveReportConfigurationLookup {
     curve_report_configuration: CurveReportConfiguration | null;
 }
 
+export interface CurveReportConfigurationsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveReportConfigurationEvent {
     event_id: string;
     key: CurveReportConfigurationKey;
@@ -88,6 +92,7 @@ export interface ListCurveReportConfigurationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveReportConfigurationsFilter | null;
 }
 
 export interface ListCurveReportConfigurationsResponse {

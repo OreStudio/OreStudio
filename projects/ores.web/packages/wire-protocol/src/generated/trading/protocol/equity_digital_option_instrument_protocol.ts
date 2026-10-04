@@ -63,6 +63,10 @@ export interface EquityDigitalOptionInstrumentLookup {
     equity_digital_option_instrument: EquityDigitalOptionInstrument | null;
 }
 
+export interface EquityDigitalOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityDigitalOptionInstrumentEvent {
     event_id: string;
     key: EquityDigitalOptionInstrumentKey;
@@ -87,6 +91,7 @@ export interface ListEquityDigitalOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityDigitalOptionInstrumentsFilter | null;
 }
 
 export interface ListEquityDigitalOptionInstrumentsResponse {

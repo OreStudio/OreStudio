@@ -54,6 +54,10 @@ export interface TenorKindLookup {
     tenor_kind: TenorKind | null;
 }
 
+export interface TenorKindsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorKindEvent {
     event_id: string;
     key: TenorKindKey;
@@ -78,6 +82,7 @@ export interface ListTenorKindsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorKindsFilter | null;
 }
 
 export interface ListTenorKindsResponse {

@@ -63,6 +63,7 @@ struct currency_pair_convention_calendar_lookup {
 
 struct currency_pair_convention_calendars_filter {
     std::optional<std::string> pair_code;
+    std::optional<std::vector<std::string>> pair_code_one_of;
 };
 
 struct list_currency_pair_convention_calendars_request {

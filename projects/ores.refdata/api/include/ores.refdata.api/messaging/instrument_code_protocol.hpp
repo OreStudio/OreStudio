@@ -64,6 +64,10 @@ struct instrument_code_lookup {
     std::optional<ores::refdata::domain::instrument_code> instrument_code;
 };
 
+struct instrument_codes_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct instrument_code_event {
     boost::uuids::uuid event_id;
     instrument_code_key key;
@@ -97,6 +101,7 @@ struct list_instrument_codes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<instrument_codes_filter> filter;
 };
 
 struct list_instrument_codes_response {

@@ -90,6 +90,10 @@ struct instrument_option_lookup {
     std::optional<ores::trading::domain::instrument_option> instrument_option;
 };
 
+struct instrument_options_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct instrument_option_event {
     boost::uuids::uuid event_id;
     instrument_option_key key;
@@ -123,6 +127,7 @@ struct list_instrument_options_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<instrument_options_filter> filter;
 };
 
 struct list_instrument_options_response {

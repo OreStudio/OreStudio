@@ -56,6 +56,10 @@ export interface FeedBindingLookup {
     feed_binding: FeedBinding | null;
 }
 
+export interface FeedBindingsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FeedBindingEvent {
     event_id: string;
     key: FeedBindingKey;
@@ -80,6 +84,7 @@ export interface ListFeedBindingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FeedBindingsFilter | null;
 }
 
 export interface ListFeedBindingsResponse {

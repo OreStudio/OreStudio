@@ -59,6 +59,10 @@ export interface HostLookup {
     host: Host | null;
 }
 
+export interface HostsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface HostEvent {
     event_id: string;
     key: HostKey;
@@ -83,6 +87,7 @@ export interface ListHostsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: HostsFilter | null;
 }
 
 export interface ListHostsResponse {

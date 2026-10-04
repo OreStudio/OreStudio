@@ -54,6 +54,10 @@ export interface RoundingTypeLookup {
     rounding_type: RoundingType | null;
 }
 
+export interface RoundingTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface RoundingTypeEvent {
     event_id: string;
     key: RoundingTypeKey;
@@ -78,6 +82,7 @@ export interface ListRoundingTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: RoundingTypesFilter | null;
 }
 
 export interface ListRoundingTypesResponse {

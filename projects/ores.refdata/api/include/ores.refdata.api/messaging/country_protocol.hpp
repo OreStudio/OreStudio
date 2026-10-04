@@ -64,6 +64,10 @@ struct country_lookup {
     std::optional<ores::refdata::domain::country> country;
 };
 
+struct countries_filter {
+    std::optional<std::vector<std::string>> alpha2_code_one_of;
+};
+
 struct country_event {
     boost::uuids::uuid event_id;
     country_key key;
@@ -97,6 +101,7 @@ struct list_countries_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<countries_filter> filter;
     std::optional<std::string> as_of;
 };
 

@@ -64,6 +64,10 @@ export interface FxAsianForwardInstrumentLookup {
     fx_asian_forward_instrument: FxAsianForwardInstrument | null;
 }
 
+export interface FxAsianForwardInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxAsianForwardInstrumentEvent {
     event_id: string;
     key: FxAsianForwardInstrumentKey;
@@ -88,6 +92,7 @@ export interface ListFxAsianForwardInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxAsianForwardInstrumentsFilter | null;
 }
 
 export interface ListFxAsianForwardInstrumentsResponse {

@@ -35,6 +35,10 @@ export interface LoginInfoLookup {
     login_info: LoginInfo | null;
 }
 
+export interface LoginInfoFilter {
+    account_id_one_of: string[] | null;
+}
+
 export interface LoginInfoEvent {
     event_id: string;
     key: LoginInfoKey;
@@ -48,6 +52,7 @@ export interface ListLoginInfoRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LoginInfoFilter | null;
 }
 
 export interface ListLoginInfoResponse {

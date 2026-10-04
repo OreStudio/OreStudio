@@ -70,6 +70,10 @@ struct ois_convention_lookup {
     std::optional<ores::refdata::domain::ois_convention> ois_convention;
 };
 
+struct ois_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct ois_convention_event {
     boost::uuids::uuid event_id;
     ois_convention_key key;
@@ -103,6 +107,7 @@ struct list_ois_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ois_conventions_filter> filter;
 };
 
 struct list_ois_conventions_response {

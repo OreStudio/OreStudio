@@ -300,6 +300,7 @@ instrument_option_premium_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
+        std::nullopt,
         [](const auto& entities) { return instrument_option_premium_mapper::map(entities); },
         lg(),
         "Reading latest instrument option premiums with pagination.");
@@ -309,21 +310,12 @@ std::uint32_t instrument_option_premium_repository::get_total_option_premium_cou
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument option premium count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<instrument_option_premium_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<instrument_option_premium_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active instrument option premium count: " << count;
-    return count;
+    return execute_count_query<instrument_option_premium_entity>(
+        ctx, query, std::nullopt, lg(), "Counting instrument option premiums");
 }
 
 std::vector<domain::instrument_option_premium> instrument_option_premium_repository::read_latest(

@@ -72,6 +72,10 @@ struct workflow_instance_lookup {
     std::optional<ores::workflow::domain::workflow_instance> workflow_instance;
 };
 
+struct workflow_instances_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct workflow_instance_event {
     boost::uuids::uuid event_id;
     workflow_instance_key key;
@@ -105,6 +109,7 @@ struct list_workflow_instances_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<workflow_instances_filter> filter;
 };
 
 struct list_workflow_instances_response {

@@ -27,6 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_contact_information.hpp"
+#include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -151,19 +152,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::account_contact_information>
-    read_latest_by_account_id(context ctx,
-                              const std::string& account_id,
-                              std::uint32_t offset,
-                              std::uint32_t limit,
-                              const ores::utility::domain::order& order = {});
+    std::vector<domain::account_contact_information> read_latest_by_account_id(
+        context ctx,
+        const std::string& account_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::account_contact_informations_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active account contact informations filtered by account_id.
      */
-    std::uint32_t
-    get_total_account_contact_information_count_by_account_id(context ctx,
-                                                              const std::string& account_id);
+    std::uint32_t get_total_account_contact_information_count_by_account_id(
+        context ctx,
+        const std::string& account_id,
+        const std::optional<messaging::account_contact_informations_filter>& filter = std::nullopt);
 
 
     /**
@@ -196,20 +199,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::account_contact_information>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::account_contact_information> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::account_contact_informations_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active account contact informations.
      * @param ctx Repository context with database connection
      * @return Total number of active account contact informations
      */
-    std::uint32_t get_total_account_contact_information_count(context ctx);
+    std::uint32_t get_total_account_contact_information_count(
+        context ctx,
+        const std::optional<messaging::account_contact_informations_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a account contact information by closing its temporal validity.

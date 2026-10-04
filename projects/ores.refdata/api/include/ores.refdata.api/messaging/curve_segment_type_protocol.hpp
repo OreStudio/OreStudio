@@ -60,6 +60,10 @@ struct curve_segment_type_lookup {
     std::optional<ores::refdata::domain::curve_segment_type> curve_segment_type;
 };
 
+struct curve_segment_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct curve_segment_type_event {
     boost::uuids::uuid event_id;
     curve_segment_type_key key;
@@ -93,6 +97,7 @@ struct list_curve_segment_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<curve_segment_types_filter> filter;
 };
 
 struct list_curve_segment_types_response {

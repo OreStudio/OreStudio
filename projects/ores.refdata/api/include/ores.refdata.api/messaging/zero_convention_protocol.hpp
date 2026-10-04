@@ -67,6 +67,10 @@ struct zero_convention_lookup {
     std::optional<ores::refdata::domain::zero_convention> zero_convention;
 };
 
+struct zero_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct zero_convention_event {
     boost::uuids::uuid event_id;
     zero_convention_key key;
@@ -100,6 +104,7 @@ struct list_zero_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<zero_conventions_filter> filter;
 };
 
 struct list_zero_conventions_response {

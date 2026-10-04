@@ -55,6 +55,10 @@ export interface AnalyticTypeLookup {
     analytic_type: AnalyticType | null;
 }
 
+export interface AnalyticTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface AnalyticTypeEvent {
     event_id: string;
     key: AnalyticTypeKey;
@@ -79,6 +83,7 @@ export interface ListAnalyticTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AnalyticTypesFilter | null;
 }
 
 export interface ListAnalyticTypesResponse {

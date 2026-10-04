@@ -67,6 +67,9 @@ struct tenor_schedule_lookup {
 struct tenor_schedules_filter {
     std::optional<std::optional<std::string>> calendar_code;
     std::optional<std::optional<std::string>> diary_entry_type;
+    std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::vector<std::string>> calendar_code_one_of;
+    std::optional<std::vector<std::string>> diary_entry_type_one_of;
 };
 
 struct tenor_schedule_event {

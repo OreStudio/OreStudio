@@ -61,6 +61,10 @@ struct derivation_kind_lookup {
     std::optional<ores::refdata::domain::derivation_kind> derivation_kind;
 };
 
+struct derivation_kinds_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct derivation_kind_event {
     boost::uuids::uuid event_id;
     derivation_kind_key key;
@@ -94,6 +98,7 @@ struct list_derivation_kinds_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<derivation_kinds_filter> filter;
 };
 
 struct list_derivation_kinds_response {

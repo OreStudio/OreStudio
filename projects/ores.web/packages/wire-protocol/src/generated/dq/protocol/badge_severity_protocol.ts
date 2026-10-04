@@ -54,6 +54,10 @@ export interface BadgeSeverityLookup {
     badge_severity: BadgeSeverity | null;
 }
 
+export interface BadgeSeveritiesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BadgeSeverityEvent {
     event_id: string;
     key: BadgeSeverityKey;
@@ -78,6 +82,7 @@ export interface ListBadgeSeveritiesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BadgeSeveritiesFilter | null;
 }
 
 export interface ListBadgeSeveritiesResponse {

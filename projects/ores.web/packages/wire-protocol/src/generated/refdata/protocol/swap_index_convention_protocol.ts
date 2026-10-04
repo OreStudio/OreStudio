@@ -53,6 +53,10 @@ export interface SwapIndexConventionLookup {
     swap_index_convention: SwapIndexConvention | null;
 }
 
+export interface SwapIndexConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface SwapIndexConventionEvent {
     event_id: string;
     key: SwapIndexConventionKey;
@@ -77,6 +81,7 @@ export interface ListSwapIndexConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SwapIndexConventionsFilter | null;
 }
 
 export interface ListSwapIndexConventionsResponse {

@@ -103,14 +103,23 @@ messaging::list_report_analytics_response report_analytic_service::list_report_a
             "A list of report analytics cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.analytics = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_analytic_count(ctx_);
+    if (request.filter && request.filter->analytic_type_code_one_of &&
+        request.filter->analytic_type_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in analytic_type_code_one_of.";
+        return response;
+    }
+    response.analytics =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_analytic_count(ctx_, request.filter);
     return response;
 }
 
@@ -126,10 +135,18 @@ report_analytic_service::list_by_analytic_type_code_report_analytics(
             "A list of report analytics cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->analytic_type_code_one_of &&
+        request.filter->analytic_type_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in analytic_type_code_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -140,8 +157,9 @@ report_analytic_service::list_by_analytic_type_code_report_analytics(
     }
     const auto relation = request.analytic_type_code;
     response.analytics = repo_.read_latest_by_analytic_type_code(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_analytic_count_by_analytic_type_code(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_analytic_count_by_analytic_type_code(ctx_, relation, request.filter);
     return response;
 }
 

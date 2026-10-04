@@ -56,6 +56,10 @@ export interface ActivityTypeLookup {
     activity_type: ActivityType | null;
 }
 
+export interface ActivityTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ActivityTypeEvent {
     event_id: string;
     key: ActivityTypeKey;
@@ -80,6 +84,7 @@ export interface ListActivityTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ActivityTypesFilter | null;
 }
 
 export interface ListActivityTypesResponse {

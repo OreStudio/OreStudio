@@ -53,6 +53,10 @@ export interface OriginDimensionLookup {
     origin_dimension: OriginDimension | null;
 }
 
+export interface OriginDimensionsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface OriginDimensionEvent {
     event_id: string;
     key: OriginDimensionKey;
@@ -77,6 +81,7 @@ export interface ListOriginDimensionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: OriginDimensionsFilter | null;
 }
 
 export interface ListOriginDimensionsResponse {

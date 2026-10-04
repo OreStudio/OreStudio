@@ -60,6 +60,10 @@ export interface FxAccumulatorInstrumentLookup {
     fx_accumulator_instrument: FxAccumulatorInstrument | null;
 }
 
+export interface FxAccumulatorInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxAccumulatorInstrumentEvent {
     event_id: string;
     key: FxAccumulatorInstrumentKey;
@@ -84,6 +88,7 @@ export interface ListFxAccumulatorInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxAccumulatorInstrumentsFilter | null;
 }
 
 export interface ListFxAccumulatorInstrumentsResponse {

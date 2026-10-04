@@ -53,6 +53,10 @@ export interface NatureDimensionLookup {
     nature_dimension: NatureDimension | null;
 }
 
+export interface NatureDimensionsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface NatureDimensionEvent {
     event_id: string;
     key: NatureDimensionKey;
@@ -77,6 +81,7 @@ export interface ListNatureDimensionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: NatureDimensionsFilter | null;
 }
 
 export interface ListNatureDimensionsResponse {

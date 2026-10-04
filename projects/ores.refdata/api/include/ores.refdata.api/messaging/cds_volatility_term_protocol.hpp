@@ -63,6 +63,10 @@ struct cds_volatility_term_lookup {
     std::optional<ores::refdata::domain::cds_volatility_term> cds_volatility_term;
 };
 
+struct cds_volatility_terms_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct cds_volatility_term_event {
     boost::uuids::uuid event_id;
     cds_volatility_term_key key;
@@ -96,6 +100,7 @@ struct list_cds_volatility_terms_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<cds_volatility_terms_filter> filter;
 };
 
 struct list_cds_volatility_terms_response {

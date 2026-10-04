@@ -70,6 +70,8 @@ export interface WorkflowStepLookup {
 
 export interface WorkflowStepsFilter {
     workflow_id: string | null;
+    id_one_of: string[] | null;
+    workflow_id_one_of: string[] | null;
 }
 
 export interface WorkflowStepEvent {

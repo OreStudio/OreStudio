@@ -57,6 +57,8 @@ export interface ConfigurationLookup {
 
 export interface ConfigurationsFilter {
     configuration_type_code: string | null;
+    id_one_of: string[] | null;
+    configuration_type_code_one_of: string[] | null;
 }
 
 export interface ConfigurationEvent {

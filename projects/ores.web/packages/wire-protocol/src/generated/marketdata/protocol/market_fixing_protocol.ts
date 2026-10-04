@@ -56,6 +56,10 @@ export interface MarketFixingLookup {
     market_fixing: MarketFixing | null;
 }
 
+export interface MarketFixingsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface MarketFixingEvent {
     event_id: string;
     key: MarketFixingKey;
@@ -69,6 +73,7 @@ export interface ListMarketFixingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: MarketFixingsFilter | null;
 }
 
 export interface ListMarketFixingsResponse {

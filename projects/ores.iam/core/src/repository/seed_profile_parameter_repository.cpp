@@ -70,6 +70,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::seed_profile_parameters_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->seed_profile_id)
+        r.push_back(equals("seed_profile_id", filter_value(*filter->seed_profile_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->seed_profile_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->seed_profile_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("seed_profile_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -227,7 +253,8 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
     const std::string& seed_profile_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest seed profile parameters. seed_profile_id: "
                                << seed_profile_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -242,6 +269,7 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
         ctx,
         query,
         list_order(order, {"display_order"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters by seed_profile_id.");
@@ -249,30 +277,25 @@ seed_profile_parameter_repository::read_latest_by_seed_profile_id(
 
 std::uint32_t
 seed_profile_parameter_repository::get_total_seed_profile_parameter_count_by_seed_profile_id(
-    context ctx, const std::string& seed_profile_id) {
+    context ctx,
+    const std::string& seed_profile_id,
+    const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active seed profile parameters count. seed_profile_id: "
         << seed_profile_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<seed_profile_parameter_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "seed_profile_id"_c == seed_profile_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<seed_profile_parameter_entity>> |
+                       where("tenant_id"_c == tid && "seed_profile_id"_c == seed_profile_id &&
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active seed profile parameters count by seed_profile_id: "
-                               << count;
-    return count;
+    return execute_count_query<seed_profile_parameter_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting seed profile parameters by seed_profile_id");
 }
 
 
@@ -309,11 +332,12 @@ void seed_profile_parameter_repository::remove(context ctx, const std::string& i
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::seed_profile_parameter>
-seed_profile_parameter_repository::read_latest(context ctx,
-                                               std::uint32_t offset,
-                                               std::uint32_t limit,
-                                               const ores::utility::domain::order& order) {
+std::vector<domain::seed_profile_parameter> seed_profile_parameter_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest seed profile parameters with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -327,31 +351,23 @@ seed_profile_parameter_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return seed_profile_parameter_mapper::map(entities); },
         lg(),
         "Reading latest seed profile parameters with pagination.");
 }
 
-std::uint32_t
-seed_profile_parameter_repository::get_total_seed_profile_parameter_count(context ctx) {
+std::uint32_t seed_profile_parameter_repository::get_total_seed_profile_parameter_count(
+    context ctx, const std::optional<messaging::seed_profile_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active seed profile parameter count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<seed_profile_parameter_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<seed_profile_parameter_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active seed profile parameter count: " << count;
-    return count;
+    return execute_count_query<seed_profile_parameter_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting seed profile parameters");
 }
 
 std::vector<domain::seed_profile_parameter>

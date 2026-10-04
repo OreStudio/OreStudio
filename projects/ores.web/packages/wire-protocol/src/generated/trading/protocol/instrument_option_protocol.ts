@@ -83,6 +83,10 @@ export interface InstrumentOptionLookup {
     instrument_option: InstrumentOption | null;
 }
 
+export interface InstrumentOptionsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface InstrumentOptionEvent {
     event_id: string;
     key: InstrumentOptionKey;
@@ -107,6 +111,7 @@ export interface ListInstrumentOptionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentOptionsFilter | null;
 }
 
 export interface ListInstrumentOptionsResponse {

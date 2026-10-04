@@ -54,6 +54,10 @@ export interface CreditSimulationMatrixConfigLookup {
     credit_simulation_matrix_config: CreditSimulationMatrixConfig | null;
 }
 
+export interface CreditSimulationMatrixConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CreditSimulationMatrixConfigEvent {
     event_id: string;
     key: CreditSimulationMatrixConfigKey;
@@ -78,6 +82,7 @@ export interface ListCreditSimulationMatrixConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CreditSimulationMatrixConfigsFilter | null;
 }
 
 export interface ListCreditSimulationMatrixConfigsResponse {

@@ -54,6 +54,10 @@ export interface BookPurposeTypeLookup {
     book_purpose_type: BookPurposeType | null;
 }
 
+export interface BookPurposeTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BookPurposeTypeEvent {
     event_id: string;
     key: BookPurposeTypeKey;
@@ -78,6 +82,7 @@ export interface ListBookPurposeTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BookPurposeTypesFilter | null;
 }
 
 export interface ListBookPurposeTypesResponse {

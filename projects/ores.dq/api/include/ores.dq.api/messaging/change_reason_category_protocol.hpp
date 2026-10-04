@@ -59,6 +59,10 @@ struct change_reason_category_lookup {
     std::optional<ores::dq::domain::change_reason_category> change_reason_category;
 };
 
+struct change_reason_categories_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct change_reason_category_event {
     boost::uuids::uuid event_id;
     change_reason_category_key key;
@@ -92,6 +96,7 @@ struct list_change_reason_categories_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<change_reason_categories_filter> filter;
 };
 
 struct list_change_reason_categories_response {

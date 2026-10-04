@@ -75,6 +75,8 @@ export interface CsaLookup {
 
 export interface CsasFilter {
     netting_set_id: string | null;
+    id_one_of: string[] | null;
+    netting_set_id_one_of: string[] | null;
 }
 
 export interface CsaEvent {

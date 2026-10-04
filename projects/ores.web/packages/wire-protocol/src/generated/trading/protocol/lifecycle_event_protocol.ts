@@ -53,6 +53,10 @@ export interface LifecycleEventLookup {
     lifecycle_event: LifecycleEvent | null;
 }
 
+export interface LifecycleEventsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface LifecycleEventEvent {
     event_id: string;
     key: LifecycleEventKey;
@@ -77,6 +81,7 @@ export interface ListLifecycleEventsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LifecycleEventsFilter | null;
 }
 
 export interface ListLifecycleEventsResponse {

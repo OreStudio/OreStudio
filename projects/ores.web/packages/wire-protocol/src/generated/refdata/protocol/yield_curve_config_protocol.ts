@@ -64,6 +64,10 @@ export interface YieldCurveConfigLookup {
     yield_curve_config: YieldCurveConfig | null;
 }
 
+export interface YieldCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface YieldCurveConfigEvent {
     event_id: string;
     key: YieldCurveConfigKey;
@@ -88,6 +92,7 @@ export interface ListYieldCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: YieldCurveConfigsFilter | null;
 }
 
 export interface ListYieldCurveConfigsResponse {

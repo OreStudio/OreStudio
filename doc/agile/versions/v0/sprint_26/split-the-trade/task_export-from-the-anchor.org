@@ -52,9 +52,10 @@ The ORE export, the report export to storage and the instrument lookup read the 
   HTTP base URL for the storage upload. Remove the subjects, the handler
   methods and the instrument lookup from the wide trade's model. The
   instrument lookup had no caller.
-- Turn off the TypeScript protocol facet of the operations model. Its
-  messages carry C++ payload types that the web package does not declare,
-  and no web client calls them.
+- Give the instrument payload and the envelope hand-written TypeScript
+  twins in the wire-protocol package, registered in the codegen's table of
+  hand-written types, so the operations model keeps its TypeScript
+  protocol. The protocol twin check refuses a model that switches it off.
 - Point the ORE exporter, the round trip, the shell command, the report
   export and the tests at the new item.
 
@@ -109,6 +110,7 @@ via its "Verifies task" field.
 | 8 | PR review: sort the anchors by uuid, not by its string. | =trade_export_service.cpp= | accept | Sorted by the id. |
 | 9 | PR review: the per-type id lists, the in-memory storage export, the Phase 4 comment. | =trade_export_service.cpp= | decline | Moved unchanged from the old handler; the comment is accurate, each item takes a copy of the payload. |
 | 10 | PR review: a parameter list is misaligned. | =trade_export_service.cpp= | accept | clang-format 18 applied to the new files. |
+| 11 | CI drift: the protocol twin check refuses the switched-off TypeScript facet. | =ores.trading.trade_operations.org= | accept | Facet back on; the two payload types have hand-written twins. |
 
 * Result
 

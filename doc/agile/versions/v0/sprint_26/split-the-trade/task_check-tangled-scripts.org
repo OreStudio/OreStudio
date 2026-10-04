@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/check-tangled-scripts
-#+pr:
+#+pr: 2605
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2605][#2605]] | [ci] Catch untangled shell scripts before review |
 
 * Review
 

@@ -26,11 +26,11 @@ An administrator gives a role with a reason a person understands, the grant reco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -38,13 +38,23 @@ An administrator gives a role with a reason a person understands, the grant reco
 - iam.v1.roles.assign carries a change reason code and commentary, and the grant row stores them.
 - An access change-reason category offers new joiner, role change, cover for absence and access review.
 - iam.v1.roles.revoke refuses a caller taking a role away from their own account.
-- Tests cover the stored reason, a reason that does not apply, and the self refusal.
+- Tests cover the stored reason, a reason nobody defined, and the self refusal.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The grant row already has =change_reason_code= and =change_commentary=, and
+  its insert trigger validates the code; only the request lacked the fields.
+  Add both to =assign_role_request= in the message model and regenerate, so
+  the protocol, the shell command, the HTTP route and the web types agree.
+- No seeded reason fits a person's access: the ones that apply to a new record
+  are =system.*=. Seed an =access= category with new joiner, role change,
+  cover for absence and access review.
+- An empty reason keeps =system.new_record=, so provisioning, sign-up and the
+  other platform callers do not change.
+- A revoke closes the grant row, which has no place for a closing reason, so
+  revoke carries none; the gap is recorded on the journey.
+- Refuse a revoke whose caller is the account, in one helper both revoke
+  subjects call.
 
 * Measurements
 
@@ -86,3 +96,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Giving a role carries a reason, and nobody takes a role away from themselves.
+
+- =iam.v1.roles.assign= carries =change_reason_code= and =change_commentary=,
+  stored on the grant; an empty reason records =system.new_record=. The shell's
+  =assign-role= takes both, and its recipe passes =access.new_joiner=.
+- The =access= change-reason category holds =access.new_joiner=,
+  =access.role_change=, =access.cover_for_absence= and =access.access_review=.
+- =iam.v1.roles.revoke= and =iam.v1.roles.revoke-by-name= refuse a caller
+  taking a role away from their own account.
+
+Tests, on a recreated database: iam core 208 cases (four new), shell iam 315,
+HTTP iam 22 pass. Not done: a reason on a revoke, which needs somewhere to
+store it.

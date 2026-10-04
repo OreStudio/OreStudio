@@ -19,20 +19,9 @@
  */
 
 -- =============================================================================
--- Drop Row-Level Security Policies
+-- Drop Row-Level Security Policies for Inbox Junction Tables
 -- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+-- Must be dropped before the corresponding tables are dropped.
 
-\ir ../synthetic/synthetic_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../inbox/inbox_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+drop policy if exists notification_recipients_tbl_tenant_isolation_policy on "ores_inbox_notification_recipients_tbl";
+drop policy if exists notification_arguments_tbl_tenant_isolation_policy on "ores_inbox_notification_arguments_tbl";

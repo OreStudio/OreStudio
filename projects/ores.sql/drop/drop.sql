@@ -26,6 +26,7 @@
 -- =============================================================================
 -- 2. Operational Tables (have FKs to data governance tables, must be dropped first)
 -- =============================================================================
+\ir ./inbox/inbox_drop.sql
 \ir ./synthetic/synthetic_drop.sql
 \ir ./analytics/drop_analytics.sql
 \ir ./marketdata/marketdata_drop.sql

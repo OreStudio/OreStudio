@@ -39,7 +39,7 @@ POPULATE = (
 # pass 2 of its own clean-standard work, trading with its clean-standard
 # pass, and marketdata once its seeds named the codes its handlers check.
 REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting",
-            "dq", "trading", "marketdata")
+            "dq", "trading", "marketdata", "inbox")
 
 # has_permission takes the request context first, so the code is the string
 # literal argument. A helper that passes the code through a variable is not

@@ -18,21 +18,20 @@
  *
  */
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+/**
+ * Delivery Outcome Types Population Script
+ *
+ * Seeds the closed set of notification delivery outcomes. The codes match the
+ * C++ enum domain::delivery_outcome.
+ *
+ * The table is immutable, so a row is written once and a re-run inserts
+ * nothing. This script is idempotent.
+ */
 
-\ir ../synthetic/synthetic_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../inbox/inbox_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+\echo '--- Delivery Outcome Types ---'
+
+insert into ores_inbox_delivery_outcome_types_tbl (code, description) values
+    ('pending',   'The attempt is queued and has not finished'),
+    ('delivered', 'The channel took the notification'),
+    ('failed',    'The channel refused the notification')
+on conflict (code) do nothing;

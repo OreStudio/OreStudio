@@ -18,21 +18,5 @@
  *
  */
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
-
-\ir ../synthetic/synthetic_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../inbox/inbox_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+drop trigger if exists ores_inbox_approval_decisions_rules_trg on "ores_inbox_approval_decisions_tbl";
+drop function if exists ores_inbox_approval_decisions_rules_fn;

@@ -18,21 +18,17 @@
  *
  */
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+/**
+ * Inbox Population Script
+ *
+ * Seeds the approval request and notification lookups. The approval kinds
+ * come after the states and decision types, because each names an IAM
+ * permission.
+ */
 
-\ir ../synthetic/synthetic_rls_policies_drop.sql
-\ir ../workflow/workflow_rls_policies_drop.sql
-\ir ../compute/compute_rls_policies_drop.sql
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../inbox/inbox_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+\ir inbox_approval_request_states_populate.sql
+\ir inbox_approval_decision_types_populate.sql
+\ir inbox_approval_kinds_populate.sql
+\ir inbox_notification_channels_populate.sql
+\ir inbox_notification_kinds_populate.sql
+\ir inbox_delivery_outcome_types_populate.sql

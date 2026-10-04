@@ -30,6 +30,7 @@
  * - A trade's portfolios come back by name in the order it stated them
  * - A trade is reported only in its own party's portfolios
  * - A second publish of the ORE sample portfolios adds nothing
+ * - Neither names function shows a trade of a party the caller cannot see
  * - The booking refuses an identifier of another counterparty or netting set
  *
  * Run with: pg_prove -d <database> test/trading_trade_envelope_names_test.sql
@@ -37,7 +38,7 @@
 
 begin;
 
-select plan(10);
+select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -221,6 +222,20 @@ select results_eq(
         ores_utility_system_tenant_id_fn())$$,
     $$values ('skipped'::text, 2::bigint)$$,
     'a second publish of the ORE sample portfolios adds nothing');
+
+select set_config('app.visible_party_ids',
+    (select '{' || id::text || '}' from ores_refdata_parties_tbl
+     where tenant_id = ores_utility_system_tenant_id_fn() and id <> (select party_id from t_ctx)
+       and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1), true);
+
+select is(
+    (select count(*) from ores_trading_trade_envelope_names_fn(
+        array['00000000-0000-0000-0000-00000000e101'::uuid,
+              '00000000-0000-0000-0000-00000000e102'::uuid])) +
+    (select count(*) from ores_trading_trade_portfolio_names_fn(
+        array['00000000-0000-0000-0000-00000000e102'::uuid])),
+    0::bigint,
+    'neither names function shows a trade of a party the caller cannot see');
 
 select * from finish();
 

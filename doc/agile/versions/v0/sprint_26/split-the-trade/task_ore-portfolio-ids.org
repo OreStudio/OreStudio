@@ -77,7 +77,7 @@ task and name that file in the Command column.
 | Round trip with PortfolioIds, in-scope pairs | lost 0, unexplained 0; 13 of 13 envelopes as stated | =reset_and_roundtrip.sh=, in [[file:evidence/ore_portfolio_ids.txt][evidence/ore_portfolio_ids.txt]] | branch head before commit |
 | Unknown PortfolioId | the trade is rejected with one reason | the same evidence file | branch head before commit |
 | ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
-| pgTAP envelope names cases | 10/10 pass | =pg_prove projects/ores.sql/test/trading_trade_envelope_names_test.sql= | branch head before commit |
+| pgTAP envelope names cases | 11/11 pass | =pg_prove projects/ores.sql/test/trading_trade_envelope_names_test.sql= | branch head before commit |
 
 * Notes
 
@@ -110,6 +110,11 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | The portfolio tree publish skips a party that already has portfolios, so it cannot add PF1 and PF2 to ACME. | refdata_publish_from_dq_create.sql | Accept | A named portfolio publish over the same staging table. |
+| 2 | PR 2610 review 1: the security definer names functions filter only by tenant. | trading_trade_components_functions_create.sql | Accept | Both now hold rows to the caller's visible parties too; pgTAP case 11. |
+| 3 | PR 2610 review 2: is the portfolio lookup scoped and deterministic? | ore_import_execute_handler.cpp | Decline | A portfolio's party and name are its natural key; the read runs under the caller's party visibility and the pin refuses another party's portfolio. |
+| 4 | PR 2610 review 3: a failed portfolio row leaves a partial list on a booked trade. | ore_import_execute_handler.cpp | Decline | As before for the envelope; recorded on the import task. |
+| 5 | PR 2610 review 4: the skipped count covers held and duplicate names. | refdata_publish_from_dq_create.sql | Decline | The count is correct. |
+| 6 | PR 2610 review 5: include order; a redundant generated trigger check. | ore_import_execute_handler.cpp | Accept / Decline | Include moved; the check is generated. |
 
 * Result
 

@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969
+:END:
+#+title: Task: Replace the asset-specific ticks with one market tick
+#+description: One tick type for every feed and asset class: the oresmd quote URI, the value, the observation time and the source, with the owner from the feed binding. Declares marketdata.v1.tick in a model, which closes P02.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch: feature/replace-the-asset-specific-ticks-with-one-market-tick
+#+pr: 2602
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every live market data feed, whatever its asset class, publishes and ingests one tick type keyed by the oresmd quote URI, and every feed takes its owner from one source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- fx_spot_tick and ir_curve_tick are deleted; one modelled market_tick carries the oresmd quote URI, the value, the observation time and the source.
+- Every feed takes tenant, workspace and party from its feed binding; no tick carries an owner.
+- The ingest loop reads the URI with oresmd_uri_codec and classifies the datum with classification_key_of; it no longer rebuilds an ORE key from parts or reads a classification off the wire.
+- P02: marketdata.v1.tick is declared once, by the market_tick model, and every use of it, the republish subject builder included, references the generated constant.
+- The republished subject is =marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>=, where =<key>= is the canonical ORE key of the tick's datum, lower-cased with its slashes turned to dots, written by one builder that both the ingest loop and the client use.
+- A tick finds its consumers by =source= through the enabled feed bindings of that source, for every feed; a tick from a source with no enabled binding is dropped with one warning per source.
+- =market_tick.value= is decimal text, as stored observations are.
+- Tenant provisioning creates bindings for the IR curve generation configs as it does for the FX spot ones.
+- The synthetic FX and IR curve feeds publish market_tick, and a live feed run stores observations for both.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The model and its reasons are in [[id:F7F432FA-09C2-4508-8733-7AF7EBB00818][the market tick investigation]]. One point it leaves to this task:
+
+- The feed binding stores an =asset_class= that its =oresmd_uri= already
+  implies. Derive it from the URI or drop it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2602][#2602]] | [agile] Investigate the market tick data model |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR 2602: the republish line references look stale. | investigation | Accepted | They were correct at =2a000020ea= (the two =js_publish= calls); the document now names the calls and functions instead of lines. |
+| 2 | PR 2602: the tick design has no rule for the republished subject's suffix. | investigation, task | Accepted | The suffix is the datum's canonical ORE key, lower-cased with dots, written by one builder; an acceptance line says so. |
+| 3 | PR 2602: how a binding is found, and what happens with none. | investigation, task | Accepted | By =source=, as FX does today, for every feed; no enabled binding drops the tick with one warning per source. |
+| 4 | PR 2602: settle the value type before the model is written. | investigation, task | Accepted | Decimal text, as stored observations are. |
+| 5 | PR 2602: the task's Status still shows template text, and =#+pr= names the investigation PR. | task | Not changed | The task is in BACKLOG until its work starts; =compass pr create= adds the implementation PR as another row. |
+| 6 | PR 2602: no step creates bindings for the IR feeds; is =source= unique? | investigation, task | Accepted | Provisioning creates them as it does for FX; a source names a producer uniquely within a tenant. |
+
+* Result

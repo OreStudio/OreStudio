@@ -72,7 +72,8 @@ failure:
 | Item | Owner |
 |------+-------|
 | W02 | [[id:0666E3FB-11E1-4595-A430-018D2FC2A1C4][Gate and seed the marketdata permissions]] |
-| P02, G02, H03 | [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] |
+| G02, H03 | [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] |
+| P02 | [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] |
 | S01, S02, V04 | [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]] |
 | G04, V08 | [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] |
 | P01, H01 | This task |

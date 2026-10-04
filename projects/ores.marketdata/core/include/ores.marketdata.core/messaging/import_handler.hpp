@@ -40,7 +40,7 @@ inline auto& import_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.marketdata.messaging.import_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -102,5 +102,5 @@ private:
     ores::nats::service::nats_client& auth_nats_;
 };
 
-} // namespace ores::marketdata::messaging
+}
 #endif

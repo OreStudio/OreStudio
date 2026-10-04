@@ -58,7 +58,7 @@ namespace {
 constexpr std::string_view service_name = "ores.marketdata.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-} // namespace
+}
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;

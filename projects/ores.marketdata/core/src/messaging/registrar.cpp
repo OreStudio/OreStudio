@@ -51,7 +51,7 @@ ores::history::service::dispatch_registry& history_registry() {
     static ores::history::service::dispatch_registry instance;
     return instance;
 }
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,

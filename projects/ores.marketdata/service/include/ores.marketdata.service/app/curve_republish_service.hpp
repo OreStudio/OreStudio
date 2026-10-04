@@ -45,9 +45,9 @@ namespace ores::marketdata::service::app {
  * market_observations/observation_lineage, letting a caller preview a bootstrap's result before
  * committing to it. republish() calls compute() internally and then does the actual write --
  * this is what a Curve Builder Workbench's separate Bootstrap (preview) and Publish actions each
- * call, and what the future Curve review/sign-off UI task's approval gate sits in front of
- * republish() alone, not compute(). Neither method gates on any such approval today -- Bootstrap
- * is a compute-only preview, and Publish (via republish()) still always auto-publishes.
+ * call; an approval gate, when one exists, belongs in front of republish() alone, not
+ * compute(). Neither method gates on approval: Bootstrap is a compute-only preview, and Publish
+ * (via republish()) always publishes.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT curve_republish_service {
 private:

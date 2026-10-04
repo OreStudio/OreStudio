@@ -48,7 +48,7 @@ inline auto& curve_snapshot_handler_lg() {
 // happens to allow.
 constexpr std::uint32_t max_bucket_count = 200;
 
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -159,6 +159,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::marketdata::messaging
+}
 
 #endif

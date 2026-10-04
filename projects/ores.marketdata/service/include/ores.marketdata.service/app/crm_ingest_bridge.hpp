@@ -173,7 +173,8 @@ public:
                                                               bool reciprocal) const;
 
 private:
-    using pair_key = std::pair<std::string, std::string>; // (tenant_id_str, party_id_str)
+    /// (tenant_id_str, party_id_str)
+    using pair_key = std::pair<std::string, std::string>;
 
     struct named_engine {
         std::string name;
@@ -214,6 +215,6 @@ private:
     std::shared_ptr<const engines_map> engines_;
 };
 
-} // namespace ores::marketdata::service::app
+}
 
 #endif

@@ -153,7 +153,8 @@ TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in t
           tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
-    std::unordered_map<std::string, double> raw_rates; // empty -- 3M missing
+    // Empty, so 3M is missing.
+    std::unordered_map<std::string, double> raw_rates;
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }

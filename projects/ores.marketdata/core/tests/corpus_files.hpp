@@ -104,6 +104,6 @@ inline std::vector<std::filesystem::path> fixing_payloads(const std::filesystem:
     return found;
 }
 
-} // namespace ores::marketdata::test
+}
 
 #endif

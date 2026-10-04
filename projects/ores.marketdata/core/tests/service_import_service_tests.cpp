@@ -170,7 +170,7 @@ TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", tags)
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
 
-    // The file reader no longer splits keys, so a key with no type and metric
+    // The file reader does not split keys, so a key with no type and metric
     // reaches the key codec, which refuses that row alone.
     ores::marketdata::messaging::import_market_data_request req;
     req.market_data_content = "20160205 NOTAKEY 1.0\n"

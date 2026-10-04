@@ -34,9 +34,9 @@ namespace ores::trading::domain {
  * a trade anchor references with a database foreign key.
  */
 enum class booking_nature {
-    actual,       ///< The firm did a deal.
-    test,         ///< The booking exercises the system.
-    hypothetical  ///< The booking answers a question.
+    actual,      ///< The firm did a deal.
+    test,        ///< The booking exercises the system.
+    hypothetical ///< The booking answers a question.
 };
 
 /**
@@ -84,7 +84,8 @@ inline std::ostream& operator<<(std::ostream& s, booking_nature v) {
  * The shell command-token reader finds this overload by argument-dependent
  * lookup, so the shell header needs no include of this one.
  */
-[[nodiscard]] inline std::optional<booking_nature> parse_token(std::string_view sv, booking_nature) {
+[[nodiscard]] inline std::optional<booking_nature> parse_token(std::string_view sv,
+                                                               booking_nature) {
     return booking_nature_from_string(sv);
 }
 

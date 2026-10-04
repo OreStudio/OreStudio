@@ -34,10 +34,10 @@ namespace ores::trading::domain {
  * a trade anchor references with a database foreign key.
  */
 enum class entry_channel {
-    manual,     ///< A user captured the trade.
-    stp,        ///< Straight-through processing from an upstream system.
-    ecn,        ///< An electronic communication network.
-    allocation  ///< An allocation split from a block trade.
+    manual,    ///< A user captured the trade.
+    stp,       ///< Straight-through processing from an upstream system.
+    ecn,       ///< An electronic communication network.
+    allocation ///< An allocation split from a block trade.
 };
 
 /**

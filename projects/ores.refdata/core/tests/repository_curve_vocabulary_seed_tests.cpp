@@ -133,8 +133,7 @@ TEST_CASE("the seeded segment types are the schema's segment types, each under i
     const std::regex value(R"re(<xs:enumeration value="([^"]+)")re");
 
     std::map<std::string, std::string> expected;
-    for (std::sregex_iterator it(segments.begin(), segments.end(), segment), end; it != end;
-         ++it) {
+    for (std::sregex_iterator it(segments.begin(), segments.end(), segment), end; it != end; ++it) {
         const auto kind = (*it)[2].str();
         const auto body = type_body(schema, "complexType", (*it)[1].str());
         if (const auto f = matches(body, fixed); !f.empty()) {
@@ -172,8 +171,8 @@ TEST_CASE("the seeded calendar names are the schema's calendar pattern names", t
     std::size_t from = 0;
     while (from <= alternatives.size()) {
         const auto bar = alternatives.find('|', from);
-        const auto name = alternatives.substr(from, bar == std::string::npos ? std::string::npos
-                                                                             : bar - from);
+        const auto name =
+            alternatives.substr(from, bar == std::string::npos ? std::string::npos : bar - from);
         if (name != "[A-Z]{4}" && name != "CUSTOM_.*")
             expected.insert(name);
         if (bar == std::string::npos)

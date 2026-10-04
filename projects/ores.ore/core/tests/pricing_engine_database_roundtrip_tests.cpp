@@ -22,8 +22,8 @@
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
 #include "ores.ore.core/domain/party_scope.hpp"
+#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -132,7 +132,9 @@ TEST_CASE("a party sees only its own pricing engine configuration", tags) {
     auto parties = ores::ore::tests::make_two_parties(h);
     pricingengines original;
     ores::ore::domain::load_data(
-        file::read_content(ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")), original);
+        file::read_content(
+            ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")),
+        original);
     auto mapped = pricing_engine_mapper::map(original);
     ores::ore::domain::assign_party(mapped, parties.a);
 

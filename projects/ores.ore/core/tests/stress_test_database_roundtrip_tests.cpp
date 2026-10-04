@@ -21,16 +21,16 @@
 #include "ores.analytics.core/repository/stress_test_scenario_repository.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_repository.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/stress_test_mapper.hpp"
 #include "ores.ore.core/domain/party_scope.hpp"
+#include "ores.ore.core/domain/stress_test_mapper.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <boost/uuid/random_generator.hpp>
 #include "party_fixture.hpp"
-#include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <string>
 

@@ -42,7 +42,8 @@ using ores::refdata::repository::commodity_forward_convention_repository;
 
 double round_trip(ores::testing::scoped_database_helper& h, double value) {
     auto gen_ctx = ores::testing::make_generation_context(h);
-    auto convention = ores::refdata::generators::generate_synthetic_commodity_forward_convention(gen_ctx);
+    auto convention =
+        ores::refdata::generators::generate_synthetic_commodity_forward_convention(gen_ctx);
     convention.points_factor = value;
 
     commodity_forward_convention_repository repo;

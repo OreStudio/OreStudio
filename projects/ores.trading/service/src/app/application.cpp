@@ -154,18 +154,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto trade_sub = ores::trading::service::messaging::register_trade_event_mapping(
         event_source, event_bus, nats);
-    auto trade_anchor_sub =
-        ores::trading::service::messaging::register_trade_anchor_event_mapping(
-            event_source, event_bus, nats);
+    auto trade_anchor_sub = ores::trading::service::messaging::register_trade_anchor_event_mapping(
+        event_source, event_bus, nats);
     auto trade_additional_field_sub =
         ores::trading::service::messaging::register_trade_additional_field_event_mapping(
             event_source, event_bus, nats);
     auto trade_booking_sub =
         ores::trading::service::messaging::register_trade_booking_event_mapping(
             event_source, event_bus, nats);
-    auto trade_state_sub =
-        ores::trading::service::messaging::register_trade_state_event_mapping(
-            event_source, event_bus, nats);
+    auto trade_state_sub = ores::trading::service::messaging::register_trade_state_event_mapping(
+        event_source, event_bus, nats);
 
     auto equity_position_instrument_sub =
         ores::trading::service::messaging::register_equity_position_instrument_event_mapping(

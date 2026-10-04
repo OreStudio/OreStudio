@@ -104,7 +104,7 @@ void map_collection(mapped_todays_market& out,
                     const char* name,
                     int& collection_position,
                     const xsd::vector<Wrapper>& wrappers,
-                    xsd::vector<EntryT> Wrapper::* entries,
+                    xsd::vector<EntryT> Wrapper::*entries,
                     K1 key1,
                     K2 key2,
                     Tg target) {
@@ -131,8 +131,8 @@ void map_collection(mapped_todays_market& out,
 // The reverse: one collection row and its entry rows become one element.
 template <typename Wrapper, typename EntryT, typename Build>
 void build_collection(todaysmarket& doc,
-                      xsd::vector<Wrapper> todaysmarket::* member,
-                      xsd::vector<EntryT> Wrapper::* entries,
+                      xsd::vector<Wrapper> todaysmarket::*member,
+                      xsd::vector<EntryT> Wrapper::*entries,
                       const todays_market_collection& c,
                       const std::vector<const todays_market_entry*>& rows,
                       Build build) {

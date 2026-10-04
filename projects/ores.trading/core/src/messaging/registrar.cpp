@@ -52,8 +52,8 @@
 #include "ores.trading.core/messaging/callable_swap_call_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/commodity_basket_constituent_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/counterparty_scope_type_registrar.hpp"
-#include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
+#include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_registrar.hpp"
 #include "ores.trading.core/messaging/fpml_event_type_history_provider_registrar.hpp"
@@ -107,7 +107,6 @@
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
-
 #include <memory>
 
 namespace ores::trading::messaging {

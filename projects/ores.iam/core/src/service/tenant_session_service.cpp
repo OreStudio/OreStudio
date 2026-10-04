@@ -51,24 +51,24 @@ messaging::enter_tenant_response refused_entry(tenant_session_refusal refusal) {
 
 std::string_view describe(tenant_session_refusal refusal) {
     switch (refusal) {
-    case tenant_session_refusal::outside_system_administration:
-        return "A tenant is entered from system administration.";
-    case tenant_session_refusal::already_inside_a_tenant:
-        return "The session is already inside a tenant; leave it first.";
-    case tenant_session_refusal::not_permitted:
-        return "Entering a tenant needs the permission iam::tenants:impersonate.";
-    case tenant_session_refusal::unreadable_tenant_id:
-        return "The tenant id could not be read.";
-    case tenant_session_refusal::system_tenant:
-        return "The system tenant is not entered; it is the deployment's own.";
-    case tenant_session_refusal::unknown_tenant:
-        return "No tenant has this id.";
-    case tenant_session_refusal::no_system_party:
-        return "The tenant has no system party yet, so there is nothing to act as.";
-    case tenant_session_refusal::no_read_permissions:
-        return "The caller holds no read permission to carry into the tenant.";
-    case tenant_session_refusal::not_inside_a_tenant:
-        return "The session is not inside a tenant.";
+        case tenant_session_refusal::outside_system_administration:
+            return "A tenant is entered from system administration.";
+        case tenant_session_refusal::already_inside_a_tenant:
+            return "The session is already inside a tenant; leave it first.";
+        case tenant_session_refusal::not_permitted:
+            return "Entering a tenant needs the permission iam::tenants:impersonate.";
+        case tenant_session_refusal::unreadable_tenant_id:
+            return "The tenant id could not be read.";
+        case tenant_session_refusal::system_tenant:
+            return "The system tenant is not entered; it is the deployment's own.";
+        case tenant_session_refusal::unknown_tenant:
+            return "No tenant has this id.";
+        case tenant_session_refusal::no_system_party:
+            return "The tenant has no system party yet, so there is nothing to act as.";
+        case tenant_session_refusal::no_read_permissions:
+            return "The caller holds no read permission to carry into the tenant.";
+        case tenant_session_refusal::not_inside_a_tenant:
+            return "The session is not inside a tenant.";
     }
     return "The request was refused.";
 }
@@ -183,7 +183,8 @@ tenant_session_service::enter(const tenant_session_caller& caller,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
 }
 
-messaging::leave_tenant_response tenant_session_service::leave(const tenant_session_caller& caller) {
+messaging::leave_tenant_response
+tenant_session_service::leave(const tenant_session_caller& caller) {
     const auto from_system = caller.acting_from_tenant_id &&
                              utility::uuid::tenant_id::from_string(*caller.acting_from_tenant_id)
                                  .transform([](const auto& id) { return id.is_system(); })

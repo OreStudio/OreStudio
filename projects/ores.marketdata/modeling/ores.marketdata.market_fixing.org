@@ -176,7 +176,7 @@ std::vector<domain::market_fixing>
 market_fixing_repository::read_latest_for_series(context ctx,
                                                  const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto query =

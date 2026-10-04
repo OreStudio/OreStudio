@@ -217,6 +217,7 @@ std::vector<domain::market_observation> read_latest_for_series(context ctx,
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 #include <string>
 #+end_src
 
@@ -225,7 +226,7 @@ std::vector<domain::market_observation>
 market_observation_repository::read_latest_for_series(context ctx,
                                                      const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto query =
@@ -273,8 +274,8 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
 
     // DISTINCT ON (oresmd_uri) returns exactly one row per point -- the latest at or before
     // as_of_datetime -- reconstructing a curve/grid snapshot from independently-ticking rows.
-    // Correct whether every point shares one observation_datetime (today's synchronous
-    // publish) or points have staggered timestamps (the general case).
+    // Correct whether every point shares one observation_datetime or the points have
+    // staggered timestamps.
     static const std::string sql = R"(
         SELECT DISTINCT ON (oresmd_uri)
             id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
@@ -292,7 +293,8 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     result.reserve(rows.size());
     for (const auto& row : rows) {
         if (row.size() < 10)
-            continue;
+            throw std::runtime_error("read_as_of: a row has " + std::to_string(row.size()) +
+                                     " columns, expected 10");
 
         market_observation_entity e;
         e.id = row[0].value_or("");
@@ -390,11 +392,16 @@ market_observation_repository::read_as_of_buckets(
     std::vector<std::vector<domain::market_observation>> result(bucket_count);
     for (const auto& row : rows) {
         if (row.size() < 11)
-            continue;
+            throw std::runtime_error("read_as_of_buckets: a row has " +
+                                     std::to_string(row.size()) + " columns, expected 11");
+        if (!row[0])
+            throw std::runtime_error("read_as_of_buckets: a row has no bucket ordinal");
 
-        const auto ordinal = row[0] ? std::stoul(*row[0]) : 0u;
+        const auto ordinal = std::stoul(*row[0]);
         if (ordinal >= result.size())
-            continue;
+            throw std::runtime_error("read_as_of_buckets: bucket ordinal " + *row[0] +
+                                     " is outside the " + std::to_string(result.size()) +
+                                     " buckets requested");
 
         market_observation_entity e;
         e.id = row[1].value_or("");

@@ -30,6 +30,7 @@
 #include "ores.reporting.core/repository/report_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_analytic_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -280,7 +281,15 @@ run_import_result import_run(const context& ctx,
     return r;
 }
 
-input_files export_run(const context& ctx, const boost::uuids::uuid& report_definition_id) {
+input_files export_run(const context& session, const boost::uuids::uuid& report_definition_id) {
+    const auto ctx = [&] {
+        if (session.party_id())
+            return session;
+        const auto definition = detail::read_one(
+            session, report_definition_repository(), "report definition", report_definition_id);
+        return session.with_party(
+            session.tenant_id(), definition.party_id, {definition.party_id}, session.actor());
+    }();
     const auto of_definition = [&](const auto& row) {
         return row.report_definition_id == report_definition_id;
     };
@@ -345,6 +354,29 @@ input_files export_run(const context& ctx, const boost::uuids::uuid& report_defi
         files[*file] = load_document(ctx, b);
     }
     return files;
+}
+
+input_files archive_layout(const input_files& files) {
+    const auto run = files.find(std::string(run_document_file));
+    if (run == files.end())
+        throw std::invalid_argument(
+            std::format("An ORE input holds its run document as {}.", run_document_file));
+
+    domain::ore document;
+    domain::load_data(run->second, document);
+    std::string input_path = "Input";
+    for (const auto& p : document.Setup.Parameter)
+        if (std::string(p.name) == "inputPath" && !static_cast<const std::string&>(p).empty())
+            input_path = static_cast<const std::string&>(p);
+    if (input_path.starts_with("./"))
+        input_path.erase(0, 2);
+
+    input_files layout;
+    for (const auto& [name, content] : files) {
+        const auto directory = name == run_document_file ? std::string("Input") : input_path;
+        layout[directory + "/" + name] = content;
+    }
+    return layout;
 }
 
 }

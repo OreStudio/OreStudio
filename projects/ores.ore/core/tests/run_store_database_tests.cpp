@@ -56,14 +56,20 @@ store::input_files example_input() {
 // A binding names a report definition that must exist, so each case writes a
 // risk report definition owned by the party.
 boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
-                                   const ores::ore::tests::two_parties& parties) {
+                                   const boost::uuids::uuid& party,
+                                   const ores::database::context& ctx) {
     auto gen = ores::testing::make_generation_context(h);
     auto d = ores::reporting::generators::generate_synthetic_report_definition(gen);
     d.change_reason_code = "system.test";
     d.report_type = "risk";
-    d.party_id = parties.a;
-    ores::reporting::repository::report_definition_repository().write(parties.a_context, d);
+    d.party_id = party;
+    ores::reporting::repository::report_definition_repository().write(ctx, d);
     return d.id;
+}
+
+boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
+                                   const ores::ore::tests::two_parties& parties) {
+    return make_definition(h, parties.a, parties.a_context);
 }
 
 template <typename Document>
@@ -210,4 +216,35 @@ TEST_CASE("a second import into the same report definition is refused", tags) {
     CHECK_THROWS_WITH(
         store::import_run(parties.a_context, definition, "second", files),
         "The report definition already holds a run document; import into a new definition.");
+}
+
+TEST_CASE("an export from a session with no party reads the definition's party", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto parties = ores::ore::tests::make_two_parties(h);
+    const auto files = example_input();
+    const auto definition = make_definition(h, parties);
+    store::import_run(parties.a_context, definition, "Example_1", files);
+    store::import_run(
+        parties.b_context, make_definition(h, parties.b, parties.b_context), "Example_1", files);
+
+    const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
+    CHECK(store::export_run(tenant_only, definition) ==
+          store::export_run(parties.a_context, definition));
+}
+
+TEST_CASE("the archive puts the run document in Input and the rest in the run's input path",
+          "[ore][store]") {
+    auto files = example_input();
+    auto layout = store::archive_layout(files);
+    CHECK(layout.contains("Input/ore.xml"));
+    CHECK(layout.contains("Input/curveconfig.xml"));
+    CHECK(layout.size() == files.size());
+
+    auto& run = files.at("ore.xml");
+    const std::string from = "<Parameter name=\"inputPath\">Input</Parameter>";
+    REQUIRE(run.find(from) != std::string::npos);
+    run.replace(run.find(from), from.size(), "<Parameter name=\"inputPath\">./Input/Dim</Parameter>");
+    layout = store::archive_layout(files);
+    CHECK(layout.contains("Input/ore.xml"));
+    CHECK(layout.contains("Input/Dim/curveconfig.xml"));
 }

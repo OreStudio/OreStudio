@@ -44,7 +44,6 @@ domain::bond_issue generate_synthetic_bond_issue(utility::generation::generation
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.issue_id = ctx.generate_uuid();
     r.security_id = std::string("US9128283M42");
     r.issuer = std::string("US Treasury");

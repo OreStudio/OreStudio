@@ -168,24 +168,9 @@ void scripted_instrument_repository::write(
 std::vector<domain::scripted_instrument> scripted_instrument_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("trade_id"_c);
-        return execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
-            ctx,
-            query,
-            [](const auto& entities) { return scripted_instrument_mapper::map(entities); },
-            lg(),
-            "Reading latest scripted instruments (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<scripted_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
+    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c);
 
     return execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
         ctx,
@@ -201,10 +186,9 @@ scripted_instrument_repository::read_latest(context ctx, const std::string& trad
                                << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<scripted_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
         ctx,
@@ -220,11 +204,9 @@ scripted_instrument_repository::read_all(context ctx, const std::string& trade_i
     BOOST_LOG_SEV(lg(), debug) << "Reading all scripted instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<scripted_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id) |
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
         ctx,
@@ -239,11 +221,10 @@ std::optional<domain::scripted_instrument> scripted_instrument_repository::read_
     BOOST_LOG_SEV(lg(), debug) << "Reading scripted instrument at version. "
                                << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<scripted_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities =
         execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
@@ -275,11 +256,9 @@ scripted_instrument_repository::remove_status scripted_instrument_repository::re
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::delete_from<scripted_instrument_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = sqlgen::delete_from<scripted_instrument_entity> |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing scripted instrument from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -304,11 +283,9 @@ std::vector<domain::scripted_instrument> scripted_instrument_repository::read_la
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<scripted_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<scripted_instrument_entity, domain::scripted_instrument>(
         ctx,
@@ -326,10 +303,8 @@ std::uint32_t scripted_instrument_repository::get_total_scripted_instrument_coun
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<scripted_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     return execute_count_query<scripted_instrument_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting scripted instruments");
@@ -342,10 +317,9 @@ scripted_instrument_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<scripted_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<scripted_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<scripted_instrument_entity, domain::scripted_instrument>(
         ctx,
         query,
@@ -367,10 +341,9 @@ void scripted_instrument_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<scripted_instrument_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<scripted_instrument_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing scripted instruments.");
 }
 

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T16:35:32.912790Z
+' Generated: 2026-10-04T17:52:25.108955Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -8024,7 +8024,6 @@ package "trading" #E8F5E9 {
         * maturity_date : date
           lockout_days : integer
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -8163,7 +8162,6 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * issue_id : uuid <<FK>>
           notional : numeric(28, 10)
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -8584,7 +8582,6 @@ package "trading" #E8F5E9 {
           price_type : text
           payer : text
           credit_risk : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -8984,9 +8981,7 @@ package "trading" #E8F5E9 {
     date is refused by the column's type rather than by a convention the
     readers must share, and a repeated date stays two rows because the
     ordinal, not the date, is part of the key.
-    The trade row carries the workspace and the party. The
-    call date rows are family-owned and ride the trade's scope, so no
-    workspace column rides them.
+    The trade row carries the party. The call date rows are family-owned and ride the trade's scope.
     end note
 
     entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -8999,7 +8994,6 @@ package "trading" #E8F5E9 {
         * start_date : date
         * maturity_date : date
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9038,7 +9032,6 @@ package "trading" #E8F5E9 {
         * start_date : date
         * maturity_date : date
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9087,9 +9080,7 @@ package "trading" #E8F5E9 {
     weight is money-role decimal, so the column holds an exact numeric and not
     a binary float. The document may state no weight, and then the column is
     null rather than a zero the document never wrote.
-    The trade row carries the workspace and the party. The
-    constituent rows are family-owned and ride the trade's scope, so no
-    workspace column rides them.
+    The trade row carries the party. The constituent rows are family-owned and ride the trade's scope.
     end note
 
     entity ores_trading_commodity_instruments_tbl <<temporal>> #C6F0D8 {
@@ -9125,7 +9116,6 @@ package "trading" #E8F5E9 {
           payment_frequency_code : text
           swaption_expiry_date : date
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9160,7 +9150,6 @@ package "trading" #E8F5E9 {
         * trade_type_code : text
         * party_id : uuid <<FK>>
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9192,7 +9181,6 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<FK>>
         * leg_sequence : integer
         * constituent_trade_id : text <<FK>>
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9271,7 +9259,6 @@ package "trading" #E8F5E9 {
           linked_asset_code : text
           tranche_attachment : numeric(28, 10)
           tranche_detachment : numeric(28, 10)
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9292,9 +9279,9 @@ package "trading" #E8F5E9 {
     CBO and SyntheticCDO products, and the linked-asset code for
     CreditLinkedSwap.
     The table is a flat instrument sub-type, so it binds
-    :profile: trading-instrument. Three table features justify that binding:
+    :profile: trading-instrument. Two table features justify that binding:
     the table is tenant-scoped through tenant_id and the tenant isolation
-    policy, it is workspace-scoped through workspace_id, and its insert
+    policy, its insert
     trigger stamps party_id from the session variable app.current_party_id
     rather than taking it from the client. The profile also fixes the identity
     and audit field groups, the batch read and the generator facet, and leaves
@@ -9346,7 +9333,6 @@ package "trading" #E8F5E9 {
           target_type : text
         * payoff_type : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9388,7 +9374,6 @@ package "trading" #E8F5E9 {
         * averaging_start_date : date
         * averaging_end_date : date
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9431,7 +9416,6 @@ package "trading" #E8F5E9 {
           upper_barrier_type : text
           rebate : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9473,7 +9457,6 @@ package "trading" #E8F5E9 {
         * long_short : text
           payout_amount : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9510,7 +9493,6 @@ package "trading" #E8F5E9 {
         * long_short : text
           settlement_type : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9545,7 +9527,6 @@ package "trading" #E8F5E9 {
           settlement_type : text
           cliquet_frequency : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9579,7 +9560,6 @@ package "trading" #E8F5E9 {
         * quantity : numeric(28, 10)
           price : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9650,9 +9630,7 @@ package "trading" #E8F5E9 {
     exercise date list stays unmodelled: it is a collection of its own, and
     a single date column would silently drop the rest of the list. That
     shape belongs to defect 16, the observation schedule.
-    The trade row carries the workspace and the party. The
-    entry rows are family-owned and ride the trade's scope, so no
-    workspace column rides them.
+    The trade row carries the party. The entry rows are family-owned and ride the trade's scope.
     end note
 
     entity ores_trading_equity_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -9672,7 +9650,6 @@ package "trading" #E8F5E9 {
         * long_short : text
         * payment_frequency_code : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9706,7 +9683,6 @@ package "trading" #E8F5E9 {
         * maturity_date : date
         * long_short : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9792,7 +9768,6 @@ package "trading" #E8F5E9 {
         * strike : numeric(18, 10)
         * notional : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9825,7 +9800,6 @@ package "trading" #E8F5E9 {
         * start_date : date
           knock_out_barrier : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9863,7 +9837,6 @@ package "trading" #E8F5E9 {
           target_amount : numeric(28, 10)
           strike : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9906,7 +9879,6 @@ package "trading" #E8F5E9 {
           upper_barrier : numeric(28, 10)
           underlying_code : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9944,7 +9916,6 @@ package "trading" #E8F5E9 {
           lower_barrier : numeric(28, 10)
           upper_barrier : numeric(28, 10)
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -9980,7 +9951,6 @@ package "trading" #E8F5E9 {
         * value_date : date
           settlement : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10015,7 +9985,6 @@ package "trading" #E8F5E9 {
         * exercise_style : text
           settlement : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10049,7 +10018,6 @@ package "trading" #E8F5E9 {
         * notional : numeric(28, 10)
         * moment_type : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10080,7 +10048,6 @@ package "trading" #E8F5E9 {
           base_cpi : numeric(18, 10)
           lag_convention : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10424,7 +10391,6 @@ package "trading" #E8F5E9 {
         * barrier_level : numeric(18, 10)
         * barrier_type : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10449,7 +10415,6 @@ package "trading" #E8F5E9 {
         * version : integer
           description : text
           fsm_state_id : uuid <<FK>>
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10702,7 +10667,6 @@ package "trading" #E8F5E9 {
         * participation_rate : double
         * protection_fee : double
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10734,7 +10698,6 @@ package "trading" #E8F5E9 {
           underlyings_json : text
           parameters_json : text
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10757,9 +10720,9 @@ package "trading" #E8F5E9 {
     no nested sub-struct, because the script definition is embedded text and
     not a set of typed columns.
     The table is a flat instrument sub-type, so it binds
-    :profile: trading-instrument. Three table features justify that binding:
+    :profile: trading-instrument. Two table features justify that binding:
     the table is tenant-scoped through tenant_id and the tenant isolation
-    policy, it is workspace-scoped through workspace_id, and its insert
+    policy, its insert
     trigger stamps party_id from the session variable app.current_party_id
     rather than taking it from the client. The profile also fixes the identity
     and audit field groups, the batch read and the generator facet, and leaves
@@ -10811,7 +10774,6 @@ package "trading" #E8F5E9 {
           spread : numeric(18, 10)
         * notional : numeric(28, 10)
         * currency : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -10838,9 +10800,8 @@ package "trading" #E8F5E9 {
     The instrument is keyed by its trade, so all nine rates families name the one
     parent the trades table holds rather than a table per family.
     It binds :profile: trading-instrument, like the nine instrument sub-types
-    whose legs it holds. Three table features justify the bind: the table is
-    tenant-scoped through tenant_id and the tenant isolation policy, it is
-    workspace-scoped through workspace_id, and its insert trigger stamps
+    whose legs it holds. Two table features justify the bind: the table is
+    tenant-scoped through tenant_id and the tenant isolation policy, its insert trigger stamps
     party_id from the session variable app.current_party_id rather than taking
     it from the client. The bind leaves the table with no UI surface -- the
     per-instrument forms were hand-crafted in the removed desktop client and
@@ -10865,7 +10826,6 @@ package "trading" #E8F5E9 {
           start_date : date
           maturity_date : date
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11269,7 +11229,6 @@ package "trading" #E8F5E9 {
           execution_timestamp : timestamptz
           effective_date : date
           termination_date : date
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11304,7 +11263,6 @@ package "trading" #E8F5E9 {
           settlement_lag : integer
           netting_set_id : text <<FK>>
           description : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

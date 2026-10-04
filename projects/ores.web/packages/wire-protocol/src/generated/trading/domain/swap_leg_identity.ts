@@ -31,7 +31,6 @@
 export interface SwapLegIdentity {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     trade_id: string;

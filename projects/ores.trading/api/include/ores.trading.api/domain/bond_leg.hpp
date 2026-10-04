@@ -70,8 +70,7 @@ struct bond_leg final {
     /**
      * @brief The trade this leg belongs to.
      *
-     * The trade row carries the workspace and the party. The leg rows are family-owned and ride the
-     * trade's scope, so no workspace column rides them.
+     * The trade row carries the party. The leg rows are family-owned and ride the trade's scope.
      */
     boost::uuids::uuid trade_id;
 

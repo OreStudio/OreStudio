@@ -161,24 +161,9 @@ void trade_repository::write(context ctx,
 std::vector<domain::trade> trade_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<trade_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<trade_entity, domain::trade>(
-            ctx,
-            query,
-            [](const auto& entities) { return trade_mapper::map(entities); },
-            lg(),
-            "Reading latest trades (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<trade_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<trade_entity, domain::trade>(
         ctx,
@@ -192,10 +177,8 @@ std::vector<domain::trade> trade_repository::read_latest(context ctx, const std:
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<trade_entity, domain::trade>(
         ctx,
@@ -210,10 +193,9 @@ trade_repository::read_latest_by_external_id(context ctx, const std::string& ext
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade by external_id: " << external_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "external_id"_c == external_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "external_id"_c == external_id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<trade_entity, domain::trade>(
         ctx,
@@ -227,11 +209,9 @@ std::vector<domain::trade>
 trade_repository::read_any_by_external_id(context ctx, const std::string& external_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any trade by external_id: " << external_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "external_id"_c == external_id) |
-        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query = sqlgen::read<std::vector<trade_entity>> |
+                       where("tenant_id"_c == tid && "external_id"_c == external_id) |
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<trade_entity, domain::trade>(
         ctx,
@@ -245,9 +225,8 @@ trade_repository::read_any_by_external_id(context ctx, const std::string& extern
 std::vector<domain::trade> trade_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<trade_entity, domain::trade>(
@@ -263,10 +242,8 @@ trade_repository::read_at_version(context ctx, const std::string& id, std::uint3
     BOOST_LOG_SEV(lg(), debug) << "Reading trade at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<trade_entity, domain::trade>(
@@ -298,10 +275,9 @@ trade_repository::remove(context ctx, const std::string& id, std::optional<std::
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<trade_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing trade from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -326,11 +302,9 @@ trade_repository::read_latest(context ctx,
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<trade_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<trade_entity, domain::trade>(
         ctx,
@@ -349,10 +323,8 @@ trade_repository::get_total_trade_count(context ctx,
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<trade_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<trade_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     return execute_count_query<trade_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting trades");
@@ -364,10 +336,8 @@ std::vector<domain::trade> trade_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<trade_entity, domain::trade>(
         ctx,
         query,
@@ -388,10 +358,8 @@ void trade_repository::remove(context ctx, const std::vector<std::string>& ids) 
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::delete_from<trade_entity> | where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                                                  "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto query = sqlgen::delete_from<trade_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing trades.");
 }
 
@@ -413,7 +381,6 @@ std::vector<std::string> fetch_book_ids(context ctx,
 std::vector<domain::trade> read_trades_for_books(context ctx,
                                                  const std::vector<std::string>& book_ids,
                                                  const std::string& tid,
-                                                 const std::string& wid,
                                                  std::uint32_t offset,
                                                  std::uint32_t limit,
                                                  logging::logger_t& lg) {
@@ -421,10 +388,10 @@ std::vector<domain::trade> read_trades_for_books(context ctx,
     const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
     std::vector<domain::trade> result;
     for (const auto& bid : book_ids) {
-        const auto query = sqlgen::read<std::vector<trade_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                                 "valid_to"_c == max && "book_id"_c == bid) |
-                           order_by("id"_c);
+        const auto query =
+            sqlgen::read<std::vector<trade_entity>> |
+            where("tenant_id"_c == tid && "valid_to"_c == max && "book_id"_c == bid) |
+            order_by("id"_c);
         auto batch = execute_read_query<trade_entity, domain::trade>(
             ctx,
             query,
@@ -447,7 +414,6 @@ std::vector<domain::trade> read_trades_for_books(context ctx,
 std::uint32_t count_trades_for_books(context ctx,
                                      const std::vector<std::string>& book_ids,
                                      const std::string& tid,
-                                     const std::string& wid,
                                      logging::logger_t& lg) {
 
     const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
@@ -456,10 +422,10 @@ std::uint32_t count_trades_for_books(context ctx,
     };
     std::uint32_t total = 0;
     for (const auto& bid : book_ids) {
-        const auto query = sqlgen::select_from<trade_entity>(sqlgen::count().as<"count">()) |
-                           where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                                 "valid_to"_c == max && "book_id"_c == bid) |
-                           sqlgen::to<count_result>;
+        const auto query =
+            sqlgen::select_from<trade_entity>(sqlgen::count().as<"count">()) |
+            where("tenant_id"_c == tid && "valid_to"_c == max && "book_id"_c == bid) |
+            sqlgen::to<count_result>;
         const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
         ensure_success(r, lg);
         total += static_cast<std::uint32_t>(r->count);
@@ -478,7 +444,6 @@ std::vector<domain::trade> trade_repository::read_latest_for_node_id(context ctx
         return read_latest(ctx, offset, limit);
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto& nid = node_id;
     BOOST_LOG_SEV(lg(), debug) << "Reading trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
@@ -487,7 +452,7 @@ std::vector<domain::trade> trade_repository::read_latest_for_node_id(context ctx
                                          nid,
                                          lg(),
                                          "Fetching book IDs for node subtree");
-    return read_trades_for_books(ctx, book_ids, tid, wid, offset, limit, lg());
+    return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
 }
 
 std::uint32_t trade_repository::count_latest_for_node_id(context ctx, const std::string& node_id) {
@@ -496,7 +461,6 @@ std::uint32_t trade_repository::count_latest_for_node_id(context ctx, const std:
         return get_total_trade_count(ctx);
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto& nid = node_id;
     BOOST_LOG_SEV(lg(), debug) << "Counting trades for node: " << nid;
     const auto book_ids = fetch_book_ids(ctx,
@@ -505,7 +469,7 @@ std::uint32_t trade_repository::count_latest_for_node_id(context ctx, const std:
                                          nid,
                                          lg(),
                                          "Fetching book IDs for node subtree");
-    return count_trades_for_books(ctx, book_ids, tid, wid, lg());
+    return count_trades_for_books(ctx, book_ids, tid, lg());
 }
 
 }

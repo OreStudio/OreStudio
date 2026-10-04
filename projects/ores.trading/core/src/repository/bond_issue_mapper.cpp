@@ -42,7 +42,6 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     domain::bond_issue r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.issue_id = boost::lexical_cast<boost::uuids::uuid>(v.issue_id.value());
     r.security_id = v.security_id;
     r.issuer = v.issuer.value_or("");
@@ -83,7 +82,6 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     bond_issue_entity r;
     r.issue_id = boost::uuids::to_string(v.issue_id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.security_id = v.security_id;
     r.issuer = v.issuer.empty() ? std::nullopt : std::optional(v.issuer);

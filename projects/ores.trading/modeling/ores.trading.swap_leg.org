@@ -31,9 +31,8 @@ The instrument is keyed by its trade, so all nine rates families name the one
 parent the trades table holds rather than a table per family.
 
 It binds =:profile: trading-instrument=, like the nine instrument sub-types
-whose legs it holds. Three table features justify the bind: the table is
-tenant-scoped through =tenant_id= and the tenant isolation policy, it is
-workspace-scoped through =workspace_id=, and its insert trigger stamps
+whose legs it holds. Two table features justify the bind: the table is
+tenant-scoped through =tenant_id= and the tenant isolation policy, its insert trigger stamps
 =party_id= from the session variable =app.current_party_id= rather than taking
 it from the client. The bind leaves the table with no UI surface -- the
 per-instrument forms were hand-crafted in the removed desktop client and
@@ -307,7 +306,7 @@ generates the trade-scoped read the trade read path uses.
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
 pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
-columns (version, tenant_id, workspace_id, the primary key) and the
+columns (version, tenant_id, the primary key) and the
 columns marked =:group: identity= above fold into a
 =swap_leg_identity identity;= member (see the
 ores.trading.swap_leg_identity field-group model), the implicit audit
@@ -368,8 +367,7 @@ The trade read path fetches the legs of many instruments at once, and no
 generated read covers that: =read_latest(context, ids)= filters on the leg's
 own key and =read_latest_by_trade_id= reads one instrument at a time.
 The batch read below is one statement over the instrument set, which is what
-the generated stack cannot express. It keeps the workspace filter the rest of
-the generated reads carry.
+the generated stack cannot express.
 
 *** read_by_instruments_batch
 :PROPERTIES:
@@ -392,9 +390,8 @@ swap_leg_repository::read_by_instruments_batch(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                       where("tenant_id"_c == tid &&
                              "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
                        order_by("trade_id"_c, "leg_number"_c);
     return execute_read_query<swap_leg_entity, domain::swap_leg>(

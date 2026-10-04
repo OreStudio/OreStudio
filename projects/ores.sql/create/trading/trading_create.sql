@@ -158,7 +158,7 @@
 -- Bond relational model (pilot, task D7943D7E): the issue table, the
 -- instrument table that references it, the per-trade fact tables and
 -- the issue-keyed child tables. The issue, fact and child rows are
--- tenant-scoped; the instrument row carries tenant + workspace + party.
+-- tenant-scoped; the instrument row carries tenant + party.
 \ir ./trading_bond_issues_create.sql
 \ir ./trading_bond_issues_notify_trigger_create.sql
 

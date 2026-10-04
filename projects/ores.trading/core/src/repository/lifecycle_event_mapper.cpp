@@ -39,7 +39,6 @@ domain::lifecycle_event lifecycle_event_mapper::map(const lifecycle_event_entity
     domain::lifecycle_event r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.code = v.code.value();
     r.description = v.description.value_or("");
     r.fsm_state_id = v.fsm_state_id.has_value() ?
@@ -61,7 +60,6 @@ lifecycle_event_entity lifecycle_event_mapper::map(const domain::lifecycle_event
     lifecycle_event_entity r;
     r.code = v.code;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.fsm_state_id = v.fsm_state_id.has_value() ?

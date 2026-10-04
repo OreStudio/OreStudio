@@ -160,24 +160,9 @@ void bond_issue_repository::write(context ctx,
 std::vector<domain::bond_issue> bond_issue_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("issue_id"_c);
-        return execute_read_query<bond_issue_entity, domain::bond_issue>(
-            ctx,
-            query,
-            [](const auto& entities) { return bond_issue_mapper::map(entities); },
-            lg(),
-            "Reading latest bond issues (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<bond_issue_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("issue_id"_c);
+    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("issue_id"_c);
 
     return execute_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
@@ -192,10 +177,9 @@ std::vector<domain::bond_issue> bond_issue_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue. " << "issue_id: " << issue_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "issue_id"_c == issue_id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_issue_entity>> |
+        where("tenant_id"_c == tid && "issue_id"_c == issue_id && "valid_to"_c == max.value());
 
     return execute_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
@@ -210,11 +194,9 @@ std::vector<domain::bond_issue> bond_issue_repository::read_all(context ctx,
                                                                 const std::string& issue_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond issue versions. " << "issue_id: " << issue_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<bond_issue_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "issue_id"_c == issue_id) |
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
+                       where("tenant_id"_c == tid && "issue_id"_c == issue_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
@@ -229,11 +211,10 @@ std::optional<domain::bond_issue> bond_issue_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading bond issue at version. " << "issue_id: " << issue_id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "issue_id"_c == issue_id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<bond_issue_entity>> |
+        where("tenant_id"_c == tid && "issue_id"_c == issue_id && "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities = execute_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
@@ -263,11 +244,9 @@ bond_issue_repository::remove_status bond_issue_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::delete_from<bond_issue_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "issue_id"_c == issue_id &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = sqlgen::delete_from<bond_issue_entity> |
+                       where("tenant_id"_c == tid && "issue_id"_c == issue_id &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing bond issue from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -292,11 +271,9 @@ bond_issue_repository::read_latest(context ctx,
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<bond_issue_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
@@ -314,10 +291,8 @@ std::uint32_t bond_issue_repository::get_total_issue_count(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<bond_issue_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     return execute_count_query<bond_issue_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting bond issues");
@@ -329,10 +304,9 @@ bond_issue_repository::read_latest(context ctx, const std::vector<std::string>& 
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<bond_issue_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_issue_entity>> |
+        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<bond_issue_entity, domain::bond_issue>(
         ctx,
         query,
@@ -353,10 +327,9 @@ void bond_issue_repository::remove(context ctx, const std::vector<std::string>& 
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<bond_issue_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<bond_issue_entity> |
+        where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing bond issues.");
 }
 

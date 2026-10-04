@@ -40,8 +40,7 @@ task (task D7943D7E wave 1.3).
 
 UUID of the issue this call date belongs to.
 
-The issue row carries the workspace; the child rows are family-owned
-and ride the issue's scope, so no workspace column rides them.
+The child rows are family-owned and ride the issue's scope.
 
 ** sequence_number
 :PROPERTIES:

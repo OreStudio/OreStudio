@@ -58,8 +58,7 @@ struct bond_issue_conversion_target final {
     /**
      * @brief UUID of the issue this conversion target belongs to.
      *
-     * The issue row carries the workspace; the child rows are family-owned and ride the issue's
-     * scope, so no workspace column rides them.
+     * The child rows are family-owned and ride the issue's scope.
      */
     boost::uuids::uuid issue_id;
 

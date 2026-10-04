@@ -36,9 +36,9 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::messaging {
 

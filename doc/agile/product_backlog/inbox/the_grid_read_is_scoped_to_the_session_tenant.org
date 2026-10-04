@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 3621E2BC-2670-4E59-8721-32F86B640F24
+:END:
+#+title: The grid read is scoped to the session tenant
+#+description: The grid belongs to the installation: every tenant's work runs on the same hosts. The reads filter by the tenant of the session anyway, so an administrator reads one tenant's slice of a shared grid, or nothing. The reads must serve the whole grid; the node sample's tenant id stays as attribution.
+#+type: capture
+#+level: cross
+#+filetags: :compute:telemetry:defect:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The grid belongs to the installation: one set of hosts runs every tenant's
+work, and the samples describe the fleet, not a tenant's slice of it
+([[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]). The
+reads filter by tenant anyway. =latest_node_samples= selects
+=DISTINCT ON (host_id) ... WHERE tenant_id = $1=, and the grid summary read
+follows the session's tenant; the node sample carries a =tenant_id=, so the
+filter has something to bite on and quietly returns one tenant's rows.
+
+The accepted design says the grid is read whole. The fix is to drop the
+tenant filter from the grid reads — the stored =tenant_id= stays on the
+sample as attribution — and to guard the read with the permission the
+journey records, so *the whole grid* and *who may see it* stay two separate
+decisions.
+
+* Why
+
+Silent and wrong: the person whose job is to see all the nodes reads a
+shorter table and cannot tell it is short. The samples are already
+installation-wide; only the read narrows them. This is a defect under the
+read, not a missing feature.
+
+* References
+
+- =projects/ores.compute/core/src/repository/compute_telemetry_repository.cpp= — =latest_node_samples=, =WHERE tenant_id = $1=
+- =projects/ores.compute/core/include/ores.compute.core/messaging/telemetry_handler.hpp= — =get_grid_stats=, the handler
+- =projects/ores.compute/modeling/ores.compute.telemetry.org= — =node_sample_message= carries =tenant_id= and =host_id=
+
+* See also
+
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen that reads the grid
+- [[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]] — the permission the read must grow as the filter goes

@@ -83,6 +83,24 @@ and destroys nothing.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_watch_the_message_bus.png]]
 
+* Prototype
+
+Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record.
+
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Route :: =/prototype/bus=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
+
+The prototype settled the reading of a sample. The vitals keep the running
+totals apart from the current numbers and show the movement across the range
+as a difference, because a raw total says nothing without the sample it came
+from. The range control carries its rule in place — start inclusive, end
+exclusive — so adjacent ranges tile. The chart follows one chosen stream, as
+the legacy client's queue chart did, and reads the JetStream samples because
+the installation runs no queue of its own.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -144,7 +162,9 @@ which reads both lists and marks the running totals.
    per-connection detail on the sample, or a current count beside the total.
 5. *The reads check no permission.* The handlers authenticate the token and
    then serve any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=.
+   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
+   is not these reads' alone
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
 
 * Related journeys
 

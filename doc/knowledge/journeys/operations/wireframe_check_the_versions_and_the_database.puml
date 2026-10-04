@@ -34,15 +34,17 @@ salt
     Address https://ores.example.com
   }
   --
-  <b>DATABASE</b> | what the deployment stores
+  <b>DATABASE</b> | from the login answer | what the deployment stores
   {
-    Fingerprint (unknown) | Environment (unknown)
-    Commit (unknown) | Created (unknown)
+    Fingerprint 1109eccab21e8fe8 | Environment development
+    Commit a1e507d (2026-10-03) | Created 2026-10-04 14:02
   }
   --
   Read-only. Every screen also states the client and the server in its footer.
-  The database reads unknown until a read serves the fingerprint row of
-  ores_database_info_tbl; today only a service startup reads it.
+  The database panel reads its four values from the login answer, beside the
+  server build the answer states today; until the answer carries the database
+  row, a session states the database as unknown rather than showing an empty
+  row as a fact.
 }
 
 @enduml

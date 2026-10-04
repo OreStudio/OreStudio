@@ -2,7 +2,7 @@
 :ID: 7B820710-161C-4926-B5AA-5EF2772A3652
 :END:
 #+title: User Journey: Watch the compute grid
-#+description: A system administrator watches the compute grid: how many nodes it has, how busy they are, and how the work is going.
+#+description: A system administrator watches the compute grid: how many nodes it has, how busy they are, how the work is going, and which compute wrappers report for those nodes.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:security:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-04
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator watches the compute grid: how many nodes it has, how busy they are, and how the work is going.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator watches the compute grid: how many nodes it has, how busy they are, how the work is going, and which compute wrappers report for those nodes.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -20,9 +20,9 @@ each step needs.
 * Goal
 
 "I want to know how the grid is doing." The system administrator reads one
-screen and gets one summary of the host fleet and one row per node. The
-journey is done when the administrator can say whether the grid is working,
-and which node is behind.
+screen and gets one summary of the host fleet, one row per node, and the
+compute wrappers that report for those nodes. The journey is done when the
+administrator can say whether the grid is working, and which node is behind.
 
 * Actor and trigger
 
@@ -38,17 +38,20 @@ journey ends when the fleet and the work in it are accounted for.
 This journey writes nothing. It reads a summary the service already stores and
 the latest sample of every node.
 
-The read is scoped by the caller's session tenant: the reply covers the tenant
-the administrator acts in, and no other. A system administrator also runs
-grids for other tenants, and reading one of those is a gap this journey
-records — see *What is missing*.
+The grid belongs to the installation: every tenant's work runs on the same
+hosts, and the samples describe the fleet, not a tenant's slice of it. The
+read filters by the caller's session tenant anyway, so the grid an
+administrator sees can be short without saying so — a defect under the read,
+recorded in *What is missing* and in
+[[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]].
 
 * Steps
 
 1. *Open the grid screen.* The administrator opens the grid screen in the
    *Operations* area. The system shows one screen: a summary panel, a
-   read-only table with one row per node, and a refresh control. The
-   administrator expects every registered node, busy or idle.
+   read-only table with one row per node, a panel of the compute wrappers that
+   report for those nodes, and a refresh control. The administrator expects
+   every registered node, busy or idle.
 2. *Read the summary.* The system states the host counts — total, online and
    idle — and the work counts: workunits, batches and active batches. It adds
    the outcomes of the last day: successes, client errors and jobs that got no
@@ -60,32 +63,58 @@ records — see *What is missing*.
    since the previous sample, the mean task time, the bytes fetched, the bytes
    uploaded, and the seconds since the node last heartbeated. A node the
    operator should look at has a large number in the last column.
-4. *A grid with no sample.* The deployment is up but no grid sample is stored
+4. *Read the wrappers.* The system gives each compute wrapper its instance
+   id, its state and the release it runs, and when it last reported — the
+   same heartbeat the services screen reads. One wrapper runs on each node
+   and takes the work that node runs, so the panel is the fleet's other half.
+   The wrappers sit beside the nodes and not on them; *What is missing* says
+   why.
+5. *A grid with no sample.* The deployment is up but no grid sample is stored
    yet, which is the state before the sampler's first pass. The screen says it
    has no sample and shows the node table on its own, rather than presenting
    zero hosts as a fact about the fleet.
-5. *A node that went quiet.* The node table reads the most recent sample of
+6. *A node that went quiet.* The node table reads the most recent sample of
    every node, so a quiet node keeps its row and its seconds-since-heartbeat
-   grows. This is the deliberate difference from the services screen, where a
-   quiet instance leaves the list: here the operator can see *which* node went
-   quiet.
-6. *Refresh, or watch.* The summary and the nodes are point-in-time reads. The
+   grows. This is the deliberate difference from the services screen: there a
+   quiet instance keeps its row and its state says so; here the age in the
+   last column is the state.
+7. *Refresh, or watch.* The summary and the nodes are point-in-time reads. The
    administrator refreshes, or leaves the screen polling while a batch runs,
    as the shell's own grid command can watch the grid.
-7. *Leave, or go on.* The administrator leaves the screen, or follows a node
+8. *Leave, or go on.* The administrator leaves the screen, or follows a node
    into the paths that are out of this story's scope: host maintenance belongs
    to the compute journeys. Related screens carry the rest: the logs explain a
    failure, and the message bus shows whether results are moving at all.
 
 * Screens and wireframes
 
-One screen. The summary panel, the node table and the refresh control are
-panels of that screen, because the administrator reads them as one answer. The
-screen is read-only: it creates nothing, changes nothing and destroys nothing.
+One screen. The summary panel, the node table, the wrapper panel and the
+refresh control are panels of that screen, because the administrator reads
+them as one answer. The screen is read-only: it creates nothing, changes
+nothing and destroys nothing.
 
-#+caption: Watch the compute grid: the host and work summary, the node table, and the empty state.
+#+caption: Watch the compute grid: the host and work summary, the node table, the wrapper panel and the empty state.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_watch_the_compute_grid.png]]
+
+* Prototype
+
+Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record.
+
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Route :: =/prototype/grid=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
+
+The prototype settled the wrappers. They belong to this screen and not to the
+services screen: a wrapper runs on a node and reports for it, so the panel
+sits under the node table with the same four columns the services screen reads
+— instance, state, release, last heartbeat — and the services screen leaves
+the wrapper service out. It also settled the frame around the read: the grid
+is the installation's, so the read must stop narrowing it to the session's
+tenant, and the summary keeps its sample time beside the counters because the
+counters mirror one stored sample.
 
 * Entities composed
 
@@ -95,11 +124,17 @@ screen is read-only: it creates nothing, changes nothing and destroys nothing.
 | =node_stats_summary= | One row per node: tasks, durations, bytes and seconds since heartbeat | [[id:05BA3A23-3596-4881-BFB6-D4E3438FD9AC][ores.compute.telemetry]] |
 | =grid_sample= | The host and work counters, as one stored sample with its time | [[id:05BA3A23-3596-4881-BFB6-D4E3438FD9AC][ores.compute.telemetry]] |
 | =host= | The hostname and display name joined onto each node row | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =service_sample= | The wrapper instances that report for the nodes: state, instance id and release | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
 
 The node row identifies its host by =host_id=, the host row's identity, and
 nothing more. The hostname a person reads is the host's =external_id=, and it
 arrives by joining the host list onto the summary. A node with no matching
 host row shows its id and says no host names it.
+
+The node rows and the wrapper rows describe the same machines, and they share
+no key: the node sample carries =host_id= and no release, and the heartbeat
+carries the release and no host. The panel places the wrappers beside the
+nodes because nothing joins them — see *What is missing*.
 
 * Operations and messages
 
@@ -112,11 +147,13 @@ host row shows its id and says no host names it.
 | Read the summary | Read the host and work counters | carried by =compute.v1.telemetry.get_grid_stats= | exists |
 | Read the nodes | Read one row per node | carried by =compute.v1.telemetry.get_grid_stats= | exists |
 | Name the nodes | Join the host registry onto each node row | =compute.v1.hosts.list= | exists |
+| Read the wrappers | List the latest sample of every wrapper instance | =telemetry.v1.services.list= | exists |
 | A grid with no sample | Answer with an empty sample time | carried by =compute.v1.telemetry.get_grid_stats= | exists |
 | Refresh, or watch | Read again | =compute.v1.telemetry.get_grid_stats= | exists |
 
-=compute.v1.telemetry.get_grid_stats= carries no request fields, because the
-caller's session decides what the summary covers. Its reply carries the
+=compute.v1.telemetry.get_grid_stats= carries no request fields, and the
+handler scopes the reply by the caller's session tenant — which the grid's
+ownership says it must not; see *What is missing*. Its reply carries the
 counters, the sample time as an ISO-8601 string, and one
 =node_stats_summary= per node. The handler reads the newest stored grid sample
 and the most recent sample of every node; it computes nothing live.
@@ -125,32 +162,51 @@ and the most recent sample of every node; it computes nothing live.
 its node did since the previous sample, and the message is declared with auth
 =none=, because the publishing node has no session.
 
+The wrapper panel reads =telemetry.v1.services.list=, the same read the
+services screen uses, filtered to the compute wrapper service. Nothing joins
+its rows to the nodes above.
+
 The browser reads the summary through a hand-written BFF route on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
 the operations screens yet; the prototype adds =GET /api/operations/grid=,
-which reads the summary and joins the host list, as the shell's own grid
-command does.
+which reads the summary, joins the host list as the shell's own grid command
+does, and reads the wrapper samples.
 
 * What is missing
 
-1. *The summary covers one tenant.* The read is scoped by the session's
-   tenant, so an administrator who runs grids in several tenants reads one at
-   a time, from a session inside each. The candidate is a tenant choice on the
-   request, guarded by the permission that allows it.
-2. *Failures are dropped on the way to the screen.* The node sample carries
+1. *The grid is the installation's and the read serves one tenant.* The grid
+   is shared: every tenant's work runs on the same hosts. The read filters by
+   the session's tenant anyway, so an administrator reads one tenant's slice
+   of a shared grid, or nothing
+   ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]).
+   The read must serve the whole grid, and the permission gate decides who
+   may see it.
+2. *A wrapper cannot be placed on its node.* The wrapper heartbeat carries
+   the service name, the instance id and the release, and no host. The node
+   sample carries the host and no release. Nothing joins the two, so the
+   wrappers are listed beside the nodes rather than on them. A host id on the
+   heartbeat would join them, and each node row could then state the release
+   it runs
+   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]).
+3. *Failures are dropped on the way to the screen.* The node sample carries
    =tasks_failed= and =max_task_duration_ms=, and the node summary carries
    neither. The screen cannot show failed tasks or the slowest task per node,
-   which are the first numbers an operator wants from a grid. The candidate is
+   which are the first numbers an operator wants from a grid
+   ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]).
+   A node failing every task reads as a node doing nothing. The candidate is
    to carry both fields into =node_stats_summary=.
-3. *No history.* The read answers with the newest stored sample only, so the
+4. *No history.* The read answers with the newest stored sample only, so the
    screen cannot show a trend, and a batch's progress over time is not
-   visible. The candidate is a read over grid samples in a time range.
-4. *A node with no host row.* The join fixes the common case, and a node the
+   visible. The poller keeps writing samples that no read returns. The
+   candidate is a read over grid samples in a time range.
+5. *A node with no host row.* The join fixes the common case, and a node the
    host registry does not know shows a bare id. The screen must say that no
    host names the node, rather than printing the id as if it were a name.
-5. *The read checks no permission.* The handler authenticates the token and
+6. *The read checks no permission.* The handler authenticates the token and
    then serves any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=.
+   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
+   is not this read's alone
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
 
 * Related journeys
 
@@ -163,6 +219,7 @@ command does.
 
 - [[id:05BA3A23-3596-4881-BFB6-D4E3438FD9AC][ores.compute.telemetry]]
 - [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]]
+- [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]]
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]]
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]
 - [[id:7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A][Compute Grid Telemetry Design]]

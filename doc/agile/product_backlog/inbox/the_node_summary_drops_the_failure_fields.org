@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 8C1D6E61-3661-49F2-90BB-00ED7C4F113C
+:END:
+#+title: The node summary drops the failure fields
+#+description: The node sample stores the failed task count and the longest task, and the node summary drops both before the reply leaves. A node failing every task reads as a node doing nothing, which is the opposite of the truth.
+#+type: capture
+#+level: cross
+#+filetags: :compute:telemetry:defect:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The node sample carries the count of failed tasks and the longest task the
+node ran: =tasks_failed= and =max_task_duration_ms= on =node_sample_message=.
+The reply's per-node summary, =node_stats_summary=, carries neither — it
+keeps =tasks_completed=, =tasks_since_last=, =avg_task_duration_ms= and the
+byte counters — so both fields are stored and dropped on the way out.
+
+The screen suffers the worst version of it: a node failing every task reads
+as a node doing nothing, because the failures never arrive and the completed
+count stays flat
+([[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]). The
+candidate is to carry both fields into =node_stats_summary=, so the node row
+states the failures beside the completions.
+
+* Why
+
+Failures per node are the first numbers an operator wants from a grid, and
+the ingest already pays to store them. Dropping them at the summary is a
+defect of the reply, not a missing feature; the fix is one message change
+and the read that carries it.
+
+* References
+
+- =projects/ores.compute/modeling/ores.compute.telemetry.org= — =node_sample_message= (=tasks_failed=, =max_task_duration_ms=) and =node_stats_summary= (neither field)
+
+* See also
+
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen that cannot show the failures

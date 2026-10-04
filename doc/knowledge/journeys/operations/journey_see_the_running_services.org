@@ -2,7 +2,7 @@
 :ID: ED949529-0A80-4661-BBAC-E5DB7A6E5828
 :END:
 #+title: User Journey: See the running services
-#+description: A system administrator reads the services running in the installation: each instance, its version, and when it last reported.
+#+description: A system administrator reads the services the installation runs: the expected roster, each instance's state and version, and when it last reported.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:security:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-04
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the services running in the installation: each instance, its version, and when it last reported.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the services the installation runs: the expected roster, each instance's state and version, and when it last reported.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -19,11 +19,11 @@ each step needs.
 
 * Goal
 
-"I want to know what services this installation is running." The system
-administrator reads one screen and gets one row per running service instance.
-The journey is done when every row answers four questions: which service the
-instance belongs to, which instance it is, what version it runs, and when it
-last reported.
+"I want to know what services this installation is running, and what is not
+reporting." The system administrator reads one screen and gets one row per
+instance the installation expects, grouped under its service. The journey is
+done when every row answers four questions: which service it belongs to, what
+state it is in, which version it runs, and when it last reported.
 
 * Actor and trigger
 
@@ -46,64 +46,90 @@ publishes on a timer, and the read changes no state.
 
 1. *Open the services screen.* The administrator opens the services screen in
    the *Operations* area. The system shows one screen: a summary line, a
-   read-only table with one row per running service instance, and a refresh
-   control. The administrator expects to find every service the installation
-   runs, including more than one instance of the same service.
-2. *Read the rows.* The system gives each row four columns. The service name
-   is the canonical name, for example =ores.iam.service=. The instance id
-   tells two instances of one service apart. The version is the release the
-   instance reports with its heartbeat. The last heartbeat says how long ago
-   the instance last reported, so a row that is not moving is visible at a
-   glance.
+   read-only table with one row per expected instance grouped under its
+   service, and a refresh control. The administrator expects to find every
+   service the installation runs, including the ones that are not reporting.
+2. *Read the rows.* The system gives each service its canonical name, for
+   example =ores.iam.service=, and its instance count: how many of the
+   expected instances reported, as *four of four* or *four of five*. Each
+   instance row gives the instance id, a state word, the version, and how long
+   ago the instance last reported. The state words are the installation's own:
+   *running*, *stopped*, *missing*. A stopped instance keeps its row, so the
+   absence of a row is never the answer.
 3. *Spot a version that lags behind.* The version column exists for
    comparison: after a rollout, instances on different builds show different
-   versions in one list. The screen states the difference; it does not judge
-   it. The heartbeat carries the release string only, so two builds of one
-   release read the same here — see *What is missing*.
+   versions in one list. An older build is marked on its own row, and a lag
+   that touches a service earns a notice of its own above the table, because a
+   release only some instances took is the event this screen exists to catch.
+   The heartbeat carries the release string only, so two builds of one release
+   read the same here — see *What is missing*.
 4. *An installation with none.* The service is up but no heartbeat has arrived
-   yet, which is the state right after a cold start. The screen answers an
-   empty table and says that nothing has reported, rather than showing a
-   failure. The screen reads *active* instances only: the list holds the
-   instances that reported in the last five minutes, so it can be empty while
-   the installation is up.
-5. *A service that went quiet.* This is the case the screen cannot show
-   today. A service that stops reporting leaves the list when five minutes
-   pass, and the screen cannot tell a stopped service from one that was never
-   listed. The gap and its candidates are in *What is missing*. Until it
-   closes, the screen states the rule its list follows — active instances,
-   five minutes — so no reader takes the absence of a row for proof that a
-   service never ran.
+   yet, which is the state right after a cold start. Every expected row says
+   *missing*, and the summary says that nothing reported — rather than an
+   empty table, which would read as an installation with no services.
+5. *A service that went quiet.* A service that stops reporting keeps its row,
+   and the age in its last column grows. This is the case the screen cannot
+   fully show today: *running* is read from the five-minute window, and the
+   states *stopped* and *missing* have no read of their own. The screen can
+   state that an instance has not reported; it cannot say why. The gap and its
+   candidates are in *What is missing*.
 6. *Refresh, or watch.* The list is a point-in-time read, and heartbeats keep
    arriving while the screen is open. The administrator refreshes, or leaves
    the screen polling, so the ages in the last column move and a service that
    goes quiet is visible while they watch.
 7. *Leave, or go on.* The administrator leaves the screen, or follows one of
    the related journeys: the compute grid, the message bus, the logs, or the
-   versions. A version column also raises the question the versions journey
-   answers: which build the deployment itself runs.
+   versions. The compute wrappers are the grid screen's: a wrapper runs on a
+   node, and this screen leaves it with the node. A version column also raises
+   the question the versions journey answers: which build the deployment
+   itself runs.
 
 * Screens and wireframes
 
-One screen. The summary line, the table and the refresh control are panels of
-that screen, because the administrator reads them as one answer. The screen is
-read-only: it creates nothing, changes nothing and destroys nothing.
+One screen. The summary line, the roster table and the refresh control are
+panels of that screen, because the administrator reads them as one answer. The
+screen is read-only: it creates nothing, changes nothing and destroys nothing.
 
-#+caption: See the running services: the summary, the instance table and the empty state.
+#+caption: See the running services: the roster, the instance table and the missing state.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_see_the_running_services.png]]
+
+* Prototype
+
+Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record. The built screen keeps its
+shape: one row per expected instance, grouped under its service.
+
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Route :: =/prototype/services=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
+
+The prototype settled the roster. A stopped instance never leaves the list:
+the row stays, the state changes, and the instance count reads *four of five*
+in the warning tone. The states use the installation's own words with the
+shell's colours — running in the accent tone, stopped muted, missing in the
+warning tone. A version that lags behind is marked on its row and named in a
+notice above the table when it touches a service. The list sorts by service
+name, then instance, because the read orders nothing. The compute wrappers
+left this screen for the grid screen, where the nodes they run on are.
 
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =service_sample= | Service name, instance id, version and last heartbeat; one row per running instance | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
+| =service_sample= | State, instance id, version and last heartbeat; one row per reporting instance | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
+| =service_registry= | The expected roster: which services exist and how many replicas each runs | [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] |
 
-The row is the instance's latest sample, not the service itself. The
-installation has no service registry to read, so the screen answers "which
-services run" from the samples the services send: a service that never reports
-does not appear. The sample also says nothing about the host the instance runs
-on, so the screen cannot say where an instance is.
+The row is the instance's latest sample, joined to the roster the registry
+states. The samples serve "who is running"; the registry serves "who should
+be". Neither alone is the screen: samples without the roster cannot show a
+service that never reported, and the roster without samples cannot show a
+version or an age. The registry is a code-generation model for the deployment
+tooling, and no operation serves it yet — see *What is missing*. The sample
+also says nothing about the host the instance runs on, so the screen cannot
+say where an instance is.
 
 * Operations and messages
 
@@ -111,10 +137,11 @@ on, so the screen cannot say where an instance is.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Before the screen: every service reports on a timer | Publish that an instance is alive | =telemetry.v1.services.heartbeat= | exists |
-| Open the screen | List the latest sample of every running instance | =telemetry.v1.services.list= | exists |
-| Read the rows | Read the service, instance, version and sample time | carried by =telemetry.v1.services.list= | exists |
-| An installation with none | Answer an empty list | carried by =telemetry.v1.services.list= | exists |
-| A service that went quiet | Read an instance that stopped reporting | — | missing |
+| Open the screen | List the latest sample of every reporting instance | =telemetry.v1.services.list= | exists |
+| Read the roster | Read the services the installation expects and their replica counts | — | missing |
+| Read the rows | Read state, instance, version and sample time per expected instance | carried by the reads above | partial |
+| A service that went quiet | Read an instance that stopped reporting, or never reported | — | missing |
+| An installation with none | Answer one missing row per expected instance | carried by both reads | partial |
 | Refresh, or watch | Read the list again | =telemetry.v1.services.list= | exists |
 
 =telemetry.v1.services.heartbeat= is ingested. Every service that embeds the
@@ -126,9 +153,11 @@ carries no token.
 =telemetry.v1.services.list= is served by the [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][service_samples model]].
 Its request carries no fields, because the reply covers every service the
 caller may see. Its reply carries =success=, =message= and one sample per
-running instance, in no particular order. The read keeps the latest sample per
-=(service_name, instance_id)= among the rows of the last five minutes, so it
-answers *active instances*, not *all instances*.
+reporting instance, in no particular order. The read keeps the latest sample
+per =(service_name, instance_id)= among the rows of the last five minutes, so
+it answers *active instances*, not *all instances*. The screen joins the reply
+to the registry's roster: an expected instance with no sample reads *missing*,
+and the instance count reads how many of the expected instances reported.
 
 The browser reads it through a hand-written BFF route, on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
@@ -138,28 +167,46 @@ caller's token and then checks no dedicated permission — see *What is missing*
 
 * What is missing
 
-1. *A stopped service leaves the list.* The read keeps the rows of the last
-   five minutes, so an instance that stops reporting disappears instead of
-   going stale. The operator cannot see which service went quiet — only that
-   the list is shorter than memory says. The candidates are a longer window,
-   or the latest sample per instance at any age with its age stated. Until one
-   exists, the screen keeps saying *active instances, five minutes*.
-2. *The heartbeat states the release, not the build.* Each service sends its
+1. *The roster has no read.* The registry that states which services exist
+   and how many replicas each expects is a code-generation model for the
+   deployment tooling, and no operation serves it
+   ([[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]).
+   Until a read exists, the screen can only draw the rows it can infer, so a
+   service that never reports cannot be shown as missing — only as absent.
+2. *The state comes from absence, not from a read.* *Running* means "reported
+   in the last five minutes"; *stopped* and *missing* have no source at all.
+   Nothing serves the service manager's state — the one =compass services
+   status= asks — to a screen, so a reader cannot tell a service somebody
+   stopped from one that fell over. The candidates are the latest sample per
+   instance at any age with its age stated, and a state read the manager owns.
+   Until one exists, the screen states which instances are expected and which
+   have reported, and marks the rest *missing*.
+3. *The heartbeat states the release, not the build.* Each service sends its
    =ORES_VERSION= string, so two builds cut from one release look identical
    here, and a rebuild without a release bump is invisible. The candidate is
    for the heartbeat to carry the full version string — the one the login
    answer already states.
-3. *The read checks no permission.* The handler authenticates the token and
-   then serves any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=.
-4. *No uptime.* Nothing says when an instance started, so the screen cannot
+4. *The heartbeat carries no host.* Each heartbeat names the service, the
+   instance and the release, and no host; the node samples name the host and
+   no release. Nothing joins an instance to the machine it runs on, so the
+   screen cannot say where an instance is, and the grid screen cannot place a
+   compute wrapper on its node
+   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]).
+   The candidate is a host id on the heartbeat — one field that joins both.
+5. *No uptime.* Nothing says when an instance started, so the screen cannot
    tell an instance that just restarted from one that has run for weeks; the
    age of a heartbeat answers neither question. The candidates are a start
    time and a restart count on the heartbeat.
-5. *The reply is unordered.* The samples come back in no particular order, so
-   the screen sorts them, and every reader must sort them the same way. A
-   stable order from the read — service name, then instance — would settle it
-   once.
+6. *The reply is unordered.* The samples come back in no particular order, so
+   the screen sorts them, and every reader must sort them the same way. The
+   prototype sorts by service name, then instance. A stable order from the
+   read — service name, then instance — would settle it once.
+7. *The read checks no permission.* The handler authenticates the token and
+   then serves any signed-in account. The candidate is a dedicated permission
+   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
+   is not this read's alone: every hand-written operation handler can ship
+   with no check at all
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
 
 * Related journeys
 
@@ -173,6 +220,7 @@ caller's token and then checks no dedicated permission — see *What is missing*
 
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]
 - [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]]
+- [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]]
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]]
 - [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
 - [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]

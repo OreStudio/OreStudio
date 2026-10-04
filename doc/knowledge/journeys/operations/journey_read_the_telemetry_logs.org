@@ -89,6 +89,23 @@ is read-only: it creates nothing, changes nothing and destroys nothing.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_read_the_telemetry_logs.png]]
 
+* Prototype
+
+Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
+is not merged; the branch is kept as the record.
+
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Route :: =/prototype/logs=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
+
+The prototype settled the reading of a page. The filters combine with AND and
+each one narrows; the bar keeps the range beside them, because the range alone
+is often enough to shrink the store. The table states the emission time and
+leaves the receipt time to the opened entry, where the difference between the
+two is the point. The paging line reads *showing 1-100 of 2,431*, so the count
+settles whether the filter is narrow enough to read.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -157,7 +174,9 @@ which carries the filter from the screen.
    table.
 6. *The read checks no permission.* The handler authenticates the token and
    then serves any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=.
+   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
+   is not this read's alone
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
 
 * Related journeys
 

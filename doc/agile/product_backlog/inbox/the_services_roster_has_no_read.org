@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: B7B53CD1-4A11-403E-8844-13177864F0E7
+:END:
+#+title: The services roster has no read
+#+description: The services screen reads a roster: which services the installation expects and how many replicas each runs. The registry holds it as a codegen model for the deployment tooling and no operation serves it. The states hang on the same gap: running means reported in the last five minutes, and stopped or missing have no source at all.
+#+type: capture
+#+level: cross
+#+filetags: :telemetry:data_model:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The services screen shows what the installation runs as a roster: one row per
+expected instance, with a state word for each — running, stopped, missing — so
+a service that stops keeps its row and a service that never reports shows as
+missing rather than absent
+([[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]]). The
+screen needs two reads and neither exists.
+
+The roster itself is a code-generation model.
+=projects/modeling/service_registry.org= lists every service, its
+=replicas=, its =enabled= flag and its startup dependencies, for the
+deployment tooling to generate from. No operation serves it, so the screen
+can only draw what reported, and the expected-but-absent row cannot exist.
+
+The state beyond running hangs on the same gap. *Running* is answerable today:
+a sample arrived within five minutes. *Stopped* and *missing* are not. The
+thing that knows an instance was stopped is the service manager — the one
+=compass services status= asks — and it serves no screen. The candidates: a
+read of the registry, so the expected rows and the replica counts exist; and
+either a state read or the latest sample per instance at any age, so a quiet
+instance keeps its row with the age of its last report.
+
+* Why
+
+An operator's question is as much what is missing as what is running. A
+screen drawn from samples alone answers only the second, and it fails in the
+worst way: the shorter the list, the less the reader can tell. The registry
+already holds the truth a screen needs — the expected services and their
+replica counts — and it is one read away.
+
+* References
+
+- =projects/modeling/service_registry.org= — the registry: every service, =replicas=, =enabled=, dependencies
+- =projects/ores.telemetry/modeling/ores.telemetry.service_samples.org= — =get_service_samples=, the reporter side
+- =projects/ores.compass/= — =compass services status=, the service manager's only surface today
+
+* See also
+
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the screen that reads the roster
+- [[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]] — the permission side of any new read

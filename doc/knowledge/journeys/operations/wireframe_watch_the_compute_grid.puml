@@ -38,8 +38,21 @@ salt
     grid-05.example.com | 101 | 0 | - | 40 MB | 2 MB | (3 h 12 m)
   }
   --
-  Read-only. The summary covers the tenant of the session. A node whose last
-  column grows is the one to look at; the node keeps its row while it is quiet.
+  <b>COMPUTE WRAPPERS</b> | 4 of 5 reported in the last five minutes | (1 missing)
+  {#
+    Instance | Status | Version | Last heartbeat
+    6f2c19a1 | running | v0.0.25 | 8 s
+    c47e5508 | running | v0.0.25 | 21 s
+    b8d3a9e2 | running | v0.0.25 | 5 s
+    42f0c7d1 | running | v0.0.25 | 11 s
+    - | (missing) | - | -
+  }
+  --
+  Read-only. The grid is the installation's: every tenant's work runs on the
+  same hosts. A node whose last column grows is the one to look at; the node
+  keeps its row while it is quiet. One wrapper runs on each node and takes the
+  work that node runs, but nothing joins the two rows yet: a wrapper heartbeat
+  carries no host, and a node sample carries no release.
   --
   [ Open the node ] - waits for the compute journeys
   --

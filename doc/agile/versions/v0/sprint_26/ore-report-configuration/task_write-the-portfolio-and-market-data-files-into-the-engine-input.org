@@ -60,6 +60,10 @@ task and name that file in the Command column.
 
 * Notes
 
+Owned elsewhere: the operator ruled on 2026-10-04 that portfolio and market
+data work runs in other environments, so the bright_faraday environment does
+not pick this task up.
+
 Raised on 2026-10-04 from the open items left after [[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] and [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]].
 
 * Test Scenarios

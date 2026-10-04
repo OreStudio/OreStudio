@@ -103,6 +103,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: TotalReturnSwap with an equity underlying is written to the equity position table under the underlying's code, so routing by the trade's own type still misses it on export | =trade_type_catalogue= | Decline here | Unchanged from before; the equity family story owns its round trip. |
 | 2 | Local review: the drift check shows =trade_service.cpp= changed only under clang-format 21 | tooling | Accept as follow-up | CI uses clang-format 18; with 18 on PATH the tree has no drift. Pinning the generator's formatter is its own change. |
+| 3 | @claude: confirm the wide trade's trade type lookup is indexed | =trading_trades_create.sql= | Accept as is | =trade_types_code_uniq_idx= on =(tenant_id, code)= for the current row serves it; the system tenant matches the anchor's check. |
+| 4 | @claude: a trigger check is skipped by loads that disable triggers | =trading_trades_create.sql= | Decline | The wide trade's party, book and status checks are already triggers, and nothing loads trades with triggers off. |
+| 5 | @claude: generate the handler's switch and buckets too | =trade_handler.hpp= | Accept as follow-up | The switch has no default, so a new table is a compiler warning; generating the bucket-to-service map belongs with the consumers task. |
+| 6 | @claude: log trades with no table, an O(n^2) duplicate count, a path-depth error, shared test helpers | various | Decline | Minor; the unrouted types are documented in the catalogue, and 121 rows make the count cost nothing. |
 
 * Result
 

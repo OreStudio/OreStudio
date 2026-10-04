@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B
+:END:
+#+title: Story: Implement the refdata journeys in ores.web
+#+description: Build the ores.refdata user journeys as ores.web screens on the journey runtime, starting with the classification list and the currency.
+#+type: story
+#+level: s2
+#+filetags: :web:refdata:user_journey:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The written ores.refdata journeys run in ores.web against the real server: a reference data administrator can maintain the classification lists, currencies, currency pairs, desk groups and holiday calendars from the screens the journey documents describe, instead of the deleted per-entity screens.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Scaffolded; tasks broken out.          |
+| Waiting on    | Nothing.                               |
+| Next          | Build the classification list screen.  |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- Maintain a classification list, Add or correct a currency, Set up a currency pair, Group currencies for the desk and Keep a holiday calendar right each run in ores.web against the real server.
+- Every screen uses the journey runtime and the generic history request; none adds a per-entity list, detail or history primitive.
+- Every gap a journey document records is either closed or stated on the screen as the document says.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:738628F9-DBAD-4626-9A22-CAA9AF5C88BF][Scaffold story: Implement the refdata journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A6FEE241-EA6B-4290-B21E-750D089EC3C0][Build the classification list screen]] | BACKLOG | | | Build Maintain a classification list in ores.web: 28 code lists by topic, edit form and history. |
+| [[id:F18DC40C-6CF6-413B-A5C3-3509B422AB1E][Build the currency screen]] | BACKLOG | | | Build Add or correct a currency in ores.web: the currency, its pickers, countries, calendars, desk groups and history. |
+| [[id:978FEF55-DFCB-440B-A7DB-BB65C8C018C8][Build the holiday calendar screen]] | BACKLOG | | | Build Keep a holiday calendar right in ores.web: the calendar by shape, rules, exceptions, events, rebuild and business days. |
+| [[id:5D47FE58-7DFE-4FB9-B5DB-26E2A5B762A4][Build the currency pair screen]] | BACKLOG | | | Build Set up a currency pair in ores.web: the pair and convention form, settlement calendars and history. |
+| [[id:B99318CA-9335-40FF-9643-132CA63E3EB7][Build the desk group screen]] | BACKLOG | | | Build Group currencies for the desk in ores.web: groups in order, members and history. |
+
+* Order
+
+| # | Journey | Task | Why here |
+|---+---------+------+----------|
+| 1 | [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] | Build the classification list screen | One generic screen covers 28 lists, needs no new server work, and settles the history panel and the change-reason form every later screen reuses |
+| 2 | [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] | Build the currency screen | Its pickers read lists the first screen maintains; it adds the junction panels |
+| 3 | [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] | Build the holiday calendar screen | The currency and pair screens link to it |
+| 4 | [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] | Build the currency pair screen | Needs currencies and calendars in place |
+| 5 | [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] | Build the desk group screen | Smallest; the currency screen already shows memberships |
+
+* Decisions
+
+- *The journey documents are the specification.* The screens build from the
+  five refdata journeys; where the build proves a document wrong, the
+  correction goes to the document.
+- *No server work is planned.* Every operation the five screens need exists,
+  and the TypeScript wire package already carries all 139 refdata protocols
+  and the history protocol. The work is ores.web routes, operations and
+  screens. A gap the journeys record is stated on the screen, as each document
+  says, unless a task chooses to close it.
+- *One history panel and one change-reason form, written once.* The first
+  screen builds both over =refdata.v1.history.get= and =/api/change-reasons=,
+  and every later screen reuses them.
+- *New routes and menu items only.* The screens add routes and menu entries in
+  =AppRoutes.tsx= and =shell/areas.ts=, and touch no page another story owns,
+  so they do not clash with the access and profile work in the same files.
+
+* Out of scope
+
+- Journeys 5 to 9 of the refdata catalogue (parties, books, conventions,
+  tenors): they are not written yet.
+- The server-side gaps the journeys record, such as delete-in-use checks and
+  junction end checks; they are captured separately.
+- The ORE XML export of currencies, which has no server operation.

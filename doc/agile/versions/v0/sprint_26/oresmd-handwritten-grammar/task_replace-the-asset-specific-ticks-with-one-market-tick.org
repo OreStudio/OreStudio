@@ -138,6 +138,13 @@ via its "Verifies task" field.
 | 4 | PR 2602: settle the value type before the model is written. | investigation, task | Accepted | Decimal text, as stored observations are. |
 | 5 | PR 2602: the task's Status still shows template text, and =#+pr= names the investigation PR. | task | Not changed | The task is in BACKLOG until its work starts; =compass pr create= adds the implementation PR as another row. |
 | 6 | PR 2602: no step creates bindings for the IR feeds; is =source= unique? | investigation, task | Accepted | Provisioning creates them as it does for FX; a source names a producer uniquely within a tenant. |
+| 7 | PR 2607: =classifier_for= returns a reference into a map that =refresh()= clears on another thread. | =feed_ingest_loop= | Accepted | The map holds shared classifiers, and the caller keeps its own reference while it classifies. |
+| 8 | PR 2607: the set of unnameable URIs is never cleared. | =feed_ingest_loop= | Accepted | =refresh()= clears it, as it clears the unbound sources. |
+| 9 | PR 2607: one series read per tick and binding. | =feed_ingest_loop= | Not changed | The old paths read the series the same way, so it is not a regression. A series cache is a measured change for later. |
+| 10 | PR 2607: the stats count a tick before it is stored. | =feed_ingest_loop= | Accepted | A tick counts after its observation is stored. |
+| 11 | PR 2607: =feed_bindings= changes with no migration. | SQL | Not changed | No deployed database exists; the database is recreated, and the design decision allows no backwards compatibility. |
+| 12 | PR 2607: the value is stored without a check. | =feed_ingest_loop= | Accepted | A tick whose value is not a number is dropped, with one warning per source. |
+| 13 | PR 2607: no tests for the new =on_tick= behaviour. | tests | Not changed | =on_tick= needs NATS and a database; the test task, [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]], owns it and its notes say so. |
 
 * Result
 

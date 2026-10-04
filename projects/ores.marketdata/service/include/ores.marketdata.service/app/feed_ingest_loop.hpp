@@ -55,7 +55,8 @@ namespace ores::marketdata::service::app {
  * market_observation under that binding's tenant and party, and republished
  * on market_tick_subject() for that consumer and the datum's canonical ORE
  * key. A tick from a source with no enabled binding is dropped, with one
- * warning per source, and so is a tick whose URI names no datum.
+ * warning per source, and so is a tick whose URI names no datum or whose
+ * value is not a number.
  *
  * A series a tick lands in for the first time is created and classified the
  * way the file import classifies it, from the datum. An FX spot tick is also
@@ -90,8 +91,10 @@ private:
                  const datum::market_datum& tick_datum,
                  const messaging::market_tick& tick);
 
-    /// The classifier for @p tenant_ctx's tenant, read once per refresh().
-    const core::series_classifier& classifier_for(const ores::database::context& tenant_ctx);
+    /// The classifier for @p tenant_ctx's tenant, read once per refresh(). It is
+    /// shared, so a refresh() on another thread cannot destroy it while in use.
+    std::shared_ptr<const core::series_classifier>
+    classifier_for(const ores::database::context& tenant_ctx);
 
     // One consumer: a source feeds many parties, each of which gets its own
     // observations and republish stream from the shared tick.
@@ -125,10 +128,12 @@ private:
     std::map<std::string, std::vector<domain::feed_binding>> bindings_by_source_;
     std::map<binding_key, std::shared_ptr<feed_stats>> stats_;
     /// Classifiers by tenant id, cleared by refresh().
-    std::map<std::string, core::series_classifier> classifiers_;
-    /// Sources and URIs already reported as dropped, so each is reported once.
+    std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
+    /// Sources and URIs already reported as dropped, so each is reported once
+    /// per refresh().
     std::set<std::string> unbound_warned_;
     std::set<std::string> unnameable_warned_;
+    std::set<std::string> bad_value_warned_;
 
     static constexpr std::chrono::minutes status_interval_{1};
     std::atomic<bool> stop_flag_{false};

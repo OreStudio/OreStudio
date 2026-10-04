@@ -36,7 +36,7 @@ A new tenant resolves the FOMC tenors 1F to 8F to FOMC meeting dates, as the sys
 * Acceptance
 
 - The tenant provisioner copies schedule_code and schedule_step_count with each tenor convention resolution.
-- The tenant provisioner copies the central_bank_meeting calendar events into the new tenant.
+- A new tenant has the US.FOMC calendar, the central_bank_meeting diary entry type and the central_bank_meeting calendar events.
 - A test resolves 1F in a newly provisioned tenant and gets the first FOMC meeting on or after spot.
 - On a live run, the USD-SOFR-FOMC feed publishes ticks for its bound parties.
 
@@ -85,6 +85,14 @@ The provisioner also copies no calendar events, and row security on
 =ores_refdata_calendar_events_tbl= shows a tenant only its own rows. So after
 the columns are fixed, the resolver finds no meeting dates and stops with "no
 event-lookup dates were supplied". Both gaps must close.
+
+The events cannot simply be copied. The insert trigger of
+=ores_refdata_calendar_events_tbl= checks that the tenant has the event's
+calendar and its diary entry type. On 2026-10-04 the ACME tenant had 60 of the
+system tenant's 61 calendars, all but =US.FOMC=, because its calendars come
+from a dataset publish rather than the provisioner. It had no diary entry
+types, because nothing copies them. So the tenant also needs =US.FOMC= and
+=central_bank_meeting= before its meeting dates.
 
 No pillar check stops a curve from publishing past data. A curve's dates are
 calculated from its own as-of date, and only a pillar of zero length from spot

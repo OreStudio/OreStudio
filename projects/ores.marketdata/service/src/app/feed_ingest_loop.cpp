@@ -78,6 +78,8 @@ void feed_ingest_loop::refresh() {
     std::lock_guard lock(mu_);
     bindings_by_source_ = std::move(wanted);
     unbound_warned_.clear();
+    unnameable_warned_.clear();
+    bad_value_warned_.clear();
     classifiers_.clear();
 
     // A stats entry per bound consumer, so a binding that never ticks still
@@ -134,7 +136,19 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
         return;
     }
 
+    const auto value = ores::platform::numeric::parse_double(tick->value);
+    if (!value) {
+        std::lock_guard lock(mu_);
+        if (bad_value_warned_.insert(tick->source).second)
+            BOOST_LOG_SEV(lg(), warn) << "Dropping ticks from source '" << tick->source
+                                      << "': value '" << tick->value << "' is not a number";
+        return;
+    }
+
     for (const auto& b : bindings) {
+        if (!persist(b, *tick_datum, *tick))
+            continue;
+
         const binding_key key{b.source_name,
                               b.tenant_id.to_string(),
                               boost::uuids::to_string(b.party_id),
@@ -157,25 +171,19 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
                 << "INGEST FIRST TICK: source='" << b.source_name << "' datum='" << tick->oresmd_uri
                 << "' subject='" << subject << "' value=" << tick->value;
 
-        if (!persist(b, *tick_datum, *tick))
-            continue;
-
         // Currency driver pairs are FX-shaped, so only an FX spot rate is a
         // candidate driver update. The bridge offers it tenant-wide.
-        if (crm_bridge_ && tick_datum->type() == datum::instrument_type::fx_spot) {
-            const auto rate = ores::platform::numeric::parse_double(tick->value);
-            if (rate)
-                crm_bridge_->update(b.tenant_id.to_string(),
-                                    *tick_datum->get<datum::field::unit_ccy>(),
-                                    *tick_datum->get<datum::field::ccy>(),
-                                    *rate,
-                                    tick->observation_time);
-        }
+        if (crm_bridge_ && tick_datum->type() == datum::instrument_type::fx_spot)
+            crm_bridge_->update(b.tenant_id.to_string(),
+                                *tick_datum->get<datum::field::unit_ccy>(),
+                                *tick_datum->get<datum::field::ccy>(),
+                                *value,
+                                tick->observation_time);
         nats_.js_publish(subject, msg.data);
     }
 }
 
-const core::series_classifier&
+std::shared_ptr<const core::series_classifier>
 feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
     const auto tenant = tenant_ctx.tenant_id().to_string();
     {
@@ -184,9 +192,10 @@ feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
         if (it != classifiers_.end())
             return it->second;
     }
-    auto rules = repository::series_classification_rule_repository{}.read_latest(tenant_ctx);
+    auto classifier = std::make_shared<const core::series_classifier>(
+        repository::series_classification_rule_repository{}.read_latest(tenant_ctx));
     std::lock_guard lock(mu_);
-    return classifiers_.try_emplace(tenant, std::move(rules)).first->second;
+    return classifiers_.try_emplace(tenant, std::move(classifier)).first->second;
 }
 
 bool feed_ingest_loop::persist(const domain::feed_binding& binding,
@@ -205,7 +214,7 @@ bool feed_ingest_loop::persist(const domain::feed_binding& binding,
         if (existing.empty()) {
             const auto ck = core::classification_key_of(tick_datum);
             const auto cl =
-                classifier_for(tenant_ctx).classify(ck.series_type, ck.metric, ck.qualifier);
+                classifier_for(tenant_ctx)->classify(ck.series_type, ck.metric, ck.qualifier);
             BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
             domain::market_series series;

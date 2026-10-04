@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A tenant administrator keeps a holiday calendar right in ores.web: the calendar by its shape, its rules, exceptions and events, the rebuild of the business days, and the business days they produce.
 
 * Status
 
@@ -35,7 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The journey [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] runs in ores.web against the real server.
+- It reuses the shared history panel and change-reason form.
+- Every gap the journey document records is stated on the screen as the document says, or closed.
+- Tests cover the BFF routes and the screen.
 
 * Plan
 

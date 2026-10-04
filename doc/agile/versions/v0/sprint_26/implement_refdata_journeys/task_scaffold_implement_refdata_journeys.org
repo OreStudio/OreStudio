@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story exists with its goal, acceptance, build order, decisions and scope, and is broken into one task per refdata journey screen.
 
 * Status
 
@@ -35,7 +35,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The story and its five screen tasks are scaffolded and wired into sprint 26.
 
 * Plan
 
@@ -80,7 +80,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story STARTED but sprint row BACKLOG | =sprint.org= | Accepted | Sprint row set to STARTED with today's start date |
+| 2 | Placeholder Goal and Acceptance in the task files | task files | Accepted | Four screen tasks and the scaffold task filled; the scaffold Result was already written |
+| 3 | Task environment is empty | task files | Declined | Intended: a task takes its environment when it starts |
+| 4 | State row padding | story, tasks | Declined | Generator output; compass lint passes |
+| 5 | The 139 protocols claim has no measurement | first task | Accepted | Measurement with command and commit added |
 
 * Result
 

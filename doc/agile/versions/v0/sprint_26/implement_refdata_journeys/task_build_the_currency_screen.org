@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A tenant administrator corrects a currency in ores.web on one screen: the currency with its pickers, its countries, calendars and desk groups, and its history.
 
 * Status
 
@@ -35,7 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The journey [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] runs in ores.web against the real server.
+- It reuses the shared history panel and change-reason form.
+- Every gap the journey document records is stated on the screen as the document says, or closed.
+- Tests cover the BFF routes and the screen.
 
 * Plan
 

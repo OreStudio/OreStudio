@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generated refdata protocols in the TypeScript wire package | 139 | =ls projects/ores.web/packages/wire-protocol/src/generated/refdata/protocol= | e275a68ebd |
 
 * Notes
 

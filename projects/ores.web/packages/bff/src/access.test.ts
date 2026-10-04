@@ -240,6 +240,7 @@ describe('access routes', () => {
                 name: 'Trading',
                 description: 'Trading role',
                 service: false,
+                registrationDefault: false,
                 permissionCodes: ['refdata::currencies:read'],
             },
             {
@@ -248,10 +249,38 @@ describe('access routes', () => {
                 name: 'IamService',
                 description: 'IamService role',
                 service: true,
+                registrationDefault: false,
                 permissionCodes: [],
             },
         ]);
         expect(calls.filter((c) => c.subject === 'iam.v1.roles.permissions')).toHaveLength(1);
+    });
+
+    it('keeps a role the registration default when it is renamed', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.roles.put': { result: { outcome: 'ok' }, role: null },
+        });
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: `/api/roles/${TRADING}`,
+            cookies,
+            payload: {
+                name: 'Trading',
+                description: 'Desk',
+                version: 2,
+                registrationDefault: true,
+            },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.body).toMatchObject({
+            change: {
+                write: { id: TRADING, name: 'Trading', is_registration_default: true },
+                precondition: { kind: 'must_match_version', version: 2 },
+            },
+        });
     });
 
     it('saves exactly the set of permissions the screen sends', async () => {
@@ -321,6 +350,8 @@ describe('access routes', () => {
 
         expect(picture.statusCode).toBe(200);
         expect(picture.headers['content-type']).toBe('image/jpeg');
+        expect(picture.headers['x-content-type-options']).toBe('nosniff');
+        expect(picture.headers['content-security-policy']).toContain('sandbox');
         expect(none.statusCode).toBe(404);
     });
 });

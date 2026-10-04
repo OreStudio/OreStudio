@@ -785,6 +785,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return reply
             .header('content-type', image.mimeType)
             .header('cache-control', 'private, max-age=300')
+            .header('x-content-type-options', 'nosniff')
+            .header('content-security-policy', "default-src 'none'; sandbox")
             .send(image.bytes);
     });
 
@@ -856,22 +858,32 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         };
     });
 
-    /** What the browser sends for a role's name and description. */
-    const roleBodySchema = z.object({
+    /** What the browser sends to create a role: its name and description. */
+    const newRoleBodySchema = z.object({
         name: z.string().trim().min(1).max(100),
         description: z.string().max(1000).default(''),
-        version: z.int().nonnegative().nullable().default(null),
+    });
+
+    /** What the browser sends to rename a role, against the version it read. */
+    const roleBodySchema = newRoleBodySchema.extend({
+        version: z.int().nonnegative(),
+        registrationDefault: z.boolean(),
     });
 
     /** Creates a role. It starts granting nothing. */
     server.post('/api/roles', async (request) => {
         const session = requireSession(request);
-        const body = roleBodySchema.safeParse(request.body);
+        const body = newRoleBodySchema.safeParse(request.body);
         if (!body.success) {
             throw invalidRequest('A role needs a name.');
         }
         const id = randomUUID();
-        const outcome = await saveRole(session.client, { ...body.data, id, version: null });
+        const outcome = await saveRole(session.client, {
+            ...body.data,
+            id,
+            version: null,
+            registrationDefault: false,
+        });
         if (!outcome.done) {
             throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
         }
@@ -883,7 +895,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const session = requireSession(request);
         const { roleId } = request.params as { roleId: string };
         const body = roleBodySchema.safeParse(request.body);
-        if (!isUuid(roleId) || !body.success || body.data.version === null) {
+        if (!isUuid(roleId) || !body.success) {
             throw invalidRequest('A role needs a name and the version it was read at.');
         }
         const outcome = await saveRole(session.client, { ...body.data, id: roleId });
@@ -1899,6 +1911,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return reply
             .header('content-type', image.mimeType)
             .header('cache-control', 'private, max-age=31536000, immutable')
+            .header('x-content-type-options', 'nosniff')
+            .header('content-security-policy', "default-src 'none'; sandbox")
             .send(image.bytes);
     }
 

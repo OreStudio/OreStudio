@@ -394,7 +394,12 @@ function RenameDialog({
     const [description, setDescription] = useState(role.description);
     const update = useMutation({
         mutationFn: () =>
-            api.updateRole(role.id, { name: name.trim(), description, version: role.version }),
+            api.updateRole(role.id, {
+                name: name.trim(),
+                description,
+                version: role.version,
+                registrationDefault: role.registrationDefault,
+            }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['roles'] });
             onClose();

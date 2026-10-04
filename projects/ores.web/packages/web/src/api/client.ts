@@ -266,7 +266,12 @@ export const api = {
     /** Renames or redescribes a role, against the version the screen read. */
     async updateRole(
         roleId: string,
-        input: { readonly name: string; readonly description: string; readonly version: number },
+        input: {
+            readonly name: string;
+            readonly description: string;
+            readonly version: number;
+            readonly registrationDefault: boolean;
+        },
     ): Promise<void> {
         await request(`/api/roles/${encodeURIComponent(roleId)}`, {
             method: 'PUT',

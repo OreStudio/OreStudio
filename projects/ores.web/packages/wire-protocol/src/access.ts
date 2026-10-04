@@ -71,6 +71,7 @@ const wireRoleSchema = z.object({
     version: z.int().nonnegative().default(0),
     name: z.string(),
     description: z.string().default(''),
+    is_registration_default: z.boolean().default(false),
 });
 
 const accessReplySchema = z.object({
@@ -113,7 +114,14 @@ const flagReplySchema = z.object({
     error_message: z.string().default(''),
 });
 
-/** The outcome of a write a person asked for: done, or refused with the server's words. */
+/**
+ * The outcome of a write a person asked for: done, or refused with the
+ * server's words.
+ *
+ * Giving and taking away a role answer `success` and `error_message`, the
+ * older reply shape; the role and bundle writes answer a `result`. Both are
+ * read into this one shape so a screen handles a refusal one way.
+ */
 export type AccessWrite =
     { readonly done: true } | { readonly done: false; readonly message: string };
 
@@ -146,7 +154,7 @@ export async function readMyAccess(caller: AuthenticatedCaller): Promise<Account
     return toAccess(reply);
 }
 
-/** The roles one account holds. The server allows this to a holder of =iam::roles:read=. */
+/** The roles one account holds. The server allows this to a holder of `iam::roles:read`. */
 export async function readAccountAccess(
     caller: AuthenticatedCaller,
     accountId: string,
@@ -200,6 +208,7 @@ export async function readRoles(caller: AuthenticatedCaller): Promise<RoleSummar
                 name: role.name,
                 description: role.description,
                 service,
+                registrationDefault: role.is_registration_default,
                 permissionCodes: service ? [] : await readRolePermissions(caller, role.id),
             };
         }),
@@ -293,6 +302,7 @@ export async function saveRole(
         readonly version: number | null;
         readonly name: string;
         readonly description: string;
+        readonly registrationDefault: boolean;
     },
 ): Promise<AccessWrite> {
     const request: PutRoleRequest = {
@@ -301,7 +311,7 @@ export async function saveRole(
                 id: input.id,
                 name: input.name,
                 description: input.description,
-                is_registration_default: false,
+                is_registration_default: input.registrationDefault,
             },
             precondition:
                 input.version === null

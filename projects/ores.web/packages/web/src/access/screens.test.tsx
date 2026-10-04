@@ -69,6 +69,7 @@ function role(id: string, name: string, codes: string[], service = false): RoleS
         name,
         description: `${name} role`,
         service,
+        registrationDefault: false,
         permissionCodes: codes,
     };
 }

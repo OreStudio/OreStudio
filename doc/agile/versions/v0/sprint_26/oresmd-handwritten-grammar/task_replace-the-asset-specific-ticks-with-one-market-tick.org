@@ -26,11 +26,11 @@ Every live market data feed, whatever its asset class, publishes and ingests one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -81,9 +81,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Change size | 55 files, 549 insertions, 1,495 deletions | =git show --stat= | c87a9789b9 |
+| Test suites, recreated database | 90 of 90 passed | =compass test run= | c87a9789b9 |
+| Bindings after ACME provisioning | 34 sources (13 FX, 21 IR curve), 5 parties each | =compass sql=, current feed bindings by source | c87a9789b9 |
+| Sources ticking within five minutes of the feed start | 13 FX spot, 20 IR curve | =compass sql=, observations by instrument and source | c87a9789b9 |
+| New series, classified from the datum | 65 FX spot (=fx=, =spot=), 300 IR swap (=interest_rates=, =yield=) | =compass sql=, series by instrument, subclass and asset class | c87a9789b9 |
 
 * Notes
+
+** The live run
+
+The fleet ran on a recreated database with the ACME demonstration profile,
+whose last step starts the market feeds. Every FX source and 20 of the 21 curve
+sources ticked, and both kinds were stored through the one path. The remaining
+curve, =usdsofrfomc=, published nothing: one of its FOMC-meeting pillars ended
+on the spot date, and =make_pillar_quote_key= refused it, failing the whole
+batch. The same call sat in the same loop before this change, so it is recorded
+as [[id:648FC0CE-4EF8-4460-8FD3-0E2EDFDD110D][a capture]] rather than fixed here.
+
+** Deleted rather than ported
+
+=fx_spot_subscription= and the client's =subject_helpers.hpp= had no production
+consumer, so they went instead of being moved to =market_tick=.
 
 The model and its reasons are in [[id:F7F432FA-09C2-4508-8733-7AF7EBB00818][the market tick investigation]]. One point it leaves to this task:
 
@@ -119,3 +138,14 @@ via its "Verifies task" field.
 | 6 | PR 2602: no step creates bindings for the IR feeds; is =source= unique? | investigation, task | Accepted | Provisioning creates them as it does for FX; a source names a producer uniquely within a tenant. |
 
 * Result
+
+A live tick is one type for every feed and asset class: =market_tick=, the
+oresmd quote URI, the value as decimal text, the observation time and the
+source. Every feed takes its owners from its feed binding, which now maps a
+source to a party and nothing else, and the ingest loop has one path that
+classifies a new series from its datum, as the file import does. P02 holds for
+marketdata: =marketdata.v1.tick= is declared once, by the model, and the
+republished subject and both stream wildcards are built from it. On a recreated
+database, 90 of 90 suites passed, and a live ACME run stored FX and IR curve
+ticks from 33 of 34 sources; the one that published nothing fails on a
+pre-existing pillar defect, recorded as a capture.

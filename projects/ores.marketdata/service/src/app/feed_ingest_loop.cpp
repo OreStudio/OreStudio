@@ -44,13 +44,6 @@ namespace ores::marketdata::service::app {
 
 using namespace ores::logging;
 
-namespace {
-
-/// Every producer's ticks: '>' because a source name may itself be dotted.
-constexpr auto* tick_wildcard_subject = "synthetic.v1.tick.>";
-
-}
-
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
                                    ores::database::context ctx,
                                    std::shared_ptr<crm_ingest_bridge> crm_bridge)
@@ -65,11 +58,10 @@ feed_ingest_loop::~feed_ingest_loop() {
 }
 
 void feed_ingest_loop::start() {
-    BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '"
-                              << tick_wildcard_subject << "'";
+    const auto wildcard = domain::synthetic_tick_wildcard();
+    BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
-    tick_sub_ =
-        nats_.subscribe(tick_wildcard_subject, [this](ores::nats::message msg) { on_tick(msg); });
+    tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });
     status_thread_ = std::thread(&feed_ingest_loop::status_loop, this);
 }
 

@@ -40,6 +40,16 @@ inline constexpr std::string_view synthetic_tick_subject_prefix = "synthetic.v1.
 inline constexpr std::string_view synthetic_sandbox_tick_subject_prefix =
     "synthetic.v1.sandbox.tick.";
 
+/// Every producer's ticks; '>' because a source name may itself be dotted.
+inline std::string synthetic_tick_wildcard() {
+    return std::string(synthetic_tick_subject_prefix).append(">");
+}
+
+/// Every consumer's ticks.
+inline std::string market_tick_wildcard() {
+    return std::string(messaging::market_tick::nats_subject).append(".>");
+}
+
 /// The subject a producer publishes @p source_name's ticks on.
 inline std::string synthetic_tick_subject(std::string_view source_name) {
     return std::string(synthetic_tick_subject_prefix).append(source_name);

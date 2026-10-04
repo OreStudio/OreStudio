@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 648FC0CE-4EF8-4460-8FD3-0E2EDFDD110D
+:END:
+#+title: The FOMC-dated SOFR curve feed publishes nothing when a pillar ends today
+#+description: make_pillar_quote_key refuses a spot pillar whose end date is the spot date, so the whole curve batch fails and the feed publishes no tick.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On 2026-10-04 the synthetic feed =synthetic.2026realistic.usdsofrfomc=, the
+SOFR curve with FOMC-meeting-dated pillars, published no tick. Every minute
+=ir_curve_feed= logged:
+
+#+begin_example
+SYNTHETIC CURVE PUBLISH FAILED: ... pillar key: a spot pillar must end after
+spot, but 2026-10-04 is not after 2026-10-04
+#+end_example
+
+=make_pillar_quote_key= refuses a spot pillar whose end date is the spot date.
+The tick loop builds every pillar's key inside one =try=, so one refused pillar
+drops the whole curve batch. The other 20 curve feeds ticked normally.
+
+* Why
+
+The feed and its five bound parties get no observations while any pillar ends
+on the spot date, which here is a meeting date that falls today. Either the
+template should not yield a pillar that ends on spot, or the feed should skip
+that pillar and publish the rest. The defect is older than the market tick
+change: the same call sat in the same loop before it.
+
+* References
+
+- =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp= -- the tick loop
+  and its one =try= around the batch.
+- =projects/ores.marketdata/core/src/oresmd/pillar_quote_key.cpp= --
+  =make_pillar_quote_key=.
+- [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] -- the live run
+  that found it.
+
+* See also
+
+-

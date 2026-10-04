@@ -23,6 +23,7 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_event.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
@@ -84,14 +85,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     try {
         auto admin = nats.make_admin();
-        // The unified tick scheme (synthetic.v1.tick.<kind>.<source>) is fully
-        // covered by synthetic_ticks's "synthetic.v1.tick.>" filter; the retired
-        // synthetic_curve_ticks stream (curve_family subjects) is no longer ensured —
-        // a stale one on an already-running server is inert (no producers, no consumers).
-        admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>")});
+        admin.ensure_stream(
+            nats.make_stream_name("synthetic_ticks"),
+            {nats.make_subject(ores::marketdata::domain::synthetic_tick_wildcard())});
         admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
-                            {nats.make_subject("marketdata.v1.tick.>")});
+                            {nats.make_subject(ores::marketdata::domain::market_tick_wildcard())});
         BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();

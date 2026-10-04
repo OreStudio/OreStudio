@@ -27,11 +27,11 @@ standard.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -146,6 +146,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 2597: =read_latest_for_series= builds the maximum timestamp on every call. | =market_observation=, =market_fixing= models | Accepted | Part 3: a static, as the other reads. |
+| 2 | PR 2597: =read_as_of= and =read_as_of_buckets= skip a short row. | =market_observation= model | Accepted | Part 3: they throw, and so does a missing or out-of-range bucket ordinal. |
+| 3 | Part 3 local review: comment-only edits change no behaviour. | hand-written marketdata | Accepted | Checked by the build, ctest =ores.marketdata= 5/5 and the marketdata drift check. |
 
 * Result
+
+The marketdata code meets the items this task owns. Part 1 (PR 2597) left one
+repository each for observations and fixings, with a codegen =append_insert=
+flag for the bulk append, and moved observation values to =parse_double=. P02
+was closed by the market tick task. Part 3 brought the hand-written code and the
+model comments to the comment rules, and made the as-of reads refuse a short row
+rather than return a curve short a pillar. The namespace closer comments that 14
+shared templates write into every component are a task of their own.

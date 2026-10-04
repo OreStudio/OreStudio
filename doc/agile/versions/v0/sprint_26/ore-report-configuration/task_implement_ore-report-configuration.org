@@ -26,11 +26,11 @@ A report definition's configuration is a set of strongly typed entities rather t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | The cluster is written and the follow-on tasks are cut. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance
@@ -141,3 +141,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The entity model is designed and built. Every one of the seventeen ORE
+configuration documents is a seeded configuration type with an owning
+component, and a report definition reaches its configuration through typed
+entities, configuration rows and bindings, never a flat row of switches or a
+blob. The third acceptance item, that a new kind of report adds a workflow and
+a parameter block rather than a column, is delivered by [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds
+and bind each to a workflow]].

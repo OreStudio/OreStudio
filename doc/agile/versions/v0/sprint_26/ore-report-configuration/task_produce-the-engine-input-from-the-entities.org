@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A run's engine input is generated from typed entities, validated against the ORE
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,15 +35,34 @@ A run's engine input is generated from typed entities, validated against the ORE
 
 * Acceptance
 
-- The generated archive contains Input/ore.xml and every file it names, and the engine accepts it.
+- The generated archive contains Input/ore.xml and every configuration file it names. That the engine runs the archive moved on 2026-10-04 to [[id:3064DDA0-67AD-43B0-B57D-5AC5926E4C4E][Write the portfolio and market data files into the engine input]], since it needs the portfolio and market files too.
 - No field is written as a name/value pair or a blob: every value comes from a typed column.
 - The generator is tested against the vendored example bundle.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+[[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] built the export: a
+report definition's run document and the documents it binds, rebuilt as files.
+This task puts that export into the package step, so the archive the compute
+wrapper unpacks carries the run's input.
+
+1. =prepare_ore_package_request= carries the report definition id, which the
+   workflow already holds in its start request.
+2. The ORE service's package handler exports the definition under the run's
+   tenant and writes the files into the archive with =archive_layout=.
+3. =export_run= narrows itself to the definition's party when the session has
+   none, since a workflow step runs with the tenant alone and would otherwise
+   read every party's conventions.
+
+Decisions:
+
+- The engine is started on =Input/ore.xml=, so the run document goes there;
+  every other file goes under the run's =inputPath=, as ORE reads them. The
+  corpus sets =inputPath= to =Input= or a folder under it in every run
+  document.
+- The trades and market data stay the msgpack blobs the earlier steps write.
+  Turning them into the portfolio and market files the run document names is
+  separate work, so the engine cannot run the archive yet.
 
 * Measurements
 
@@ -76,6 +95,10 @@ Inside the document, every reference is text. A
 that resolves the chain, so it decides whether the binding should carry a
 =todays_market_collection_id= foreign key, or whether name resolution at
 export time is enough.
+
+The export resolves the chain by name, as ORE does, and nothing checks it at
+write time. The decision moved to its own task on 2026-10-04: [[id:A766897B-B26A-44DA-AEA0-749A594A6B68][Link today's market
+bindings to their collections]].
 
 * Test Scenarios
 

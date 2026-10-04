@@ -21,7 +21,7 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { SYSTEM_TENANT_ID, type TenantDetailResponse } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
@@ -29,7 +29,8 @@ import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
 import { Avatar, CentreFlag, imageUrl } from '../ui/Images.js';
 import { Pager, pageBounds } from '../ui/Pager.js';
-import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 
 /** The tabs of a tenant's screen, in the order they are drawn. */
 const TABS = ['overview', 'parties', 'people'] as const;
@@ -43,8 +44,8 @@ const TAB_PAGE_SIZE = 20;
  * parties and people.
  *
  * The address names the tenant's code, its stable name in a request, and the
- * tab, so a link opens the same tenant at the same place again. The screen
- * writes nothing. The parties and people are the tenant's own data, which the
+ * tab, so a link opens the same tenant at the same place again. The one write
+ * is removing the tenant, which asks first. The parties and people are the tenant's own data, which the
  * server reads inside the tenant for each read; the person opens a tab, and
  * never enters or leaves anything.
  */
@@ -61,6 +62,8 @@ export function TenantPage(): ReactNode {
     });
     const statuses = useQuery({ queryKey: ['tenant-statuses'], queryFn: api.tenantStatuses });
     const types = useQuery({ queryKey: ['tenant-types'], queryFn: api.tenantTypes });
+    const navigate = useNavigate();
+    const [removing, setRemoving] = useState(false);
 
     const back = (
         <LinkButton to="/tenants" variant="secondary">
@@ -92,7 +95,27 @@ export function TenantPage(): ReactNode {
 
     return (
         <div>
-            <PageHeader title={tenant.name} description={t('tenants.detail.lead')} actions={back} />
+            <PageHeader
+                title={tenant.name}
+                description={t('tenants.detail.lead')}
+                actions={
+                    <>
+                        {tenant.id !== SYSTEM_TENANT_ID && (
+                            <Button variant="danger" onClick={() => setRemoving(true)}>
+                                {t('tenants.removeAction')}
+                            </Button>
+                        )}
+                        {back}
+                    </>
+                }
+            />
+            {removing && (
+                <RemoveTenantDialog
+                    tenant={tenant}
+                    onClose={() => setRemoving(false)}
+                    onRemoved={() => void navigate('/tenants')}
+                />
+            )}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line">
                 <div role="tablist" aria-label={tenant.name} className="flex gap-1">
                     {TABS.map((candidate) => (

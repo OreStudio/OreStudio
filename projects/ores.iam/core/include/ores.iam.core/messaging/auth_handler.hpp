@@ -101,6 +101,29 @@ inline std::optional<std::string> auth_refresh_refusal(const security::jwt::jwt_
 }
 
 /**
+ * @brief Why refresh refuses a token's tenant, or nothing when it admits people.
+ *
+ * Sign-in refuses a tenant that is removed or neither active nor still being
+ * set up, and refresh refuses the same tenants, so a person signed in before
+ * the tenant closed loses access within one access lifetime. The registry is
+ * the system tenant's, so the read runs there.
+ */
+inline std::optional<std::string> auth_tenant_refusal(const ores::database::context& ctx,
+                                                      const security::jwt::jwt_claims& claims) {
+    const auto tenant = ores::utility::uuid::tenant_id::from_string(claims.tenant_id.value_or(""));
+    if (!tenant)
+        return "The token names no tenant.";
+    const auto system_ctx = ctx.with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    const auto tenants = repository::read_active_tenant_by_id(system_ctx, tenant->to_uuid());
+    if (tenants.empty())
+        return "The tenant is closed.";
+    const auto& status = tenants.front().status;
+    if (status != "active" && status != "bootstrapping")
+        return "The tenant is not active.";
+    return std::nullopt;
+}
+
+/**
  * @brief The permissions a refreshed token carries, read from the database.
  *
  * They are read again rather than copied, so a role granted or revoked since
@@ -975,6 +998,12 @@ public:
 
             if (const auto refusal = auth_refresh_refusal(*claims_result)) {
                 reply(nats_, msg, refresh_response{.success = false, .message = *refusal});
+                return;
+            }
+            if (const auto closed = auth_tenant_refusal(ctx_, *claims_result)) {
+                BOOST_LOG_SEV(auth_handler_lg(), info)
+                    << "Refresh refused for subject " << claims_result->subject << ": " << *closed;
+                reply(nats_, msg, refresh_response{.success = false, .message = *closed});
                 return;
             }
 

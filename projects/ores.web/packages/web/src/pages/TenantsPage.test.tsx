@@ -447,11 +447,27 @@ describe('the tenant roster', () => {
      * Retiring or resetting a tenant is not in this release. The menu names it
      * and says so, rather than hiding it or offering a link that goes nowhere.
      */
-    it('names the action this release does not have, and marks it', () => {
-        const html = render([acme], 1);
+    /*
+     * Each tenant offers its removal, except the system tenant, which holds
+     * the deployment itself.
+     */
+    it('offers removal on every row but the system tenant', () => {
+        const html = render(
+            [
+                acme,
+                {
+                    ...acme,
+                    id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+                    code: 'system',
+                    name: 'System',
+                    type: 'system',
+                },
+            ],
+            2,
+        );
 
-        expect(html).toContain('>Retire or reset<');
-        expect(html.match(/Not in this release/g)).toHaveLength(1);
+        expect(html.match(/>Remove tenant</g)).toHaveLength(1);
+        expect(html).not.toContain('Not in this release');
     });
 
     it('says so when the deployment holds no tenant, without repeating the action', () => {

@@ -32,6 +32,7 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
+    SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
     isUuid,
     changeOwnPassword,
@@ -41,6 +42,7 @@ import {
     initialAdministratorSchema,
     searchLeiEntitiesResponseSchema,
     readImages,
+    removeTenant,
     toWireTimestamp,
     loginResultSchema,
     loginInfoKeyRequestSchema,
@@ -1132,6 +1134,57 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             activity,
             activityUnavailable,
         });
+    });
+
+    /** What the browser sends to remove a tenant: its code, typed again. */
+    const removeTenantBodySchema = z.object({ confirmCode: z.string() });
+
+    /**
+     * Removes a tenant.
+     *
+     * The person types the tenant's code to confirm, and the route checks it
+     * against the address, so a request that names one tenant cannot remove
+     * another. The server closes the tenant's row, marks it terminated and
+     * keeps its data; sign-in then refuses it, and token refresh refuses a
+     * session already open in it. The system tenant holds the deployment
+     * itself, so it is refused here with a reason, and the database refuses it
+     * too.
+     */
+    server.delete('/api/tenants/:code', async (request, reply) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('A tenant of the deployment is removed in system administration.');
+        }
+        const { code } = request.params as { code: string };
+        const body = removeTenantBodySchema.safeParse(request.body);
+        if (!body.success || body.data.confirmCode !== code) {
+            throw invalidRequest('Type the tenant code to confirm the removal.');
+        }
+        const tenant = await readTenant(session.client, code);
+        if (tenant === null) {
+            throw notFound('No tenant has this code.');
+        }
+        if (tenant.id === SYSTEM_TENANT_ID) {
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message: 'The system tenant holds the deployment itself and cannot be removed.',
+            });
+        }
+        const outcome = await removeTenant(session.client, code);
+        if (!outcome.removed) {
+            if (outcome.outcome === 'missing') {
+                throw notFound('No tenant has this code.');
+            }
+            if (outcome.outcome === 'denied') {
+                throw notPermitted(outcome.message || 'You may not remove tenants.');
+            }
+            throw new HttpFailure(409, {
+                code: 'conflict',
+                message: outcome.message || 'The tenant was not removed.',
+            });
+        }
+        request.log.info({ code }, 'Tenant removed.');
+        return reply.code(204).send();
     });
 
     /**

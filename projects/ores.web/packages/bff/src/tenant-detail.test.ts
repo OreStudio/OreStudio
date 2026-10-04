@@ -250,3 +250,96 @@ describe('GET /api/tenants/:code', () => {
         expect(body.setupUnavailable).toBe(true);
     });
 });
+
+async function remove(answers: Answers, confirmCode: unknown, code = 'acme', mode?: 'application') {
+    const built = buildTestServer(answers, mode);
+    const response = await built.server.inject({
+        method: 'DELETE',
+        url: `/api/tenants/${code}`,
+        cookies: { ores_web_session: built.sessionId },
+        payload: { confirmCode },
+    });
+    await built.server.close();
+    return { response, calls: built.calls };
+}
+
+const REMOVABLE = {
+    'iam.v1.tenants.get': FOUND,
+    'iam.v1.tenants.delete': { result: { outcome: 'ok' } },
+};
+
+describe('DELETE /api/tenants/:code', () => {
+    it('removes the tenant the person confirmed, naming it by its code', async () => {
+        const { response, calls } = await remove(REMOVABLE, 'acme');
+
+        expect(response.statusCode).toBe(204);
+        expect(calls.map((c) => c.subject)).toEqual([
+            'iam.v1.tenants.get',
+            'iam.v1.tenants.delete',
+        ]);
+        expect(calls[1]?.body).toEqual({
+            removal: { key: { code: 'acme' }, precondition: { kind: 'any', version: null } },
+            intent: { reason_code: '', commentary: '' },
+        });
+    });
+
+    it('removes nothing when the typed code is not the tenant code', async () => {
+        for (const typed of ['acm', 'ACME', undefined]) {
+            const { response, calls } = await remove(REMOVABLE, typed);
+
+            expect(response.statusCode).toBe(400);
+            expect(calls).toHaveLength(0);
+        }
+    });
+
+    it('refuses the system tenant and asks the server to remove nothing', async () => {
+        const { response, calls } = await remove(
+            {
+                ...REMOVABLE,
+                'iam.v1.tenants.get': {
+                    result: { outcome: 'ok' },
+                    tenant: wireTenant(SYSTEM_TENANT, 'system'),
+                },
+            },
+            'system',
+            'system',
+        );
+
+        expect(response.statusCode).toBe(409);
+        expect(response.json().message).toContain('cannot be removed');
+        expect(calls.map((c) => c.subject)).toEqual(['iam.v1.tenants.get']);
+    });
+
+    it('answers no tenant for a code nobody holds', async () => {
+        const { response, calls } = await remove(
+            { 'iam.v1.tenants.get': { result: { outcome: 'missing' }, tenant: null } },
+            'nobody',
+            'nobody',
+        );
+
+        expect(response.statusCode).toBe(404);
+        expect(calls.map((c) => c.subject)).toEqual(['iam.v1.tenants.get']);
+    });
+
+    it('passes on a refusal by the server', async () => {
+        const { response } = await remove(
+            {
+                ...REMOVABLE,
+                'iam.v1.tenants.delete': {
+                    result: { outcome: 'denied', message: 'Removing tenants is not permitted.' },
+                },
+            },
+            'acme',
+        );
+
+        expect(response.statusCode).toBe(403);
+        expect(response.json().message).toBe('Removing tenants is not permitted.');
+    });
+
+    it('refuses a session outside system administration', async () => {
+        const { response, calls } = await remove(REMOVABLE, 'acme', 'acme', 'application');
+
+        expect(response.statusCode).toBe(403);
+        expect(calls).toHaveLength(0);
+    });
+});

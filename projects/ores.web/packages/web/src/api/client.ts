@@ -387,6 +387,18 @@ export const api = {
         );
     },
 
+    /**
+     * Removes a tenant. The code is typed again by the person, and the server
+     * checks it against the tenant the address names.
+     */
+    async removeTenant(code: string, confirmCode: string): Promise<void> {
+        await request(`/api/tenants/${encodeURIComponent(code)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ confirmCode }),
+        });
+    },
+
     /** One page of a tenant's parties, read inside it from system administration. */
     async tenantParties(
         code: string,

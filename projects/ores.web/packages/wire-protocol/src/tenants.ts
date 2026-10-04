@@ -30,6 +30,7 @@ import {
 } from './domain.js';
 import {
     subjects as tenantSubjects,
+    type DeleteTenantRequest,
     type GetTenantRequest,
     type ListTenantsRequest,
 } from './generated/iam/protocol/tenant_protocol.js';
@@ -56,6 +57,7 @@ import {
 export const TENANT_SUBJECTS = {
     list: tenantSubjects.list_tenants_request,
     get: tenantSubjects.get_tenant_request,
+    delete: tenantSubjects.delete_tenant_request,
 } as const;
 
 /** The row as the registry writes it. */
@@ -157,8 +159,45 @@ export async function readTenant(
     return detailOf(answer.tenant);
 }
 
-/** What the roster asks the search for. */
+const wireDeleteTenantSchema = z.object({
+    result: z.object({
+        outcome: z.string(),
+        message: z.string().default(''),
+    }),
+});
+
+/** How a removal ended: removed, or the server's outcome and its words. */
+export type TenantRemovalOutcome =
+    | { readonly removed: true }
+    | { readonly removed: false; readonly outcome: string; readonly message: string };
+
 /**
+ * Removes the tenant with this code.
+ *
+ * The server closes the tenant's row and marks it terminated, and keeps its
+ * data. Sign-in and token refresh then refuse it. A removal that is refused
+ * is an answer, not a failed call.
+ */
+export async function removeTenant(
+    caller: AuthenticatedCaller,
+    code: string,
+): Promise<TenantRemovalOutcome> {
+    const request: DeleteTenantRequest = {
+        removal: { key: { code }, precondition: { kind: 'any', version: null } },
+        intent: { reason_code: '', commentary: '' },
+    };
+    const answer = await caller.callAuthenticated(
+        TENANT_SUBJECTS.delete,
+        request,
+        wireDeleteTenantSchema,
+    );
+    return answer.result.outcome === 'ok'
+        ? { removed: true }
+        : { removed: false, outcome: answer.result.outcome, message: answer.result.message };
+}
+
+/**
+
  * What a roster read narrows by. Every member is optional; the ones set must
  * all hold.
  */

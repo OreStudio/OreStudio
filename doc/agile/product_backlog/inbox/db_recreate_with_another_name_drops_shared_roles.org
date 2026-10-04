@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A12727BB-342C-41F1-B37D-3FB1602823FE
+:END:
+#+title: compass db recreate -D drops the environment's shared roles
+#+description: Recreating a database under another name with -D still runs drop_roles.sql for the whole environment, so a scratch test database cannot be built beside a deployment that holds data; it failed safely only because the roles own objects in the deployment database.
+#+type: capture
+#+level: cross
+#+filetags: :compass:database:defect:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

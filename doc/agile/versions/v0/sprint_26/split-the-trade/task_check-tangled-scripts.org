@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: FCA0C098-9BEA-4EA3-9B07-44510FD0EF18
+:END:
+#+title: Task: Catch untangled shell scripts before review
+#+description: Make the shell script drift check fail on scripts a recipe produces that are not committed, and add the tangle to the local check list.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/check-tangled-scripts
+#+pr: 2605
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A recipe whose tangled scripts are missing or stale fails both the local check set and CI.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- shell-script-drift.yml fails on an untracked script under projects/ores.shell/scripts/library.
+- compass-pr-raise lists the tangle among the local checks.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2605][#2605]] | [ci] Catch untangled shell scripts before review |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Found in PR 2603: three earlier pull requests added recipes whose tangled scripts were never committed, and CI passed them. | shell-script-drift.yml | Accept | =git diff= ignores untracked files; the check now lists them too. |
+| 2 | PR 2605 review: the job comment still says only "a diff". | shell-script-drift.yml | Accept | It names untracked scripts too. |
+| 3 | PR 2605 review: a stale script stops the step before the untracked list prints. | shell-script-drift.yml | Decline | CI fails either way, and the local check shows both. |
+| 4 | PR 2605 review: the workflow does not run on a modeling-only change. | shell-script-drift.yml | Decline | A regenerated recipe changes doc/recipes/shell, which the filter covers; codegen drift catches an unregenerated model. |
+
+* Result
+
+The shell script drift check now fails on a script a recipe produces that
+nobody committed, as well as on a stale one: proved locally by an untracked
+probe script, which fails the check, and a clean tree, which passes. The
+compass-pr-raise skill lists the tangle among the local checks, so the gap
+shows before review.

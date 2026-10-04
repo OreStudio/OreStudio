@@ -35,9 +35,9 @@ services roster can name the machine behind an instance.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | The PR is open; CI and the review are next. |
-| Waiting on   | CI and the review.                     |
-| Next         | Settle the review, then merge.         |
+| Now          | The review is settled with no code changes; CI runs on the bookkeeping commit. |
+| Waiting on   | CI on the review-settlement commit.     |
+| Next         | Merge the PR, then close the task.      |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -98,6 +98,7 @@ task and name that file in the Command column.
 | Drift sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =fd05c11807= |
 | ER diagram check | 430 tables, 0 warnings, puml up to date | =plantuml_er_generate.sh --check= | =fd05c11807= |
 | TypeScript typecheck | no errors | =npm run typecheck= (wire-protocol) | =fd05c11807= |
+| Live demo | wrapper beats carry the host: 17/17; every other service sends the empty string | =compass db sql= (queries in PR #2626 comment) | =3a8ca6538e= |
 
 * Notes
 
@@ -128,7 +129,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Existing databases: =create table if not exists= does not add the column | =projects/ores.sql/create/telemetry/service_samples_create.sql= | Accepted | The project has no migration mechanism: environments are created by =compass db recreate=, and the fleet starts only on a matching fingerprint. No long-lived database exists to alter. |
+| 2 | Mixed-version rollout: a missing field may fail to decode | =build/.../rfl/parsing/NamedTupleParser.hpp= (rfl 0.25.0) | Accepted | Verified in the vendored source: a plain =std::string= field is required (line 289), so an old publisher's beat fails to decode and telemetry logs a warning and drops it (=telemetry_handler.hpp:136=). An unknown field is ignored, so a new publisher is safe on an old telemetry. The fleet starts from one build, so no mixed window exists; the failure is bounded and self-heals on publisher restart. |
+| 3 | Primary key: =host_id= is not in the key | =projects/ores.sql/create/telemetry/service_samples_create.sql:35= | Accepted | The key stays =(sampled_at, service_name, instance_id)=; instance ids are unique per process. |
+| 4 | Bundled merge in the six-commit history | — | Accepted | House flow merges =main= into the branch before review; the review surface is the implementation commit. |
 
 * Result
 

@@ -19,37 +19,40 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import type { TenantDetailResponse } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
-import { Button, Detail, LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { Pager, pageBounds } from '../ui/Pager.js';
+import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+
+/** The tabs of a tenant's screen, in the order they are drawn. */
+const TABS = ['overview', 'parties', 'people'] as const;
+type Tab = (typeof TABS)[number];
+
+/** How many parties or people a tab shows at a time. */
+const TAB_PAGE_SIZE = 20;
 
 /**
- * One tenant, opened from the roster: what it is and how its setup went.
+ * One tenant, opened from the roster: what it is, how its setup went, and its
+ * parties and people.
  *
- * The address names the tenant's code, its stable name in a request, so a link
- * opens the same tenant again. The screen writes nothing. A run the server
- * could not read empties its own panel and says so. The tenant's own data,
- * its parties among it, is read after entering the tenant.
+ * The address names the tenant's code, its stable name in a request, and the
+ * tab, so a link opens the same tenant at the same place again. The screen
+ * writes nothing. The parties and people are the tenant's own data, which the
+ * server reads inside the tenant for each read; the person opens a tab, and
+ * never enters or leaves anything.
  */
-export interface TenantPageProps {
-    /**
-     * Enters the tenant, reading only. The wiring owns the session, so the
-     * screen asks for the entry rather than making it.
-     */
-    readonly onEnterTenant: (tenantId: string) => Promise<void>;
-}
-
-export function TenantPage({ onEnterTenant }: TenantPageProps): ReactNode {
+export function TenantPage(): ReactNode {
     const { t } = useTranslation();
-    const [entering, setEntering] = useState(false);
-    const [entryRefused, setEntryRefused] = useState<string | null>(null);
     const { code = '' } = useParams();
+    const [search, setSearch] = useSearchParams();
+    const requested = search.get('tab');
+    const tab: Tab = TABS.find((candidate) => candidate === requested) ?? 'overview';
     const read = useQuery({
         queryKey: ['tenant', code],
         queryFn: () => api.tenant(code),
@@ -88,90 +91,242 @@ export function TenantPage({ onEnterTenant }: TenantPageProps): ReactNode {
 
     return (
         <div>
-            <PageHeader
-                title={tenant.name}
-                description={t('tenants.detail.lead')}
-                actions={
-                    <>
-                        <Button
-                            disabled={entering}
-                            onClick={() => {
-                                setEntering(true);
-                                setEntryRefused(null);
-                                onEnterTenant(tenant.id).catch((error: unknown) => {
-                                    setEntering(false);
-                                    setEntryRefused(
-                                        error instanceof Error ? error.message : String(error),
-                                    );
-                                });
-                            }}
+            <PageHeader title={tenant.name} description={t('tenants.detail.lead')} actions={back} />
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-line">
+                <div role="tablist" aria-label={tenant.name} className="flex gap-1">
+                    {TABS.map((candidate) => (
+                        <button
+                            key={candidate}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === candidate}
+                            onClick={() =>
+                                setSearch(candidate === 'overview' ? {} : { tab: candidate })
+                            }
+                            className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+                                tab === candidate
+                                    ? 'border-accent text-ink'
+                                    : 'border-transparent text-ink-muted hover:text-ink'
+                            }`}
                         >
-                            {t('tenants.detail.enter')}
-                        </Button>
-                        {back}
-                    </>
-                }
+                            {t(`tenants.detail.tab.${candidate}`)}
+                        </button>
+                    ))}
+                </div>
+                <span title={t('tenants.detail.viewOnlyHint')}>
+                    <Tag tone="muted">{t('tenants.detail.viewOnly')}</Tag>
+                </span>
+            </div>
+
+            {tab === 'parties' && <TenantParties code={tenant.code} />}
+            {tab === 'people' && <TenantPeople code={tenant.code} />}
+            {tab === 'overview' && (
+                <>
+                    <section className="card mb-6 p-6">
+                        <h2 className="mb-4 text-sm font-semibold">
+                            {t('tenants.detail.details')}
+                        </h2>
+                        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <Detail label={t('tenants.code')} value={tenant.code} mono />
+                            <Detail label={t('tenants.name')} value={tenant.name} />
+                            <Detail label={t('tenants.hostname')} value={tenant.hostname} mono />
+                            <div>
+                                <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                    {t('tenants.type')}
+                                </dt>
+                                <dd className="mt-0.5">
+                                    <PaintedValue value={tenant.type} known={type} />
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                    {t('tenants.status')}
+                                </dt>
+                                <dd className="mt-0.5">
+                                    <PaintedValue value={tenant.status} known={status} />
+                                </dd>
+                            </div>
+                            <Detail
+                                label={t('tenants.detail.registrationDefault')}
+                                value={
+                                    tenant.registrationDefault
+                                        ? t('tenants.detail.yes')
+                                        : t('tenants.detail.no')
+                                }
+                            />
+                            <Detail
+                                label={t('tenants.detail.description')}
+                                value={tenant.description}
+                            />
+                        </dl>
+                        <h3 className="mb-3 mt-6 text-xs font-semibold text-ink-muted">
+                            {t('tenants.detail.provenance')}
+                        </h3>
+                        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <Detail
+                                label={t('tenants.detail.version')}
+                                value={String(tenant.version)}
+                            />
+                            <Detail
+                                label={t('tenants.detail.modifiedBy')}
+                                value={tenant.modifiedBy}
+                            />
+                            <Detail
+                                label={t('tenants.detail.performedBy')}
+                                value={tenant.performedBy}
+                            />
+                            <Detail
+                                label={t('tenants.detail.changeReason')}
+                                value={tenant.changeReasonCode}
+                                mono
+                            />
+                            <Detail
+                                label={t('tenants.detail.changeCommentary')}
+                                value={tenant.changeCommentary}
+                            />
+                            <Detail
+                                label={t('tenants.detail.recordedAt')}
+                                value={tenant.recordedAt}
+                            />
+                        </dl>
+                    </section>
+
+                    <section className="card mb-6 p-6">
+                        <h2 className="mb-4 text-sm font-semibold">{t('tenants.setup')}</h2>
+                        <SetupPanel detail={read.data} />
+                    </section>
+                </>
+            )}
+        </div>
+    );
+}
+
+/** One page of the tenant's parties, each named with the party it belongs to. */
+function TenantParties({ code }: { readonly code: string }): ReactNode {
+    const { t, plural } = useTranslation();
+    const [offset, setOffset] = useState(0);
+    const read = useQuery({
+        queryKey: ['tenant-parties', code, offset],
+        queryFn: () => api.tenantParties(code, { offset, limit: TAB_PAGE_SIZE }),
+        placeholderData: keepPreviousData,
+    });
+
+    if (read.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (read.isError) {
+        return <Notice tone="error">{read.error.message}</Notice>;
+    }
+    const { parties, totalCount } = read.data;
+    if (totalCount === 0) {
+        return <p className="text-sm text-ink-muted">{t('tenants.detail.noParties')}</p>;
+    }
+    const { first, last } = pageBounds(offset, parties.length);
+    return (
+        <div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="py-2 pr-4 font-medium">{t('parties.name')}</th>
+                            <th className="py-2 pr-4 font-medium">{t('parties.code')}</th>
+                            <th className="py-2 pr-4 font-medium">{t('parties.parent')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {parties.map((party) => (
+                            <tr key={party.id} className="border-b border-line-subtle">
+                                <td className="py-2 pr-4 text-ink">{party.name}</td>
+                                <td className="py-2 pr-4 font-mono text-xs text-ink-muted">
+                                    {party.code}
+                                </td>
+                                <td className="py-2 pr-4">
+                                    {party.parentId === null ? (
+                                        <span className="text-ink-faint">
+                                            {t('tenants.detail.topOfGroup')}
+                                        </span>
+                                    ) : party.parentName !== null ? (
+                                        party.parentName
+                                    ) : (
+                                        <span className="text-ink-faint">
+                                            {t('parties.parentElsewhere')}
+                                        </span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <Pager
+                offset={offset}
+                shown={parties.length}
+                total={totalCount}
+                pageSize={TAB_PAGE_SIZE}
+                showing={plural('parties.showing', totalCount, { first, last })}
+                onMove={setOffset}
             />
-            {entryRefused !== null && <Notice tone="error">{entryRefused}</Notice>}
+        </div>
+    );
+}
 
-            <section className="card mb-6 p-6">
-                <h2 className="mb-4 text-sm font-semibold">{t('tenants.detail.details')}</h2>
-                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Detail label={t('tenants.code')} value={tenant.code} mono />
-                    <Detail label={t('tenants.name')} value={tenant.name} />
-                    <Detail label={t('tenants.hostname')} value={tenant.hostname} mono />
-                    <div>
-                        <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
-                            {t('tenants.type')}
-                        </dt>
-                        <dd className="mt-0.5">
-                            <PaintedValue value={tenant.type} known={type} />
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-[11px] uppercase tracking-wide text-ink-faint">
-                            {t('tenants.status')}
-                        </dt>
-                        <dd className="mt-0.5">
-                            <PaintedValue value={tenant.status} known={status} />
-                        </dd>
-                    </div>
-                    <Detail
-                        label={t('tenants.detail.registrationDefault')}
-                        value={
-                            tenant.registrationDefault
-                                ? t('tenants.detail.yes')
-                                : t('tenants.detail.no')
-                        }
-                    />
-                    <Detail label={t('tenants.detail.description')} value={tenant.description} />
-                </dl>
-                <h3 className="mb-3 mt-6 text-xs font-semibold text-ink-muted">
-                    {t('tenants.detail.provenance')}
-                </h3>
-                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <Detail label={t('tenants.detail.version')} value={String(tenant.version)} />
-                    <Detail label={t('tenants.detail.modifiedBy')} value={tenant.modifiedBy} />
-                    <Detail label={t('tenants.detail.performedBy')} value={tenant.performedBy} />
-                    <Detail
-                        label={t('tenants.detail.changeReason')}
-                        value={tenant.changeReasonCode}
-                        mono
-                    />
-                    <Detail
-                        label={t('tenants.detail.changeCommentary')}
-                        value={tenant.changeCommentary}
-                    />
-                    <Detail label={t('tenants.detail.recordedAt')} value={tenant.recordedAt} />
-                </dl>
-            </section>
+/** One page of the people who can sign in to the tenant. */
+function TenantPeople({ code }: { readonly code: string }): ReactNode {
+    const { t, plural } = useTranslation();
+    const [offset, setOffset] = useState(0);
+    const read = useQuery({
+        queryKey: ['tenant-people', code, offset],
+        queryFn: () => api.tenantPeople(code, { offset, limit: TAB_PAGE_SIZE }),
+        placeholderData: keepPreviousData,
+    });
 
-            <section className="card mb-6 p-6">
-                <h2 className="mb-4 text-sm font-semibold">{t('tenants.setup')}</h2>
-                <SetupPanel detail={read.data} />
-            </section>
-
-            <Notice tone="info">{t('tenants.detail.readInside')}</Notice>
+    if (read.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (read.isError) {
+        return <Notice tone="error">{read.error.message}</Notice>;
+    }
+    const { accounts, totalCount } = read.data;
+    if (totalCount === 0) {
+        return <p className="text-sm text-ink-muted">{t('tenants.detail.noPeople')}</p>;
+    }
+    const { first, last } = pageBounds(offset, accounts.length);
+    return (
+        <div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="py-2 pr-4 font-medium">{t('tenants.detail.person')}</th>
+                            <th className="py-2 pr-4 font-medium">
+                                {t('tenants.detail.username')}
+                            </th>
+                            <th className="py-2 pr-4 font-medium">{t('tenants.detail.email')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {accounts.map((account) => (
+                            <tr key={account.id} className="border-b border-line-subtle">
+                                <td className="py-2 pr-4 text-ink">
+                                    {account.fullName === '' ? account.username : account.fullName}
+                                </td>
+                                <td className="py-2 pr-4 font-mono text-xs text-ink-muted">
+                                    {account.username}
+                                </td>
+                                <td className="py-2 pr-4 text-ink-muted">{account.email}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <Pager
+                offset={offset}
+                shown={accounts.length}
+                total={totalCount}
+                pageSize={TAB_PAGE_SIZE}
+                showing={plural('tenants.detail.showingPeople', totalCount, { first, last })}
+                onMove={setOffset}
+            />
         </div>
     );
 }

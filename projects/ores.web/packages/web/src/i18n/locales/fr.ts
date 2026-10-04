@@ -34,9 +34,6 @@ const fr: SourceCatalogue = {
         accounts: 'Comptes',
         notifications: 'Notifications',
         alerts: 'Alertes',
-        actingIn: 'Vous agissez dans {tenant} en tant que {username}',
-        readOnly: 'Lecture seule',
-        leaveTenant: 'Quitter le locataire',
         signOut: 'Se déconnecter',
         signIn: 'Se connecter',
         menu: 'Menu',
@@ -126,9 +123,20 @@ const fr: SourceCatalogue = {
             done: 'L’exécution est terminée. Le locataire est prêt.',
         },
         detail: {
-            readInside:
-                'Ses parties, ses comptes et ses connexions se lisent dans le locataire. Agissez dans ce locataire pour les lire.',
-            enter: 'Agir dans ce locataire',
+            viewOnly: 'Consultation',
+            viewOnlyHint:
+                'Les parties et les personnes de ce locataire sont modifiées par ses propres administrateurs.',
+            tab: { overview: 'Aperçu', parties: 'Parties', people: 'Personnes' },
+            noParties: "Ce locataire n'a pas encore de partie.",
+            noPeople: 'Personne ne peut encore se connecter à ce locataire.',
+            topOfGroup: 'Tête du groupe',
+            person: 'Nom',
+            username: "Nom d'utilisateur",
+            email: 'E-mail',
+            showingPeople: {
+                one: '{first}–{last} sur {count} personne',
+                other: '{first}–{last} sur {count} personnes',
+            },
             lead: 'Un locataire de ce déploiement : ce qu’il est, et comment sa mise en place s’est passée.',
             back: 'Retour aux locataires',
             notFound: 'Aucun locataire n’a ce code.',
@@ -165,7 +173,7 @@ const fr: SourceCatalogue = {
         type: 'Type',
         status: 'Statut',
         parent: 'Parent',
-        parentElsewhere: 'Sur une autre page',
+        parentElsewhere: 'Hors de votre périmètre',
         showing: {
             one: '{first}–{last} sur {count} partie',
             other: '{first}–{last} sur {count} parties',

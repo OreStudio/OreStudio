@@ -31,12 +31,12 @@ import {
     type LeaveTenantRequest,
     type LeaveTenantResponse,
 } from './generated/iam/protocol/tenant_session_protocol.js';
+import type { AuthenticatedCaller } from './account-operations.js';
 import {
     NotAuthenticatedError,
     OperationFailedError,
     ServerError,
     SessionExpiredError,
-    TenantSessionEndedError,
     type ProtocolError,
     type ServerErrorCode,
 } from './errors.js';
@@ -189,16 +189,6 @@ export interface WorkspaceContext {
     readonly resolutionOrder?: readonly string[];
 }
 
-/** A tenant the session entered from system administration, reading only. */
-export interface EnteredTenant {
-    readonly tenantId: string;
-    readonly tenantCode: string;
-    readonly tenantName: string;
-    readonly partyId: Uuid;
-    readonly partyName: string;
-    readonly accessLifetimeSeconds: number;
-}
-
 const enterTenantResponseSchema = z.object({
     success: z.boolean().default(false),
     message: z.string().default(''),
@@ -238,15 +228,6 @@ export class OresClient {
     readonly #now: () => Date;
     readonly #generateId: IdGenerator;
     #session: SessionState | undefined;
-    /**
-     * The tenant the session entered, with the token it entered from.
-     *
-     * One field holds both, so the client is either inside one tenant with a
-     * way back, or outside with nothing to restore.
-     */
-    #inside: { readonly tenant: EnteredTenant; readonly outsideToken: string } | undefined;
-    /** An entry under way, so a second one cannot take the first's token as its own. */
-    #entering: Promise<EnteredTenant> | undefined;
 
     constructor(options: OresClientOptions) {
         this.#transport = options.transport;
@@ -768,7 +749,6 @@ export class OresClient {
             }).catch(() => undefined);
         }
         this.#session = undefined;
-        this.#inside = undefined;
     }
 
     /**
@@ -782,90 +762,90 @@ export class OresClient {
      */
     async refresh(): Promise<string> {
         const session = this.#requireSession();
-        if (this.#inside !== undefined) {
-            this.#returnOutside(session);
-            throw new TenantSessionEndedError();
-        }
         session.refreshInFlight ??= this.#performRefresh(session).finally(() => {
             session.refreshInFlight = undefined;
         });
         return session.refreshInFlight;
     }
 
-    /** The tenant the session is inside, or `undefined` in its own tenant. */
-    get enteredTenant(): EnteredTenant | undefined {
-        return this.#inside?.tenant;
-    }
-
     /**
-     * Enters one tenant from system administration, reading only.
+     * Reads inside one tenant from system administration, for one read.
      *
-     * The session's token becomes one scoped to the tenant, and the token it
-     * replaces is kept so {@link leaveTenant} needs no sign-in.
+     * The tenant session lasts as long as `read`: it is entered before the read
+     * and left after it, whether or not the read succeeds. Its token is never
+     * put on the session, so a call the session makes meanwhile keeps the
+     * session's own token, and every call the read makes carries the tenant's.
+     * A tenant session is not refreshed, so a read that outlives it fails as
+     * an ordinary failed read, and the session it was entered from goes on.
+     * `onExitFailure` hears of an exit that could not be recorded.
      *
      * @throws {OperationFailedError} when the server refuses the entry, or the
-     * session is already inside a tenant.
+     * tenant session ended during the read.
      */
-    async enterTenant(tenantId: string): Promise<EnteredTenant> {
-        const subject = tenantSessionSubjects.enter_tenant_request;
-        if (this.#inside !== undefined || this.#entering !== undefined) {
-            throw new OperationFailedError(subject, 'The session is already inside a tenant.');
-        }
-        this.#entering = this.#enter(tenantId).finally(() => {
-            this.#entering = undefined;
-        });
-        return this.#entering;
-    }
-
-    async #enter(tenantId: string): Promise<EnteredTenant> {
-        const session = this.#requireSession();
+    async readInsideTenant<T>(
+        tenantId: string,
+        read: (caller: AuthenticatedCaller) => Promise<T>,
+        onExitFailure: (error: unknown) => void = () => undefined,
+    ): Promise<T> {
         const subject = tenantSessionSubjects.enter_tenant_request;
         const request: EnterTenantRequest = { tenant_id: tenantId };
-        const reply = await this.#authenticatedCall(subject, request, enterTenantResponseSchema, {
+        const entered = await this.#authenticatedCall(subject, request, enterTenantResponseSchema, {
             timeoutMs: this.#timeouts.fastMs,
         });
-        if (!reply.success || reply.token.length === 0) {
-            throw new OperationFailedError(subject, reply.message);
+        if (!entered.success || entered.token.length === 0) {
+            throw new OperationFailedError(subject, entered.message);
         }
-        const tenant: EnteredTenant = {
-            tenantId: reply.tenant_id,
-            tenantCode: reply.tenant_code,
-            tenantName: reply.tenant_name,
-            partyId: uuid(reply.party_id),
-            partyName: reply.party_name,
-            accessLifetimeSeconds: reply.access_lifetime_s,
+        const caller: AuthenticatedCaller = {
+            callAuthenticated: (callSubject, body, schema) =>
+                this.#callAs(entered.token, callSubject, body, schema),
         };
-        this.#inside = { tenant, outsideToken: session.token };
-        session.token = reply.token;
-        return tenant;
+        try {
+            return await read(caller);
+        } finally {
+            /*
+             * The exit is recorded when it can be. One that cannot be leaves a
+             * tenant session nobody holds, which ends at its own expiry.
+             */
+            const leave: LeaveTenantRequest = {};
+            await this.#callAs(
+                entered.token,
+                tenantSessionSubjects.leave_tenant_request,
+                leave,
+                leaveTenantResponseSchema,
+            ).catch(onExitFailure);
+        }
     }
 
-    /**
-     * Leaves the tenant and returns to the session it was entered from.
-     *
-     * The return happens even when the exit cannot be recorded, because a
-     * session must never be left inside a tenant its holder asked to leave.
-     */
-    async leaveTenant(): Promise<void> {
+    /** One call made with a token other than the session's own. */
+    async #callAs<Schema extends z.ZodType>(
+        token: string,
+        subject: string,
+        body: unknown,
+        schema: Schema,
+    ): Promise<z.infer<Schema>> {
         const session = this.#requireSession();
-        if (this.#inside === undefined) {
-            return;
-        }
-        const request: LeaveTenantRequest = {};
-        try {
-            await this.#authenticatedCall(
-                tenantSessionSubjects.leave_tenant_request,
-                request,
-                leaveTenantResponseSchema,
-                { timeoutMs: this.#timeouts.fastMs },
+        const reply = await this.#transport.request(
+            subject,
+            this.#codec.encode(body),
+            { ...this.#authenticatedHeaders(session), Authorization: `Bearer ${token}` },
+            this.#timeouts.fastMs,
+        );
+        const serverError = serverErrorCode(reply.headers);
+        if (serverError === 'token_expired') {
+            /*
+             * The tenant token lapsed, not the session's own: reporting it as
+             * an expired session would sign the person out of a session that
+             * is still good.
+             */
+            throw new OperationFailedError(
+                subject,
+                'The time inside the tenant ended. Read again.',
             );
-        } catch (error) {
-            if (!(error instanceof TenantSessionEndedError)) {
-                this.#returnOutside(session);
-                throw error;
-            }
         }
-        this.#returnOutside(session);
+        if (serverError !== undefined) {
+            throw errorForServerCode(serverError, subject);
+        }
+        return this.#codec.decodeAs(reply.body, schema);
     }
 
     /**
@@ -957,7 +937,6 @@ export class OresClient {
 
     async close(): Promise<void> {
         this.#session = undefined;
-        this.#inside = undefined;
         await this.#transport.close();
     }
 
@@ -1062,13 +1041,6 @@ export class OresClient {
             throw new NotAuthenticatedError('No session: call login() first');
         }
         return this.#session;
-    }
-
-    #returnOutside(session: SessionState): void {
-        if (this.#inside !== undefined) {
-            session.token = this.#inside.outsideToken;
-            this.#inside = undefined;
-        }
     }
 
     #replaceToken(token: string): void {

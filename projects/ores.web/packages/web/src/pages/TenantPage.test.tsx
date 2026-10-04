@@ -60,7 +60,7 @@ const loaded: TenantDetailResponse = {
     setupUnavailable: false,
 };
 
-function render(seed: (client: QueryClient) => void, code = 'acme_corporation'): string {
+function render(seed: (client: QueryClient) => void, code = 'acme_corporation', tab = ''): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false } },
     });
@@ -70,12 +70,11 @@ function render(seed: (client: QueryClient) => void, code = 'acme_corporation'):
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter initialEntries={[`/tenants/${code}`]}>
+                <MemoryRouter
+                    initialEntries={[`/tenants/${code}${tab === '' ? '' : `?tab=${tab}`}`]}
+                >
                     <Routes>
-                        <Route
-                            path="/tenants/:code"
-                            element={<TenantPage onEnterTenant={async () => undefined} />}
-                        />
+                        <Route path="/tenants/:code" element={<TenantPage />} />
                     </Routes>
                 </MemoryRouter>
             </TranslationProvider>
@@ -100,15 +99,90 @@ describe('TenantPage', () => {
         expect(html).toContain('href="/tenants"');
     });
 
-    it('offers to act in the tenant', () => {
-        expect(renderLoaded(loaded)).toContain('Act in this tenant');
-    });
-
-    it('reads no party, and says the parties are read inside the tenant', () => {
+    /*
+     * The tenant's data is a tab like its details. Nothing offers to enter or
+     * leave the tenant: the read inside it is the server's, for the tab.
+     */
+    it('offers the overview, parties and people as tabs, and no way in or out', () => {
         const html = renderLoaded(loaded);
 
-        expect(html).toContain('Act in this tenant to read them.');
-        expect(html).not.toContain('<table');
+        for (const tab of ['Overview', 'Parties', 'People']) {
+            expect(html).toContain(`>${tab}</button>`);
+        }
+        expect(html).toContain('aria-selected="true"');
+        expect(html).toContain('View only');
+        expect(html.toLowerCase()).not.toContain('act in');
+        expect(html.toLowerCase()).not.toContain('leave');
+    });
+
+    it("lists the tenant's parties on the parties tab, each with the party it belongs to", () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['tenant', 'acme_corporation'], loaded);
+                client.setQueryData(['tenant-parties', 'acme_corporation', 0], {
+                    parties: [
+                        {
+                            id: '77777777-7777-7777-7777-777777777777',
+                            code: 'ACMCOR',
+                            name: 'Acme Corporation Plc',
+                            category: 'Operational',
+                            type: 'Corporate',
+                            status: 'active',
+                            parentId: null,
+                            parentName: null,
+                        },
+                        {
+                            id: '88888888-8888-8888-8888-888888888888',
+                            code: 'ACCOHK',
+                            name: 'Acme Corporation HK Ltd',
+                            category: 'Operational',
+                            type: 'Corporate',
+                            status: 'active',
+                            parentId: '77777777-7777-7777-7777-777777777777',
+                            parentName: 'Acme Corporation Plc',
+                        },
+                    ],
+                    totalCount: 2,
+                });
+            },
+            'acme_corporation',
+            'parties',
+        );
+
+        expect(html).toContain('Acme Corporation HK Ltd');
+        expect(html).toContain('Top of the group');
+        expect(html).toContain('>Acme Corporation Plc</td>');
+        expect(html).not.toContain('Provenance');
+    });
+
+    it('lists the people on the people tab', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['tenant', 'acme_corporation'], loaded);
+                client.setQueryData(['tenant-people', 'acme_corporation', 0], {
+                    accounts: [
+                        {
+                            version: 1,
+                            id: '99999999-9999-9999-9999-999999999999',
+                            tenantId: '44444444-4444-4444-4444-444444444444',
+                            username: 'priya',
+                            fullName: 'Priya Natarajan',
+                            email: 'priya@acme.example',
+                            accountType: 'user',
+                            jobTitle: '',
+                            reportsToAccountId: null,
+                            defaultPartyId: null,
+                        },
+                    ],
+                    totalCount: 1,
+                });
+            },
+            'acme_corporation',
+            'people',
+        );
+
+        expect(html).toContain('Priya Natarajan');
+        expect(html).toContain('priya@acme.example');
     });
 
     /*

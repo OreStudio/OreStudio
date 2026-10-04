@@ -26,7 +26,6 @@ import {
     ServerError,
     ServiceUnavailableError,
     SessionExpiredError,
-    TenantSessionEndedError,
     TransportError,
 } from '@ores/wire-protocol';
 import type { ApiError } from '@ores/wire-protocol';
@@ -178,12 +177,6 @@ export function tooManyRequests(what: string): HttpFailure {
 export function toHttpFailure(error: unknown): HttpFailure {
     if (error instanceof HttpFailure) {
         return error;
-    }
-    if (error instanceof TenantSessionEndedError) {
-        return new HttpFailure(409, {
-            code: 'tenant-session-ended',
-            message: 'Your time inside the tenant ended. You are back in system administration.',
-        });
     }
     if (error instanceof SessionExpiredError) {
         return new HttpFailure(401, {

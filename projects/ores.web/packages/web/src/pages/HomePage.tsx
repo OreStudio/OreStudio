@@ -50,24 +50,14 @@ export interface HomePageProps {
     readonly partyName: string;
     /** The context the session runs in, which decides what this page shows. */
     readonly mode: SessionMode;
-    /**
-     * Whether the session only reads. A read-only session is offered no change.
-     */
-    readonly readOnly?: boolean;
 }
 
-export function HomePage({
-    username,
-    tenantName,
-    partyName,
-    mode,
-    readOnly = false,
-}: HomePageProps): ReactNode {
+export function HomePage({ username, tenantName, partyName, mode }: HomePageProps): ReactNode {
     if (mode === 'system-administration') {
         return <SystemHome username={username} />;
     }
     if (mode === 'tenant-administration') {
-        return <TenantHome username={username} tenantName={tenantName} readOnly={readOnly} />;
+        return <TenantHome username={username} tenantName={tenantName} />;
     }
     return <PartyHome username={username} partyName={partyName} />;
 }
@@ -385,24 +375,18 @@ function Tiles({ tiles, later }: { readonly tiles: readonly Tile[]; readonly lat
 function TenantHome({
     username,
     tenantName,
-    readOnly,
 }: {
     readonly username: string;
     readonly tenantName: string;
-    readonly readOnly: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const tiles: Tile[] = [
         { title: t('home.tenant.parties'), body: t('home.tenant.partiesBody'), to: '/parties' },
-        ...(readOnly
-            ? []
-            : [
-                  {
-                      title: t('home.tenant.newParty'),
-                      body: t('home.tenant.newPartyBody'),
-                      to: '/parties/new',
-                  },
-              ]),
+        {
+            title: t('home.tenant.newParty'),
+            body: t('home.tenant.newPartyBody'),
+            to: '/parties/new',
+        },
         { title: t('home.tenant.rescue'), body: t('home.tenant.rescueBody'), to: '/rescue' },
         { title: t('home.tenant.audit'), body: t('home.tenant.auditBody'), to: '/audit' },
         { title: t('home.tenant.security'), body: t('home.tenant.securityBody'), to: '/security' },

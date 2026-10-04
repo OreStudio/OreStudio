@@ -93,7 +93,7 @@ const quiet: DeploymentOverview = {
     activityUnavailable: true,
 };
 
-function home(mode: SessionMode, overview?: DeploymentOverview, readOnly = false): string {
+function home(mode: SessionMode, overview?: DeploymentOverview): string {
     const client = new QueryClient();
     if (overview !== undefined) {
         client.setQueryData(['overview'], overview);
@@ -110,7 +110,6 @@ function home(mode: SessionMode, overview?: DeploymentOverview, readOnly = false
                         tenantName="Acme Corporation"
                         partyName="Acme London"
                         mode={mode}
-                        readOnly={readOnly}
                     />
                 </MemoryRouter>
             </TranslationProvider>
@@ -194,13 +193,6 @@ describe("the tenant administrator's home", () => {
             expect(html).toContain(`href="${href}"`);
         }
         expect(html).not.toContain('href="/tenants');
-    });
-
-    it('offers no change to a session that only reads', () => {
-        const html = home('tenant-administration', undefined, true);
-
-        expect(html).not.toContain('href="/parties/new"');
-        expect(html).toContain('href="/parties"');
     });
 });
 

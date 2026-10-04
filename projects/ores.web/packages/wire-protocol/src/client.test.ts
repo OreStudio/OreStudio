@@ -21,7 +21,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { OresClient } from './client.js';
-import { NotAuthenticatedError, OperationFailedError, TenantSessionEndedError } from './errors.js';
+import { z } from 'zod';
+import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
 import { WireCodec } from './codec.js';
 import type { Reply, RequestHeaders, Transport } from './transport.js';
 
@@ -316,7 +317,7 @@ describe('OresClient authenticated calls', () => {
  * Entering a tenant swaps the session's token, and every way back restores the
  * token it entered from, so the session is never stranded inside a tenant.
  */
-describe('OresClient inside a tenant', () => {
+describe('OresClient reading inside a tenant', () => {
     const accountsReply = { accounts: [], total_available_count: 0 };
     const ACME = '44444444-4444-4444-4444-444444444444';
     const entered = {
@@ -330,27 +331,61 @@ describe('OresClient inside a tenant', () => {
         party_name: 'System Party',
         access_lifetime_s: 900,
     };
+    const left = { success: true, message: '' };
+    const anything = z.unknown();
 
-    it('enters with its own token, then calls with the tenant token', async () => {
+    it('reads with the tenant token, leaves with it, and keeps its own', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
+            'iam.v1.ops.leave_tenant': [{ body: left }],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
 
-        const tenant = await client.enterTenant(ACME);
-        await client.listAccounts();
+        await client.readInsideTenant(ACME, (caller) =>
+            caller.callAuthenticated('iam.v1.accounts.list', {}, anything),
+        );
 
-        expect(tenant.tenantName).toBe('Acme Corporation');
-        expect(client.enteredTenant?.tenantCode).toBe('acme_corporation');
+        expect(transport.calls.map((call) => call.subject)).toEqual([
+            'iam.v1.auth.login',
+            'iam.v1.ops.enter_tenant',
+            'iam.v1.accounts.list',
+            'iam.v1.ops.leave_tenant',
+        ]);
         expect(transport.decodeCall(1)).toEqual({ tenant_id: ACME });
         expect(transport.calls[1]?.headers['Authorization']).toBe('Bearer token-one');
         expect(transport.calls[2]?.headers['Authorization']).toBe('Bearer tenant-token');
+        expect(transport.calls[3]?.headers['Authorization']).toBe('Bearer tenant-token');
+        expect(client.token).toBe('token-one');
     });
 
-    it('stays outside when the server refuses the entry', async () => {
+    /*
+     * The read holds the tenant token itself, so a call the session makes while
+     * the read is under way is still the session's own.
+     */
+    it('leaves a call the session makes meanwhile with its own token', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.enter_tenant': [{ body: entered }],
+            'iam.v1.accounts.list': [{ body: accountsReply }],
+            'iam.v1.tenants.list': [{ body: {} }],
+            'iam.v1.ops.leave_tenant': [{ body: left }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await client.readInsideTenant(ACME, async (caller) => {
+            await client.callAuthenticated('iam.v1.tenants.list', {}, anything);
+            return caller.callAuthenticated('iam.v1.accounts.list', {}, anything);
+        });
+
+        const outside = transport.calls.find((call) => call.subject === 'iam.v1.tenants.list');
+        expect(outside?.headers['Authorization']).toBe('Bearer token-one');
+    });
+
+    it('reads nothing and leaves nothing when the server refuses the entry', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [
@@ -366,66 +401,62 @@ describe('OresClient inside a tenant', () => {
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
+        let read = false;
 
-        await expect(client.enterTenant(ACME)).rejects.toThrow(OperationFailedError);
-        expect(client.enteredTenant).toBeUndefined();
-        expect(client.token).toBe('token-one');
+        await expect(
+            client.readInsideTenant(ACME, async () => {
+                read = true;
+            }),
+        ).rejects.toThrow(OperationFailedError);
+        expect(read).toBe(false);
+        expect(transport.calls.map((call) => call.subject)).not.toContain(
+            'iam.v1.ops.leave_tenant',
+        );
     });
 
-    /*
-     * Two entries at once would let the second keep the first's tenant token
-     * as the token to return to, stranding the session inside a tenant.
-     */
-    it('refuses a second entry while the first is under way', async () => {
-        const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
-            'iam.v1.ops.enter_tenant': [{ body: entered }, { body: entered }],
-        });
-        const client = new OresClient({ transport });
-        await client.login({ principal: 'probe', password: 'secret' });
-
-        const first = client.enterTenant(ACME);
-        await expect(client.enterTenant(ACME)).rejects.toThrow(OperationFailedError);
-        await first;
-        await client.leaveTenant().catch(() => undefined);
-
-        expect(client.token).toBe('token-one');
-    });
-
-    it('leaves with the tenant token and returns to its own', async () => {
+    it('leaves the tenant when the read fails', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
-            'iam.v1.ops.leave_tenant': [{ body: { success: true, message: '' } }],
+            'iam.v1.ops.leave_tenant': [{ body: left }],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
-        await client.enterTenant(ACME);
 
-        await client.leaveTenant();
-
-        expect(transport.calls[2]?.headers['Authorization']).toBe('Bearer tenant-token');
-        expect(client.enteredTenant).toBeUndefined();
+        await expect(
+            client.readInsideTenant(ACME, () => Promise.reject(new Error('read failed'))),
+        ).rejects.toThrow('read failed');
+        expect(transport.calls.at(-1)?.subject).toBe('iam.v1.ops.leave_tenant');
         expect(client.token).toBe('token-one');
     });
 
     /*
-     * A tenant session is never refreshed. When it lapses, the client goes back
-     * to its own token without asking the server, and says so.
+     * A tenant session is never refreshed. A read that outlives it fails as an
+     * ordinary failed read, not as an expired session, so the session it was
+     * entered from is neither renewed nor ended on its account. The exit that
+     * cannot be recorded is reported.
      */
-    it('returns to its own token when the tenant session lapses', async () => {
+    it('fails a read whose tenant session lapsed, without refreshing', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.auth.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.accounts.list': [{ headers: { 'X-Error': 'token_expired' } }],
+            'iam.v1.ops.leave_tenant': [{ headers: { 'X-Error': 'token_expired' } }],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
-        await client.enterTenant(ACME);
 
-        await expect(client.listAccounts()).rejects.toThrow(TenantSessionEndedError);
-        expect(client.enteredTenant).toBeUndefined();
-        expect(client.token).toBe('token-one');
+        const exitFailures: unknown[] = [];
+        const read = client.readInsideTenant(
+            ACME,
+            (caller) => caller.callAuthenticated('iam.v1.accounts.list', {}, anything),
+            (error) => exitFailures.push(error),
+        );
+
+        await expect(read).rejects.toThrow(OperationFailedError);
+        await expect(read).rejects.not.toThrow(SessionExpiredError);
+        expect(exitFailures).toHaveLength(1);
         expect(transport.calls.map((call) => call.subject)).not.toContain('iam.v1.auth.refresh');
+        expect(client.token).toBe('token-one');
     });
 });

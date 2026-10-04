@@ -94,7 +94,7 @@ describe('PartiesPage', () => {
 
         expect(html).toContain('acme_group');
         expect(html).toContain('>Acme System</td>');
-        expect(html).toContain('On another page');
+        expect(html).toContain('Not one you can see');
     });
 
     it('pages with the server total', () => {

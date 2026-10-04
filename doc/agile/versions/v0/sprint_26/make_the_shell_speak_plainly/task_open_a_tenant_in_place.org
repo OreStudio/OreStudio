@@ -7,35 +7,43 @@
 #+level: s1
 #+filetags: :web:ui:tenancy:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/open-a-tenant-in-place
+#+pr: 2600
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator opens a tenant and reads its parties and people in
+place, as tabs beside its details. The tenant session that reads them is the
+server's, held for each read; nothing offers to enter or leave a tenant.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- The tenant's screen has Overview, Parties and People tabs, and no entry or
+  exit control; a quiet label says the view is read only.
+- The server reads a tab inside the tenant for that read alone, and the
+  browser's session stays in system administration throughout.
+- The visible tenant session (the routes, the client state, the banner and the
+  read-only session flag) is removed.
+- Tests prove each.
 
 * Plan
 
@@ -74,12 +82,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2600][#2600]] | [web] Open a tenant in place |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every read failure inside a tenant answered 403 | bff/src/server.ts | Accept | Only a refused entry answers 403; a failed read keeps its own status |
+| 2 | A lapsed tenant token signed the person out | wire-protocol/src/client.ts | Accept | =token_expired= on the tenant token is an =OperationFailedError= that asks for a new read |
+| 3 | An orphan comment stayed after the enter and leave code went | wire-protocol/src/client.ts | Accept | Removed |
+| 4 | A failed leave was lost without a trace | wire-protocol/src/client.ts | Accept | =readInsideTenant= takes =onExitFailure=; the BFF logs it as a warning |
+| 5 | Each tab read enters and leaves, one round trip each | bff/src/server.ts | Decline | A tab read is rare and small; holding a token across requests is what this task removed |
+| 6 | No test for the tenant token on the read's header | wire-protocol/src/client.test.ts | Decline | The case "reads with the tenant token and leaves" already asserts the header |
+| 7 | The page query is parsed by hand | bff/src/server.ts | Decline | It follows the parties and tenants routes; a shared parser is its own change |
 
 * Result
+
+A tenant opens in place.
+
+- *A scoped read in the client.* =OresClient.readInsideTenant(tenantId, read)=
+  enters the tenant, hands =read= a caller that carries the tenant's token, and
+  leaves in a =finally=, whatever the read did. The token is never put on the
+  session, so a call the session makes meanwhile keeps its own token; a tenant
+  session is not refreshed, so a read that outlives it fails.
+- *Two routes.* =GET /api/tenants/:code/parties= and
+  =GET /api/tenants/:code/people= read inside the tenant, for system
+  administration only; an unknown code or the system tenant is no tenant, and
+  the server's refusal of the entry is a 403.
+- *The tenant's screen* has Overview, Parties and People tabs, kept in the
+  address, and a quiet *View only* label; the *Act in this tenant* button is
+  gone.
+- *Removed with its callers:* the session-level enter and leave routes, the
+  client's entered tenant and its error, the session's acting-in state, the
+  read-only request hook, the shell's banner, the session provider's enter
+  and leave, and the home page's read-only flag.
+- *Words.* The parties page's "On another page" said something the parent
+  read by id made false; a parent left unnamed is now one the session cannot
+  see, and says so, in all three languages.
+- *Journey.* =journey_act_inside_a_tenant.org= describes the tabs, the read
+  per request and the audit record each read leaves.
+- *Tests:* 5 client cases for the scoped read (tenant token on the read and
+  the exit, the session's own token kept and used by a concurrent call, a
+  refused entry, an exit after a failed read, no refresh on a lapsed tenant
+  session); 6 BFF cases for the routes; the tenant page's tabs; the old
+  tenant-session and banner tests removed with what they tested. BFF 128, web
+  230, wire protocol 68, all passing; typecheck and prettier clean.
+- *Not read live*, for the reason task 1 gives; the story's final deployment
+  reads it.

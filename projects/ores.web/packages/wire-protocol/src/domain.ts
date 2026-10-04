@@ -481,3 +481,20 @@ export const permissionEntrySchema = z.object({
 });
 
 export type PermissionEntry = z.infer<typeof permissionEntrySchema>;
+
+/**
+ * One account's sign-ins: the account, its sign-in state and a page of its
+ * sessions, newest first.
+ *
+ * The state is absent for an account that has never signed in. A session's
+ * end time is empty when no end was recorded, which today is every session:
+ * signing out writes none.
+ */
+export const accountSignInsSchema = z.object({
+    account: accountSchema,
+    loginInfo: loginInfoSchema.nullable(),
+    sessions: z.array(sessionSchema),
+    totalCount: z.int().nonnegative(),
+});
+
+export type AccountSignIns = z.infer<typeof accountSignInsSchema>;

@@ -143,6 +143,53 @@ function buildTestServer(
         if (subject === 'iam.v1.accounts.list') {
             return { accounts: [acmePerson], total: 1 };
         }
+        if (subject === 'iam.v1.accounts.get') {
+            const username = (body as { key: { username: string } }).key.username;
+            return { account: username === 'priya' ? acmePerson : null };
+        }
+        if (subject === 'iam.v1.login_info.get') {
+            return {
+                login_info: {
+                    tenant_id: ACME,
+                    account_id: acmePerson.id,
+                    last_ip: '203.0.113.44',
+                    last_attempt_ip: '203.0.113.44',
+                    failed_logins: 2,
+                    locked: false,
+                    last_login: '2026-10-04 09:00:00Z',
+                    online: true,
+                    password_reset_required: false,
+                },
+            };
+        }
+        if (subject === 'iam.v1.sessions.list') {
+            const request = body as {
+                order: { field: string; descending: boolean };
+                filter: { account_id: string };
+            };
+            expect(request.order).toEqual({ field: 'start_time', descending: true });
+            expect(request.filter.account_id).toBe(acmePerson.id);
+            return {
+                sessions: [
+                    {
+                        tenant_id: ACME,
+                        id: '77777777-0000-0000-0000-000000000001',
+                        account_id: acmePerson.id,
+                        start_time: '2026-10-04 09:00:00Z',
+                        end_time: '',
+                        client_ip: '203.0.113.44',
+                        client_identifier: 'ores.web',
+                        client_version_major: 0,
+                        client_version_minor: 25,
+                        bytes_sent: 10,
+                        bytes_received: 20,
+                        country_code: 'GB',
+                        protocol: 'https',
+                    },
+                ],
+                total: 1,
+            };
+        }
         if (subject === 'refdata.v1.business_centres.list') {
             const codes = (body as { filter: { code_one_of: string[] } }).filter.code_one_of;
             expect(codes).toEqual(['GBLO']);
@@ -355,6 +402,50 @@ describe("a tenant's data, read from system administration", () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ accounts: [{ imageId: PRIYA_PHOTO }] });
+    });
+
+    /*
+     * An account opened from a tenant's People tab shows its sign-in state and
+     * its sessions, newest first, read inside the tenant in one visit.
+     */
+    it("reads one account's sign-ins inside the tenant, newest first", async () => {
+        const { server, cookies, calls } = buildTestServer();
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/acme_corporation/accounts/priya/sign-ins',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            account: { username: 'priya' },
+            loginInfo: { failedLogins: 2, locked: false },
+            sessions: [{ clientIdentifier: 'ores.web', endTime: '' }],
+            totalCount: 1,
+        });
+        expect(calls.filter((call) => call.startsWith('enter'))).toHaveLength(1);
+    });
+
+    it('reads the system tenant accounts as the session, and answers no account it lacks', async () => {
+        const { server, cookies, calls } = buildTestServer();
+
+        const found = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/system/accounts/priya/sign-ins',
+            cookies,
+        });
+        const missing = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/system/accounts/nobody/sign-ins',
+            cookies,
+        });
+        await server.close();
+
+        expect(found.statusCode).toBe(200);
+        expect(missing.statusCode).toBe(404);
+        expect(calls.filter((call) => call.startsWith('enter'))).toHaveLength(0);
     });
 
     it('answers no image for an identifier the tenant does not hold', async () => {

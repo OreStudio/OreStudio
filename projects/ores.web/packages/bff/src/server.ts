@@ -69,6 +69,8 @@ import {
     registrationPolicyViewSchema,
     readAccount,
     readAccountsPage,
+    readAccountSignIns,
+    accountSignInsSchema,
     readActiveSessions,
     readLoginInfo,
     readLoginInfoPage,
@@ -941,6 +943,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * One account of the session's own tenant and its sign-ins: its sign-in
+     * state and its sessions, newest first. The server allows the session
+     * read to a holder of iam::sessions:read.
+     */
+    server.get('/api/accounts/:username/sign-ins', async (request) => {
+        const session = requireSession(request);
+        const page = signInsPage(request);
+        const { username } = request.params as { username: string };
+        const answer = await readAccountSignIns(session.client, username, page);
+        if (answer === null) {
+            throw notFound('No account has this username.');
+        }
+        return accountSignInsSchema.parse(answer);
+    });
+
+    /**
      * One account by username.
      *
      * A username that is not there answers with nothing rather than with a 404.
@@ -1550,6 +1568,46 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             );
             return people;
         });
+    });
+
+    /** A page of an account's sessions, as the browser asks for it. */
+    const signInsPageSchema = z.object({
+        offset: z.int().nonnegative(),
+        limit: z.int().positive().max(200),
+    });
+
+    function signInsPage(request: FastifyRequest): z.infer<typeof signInsPageSchema> {
+        const query = request.query as Record<string, string | undefined>;
+        const page = signInsPageSchema.safeParse({
+            offset: Number(query['offset'] ?? 0),
+            limit: Number(query['limit'] ?? 20),
+        });
+        if (!page.success) {
+            throw invalidRequest('The page offset and limit must be whole numbers.');
+        }
+        return page.data;
+    }
+
+    /**
+     * One account of a tenant and its sign-ins, read inside the tenant: its
+     * sign-in state and its sessions, newest first. The system tenant is the
+     * system administrator's own, so its accounts, the platform's services
+     * among them, are read as the session.
+     */
+    server.get('/api/tenants/:code/accounts/:username/sign-ins', async (request) => {
+        const page = signInsPage(request);
+        const { username } = request.params as { username: string };
+        const answer = await readInside(request, async (caller, tenantId) => {
+            const signIns = await readAccountSignIns(caller, username, page);
+            if (signIns !== null) {
+                await keepPageImages(request, caller, tenantId, [signIns.account.imageId]);
+            }
+            return signIns;
+        });
+        if (answer === null) {
+            throw notFound('No account has this username.');
+        }
+        return accountSignInsSchema.parse(answer);
     });
 
     /**

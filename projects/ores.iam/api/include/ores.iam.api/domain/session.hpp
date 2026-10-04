@@ -85,12 +85,14 @@ struct session final {
 
     /**
      * @brief Timestamp when the session started (login time). It is the hypertable's partition
-     * column, so it is part of the primary key.
+     * column, so it is part of the primary key. A list may be ordered by it, so an account's
+     * sessions read newest first.
      */
     std::chrono::system_clock::time_point start_time;
 
     /**
-     * @brief Foreign key referencing the associated account.
+     * @brief Foreign key referencing the associated account. A list may be filtered by it, so an
+     * account's page reads that account's sessions and no other.
      */
     boost::uuids::uuid account_id;
 

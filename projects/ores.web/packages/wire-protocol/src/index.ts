@@ -45,6 +45,7 @@ export {
     ACCOUNT_TYPES,
     accountAccessSchema,
     accountPageSchema,
+    accountSignInsSchema,
     accountSchema,
     activePartySchema,
     badgePresentationSchema,
@@ -67,6 +68,7 @@ export type {
     Account,
     AccountAccess,
     AccountPage,
+    AccountSignIns,
     AccountType,
     ActiveParty,
     BadgePresentation,
@@ -305,6 +307,7 @@ export type { AuthenticatedCaller, ChangeOwnPasswordRequest } from './account-op
 export {
     CREDENTIAL_SUBJECTS,
     readAccount,
+    readAccountSignIns,
     readAccountsPage,
     readActiveSessions,
     readLoginInfo,

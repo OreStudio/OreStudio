@@ -53,7 +53,9 @@ std::string session_repository::sql() {
 }
 
 bool session_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "start_time",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -73,6 +75,26 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     if (!session_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of sessions cannot be ordered by " + order.field + ".");
     return make_order({order.field}, order.descending, {"id", "start_time"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::sessions_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->account_id)
+        r.push_back(equals("account_id", filter_value(*filter->account_id)));
+    if (filter->account_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->account_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("account_id", std::move(values)));
+    }
+    return all_of(std::move(r));
 }
 
 }
@@ -242,7 +264,8 @@ std::vector<domain::session>
 session_repository::read_latest(context ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
-                                const ores::utility::domain::order& order) {
+                                const ores::utility::domain::order& order,
+                                const std::optional<messaging::sessions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sessions with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
@@ -253,19 +276,21 @@ session_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id", "start_time"}, false),
-        std::nullopt,
+        filter_condition(filter),
         [](const auto& entities) { return session_mapper::map(entities); },
         lg(),
         "Reading latest sessions with pagination.");
 }
 
-std::uint32_t session_repository::get_total_session_count(context ctx) {
+std::uint32_t session_repository::get_total_session_count(
+    context ctx, const std::optional<messaging::sessions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active session count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<session_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<session_entity>(ctx, query, std::nullopt, lg(), "Counting sessions");
+    return execute_count_query<session_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sessions");
 }
 
 std::vector<domain::session> session_repository::read_latest(

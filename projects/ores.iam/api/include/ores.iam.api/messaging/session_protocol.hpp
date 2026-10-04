@@ -69,6 +69,11 @@ struct session_lookup {
     std::optional<ores::iam::domain::session> session;
 };
 
+struct sessions_filter {
+    std::optional<boost::uuids::uuid> account_id;
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+};
+
 struct session_event {
     boost::uuids::uuid event_id;
     session_key key;
@@ -91,6 +96,7 @@ struct list_sessions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<sessions_filter> filter;
 };
 
 struct list_sessions_response {

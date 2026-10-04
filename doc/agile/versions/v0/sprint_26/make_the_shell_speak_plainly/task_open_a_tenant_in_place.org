@@ -8,7 +8,7 @@
 #+filetags: :web:ui:tenancy:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
 #+branch: feature/open-a-tenant-in-place
-#+pr:
+#+pr: 2600
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2600][#2600]] | [web] Open a tenant in place |
 
 * Review
 

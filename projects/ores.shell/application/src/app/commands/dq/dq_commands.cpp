@@ -18,6 +18,7 @@
 #include "ores.shell/app/commands/dq/lei_entity_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_entity_summary_operations_commands.hpp"
 #include "ores.shell/app/commands/dq/counterparty_alias_commands.hpp"
+#include "ores.shell/app/commands/dq/netting_set_alias_commands.hpp"
 #include "ores.shell/app/commands/dq/lei_relationship_commands.hpp"
 #include "ores.shell/app/commands/dq/methodology_commands.hpp"
 #include "ores.shell/app/commands/dq/nature_dimension_commands.hpp"
@@ -51,6 +52,7 @@ void dq_commands::register_commands(cli::Menu& root_menu,
     lei_entity_commands::register_commands(root_menu, session);
     lei_entity_summary_operations_commands::register_commands(root_menu, session);
     counterparty_alias_commands::register_commands(root_menu, session);
+    netting_set_alias_commands::register_commands(root_menu, session);
     lei_relationship_commands::register_commands(root_menu, session);
     methodology_commands::register_commands(root_menu, session);
     nature_dimension_commands::register_commands(root_menu, session);

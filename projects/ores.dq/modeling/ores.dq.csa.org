@@ -1,0 +1,410 @@
+:PROPERTIES:
+:ID: D312E6C5-AC0C-412C-B7F1-6027237F8C29
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.csa
+#+description: Codegen entity model for the dq csa staging table: a credit support annex staged with the code of the netting set it collateralises.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+entity_singular: csa
+#+entity_plural: csas
+#+entity_title: CSA
+#+brief: A credit support annex staged with the code of the netting set it collateralises.
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The credit support annex of a netting set, with the terms ORE reads from a
+netting set definition. The set is named by code; publishing resolves it in
+the target tenant. The eligible collateral currencies are a comma separated
+list in posting order.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** netting_set_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The code of the netting set the CSA collateralises.
+
+#+begin_src cpp :name generator
+std::string("NS-0001")
+#+end_src
+
+** is_active
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    bool
+:nullable:    false
+:END:
+
+ORE's ActiveCSAFlag.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** bilateral
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+Bilateral, CallOnly or PostOnly.
+
+#+begin_src cpp :name generator
+std::string("Bilateral")
+#+end_src
+
+** csa_currency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The currency the CSA is held in.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** index_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The index collateral accrues at.
+
+#+begin_src cpp :name generator
+std::string("EUR-ESTER")
+#+end_src
+
+** threshold_pay
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The exposure the firm may owe before it must post.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** threshold_receive
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The exposure the counterparty may owe before it must post.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** minimum_transfer_amount_pay
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The smallest amount the firm transfers.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** minimum_transfer_amount_receive
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The smallest amount the counterparty transfers.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** independent_amount_held
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The independent amount held.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** independent_amount_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+FIXED, as ORE names it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** call_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+How often the firm calls for collateral.
+
+#+begin_src cpp :name generator
+std::string("1D")
+#+end_src
+
+** post_frequency
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+How often the firm posts collateral.
+
+#+begin_src cpp :name generator
+std::string("1D")
+#+end_src
+
+** margin_period_of_risk
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+ORE's margin period of risk.
+
+#+begin_src cpp :name generator
+std::string("2W")
+#+end_src
+
+** collateral_compounding_spread_receive
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The spread on collateral received.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** collateral_compounding_spread_pay
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+The spread on collateral posted.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** apply_initial_margin
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+ORE's ApplyInitialMargin.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** initial_margin_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+Bilateral, CallOnly or PostOnly.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calculate_im_amount
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+ORE's CalculateIMAmount.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** calculate_vm_amount
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+ORE's CalculateVMAmount.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** non_exempt_im_regulations
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+ORE's NonExemptIMRegulations.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** eligible_currencies
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The eligible collateral currencies, comma separated, in posting order.
+
+#+begin_src cpp :name generator
+std::string("EUR,USD")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_csas_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: csa
+:entity_plural_short:   csas
+:entity_singular_words: csa
+:entity_plural_words:   csas
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: csa
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| netting_set_code | Netting Set |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_class:                dq::domain::csa
+:collection_name:             csas
+:key_field:                   netting_set_code
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:END:
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| NettingSetCode | netting_set_code | Netting Set | string | 150 |
+
+* Notes
+
+Bound to the artefact staging only profile: the table is staging, and its
+artefact type publishes through =ores_refdata_publish_csas_from_dq_fn=.
+
+* See also
+
+- [[id:A66D44D3-493E-46D8-BE41-F70271F003C1][ores.dq.counterparty_alias]] — the staging model this one follows.

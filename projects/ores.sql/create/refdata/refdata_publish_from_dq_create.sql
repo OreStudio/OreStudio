@@ -2207,6 +2207,365 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
+-- Netting Agreements, Netting Sets, CSAs and Netting Set Aliases
+-- =============================================================================
+
+/**
+ * The party a party-scoped publish writes for.
+ *
+ * The party named by the publish parameters, else the tenant's root party:
+ * the one with no parent that is not the system party. Null when the tenant
+ * holds no such party, as it does while a tenant is provisioned before its
+ * party exists.
+ */
+create or replace function ores_refdata_publish_target_party_fn(
+    p_target_tenant_id uuid,
+    p_params jsonb
+)
+returns uuid as $$
+    select coalesce(
+        (p_params ->> 'party_id')::uuid,
+        (select id from ores_refdata_parties_tbl
+         where tenant_id = p_target_tenant_id
+           and parent_party_id is null
+           and party_category <> 'System'
+           and valid_to = ores_utility_infinity_timestamp_fn()
+         order by id
+         limit 1));
+$$ language sql stable security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes netting agreements from a DQ dataset to a party.
+ *
+ * Each staged agreement is written between the target party and the
+ * counterparty that holds the staged LEI in the target tenant. An agreement
+ * whose number the tenant already holds, and one whose LEI names no
+ * counterparty, are skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_netting_agreements_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_netting_agreements_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_netting_agreements_tbl (
+        tenant_id, id, version, agreement_number, party_id, counterparty_id,
+        agreement_type, governing_law, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct on (a.agreement_number)
+        p_target_tenant_id, gen_random_uuid(), 0, a.agreement_number, v_party_id,
+        ci.counterparty_id, a.agreement_type, a.governing_law, a.description,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_netting_agreements_artefact_tbl a
+    join ores_refdata_counterparty_identifiers_tbl ci
+      on ci.tenant_id = p_target_tenant_id
+     and ci.id_scheme = 'LEI'
+     and ci.id_value = a.counterparty_lei
+     and ci.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_netting_agreements_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.agreement_number = a.agreement_number
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+    order by a.agreement_number, ci.counterparty_id;
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes netting sets from a DQ dataset to a party.
+ *
+ * A staged set is written for the target party. A set opened under an
+ * agreement takes the agreement's counterparty; the agreement is found by
+ * number among the party's agreements. A set with no agreement takes the
+ * counterparty holding its staged LEI, if it names one. A set whose code the
+ * tenant already holds, and one whose agreement or LEI does not resolve, are
+ * skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_netting_sets_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_netting_sets_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_netting_sets_tbl (
+        tenant_id, id, version, code, netting_agreement_id, counterparty_id, party_id,
+        call_type, initial_margin_type, risk_weight, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct on (s.code)
+        p_target_tenant_id, gen_random_uuid(), 0, s.code, ag.id,
+        coalesce(ag.counterparty_id, ci.counterparty_id), v_party_id,
+        s.call_type, s.initial_margin_type, s.risk_weight, s.description,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_netting_sets_artefact_tbl s
+    left join ores_refdata_netting_agreements_tbl ag
+      on ag.tenant_id = p_target_tenant_id
+     and ag.party_id = v_party_id
+     and ag.agreement_number = s.agreement_number
+     and ag.valid_to = ores_utility_infinity_timestamp_fn()
+    left join ores_refdata_counterparty_identifiers_tbl ci
+      on ci.tenant_id = p_target_tenant_id
+     and ci.id_scheme = 'LEI'
+     and ci.id_value = s.counterparty_lei
+     and ci.valid_to = ores_utility_infinity_timestamp_fn()
+    where s.dataset_id = p_dataset_id
+      and (s.agreement_number is null or ag.id is not null)
+      and (s.counterparty_lei is null or ci.counterparty_id is not null)
+      and not exists (
+        select 1 from ores_refdata_netting_sets_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.code = s.code
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+    order by s.code, ci.counterparty_id;
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes CSAs from a DQ dataset into a tenant.
+ *
+ * Each staged CSA is written for the netting set holding its code in the
+ * target tenant, with its eligible currencies in the staged order. A set that
+ * already holds a CSA, and a code that names no set, are skipped. A publish
+ * only inserts.
+ */
+create or replace function ores_refdata_publish_csas_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_modified_by text := coalesce(ores_iam_current_service_fn(), current_user);
+    v_commentary text;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    select count(*) into v_staged
+    from ores_dq_csas_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    create temp table if not exists ores_publish_csa_map (
+        csa_id uuid, netting_set_code text
+    ) on commit drop;
+    truncate ores_publish_csa_map;
+
+    insert into ores_publish_csa_map (csa_id, netting_set_code)
+    select gen_random_uuid(), c.netting_set_code
+    from ores_dq_csas_artefact_tbl c
+    join ores_refdata_netting_sets_tbl ns
+      on ns.tenant_id = p_target_tenant_id
+     and ns.code = c.netting_set_code
+     and ns.valid_to = ores_utility_infinity_timestamp_fn()
+    where c.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_csas_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.netting_set_id = ns.id
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    insert into ores_refdata_csas_tbl (
+        tenant_id, id, version, netting_set_id, is_active, bilateral, csa_currency,
+        index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
+        minimum_transfer_amount_receive, independent_amount_held,
+        independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
+        collateral_compounding_spread_receive, collateral_compounding_spread_pay,
+        apply_initial_margin, initial_margin_type, calculate_im_amount,
+        calculate_vm_amount, non_exempt_im_regulations,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select p_target_tenant_id, m.csa_id, 0, ns.id, c.is_active, c.bilateral,
+        c.csa_currency, c.index_name, c.threshold_pay, c.threshold_receive,
+        c.minimum_transfer_amount_pay, c.minimum_transfer_amount_receive,
+        c.independent_amount_held, c.independent_amount_type, c.call_frequency,
+        c.post_frequency, c.margin_period_of_risk,
+        c.collateral_compounding_spread_receive, c.collateral_compounding_spread_pay,
+        c.apply_initial_margin, c.initial_margin_type, c.calculate_im_amount,
+        c.calculate_vm_amount, c.non_exempt_im_regulations,
+        v_modified_by, current_user, 'system.external_data_import', v_commentary
+    from ores_publish_csa_map m
+    join ores_dq_csas_artefact_tbl c
+      on c.dataset_id = p_dataset_id
+     and c.netting_set_code = m.netting_set_code
+    join ores_refdata_netting_sets_tbl ns
+      on ns.tenant_id = p_target_tenant_id
+     and ns.code = m.netting_set_code
+     and ns.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_inserted = row_count;
+
+    insert into ores_refdata_csa_eligible_currencies_tbl (
+        tenant_id, id, version, csa_id, currency_code, position,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select p_target_tenant_id, gen_random_uuid(), 0, m.csa_id, trim(e.currency_code),
+        (e.ordinal - 1)::integer,
+        v_modified_by, current_user, 'system.external_data_import', v_commentary
+    from ores_publish_csa_map m
+    join ores_dq_csas_artefact_tbl c
+      on c.dataset_id = p_dataset_id
+     and c.netting_set_code = m.netting_set_code
+    cross join lateral unnest(string_to_array(c.eligible_currencies, ','))
+        with ordinality as e(currency_code, ordinal)
+    where trim(e.currency_code) <> '';
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes netting set aliases from a DQ dataset into a tenant.
+ *
+ * Each alias is written, under its scheme, as an identifier of the netting set
+ * holding the staged code in the target tenant. A name already held, and a
+ * code that names no set, are skipped. A publish only inserts.
+ */
+create or replace function ores_refdata_publish_netting_set_aliases_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_netting_set_aliases_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_netting_set_identifiers_tbl (
+        tenant_id, id, version, netting_set_id, id_scheme, id_value, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct on (a.id_scheme, a.id_value)
+        p_target_tenant_id, gen_random_uuid(), 0, ns.id, a.id_scheme, a.id_value,
+        a.description,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_netting_set_aliases_artefact_tbl a
+    join ores_refdata_netting_sets_tbl ns
+      on ns.tenant_id = p_target_tenant_id
+     and ns.code = a.netting_set_code
+     and ns.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_netting_set_identifiers_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.id_scheme = a.id_scheme
+          and o.id_value = a.id_value
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+    order by a.id_scheme, a.id_value, ns.id;
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
 -- LEI Counterparties
 -- =============================================================================
 

@@ -124,6 +124,12 @@ BEGIN
         'Calendar reference data: calendar type classifications and ORE/QuantLib business-day/holiday calendars.'
     );
 
+    PERFORM ores_dq_subject_areas_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'Reference Data',
+        'Netting and Collateral',
+        'Credit risk mitigation reference data: master netting agreements, netting sets, credit support annexes and their aliases.'
+    );
+
     -- =============================================================================
     -- Summary
     -- =============================================================================

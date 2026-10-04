@@ -1360,3 +1360,7 @@ tangled into the runnable script library
 * Netting Set Identifiers
 
 - [[id:5906C072-05A5-5A3E-B9AB-5B34089834D4][How do I run the netting_set_identifiers commands from the shell?]]
+
+* Netting Set Aliases
+
+- [[id:759255D2-7920-5CA2-BCFF-DBD057DA8740][How do I run the netting_set_aliases commands from the shell?]]

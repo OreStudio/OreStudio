@@ -8,7 +8,7 @@
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-access-screens
-#+pr:
+#+pr: 2617
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2617][#2617]] | [web] Build the access screens |
 
 * Review
 

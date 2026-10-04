@@ -104,12 +104,15 @@ way.
 - No mail: there is no SMTP client, no mail service and no template pipeline
   ([[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][the password recovery capture]]).
 
-** Open questions
+** Decisions
 
-1. Its own component, or beside the approval requests in one component.
-2. Which mail transport, and how its credentials are held.
-3. Whether a permission audience is resolved when raised (proposed) or when read.
-4. The retention period, and whether it is per tenant.
+1. *One component.* The notifications live in =ores.inbox=, beside the approval
+   requests, and know nothing of them.
+2. *In the application first.* The first build has the bell, the list, read
+   state and live arrival. Mail, with its transport and credentials, follows,
+   first for password recovery.
+3. *Open:* whether a permission audience is resolved when raised (proposed) or
+   when read, and the retention period.
 
 * See also
 

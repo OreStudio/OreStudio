@@ -55,7 +55,7 @@ record's change event; the record does not need the workflow.
 | =tenant_id= | The tenant it belongs to; row-level security scopes every read |
 | =kind= | What is asked, from a registered list: =iam.role_grant=, =trading.operational_authorisation=, ... |
 | =subject_ref= | What the request is about, as the owning component names it: an account and a role, a trade id |
-| =payload= | The kind's own detail, as JSON the kind defines and validates |
+| (detail) | The kind's own detail, in the kind's own table keyed by the request's id |
 | =requested_by=, =requested_at= | Who asked and when; a system may ask, as an automated feed does |
 | =reason= | Why they ask, in their words |
 | =state= | Where it is: see the lifecycle |
@@ -116,7 +116,7 @@ deferred four-eyes item, almost all of the queue is the same for every kind.
 
 | Part | Generic | What a kind adds |
 |------+---------+------------------|
-| The record and its history | Who asked, when, why, state, who decided, when and why | Its =subject_ref= and =payload= shape |
+| The record and its history | Who asked, when, why, state, who decided, when and why | Its =subject_ref= and its detail table |
 | The lifecycle | Waiting, approved, refused, withdrawn, expired; a refusal is final; an approval is reversed with a comment | Whether =held= is allowed, and its reasons (a trade's handover markers) |
 | Four-eyes | The decider is not the asker | A stronger rule, such as another desk or a second decider |
 | Who may decide | A permission per kind | The permission's code |
@@ -126,26 +126,26 @@ deferred four-eyes item, almost all of the queue is the same for every kind.
 | One open request per subject | Refused while one waits | What "the same subject" means |
 | Applying the decision | The decision publishes a change event | The operation that applies it, in the owning component |
 | Raising a request | A person asks, or a system asks on their behalf | Whether the system raises it (a trade on arrival) and whether it can decide on its own (auto-authorisation) |
-| The queue | One paged read: kind, state, subject, age; oldest first; scoped by tenant and the decider's permissions | Its own columns from the payload, its grouping, highlighted changes |
+| The queue | One paged read: kind, state, subject, age; oldest first; scoped by tenant and the decider's permissions | Its own columns from its detail table, its grouping, highlighted changes |
 | Reports | Time waiting, decisions by person, what stayed open overnight | A kind's own reports, such as held-over trades |
 | Notifications | Tell the deciders a request waits; tell the asker the decision | The words |
 
-So a kind is a small declaration: its name, its subject and payload, the
+So a kind is a small declaration: its name, its subject and detail table, the
 permission that decides it, its comment and hold rules, its expiry, and the
 operation that applies an approval. The record, the lifecycle, the rules, the
 queue, the reports and the notifications are written once.
 
 ** Where it lives
 
-The record belongs to no single business area, and every component may register
-a kind, so it is its own small component, or a part of =ores.workflow=, which
-already owns long-running processes and their events. That choice is open.
+In one new component, =ores.inbox=, beside the notifications: the things that
+wait for a person and the things a person is told. It belongs to no business
+area, and every component may register a kind. Decided on 2026-10-04.
 
 ** The queue
 
 The queue is one paged read of the record, filtered by kind, state and subject,
 ordered oldest first, and limited by row-level security and the decider's
-permissions. A screen shows a kind's own columns from the payload. The trade
+permissions. A screen shows a kind's own columns from its detail table. The trade
 queue's grouping, highlighted changes and reports are views over this read.
 
 ** The caution about trades
@@ -165,14 +165,16 @@ who asked what was decided, is the
 [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][notification subsystem's]] first use, and the record's
 change events are what it listens to.
 
-** Open questions
+** Decisions
 
-1. Its own component, or a part of =ores.workflow=.
-2. Whether =payload= is free JSON validated by the kind, or a typed table per kind
-   beside a common header.
-3. The expiry default, and whether expiry is a setting per kind or per tenant.
-4. Whether a reversal of an approval is a state of the same request or a request
-   of its own kind.
+1. *One component.* =ores.inbox= holds the approval record and the
+   notifications.
+2. *A typed table per kind.* The record is a common header; each kind keeps its
+   detail in a table of its own, keyed by the request's id, in the component
+   that owns the kind. The role request's detail (the account and the role)
+   lives in IAM. A new kind is a schema change, which buys a checked shape.
+3. *Open:* the expiry default, and whether a reversal of an approval is a state
+   of the same request or a request of its own kind.
 
 * See also
 

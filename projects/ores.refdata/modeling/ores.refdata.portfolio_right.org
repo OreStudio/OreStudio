@@ -98,6 +98,7 @@ std::string("read")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_portfolio_rights_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

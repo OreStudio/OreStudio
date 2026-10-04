@@ -70,6 +70,7 @@ ctx.generate_uuid()
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_sandbox_members_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

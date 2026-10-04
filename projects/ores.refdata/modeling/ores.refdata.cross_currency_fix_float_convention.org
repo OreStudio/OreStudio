@@ -273,6 +273,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_cross_currency_fix_float_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

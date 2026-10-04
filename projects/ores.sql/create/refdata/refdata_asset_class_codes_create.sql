@@ -194,3 +194,20 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Asset Class Code
+-- =============================================================================
+alter table ores_refdata_asset_class_codes_tbl enable row level security;
+
+drop policy if exists asset_class_codes_tbl_tenant_isolation_policy
+    on ores_refdata_asset_class_codes_tbl;
+
+create policy asset_class_codes_tbl_tenant_isolation_policy
+on ores_refdata_asset_class_codes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

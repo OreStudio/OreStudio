@@ -112,6 +112,7 @@ false
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_ibor_index_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

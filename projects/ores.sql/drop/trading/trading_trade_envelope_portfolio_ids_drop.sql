@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists trade_envelope_portfolio_ids_tbl_tenant_isolation_policy on "ores_trading_trade_envelope_portfolio_ids_tbl";
 drop rule if exists ores_trading_trade_envelope_portfolio_ids_delete_rule on "ores_trading_trade_envelope_portfolio_ids_tbl";
 drop trigger if exists ores_trading_trade_envelope_portfolio_ids_insert_trg on "ores_trading_trade_envelope_portfolio_ids_tbl";
 drop function if exists ores_trading_trade_envelope_portfolio_ids_insert_fn;

@@ -141,6 +141,7 @@ ctx.random_int(1, 30)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_tenors_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Insert trigger

@@ -160,6 +160,7 @@ std::string("federalreserve.gov")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_calendar_events_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

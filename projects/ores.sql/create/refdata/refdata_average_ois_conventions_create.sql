@@ -153,3 +153,20 @@ on delete to "ores_refdata_average_ois_conventions_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Averaging OIS Convention
+-- =============================================================================
+alter table ores_refdata_average_ois_conventions_tbl enable row level security;
+
+drop policy if exists average_ois_conventions_tbl_tenant_isolation_policy
+    on ores_refdata_average_ois_conventions_tbl;
+
+create policy average_ois_conventions_tbl_tenant_isolation_policy
+on ores_refdata_average_ois_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

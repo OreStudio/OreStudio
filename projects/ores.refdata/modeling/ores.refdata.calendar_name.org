@@ -70,6 +70,7 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_calendar_names_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

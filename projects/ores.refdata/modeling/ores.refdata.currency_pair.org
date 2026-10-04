@@ -97,6 +97,7 @@ std::string("major")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currency_pairs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

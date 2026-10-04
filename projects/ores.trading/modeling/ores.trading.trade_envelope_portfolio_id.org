@@ -76,6 +76,7 @@ std::string("PORTFOLIO-1")
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_envelope_portfolio_ids_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

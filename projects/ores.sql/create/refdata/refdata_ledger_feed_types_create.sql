@@ -196,3 +196,20 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Ledger Feed Type
+-- =============================================================================
+alter table ores_refdata_ledger_feed_types_tbl enable row level security;
+
+drop policy if exists ledger_feed_types_tbl_tenant_isolation_policy
+    on ores_refdata_ledger_feed_types_tbl;
+
+create policy ledger_feed_types_tbl_tenant_isolation_policy
+on ores_refdata_ledger_feed_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

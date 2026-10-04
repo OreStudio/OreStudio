@@ -139,3 +139,20 @@ on delete to "ores_trading_activity_categories_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Activity Category
+-- =============================================================================
+alter table ores_trading_activity_categories_tbl enable row level security;
+
+drop policy if exists activity_categories_tbl_tenant_isolation_policy
+    on ores_trading_activity_categories_tbl;
+
+create policy activity_categories_tbl_tenant_isolation_policy
+on ores_trading_activity_categories_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

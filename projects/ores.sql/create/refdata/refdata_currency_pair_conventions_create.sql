@@ -200,3 +200,20 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Currency Pair Convention
+-- =============================================================================
+alter table ores_refdata_currency_pair_conventions_tbl enable row level security;
+
+drop policy if exists currency_pair_conventions_tbl_tenant_isolation_policy
+    on ores_refdata_currency_pair_conventions_tbl;
+
+create policy currency_pair_conventions_tbl_tenant_isolation_policy
+on ores_refdata_currency_pair_conventions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

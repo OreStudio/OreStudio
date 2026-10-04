@@ -74,6 +74,7 @@ std::string("DE")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currency_countries_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Repository

@@ -234,6 +234,7 @@ false
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_equity_volatility_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

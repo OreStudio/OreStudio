@@ -155,3 +155,20 @@ on delete to "ores_trading_bond_repos_tbl" do instead (
       and trade_id = OLD.trade_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Bond Repo
+-- =============================================================================
+alter table ores_trading_bond_repos_tbl enable row level security;
+
+drop policy if exists bond_repos_tbl_tenant_isolation_policy
+    on ores_trading_bond_repos_tbl;
+
+create policy bond_repos_tbl_tenant_isolation_policy
+on ores_trading_bond_repos_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

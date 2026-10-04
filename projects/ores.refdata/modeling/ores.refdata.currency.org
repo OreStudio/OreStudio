@@ -373,6 +373,7 @@ The ISO import carries =holiday_calendar=, which =refdata_currency_calendars_see
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currencies_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

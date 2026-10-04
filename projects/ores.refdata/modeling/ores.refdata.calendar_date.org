@@ -118,6 +118,7 @@ std::string("quantlib_computed")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_calendar_dates_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Repository

@@ -137,6 +137,7 @@ std::string("GBP")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_zero_inflation_index_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

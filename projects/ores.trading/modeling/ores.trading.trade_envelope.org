@@ -107,6 +107,7 @@ true
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_envelopes_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

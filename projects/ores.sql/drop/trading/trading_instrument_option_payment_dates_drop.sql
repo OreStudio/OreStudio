@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists instrument_option_payment_dates_tbl_tenant_isolation_policy on "ores_trading_instrument_option_payment_dates_tbl";
 drop rule if exists ores_trading_instrument_option_payment_dates_delete_rule on "ores_trading_instrument_option_payment_dates_tbl";
 drop trigger if exists ores_trading_instrument_option_payment_dates_insert_trg on "ores_trading_instrument_option_payment_dates_tbl";
 drop function if exists ores_trading_instrument_option_payment_dates_insert_fn;

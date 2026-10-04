@@ -337,6 +337,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_fx_volatility_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

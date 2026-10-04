@@ -186,6 +186,7 @@ trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_position_option_underlyings_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

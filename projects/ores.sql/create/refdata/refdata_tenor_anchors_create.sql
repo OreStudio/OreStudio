@@ -185,3 +185,20 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Tenor Anchor
+-- =============================================================================
+alter table ores_refdata_tenor_anchors_tbl enable row level security;
+
+drop policy if exists tenor_anchors_tbl_tenant_isolation_policy
+    on ores_refdata_tenor_anchors_tbl;
+
+create policy tenor_anchors_tbl_tenant_isolation_policy
+on ores_refdata_tenor_anchors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

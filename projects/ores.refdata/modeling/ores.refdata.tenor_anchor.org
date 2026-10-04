@@ -78,6 +78,7 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_tenor_anchors_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

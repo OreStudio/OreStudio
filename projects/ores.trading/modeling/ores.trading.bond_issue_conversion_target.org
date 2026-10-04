@@ -87,6 +87,7 @@ Number of shares per bond face value at conversion. The row weight.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_issue_conversion_targets_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

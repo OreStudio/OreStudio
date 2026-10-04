@@ -226,3 +226,20 @@ begin
     ) and ores_refdata_account_is_live_fn(p_account_id);
 end;
 $$ language plpgsql stable set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Portfolio Right
+-- =============================================================================
+alter table ores_refdata_portfolio_rights_tbl enable row level security;
+
+drop policy if exists portfolio_rights_tbl_tenant_isolation_policy
+    on ores_refdata_portfolio_rights_tbl;
+
+create policy portfolio_rights_tbl_tenant_isolation_policy
+on ores_refdata_portfolio_rights_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

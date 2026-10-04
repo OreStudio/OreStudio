@@ -715,6 +715,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_commodity_future_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

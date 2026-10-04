@@ -208,3 +208,20 @@ on delete to "ores_refdata_counterparty_identifiers_tbl" do instead (
         'counterparty_identifier'
     );
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Counterparty Identifier
+-- =============================================================================
+alter table ores_refdata_counterparty_identifiers_tbl enable row level security;
+
+drop policy if exists counterparty_identifiers_tbl_tenant_isolation_policy
+    on ores_refdata_counterparty_identifiers_tbl;
+
+create policy counterparty_identifiers_tbl_tenant_isolation_policy
+on ores_refdata_counterparty_identifiers_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

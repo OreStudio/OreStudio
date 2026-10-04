@@ -178,6 +178,7 @@ std::optional<std::string>("Test sandbox")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_sandboxes_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

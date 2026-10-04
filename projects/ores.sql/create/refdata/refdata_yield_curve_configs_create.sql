@@ -180,3 +180,20 @@ on delete to "ores_refdata_yield_curve_configs_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Yield Curve Config
+-- =============================================================================
+alter table ores_refdata_yield_curve_configs_tbl enable row level security;
+
+drop policy if exists yield_curve_configs_tbl_tenant_isolation_policy
+    on ores_refdata_yield_curve_configs_tbl;
+
+create policy yield_curve_configs_tbl_tenant_isolation_policy
+on ores_refdata_yield_curve_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

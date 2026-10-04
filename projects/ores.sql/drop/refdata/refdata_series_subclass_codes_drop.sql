@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists series_subclass_codes_tbl_tenant_isolation_policy on "ores_refdata_series_subclass_codes_tbl";
 drop rule if exists ores_refdata_series_subclass_codes_delete_rule on "ores_refdata_series_subclass_codes_tbl";
 drop trigger if exists ores_refdata_series_subclass_codes_insert_trg on "ores_refdata_series_subclass_codes_tbl";
 drop function if exists ores_refdata_series_subclass_codes_insert_fn;

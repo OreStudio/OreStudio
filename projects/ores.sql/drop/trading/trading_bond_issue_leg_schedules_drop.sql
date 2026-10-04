@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists bond_issue_leg_schedules_tbl_tenant_isolation_policy on "ores_trading_bond_issue_leg_schedules_tbl";
 drop rule if exists ores_trading_bond_issue_leg_schedules_delete_rule on "ores_trading_bond_issue_leg_schedules_tbl";
 drop trigger if exists ores_trading_bond_issue_leg_schedules_insert_trg on "ores_trading_bond_issue_leg_schedules_tbl";
 drop function if exists ores_trading_bond_issue_leg_schedules_insert_fn;

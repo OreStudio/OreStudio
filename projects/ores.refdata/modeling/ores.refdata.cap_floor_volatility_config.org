@@ -562,6 +562,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_cap_floor_volatility_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

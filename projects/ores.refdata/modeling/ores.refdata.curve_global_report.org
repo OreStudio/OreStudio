@@ -274,6 +274,7 @@ The family's place in the document, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_global_reports_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

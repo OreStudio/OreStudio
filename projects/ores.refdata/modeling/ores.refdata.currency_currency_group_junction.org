@@ -73,6 +73,7 @@ std::string("G11")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currency_currency_groups_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Repository

@@ -228,6 +228,7 @@ what the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_quotes_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

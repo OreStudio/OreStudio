@@ -132,6 +132,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_intraday_power_curve_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

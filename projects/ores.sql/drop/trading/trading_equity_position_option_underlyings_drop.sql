@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists equity_position_option_underlyings_tbl_tenant_isolation_policy on "ores_trading_equity_position_option_underlyings_tbl";
 drop rule if exists ores_trading_equity_position_option_underlyings_delete_rule on "ores_trading_equity_position_option_underlyings_tbl";
 drop trigger if exists ores_trading_equity_position_option_underlyings_insert_trg on "ores_trading_equity_position_option_underlyings_tbl";
 drop function if exists ores_trading_equity_position_option_underlyings_insert_fn;

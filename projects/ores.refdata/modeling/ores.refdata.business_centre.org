@@ -125,6 +125,7 @@ std::string("NONE")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_business_centres_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

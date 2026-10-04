@@ -65,6 +65,7 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_activity_categories_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

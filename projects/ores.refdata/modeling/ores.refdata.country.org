@@ -172,6 +172,7 @@ The staging key.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_countries_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

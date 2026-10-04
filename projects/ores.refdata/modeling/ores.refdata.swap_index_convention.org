@@ -76,6 +76,7 @@ std::string("TARGET")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_swap_index_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

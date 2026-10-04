@@ -107,6 +107,7 @@ false
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_types_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

@@ -127,6 +127,7 @@ std::string("Test exception")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_calendar_exceptions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

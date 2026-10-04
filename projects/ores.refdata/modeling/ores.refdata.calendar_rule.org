@@ -230,6 +230,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_calendar_rules_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

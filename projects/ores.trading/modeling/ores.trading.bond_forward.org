@@ -184,6 +184,7 @@ trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_forwards_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

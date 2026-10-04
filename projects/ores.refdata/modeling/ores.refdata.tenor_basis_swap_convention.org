@@ -236,6 +236,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_tenor_basis_swap_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

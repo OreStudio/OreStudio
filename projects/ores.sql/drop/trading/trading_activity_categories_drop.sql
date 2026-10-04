@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists activity_categories_tbl_tenant_isolation_policy on "ores_trading_activity_categories_tbl";
 drop rule if exists ores_trading_activity_categories_delete_rule on "ores_trading_activity_categories_tbl";
 drop trigger if exists ores_trading_activity_categories_insert_trg on "ores_trading_activity_categories_tbl";
 drop function if exists ores_trading_activity_categories_insert_fn;

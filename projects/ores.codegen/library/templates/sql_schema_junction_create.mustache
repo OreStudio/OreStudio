@@ -201,4 +201,23 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
 );
+{{#junction.sql.rls_party_isolation}}
+
+-- Party isolation (restrictive, ANDed with the tenant policy). A session with
+-- no party context (visible_party_ids is NULL) passes through.
+drop policy if exists {{junction.name}}_tbl_party_isolation_policy
+    on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl";
+
+create policy {{junction.name}}_tbl_party_isolation_policy
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+{{/junction.sql.rls_party_isolation}}
 {{/junction.sql.rls_tenant_isolation}}

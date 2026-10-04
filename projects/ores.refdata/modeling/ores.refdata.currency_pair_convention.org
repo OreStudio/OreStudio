@@ -190,6 +190,7 @@ The import carries =advance_calendar=, a comma-joined list of calendar codes. =o
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currency_pair_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

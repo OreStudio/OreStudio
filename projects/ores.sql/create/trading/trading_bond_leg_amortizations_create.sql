@@ -170,3 +170,20 @@ on delete to "ores_trading_bond_leg_amortizations_tbl" do instead (
       and trade_id = OLD.trade_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Bond Leg Amortization
+-- =============================================================================
+alter table ores_trading_bond_leg_amortizations_tbl enable row level security;
+
+drop policy if exists bond_leg_amortizations_tbl_tenant_isolation_policy
+    on ores_trading_bond_leg_amortizations_tbl;
+
+create policy bond_leg_amortizations_tbl_tenant_isolation_policy
+on ores_trading_bond_leg_amortizations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

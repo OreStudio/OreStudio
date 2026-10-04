@@ -145,3 +145,20 @@ on delete to "ores_refdata_curve_sections_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Curve Section
+-- =============================================================================
+alter table ores_refdata_curve_sections_tbl enable row level security;
+
+drop policy if exists curve_sections_tbl_tenant_isolation_policy
+    on ores_refdata_curve_sections_tbl;
+
+create policy curve_sections_tbl_tenant_isolation_policy
+on ores_refdata_curve_sections_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

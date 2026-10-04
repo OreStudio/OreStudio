@@ -142,6 +142,7 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_payment_frequencies_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

@@ -101,6 +101,7 @@ boost::uuids::nil_uuid()
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_configurations_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

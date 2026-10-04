@@ -17,14 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_domain_entity_drop.mustache
- * To modify, update the template and regenerate.
- */
 
-drop policy if exists commodity_curve_configs_tbl_tenant_isolation_policy on "ores_refdata_commodity_curve_configs_tbl";
-drop rule if exists ores_refdata_commodity_curve_configs_delete_rule on "ores_refdata_commodity_curve_configs_tbl";
-drop trigger if exists ores_refdata_commodity_curve_configs_insert_trg on "ores_refdata_commodity_curve_configs_tbl";
-drop function if exists ores_refdata_commodity_curve_configs_insert_fn;
-drop table if exists "ores_refdata_commodity_curve_configs_tbl";
+drop function if exists ores_iam_current_tenant_id_fn cascade;
+drop function if exists ores_iam_current_party_id_fn cascade;
+drop function if exists ores_iam_current_actor_fn cascade;
+drop function if exists ores_iam_current_service_fn cascade;
+drop function if exists ores_iam_visible_party_ids_fn cascade;

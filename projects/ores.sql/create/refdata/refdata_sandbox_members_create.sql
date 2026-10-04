@@ -182,3 +182,20 @@ on delete to "ores_refdata_sandbox_members_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Sandbox Member
+-- =============================================================================
+alter table ores_refdata_sandbox_members_tbl enable row level security;
+
+drop policy if exists sandbox_members_tbl_tenant_isolation_policy
+    on ores_refdata_sandbox_members_tbl;
+
+create policy sandbox_members_tbl_tenant_isolation_policy
+on ores_refdata_sandbox_members_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

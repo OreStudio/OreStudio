@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists ascots_tbl_tenant_isolation_policy on "ores_trading_ascots_tbl";
 drop rule if exists ores_trading_ascots_delete_rule on "ores_trading_ascots_tbl";
 drop trigger if exists ores_trading_ascots_insert_trg on "ores_trading_ascots_tbl";
 drop function if exists ores_trading_ascots_insert_fn;

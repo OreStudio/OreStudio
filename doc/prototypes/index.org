@@ -28,6 +28,7 @@ that describes it.
 | [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen]] | One profile screen is not in dispute; where the save boundary sits is. One Save, a save per panel, or the panels as rail steps — and how a read-only panel and a proposed reporting line read. | [[file:profile/][Profile screen]] |
 | [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell]] | The shell the journeys hang from: a menu of areas, the cards it opens, and the person's own journeys under their name — seen through the four sign-ins that decide the mode. | [[file:navigation/][Shell]] |
 | [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen]] | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][Home screen]] |
+| [[id:A5C3E9B1-7D24-4F6A-9B8E-2C1D0F3E5A71][Access screens]] | Access in a person's own words: a member's own roles and a "Can I…?" answer, the administrator giving and taking away roles with a reason, and a role catalogue whose permissions are a grid by area rather than a list of 890 codes. | [[file:access/][Access screens]] |
 
 * Adding a prototype
 

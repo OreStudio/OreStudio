@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: A5C3E9B1-7D24-4F6A-9B8E-2C1D0F3E5A71
+:END:
+#+title: Access screens prototype
+#+description: The three access journeys as screens: a member's own access with a "Can I…?" answer, the administrator's grant and revoke with a reason, and the role catalogue with a permission grid by area, on the deployment's real roles and permission catalogue.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:access:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+* Summary
+
+The access journeys had wireframes and no prototype. The wireframes draw the
+permissions as a flat list of codes, which the real catalogue does not
+survive: it holds 890 permissions in 17 areas. This prototype draws the three
+original access journeys on that real catalogue and on the real seeded roles,
+with mock people, so it is judged against the data the screens will hold.
+
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]]: *My access*,
+  from the person's own menu.
+- [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]]:
+  *People*, then a person.
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]]:
+  *Roles*, then a role.
+
+It is throwaway. It is not production code and it reads no service.
+
+Open the [[file:access/][access screens]]. A link can open one screen
+directly, for example =access/#persona=tenant&screen=role&role=Operations=.
+
+* Detail
+
+** The verdict
+
+Not yet reviewed.
+
+** What it argues
+
+| Wireframe | This prototype | Why |
+|-----------+----------------+-----|
+| Effective permissions as a list of codes | A grid per area: what, then Read, Write and Delete, and the rare other actions beside them | 890 codes in 17 areas, and almost every one reads, writes or deletes one thing |
+| The member reads the whole list | *Can I…?* answers a question and names the role that allows it | A member wants an answer, not a catalogue |
+| A role holding =*= lists every code | It says *Everything* | Ticks for 890 codes hide the one fact that matters |
+| Every role in the picker | The 19 service roles are hidden unless asked for | They belong to the platform's services, not to people |
+| Add selected, Remove selected | *Give a role* and *Take away*, each with a reason | The person's words; the grant row records who, when and why |
+| Save role | The save shows what it adds and removes, and who holds the role | One save changes access for everyone who holds it |
+| Changes take effect on the next sign-in | Within 30 minutes, when the sign-in renews | Refresh reads the permissions again |
+
+Two small guards are drawn: a person cannot take their own administration
+away, and a role that people hold cannot be deleted.
+
+** What is real and what is not
+
+The permission catalogue, its descriptions and the eight human roles with
+their bundles are exported from the deployment's seed data. The people, their
+grants and the reasons are mock.
+
+The server does not yet support everything drawn:
+
+- *A reason on giving and taking away.* =iam.v1.roles.assign= and
+  =iam.v1.roles.revoke= carry an account and a role only. The grant row has the
+  columns; the requests need the reason and the commentary.
+- *A guard on taking away one's own administration, and on deleting a held
+  role.* Neither exists on the server.
+
+** Where the code lives
+
+=doc/prototypes/access/index.html=: one file, plain HTML, CSS and JavaScript,
+no framework and no build step. The site build copies the directory through
+=ores-deploy-web-app=, beside the other prototypes.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen prototype]] — the shell these screens sit in.

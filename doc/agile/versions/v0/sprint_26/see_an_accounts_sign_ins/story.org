@@ -21,11 +21,11 @@ An administrator who opens an account reads what kind of account it is, whether 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | An administrator opens any account to its kind, sign-in state and sessions, newest first; the system administrator reads the system tenant's service accounts this way. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ An administrator who opens an account reads what kind of account it is, whether 
 |------+-------+-------+-----+-------------|
 | [[id:D8F93A88-DE13-4497-AE01-BF540A9822B1][Scaffold story: See an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:84D5E596-DEF1-4B16-9D64-951F582B3DE4][Extend the journeys for an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: See an account's sign-ins |
-| [[id:60FAB4B6-0561-4C95-893D-7D1861934752][Show an account's sign-ins]] | STARTED | 2026-10-04 | | List one account's sessions on the server, newest first, and open an account from People or a tenant's People tab to its type, sign-in state and sessions. |
+| [[id:60FAB4B6-0561-4C95-893D-7D1861934752][Show an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | List one account's sessions on the server, newest first, and open an account from People or a tenant's People tab to its type, sign-in state and sessions. |
 
 * Decisions
 

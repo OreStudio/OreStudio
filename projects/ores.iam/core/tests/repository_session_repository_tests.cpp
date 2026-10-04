@@ -20,7 +20,9 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/session_generator.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.iam.core/service/session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -29,6 +31,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 
 namespace {
 
@@ -93,4 +96,41 @@ TEST_CASE("read_nonexistent_session", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     CHECK(!read_session.has_value());
+}
+
+/*
+ * An account's page reads that account's sessions and no other, newest first:
+ * the list filters on the account and is ordered by the start time.
+ */
+TEST_CASE("list_sessions_reads_one_accounts_sessions_newest_first", tags) {
+    database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    session_repository repo;
+
+    const auto now = std::chrono::system_clock::now();
+    auto older = generate_synthetic_session(gen_ctx);
+    older.start_time = now - std::chrono::hours(2);
+    auto newer = generate_synthetic_session(gen_ctx);
+    newer.account_id = older.account_id;
+    newer.start_time = now - std::chrono::hours(1);
+    auto other = generate_synthetic_session(gen_ctx);
+    other.account_id = boost::uuids::random_generator()();
+    other.start_time = now;
+    repo.write(h.context(), older);
+    repo.write(h.context(), newer);
+    repo.write(h.context(), other);
+
+    ores::iam::messaging::list_sessions_request request;
+    request.offset = 0;
+    request.limit = 10;
+    request.order = {.field = "start_time", .descending = true};
+    request.filter = ores::iam::messaging::sessions_filter{.account_id = older.account_id};
+
+    ores::iam::service::session_service svc(h.context());
+    const auto answer = svc.list_sessions(request);
+
+    REQUIRE(answer.sessions.size() == 2);
+    CHECK(answer.total == 2);
+    CHECK(answer.sessions[0].id == newer.id);
+    CHECK(answer.sessions[1].id == older.id);
 }

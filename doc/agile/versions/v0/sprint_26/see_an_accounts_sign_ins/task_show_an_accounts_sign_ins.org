@@ -26,11 +26,11 @@ An administrator opens an account and reads its type, sign-in state and sessions
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B43E22C1-DBFA-4A7A-BB71-D613F588DD41][See an account's sign-ins]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ An administrator opens an account and reads its type, sign-in state and sessions
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Mark the session's =account_id= filterable and its =start_time= sortable in
+  the model; the list contract generates the filter and the stated order, so
+  no hand-written read is added. No SQL changes.
+- One read composes an account's sign-ins: the account, its login record and
+  a page of its sessions, newest first. The BFF serves it for the session's own
+  tenant and inside any tenant, the system tenant read as the session.
+- One panel draws it, on a person's page and on a new tenant account page
+  opened from the tenant's People tab, which gains a kind column.
 
 * Measurements
 
@@ -85,3 +90,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An administrator opens an account and reads its sign-ins.
+
+- *Server.* =iam.v1.sessions.list= takes an account filter and a stated order;
+  a repository test proves it reads one account's sessions, newest first.
+- *BFF.* =GET /api/accounts/:username/sign-ins= and
+  =GET /api/tenants/:code/accounts/:username/sign-ins= answer the account, its
+  sign-in state and a page of its sessions.
+- *Web.* The panel shows the kind of account (person or service), the last
+  sign-in, failed attempts, lock and password state, and the sessions with
+  start, end, client, address, country and traffic. A tenant administrator sees
+  it on a person's page; the system administrator opens any account from a
+  tenant's *People* tab, where a *Kind* column marks service accounts, and the
+  system tenant's platform services are read there.
+
+Tests: iam core 209 (one new) on a recreated database; BFF 153 (two new), web
+249 (two new), protocol 70. A session's end is still not recorded, which the
+panel states.

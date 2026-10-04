@@ -91,6 +91,16 @@ alter default privileges in schema public
 {{/service_registry_db_services}}
 
 -- ---------------------------------------------------------------------------
+-- Schema fingerprint — read by every service at startup, which refuses to
+-- start when the database was built from other SQL than the service.
+-- ---------------------------------------------------------------------------
+grant select on ores_database_info_tbl
+    to
+{{#service_registry_db_services}}
+    :{{psql_var}}_user{{^last}},{{/last}}{{#last}};{{/last}}
+{{/service_registry_db_services}}
+
+-- ---------------------------------------------------------------------------
 -- Per-service grants
 -- ---------------------------------------------------------------------------
 {{#service_registry_db_services}}

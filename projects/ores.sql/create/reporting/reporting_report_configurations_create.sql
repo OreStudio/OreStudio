@@ -90,7 +90,7 @@ begin
     -- Validate configuration_type_code (soft FK to ores_reporting_configuration_types_tbl)
     if not exists (
         select 1 from ores_reporting_configuration_types_tbl
-        where tenant_id = NEW.tenant_id
+        where tenant_id = ores_utility_system_tenant_id_fn()
           and code = NEW.configuration_type_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

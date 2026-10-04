@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -41,6 +45,7 @@
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/service/configuration_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_reporting_configuration_types_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.reporting.api/generators/configuration_type_generator.hpp"
@@ -139,15 +144,20 @@ TEST_CASE("write_configuration_publishes_an_event", tags) {
     auto v = generate_synthetic_configuration(ctx);
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
-    // Seed the active configuration_type row ores_reporting_configuration_types_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto configuration_type_code_parent =
-        ores::reporting::generators::generate_synthetic_configuration_type(ctx);
-    configuration_type_code_parent.change_reason_code = "system.test";
-    ores::reporting::repository::configuration_type_repository configuration_type_code_repo;
-    configuration_type_code_repo.write(party_ctx, configuration_type_code_parent);
-    v.configuration_type_code = configuration_type_code_parent.code;
+    // configuration_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::reporting::repository::configuration_type_repository
+            configuration_type_code_catalogue_repo;
+        const auto configuration_type_code_catalogue =
+            configuration_type_code_catalogue_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(configuration_type_code_catalogue.empty());
+        v.configuration_type_code = configuration_type_code_catalogue.front().code;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Configuration: " << v;
 

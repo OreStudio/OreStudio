@@ -18,12 +18,11 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
-#include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
-#include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/store/document_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -48,11 +47,7 @@ std::filesystem::path ore_path(const std::string& relative) {
 
 }
 
-using ores::analytics::domain::pricing_model_product;
-using ores::analytics::domain::pricing_model_product_parameter;
 using ores::analytics::repository::pricing_model_config_repository;
-using ores::analytics::repository::pricing_model_product_parameter_repository;
-using ores::analytics::repository::pricing_model_product_repository;
 using ores::ore::domain::mapped_pricing_engines;
 using ores::ore::domain::pricing_engine_mapper;
 using ores::ore::domain::pricingengines;
@@ -84,38 +79,18 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     REQUIRE(mapped.products.size() == original.Product.size());
     REQUIRE(!mapped.parameters.empty());
 
-    pricing_model_config_repository config_repo;
-    pricing_model_product_repository product_repo;
-    pricing_model_product_parameter_repository parameter_repo;
+    ores::ore::store::write(h.context(), mapped);
 
-    config_repo.write(h.context(), mapped.config);
-    product_repo.write(h.context(), mapped.products);
-    parameter_repo.write(h.context(), mapped.parameters);
-
-    // Read back from the store, filtered to this configuration: the read is not
-    // allowed to be the write's own memory.
-    std::vector<pricing_model_product> products;
-    for (const auto& row : product_repo.read_latest(h.context())) {
-        if (row.pricing_model_config_id == mapped.config.id)
-            products.push_back(row);
-    }
-
-    std::vector<pricing_model_product_parameter> parameters;
-    for (const auto& row : parameter_repo.read_latest(h.context())) {
-        if (row.pricing_model_config_id == mapped.config.id)
-            parameters.push_back(row);
-    }
-
-    INFO("products read back: " << products.size() << " of " << mapped.products.size());
-    INFO("parameters read back: " << parameters.size() << " of " << mapped.parameters.size());
-    REQUIRE(products.size() == mapped.products.size());
-    REQUIRE(parameters.size() == mapped.parameters.size());
-
-    // Export from what the database returned, not from what was written.
-    mapped_pricing_engines from_database;
-    from_database.config = mapped.config;
-    from_database.products = products;
-    from_database.parameters = parameters;
+    // Read back from the store: the read is not allowed to be the write's own
+    // memory.
+    const auto from_database =
+        ores::ore::store::read_pricing_engines(h.context(), mapped.config.id);
+    INFO("products read back: " << from_database.products.size() << " of "
+                                << mapped.products.size());
+    INFO("parameters read back: " << from_database.parameters.size() << " of "
+                                  << mapped.parameters.size());
+    REQUIRE(from_database.products.size() == mapped.products.size());
+    REQUIRE(from_database.parameters.size() == mapped.parameters.size());
 
     const pricingengines rebuilt = pricing_engine_mapper::reverse(from_database);
 

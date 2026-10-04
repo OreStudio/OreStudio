@@ -7,41 +7,56 @@
 #+level: s1
 #+filetags: :implement-access-journeys:sprint_26:v0:
 #+owner: marco
-#+branch: feature/implement-access-journeys
-#+pr:
+#+branch: feature/build-the-access-screens
+#+pr: 2617
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The three original access journeys run in =ores.web= against the real server,
+as the accepted access screens prototype draws them: a member's own access, the
+administrator's grant and take-away, and the role catalogue with its permission
+picker. Every account they name shows its picture.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance
 
--
+- *My access* lists the roles held with who gave each one and why, answers
+  "Can I…?" with the role behind a yes, and draws what the roles allow by area.
+- *People* lists the tenant's accounts with pictures and roles; a person's page
+  gives a role for a reason and takes one away, never from oneself.
+- *Roles* hides service roles unless asked; a role's page ticks what it allows
+  by area and saves the whole set after showing the difference.
+- Every account the screens name shows its picture, and so does Rescue access.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The protocol package gains readers and writers for the role subjects, and
+  browser-safe types for a held role, a role and a permission.
+- The BFF adds one route per screen action and a picture route by username,
+  because most places that name an account know a username, not an image.
+- One catalogue module turns the 890 codes into areas, resources and actions,
+  answers "covers" with wildcards, and searches in a person's words; one grid
+  component draws it read-only or with ticks.
+- The screens follow the prototype. Roles per person are read one account at a
+  time, as the server has no joined read yet.
 
 * Measurements
 
@@ -74,12 +89,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2617][#2617]] | [web] Build the access screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Renaming a role clears its registration-default flag | wire-protocol/src/access.ts | Accept | The role carries the flag and a rename sends it back; a BFF test pins it |
+| 2 | Empty reasons on role and bundle writes may be refused | wire-protocol/src/access.ts | Decline | The services record =system.new_record= for an empty reason, as the code shows |
+| 3 | A picture is served with its stored type, scripts and all | bff/src/server.ts | Accept | Every image answer carries =nosniff= and a sandboxing content security policy |
+| 4 | Deleting a role somebody holds is not refused by the server | bff/src/server.ts | Decline | Stated in the PR as the screen's guard only; a server guard is its own change |
+| 5 | Service roles are told apart by their name | wire-protocol/src/access.ts | Decline | The server carries no such field; the rule is written beside the type |
+| 6 | One permissions read per role | wire-protocol/src/access.ts | Decline | Eight human roles in the seed; a bulk read is the server's change |
+| 7 | Delete names a role by name where siblings use an id | web/src/api/client.ts | Decline | The generated delete is keyed by name; the client encodes it |
+| 8 | Two reply shapes in one helper file | wire-protocol/src/access.ts | Accept | A comment says why |
+| 9 | Creating a role accepts and ignores a version | bff/src/server.ts | Accept | Create and rename have their own body schemas |
+| 10 | Org markup in a TypeScript comment | wire-protocol/src/access.ts | Accept | Backticks |
 
 * Result
+
+The access screens run in =ores.web=.
+
+- *My access* (=/access=, from the account menu behind the person's picture):
+  the roles held with who gave each one, when and why, a *Can I…?* search
+  naming the role behind a yes, and the permissions by area; a role that
+  grants everything says so.
+- *People* and a person (=/people=, =/people/:username=), for the tenant
+  administrator: pictures and role chips; *Give a role* with a reason from the
+  access category and a note; *Take away*, disabled on one's own page.
+- *Roles* and a role (=/roles=, =/roles/:roleId=): service roles hidden unless
+  asked; a new role starts empty; the permission grid by area with "All of it",
+  a filter, "Only what it allows", and a save that lists what it adds, removes
+  and whose access changes. A role that grants everything, or a service's
+  role, is not edited; a role somebody holds is not offered for deletion.
+- *The header* holds the person's picture alone, as most applications do; the
+  account menu behind it names the person, the tenant and the party, and holds
+  My access, Security and Sign out. The tenant stays in view beside the brand.
+- Pictures: =/api/accounts/:username/picture= serves any account's picture, and
+  the header, "Given by", People, a person, "Held by" and Rescue access use it
+  or the account's image.
+
+Tests: BFF 149 (seven new route cases), web 246 (eleven new for the catalogue
+and the screens), protocol 70; typecheck, menu and route checks clean. Not
+checked live with a sign-in: the recreated deployment has no administrator yet.
+Open: roles per person cost one read per account, and the delete guard and
+the edit lock are the screen's alone.

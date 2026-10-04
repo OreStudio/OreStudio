@@ -81,9 +81,8 @@ describe('the public shell', () => {
 });
 
 /*
- * A system administrator inside a tenant reads another tenant's data. Every
- * screen says so and offers the way out, and a session in its own tenant
- * carries no such banner.
+ * The signed-in shell: the areas of the session's mode, the tenant beside the
+ * brand, and the person's picture with the menu behind it.
  */
 describe('the application shell', () => {
     function renderAppShell(
@@ -118,6 +117,21 @@ describe('the application shell', () => {
         expect(html).toContain('Acme Operations');
         expect(html).toContain('Sign out');
         expect(html).toContain('the screen');
+    });
+
+    /*
+     * The header holds the picture alone; who the person is, where they work,
+     * their own pages and the way out sit in the menu, hidden until opened.
+     */
+    it('puts the person behind their picture, with their pages and the way out', () => {
+        const html = renderAppShell('Acme Operations');
+
+        expect(html).toContain('aria-label="Your account"');
+        expect(html).toContain('src="/api/accounts/admin/picture"');
+        expect(html).toMatch(/role="menu" hidden=""/);
+        expect(html).toContain('href="/access"');
+        expect(html).toContain('href="/security"');
+        expect(html).not.toContain('admin · Acme Corporation');
     });
 
     it('names the party it is working in', () => {

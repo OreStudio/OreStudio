@@ -43,12 +43,16 @@ export type { Uuid, WireTimestamp } from './primitives.js';
 
 export {
     ACCOUNT_TYPES,
+    accountAccessSchema,
     accountPageSchema,
     accountSchema,
     activePartySchema,
     badgePresentationSchema,
     deploymentOverviewSchema,
+    heldRoleSchema,
     partySummarySchema,
+    permissionEntrySchema,
+    roleSummarySchema,
     tenantDetailResponseSchema,
     tenantDetailSchema,
     tenantPageSchema,
@@ -61,12 +65,16 @@ export {
 } from './domain.js';
 export type {
     Account,
+    AccountAccess,
     AccountPage,
     AccountType,
     ActiveParty,
     BadgePresentation,
     DeploymentOverview,
+    HeldRole,
     PartySummary,
+    PermissionEntry,
+    RoleSummary,
     SetupActivity,
     TenantDetail,
     TenantDetailResponse,
@@ -114,6 +122,19 @@ export type {
     WireTenantPage,
 } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
+export {
+    ACCESS_SUBJECTS,
+    deleteRole,
+    giveRole,
+    readAccountAccess,
+    readMyAccess,
+    readPermissionCatalogue,
+    readRoles,
+    saveRole,
+    saveRolePermissions,
+    takeRoleAway,
+} from './access.js';
+export type { AccessWrite } from './access.js';
 export type { PartyPageQuery } from './party-page.js';
 
 export {

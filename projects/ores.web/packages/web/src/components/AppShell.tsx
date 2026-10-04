@@ -19,11 +19,12 @@
  *
  */
 
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router';
 import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
+import { AccountPicture } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
 import { menuFor, modeKey } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
@@ -78,14 +79,6 @@ export function AppShell({
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
-    /*
-     * The three parts are joined rather than printed one after another,
-     * because a part the session does not carry would otherwise leave its
-     * separator behind and read as a dot with nothing beside it.
-     */
-    const session = [username, tenantName, partyName]
-        .filter((part) => part !== undefined && part !== '')
-        .join(' · ');
     const menu = menuFor(mode);
 
     return (
@@ -98,6 +91,14 @@ export function AppShell({
                             {t('app.name')}
                         </span>
                     </Link>
+                    {/*
+                     * Where the person is working stays in view beside the
+                     * brand, as an organisation or a workspace does: the
+                     * tenant decides what every screen shows.
+                     */}
+                    {tenantName !== '' && (
+                        <span className="text-sm text-ink-muted">{tenantName}</span>
+                    )}
                     <span
                         className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
                         title={t('nav.mode')}
@@ -120,11 +121,13 @@ export function AppShell({
                             </NavLink>
                         ))}
                     </nav>
-                    <div className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
-                        <span>{session}</span>
-                        <Button variant="ghost" size="sm" onClick={onSignOut}>
-                            {t('nav.signOut')}
-                        </Button>
+                    <div className="ml-auto">
+                        <AccountMenu
+                            username={username}
+                            tenantName={tenantName}
+                            partyName={partyName}
+                            onSignOut={onSignOut}
+                        />
                     </div>
                 </div>
             </header>
@@ -141,6 +144,106 @@ export function AppShell({
                 <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
             </main>
             <VersionFooter serverVersion={serverVersion} />
+        </div>
+    );
+}
+
+/**
+ * The signed-in person's picture, and the menu behind it.
+ *
+ * The header holds the picture alone, as most applications do; who the person
+ * is, where they work and their own pages sit in the menu it opens, with
+ * signing out last. The menu is always in the page and hidden while closed,
+ * so it is one element whether open or not, and Escape or a click elsewhere
+ * closes it.
+ */
+function AccountMenu({
+    username,
+    tenantName,
+    partyName,
+    onSignOut,
+}: {
+    readonly username: string;
+    readonly tenantName: string;
+    readonly partyName: string | undefined;
+    readonly onSignOut: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
+    const root = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return undefined;
+        const outside = (event: MouseEvent) => {
+            if (root.current !== null && !root.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+        const escape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setOpen(false);
+        };
+        document.addEventListener('mousedown', outside);
+        document.addEventListener('keydown', escape);
+        return () => {
+            document.removeEventListener('mousedown', outside);
+            document.removeEventListener('keydown', escape);
+        };
+    }, [open]);
+
+    const close = () => setOpen(false);
+    const item = 'block rounded px-2 py-1.5 text-sm text-ink hover:bg-surface-hover';
+
+    return (
+        <div ref={root} className="relative">
+            <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                aria-label={t('nav.accountMenu')}
+                title={username}
+                onClick={() => setOpen(!open)}
+                className="flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+                <AccountPicture username={username} name={username} />
+            </button>
+            <div
+                role="menu"
+                hidden={!open}
+                className="absolute right-0 z-30 mt-2 w-64 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
+            >
+                <div className="flex items-center gap-3 border-b border-line px-2 pb-3 pt-1">
+                    <AccountPicture username={username} name={username} />
+                    <div className="min-w-0">
+                        <div className="truncate text-sm font-medium text-ink">{username}</div>
+                        <div className="truncate text-xs text-ink-muted">{tenantName}</div>
+                        {partyName !== undefined && partyName !== '' && (
+                            <div className="truncate text-xs text-ink-faint">{partyName}</div>
+                        )}
+                    </div>
+                </div>
+                <div className="space-y-0.5 border-b border-line py-1.5">
+                    <Link to="/access" role="menuitem" className={item} onClick={close}>
+                        {t('shell.menu.access')}
+                    </Link>
+                    <Link to="/security" role="menuitem" className={item} onClick={close}>
+                        {t('nav.security')}
+                    </Link>
+                </div>
+                <div className="pt-1.5">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        role="menuitem"
+                        className="w-full justify-start"
+                        onClick={() => {
+                            close();
+                            onSignOut();
+                        }}
+                    >
+                        {t('nav.signOut')}
+                    </Button>
+                </div>
+            </div>
         </div>
     );
 }

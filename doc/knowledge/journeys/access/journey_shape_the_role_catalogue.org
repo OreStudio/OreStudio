@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator defines roles and the permissions each one bundles.
@@ -141,6 +141,14 @@ unknown permission code is =invalid= and writes nothing, because the whole
 bundle resolves before any row lands.
 
 * What is left
+
+The screen runs in =ores.web= as *Roles*: the catalogue with service roles
+hidden unless asked for, and a role's page that ticks what it allows by area
+and saves the whole set after showing what it adds, takes away and whose
+access changes ([[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]]). Two guards are the screen's alone: it does not
+offer to delete a role somebody holds, and it does not edit a role that
+grants everything or a service's role. The server enforces neither.
+
 
 1. *The screen is not built.* The operations exist and the journey runs at the
    protocol, but nothing in =ores.web= draws the catalogue, the selected role

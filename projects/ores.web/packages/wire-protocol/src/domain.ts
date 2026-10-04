@@ -429,3 +429,55 @@ export type ActiveParty = z.infer<typeof activePartySchema>;
 
 /** Re-exported so consumers do not import the sentinels from two places. */
 export { LIVE_WORKSPACE_ID, SYSTEM_TENANT_ID, toWireTimestamp };
+
+/**
+ * One role an account holds: what it is, what it grants, and the grant's own
+ * record of who gave it, when and why.
+ */
+export const heldRoleSchema = z.object({
+    roleId: uuidSchema,
+    name: z.string(),
+    description: z.string(),
+    permissionCodes: z.array(z.string()),
+    givenBy: z.string(),
+    givenAt: z.string(),
+    reasonCode: z.string(),
+    commentary: z.string(),
+});
+
+export type HeldRole = z.infer<typeof heldRoleSchema>;
+
+/** The roles one account holds. */
+export const accountAccessSchema = z.object({
+    roles: z.array(heldRoleSchema),
+});
+
+export type AccountAccess = z.infer<typeof accountAccessSchema>;
+
+/**
+ * One role of the tenant's catalogue.
+ *
+ * A service role is one the platform's own services sign in with. The seed
+ * names each one for its service, so a role whose name ends in `Service` is
+ * one; a screen offers people only the others.
+ */
+export const roleSummarySchema = z.object({
+    id: uuidSchema,
+    version: z.int().nonnegative(),
+    name: z.string(),
+    description: z.string(),
+    service: z.boolean(),
+    /** Whether a person who registers is given this role. */
+    registrationDefault: z.boolean(),
+    permissionCodes: z.array(z.string()),
+});
+
+export type RoleSummary = z.infer<typeof roleSummarySchema>;
+
+/** One permission the platform defines: its code and what it allows. */
+export const permissionEntrySchema = z.object({
+    code: z.string(),
+    description: z.string(),
+});
+
+export type PermissionEntry = z.infer<typeof permissionEntrySchema>;

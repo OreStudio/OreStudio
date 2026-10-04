@@ -19,6 +19,7 @@
  *
  */
 
+import { Avatar, imageUrl } from '../ui/Images.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { api } from '../api/client.js';
@@ -225,9 +226,13 @@ function Finder(): ReactNode {
                             <li key={row.id}>
                                 <button
                                     type="button"
-                                    className="flex w-full flex-wrap items-baseline gap-x-3 gap-y-1 py-3 text-left hover:bg-surface-hover"
+                                    className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 py-3 text-left hover:bg-surface-hover"
                                     onClick={() => choose(row)}
                                 >
+                                    <Avatar
+                                        name={row.fullName === '' ? row.username : row.fullName}
+                                        src={row.imageId === null ? null : imageUrl(row.imageId)}
+                                    />
                                     <span className="font-mono text-sm">{row.username}</span>
                                     <span className="min-w-0 flex-1 text-sm text-ink-muted">
                                         {row.fullName === '' ? 'no full name' : row.fullName}
@@ -278,7 +283,12 @@ function AccountHeader({
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-1">
+                <Avatar
+                    name={account.fullName === '' ? account.username : account.fullName}
+                    size="lg"
+                    src={account.imageId === null ? null : imageUrl(account.imageId)}
+                />
+                <div className="min-w-0 flex-1 space-y-1">
                     <h2 className="text-lg font-medium">
                         {account.fullName === '' ? account.username : account.fullName}
                     </h2>

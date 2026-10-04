@@ -258,3 +258,43 @@ describe('GET /api/sessions/active', () => {
         await server.close();
     });
 });
+
+/*
+ * A person's own screen lists their sessions only. The server answers the
+ * tenant's open sessions, the platform's services' among them, so the read
+ * keeps the rows of the signed-in account.
+ */
+describe('GET /api/me/sessions', () => {
+    it('keeps the signed-in account sessions and drops every other account', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.sessions.active': {
+                sessions: [
+                    wireSession,
+                    {
+                        ...wireSession,
+                        id: '99999999-9999-9999-9999-999999999999',
+                        account_id: '88888888-8888-8888-8888-888888888888',
+                        client_identifier: 'ores.service.binary',
+                    },
+                ],
+                success: true,
+                message: '',
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/me/sessions',
+            cookies: { ores_web_session: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sessions).toHaveLength(1);
+        expect(response.json().sessions[0]).toMatchObject({
+            id: SESSION_ID,
+            accountId: ACCOUNT_ID,
+        });
+
+        await server.close();
+    });
+});

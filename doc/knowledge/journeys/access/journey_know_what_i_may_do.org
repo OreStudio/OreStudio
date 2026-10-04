@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member sees the roles they hold and the permissions those roles carry.
@@ -98,6 +98,12 @@ permission beyond a session. The privileged read still takes an id and now
 requires =iam::roles:read= before it looks the account up.
 
 * What is missing
+
+The screen runs in =ores.web= as *My access*: the roles held with who gave
+each one and why, a *Can I…?* search that names the role behind a yes, and
+the permissions by area. A role that grants everything says so instead of
+listing every code ([[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]]).
+
 
 Nothing. All three gaps this journey recorded have closed, and the build that
 closed them is recorded on

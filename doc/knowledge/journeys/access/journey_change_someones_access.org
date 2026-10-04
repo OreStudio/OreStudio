@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator grants and revokes a colleague's roles.
@@ -116,12 +116,18 @@ gaps the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][access group]]'s survey clos
 
 * What is missing
 
-1. *No reason on the message.* =assign_role_request= and =revoke_role_request=
-   carry only =account_id= and =role_id=. The row has change reason and
-   commentary columns, and the insert trigger validates the reason, but the
-   client cannot set either field. The candidate is to add
-   =change_reason_code= and =change_commentary= to both requests, or to add
-   =iam.v1.roles.assign-with-reason= and its revoke twin.
+The screens run in =ores.web=: *People* lists the tenant's accounts with
+their pictures and roles, and a person's page gives a role for a reason and
+takes one away. Nobody takes a role away from their own account: the server
+refuses it and the screen does not offer it ([[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]]).
+
+
+1. *Closed for a grant, open for a revoke.* =assign_role_request= carries
+   =change_reason_code= and =change_commentary=, the grant row stores them,
+   and an =access= reason category offers new joiner, role change, cover for
+   absence and access review. A revoke closes the grant row, which has no
+   place for a reason of its own, so the screen asks for none; recording why a
+   role was taken away needs a closing-reason column or an event of its own.
 2. *No guard on an empty role list.* The account screen warns when an account
    has no party, but stays silent when it has no role (see the user guide
    chapter). The same silence applies when a revoke removes the last role. The

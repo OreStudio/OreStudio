@@ -2213,26 +2213,46 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 /**
  * The party a party-scoped publish writes for.
  *
- * The party named by the publish parameters, else the tenant's root party:
- * the one with no parent that is not the system party. Null when the tenant
- * holds no such party, as it does while a tenant is provisioned before its
- * party exists.
+ * The party named by the publish parameters, which must be an active party of
+ * the target tenant, else the tenant's root party: the one with no parent that
+ * is not the system party. Null when no party is named and the tenant holds no
+ * root party, as while a tenant is provisioned before its party exists.
  */
 create or replace function ores_refdata_publish_target_party_fn(
     p_target_tenant_id uuid,
     p_params jsonb
 )
 returns uuid as $$
-    select coalesce(
-        (p_params ->> 'party_id')::uuid,
-        (select id from ores_refdata_parties_tbl
-         where tenant_id = p_target_tenant_id
-           and parent_party_id is null
-           and party_category <> 'System'
-           and valid_to = ores_utility_infinity_timestamp_fn()
-         order by id
-         limit 1));
-$$ language sql stable security definer set search_path = public, pg_temp;
+declare
+    v_named text := p_params ->> 'party_id';
+    v_party_id uuid;
+begin
+    if v_named is null then
+        select id into v_party_id
+        from ores_refdata_parties_tbl
+        where tenant_id = p_target_tenant_id
+          and parent_party_id is null
+          and party_category <> 'System'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        order by id
+        limit 1;
+        return v_party_id;
+    end if;
+
+    select id into v_party_id
+    from ores_refdata_parties_tbl
+    where tenant_id = p_target_tenant_id
+      and id::text = v_named
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_party_id is null then
+        raise exception 'Invalid party_id: %. No active party of tenant % has this id.',
+            v_named, p_target_tenant_id
+            using errcode = '23503';
+    end if;
+    return v_party_id;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;
 
 /**
  * Publishes netting agreements from a DQ dataset to a party.
@@ -2317,6 +2337,11 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * counterparty holding its staged LEI, if it names one. A set whose code the
  * tenant already holds, and one whose agreement or LEI does not resolve, are
  * skipped. A publish only inserts.
+ *
+ * An agreement number is unique within the tenant, but a set looks its
+ * agreement up among the target party's only: a set must share its
+ * agreement's party, so an agreement of another party leaves the set
+ * unresolved rather than refused.
  */
 create or replace function ores_refdata_publish_netting_sets_from_dq_fn(
     p_dataset_id uuid,
@@ -2428,69 +2453,59 @@ begin
     from ores_dq_csas_artefact_tbl
     where dataset_id = p_dataset_id;
 
-    create temp table if not exists ores_publish_csa_map (
-        csa_id uuid, netting_set_code text
-    ) on commit drop;
-    truncate ores_publish_csa_map;
-
-    insert into ores_publish_csa_map (csa_id, netting_set_code)
-    select gen_random_uuid(), c.netting_set_code
-    from ores_dq_csas_artefact_tbl c
-    join ores_refdata_netting_sets_tbl ns
-      on ns.tenant_id = p_target_tenant_id
-     and ns.code = c.netting_set_code
-     and ns.valid_to = ores_utility_infinity_timestamp_fn()
-    where c.dataset_id = p_dataset_id
-      and not exists (
-        select 1 from ores_refdata_csas_tbl o
-        where o.tenant_id = p_target_tenant_id
-          and o.netting_set_id = ns.id
-          and o.valid_to = ores_utility_infinity_timestamp_fn());
-
-    insert into ores_refdata_csas_tbl (
-        tenant_id, id, version, netting_set_id, is_active, bilateral, csa_currency,
-        index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
-        minimum_transfer_amount_receive, independent_amount_held,
-        independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
-        collateral_compounding_spread_receive, collateral_compounding_spread_pay,
-        apply_initial_margin, initial_margin_type, calculate_im_amount,
-        calculate_vm_amount, non_exempt_im_regulations,
-        modified_by, performed_by, change_reason_code, change_commentary
+    with staged as materialized (
+        select gen_random_uuid() as csa_id, ns.id as netting_set_id, c.*
+        from ores_dq_csas_artefact_tbl c
+        join ores_refdata_netting_sets_tbl ns
+          on ns.tenant_id = p_target_tenant_id
+         and ns.code = c.netting_set_code
+         and ns.valid_to = ores_utility_infinity_timestamp_fn()
+        where c.dataset_id = p_dataset_id
+          and not exists (
+            select 1 from ores_refdata_csas_tbl o
+            where o.tenant_id = p_target_tenant_id
+              and o.netting_set_id = ns.id
+              and o.valid_to = ores_utility_infinity_timestamp_fn())
+    ),
+    csas as (
+        insert into ores_refdata_csas_tbl (
+            tenant_id, id, version, netting_set_id, is_active, bilateral, csa_currency,
+            index_name, threshold_pay, threshold_receive, minimum_transfer_amount_pay,
+            minimum_transfer_amount_receive, independent_amount_held,
+            independent_amount_type, call_frequency, post_frequency, margin_period_of_risk,
+            collateral_compounding_spread_receive, collateral_compounding_spread_pay,
+            apply_initial_margin, initial_margin_type, calculate_im_amount,
+            calculate_vm_amount, non_exempt_im_regulations,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select p_target_tenant_id, s.csa_id, 0, s.netting_set_id, s.is_active, s.bilateral,
+            s.csa_currency, s.index_name, s.threshold_pay, s.threshold_receive,
+            s.minimum_transfer_amount_pay, s.minimum_transfer_amount_receive,
+            s.independent_amount_held, s.independent_amount_type, s.call_frequency,
+            s.post_frequency, s.margin_period_of_risk,
+            s.collateral_compounding_spread_receive, s.collateral_compounding_spread_pay,
+            s.apply_initial_margin, s.initial_margin_type, s.calculate_im_amount,
+            s.calculate_vm_amount, s.non_exempt_im_regulations,
+            v_modified_by, current_user, 'system.external_data_import', v_commentary
+        from staged s
+        returning id
+    ),
+    currencies as (
+        insert into ores_refdata_csa_eligible_currencies_tbl (
+            tenant_id, id, version, csa_id, currency_code, position,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select p_target_tenant_id, gen_random_uuid(), 0, s.csa_id, trim(e.currency_code),
+            (e.ordinal - 1)::integer,
+            v_modified_by, current_user, 'system.external_data_import', v_commentary
+        from staged s
+        join csas on csas.id = s.csa_id
+        cross join lateral unnest(string_to_array(s.eligible_currencies, ','))
+            with ordinality as e(currency_code, ordinal)
+        where trim(e.currency_code) <> ''
+        returning 1
     )
-    select p_target_tenant_id, m.csa_id, 0, ns.id, c.is_active, c.bilateral,
-        c.csa_currency, c.index_name, c.threshold_pay, c.threshold_receive,
-        c.minimum_transfer_amount_pay, c.minimum_transfer_amount_receive,
-        c.independent_amount_held, c.independent_amount_type, c.call_frequency,
-        c.post_frequency, c.margin_period_of_risk,
-        c.collateral_compounding_spread_receive, c.collateral_compounding_spread_pay,
-        c.apply_initial_margin, c.initial_margin_type, c.calculate_im_amount,
-        c.calculate_vm_amount, c.non_exempt_im_regulations,
-        v_modified_by, current_user, 'system.external_data_import', v_commentary
-    from ores_publish_csa_map m
-    join ores_dq_csas_artefact_tbl c
-      on c.dataset_id = p_dataset_id
-     and c.netting_set_code = m.netting_set_code
-    join ores_refdata_netting_sets_tbl ns
-      on ns.tenant_id = p_target_tenant_id
-     and ns.code = m.netting_set_code
-     and ns.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_inserted = row_count;
-
-    insert into ores_refdata_csa_eligible_currencies_tbl (
-        tenant_id, id, version, csa_id, currency_code, position,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select p_target_tenant_id, gen_random_uuid(), 0, m.csa_id, trim(e.currency_code),
-        (e.ordinal - 1)::integer,
-        v_modified_by, current_user, 'system.external_data_import', v_commentary
-    from ores_publish_csa_map m
-    join ores_dq_csas_artefact_tbl c
-      on c.dataset_id = p_dataset_id
-     and c.netting_set_code = m.netting_set_code
-    cross join lateral unnest(string_to_array(c.eligible_currencies, ','))
-        with ordinality as e(currency_code, ordinal)
-    where trim(e.currency_code) <> '';
+    select count(*) into v_inserted from csas;
 
     return query
     select 'inserted'::text, v_inserted

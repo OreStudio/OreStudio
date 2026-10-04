@@ -80,7 +80,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | ACME root party netting after provisioning | 8 agreements, 19 sets, 7 CSAs, 19 ORE aliases | provisioning recipe, then the query in [[file:evidence/acme_ore_sample_netting.txt][evidence/acme_ore_sample_netting.txt]] | branch head before commit |
 | ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
-| pgTAP sample netting cases | 10/10 pass | =pg_prove projects/ores.sql/test/refdata_ore_sample_netting_test.sql= | branch head before commit |
+| pgTAP sample netting cases | 12/12 pass | =pg_prove projects/ores.sql/test/refdata_ore_sample_netting_test.sql= | branch head before commit |
 
 * Notes
 
@@ -139,6 +139,12 @@ via its "Verifies task" field.
 | 2 | The test read netting sets without visible parties, so the party policy hid them. | refdata_ore_sample_netting_test.sql | Accept | The test makes every party visible, as the trade tests do. |
 | 3 | The generator wrote no shell commands for the staging netting agreement, set and CSA, whose names refdata already uses. | ores.dq.netting_set.org | Decline | The staging tables need no shell surface; the alias staging has one, as the counterparty alias does. |
 | 4 | The publish functions ignore =p_mode=. | refdata_publish_from_dq_create.sql | Decline | The same insert-only contract as the counterparty alias publish; each function's comment says so. |
+| 5 | PR 2598 review 1: the named =party_id= is not checked against the tenant. | refdata_publish_from_dq_create.sql | Accept | The helper refuses a party that is not an active party of the target tenant; pgTAP case 9. |
+| 6 | PR 2598 review 2: agreements are unique per tenant, but sets look them up per party. | refdata_publish_from_dq_create.sql | Accept | Documented: a set must share its agreement's party, so another party's agreement leaves it unresolved. |
+| 7 | PR 2598 review 3: report unresolved rows apart from held ones. | refdata_publish_from_dq_create.sql | Decline | The same counts as the counterparty alias publish; pgTAP covers both causes. |
+| 8 | PR 2598 review 4: replace the CSA temp table with a CTE; check the currency codes. | refdata_publish_from_dq_create.sql | Accept / Decline | The CSA publish is one CTE statement. The currency table has no lookup to check against; the dataset depends on iso.currencies. |
+| 9 | PR 2598 review 5: pin a set with neither agreement nor LEI. | refdata_ore_sample_netting_test.sql | Decline | Case 12 already writes one. |
+| 10 | PR 2598 review 6: test an unresolved LEI. | refdata_ore_sample_netting_test.sql | Accept | pgTAP case 10. |
 
 * Result
 

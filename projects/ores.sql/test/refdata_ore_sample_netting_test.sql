@@ -28,13 +28,15 @@
  * - The CSAs carry ORE's terms and their eligible currencies
  * - A second publish writes nothing
  * - A publish with no party, and a set whose agreement is unknown, are skipped
+ * - A publish naming a party the tenant lacks is refused
+ * - An agreement whose LEI names no counterparty is skipped
  *
  * Run with: pg_prove -d <database> test/refdata_ore_sample_netting_test.sql
  */
 
 begin;
 
-select plan(10);
+select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -156,6 +158,41 @@ select results_eq(
         '00000000-0000-0000-0000-00000000a0a0'::uuid)$$,
     $$values ('skipped_no_party'::text, 0::bigint)$$,
     'a publish to a tenant with no party is skipped');
+
+select throws_like(
+    $$select * from ores_refdata_publish_netting_agreements_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'ore.sample_netting_agreements'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn(), 'upsert',
+        '{"party_id": "00000000-0000-0000-0000-00000000a0a1"}'::jsonb)$$,
+    '%No active party of tenant%',
+    'a publish naming a party the tenant lacks is refused');
+
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'test.netting_agreement_unknown_lei', 'ORE', 'Netting and Collateral',
+        'Reference Data', 'NONE', 'Derived', 'Synthetic', 'Raw',
+        'ORE Sample Netting Synthesis', 'Netting agreement publish test', 'Test dataset.',
+        'ORE', 'Test', current_date, 'Modified BSD License', 'netting_agreements');
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'test.netting_agreement_unknown_lei'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    insert into ores_dq_netting_agreements_artefact_tbl (dataset_id, tenant_id,
+        agreement_number, version, counterparty_lei, agreement_type)
+    values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NATEST-UNKNOWN-LEI', 0,
+        '00000000000000000000', 'ISDA');
+end $$;
+
+select results_eq(
+    $$select action, record_count from ores_refdata_publish_netting_agreements_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'test.netting_agreement_unknown_lei'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    $$values ('skipped'::text, 1::bigint)$$,
+    'an agreement whose LEI names no counterparty is skipped');
 
 do $$
 declare

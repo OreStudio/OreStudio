@@ -46,6 +46,7 @@ struct cms_spread_option_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string forward_start;
     std::string spot_days;
     std::string swap_tenor;

@@ -35,6 +35,7 @@ export interface BmaBasisSwapConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     index: string;
     bma_index: string;
     bma_payment_calendar: string | null;

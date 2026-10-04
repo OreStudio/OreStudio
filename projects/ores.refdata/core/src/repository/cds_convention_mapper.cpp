@@ -41,6 +41,7 @@ domain::cds_convention cds_convention_mapper::map(const cds_convention_entity& v
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.settlement_days = v.settlement_days;
     r.calendar = v.calendar;
     r.frequency = v.frequency;
@@ -69,6 +70,7 @@ cds_convention_entity cds_convention_mapper::map(const domain::cds_convention& v
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.settlement_days = v.settlement_days;
     r.calendar = v.calendar;
     r.frequency = v.frequency;

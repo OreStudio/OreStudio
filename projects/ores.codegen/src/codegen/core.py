@@ -4322,16 +4322,27 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # these to synthesize a value for each, the same way it
             # already does for natural_keys.
             pk['extra_columns'] = pk_columns[1:]
-            pk['column_list'] = ', '.join(c['column'] for c in pk_columns)
+            # The table's key in the database can be wider than the key the
+            # API takes. A column marked :sql_key: (a party_id the session
+            # supplies, say) joins the primary key, the unique indexes, the
+            # exclusion constraint and the versioning triggers, so two
+            # parties can each hold a row with the same id; the repository
+            # and protocol stay keyed by the primary key alone, because row
+            # level security already confines a session to its own rows.
+            sql_key_columns = pk_columns + [
+                {'column': c.get('name') or c.get('column')}
+                for c in domain_entity.get('columns', []) or []
+                if c.get('sql_key')]
+            pk['column_list'] = ', '.join(c['column'] for c in sql_key_columns)
             pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
             pk['gist_column_clause'] = '\n        '.join(
-                f"{c['column']} WITH =," for c in pk_columns
+                f"{c['column']} WITH =," for c in sql_key_columns
             )
             pk['where_new'] = ' and '.join(
-                f"{c['column']} = NEW.{c['column']}" for c in pk_columns
+                f"{c['column']} = NEW.{c['column']}" for c in sql_key_columns
             )
             pk['where_old'] = ' and '.join(
-                f"{c['column']} = OLD.{c['column']}" for c in pk_columns
+                f"{c['column']} = OLD.{c['column']}" for c in sql_key_columns
             )
             # Repository-layer helpers: a compound key's where()/signature/
             # log-statement text is built once here as a single token,

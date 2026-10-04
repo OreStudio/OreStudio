@@ -46,6 +46,7 @@ struct swap_index_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string conventions;
     std::optional<std::string> fixing_calendar;
     std::string modified_by;

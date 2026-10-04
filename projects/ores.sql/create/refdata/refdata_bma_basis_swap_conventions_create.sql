@@ -39,6 +39,7 @@ create table if not exists "ores_refdata_bma_basis_swap_conventions_tbl" (
     "id" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "index" text not null,
     "bma_index" text not null,
     "bma_payment_calendar" text null,
@@ -57,10 +58,11 @@ create table if not exists "ores_refdata_bma_basis_swap_conventions_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, id, party_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         id WITH =,
+        party_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
@@ -69,11 +71,11 @@ create table if not exists "ores_refdata_bma_basis_swap_conventions_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists bma_basis_swap_conventions_version_uniq_idx
-on "ores_refdata_bma_basis_swap_conventions_tbl" (tenant_id, id, version)
+on "ores_refdata_bma_basis_swap_conventions_tbl" (tenant_id, id, party_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists bma_basis_swap_conventions_id_uniq_idx
-on "ores_refdata_bma_basis_swap_conventions_tbl" (tenant_id, id)
+on "ores_refdata_bma_basis_swap_conventions_tbl" (tenant_id, id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists bma_basis_swap_conventions_tenant_idx
@@ -102,7 +104,7 @@ begin
     select version into current_version
     from "ores_refdata_bma_basis_swap_conventions_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and id = NEW.id and party_id = NEW.party_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -131,7 +133,7 @@ begin
         update "ores_refdata_bma_basis_swap_conventions_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and id = NEW.id and party_id = NEW.party_id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -156,7 +158,7 @@ on delete to "ores_refdata_bma_basis_swap_conventions_tbl" do instead (
     update "ores_refdata_bma_basis_swap_conventions_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and id = OLD.id and party_id = OLD.party_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 
@@ -175,4 +177,24 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists bma_basis_swap_conventions_tbl_party_isolation_policy
+    on ores_refdata_bma_basis_swap_conventions_tbl;
+
+create policy bma_basis_swap_conventions_tbl_party_isolation_policy
+on ores_refdata_bma_basis_swap_conventions_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

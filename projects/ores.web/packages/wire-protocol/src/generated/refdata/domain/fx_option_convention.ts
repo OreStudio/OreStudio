@@ -35,6 +35,7 @@ export interface FxOptionConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     fx_convention_id: string | null;
     atm_type: string;
     delta_type: string;

@@ -48,6 +48,7 @@ generate_synthetic_cms_spread_option_convention(utility::generation::generation_
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-CMS-10Y-2Y-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.forward_start = std::string("0M");
     r.spot_days = std::string("2D");
     r.swap_tenor = std::string("3M");

@@ -46,6 +46,7 @@ struct inflation_swap_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string fix_calendar;
     std::string fix_convention;
     std::string day_count_fraction;

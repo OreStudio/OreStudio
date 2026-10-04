@@ -71,6 +71,12 @@ struct intraday_power_load_convention final {
     std::string id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Dated load profiles, one date per semicolon, each a pipe-separated date and a
      * comma-separated list of load factors.
      */

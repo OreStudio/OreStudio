@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/swap_index_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_swap_index_convention_fields(const domain::swap_index_convention& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Conventions", .value = v.conventions});
     fields.push_back(
         {.name = "Fixing Calendar", .value = v.fixing_calendar.value_or(std::string{})});

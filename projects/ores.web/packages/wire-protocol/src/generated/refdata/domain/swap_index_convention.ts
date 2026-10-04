@@ -35,6 +35,7 @@ export interface SwapIndexConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     conventions: string;
     fixing_calendar: string | null;
     modified_by: string;

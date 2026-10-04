@@ -35,6 +35,7 @@ export interface FutureConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     index: string;
     date_generation_rule: string | null;
     netting_type: string | null;

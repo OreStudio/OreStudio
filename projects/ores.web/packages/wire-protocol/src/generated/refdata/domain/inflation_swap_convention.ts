@@ -35,6 +35,7 @@ export interface InflationSwapConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     fix_calendar: string;
     fix_convention: string;
     day_count_fraction: string;

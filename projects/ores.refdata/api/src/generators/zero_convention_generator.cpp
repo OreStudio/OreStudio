@@ -48,6 +48,7 @@ generate_synthetic_zero_convention(utility::generation::generation_context& ctx)
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-ZERO-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.tenor_based = true;
     r.day_count_fraction = std::string("ACT/365.FIXED");
     r.compounding = std::string("Continuous");

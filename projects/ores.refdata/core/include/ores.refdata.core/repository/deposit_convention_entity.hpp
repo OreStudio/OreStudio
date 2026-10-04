@@ -46,6 +46,7 @@ struct deposit_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     bool index_based = false;
     std::optional<std::string> index;
     std::optional<std::string> calendar;

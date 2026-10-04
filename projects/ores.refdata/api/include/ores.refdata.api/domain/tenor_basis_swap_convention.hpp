@@ -72,6 +72,12 @@ struct tenor_basis_swap_convention final {
     std::string id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Index the paying leg references, in the paying and receiving form.
      */
     std::optional<std::string> pay_index;

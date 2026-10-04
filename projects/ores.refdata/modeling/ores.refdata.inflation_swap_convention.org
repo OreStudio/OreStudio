@@ -53,6 +53,22 @@ Unique inflation swap identifier.
 std::string("UKRPI_INFLATIONSWAP")
 #+end_src
 
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key: true
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** fix_calendar
 :PROPERTIES:
 :type:        text
@@ -267,6 +283,7 @@ std::nullopt
 :PROPERTIES:
 :tablename: ores_refdata_inflation_swap_conventions_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 * C++

@@ -46,6 +46,7 @@ struct commodity_forward_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::optional<int> spot_days;
     std::optional<double> points_factor;
     std::optional<std::string> advance_calendar;

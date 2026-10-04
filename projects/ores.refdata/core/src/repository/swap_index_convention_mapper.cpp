@@ -42,6 +42,7 @@ swap_index_convention_mapper::map(const swap_index_convention_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.conventions = v.conventions;
     r.fixing_calendar = v.fixing_calendar;
     r.modified_by = v.modified_by;
@@ -63,6 +64,7 @@ swap_index_convention_mapper::map(const domain::swap_index_convention& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.conventions = v.conventions;
     r.fixing_calendar = v.fixing_calendar;
     r.modified_by = v.modified_by;

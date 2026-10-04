@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/cms_spread_option_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_cms_spread_option_convention_fields(const domain::cms_spread_option_conve
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Forward Start", .value = v.forward_start});
     fields.push_back({.name = "Spot Days", .value = v.spot_days});
     fields.push_back({.name = "Swap Tenor", .value = v.swap_tenor});

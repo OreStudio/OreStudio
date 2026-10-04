@@ -42,6 +42,7 @@ fx_option_convention_mapper::map(const fx_option_convention_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.fx_convention_id = v.fx_convention_id;
     r.atm_type = v.atm_type;
     r.delta_type = v.delta_type;
@@ -69,6 +70,7 @@ fx_option_convention_mapper::map(const domain::fx_option_convention& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.fx_convention_id = v.fx_convention_id;
     r.atm_type = v.atm_type;
     r.delta_type = v.delta_type;

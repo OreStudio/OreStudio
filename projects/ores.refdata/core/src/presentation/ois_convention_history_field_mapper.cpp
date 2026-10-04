@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/ois_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_ois_convention_fields(const domain::ois_convention& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Spot Lag", .value = std::to_string(v.spot_lag)});
     fields.push_back({.name = "Index", .value = v.index});
     fields.push_back({.name = "Fixed Day Count Fraction", .value = v.fixed_day_count_fraction});

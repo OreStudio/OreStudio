@@ -35,6 +35,7 @@ export interface BondYieldConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     compounding: string;
     frequency: string | null;
     price_type: string | null;

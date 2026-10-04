@@ -35,6 +35,7 @@ export interface CommodityForwardConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     spot_days: number | null;
     points_factor: number | null;
     advance_calendar: string | null;

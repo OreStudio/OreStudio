@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/provision-the-fomc-meeting-schedule
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A new tenant resolves the FOMC tenors 1F to 8F to FOMC meeting dates, as the sys
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -97,6 +97,24 @@ types, because nothing copies them. So the tenant also needs =US.FOMC= and
 No pillar check stops a curve from publishing past data. A curve's dates are
 calculated from its own as-of date, and only a pillar of zero length from spot
 is refused.
+
+** The dependency chain
+
+Each step's insert trigger checks the step before it, in the same tenant:
+
+1. countries, which a tenant gets only from a dataset publish, after
+   provisioning;
+2. the =US.FOMC= calendar, whose trigger checks its country;
+3. the diary entry type =central_bank_meeting=, which nothing copies;
+4. the tenor schedule =FOMC_MEETING=, which checks the calendar and the diary
+   entry type;
+5. the resolution rows' =schedule_code=, which checks the tenor schedule;
+6. the meeting dates, which check the calendar and the diary entry type.
+
+The provisioner runs before the publish, so it cannot create step 2. It copies
+no tenor schedules either, so =ROLL_QUARTER= is missing too, and the
+=CREDIT_CDS_IMM= resolutions lose their schedule in the same way as the FOMC
+ones.
 
 ** Captures this task replaces
 

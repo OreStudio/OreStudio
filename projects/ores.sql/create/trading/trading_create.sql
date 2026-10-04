@@ -323,6 +323,8 @@
 
 \ir ./trading_trade_additional_fields_create.sql
 \ir ./trading_trade_additional_fields_notify_trigger_create.sql
+\ir ./trading_trade_portfolios_create.sql
+\ir ./trading_trade_portfolios_notify_trigger_create.sql
 
 -- Trade query functions (depend on trades table + refdata tables)
 \ir ./trading_trades_functions_create.sql

@@ -212,10 +212,11 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.report_definitions', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 
-    -- ORE sample netting, in publish order. Party-scoped like party_essentials.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_sample_netting', 'ore.sample_netting_agreements', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_sample_netting', 'ore.sample_netting_sets', 20);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_sample_netting', 'ore.sample_csas', 30);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_sample_netting', 'ore.netting_set_aliases', 40);
+    -- The ORE samples, in publish order. Party-scoped like party_essentials.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_netting_agreements', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_netting_sets', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_csas', 30);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.netting_set_aliases', 40);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore_samples', 'ore.sample_portfolios', 50);
 END $$;
 

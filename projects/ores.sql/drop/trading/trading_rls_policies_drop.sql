@@ -49,6 +49,8 @@ drop policy if exists identifiers_party_isolation_policy on "ores_trading_trade_
 -- Trade Additional Fields
 drop policy if exists trade_additional_fields_party_isolation_policy on "ores_trading_trade_additional_fields_tbl";
 drop policy if exists trade_additional_fields_tenant_isolation_policy on "ores_trading_trade_additional_fields_tbl";
+drop policy if exists trade_portfolios_party_isolation_policy on "ores_trading_trade_portfolios_tbl";
+drop policy if exists trade_portfolios_tenant_isolation_policy on "ores_trading_trade_portfolios_tbl";
 
 -- Trade bookings
 drop policy if exists trade_bookings_party_isolation_policy on "ores_trading_trade_bookings_tbl";

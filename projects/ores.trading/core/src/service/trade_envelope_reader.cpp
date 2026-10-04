@@ -99,11 +99,27 @@ void trade_envelope_reader::read_booked_envelopes(
         auto& data = envelopes[*row[0]];
         data.counter_party = row[1];
         data.netting_set_id = row[2];
+        data.portfolio_ids.reset();
         data.additional_fields.reset();
         booked.insert(*row[0]);
     }
     if (booked.empty())
         return;
+
+    for (const auto& row : execute_parameterized_multi_column_query(
+             ctx_,
+             "SELECT trade_id::text, name "
+             "FROM ores_trading_trade_portfolio_names_fn($1::uuid[])",
+             {ids},
+             lg(),
+             "Reading the portfolio names of booked trades.")) {
+        if (!booked.contains(*row[0]))
+            continue;
+        auto& portfolios = envelopes[*row[0]].portfolio_ids;
+        if (!portfolios)
+            portfolios.emplace();
+        portfolios->push_back(row[1].value_or(""));
+    }
 
     for (const auto& row : execute_parameterized_multi_column_query(
              ctx_,

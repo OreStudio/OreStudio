@@ -24,7 +24,7 @@
 -- Publishes the ORE sample netting to the system tenant's root party, Acme
 -- Corporation Plc, so an ORE import into the system tenant resolves every
 -- netting set id the samples use. A provisioned tenant gets the same data per
--- party through the ore_sample_netting bundle. Runs after the ORE sample
+-- party through the ore_samples bundle. Runs after the ORE sample
 -- counterparties publication, whose banks the agreements are with. Idempotent.
 -- =============================================================================
 

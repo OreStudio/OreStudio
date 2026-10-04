@@ -27,6 +27,9 @@
  * - Without a recorded identifier, the entity's first ORE alias names it
  * - A trade with no netting set gets no netting set name
  * - A deleted identifier falls back to the entity's remaining ORE alias
+ * - A trade's portfolios come back by name in the order it stated them
+ * - A trade is reported only in its own party's portfolios
+ * - A second publish of the ORE sample portfolios adds nothing
  * - The booking refuses an identifier of another counterparty or netting set
  *
  * Run with: pg_prove -d <database> test/trading_trade_envelope_names_test.sql
@@ -34,7 +37,7 @@
 
 begin;
 
-select plan(7);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -165,6 +168,59 @@ select results_eq(
         array['00000000-0000-0000-0000-00000000e101'::uuid])$$,
     $$values ('CPTY'::text)$$,
     'a deleted identifier falls back to the entity''s remaining ORE alias');
+
+create or replace function pg_temp.report_in(p_trade uuid, p_sequence int, p_portfolio uuid)
+returns void as $$
+    insert into ores_trading_trade_portfolios_tbl (trade_id, sequence_number, tenant_id,
+        version, party_id, portfolio_id, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_trade, p_sequence, ores_utility_system_tenant_id_fn(), 0, party_id, p_portfolio,
+        owner_name, owner_name, 'system.new_record', 'test'
+    from t_ctx;
+$$ language sql;
+
+create or replace function pg_temp.portfolio_named(p_name text)
+returns uuid as $$
+    select id from ores_refdata_portfolios_tbl
+    where tenant_id = ores_utility_system_tenant_id_fn()
+      and party_id = (select party_id from t_ctx)
+      and name = p_name
+      and valid_to = ores_utility_infinity_timestamp_fn();
+$$ language sql;
+
+select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 1, pg_temp.portfolio_named('PF2'));
+select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 2, pg_temp.portfolio_named('PF1'));
+
+select results_eq(
+    $$select name from ores_trading_trade_portfolio_names_fn(
+        array['00000000-0000-0000-0000-00000000e102'::uuid])$$,
+    $$values ('PF2'::text), ('PF1'::text)$$,
+    'a trade''s portfolios come back by name in the order it stated them');
+
+insert into ores_refdata_portfolios_tbl (id, tenant_id, version, party_id, name,
+    parent_portfolio_id, purpose_type, is_virtual, status,
+    modified_by, performed_by, change_reason_code, change_commentary)
+select '00000000-0000-0000-0000-00000000e002'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    (select id from ores_refdata_parties_tbl
+     where tenant_id = ores_utility_system_tenant_id_fn() and id <> (select party_id from t_ctx)
+       and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1),
+    'ENVTEST-OTHER-PARTY', null, 'Risk', false, 'Active',
+    owner_name, owner_name, 'system.new_record', 'test'
+from t_ctx;
+
+select throws_like(
+    $$select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 3,
+        '00000000-0000-0000-0000-00000000e002'::uuid)$$,
+    '%The portfolio must be the trade''s party''s%',
+    'a trade is reported only in its own party''s portfolios');
+
+select results_eq(
+    $$select action, record_count from ores_refdata_publish_named_portfolios_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'ore.sample_portfolios'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    $$values ('skipped'::text, 2::bigint)$$,
+    'a second publish of the ORE sample portfolios adds nothing');
 
 select * from finish();
 

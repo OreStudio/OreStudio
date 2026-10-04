@@ -26,6 +26,8 @@
 -- Trade identifiers, party roles and additional fields (depend on the anchor)
 \ir ./trading_trade_additional_fields_notify_trigger_drop.sql
 \ir ./trading_trade_additional_fields_drop.sql
+\ir ./trading_trade_portfolios_notify_trigger_drop.sql
+\ir ./trading_trade_portfolios_drop.sql
 
 \ir ./trading_trade_party_roles_notify_trigger_drop.sql
 \ir ./trading_trade_party_roles_drop.sql

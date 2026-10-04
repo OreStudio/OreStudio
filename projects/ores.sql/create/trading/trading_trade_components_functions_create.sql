@@ -254,3 +254,25 @@ begin
       and a.id = any(p_trade_ids);
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
+
+-- The names of the portfolios each booked trade is reported in, in the order
+-- its source stated them. Runs as the owner, because the names live in a
+-- refdata table the trading service does not read; every row is held to the
+-- caller's tenant, and the caller passes only trades it has read.
+create or replace function ores_trading_trade_portfolio_names_fn(p_trade_ids uuid[])
+returns table (trade_id uuid, sequence_number integer, name text) as $$
+#variable_conflict use_column
+begin
+    return query
+    select tp.trade_id, tp.sequence_number, p.name
+    from ores_trading_trade_portfolios_tbl tp
+    join ores_refdata_portfolios_tbl p
+      on p.tenant_id = tp.tenant_id
+     and p.id = tp.portfolio_id
+     and p.valid_to = ores_utility_infinity_timestamp_fn()
+    where tp.tenant_id = ores_iam_current_tenant_id_fn()
+      and tp.valid_to = ores_utility_infinity_timestamp_fn()
+      and tp.trade_id = any(p_trade_ids)
+    order by tp.trade_id, tp.sequence_number;
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;

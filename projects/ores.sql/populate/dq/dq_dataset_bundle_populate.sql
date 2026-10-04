@@ -112,13 +112,13 @@ BEGIN
         'The reference data a single party needs: its ORE report definitions and its CRM (Cross-Rates Matrix) topology. Published once per party with a {"party_id": "..."} param. Carries no organisation structure, staff accounts or demonstration data -- those belong to the ACME demo bundles.'
     );
 
-    -- The netting the ORE sample documents import against. Demonstration
-    -- data for one party, so a profile names the party it belongs to;
-    -- acme_demo gives it to Acme Corporation Plc, the group's root.
+    -- What the ORE sample documents import against. Demonstration data for
+    -- one party, so a profile names the party it belongs to; acme_demo gives
+    -- it to Acme Corporation Plc, the group's root.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore_sample_netting',
-        'ORE Sample Netting',
-        'Master agreements, netting sets, CSAs and netting set aliases for the netting set ids the ORE sample documents use, built from the samples'' own netting definitions. Published once per party with a {"party_id": "..."} param, against the GLEIF banks the ORE counterparty aliases map onto.'
+        'ore_samples',
+        'ORE Samples',
+        'What the ORE sample documents import against: master agreements, netting sets, CSAs and netting set aliases for the netting set ids they use, built from the samples'' own netting definitions, and the portfolios their PortfolioIds name. Published once per party with a {"party_id": "..."} param, against the GLEIF banks the ORE counterparty aliases map onto.'
     );
 END $$;
 

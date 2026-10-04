@@ -26,7 +26,7 @@
 -- for every NettingSetId the sample trades use, the CSA ORE defines for a set,
 -- and the ORE alias each set answers to. The four datasets publish in that
 -- order, each to the party a publish names, and are the members of the
--- ore_sample_netting bundle.
+-- ore_samples bundle.
 --
 -- The netting set ids and their counterparties come from an inventory of the
 -- trade envelopes under external/ore/examples; the CSA terms are the most
@@ -76,7 +76,7 @@ begin
        uncollateralised.
 
     6. PUBLISH
-       The ore_sample_netting bundle publishes the four datasets in
+       The ore_samples bundle publishes the four datasets in
        dependency order to the party named by the publish parameters.'
     );
 end $$;

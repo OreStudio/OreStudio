@@ -190,6 +190,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'netting_set_aliases', 0, 'Netting Set Aliases', 'Names source systems use for netting sets, keyed by netting set code and published as netting set identifiers',
      'dq_netting_set_aliases_artefact_tbl', 'refdata_netting_set_identifiers_tbl', 'refdata.v1.netting-set-aliases.publish-from-dq', 67,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'named_portfolios', 0, 'Named Portfolios', 'Top-level portfolios a party adds by name, staged as portfolios and published to the party a publish names',
+     'dq_portfolios_artefact_tbl', 'refdata_portfolios_tbl', 'refdata.v1.named-portfolios.publish-from-dq', 68,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

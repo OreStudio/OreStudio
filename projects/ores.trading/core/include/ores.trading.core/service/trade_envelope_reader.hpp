@@ -38,10 +38,10 @@ namespace ores::trading::service {
  * This reader takes the trades as a set and issues one query per table.
  *
  * A booked trade's envelope comes from its anchor and components: the
- * counterparty and netting set names the booking recorded and the trade's
- * additional fields. A trade with no anchor keeps the envelope its own tables
- * hold, and a trade with neither is absent from the result. The portfolio ids
- * come from the envelope tables for every trade.
+ * counterparty and netting set names the booking recorded, the names of the
+ * portfolios it is reported in and its additional fields. A trade with no
+ * anchor keeps the envelope its own tables hold, and a trade with neither is
+ * absent from the result.
  */
 class ORES_TRADING_CORE_EXPORT trade_envelope_reader {
 private:

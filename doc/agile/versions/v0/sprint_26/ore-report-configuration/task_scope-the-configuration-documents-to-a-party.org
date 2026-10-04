@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/scope-the-analytics-documents-to-a-party
-#+pr: 2579
+#+pr: 2580
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -122,6 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2580][#2580]] | [analytics] Scope the analytics configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2579][#2579]] | [reporting] Scope the run document and reporting registry to a party |
 
 * Review

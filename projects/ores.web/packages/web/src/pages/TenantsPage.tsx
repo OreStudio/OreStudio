@@ -110,13 +110,9 @@ export function TenantsPage(): ReactNode {
      * the code the server sent.
      */
     const statuses = useQuery({ queryKey: ['tenant-statuses'], queryFn: api.tenantStatuses });
-    /*
-     * The types paint the type column and fill its filter. The system type
-     * names only the deployment's own bookkeeping, which the roster never
-     * shows, so it is not offered as a filter.
-     */
+    /* The types paint the type column and fill its filter. */
     const types = useQuery({ queryKey: ['tenant-types'], queryFn: api.tenantTypes });
-    const typeChoices = (types.data ?? []).filter((choice) => choice.code !== 'system');
+    const typeChoices = types.data ?? [];
 
     if (roster.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;

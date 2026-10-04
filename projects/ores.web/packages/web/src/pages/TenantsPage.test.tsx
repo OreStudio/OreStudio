@@ -360,9 +360,8 @@ describe('the tenant roster', () => {
         expect(html).toContain('All types');
         expect(html).toContain('<option value="operational">Operational</option>');
         expect(html).toContain('<option value="automation">Automation</option>');
-        // The system type names only the deployment's own bookkeeping, which
-        // the roster never shows.
-        expect(html).not.toContain('<option value="system">');
+        // The system tenant is listed, so its type is offered too.
+        expect(html).toContain('<option value="system">System</option>');
         expect(html).toContain('All statuses');
         expect(html).toContain('<option value="active">Active</option>');
     });

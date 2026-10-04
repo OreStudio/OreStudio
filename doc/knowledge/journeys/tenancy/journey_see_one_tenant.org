@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator opens one tenant from the roster and reads its details, its setup run and its parties.
@@ -64,9 +64,8 @@ This journey writes nothing.
    in this tenant*. Row-level security scopes every read from the session's
    token, so no read here names the tenant.
 6. *A tenant that does not exist.* The address names a code that no tenant
-   holds, or the system tenant. The screen says that no such tenant exists and
-   links back to the roster. It does not show the system tenant, for the same
-   reason the roster does not.
+   holds. The screen says that no such tenant exists and links back to the
+   roster. The system tenant opens like any other.
 7. *Leave, or go on.* The administrator goes back to the roster, enters the
    tenant, or picks an action on it: resume setup, and retire or reset when
    that journey exists.

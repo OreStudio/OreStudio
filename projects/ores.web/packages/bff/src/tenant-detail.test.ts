@@ -214,7 +214,7 @@ describe('GET /api/tenants/:code', () => {
         expect(response.json().code).toBe('not-found');
     });
 
-    it('answers the system tenant as no tenant', async () => {
+    it('opens the system tenant like any other', async () => {
         const { response, calls } = await get(
             {
                 ...ALL,
@@ -226,8 +226,9 @@ describe('GET /api/tenants/:code', () => {
             'system',
         );
 
-        expect(response.statusCode).toBe(404);
-        expect(calls.map((c) => c.subject)).toEqual(['iam.v1.tenants.get']);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().tenant).toMatchObject({ id: SYSTEM_TENANT, code: 'system' });
+        expect(calls.map((c) => c.subject)[0]).toBe('iam.v1.tenants.get');
     });
 
     it('refuses a session outside system administration', async () => {

@@ -44,6 +44,7 @@ A person sees the work they can do, in their own words. The home screen shows ar
 | [[id:CB77A11C-63D2-4D64-B615-5E3CF69054FC][Manage tenants as a list and open one in place]] | DONE | 2026-10-04 | 2026-10-04 | Tenants is one list with add and remove buttons. Opening a tenant shows its overview, parties and people, with the tenant session started and ended by the screen; nothing offers entering or leaving a tenant. |
 | [[id:D825FA3C-D4DE-47A4-8E31-2420C0457CE2][Remove a tenant]] | BACKLOG | | | A system administrator removes a tenant from the list or its screen, confirming with its code. The operation terminates the tenant over the bus, and the confirmation says exactly what removal does to sign-in and to sessions already open. |
 | [[id:EAF108C1-2AE5-4415-B8C7-1F69911EE3BC][Show faces and flags in a tenant]] | DONE | 2026-10-04 | 2026-10-04 | Show each person's picture on a tenant's People tab and each party's business centre flag on its Parties tab. |
+| [[id:8EA442E6-4198-43A2-81AC-9145C69C00B8][Show the system tenant]] | DONE | 2026-10-04 | 2026-10-04 | List the system tenant on the Tenants roster and open it like any other tenant, reading its parties and people as the session's own tenant. |
 
 * Decisions
 

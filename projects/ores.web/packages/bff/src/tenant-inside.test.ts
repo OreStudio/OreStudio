@@ -398,20 +398,43 @@ describe("a tenant's data, read from system administration", () => {
         expect(session.json()).not.toHaveProperty('actingIn');
     });
 
-    it('answers no tenant for an unknown code or the system tenant, and enters nothing', async () => {
-        for (const code of ['nobody', 'system']) {
-            const { server, cookies, calls } = buildTestServer();
+    it('answers no tenant for an unknown code, and enters nothing', async () => {
+        const { server, cookies, calls } = buildTestServer();
 
-            const response = await server.inject({
-                method: 'GET',
-                url: `/api/tenants/${code}/parties`,
-                cookies,
-            });
-            await server.close();
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/nobody/parties',
+            cookies,
+        });
+        await server.close();
 
-            expect(response.statusCode).toBe(404);
-            expect(calls.filter((call) => call.startsWith('enter'))).toHaveLength(0);
-        }
+        expect(response.statusCode).toBe(404);
+        expect(calls.filter((call) => call.startsWith('enter'))).toHaveLength(0);
+    });
+
+    /*
+     * The system tenant is the session's own, so its parties are read as the
+     * session, with nothing to enter or leave.
+     */
+    it('reads the system tenant as the session, entering nothing', async () => {
+        const { server, cookies, calls } = buildTestServer();
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/system/parties',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ parties: [{ code: 'ACMCOR' }] });
+        expect(calls).toEqual([
+            'outside iam.v1.tenants.get',
+            'outside refdata.v1.parties.list',
+            'outside refdata.v1.business_centres.list',
+            'outside refdata.v1.countries.list',
+            'outside assets.v1.images.list',
+        ]);
     });
 
     it('passes the server refusal of the entry on', async () => {

@@ -22,7 +22,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
-import type { TenantDetailResponse } from '@ores/wire-protocol/browser';
+import { SYSTEM_TENANT_ID, type TenantDetailResponse } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
@@ -114,9 +114,11 @@ export function TenantPage(): ReactNode {
                         </button>
                     ))}
                 </div>
-                <span title={t('tenants.detail.viewOnlyHint')}>
-                    <Tag tone="muted">{t('tenants.detail.viewOnly')}</Tag>
-                </span>
+                {tenant.id !== SYSTEM_TENANT_ID && (
+                    <span title={t('tenants.detail.viewOnlyHint')}>
+                        <Tag tone="muted">{t('tenants.detail.viewOnly')}</Tag>
+                    </span>
+                )}
             </div>
 
             {tab === 'parties' && <TenantParties code={tenant.code} />}

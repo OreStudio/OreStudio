@@ -32,7 +32,6 @@ import {
     NatsTransport,
     OresClient,
     SUBJECTS,
-    SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
     isUuid,
     changeOwnPassword,
@@ -883,7 +882,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /** The tenant type that marks test infrastructure, hidden unless asked for. */
     const TEST_TENANT_TYPE = 'automation';
 
-    /** The deployment's own tenant, which the roster never shows. */
+    /** The deployment's own tenant, which the home page does not count. */
     const SYSTEM_TENANT_TYPE = 'system';
 
     /**
@@ -891,10 +890,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      *
      * The roster the system administration area reads, and the list a screen
      * picks a tenant from before it retires or resets one. The search matches
-     * code, name and hostname. The read names the types a row may have, so the
-     * server leaves out the system tenant, which is the deployment's own
-     * bookkeeping and not a tenant somebody set up, and the test tenants unless
-     * they are asked for; the page and its total then agree.
+     * code, name and hostname. The system tenant is listed like any other, so
+     * a system administrator can open the deployment's own tenant. The read
+     * names the types a row may have, so the server leaves out the test
+     * tenants unless they are asked for; the page and its total then agree.
      */
     server.get('/api/tenants', async (request) => {
         const session = requireSession(request);
@@ -930,9 +929,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const hideTest = !page.data.includeTest && page.data.type !== TEST_TENANT_TYPE;
         const shown = (await readTenantTypes(session.client))
             .map((type) => type.code)
-            .filter(
-                (code) => code !== SYSTEM_TENANT_TYPE && !(hideTest && code === TEST_TENANT_TYPE),
-            );
+            .filter((code) => !(hideTest && code === TEST_TENANT_TYPE));
         const read = await listTenantsPage(session.client, {
             search: page.data.search,
             type: page.data.type,
@@ -1141,8 +1138,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * One tenant's screen: the tenant and the run that set it up.
      *
      * The tenant is read by its code, which is how the registry's get keys it.
-     * The system tenant is the deployment's own bookkeeping, so it is answered
-     * as no tenant, as the roster leaves it out. The run is read beside the
+     * The system tenant opens like any other. The run is read beside the
      * tenant, and a failure to read it is not a failure to read the tenant.
      * The tenant's own data is read from inside the tenant, not from here.
      */
@@ -1153,7 +1149,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         const { code } = request.params as { code: string };
         const tenant = await readTenant(session.client, code);
-        if (tenant === null || tenant.id === SYSTEM_TENANT_ID) {
+        if (tenant === null) {
             throw notFound('No tenant has this code.');
         }
 
@@ -1192,7 +1188,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         const { code } = request.params as { code: string };
         const tenant = await readTenant(session.client, code);
-        if (tenant === null || tenant.id === SYSTEM_TENANT_ID) {
+        if (tenant === null) {
             throw notFound('No tenant has this code.');
         }
         return { session, tenantId: tenant.id };
@@ -1212,6 +1208,13 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         tenantId: string,
         read: (caller: AuthenticatedCaller, tenantId: string) => Promise<T>,
     ): Promise<T> {
+        /*
+         * The session's own tenant, the system tenant for a system
+         * administrator, is read as the session: there is nothing to enter.
+         */
+        if (tenantId === session.tenantId) {
+            return read(session.client, tenantId);
+        }
         /*
          * Only a refused entry is a refusal. A read that fails inside the
          * tenant is carried out as itself, so the browser is not told it may

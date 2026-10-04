@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-10-01
-#+updated: 2026-10-02
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the tenants a deployment holds: their code, name, hostname, type and status.
@@ -83,13 +83,14 @@ find out what exists.
    opens the tenant's provisioning run when that run did not complete. *Retire
    or reset* shows as not built yet until its journey exists.
 
-The roster does not show the system tenant. The tenant registry is
+The roster shows the system tenant like any other row, so a system
+administrator can open the deployment's own tenant. The tenant registry is
 system-scoped: the table's own check requires every row to carry the system
 tenant in =tenant_id=, so that column names the owner of the registry and never
 the tenant a row describes. A row's identity is its =id=, and the deployment's
 own bookkeeping is the row whose =id= is
 =ffffffff-ffff-ffff-ffff-ffffffffffff=. That row is not a tenant somebody set
-up, so the roster leaves it out. A reader who filters on =tenant_id= instead of
+up, so the home page does not count it. A reader who filters on =tenant_id= instead of
 =id= asks the wrong question and gets an empty list for a deployment full of
 tenants. The rule is the one
 =projects/ores.iam/core/include/ores.iam.core/service/tenant_presence.hpp=
@@ -143,8 +144,7 @@ carries one page in code order and the total that match.
 
 The browser reads it through the BFF route =GET /api/tenants=. The route names
 the types a row may have from the deployment's own type rows, leaving out the
-system type, so the system tenant is never in the answer, and the automation
-type unless asked, reporting how many tenants that hid. It reads the type and
+automation type unless asked, and reports how many tenants that hid. It reads the type and
 status rows through =GET /api/tenant-types= and =GET /api/tenant-statuses=,
 and each row's provisioning run with one read that names the tenants on the
 page.
@@ -158,10 +158,10 @@ the roster chose.
    it is given, pages and counts every match
    ([[id:4A15EFC1-447A-4573-9BF1-5B9E69A9C7D7][Search and page the tenant roster]],
    [[id:49E680DA-EC29-42A7-89BD-0D40481539A5][Filter the tenant roster by type and status]]).
-2. *Closed: the system tenant is left out of the roster.* The route names the
-   types a row may have and never the system type, so the server leaves the
-   system tenant out and the page and its total agree. A caller of the list
-   that names no types still reads it; that caller holds =iam::tenants:read=.
+2. *Closed, then reversed: the system tenant on the roster.* The roster first
+   left the system tenant out. It now lists it, because a system administrator
+   wants to see the deployment's own tenant
+   ([[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]]).
 3. *Closed: the list read checks the permission.* The tenant model guards its
    reads, so =iam.v1.tenants.list= and =iam.v1.tenants.get= check
    =iam::tenants:read=, as the search did.
@@ -170,12 +170,9 @@ the roster chose.
    So "who runs this tenant" is not answerable from the roster, and a review
    has to open each tenant in turn. The candidate is an administrator column on
    the row, or a joined read.
-5. *Nothing reaches the system tenant row.* The roster excludes the system
-   tenant by design, and no other screen offers it, so the deployment's own row
-   cannot be read from the web at all. That is intended for a roster of the
-   tenants somebody set up. The open question is whether the system tenant
-   should be readable anywhere, for example to confirm its status, given that
-   the generic delete path can still terminate it. See
+5. *Closed: the system tenant row is readable.* The roster lists it and its
+   screen opens like any other, so its status can be confirmed. Removing it is
+   not offered, and the database refuses it. See
    [[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]].
 
 * Related journeys

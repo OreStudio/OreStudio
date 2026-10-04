@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/scope-the-analytics-documents-to-a-party
+#+branch: feature/scope-the-curve-configuration-to-a-party
 #+pr: 2580
 #+blocked_on:
 #+blocked_since:

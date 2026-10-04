@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-sample-netting
-#+pr:
+#+pr: 2598
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2598][#2598]] | [dq] Publish the ORE sample netting agreements, sets and CSAs |
 
 * Review
 

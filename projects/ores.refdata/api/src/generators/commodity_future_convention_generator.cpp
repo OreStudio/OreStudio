@@ -48,6 +48,7 @@ generate_synthetic_commodity_future_convention(utility::generation::generation_c
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("COMDTY_WTI_USD") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.contract_frequency = std::string("Monthly");
     r.calendar = std::string("ICE_FuturesUS");
     r.expiry_calendar = std::nullopt;

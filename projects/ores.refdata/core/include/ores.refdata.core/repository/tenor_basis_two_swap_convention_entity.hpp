@@ -46,6 +46,7 @@ struct tenor_basis_two_swap_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string calendar;
     std::string long_fixed_frequency;
     std::string long_fixed_convention;

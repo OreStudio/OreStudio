@@ -48,6 +48,7 @@ generate_synthetic_fx_option_convention(utility::generation::generation_context&
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-USD-FXOPTION") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.fx_convention_id = std::string("EUR-USD-FX");
     r.atm_type = std::string("Atm");
     r.delta_type = std::string("Spot");

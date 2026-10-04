@@ -69,6 +69,12 @@ struct bma_basis_swap_convention final {
     std::string id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief IBOR or overnight index the non-BMA leg pays.
      */
     std::string index;

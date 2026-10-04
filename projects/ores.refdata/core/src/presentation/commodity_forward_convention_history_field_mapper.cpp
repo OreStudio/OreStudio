@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/commodity_forward_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_commodity_forward_convention_fields(const domain::commodity_forward_conve
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Spot Days", .value = v.spot_days ? std::to_string(*v.spot_days) : std::string{}});
     fields.push_back({.name = "Points Factor",

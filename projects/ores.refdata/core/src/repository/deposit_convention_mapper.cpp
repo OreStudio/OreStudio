@@ -41,6 +41,7 @@ domain::deposit_convention deposit_convention_mapper::map(const deposit_conventi
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index_based = v.index_based;
     r.index = v.index;
     r.calendar = v.calendar;
@@ -66,6 +67,7 @@ deposit_convention_entity deposit_convention_mapper::map(const domain::deposit_c
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.index_based = v.index_based;
     r.index = v.index;
     r.calendar = v.calendar;

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T03:02:17.968962Z
+' Generated: 2026-10-04T03:44:51.424812Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -909,6 +909,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_average_ois_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * spot_lag : integer
@@ -1008,6 +1009,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_bma_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * index : text
@@ -1086,6 +1088,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_bond_yield_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * compounding : text
@@ -1713,6 +1716,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_cds_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * settlement_days : integer
@@ -1811,6 +1815,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_cms_spread_option_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * forward_start : text
@@ -1901,6 +1906,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_commodity_forward_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
           spot_days : integer
@@ -1937,6 +1943,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_commodity_future_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * contract_frequency : text
@@ -2347,6 +2354,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_cross_currency_basis_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * settlement_days : integer
@@ -2397,6 +2405,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_cross_currency_fix_float_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * settlement_days : integer
@@ -3609,6 +3618,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_deposit_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * index_based : boolean
@@ -3845,6 +3855,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_fra_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * index : text
@@ -3870,6 +3881,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_future_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * index : text
@@ -3899,6 +3911,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_fx_option_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
           fx_convention_id : text <<FK>>
@@ -4128,6 +4141,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_inflation_swap_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * fix_calendar : text
@@ -4259,6 +4273,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_intraday_power_load_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
           explicit_load_profile : text
@@ -4596,6 +4611,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_ois_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * spot_lag : integer
@@ -5355,6 +5371,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_swap_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
           fixed_calendar : text
@@ -5386,6 +5403,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_swap_index_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * conventions : text
@@ -5497,6 +5515,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_tenor_basis_swap_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
           pay_index : text
@@ -5542,6 +5561,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_tenor_basis_two_swap_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * calendar : text
@@ -5915,6 +5935,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_zero_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * tenor_based : boolean
@@ -5948,6 +5969,7 @@ package "refdata" #FFF3E0 {
     entity ores_refdata_zero_inflation_index_conventions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>
+        * party_id : uuid <<PK, FK>>
         --
         * version : integer
         * region_name : text

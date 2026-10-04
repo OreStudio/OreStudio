@@ -46,6 +46,7 @@ struct ois_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     int spot_lag = 0;
     std::string index;
     std::string fixed_day_count_fraction;

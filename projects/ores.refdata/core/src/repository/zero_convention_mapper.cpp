@@ -41,6 +41,7 @@ domain::zero_convention zero_convention_mapper::map(const zero_convention_entity
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.tenor_based = v.tenor_based;
     r.day_count_fraction = v.day_count_fraction;
     r.compounding = v.compounding;
@@ -68,6 +69,7 @@ zero_convention_entity zero_convention_mapper::map(const domain::zero_convention
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.tenor_based = v.tenor_based;
     r.day_count_fraction = v.day_count_fraction;
     r.compounding = v.compounding;

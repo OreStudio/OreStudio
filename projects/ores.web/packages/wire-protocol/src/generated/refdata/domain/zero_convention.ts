@@ -35,6 +35,7 @@ export interface ZeroConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     tenor_based: boolean;
     day_count_fraction: string;
     compounding: string | null;

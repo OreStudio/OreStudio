@@ -35,6 +35,7 @@ export interface AverageOisConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     spot_lag: number;
     fixed_tenor: string;
     fixed_day_count_fraction: string;

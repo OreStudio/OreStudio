@@ -46,6 +46,7 @@ struct zero_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     bool tenor_based = false;
     std::string day_count_fraction;
     std::optional<std::string> compounding;

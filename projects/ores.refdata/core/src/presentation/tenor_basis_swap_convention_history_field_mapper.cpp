@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/tenor_basis_swap_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_tenor_basis_swap_convention_fields(const domain::tenor_basis_swap_convent
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Pay Index", .value = v.pay_index.value_or(std::string{})});
     fields.push_back({.name = "Pay Frequency", .value = v.pay_frequency.value_or(std::string{})});
     fields.push_back({.name = "Receive Index", .value = v.receive_index.value_or(std::string{})});

@@ -48,6 +48,7 @@ generate_synthetic_commodity_forward_convention(utility::generation::generation_
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("PM:XAUUSD") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.spot_days = std::nullopt;
     r.points_factor = std::nullopt;
     r.advance_calendar = std::nullopt;

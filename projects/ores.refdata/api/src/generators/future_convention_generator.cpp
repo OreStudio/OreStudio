@@ -48,6 +48,7 @@ generate_synthetic_future_convention(utility::generation::generation_context& ct
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-3M-FUTURE") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.index = std::string("EUR-EURIBOR-3M");
     r.date_generation_rule = std::string("IMM");
     r.netting_type = std::string("Compounding");

@@ -48,6 +48,7 @@ generate_synthetic_intraday_power_load_convention(utility::generation::generatio
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("LOAD_PROFILE_1_EXPLICIT") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.explicit_load_profile = std::nullopt;
     r.business_day_load_rules = std::nullopt;
     r.modified_by = modified_by;

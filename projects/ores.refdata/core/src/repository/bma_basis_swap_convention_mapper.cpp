@@ -42,6 +42,7 @@ bma_basis_swap_convention_mapper::map(const bma_basis_swap_convention_entity& v)
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index = v.index;
     r.bma_index = v.bma_index;
     r.bma_payment_calendar = v.bma_payment_calendar;
@@ -72,6 +73,7 @@ bma_basis_swap_convention_mapper::map(const domain::bma_basis_swap_convention& v
     r.tenant_id = v.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.index = v.index;
     r.bma_index = v.bma_index;
     r.bma_payment_calendar = v.bma_payment_calendar;

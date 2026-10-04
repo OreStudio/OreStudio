@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/cross_currency_fix_float_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ std::vector<ores::diff::domain::field_value> render_cross_currency_fix_float_con
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
     fields.push_back({.name = "Settlement Calendar", .value = v.settlement_calendar});
     fields.push_back({.name = "Settlement Convention", .value = v.settlement_convention});

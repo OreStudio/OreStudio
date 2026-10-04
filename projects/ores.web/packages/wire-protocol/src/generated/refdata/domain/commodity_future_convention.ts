@@ -35,6 +35,7 @@ export interface CommodityFutureConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     contract_frequency: string;
     calendar: string;
     expiry_calendar: string | null;

@@ -35,6 +35,7 @@ export interface SwapConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     fixed_calendar: string | null;
     fixed_frequency: string;
     fixed_convention: string | null;

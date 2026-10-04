@@ -48,6 +48,7 @@ domain::cross_currency_fix_float_convention generate_synthetic_cross_currency_fi
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.settlement_days = 2;
     r.settlement_calendar = std::string("US,UK,TRY");
     r.settlement_convention = std::string("Following");

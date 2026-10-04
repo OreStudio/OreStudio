@@ -46,6 +46,7 @@ struct commodity_future_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string contract_frequency;
     std::string calendar;
     std::optional<std::string> expiry_calendar;

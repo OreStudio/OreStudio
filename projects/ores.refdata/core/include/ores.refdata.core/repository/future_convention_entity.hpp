@@ -46,6 +46,7 @@ struct future_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string index;
     std::optional<std::string> date_generation_rule;
     std::optional<std::string> netting_type;

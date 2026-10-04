@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "configuration_type_seed_tests.cpp"
+    "conventions_party_database_tests.cpp"
     "credit_simulation_database_roundtrip_tests.cpp"
     "curve_configuration_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"

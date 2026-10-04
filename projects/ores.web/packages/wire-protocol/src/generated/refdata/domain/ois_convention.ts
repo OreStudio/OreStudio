@@ -35,6 +35,7 @@ export interface OisConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     spot_lag: number;
     index: string;
     fixed_day_count_fraction: string;

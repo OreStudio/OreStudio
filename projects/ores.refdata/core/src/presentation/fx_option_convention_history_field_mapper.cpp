@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/fx_option_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_fx_option_convention_fields(const domain::fx_option_convention& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "FX Convention ID", .value = v.fx_convention_id.value_or(std::string{})});
     fields.push_back({.name = "Atm Type", .value = v.atm_type});

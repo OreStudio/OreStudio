@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-the-marketdata-code
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,7 +27,7 @@ standard.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -47,6 +47,17 @@ standard.
 
 Run the compass-code-review-comments pass last, over the whole component.
 
+Three pull requests, one per verifiable unit:
+
+1. =std::stod= to =parse_double=, the =market_series= table comment, and G02:
+   one repository each for observations and fixings.
+2. P02: the tick subjects declared in a model. The prefixes are written out in
+   the ingest loop, both services' stream set-up and the synthetic feeds, and
+   =fx_spot_tick= and =ir_curve_tick= are hand-written, so this is larger than
+   one constant.
+3. H03: the comment-rules pass over the component and the templates that
+   produce it.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -62,6 +73,18 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Part 1: the two repositories
+
+The generated =market_observation_repository= and =market_fixing_repository=
+survive. Their =write= makes a version claim per row, one query each, which an
+import of about 100,000 observations cannot afford, so the append the
+hand-written classes did is the custom method =insert=. The reads production
+used, =read_latest_for_series=, =read_as_of= and =read_as_of_buckets=, moved as
+custom methods too, declared in the models. The date-range read and
+remove-by-series had only test callers, so they went with the hand-written
+classes. The single-fixing test asserted only that nothing threw; it now reads
+the fixing back.
 
 [[id:8B193823-0382-4FE3-A95B-A34799B5972D][Correct the marketdata clean-standard record]] added the three namespace headers, so G08 already
 passes, and made =subject_helpers.hpp= use the api constant

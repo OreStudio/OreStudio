@@ -69,6 +69,10 @@ change of state is a version and the history is the audit trail an auditor reads
 The model follows [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]]: each fact in one column of one table, keys
 stated, and no column that holds a document. Nothing is stored as JSON.
 
+#+caption: The proposed schema: approval requests, the role request kind, and notifications.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/approval_and_notification_schema.png]]
+
 =ores_inbox_approval_kinds_tbl=, a lookup of the kinds:
 
 | Column | Key | What it holds |

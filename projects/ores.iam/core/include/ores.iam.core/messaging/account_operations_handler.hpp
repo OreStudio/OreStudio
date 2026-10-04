@@ -712,25 +712,10 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
-            if (token.empty()) {
-                error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            auto scope = self_request_scope(msg);
+            if (!scope)
                 return;
-            }
-            auto claims_result = signer_.validate(token);
-            if (!claims_result) {
-                error_reply(nats_, msg, ores::service::error_code::unauthorized);
-                return;
-            }
-            boost::uuids::string_generator sg;
-            auto account_id = sg(claims_result->subject);
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
+            const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.update_self_account(*req, account_id);
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -738,12 +723,13 @@ public:
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
-            // thing and is reported as such.
+            // thing and is reported as such. The store's own text describes
+            // the schema to whoever reads it, so it stays in the log.
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             update_self_account_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
-            failure.result.message = e.what();
+            failure.result.message = "The write failed.";
             reply(nats_, msg, failure);
         }
     }
@@ -764,25 +750,10 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
-            if (token.empty()) {
-                error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            auto scope = self_request_scope(msg);
+            if (!scope)
                 return;
-            }
-            auto claims_result = signer_.validate(token);
-            if (!claims_result) {
-                error_reply(nats_, msg, ores::service::error_code::unauthorized);
-                return;
-            }
-            boost::uuids::string_generator sg;
-            auto account_id = sg(claims_result->subject);
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
+            const auto& [account_id, ctx] = *scope;
             service::account_operations_service svc(ctx);
             auto response = svc.update_self_account_contact_information(*req, account_id);
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
@@ -792,7 +763,7 @@ public:
             update_self_account_contact_information_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
-            failure.result.message = e.what();
+            failure.result.message = "The write failed.";
             reply(nats_, msg, failure);
         }
     }
@@ -1170,6 +1141,48 @@ public:
     }
 
 private:
+    /**
+     * @brief Resolves the caller's own account and request context.
+     *
+     * The self subjects carry no account id, so the account comes from the
+     * bearer token. A refusal -- no token, a token that does not validate, a
+     * token whose subject is not an account id, or an unusable request
+     * context -- is answered through the message here, and the call returns
+     * nothing, so the caller's own reply is reserved for what the service
+     * decided.
+     */
+    std::optional<std::pair<boost::uuids::uuid, ores::database::context>>
+    self_request_scope(const ores::nats::message& msg) {
+        auto token = ores::service::messaging::bearer_token(msg);
+        if (token.empty()) {
+            error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            return std::nullopt;
+        }
+        auto claims_result = signer_.validate(token);
+        if (!claims_result) {
+            error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            return std::nullopt;
+        }
+        boost::uuids::string_generator sg;
+        boost::uuids::uuid account_id;
+        try {
+            account_id = sg(claims_result->subject);
+        } catch (const std::exception&) {
+            BOOST_LOG_SEV(account_handler_lg(), warn)
+                << "Self write refused: token subject is not an account id: "
+                << claims_result->subject;
+            error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            return std::nullopt;
+        }
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return std::nullopt;
+        }
+        return std::make_pair(account_id, *ctx_expected);
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;

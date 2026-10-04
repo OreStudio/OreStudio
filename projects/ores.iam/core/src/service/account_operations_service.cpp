@@ -453,7 +453,8 @@ account_operations_service::update_self_account(
     messaging::update_self_account_response response;
 
     // The three fields only an administrator owns are declared on the request
-    // so a stated value is refused by name, never dropped in silence.
+    // so a stated value is refused by name, never dropped in silence. An empty
+    // string is not a stated value: it means the field is not stated.
     const auto refuse_unowned = [&response](std::string_view field, const std::string& value) {
         if (value.empty())
             return;
@@ -517,6 +518,30 @@ account_operations_service::update_self_account_contact_information(
     BOOST_LOG_SEV(lg(), debug) << "Updating own account contact information: "
                                << boost::uuids::to_string(account_id);
     messaging::update_self_account_contact_information_response response;
+
+    // A stated value must be one the record can hold: a contact email that is a
+    // real address, and a country that is an ISO 3166-1 alpha-2 code. A stated
+    // value that fails leaves the record as it is.
+    const auto refuse_invalid =
+        [&response](std::string_view field, bool valid, std::string_view message) {
+            if (!valid)
+                response.result.fields.push_back(
+                    {std::string(field), "invalid_field_value", std::string(message)});
+        };
+    if (!request.email.empty())
+        refuse_invalid("email",
+                       validation::email_validator::validate(request.email).is_valid,
+                       "The email is not a valid address.");
+    if (!request.country_code.empty())
+        refuse_invalid("country_code",
+                       request.country_code.size() == 2,
+                       "The country code must be an ISO 3166-1 alpha-2 code.");
+    if (!response.result.fields.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "invalid_field_value";
+        response.result.message = "The request states a value the record cannot hold.";
+        return response;
+    }
 
     const auto account_id_text = boost::uuids::to_string(account_id);
     auto existing = contact_repo_.read_latest_by_account_id(ctx_, account_id_text, 0, 1);

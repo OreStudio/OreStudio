@@ -333,6 +333,10 @@ struct change_password_request_typed {
  * cannot name another account. The three fields a member owns are the whole
  * of the profile write; the three a member does not own are declared beside
  * them so a stated value is refused by name rather than dropped in silence.
+ *
+ * The write states the owned fields whole: an empty string replaces the
+ * field with nothing. The same empty string on an unowned field means the
+ * field is not stated, and the write leaves it as it is.
  */
 struct update_self_account_request {
     using response_type = struct update_self_account_response;
@@ -398,6 +402,11 @@ struct update_self_account_response {
  * request carries no account id and no record id, and it cannot name another
  * account's record. A member who has no contact record gets one on the first
  * write.
+ *
+ * The write states the nine fields whole: an empty string replaces the field
+ * with nothing. A stated email must be a valid address, and a stated country
+ * code must be an ISO 3166-1 alpha-2 code, or the write is refused with the
+ * field named.
  */
 struct update_self_account_contact_information_request {
     using response_type = struct update_self_account_contact_information_response;

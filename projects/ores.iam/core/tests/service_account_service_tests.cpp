@@ -22,6 +22,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/generators/account_contact_information_generator.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
@@ -652,6 +653,119 @@ TEST_CASE("update_self_account_contact_information_creates_the_record_when_missi
     REQUIRE(stored.size() == 1);
     CHECK(stored.front().id == record_id);
     CHECK(stored.front().city == "Cambridge");
+}
+
+TEST_CASE("update_self_account_reports_an_account_that_is_not_there", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    service::account_operations_service sut(h.context());
+
+    messaging::update_self_account_request request;
+    request.full_name = "Nobody";
+    request.change_reason_code = "common.non_material_update";
+
+    const auto response = sut.update_self_account(request, boost::uuids::random_generator()());
+    CHECK(response.result.outcome == ores::utility::domain::outcome::missing);
+    CHECK(response.result.code == "not_found");
+    CHECK(!response.account.has_value());
+}
+
+TEST_CASE("update_self_account_refuses_an_image_id_that_is_not_a_uuid", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    messaging::update_self_account_request request;
+    request.full_name = "Ada Lovelace";
+    request.image_id = "not-a-uuid";
+    request.change_reason_code = "common.non_material_update";
+
+    const auto response = sut.update_self_account(request, a.id);
+    CHECK(response.result.outcome == ores::utility::domain::outcome::invalid);
+    CHECK(response.result.code == "invalid_image_id");
+    REQUIRE(response.result.fields.size() == 1);
+    CHECK(response.result.fields[0].field == "image_id");
+    CHECK(!response.account.has_value());
+
+    const auto reloaded = sut.find_account_by_id(a.id);
+    REQUIRE(reloaded.has_value());
+    CHECK(reloaded->full_name == a.full_name);
+    CHECK(!reloaded->image_id.has_value());
+}
+
+TEST_CASE("update_self_account_contact_information_updates_a_record_that_already_exists", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    // A record an administrator wrote before the member ever signed in.
+    auto existing = generate_synthetic_account_contact_information(ctx);
+    existing.account_id = a.id;
+    repository::account_contact_information_repository contact_repo;
+    contact_repo.write(h.context(), existing);
+
+    messaging::update_self_account_contact_information_request request;
+    request.city = "Cambridge";
+    request.country_code = "GB";
+    request.change_reason_code = "common.non_material_update";
+
+    const auto response = sut.update_self_account_contact_information(request, a.id);
+    CHECK(response.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(response.account_contact_information.has_value());
+    CHECK(response.account_contact_information->id == existing.id);
+    CHECK(response.account_contact_information->city == "Cambridge");
+    // The write states the fields whole: the synthetic street line the request
+    // does not state is replaced with nothing.
+    CHECK(response.account_contact_information->street_line_1.empty());
+
+    const auto stored =
+        contact_repo.read_latest_by_account_id(h.context(), boost::uuids::to_string(a.id), 0, 100);
+    REQUIRE(stored.size() == 1);
+}
+
+TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_country_code", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    messaging::update_self_account_contact_information_request request;
+    request.city = "London";
+    request.country_code = "United Kingdom";
+    request.email = "not-an-address";
+    request.change_reason_code = "common.non_material_update";
+
+    const auto response = sut.update_self_account_contact_information(request, a.id);
+    CHECK(response.result.outcome == ores::utility::domain::outcome::invalid);
+    CHECK(response.result.code == "invalid_field_value");
+    REQUIRE(response.result.fields.size() == 2);
+    CHECK(response.result.fields[0].field == "email");
+    CHECK(response.result.fields[1].field == "country_code");
+    CHECK(!response.account_contact_information.has_value());
+
+    // The refusal writes nothing, not even the record the member lacks.
+    repository::account_contact_information_repository contact_repo;
+    const auto stored =
+        contact_repo.read_latest_by_account_id(h.context(), boost::uuids::to_string(a.id), 0, 100);
+    CHECK(stored.empty());
 }
 
 TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", tags) {

@@ -130,6 +130,9 @@ describe('GET /api/classifications', () => {
             topic: 'currencies',
             shape: 'named',
             editable: true,
+            writePermission: 'refdata::monetary_natures:write',
+            deletePermission: 'refdata::monetary_natures:delete',
+            count: null,
         });
     });
 
@@ -137,6 +140,130 @@ describe('GET /api/classifications', () => {
         const { server } = buildTestServer({});
         const response = await server.inject({ method: 'GET', url: '/api/classifications' });
         expect(response.statusCode).toBe(401);
+    });
+});
+
+describe('the catalogue counts', () => {
+    it('answers the count each list reports', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.monetary_natures.list': { result: ok, types: [], total: 4 },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/classifications');
+        const lists = (response.json() as { lists: { key: string; count: number | null }[] }).lists;
+        expect(lists.find((list) => list.key === 'monetary-nature')?.count).toBe(4);
+        expect(lists.find((list) => list.key === 'rounding-type')?.count).toBeNull();
+    });
+});
+
+describe('the labels', () => {
+    it('joins each row to its label', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.rounding_types.list': {
+                result: ok,
+                types: [
+                    { version: 1, code: 'Up', name: 'Up', display_order: 1 },
+                    { version: 1, code: 'Odd', name: 'Odd', display_order: 2 },
+                ],
+            },
+            'dq.v1.badge_mappings.list_by_code_domain_code': {
+                result: ok,
+                badge_mappings: [
+                    {
+                        code_domain_code: 'rounding_type',
+                        entity_code: 'Up',
+                        badge_code: 'rounding_type_up',
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/classifications/rounding-type');
+        expect(response.json()).toMatchObject({
+            rows: [
+                { code: 'Up', labelCode: 'rounding_type_up' },
+                { code: 'Odd', labelCode: null },
+            ],
+        });
+    });
+
+    it('still answers the rows when the labels cannot be read', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.rounding_types.list': {
+                result: ok,
+                types: [{ version: 1, code: 'Up', name: 'Up', display_order: 1 }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/classifications/rounding-type');
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ rows: [{ code: 'Up', labelCode: null }] });
+    });
+
+    it('answers the label catalogue', async () => {
+        const { server, sessionId } = buildTestServer({
+            'dq.v1.badge_definitions.list': {
+                definitions: [
+                    { code: 'rounding_type_up', name: 'Up', background_colour: '#8b5cf6' },
+                ],
+            },
+            'dq.v1.badge_mappings.list': {
+                result: ok,
+                badge_mappings: [
+                    {
+                        code_domain_code: 'rounding_type',
+                        entity_code: 'Up',
+                        badge_code: 'rounding_type_up',
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/labels');
+        expect(response.json()).toMatchObject({
+            labels: [{ code: 'rounding_type_up', label: 'Up' }],
+            domains: { rounding_type: ['rounding_type_up'] },
+        });
+    });
+
+    it('labels a row of a read-only list, because a label is not a spelling', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'dq.v1.badge_mappings.put': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/classifications/day-counter/rows/A360/label',
+            {
+                badgeCode: 'active',
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.body).toMatchObject({
+            change: {
+                write: {
+                    code_domain_code: 'day_counter',
+                    entity_code: 'A360',
+                    badge_code: 'active',
+                },
+            },
+        });
+    });
+
+    it('takes a label away when the badge is null', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'dq.v1.badge_mappings.delete': { result: ok },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/classifications/rounding-type/rows/Up/label',
+            {
+                badgeCode: null,
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(204);
+        expect(calls[0]?.subject).toBe('dq.v1.badge_mappings.delete');
     });
 });
 

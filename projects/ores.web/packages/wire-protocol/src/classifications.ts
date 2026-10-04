@@ -22,12 +22,15 @@
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type {
+    BadgePresentation,
     ClassificationList,
     ClassificationRow,
     ClassificationShape,
     HistoryVersion,
 } from './domain.js';
+import { readBadgeCatalogue } from './badges.js';
 import { OperationFailedError } from './errors.js';
+import { subjects as badgeMappingSubjects } from './generated/dq/protocol/badge_mapping_protocol.js';
 import {
     historySubjectFor,
     type GetEntityHistoryRequest,
@@ -70,7 +73,10 @@ import { resultEnvelopeSchema } from './operations.js';
  * reaches this table through the generator. `rows` names the field of the
  * list reply that carries the rows, which differs between lists.
  */
-interface ClassificationDescriptor extends ClassificationList {
+interface ClassificationDescriptor extends Omit<
+    ClassificationList,
+    'writePermission' | 'deletePermission'
+> {
     readonly rows: string;
     /** Whether the list request carries a point-in-time field, which its decoder requires. */
     readonly asOf?: true;
@@ -494,15 +500,54 @@ export function classificationList(key: string): ClassificationDescriptor | unde
     return CLASSIFICATION_LISTS.find((list) => list.key === key);
 }
 
+/**
+ * The name the list's subjects and permissions share, such as `rounding_types`.
+ *
+ * Read from the put subject, so the permission a screen checks is the one the
+ * server enforces for that subject.
+ */
+function resourceOf(list: ClassificationDescriptor): string {
+    return list.subjects.put.split('.')[2] ?? '';
+}
+
+/** The code domain of a list's labels: its entity name, as the label catalogue keys it. */
+export function codeDomainOf(list: ClassificationDescriptor): string {
+    return list.entityType.split('.')[2] ?? '';
+}
+
 /** Every list's public description, without its subjects. */
 export function classificationCatalogue(): readonly ClassificationList[] {
-    return CLASSIFICATION_LISTS.map(({ key, entityType, topic, shape, editable }) => ({
-        key,
-        entityType,
-        topic,
-        shape,
-        editable,
+    return CLASSIFICATION_LISTS.map((list) => ({
+        key: list.key,
+        entityType: list.entityType,
+        topic: list.topic,
+        shape: list.shape,
+        editable: list.editable,
+        writePermission: `refdata::${resourceOf(list)}:write`,
+        deletePermission: `refdata::${resourceOf(list)}:delete`,
     }));
+}
+
+/** How many rows a list holds, read without reading the rows. */
+export async function countClassificationRows(
+    caller: AuthenticatedCaller,
+    list: ClassificationDescriptor,
+): Promise<number> {
+    const reply = await caller.callAuthenticated(
+        list.subjects.list,
+        {
+            offset: 0,
+            limit: 1,
+            order: { field: '', descending: false },
+            filter: null,
+            ...(list.asOf === true ? { as_of: null } : {}),
+        },
+        z.looseObject({ result: resultEnvelopeSchema, total: z.int().nonnegative().default(0) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(list.subjects.list, reply.result.message);
+    }
+    return reply.total;
 }
 
 /** The lists are short; one page reads any of them whole. */
@@ -574,6 +619,7 @@ export async function listClassificationRows(
             recordedAt: row.recorded_at,
             reasonCode: row.change_reason_code,
             commentary: row.change_commentary,
+            labelCode: null,
         }))
         .sort(
             (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || a.code.localeCompare(b.code),
@@ -754,4 +800,122 @@ export async function readEntityHistory(
             })),
         }))
         .sort((a, b) => b.version - a.version);
+}
+
+/** The label catalogue holds fewer mappings than this, so one page reads them all. */
+const MAPPING_PAGE = 2000;
+
+const mappingsReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    badge_mappings: z
+        .array(
+            z.object({
+                code_domain_code: z.string(),
+                entity_code: z.string(),
+                badge_code: z.string(),
+            }),
+        )
+        .default([]),
+});
+
+/**
+ * The label each code of one list carries: its badge code, keyed by the row's
+ * code. A code with no mapping has no entry.
+ */
+export async function readClassificationLabels(
+    caller: AuthenticatedCaller,
+    list: ClassificationDescriptor,
+): Promise<Readonly<Record<string, string>>> {
+    const subject = badgeMappingSubjects.list_by_code_domain_code_badge_mappings_request;
+    const reply = await caller.callAuthenticated(
+        subject,
+        {
+            code_domain_code: codeDomainOf(list),
+            scope: 'direct',
+            offset: 0,
+            limit: MAPPING_PAGE,
+            order: { field: '', descending: false },
+            filter: null,
+        },
+        mappingsReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(subject, reply.result.message);
+    }
+    return Object.fromEntries(reply.badge_mappings.map((row) => [row.entity_code, row.badge_code]));
+}
+
+/**
+ * The label catalogue: every label, and the labels each code domain uses.
+ *
+ * A picker offers a list its own domain's labels first, and the rest grouped by
+ * the domain that uses them.
+ */
+export async function readLabelCatalogue(caller: AuthenticatedCaller): Promise<{
+    readonly labels: readonly BadgePresentation[];
+    readonly domains: Readonly<Record<string, readonly string[]>>;
+}> {
+    const subject = badgeMappingSubjects.list_badge_mappings_request;
+    const [catalogue, mappings] = await Promise.all([
+        readBadgeCatalogue(caller),
+        caller.callAuthenticated(
+            subject,
+            {
+                offset: 0,
+                limit: MAPPING_PAGE,
+                order: { field: '', descending: false },
+                filter: null,
+            },
+            mappingsReplySchema,
+        ),
+    ]);
+    if (mappings.result.outcome !== 'ok') {
+        throw new OperationFailedError(subject, mappings.result.message);
+    }
+    const domains: Record<string, string[]> = {};
+    for (const row of mappings.badge_mappings) {
+        const codes = (domains[row.code_domain_code] ??= []);
+        if (!codes.includes(row.badge_code)) {
+            codes.push(row.badge_code);
+        }
+    }
+    return { labels: Object.values(catalogue), domains };
+}
+
+/**
+ * Gives one row a label, or takes its label away when the badge is null.
+ *
+ * The label is a mapping in the catalogue, not a column of the row, so this
+ * writes no new version of the row.
+ */
+export async function setClassificationLabel(
+    caller: AuthenticatedCaller,
+    list: ClassificationDescriptor,
+    code: string,
+    badgeCode: string | null,
+    intent: ClassificationIntent,
+): Promise<ClassificationWrite> {
+    const key = { code_domain_code: codeDomainOf(list), entity_code: code };
+    const reply =
+        badgeCode === null
+            ? await caller.callAuthenticated(
+                  badgeMappingSubjects.delete_badge_mapping_request,
+                  {
+                      removal: { key, precondition: { kind: 'any', version: null } },
+                      intent: intentFor(intent),
+                  },
+                  resultReplySchema,
+              )
+            : await caller.callAuthenticated(
+                  badgeMappingSubjects.put_badge_mapping_request,
+                  {
+                      change: {
+                          write: { ...key, badge_code: badgeCode },
+                          precondition: { kind: 'any', version: null },
+                      },
+                      intent: intentFor(intent),
+                  },
+                  resultReplySchema,
+              );
+    return outcomeOf(reply.result);
 }

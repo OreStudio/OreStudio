@@ -26,9 +26,11 @@ import {
     type AccountSignIns,
     permissionEntrySchema,
     roleSummarySchema,
+    badgePresentationSchema,
     classificationListSchema,
     classificationRowSchema,
     historyVersionSchema,
+    type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
@@ -319,11 +321,46 @@ export const api = {
         );
     },
 
-    /** The classification lists, by topic, with each list's columns. */
-    async classificationLists(): Promise<readonly ClassificationList[]> {
+    /** The classification lists, by topic, with each list's columns and row count. */
+    async classificationLists(): Promise<
+        readonly (ClassificationList & { readonly count: number | null })[]
+    > {
         return z
-            .object({ lists: z.array(classificationListSchema) })
+            .object({
+                lists: z.array(
+                    classificationListSchema.extend({ count: z.int().nonnegative().nullable() }),
+                ),
+            })
             .parse(await request('/api/classifications', { method: 'GET' })).lists;
+    },
+
+    /** The shared label catalogue: every label, and the labels each code domain uses. */
+    async labels(): Promise<{
+        readonly labels: readonly BadgePresentation[];
+        readonly domains: Readonly<Record<string, readonly string[]>>;
+    }> {
+        return z
+            .object({
+                labels: z.array(badgePresentationSchema),
+                domains: z.record(z.string(), z.array(z.string())),
+            })
+            .parse(await request('/api/labels', { method: 'GET' }));
+    },
+
+    /** Gives a row a label from the catalogue, or takes it away with null. */
+    async setClassificationLabel(
+        list: string,
+        code: string,
+        input: {
+            readonly badgeCode: string | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(
+            `/api/classifications/${encodeURIComponent(list)}/rows/${encodeURIComponent(code)}/label`,
+            { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(input) },
+        );
     },
 
     /** Every row of one classification list. */

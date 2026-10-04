@@ -166,8 +166,10 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =GET /api/accounts/:username/sign-ins= | One account of the session's own tenant: its sign-in state and a page of its sessions, newest first. |
 | =GET /api/tenants/:code/accounts/:username/sign-ins= | The same for an account of a tenant, read from system administration inside the tenant, or as the session for the system tenant. |
 | =GET /api/me/sessions= | The signed-in person's own open sessions. |
-| =GET /api/classifications= | The classification lists the screen maintains, by topic, each with its columns and whether it may be changed. The list keys are the BFF's authority: a key it does not name reaches nothing. |
-| =GET /api/classifications/:list= | Every row of one classification list. |
+| =GET /api/classifications= | The classification lists the screen maintains, by topic, each with its columns, whether it may be changed, the permissions the server checks, and how many rows it holds. The list keys are the BFF's authority: a key it does not name reaches nothing. |
+| =GET /api/classifications/:list= | Every row of one classification list, each with the badge code of its label in the shared label catalogue. |
+| =PUT /api/classifications/:list/rows/:code/label= | Give a row a label from the shared catalogue, or take it away with a null badge. A label is how a code is drawn, not how ORE spells it, so a read-only list may be labelled. |
+| =GET /api/labels= | The shared label catalogue: every badge, and the badges each code domain uses. |
 | =POST /api/classifications/:list/rows=, =PUT /api/classifications/:list/rows/:code=, =DELETE /api/classifications/:list/rows/:code= | Add a row, correct one against the version read, and remove one, each with a change reason. A list of ORE spellings is refused. |
 | =PUT /api/classifications/:list/order= | Write the new display order of the rows that moved, in one call. |
 | =GET /api/history= | Every version of one record, newest first, with the field-level changes in each. Served only for the entity types of the classification lists. |

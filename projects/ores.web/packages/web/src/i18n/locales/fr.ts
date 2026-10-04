@@ -75,7 +75,7 @@ const fr: SourceCatalogue = {
             audit: 'Connexions',
             people: 'Personnes',
             roles: 'Rôles',
-            classifications: 'Classifications',
+            refdata: 'Données de référence',
             access: 'Mes accès',
         },
     },
@@ -811,6 +811,12 @@ const fr: SourceCatalogue = {
         after: 'Après',
         noChanges: 'Aucun changement de champ entre ces versions.',
         openVersion: 'Ouvrir cette version',
+        modifiedBy: 'Modifié par {who}',
+        performedBy: 'Exécuté par {who}',
+        compare: 'Comparer',
+        revertTo: 'Rétablir v{version}',
+        value: 'Valeur',
+        valueDiff: 'Différence',
     },
 
     validation: {
@@ -1071,10 +1077,31 @@ const fr: SourceCatalogue = {
     },
 
     refdata: {
+        crumbs: "Fil d'Ariane",
+        area: {
+            title: 'Données de référence',
+            lead: 'Les données sur lesquelles reposent chaque opération, chaque courbe et chaque rapport.',
+            classificationsBody:
+                'Les 28 listes de codes qui classent les données de référence : types, statuts et codes ORE.',
+            later: 'Conçu ; pas encore construit',
+            coming: {
+                currencies: 'Devises',
+                currenciesBody: 'Une devise avec ses pays, ses calendriers et ses groupes.',
+                currencyPairs: 'Paires de devises',
+                currencyPairsBody:
+                    'Une paire avec sa convention de cotation et ses calendriers de règlement.',
+                deskGroups: 'Groupes de devises',
+                deskGroupsBody: 'Des groupes de devises comme G11 ou Scandies.',
+                calendars: 'Calendriers de jours fériés',
+                calendarsBody:
+                    'Règles, exceptions et événements, et les jours ouvrés qui en résultent.',
+            },
+        },
         classifications: {
             title: 'Classifications',
-            lead: 'Les listes de codes qui classent les données de référence. Choisissez une liste pour en corriger les lignes.',
-            choose: 'Choisissez une liste à gauche.',
+            lead: 'Les listes de codes qui classent les données de référence. Ouvrez-en une pour en corriger les lignes.',
+            find: 'Trouver une liste…',
+            noneFound: 'Aucune liste ne porte ce nom.',
             topics: {
                 currencies: 'Devises',
                 calendars: 'Calendriers',
@@ -1114,30 +1141,93 @@ const fr: SourceCatalogue = {
                 'derivation-kind': 'Genres de dérivation',
                 'series-subclass-code': 'Sous-classes de série',
             },
+            briefs: {
+                'monetary-nature':
+                    "La nature d'une devise : fiduciaire, matière première, synthétique ou supranationale.",
+                'rounding-type': "Les façons d'arrondir un montant, selon les noms d'ORE.",
+                'currency-market-tier': "La liquidité du marché d'une devise.",
+                'currency-pair-classification':
+                    'Si une paire de devises est majeure, mineure ou exotique.',
+                'calendar-type':
+                    "La fonction d'un calendrier : jours fériés, place financière, réunions de banque centrale.",
+                'diary-entry-type': "Les types d'entrée datée de l'agenda d'un calendrier.",
+                'calendar-name': "Les noms de calendrier qu'un document ORE peut écrire.",
+                'business-day-convention-type': "Les conventions de jour ouvré qu'ORE accepte.",
+                'party-type': "Les types d'entité juridique d'une partie ou d'une contrepartie.",
+                'party-status': "L'étape de vie d'une partie ou d'une contrepartie.",
+                'contact-type': "L'usage des coordonnées d'une partie.",
+                'book-status': "L'étape de vie d'un livre.",
+                'book-purpose-type':
+                    "Le rôle d'un livre : négociation, financement, cible de balayage, etc.",
+                'ledger-feed-type': "La façon dont le solde comptable d'un livre est alimenté.",
+                'regulatory-book-type':
+                    'Si un livre relève du portefeuille de négociation ou bancaire selon la FRTB.',
+                'purpose-type': "L'objet d'un portefeuille.",
+                'asset-class-code': 'Le premier niveau de la taxonomie des produits.',
+                'leg-type': "Les types de jambe qu'ORE accepte.",
+                'floating-index-type': "Les noms d'indice à taux variable qu'ORE accepte.",
+                'day-counter': "Les graphies de décompte de jours qu'ORE accepte.",
+                'day-count-fraction-type':
+                    'Les conventions de décompte de jours, sous leur nom canonique.',
+                'curve-role':
+                    "Les rôles d'instrument qui déterminent la construction d'une courbe.",
+                'tenor-kind': 'Si une échéance est une période fixe ou résolue par une règle.',
+                'tenor-unit': 'Les unités dans lesquelles une échéance périodique est comptée.',
+                'tenor-anchor':
+                    "Le point de départ d'une échéance : spot, aujourd'hui, la jambe proche.",
+                'tenor-resolution-algorithm':
+                    'La façon dont une convention transforme une échéance en date.',
+                'derivation-kind': 'Si une série de marché est observée ou dérivée.',
+                'series-subclass-code': 'Les types détaillés de série de marché.',
+            },
             readOnlyTag: 'Lecture seule',
             readOnly:
-                'Les documents ORE écrivent ces graphies exactement ; cette liste ne peut donc pas être modifiée ici.',
+                'Les documents ORE écrivent ces graphies exactement ; cette liste est donc en lecture seule ici. Ses libellés peuvent toutefois être modifiés.',
+            readerOnly:
+                'Vous pouvez lire cette liste. La modifier exige les droits sur les données de référence.',
             add: 'Ajouter une ligne',
+            addTitle: 'Ajouter une ligne à {list}',
+            reorder: 'Réordonner',
+            orderLead:
+                "Déplacez les lignes dans l'ordre souhaité. Rien n'est enregistré avant de choisir Enregistrer l'ordre.",
+            saveOrder: "Enregistrer l'ordre",
+            cancel: 'Annuler',
+            filter: 'Filtrer les lignes…',
             code: 'Code',
             name: 'Nom',
+            label: 'Libellé',
+            labelCurrent: 'Actuel',
+            labelUnused: 'Utilisés par aucune liste',
+            labelOthers: "Afficher les libellés d'autres listes",
             description: 'Description',
             order: 'Ordre',
+            empty: "Cette liste n'a encore aucune ligne.",
+            noMatch: 'Aucune ligne ne correspond.',
+            shown: '{shown} lignes sur {total}',
+            openHint: "Cliquez sur une ligne pour l'ouvrir",
+            moveUp: 'Monter',
+            moveDown: 'Descendre',
+            newRecordNote:
+                "La ligne est enregistrée comme nouvel enregistrement ; aucun motif n'est requis.",
+            rowLead: '{list} · {code} · version {version}',
+            edit: 'Modifier',
+            editTitle: 'Modifier {code}',
+            remove: 'Supprimer',
+            removeTitle: 'Supprimer {code} ?',
+            removeWarning:
+                'Rien ne vérifie si des enregistrements utilisent encore ce code. Un enregistrement qui le cite encore échouera à sa prochaine sauvegarde.',
+            tabs: {
+                details: 'Détails',
+                history: 'Historique',
+            },
+            lastChanged: 'Dernière modification',
+            lastChangedValue: '{when} par {who}',
+            why: 'Motif',
             reason: 'Motif',
             commentary: 'Commentaire',
             commentaryRequired: 'Ce motif exige un commentaire.',
             save: 'Enregistrer',
-            saved: 'Enregistré.',
-            cancel: 'Annuler',
-            remove: 'Supprimer',
-            removeTitle: 'Supprimer {code}',
-            removeWarning:
-                "Les enregistrements qui utilisent ce code ne sont pas vérifiés. Un enregistrement qui l'utilise encore échouera à sa prochaine sauvegarde.",
-            moveUp: 'Monter',
-            moveDown: 'Descendre',
-            orderChanged: "L'ordre a changé et n'est pas encore enregistré.",
-            saveOrder: "Enregistrer l'ordre",
-            empty: "Cette liste n'a aucune ligne.",
-            history: 'Historique',
+            revertTitle: 'Rétablir {code} à la version {version} ?',
             revertCommentary: 'Rétabli à la version {version}.',
         },
     },

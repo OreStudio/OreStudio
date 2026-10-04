@@ -23,6 +23,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { TenantSetup, TenantStatus, TenantType } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { Label } from '../ui/Label.js';
 
 /**
  * A tenant's type or status, painted by the badge its row names.
@@ -44,18 +45,12 @@ export function PaintedValue({
     readonly value: string;
     readonly known: TenantStatus | TenantType | undefined;
 }): ReactNode {
-    const badge = known?.badge ?? undefined;
-    if (badge === undefined || badge.backgroundColour === '') {
-        return <span className="text-ink-muted">{known?.name ?? value}</span>;
-    }
     return (
-        <span
-            className="inline-block rounded-full px-2 py-0.5 text-[11px] leading-tight"
-            style={{ backgroundColor: badge.backgroundColour, color: badge.textColour }}
+        <Label
+            text={known?.name ?? value}
+            badge={known?.badge ?? undefined}
             title={known?.description === '' ? undefined : known?.description}
-        >
-            {known?.name ?? value}
-        </span>
+        />
     );
 }
 

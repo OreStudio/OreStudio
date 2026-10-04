@@ -25,7 +25,11 @@ import {
     CLASSIFICATION_LISTS,
     classificationCatalogue,
     classificationList,
+    countClassificationRows,
     listClassificationRows,
+    readClassificationLabels,
+    readLabelCatalogue,
+    setClassificationLabel,
     readEntityHistory,
     removeClassificationRow,
     saveClassificationRow,
@@ -70,6 +74,10 @@ const orderBodySchema = reasonSchema.extend({
         )
         .min(1)
         .max(1000),
+});
+
+const labelBodySchema = reasonSchema.extend({
+    badgeCode: z.string().trim().min(1).max(200).nullable(),
 });
 
 const historyQuerySchema = z.object({
@@ -144,16 +152,81 @@ export function registerClassificationRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    /** The lists the screen offers, by topic, with each list's columns. */
+    /**
+     * The lists the screen offers, by topic, with each list's columns and how
+     * many rows it holds. A count that cannot be read is null rather than a
+     * failed page: the list is still there to open.
+     */
     server.get('/api/classifications', async (request) => {
-        requireSession(request);
-        return { lists: classificationCatalogue() };
+        const session = requireSession(request);
+        /*
+         * One at a time: the session's broker client answers 28 concurrent
+         * requests in about eight seconds and the same requests in sequence in
+         * about 0.2 seconds.
+         */
+        const counts: PromiseSettledResult<number>[] = [];
+        for (const list of CLASSIFICATION_LISTS) {
+            counts.push(
+                await countClassificationRows(session.client, list).then(
+                    (value) => ({ status: 'fulfilled', value }) as const,
+                    (reason: unknown) => ({ status: 'rejected', reason }) as const,
+                ),
+            );
+        }
+        return {
+            lists: classificationCatalogue().map((list, index) => {
+                const count = counts[index];
+                return { ...list, count: count?.status === 'fulfilled' ? count.value : null };
+            }),
+        };
     });
 
-    /** Every row of one list. */
+    /**
+     * Every row of one list, each with its label. Labels that cannot be read
+     * leave the rows unlabelled rather than unread.
+     */
     server.get('/api/classifications/:list', async (request) => {
         const session = requireSession(request);
-        return { rows: await listClassificationRows(session.client, listFor(request)) };
+        const list = listFor(request);
+        const [rows, labels] = await Promise.all([
+            listClassificationRows(session.client, list),
+            readClassificationLabels(session.client, list).catch(() => ({})),
+        ]);
+        return {
+            rows: rows.map((row) => ({
+                ...row,
+                labelCode: (labels as Record<string, string>)[row.code] ?? null,
+            })),
+        };
+    });
+
+    /** The shared label catalogue: every label, and the labels each code domain uses. */
+    server.get('/api/labels', async (request) => {
+        const session = requireSession(request);
+        return readLabelCatalogue(session.client);
+    });
+
+    /**
+     * Gives a row a label from the catalogue, or takes it away. A label is how
+     * a code is drawn, not how ORE spells it, so a read-only list may be
+     * labelled too.
+     */
+    server.put('/api/classifications/:list/rows/:code/label', async (request, reply) => {
+        const session = requireSession(request);
+        const list = listFor(request);
+        const { code } = request.params as { code: string };
+        const body = labelBodySchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('A label needs a badge, or null to take it away, and a reason.');
+        }
+        const { badgeCode, reasonCode, commentary } = body.data;
+        answer(
+            await setClassificationLabel(session.client, list, code, badgeCode, {
+                reasonCode,
+                commentary,
+            }),
+        );
+        return reply.code(204).send();
     });
 
     /** Adds a row. A code already in the list is refused rather than replaced. */

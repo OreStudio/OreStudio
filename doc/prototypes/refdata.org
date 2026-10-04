@@ -27,6 +27,12 @@ directly, for example =refdata/#screen=list&list=rounding-type= or
 
 * Detail
 
+** The verdict
+
+Accepted on 2026-10-05, with both assumptions below: a row opens on its own
+page, and a tenant administrator sees *Reference data* too. The live screens are
+built from it.
+
 ** What it draws
 
 - *Home* carries a live *Reference data* tile, and *Reference data* is an area

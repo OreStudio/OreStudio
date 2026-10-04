@@ -25,6 +25,10 @@ import {
     CLASSIFICATION_LISTS,
     classificationCatalogue,
     classificationList,
+    countClassificationRows,
+    readClassificationLabels,
+    readLabelCatalogue,
+    setClassificationLabel,
     listClassificationRows,
     readEntityHistory,
     removeClassificationRow,
@@ -132,6 +136,7 @@ describe('listClassificationRows', () => {
                 recordedAt: '',
                 reasonCode: '',
                 commentary: '',
+                labelCode: null,
             },
         ]);
         expect(calls[0]?.body).toMatchObject({ order: { field: '' } });
@@ -312,5 +317,132 @@ describe('readEntityHistory', () => {
         await expect(readEntityHistory(caller, 'ores.refdata.rounding_type', 'Up')).rejects.toThrow(
             'Unknown entity type.',
         );
+    });
+});
+
+describe('the catalogue permissions', () => {
+    it('names the permissions the server checks for each list', () => {
+        const entry = classificationCatalogue().find((list) => list.key === 'rounding-type');
+        expect(entry).toMatchObject({
+            writePermission: 'refdata::rounding_types:write',
+            deletePermission: 'refdata::rounding_types:delete',
+        });
+    });
+});
+
+describe('countClassificationRows', () => {
+    it('reads the total without the rows', async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.day_counters.list': {
+                result: ok,
+                day_counters: [{ code: 'A360' }],
+                total: 71,
+            },
+        });
+        expect(await countClassificationRows(caller, list('day-counter'))).toBe(71);
+        expect(calls[0]?.body).toMatchObject({ limit: 1 });
+    });
+});
+
+describe('the labels', () => {
+    it("reads a list's labels from its entity name as the code domain", async () => {
+        const { caller, calls } = fakeCaller({
+            'dq.v1.badge_mappings.list_by_code_domain_code': {
+                result: ok,
+                badge_mappings: [
+                    {
+                        code_domain_code: 'rounding_type',
+                        entity_code: 'Up',
+                        badge_code: 'rounding_type_up',
+                    },
+                ],
+            },
+        });
+        expect(await readClassificationLabels(caller, list('rounding-type'))).toEqual({
+            Up: 'rounding_type_up',
+        });
+        expect(calls[0]?.body).toMatchObject({ code_domain_code: 'rounding_type' });
+    });
+
+    it('answers every label and the labels each domain uses, once each', async () => {
+        const { caller } = fakeCaller({
+            'dq.v1.badge_definitions.list': {
+                definitions: [
+                    {
+                        code: 'rounding_type_up',
+                        name: 'Up',
+                        background_colour: '#8b5cf6',
+                        text_colour: '#fff',
+                    },
+                    {
+                        code: 'active',
+                        name: 'Active',
+                        background_colour: '#22c55e',
+                        text_colour: '#fff',
+                    },
+                ],
+            },
+            'dq.v1.badge_mappings.list': {
+                result: ok,
+                badge_mappings: [
+                    {
+                        code_domain_code: 'rounding_type',
+                        entity_code: 'Up',
+                        badge_code: 'rounding_type_up',
+                    },
+                    {
+                        code_domain_code: 'rounding_type',
+                        entity_code: 'Up',
+                        badge_code: 'rounding_type_up',
+                    },
+                    {
+                        code_domain_code: 'party_status',
+                        entity_code: 'Active',
+                        badge_code: 'active',
+                    },
+                ],
+            },
+        });
+        const catalogue = await readLabelCatalogue(caller);
+        expect(catalogue.labels.map((label) => label.code)).toEqual(['rounding_type_up', 'active']);
+        expect(catalogue.domains).toEqual({
+            rounding_type: ['rounding_type_up'],
+            party_status: ['active'],
+        });
+    });
+
+    it('gives a row a label by writing its mapping', async () => {
+        const { caller, calls } = fakeCaller({ 'dq.v1.badge_mappings.put': { result: ok } });
+        const outcome = await setClassificationLabel(
+            caller,
+            list('rounding-type'),
+            'Up',
+            'rounding_type_up',
+            {
+                reasonCode: 'common.non_material_update',
+                commentary: '',
+            },
+        );
+        expect(outcome).toEqual({ done: true });
+        expect(calls[0]?.body).toMatchObject({
+            change: {
+                write: {
+                    code_domain_code: 'rounding_type',
+                    entity_code: 'Up',
+                    badge_code: 'rounding_type_up',
+                },
+            },
+        });
+    });
+
+    it('takes a label away by removing its mapping', async () => {
+        const { caller, calls } = fakeCaller({ 'dq.v1.badge_mappings.delete': { result: ok } });
+        await setClassificationLabel(caller, list('rounding-type'), 'Up', null, {
+            reasonCode: 'common.rectification',
+            commentary: '',
+        });
+        expect(calls[0]?.body).toMatchObject({
+            removal: { key: { code_domain_code: 'rounding_type', entity_code: 'Up' } },
+        });
     });
 });

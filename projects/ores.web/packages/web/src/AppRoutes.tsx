@@ -20,7 +20,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router';
+import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
@@ -41,7 +41,10 @@ import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
+import { ClassificationListPage } from './refdata/ClassificationListPage.js';
+import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
+import { RefdataPage } from './refdata/RefdataPage.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
 import { TenantPage } from './pages/TenantPage.js';
@@ -315,7 +318,19 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/classifications"
+                path="/refdata"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RefdataPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/classifications"
                 element={signedIn(
                     gate.version,
                     session,
@@ -327,17 +342,34 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/classifications/:list"
+                path="/refdata/classifications/:list"
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
-                        <ClassificationsPage />
+                        <ClassificationListPage />
                     ),
                     'workspace',
                 )}
             />
+            <Route
+                path="/refdata/classifications/:list/:code"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ClassificationRowPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/classifications"
+                element={<Navigate to="/refdata/classifications" replace />}
+            />
+            <Route path="/classifications/:list" element={<ClassificationsRedirect />} />
             <Route
                 path="/roles"
                 element={signedIn(
@@ -481,4 +513,10 @@ function signedIn(
 
 function Centred({ children }: { readonly children: ReactNode }): ReactNode {
     return <div className="grid min-h-full place-items-center bg-bg-primary px-5">{children}</div>;
+}
+
+/** The first build's address for one list, kept so a saved link still opens it. */
+function ClassificationsRedirect(): ReactNode {
+    const { list } = useParams();
+    return <Navigate to={`/refdata/classifications/${encodeURIComponent(list ?? '')}`} replace />;
 }

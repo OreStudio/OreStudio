@@ -522,6 +522,9 @@ export const classificationListSchema = z.object({
     topic: z.string(),
     shape: classificationShapeSchema,
     editable: z.boolean(),
+    /** The permissions the server checks to write and to remove a row. */
+    writePermission: z.string(),
+    deletePermission: z.string(),
 });
 
 export type ClassificationList = z.infer<typeof classificationListSchema>;
@@ -541,6 +544,8 @@ export const classificationRowSchema = z.object({
     recordedAt: z.string(),
     reasonCode: z.string(),
     commentary: z.string(),
+    /** The badge code of the row's label in the shared catalogue, or null when it has none. */
+    labelCode: z.string().nullable(),
 });
 
 export type ClassificationRow = z.infer<typeof classificationRowSchema>;

@@ -70,7 +70,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
-| pgTAP netting set identifier cases | 7/7 pass | =pg_prove projects/ores.sql/test/refdata_netting_set_identifiers_test.sql= | branch head before commit |
+| pgTAP netting set identifier cases | 8/8 pass | =pg_prove projects/ores.sql/test/refdata_netting_set_identifiers_test.sql= | branch head before commit |
 
 * Notes
 
@@ -105,6 +105,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The copied model bumped the netting set's version, but the netting set has no touch function, so the schema failed to load. | ores.refdata.netting_set_identifier.org | Accept | Dropped the composite flags; a netting set is not composite. |
 | 2 | The generator block's comments became end-of-line comments in the C++. | ores.refdata.netting_set_identifier.org | Accept | Removed the comments from the block. |
+| 3 | PR 2595 review 1: assert the ORE scheme's cardinality. | refdata_netting_set_identifiers_test.sql | Decline | Case 1 fails if the scheme gets a limit of 1. |
+| 4 | PR 2595 review 2: a lower-case scheme may bypass the index. | refdata_netting_set_identifiers_create.sql | Decline | The scheme validation matches the code exactly, so =ore= is rejected. |
+| 5 | PR 2595 review 3: prove that a deleted alias frees its id. | refdata_netting_set_identifiers_test.sql | Accept | Added case 6. |
+| 6 | PR 2595 review 4: give the event registrar follow-up an owner. | task notes | Decline | Recorded in the task notes for the story's remaining work. |
 
 * Result
 

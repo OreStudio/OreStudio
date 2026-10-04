@@ -26,6 +26,7 @@
  * - An ORE id answers to one netting set per tenant
  * - Other schemes allow one value on several netting sets
  * - A new version of an alias keeps its name
+ * - A deleted alias frees its ORE id for another netting set
  * - An identifier must name an existing netting set and a known scheme
  *
  * Run with: pg_prove -d <database> test/refdata_netting_set_identifiers_test.sql
@@ -33,7 +34,7 @@
 
 begin;
 
-select plan(7);
+select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -90,6 +91,13 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     '00000000-0000-0000-0000-0000000a5000',
     'the ORE id resolves to its netting set');
+
+select lives_ok(
+    $$delete from ores_refdata_netting_set_identifiers_tbl
+      where tenant_id = ores_utility_system_tenant_id_fn()
+        and id_scheme = 'ORE' and id_value = 'NSITEST_A';
+      select pg_temp.add_identifier('00000000-0000-0000-0000-0000000a5001', 'ORE', 'NSITEST_A')$$,
+    'a deleted alias frees its ORE id for another netting set');
 
 select throws_like(
     $$select pg_temp.add_identifier('00000000-0000-0000-0000-0000000a5fff', 'ORE', 'NSITEST_ORPHAN')$$,

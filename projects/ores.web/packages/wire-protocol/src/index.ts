@@ -54,6 +54,10 @@ export {
     partySummarySchema,
     permissionEntrySchema,
     roleSummarySchema,
+    classificationListSchema,
+    classificationRowSchema,
+    classificationShapeSchema,
+    historyVersionSchema,
     tenantDetailResponseSchema,
     tenantDetailSchema,
     tenantPageSchema,
@@ -77,6 +81,10 @@ export type {
     PartySummary,
     PermissionEntry,
     RoleSummary,
+    ClassificationList,
+    ClassificationRow,
+    ClassificationShape,
+    HistoryVersion,
     SetupActivity,
     TenantDetail,
     TenantDetailResponse,
@@ -137,6 +145,21 @@ export {
     takeRoleAway,
 } from './access.js';
 export type { AccessWrite } from './access.js';
+export {
+    CLASSIFICATION_LISTS,
+    classificationCatalogue,
+    classificationList,
+    listClassificationRows,
+    readEntityHistory,
+    removeClassificationRow,
+    saveClassificationRow,
+    saveClassificationRows,
+} from './classifications.js';
+export type {
+    ClassificationIntent,
+    ClassificationRowInput,
+    ClassificationWrite,
+} from './classifications.js';
 export type { PartyPageQuery } from './party-page.js';
 
 export {

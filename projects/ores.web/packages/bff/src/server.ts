@@ -28,6 +28,7 @@ import cookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
+import { registerClassificationRoutes } from './classifications.js';
 import {
     NatsTransport,
     OresClient,
@@ -1902,6 +1903,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             }),
         );
     });
+
+    registerClassificationRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.

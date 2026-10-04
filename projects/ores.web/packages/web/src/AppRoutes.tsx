@@ -41,6 +41,7 @@ import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
+import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
 import { TenantPage } from './pages/TenantPage.js';
@@ -309,6 +310,30 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <PersonPage me={view.username} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/classifications"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ClassificationsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/classifications/:list"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ClassificationsPage />
                     ),
                     'workspace',
                 )}

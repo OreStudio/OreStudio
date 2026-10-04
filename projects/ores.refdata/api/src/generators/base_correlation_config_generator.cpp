@@ -45,6 +45,7 @@ generate_synthetic_base_correlation_config(utility::generation::generation_conte
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.terms = std::string("5Y");
     r.detachment_points = std::string("0.03");

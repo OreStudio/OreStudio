@@ -34,6 +34,7 @@ export interface InflationCurveConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     nominal_term_structure: string;
     inflation_type: string;

@@ -45,6 +45,7 @@ struct curve_report_configuration_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_definition_id;
     std::optional<std::string> report_on_delta_grid;
     std::optional<std::string> report_on_moneyness_grid;

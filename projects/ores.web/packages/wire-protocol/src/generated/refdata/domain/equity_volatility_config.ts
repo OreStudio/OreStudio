@@ -34,6 +34,7 @@ export interface EquityVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     equity_id: string | null;
     currency: string;

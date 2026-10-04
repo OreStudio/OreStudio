@@ -34,6 +34,7 @@ export interface FxVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     dimension: string;
     smile_type: string | null;

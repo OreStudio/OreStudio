@@ -34,6 +34,7 @@ export interface DefaultCurveConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     currency: string;
     modified_by: string;

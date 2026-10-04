@@ -45,6 +45,7 @@ struct curve_parametric_smile_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_definition_id;
     int max_calibration_attempts = 0;
     double exit_early_error_threshold;

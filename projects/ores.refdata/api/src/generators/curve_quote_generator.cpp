@@ -44,6 +44,7 @@ domain::curve_quote generate_synthetic_curve_quote(utility::generation::generati
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.curve_segment_id = boost::uuids::nil_uuid();
     r.default_curve_configuration_id = boost::uuids::nil_uuid();

@@ -45,6 +45,7 @@ struct curve_global_report_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_configuration_id;
     std::string family;
     bool has_report = false;

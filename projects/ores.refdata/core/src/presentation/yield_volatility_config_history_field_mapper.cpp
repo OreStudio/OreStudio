@@ -35,6 +35,7 @@ render_yield_volatility_config_fields(const domain::yield_volatility_config& v) 
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Qualifier", .value = v.qualifier});

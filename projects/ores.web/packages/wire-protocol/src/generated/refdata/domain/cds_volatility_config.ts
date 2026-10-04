@@ -34,6 +34,7 @@ export interface CdsVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     expiries: string | null;
     day_counter: string | null;

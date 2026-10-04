@@ -34,6 +34,7 @@ export interface CurveConfigurationSection {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_configuration_id: string;
     section_code: string;
     modified_by: string;

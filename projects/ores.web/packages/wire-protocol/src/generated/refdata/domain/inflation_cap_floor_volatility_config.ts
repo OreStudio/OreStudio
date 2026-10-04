@@ -34,6 +34,7 @@ export interface InflationCapFloorVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     inflation_type: string;
     quote_type: string;

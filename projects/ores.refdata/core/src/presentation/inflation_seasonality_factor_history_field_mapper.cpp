@@ -35,6 +35,7 @@ render_inflation_seasonality_factor_fields(const domain::inflation_seasonality_f
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Factor", .value = v.factor});

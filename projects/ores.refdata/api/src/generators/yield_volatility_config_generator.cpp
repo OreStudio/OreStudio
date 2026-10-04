@@ -45,6 +45,7 @@ generate_synthetic_yield_volatility_config(utility::generation::generation_conte
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.qualifier = std::string("BOND");
     r.dimension = std::nullopt;

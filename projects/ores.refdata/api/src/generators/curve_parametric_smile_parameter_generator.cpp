@@ -45,6 +45,7 @@ generate_synthetic_curve_parametric_smile_parameter(utility::generation::generat
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.name = std::string("alpha");
     r.initial_value = std::nullopt;

@@ -35,6 +35,7 @@ render_curve_configuration_fields(const domain::curve_configuration& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
     fields.push_back(

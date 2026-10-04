@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/scope-the-analytics-documents-to-a-party
-#+pr: 2580
+#+branch: feature/scope-the-curve-configuration-to-a-party
+#+pr: 2584
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -107,6 +107,26 @@ Step 2, decided while building it:
 - The analytics core tests link =ores.refdata.core=, which the generated tests
   need to create their party, as the reporting tests already did.
 
+Step 4a, the curve configuration, decided while building it:
+
+- The 34 curve configuration tables are keyed by uuid, so =party_id= is a plain
+  column with =:rls_party_isolation:=; they already had the tenant flag from
+  [[id:AE86A142-B734-44F1-9647-0F37A551DA83][Generate the hand-written RLS policies from model flags]].
+- The party comes from the session, as the operator pointed out: the request
+  context is built from the JWT (tenant, party, visible parties); every
+  generated service runs =ores::service::messaging::stamp=, which overwrites
+  =tenant_id= and =party_id= from that context; and the context's session
+  settings are what the RLS policies read. A party-scoped table needs no more
+  than the column and the policy to take part. =assign_party= serves only code
+  that writes through repositories directly, which today is the tests.
+
+Step 4b, the conventions, decided with the operator: a convention is keyed by
+its ORE id, and two parties must each be able to hold the same id, so
+=party_id= joins the key. Codegen derives the SQL key and the API key from the
+same columns, and the party comes from the JWT, so the column is marked to join
+the SQL primary key, unique indexes and exclusion constraint while staying out
+of the repository and protocol key parameters.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -122,6 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2584][#2584]] | [refdata] Scope the curve configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2580][#2580]] | [analytics] Scope the analytics configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2579][#2579]] | [reporting] Scope the run document and reporting registry to a party |
 

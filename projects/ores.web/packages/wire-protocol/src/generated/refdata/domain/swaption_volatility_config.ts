@@ -34,6 +34,7 @@ export interface SwaptionVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     dimension: string | null;
     volatility_type: string | null;

@@ -34,6 +34,7 @@ export interface CurveGlobalReport {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_configuration_id: string;
     family: string;
     has_report: boolean;

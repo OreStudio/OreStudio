@@ -34,6 +34,7 @@ export interface CurveParametricSmile {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     max_calibration_attempts: number;
     exit_early_error_threshold: number;

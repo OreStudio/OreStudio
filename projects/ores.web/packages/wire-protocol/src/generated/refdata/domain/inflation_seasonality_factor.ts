@@ -34,6 +34,7 @@ export interface InflationSeasonalityFactor {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     factor: string;
     position: number;

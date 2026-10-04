@@ -35,6 +35,7 @@ render_default_curve_configuration_fields(const domain::default_curve_configurat
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Curve Definition ID", .value = boost::uuids::to_string(v.curve_definition_id)});
     fields.push_back({.name = "Is Inline", .value = v.is_inline ? "true" : "false"});

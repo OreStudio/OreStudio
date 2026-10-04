@@ -40,6 +40,7 @@ domain::curve_configuration curve_configuration_mapper::map(const curve_configur
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
     r.description = v.description;
     r.configuration_id = v.configuration_id.has_value() ?
@@ -62,6 +63,7 @@ curve_configuration_entity curve_configuration_mapper::map(const domain::curve_c
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
     r.description = v.description;
     r.configuration_id = v.configuration_id == boost::uuids::uuid{} ?

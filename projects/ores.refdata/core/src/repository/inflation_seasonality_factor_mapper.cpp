@@ -41,6 +41,7 @@ inflation_seasonality_factor_mapper::map(const inflation_seasonality_factor_enti
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.factor = v.factor;
     r.position = v.position;
@@ -62,6 +63,7 @@ inflation_seasonality_factor_mapper::map(const domain::inflation_seasonality_fac
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
     r.factor = v.factor;
     r.position = v.position;

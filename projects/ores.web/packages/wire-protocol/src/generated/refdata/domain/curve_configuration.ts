@@ -34,6 +34,7 @@ export interface CurveConfiguration {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     name: string;
     description: string | null;
     configuration_id: string;

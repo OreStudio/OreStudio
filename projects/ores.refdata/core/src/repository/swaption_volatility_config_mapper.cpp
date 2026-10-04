@@ -41,6 +41,7 @@ swaption_volatility_config_mapper::map(const swaption_volatility_config_entity& 
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.dimension = v.dimension;
     r.volatility_type = v.volatility_type;
@@ -84,6 +85,7 @@ swaption_volatility_config_mapper::map(const domain::swaption_volatility_config&
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
     r.dimension = v.dimension;
     r.volatility_type = v.volatility_type;

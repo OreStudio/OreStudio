@@ -45,6 +45,7 @@ generate_synthetic_cap_floor_volatility_config(utility::generation::generation_c
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.volatility_type = std::nullopt;
     r.output_volatility_type = std::nullopt;

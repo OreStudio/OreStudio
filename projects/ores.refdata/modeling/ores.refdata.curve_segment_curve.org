@@ -43,6 +43,21 @@ Surrogate key for the row.
 ctx.generate_uuid()
 #+end_src
 
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** curve_segment_id
 :PROPERTIES:
 :type:     uuid
@@ -139,6 +154,7 @@ The curve's place in its list, which the export restores.
 :PROPERTIES:
 :tablename: ores_refdata_curve_segment_curves_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Checks

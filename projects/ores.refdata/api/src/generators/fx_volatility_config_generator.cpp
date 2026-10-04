@@ -45,6 +45,7 @@ generate_synthetic_fx_volatility_config(utility::generation::generation_context&
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.dimension = std::string("ATM");
     r.smile_type = std::nullopt;

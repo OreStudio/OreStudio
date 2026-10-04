@@ -34,6 +34,7 @@ export interface CurveSecurityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     spread_quote: string | null;
     recovery_rate_quote: string | null;

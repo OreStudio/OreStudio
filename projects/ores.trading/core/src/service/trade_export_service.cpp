@@ -59,8 +59,8 @@
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -87,8 +87,7 @@ std::string to_uuid_array(const std::vector<std::string>& ids) {
  * read each table in one batch, then read the envelopes for the whole page.
  */
 template <typename Ctx>
-void populate_instruments_for_trades(const Ctx& ctx,
-                                            std::vector<trade_export_item>& items) {
+void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_item>& items) {
     using ores::trading::domain::instrument_table;
     using ores::trading::domain::instrument_table_for;
     using ores::trading::domain::trade_instrument;
@@ -98,10 +97,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
     // Phase 1: bucket instrument IDs by the table that holds them
     std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
-        fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids,
-        infl_ids, rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids,
-        fxvar_ids, eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids,
-        eq_dig_ids, eq_acc_ids, eq_pos_ids;
+        fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids, infl_ids,
+        rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
+        eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
+        eq_acc_ids, eq_pos_ids;
 
     for (const auto& item : items) {
         const auto& t = item.anchor;
@@ -224,16 +223,14 @@ void populate_instruments_for_trades(const Ctx& ctx,
         if (!all_swap.empty()) {
             repository::swap_leg_repository leg_repo;
             for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
-                legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(
-                    std::move(leg));
+                legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(std::move(leg));
         }
     }
     std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
         comp_legs_map;
     if (!composite_ids.empty()) {
         repository::composite_leg_repository comp_leg_repo;
-        const std::unordered_set<std::string> wanted(composite_ids.begin(),
-                                                     composite_ids.end());
+        const std::unordered_set<std::string> wanted(composite_ids.begin(), composite_ids.end());
         for (auto& leg : comp_leg_repo.read_latest(ctx)) {
             const auto key = boost::uuids::to_string(leg.identity.trade_id);
             if (wanted.contains(key))
@@ -244,13 +241,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
     // The callable swap's exercise schedule is a collection of its own,
     // so it is fetched beside the legs and only for the instruments
     // that state one.
-    std::unordered_map<std::string,
-                       std::vector<ores::trading::domain::callable_swap_call_date>>
+    std::unordered_map<std::string, std::vector<ores::trading::domain::callable_swap_call_date>>
         call_dates_map;
     if (!callable_ids.empty()) {
         repository::callable_swap_call_date_repository call_date_repo;
-        for (auto& call_date :
-             call_date_repo.read_by_instruments_batch(ctx, callable_ids))
+        for (auto& call_date : call_date_repo.read_by_instruments_batch(ctx, callable_ids))
             call_dates_map[boost::uuids::to_string(call_date.trade_id)].push_back(
                 std::move(call_date));
     }
@@ -279,8 +274,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
         constituents_map;
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;
-        for (auto& constituent :
-             constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
+        for (auto& constituent : constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
             constituents_map[boost::uuids::to_string(constituent.trade_id)].push_back(
                 std::move(constituent));
     }
@@ -426,8 +420,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
     if (!eq_pos_ids.empty()) {
         repository::equity_position_option_underlying_repository underlying_repo;
         for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
-            equity_underlyings_map[boost::uuids::to_string(underlying.trade_id)]
-                .push_back(std::move(underlying));
+            equity_underlyings_map[boost::uuids::to_string(underlying.trade_id)].push_back(
+                std::move(underlying));
     }
 
     auto take_equity_underlyings = [&](const std::string& id) {
@@ -533,10 +527,8 @@ std::vector<trade_export_item> trade_export_service::export_node(const std::stri
     return export_trades(trade_ids);
 }
 
-std::vector<trade_export_item>
-trade_export_service::export_books(const std::vector<std::string>& book_ids,
-                                   std::uint32_t offset,
-                                   std::uint32_t limit) const {
+std::vector<trade_export_item> trade_export_service::export_books(
+    const std::vector<std::string>& book_ids, std::uint32_t offset, std::uint32_t limit) const {
     using database::repository::execute_parameterized_string_query;
     if (book_ids.empty())
         return {};
@@ -575,15 +567,15 @@ trade_export_service::export_trades(const std::vector<std::string>& trade_ids) c
         ore_ids.emplace(*row[0], row[1].value_or(""));
 
     auto anchors = repository::trade_anchor_repository().read_latest(ctx_, trade_ids);
-    std::ranges::sort(anchors, {}, [](const auto& a) { return boost::uuids::to_string(a.id); });
+    std::ranges::sort(anchors, {}, &domain::trade_anchor::id);
 
     std::vector<trade_export_item> items;
     items.reserve(anchors.size());
     for (auto& anchor : anchors) {
         const auto id = boost::uuids::to_string(anchor.id);
         const auto ore_id = ore_ids.find(id);
-        items.push_back({.anchor = std::move(anchor),
-                         .ore_id = ore_id != ore_ids.end() ? ore_id->second : id});
+        items.push_back(
+            {.anchor = std::move(anchor), .ore_id = ore_id != ore_ids.end() ? ore_id->second : id});
     }
     populate_instruments_for_trades(ctx_, items);
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";

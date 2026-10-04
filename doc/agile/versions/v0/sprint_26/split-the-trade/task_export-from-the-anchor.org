@@ -102,6 +102,13 @@ via its "Verifies task" field.
 | 1 | The first round trip failed: an empty node id reached the query as an empty uuid. The old path read an empty node as every trade. | =trade_export_service.cpp= | accept | The query now treats an empty node as the whole tenant. |
 | 2 | The export codec test still used the old item shape. | =messaging_export_portfolio_codec_tests.cpp= | accept | It now sets the anchor and the ORE id. |
 | 3 | =ores.reporting.core.tests= failed once on the delete check. | =report_definition_eventing_integration_tests.cpp= | decline | Known re-drive race, captured in the inbox; green 3 of 3 on rerun. |
+| 4 | PR review: a trade with two live bookings could repeat across pages. | =trade_export_service.cpp= | decline | The bookings table's exclusion constraint allows one live booking per trade. |
+| 5 | PR review: a booked trade with no anchor would end the storage paging early. | =trade_operations_handler.hpp= | decline | The booking's foreign key to the anchor is enforced, so the case cannot occur. |
+| 6 | PR review: a request that fails to decode replies with no message. | =trade_operations_handler.hpp= | accept | The reply now names the invalid request. |
+| 7 | PR review: neither export checks a permission. | =trade_operations_handler.hpp= | decline | Same as the old handler; adding a permission changes who can export and is not part of this move. |
+| 8 | PR review: sort the anchors by uuid, not by its string. | =trade_export_service.cpp= | accept | Sorted by the id. |
+| 9 | PR review: the per-type id lists, the in-memory storage export, the Phase 4 comment. | =trade_export_service.cpp= | decline | Moved unchanged from the old handler; the comment is accurate, each item takes a copy of the payload. |
+| 10 | PR review: a parameter list is misaligned. | =trade_export_service.cpp= | accept | clang-format 18 applied to the new files. |
 
 * Result
 

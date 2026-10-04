@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 5BD2DC7D-2D07-486E-AD1E-41900FDC4DFF
-:ores.ts.protocol.enabled: false
 :END:
 #+title: ores.trading.trade_operations
 #+description: Codegen operation model for the trading component's trade operations: messages that write a trade across its anchor and components, which no single entity verb can do.
@@ -26,10 +25,6 @@ than surfacing as a database key violation.
 
 The handler stays hand-written beside this model, because an operation model
 generates no service handler.
-
-The export messages carry the instrument payload and the envelope, which have
-no TypeScript projection, and no web page books or exports a trade, so the
-model projects no TypeScript protocol.
 
 * Includes
 

@@ -2488,7 +2488,8 @@ _TS_DOMAIN_TYPE_RE = re.compile(
 #
 # Most are ``ores::utility::*`` -- the shared protocol records. The diff engine's
 # payloads are the other kind: a component with an engine but no entity models,
-# whose types still travel in a history response.
+# whose types still travel in a history response. The trading export item's
+# instrument payload and envelope are hand-written structs of the same kind.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
     "ores::utility::domain::result": ("Result", "utility/protocol"),
@@ -2500,6 +2501,8 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::diff::domain::diff_span": ("DiffSpan", "diff/protocol"),
     "ores::diff::domain::diff_entry": ("DiffEntry", "diff/protocol"),
     "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
+    "ores::trading::domain::instrument_payload": ("InstrumentPayload", "trading/payload"),
+    "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

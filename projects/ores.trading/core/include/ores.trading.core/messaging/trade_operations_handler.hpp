@@ -133,6 +133,8 @@ public:
                                              static_cast<std::uint32_t>(req->offset),
                                              static_cast<std::uint32_t>(req->limit));
                 resp.success = true;
+            } else {
+                resp.message = "Invalid export_portfolio_request.";
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(trade_operations_handler_lg(), error)

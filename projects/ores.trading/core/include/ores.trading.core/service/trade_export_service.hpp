@@ -63,10 +63,9 @@ public:
     /**
      * @brief The trades booked in a set of books.
      */
-    std::vector<messaging::trade_export_item>
-    export_books(const std::vector<std::string>& book_ids,
-                 std::uint32_t offset,
-                 std::uint32_t limit) const;
+    std::vector<messaging::trade_export_item> export_books(const std::vector<std::string>& book_ids,
+                                                           std::uint32_t offset,
+                                                           std::uint32_t limit) const;
 
 private:
     std::vector<messaging::trade_export_item>

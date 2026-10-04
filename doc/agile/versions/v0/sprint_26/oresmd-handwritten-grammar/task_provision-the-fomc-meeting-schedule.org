@@ -26,25 +26,44 @@ A new tenant resolves the FOMC tenors 1F to 8F to FOMC meeting dates, as the sys
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
-- The tenant provisioner copies schedule_code and schedule_step_count with each tenor convention resolution.
+- A new tenant's tenor convention resolutions carry their schedule_code and schedule_step_count once its base datasets are published.
 - A new tenant has the US.FOMC calendar, the central_bank_meeting diary entry type and the central_bank_meeting calendar events.
+- A new tenant has the ROLL_QUARTER and FOMC_MEETING tenor schedules, so the CREDIT_CDS_IMM and RATES_SPOT_FOMC resolutions keep their schedules.
 - A test resolves 1F in a newly provisioned tenant and gets the first FOMC meeting on or after spot.
 - On a live run, the USD-SOFR-FOMC feed publishes ticks for its bound parties.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided with the owner on 2026-10-04: the chain reaches a tenant by dataset
+publish, as calendars already do. Lookup vocabulary is copied at provisioning;
+market reference data is published.
+
+1. The provisioner copies the diary entry types. They are vocabulary with no
+   dependencies, as the calendar names and tenor kinds it already copies are.
+2. The =refdata.calendars= dataset gains =US.FOMC=, so the calendar publish
+   brings it after the countries.
+3. A new dataset, =refdata.tenor_schedules=, publishes =ROLL_QUARTER= and
+   =FOMC_MEETING= and depends on =refdata.calendars=. Its publish function
+   also writes the system tenant's =schedule_code= and =schedule_step_count=
+   onto the tenant's resolution rows, because those columns can only be set
+   once the schedules exist. The provisioner keeps copying the resolutions
+   without them.
+4. A new dataset, =refdata.calendar_events=, publishes the meeting dates and
+   depends on =refdata.calendars=.
+5. Both datasets join the =base= bundle after =refdata.calendars=, with their
+   artefact types and publish subjects registered.
+6. A database test provisions a tenant, publishes the chain, and resolves =1F=
+   to the first meeting on or after spot.
+7. A live ACME run shows the =usdsofrfomc= feed publishing.
 
 * Measurements
 
@@ -58,7 +77,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Resolutions given a schedule in a probe tenant, after the chain is published | 14 (6 =CREDIT_CDS_IMM=, 8 =RATES_SPOT_FOMC=) | =scratchpad/fomc_chain.sql= through =psql=, in a transaction rolled back | =1d31b32a32= |
+| Rows a second publish of the chain rewrites | 2 schedules, 24 events, 0 resolutions | the same script | =1d31b32a32= |
+| Sources with a first tick in a live ACME run | 34 of 34, 170 first ticks, 0 drops, 0 publish failures | =journalctl= on the marketdata and synthetic units | =b4c9634528= |
+| Test failures with the resolution update removed from the publish | 5 checks fail, every FOMC date resolves to 2026-10-04 | the publish function loaded without its resolution insert, then =compass test run -R ores.synthetic.core= | =b4c9634528= |
 
 * Notes
 
@@ -116,6 +138,21 @@ no tenor schedules either, so =ROLL_QUARTER= is missing too, and the
 =CREDIT_CDS_IMM= resolutions lose their schedule in the same way as the FOMC
 ones.
 
+** What was built
+
+- The provisioner copies the diary entry types.
+- =refdata.calendars= carries =US.FOMC=.
+- =refdata.tenor_schedules= and =refdata.calendar_events= are new datasets in
+  the =base= bundle. Both depend on =refdata.calendars=. Their artefact tables
+  are generated from the =tenor_schedule= and =calendar_event= models, and
+  their seeds copy the system tenant's own rows, so the schedules and the
+  meeting dates are listed once.
+- The calendar event publish matches events on calendar, date and diary entry
+  type. A tenant's event keeps its own id.
+- The tenor schedule publish sets the schedule columns of the tenant's
+  resolutions from the system tenant's rows. A second publish changes none of
+  them.
+
 ** Captures this task replaces
 
 Two inbox captures described this failure with a wrong cause, a meeting on
@@ -146,3 +183,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A new tenant now resolves the FOMC tenors to meeting dates, and the
+=usdsofrfomc= feed publishes. The calendar, the schedules and the meeting dates
+reach a tenant by dataset publish, after its countries, and the schedule publish
+completes the resolutions. The =CREDIT_CDS_IMM= resolutions had lost
+=ROLL_QUARTER= in every tenant in the same way and have it back.
+=feeds_fomc_curve_resolution_tests.cpp= proves it on a tenant of its own, and
+fails, with every date on spot, when the resolution update is removed.

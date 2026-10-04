@@ -8,11 +8,11 @@
 #+filetags: :implement-profile-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/upload-a-profile-image
-#+pr:
+#+pr: 2637
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ Nothing uploads an image: the BFF serves /api/images/:id as a read only, so a me
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Implementation done and committed as =6bc0db1a2a=; the assets suites pass and both drift gates ran. |
-| Waiting on   | Nothing.                               |
-| Next         | Push the branch, open the PR, and merge when CI is green. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -128,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2637][#2637]] | [assets] Add the image upload path and its policy read |
 
 * Review
 

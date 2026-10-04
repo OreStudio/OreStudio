@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 9E46C8C2-05FF-4F31-BFC1-5B634963DBE3
+:END:
+#+title: User Journey: Add or correct a currency
+#+description: A reference data administrator adds a currency or corrects one, with its countries, calendars and desk groups on one screen.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator adds a currency or corrects one, with its countries, calendars and desk groups on one screen.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this currency to be right everywhere it is used: its codes and symbol,
+how its amounts round, the countries that issue it, the calendars that settle
+it, and the desk groups it sits in." The journey is done when the currency
+reads correctly on one screen and its history shows why it changed.
+
+* Actor and trigger
+
+The actor is the person who keeps the tenant's reference data: an account with
+the =TenantAdmin= role, which holds every permission, or one with the
+=Operations= role, which holds the currency permissions. Both act inside their
+own tenant. The trigger is a new currency the desk must book, a redenomination,
+or a wrong value found in a run or a report. The journey starts at the currency
+list, or at a link from any screen that shows a currency code, and ends when the
+person leaves the currency.
+
+* Steps
+
+1. *Find the currency.* The person opens *Currencies*. The system lists the
+   tenant's currencies: code, name, symbol, market tier and monetary nature.
+   The person filters by code or name, or chooses *Add currency*.
+2. *Read the currency.* The person selects a row. The system shows one screen
+   with four panels: the currency itself, its countries, its calendars, and its
+   desk groups. Each panel reads with its own operation, so a slow panel does
+   not hold the others.
+3. *Correct the currency.* The person edits the currency panel: the ISO codes,
+   name, symbol, fraction symbol and fractions per unit; the rounding type and
+   precision; the format; the monetary nature and market tier; the ORE currency
+   type, spot days, day basis and base precedence. Rounding type, monetary
+   nature and market tier are pickers over their lists, not free text and not a
+   button that opens another screen. The person states a change reason, and the
+   system writes the currency with =must_match_version=, so a concurrent edit is
+   refused instead of lost.
+4. *Set the countries.* The person adds or removes the countries that issue the
+   currency. The system writes or deletes one =currency_country= row each time.
+   The rows keep no history, so the panel is a plain list.
+5. *Set the calendars.* The person adds or removes the holiday calendars used
+   for the currency's spot and settlement dates. The system writes or deletes
+   one =currency_calendar= row each time. A calendar name links to
+   [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]].
+6. *Set the desk groups.* The person adds the currency to a desk group, such as
+   G11 or Scandies, or removes it. The system writes or deletes one
+   =currency_currency_group= row.
+7. *Check the history.* The person opens the *History* panel. The system reads
+   every version of the currency with the generic history request, and shows
+   who changed it, when, and the field-level difference from the version
+   before. The person can open one version read-only.
+8. *Revert a change.* The person chooses *Revert to this version* on an older
+   version. The system writes the old values as a new version, with the change
+   reason the person states. History is never rewritten.
+9. *Exchange with ORE.* The person exports the tenant's currencies as an ORE
+   =currencyconfig.xml=, or imports one. See /What is missing/.
+10. *Leave.* The person goes back to the list. Every screen that reads the
+    currency now reads the corrected values.
+
+No step waits on the server after its reply. The journey keeps no state of its
+own: a refused write leaves the panel as it was, and the person can try again.
+
+* Screens and wireframes
+
+One screen. The currency panel sits above the three lists it owns, because the
+countries, calendars and groups mean nothing without the currency they belong
+to. The history is a panel on the same screen, not a separate dialog.
+
+#+caption: Currency: the currency panel, its countries, calendars and desk groups, and the history panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/currencies/wireframe_add_or_correct_a_currency.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =currency= | The currency panel: every column, and its versions | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+| =rounding_type= | The rounding type picker | [[id:1DE2BE9C-A783-42A6-988B-96DFA6A0DA08][ores.refdata.rounding_type]] |
+| =monetary_nature= | The monetary nature picker | [[id:7DD42682-6914-4F4E-907C-D57DBBB89B8A][ores.refdata.monetary_nature]] |
+| =currency_market_tier= | The market tier picker | [[id:284D8D40-D243-4E75-885F-FDA5591FB22F][ores.refdata.currency_market_tier]] |
+| =country= | The names in the countries panel and its picker | [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][ores.refdata.country]] |
+| =currency_country= | The countries panel rows | [[id:D1B2BDB5-D35B-4EF3-9A4D-030CF28BDF83][ores.refdata.currency_country]] |
+| =calendar= | The names in the calendars panel and its picker | [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] |
+| =currency_calendar= | The calendars panel rows | [[id:EC7B18A7-3865-424A-AD78-F6BE522F3B0B][ores.refdata.currency_calendar]] |
+| =currency_group= | The names in the desk groups panel and its picker | [[id:C2C74B40-9998-4AA4-BED3-3C13A483D96A][ores.refdata.currency_group]] |
+| =currency_currency_group= | The desk groups panel rows | [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] |
+
+The three junctions are current-state tables with no versions. That is why the
+countries, calendars and groups are plain lists in their panels, and why only
+the currency itself has a history.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the currency | List the currencies | =refdata.v1.currencies.list= | exists |
+| Read the currency | Read one currency | =refdata.v1.currencies.get= | exists |
+| Read the currency | List its countries | =refdata.v1.currency_countries.list_by_currency_iso_code= | exists |
+| Read the currency | List its calendars | =refdata.v1.currency_calendars.list_by_currency_iso_code= | exists |
+| Read the currency | List its desk groups | =refdata.v1.currency_currency_groups.list_by_currency_iso_code= | exists |
+| Correct the currency | Fill the rounding type picker | =refdata.v1.rounding_types.list= | exists |
+| Correct the currency | Fill the monetary nature picker | =refdata.v1.monetary_natures.list= | exists |
+| Correct the currency | Fill the market tier picker | =refdata.v1.currency_market_tiers.list= | exists |
+| Correct the currency | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Correct the currency | Write the currency | =refdata.v1.currencies.put= | exists |
+| Set the countries | Fill the country picker | =refdata.v1.countries.list= | exists |
+| Set the countries | Add or remove a country | =refdata.v1.currency_countries.put=, =.delete= | exists |
+| Set the calendars | Fill the calendar picker | =refdata.v1.calendars.list= | exists |
+| Set the calendars | Add or remove a calendar | =refdata.v1.currency_calendars.put=, =.delete= | exists |
+| Set the desk groups | Fill the group picker | =refdata.v1.currency_groups.list= | exists |
+| Set the desk groups | Add or remove a group | =refdata.v1.currency_currency_groups.put=, =.delete= | exists |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.currency=) | exists |
+| Revert a change | Write the old values as a new version | =refdata.v1.currencies.put= | exists |
+| Exchange with ORE | Export the currencies as ORE XML | none | missing |
+| Exchange with ORE | Import an ORE currency configuration | =ore.v1.ore.import.execute= | partial |
+
+The generic history request is the one =ores.history= defines: the subject is
+derived from the entity type, and the reply carries every version's full field
+render and the field-level diff from the version before. The per-entity
+=refdata.v1.currencies_versions.list= and =.get= also exist and return the raw
+rows; the screen needs the diff, so it uses the generic request. The currency
+list filter also accepts =as_of=, which a later screen can use to show the list
+as it stood on a date.
+
+* What is missing
+
+1. *No server export of currencies as ORE XML.* The Qt client wrote
+   =currencyconfig.xml= itself, with =ore::xml::exporter::export_currency_config=
+   linked into the desktop binary. A browser cannot do that. The candidate is a
+   =refdata.v1.currencies.export= operation that returns the document, in the
+   shape of =refdata.v1.calendar_adjustments.export=. Until it exists, the screen
+   offers no export.
+2. *Import is a whole ORE bundle, not one file.* =ore.v1.ore.import.execute=
+   imports an ORE directory, and its planner reads the currency configuration as
+   one part of it. The candidate is to let the import take a currency
+   configuration on its own. Until then, the screen links to the ORE import
+   instead of offering its own.
+3. *The =Operations= role cannot fill its own pickers.* It holds read, write and
+   delete on currencies and the three junctions, but no read on countries,
+   calendars, currency groups, rounding types, monetary natures or market tiers.
+   An =Operations= member can change a currency but cannot see the values it
+   must pick from. The candidate is to grant those reads to =Operations=, or to
+   introduce a reference data role. Until then, only a tenant administrator can
+   run this journey end to end.
+4. *Reverting is a client convention, not an operation.* There is no revert
+   subject; the screen writes the old values with =put=. This is enough, and it
+   keeps history append-only, but the change reason list should carry a reason
+   for a revert so the history says what happened.
+
+* Related journeys
+
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] — each calendar in the calendars panel opens there
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — correct the rounding types, monetary natures or market tiers the pickers offer
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the tenant whose reference data this is
+
+* Related knowledge
+
+- [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]]
+- [[id:00F4B89E-E216-49BB-8BEC-7BCEE7BDFBBD][ISO 4217 Currency Codes]]
+- [[id:6AC99797-D97B-463C-9351-4946DC80D91C][Currency Lifecycle]]
+- [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:352DD997-5ABB-4E4E-B83A-EF90455EAE52][Currencies]] — the user manual chapter
+
+* See also
+
+- [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

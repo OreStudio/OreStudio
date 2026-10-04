@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extract-user-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/journeys-refdata
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
-#+updated: 2026-09-23
-#+environment:
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every journey a person had in ores.refdata is documented as a user journey, and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] |
-| Now          | Not yet started.                       |
+| Now          | Catalogue agreed; journeys 1, 4 and 10 written.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write journeys 2, 3, 5 to 9.               |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -52,9 +52,108 @@ Work the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Stan
 
 | Item | Result | Evidence |
 |------+--------+----------|
-|      |        |          |
+| I01 | Pass | 136 entity and junction models in =projects/ores.refdata/modeling=, 139 protocol headers; see /Inventory/ below |
+| I02 | Pass | Writes: =TenantAdmin= (=*=) and =Operations= (currency records only); every other human role reads currencies only; services hold =refdata::*= |
+| I03 | Pass | Every model has subjects; no operation without one. Gaps are of shape, not of subject |
+| I04 | Pass | No secret or sensitive field in the refdata wire shapes; no capture needed |
+| I05 | Pass | Versioned entities have history; the 7 junctions are current-state tables; =calendar_date= and =tenor_convention_resolution= are derived and read-only |
+| Q01 | Pass | ~65 Qt screen sets (list window, detail dialog, controller) plus the special screens; see /Legacy Qt screens/ |
+| Q02 | Pass | Every list-window action maps to =list=, =get=, =put=, =delete= or the history request; ORE XML export was client-side |
+| Q03 | Pass | Hidden workflows: related-lookup buttons, party child tables and hierarchy, curve builder bootstrap and publish, currency ORE exchange |
+| Q04 | Partial | Dispositions recorded for the actions the three written journeys cover; the rest follow with their journeys |
+| Q05 | Pass | One screen per table, related-lookup buttons instead of pickers, history in a separate dialog, unguarded delete |
+| V01 | Pass | Terms from =doc/knowledge/domain= (currency, holiday calendar administration, diary/effects) and the manual's reference data chapter |
+| V02 | Pass | No collision found; "rule", "exception" and "event" are used as the calendar models define them |
+| V03 | Pass | The journey runtime, the UX language and the UI design principles bind the screens |
+| J01-J07 | Pass | Catalogue of 12 journeys below, by topic and actor |
+| J08 | Pass | Catalogue agreed with the product owner on 2026-10-04 |
+| D01-D05 | Partial | Three of twelve written: currency, holiday calendar, classification list; three new groups added to the index |
+| X01 | Pass | Every subject in the three coverage tables found in a generated protocol header |
+| X02 | Pending | Lint and site publish run before the PR |
+| X03 | Pass | No defect found; the gaps below are design gaps |
+| X04 | Pass | Recurring gaps recorded below |
+| X05 | Partial | Complete once the remaining nine journeys are written |
 
 * Notes
+
+** Inventory
+
+Measured at =21eb604e82=. Profiles: 52 =uuid-identified-lookup=, 42
+=simple-lookup=, 24 =workspace-scoped-lookup=, 3 =uuid-surrogate-lookup=, 3
+=self-referencing-hierarchy=, 2 =fk-scoped-child=, 1 =fully-featured-lookup=,
+and 9 =tenant-scoped-junction=.
+
+- Every versioned entity has =list=, =get=, =get_many=, =put=, =put_many=,
+  =delete=, =delete_many=, and =<plural>_versions.list= and =.get=.
+- All 127 versioned entities register a history provider, so the generic
+  =refdata.v1.history.get= returns every version with its field-level diff.
+- =as_of= reads exist on 7 entities only: currency, country, party,
+  counterparty, book status, regulatory book type, commodity price segment.
+- Writes carry a change intent (reason code and commentary) and a
+  precondition (=must_not_exist=, =must_match_version= or =any=).
+- Calendar operations beyond CRUD: =calendar_dates.regenerate= and
+  =calendar_adjustments.export=.
+
+** Legacy Qt screens
+
+Every Qt list window had Add, Edit, Delete, History and Reload. Some had
+buttons that opened a related lookup list. Currency alone had CSV export, ORE
+XML export and ORE XML import. The shared history dialog listed versions,
+showed a field diff, opened a version read-only, and reverted to it. Special
+screens: party and counterparty child tables and hierarchy tabs, the curve
+builder workbench, and the market series and bootstrap config pickers.
+
+| Qt action | Disposition |
+|-----------+-------------|
+| Add, Edit, Delete, Reload on every list window | Kept: a step of the journey that owns the record |
+| History, open version, revert | Changed: a History panel on the journey screen, reading =refdata.v1.history.get= |
+| Related-lookup buttons | Changed: pickers on the record, and a link to the classification list |
+| Currency CSV export | Dropped: the ORE XML export covers exchange, and a list screen can export what it shows |
+| Currency ORE XML export and import | Kept: Add or correct a currency, step 9, with gaps |
+| Curve builder workbench, pickers | Deferred to the marketdata and analytics extractions |
+
+** Catalogue
+
+Agreed with the product owner on 2026-10-04.
+
+| # | Journey | Group | Actor | State |
+|---+---------+-------+-------+-------|
+| 1 | Add or correct a currency | Currencies and FX | tenant administrator | written |
+| 2 | Set up a currency pair | Currencies and FX | tenant administrator | agreed |
+| 3 | Group currencies for the desk | Currencies and FX | tenant administrator | agreed |
+| 4 | Keep a holiday calendar right | Calendars | tenant administrator | written |
+| 5 | Onboard a counterparty | to be decided | tenant administrator | agreed |
+| 6 | Keep a party's details current | to be decided | tenant administrator | agreed |
+| 7 | Shape the book structure | to be decided | tenant administrator | agreed |
+| 8 | Define the conventions for an instrument | to be decided | tenant administrator | agreed |
+| 9 | Define how tenors resolve | to be decided | tenant administrator | agreed |
+| 10 | Maintain a classification list | Classifications | tenant administrator | written |
+| 11 | See how a record changed, and undo a change | shared step | any writer | agreed; written as the History step of 1, 4 and 10 |
+| 12 | Exchange reference data with ORE | shared step | tenant administrator | agreed; written as steps of 1 and 4 |
+
+Out of the refdata catalogue: curve configuration (about 35 =curve_*= and
+=*_config= entities, =crm_*=, =ir_curve_bootstrap_*=) goes to the marketdata
+and analytics extractions; sandboxes and sandbox members wait for the
+workspace removal story; =portfolio_right= belongs with the Access group. The
+conventions still use =workspace-scoped-lookup=, so the workspace removal will
+change journey 8.
+
+** Recurring gaps
+
+1. No role below =TenantAdmin= can maintain reference data. =Operations=
+   writes currency records but cannot read the lists its pickers need.
+2. Deleting a lookup row is not refused while records still use the code;
+   those records then fail validation on their next save.
+3. ORE-defined vocabularies (day counters, calendar names, floating index
+   types, leg types, business day conventions) are editable; only calendars
+   carry an =is_editable= marker.
+4. No server-side ORE XML export for currencies; the calendar export returns
+   data, not the document.
+5. Business days are rebuilt only on request, with no record of when.
+6. Business days cannot be read by date range.
+7. Holiday rules and business days carry no holiday name.
+8. Externally sourced holidays are not gated by authorisation.
+9. =display_order= is not unique within a list.
 
 - Legacy screens: =ores.qt/refdata= at =/home/marco/Development/OreStudio/ores.qt=, or =git show af67db3062^:projects/ores.qt/...=. Survey on 2026-09-23: 61 =.ui= files and 194 headers declaring a window, dialog, wizard, widget, view, panel or page.
 - Starts after [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]], because the coverage tables check against the generated protocol.

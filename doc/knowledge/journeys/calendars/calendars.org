@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: A38B168A-8F37-4D8D-A99D-C485E32B9DCE
+:END:
+#+title: Calendars journeys
+#+description: Holiday calendars: their rules, exceptions and diary events, and the business days they produce.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A holiday calendar decides which days count: every date the system rolls,
+settles or fixes on is checked against one. This group holds the journeys that
+keep a calendar's inputs correct (its rules, its exceptions and its diary
+events) and that check the business days those inputs produce.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] | tenant administrator | A calendar's rules, exceptions and events, and the business days they produce |
+
+* Related
+
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

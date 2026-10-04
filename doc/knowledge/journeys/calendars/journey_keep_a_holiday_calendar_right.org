@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A
+:END:
+#+title: User Journey: Keep a holiday calendar right
+#+description: A reference data administrator keeps a holiday calendar's rules, exceptions and events correct, and checks the business days they produce.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator keeps a holiday calendar's rules, exceptions and events correct, and checks the business days they produce.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this calendar to say exactly which days are holidays, so that every
+date the system rolls, settles or fixes on lands where it should." The journey
+is done when the business days the calendar produces match the published
+holidays, for every year the desk needs.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. No narrower role holds the calendar
+permissions today; see /What is missing/. The trigger is a newly announced
+holiday, a revoked one, a central bank meeting schedule, or a run that settled
+on a wrong date. The journey starts at the calendar list, or at a calendar link
+from a currency or a currency pair, and ends when the person leaves the
+calendar.
+
+A calendar has one of three shapes, and the screen follows the shape:
+
+- *QuantLib-sourced* (=source= =quantlib=, =is_editable= false). Its rules are
+  QuantLib's published ones. The row is read-only; the person changes the dates
+  by deriving a calendar from it.
+- *Derived* (=source= =user= with a =base_calendar_code=). A delta on top of its
+  base, carried as exceptions only.
+- *Bespoke* (=source= =user= with no base). Built from its own recurring rules,
+  plus exceptions.
+
+* Steps
+
+1. *Find the calendar.* The person opens *Calendars*. The system lists the
+   tenant's calendars: code, name, type, country, source and whether it is
+   editable. The person filters by name, country or type.
+2. *Read the calendar.* The person selects a row. The system shows one screen:
+   the calendar row, then its rules, its exceptions and its diary events, then
+   the business days it produces. Panels that do not apply to the calendar's
+   shape are hidden, not shown empty: a derived calendar has no rules panel.
+3. *Derive a calendar.* On a QuantLib-sourced calendar the person chooses
+   *Derive a calendar*, names it, and confirms. The system writes a new
+   =user= calendar whose base is this one. The person continues on the new
+   calendar.
+4. *Correct the calendar row.* On an editable calendar the person changes the
+   name, type, country or image, states a change reason, and saves. The system
+   writes it with =must_match_version=.
+5. *Maintain the rules.* On a bespoke calendar the person adds, changes or
+   removes a recurring rule. The form follows the rule kind: a fixed date asks
+   for month and day; the nth weekday of a month asks for month, weekday and
+   occurrence; the last weekday of a month asks for month and weekday; an
+   Easter offset asks for the offset in days. Every kind asks for the weekend
+   shift and the first and last years it applies.
+6. *Add an exception.* The person adds a one-off date, says whether it is a
+   business day or a holiday, and describes it. An extra holiday is an
+   exception that is not a business day; a cancelled holiday is an exception
+   that is a business day. Retiring a recurring holiday from a year onward is a
+   change to the rule's last year, not a deletion, so the history keeps it.
+7. *Record diary events.* The person adds a dated event that does not change
+   whether the day is a business day, such as a central bank meeting, with its
+   diary entry type, name and description.
+8. *Rebuild the business days.* The person chooses *Rebuild business days* and
+   says up to which year. The system regenerates the materialised dates for
+   this calendar from its rules, base and exceptions.
+9. *Check the business days.* The system shows the year's holidays, one month
+   per block, with what produced each one: a rule, an exception or the
+   QuantLib base. The person can add a second calendar,
+   such as the other currency of a pair, and the system shows the union, which
+   is the business-day definition a pair settles on.
+10. *Check the history.* The person opens the history of the calendar row or of
+    one rule, exception or event. The system shows every version with the
+    field-level difference from the one before, and the person can revert to an
+    older version, which the system writes as a new version.
+11. *Export for ORE.* The person exports the calendar's adjustments, which ORE
+    reads as a =CalendarAdjustments= document.
+12. *Leave.* The person goes back to the list.
+
+Step 8 is the only one whose effect is not immediate in the rest of the system:
+until the dates are rebuilt, every consumer reads the old business days. The
+journey still keeps no state of its own; the rebuild completes within the reply.
+
+* Screens and wireframes
+
+One screen. The calendar row sits at the top, the inputs that produce the dates
+sit in the middle, and the dates they produce sit at the bottom, so the person
+reads cause above effect.
+
+#+caption: Holiday calendar: the calendar row, its rules, exceptions and events, and the business days they produce.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/calendars/wireframe_keep_a_holiday_calendar_right.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =calendar= | The calendar row: code, name, type, country, source, editable, base | [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] |
+| =calendar_rule= | The rules panel of a bespoke calendar | [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][ores.refdata.calendar_rule]] |
+| =calendar_exception= | The exceptions panel: one-off holidays and business days | [[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][ores.refdata.calendar_exception]] |
+| =calendar_event= | The diary events panel | [[id:B20050A5-1245-4944-A328-2A0893C92AEC][ores.refdata.calendar_event]] |
+| =calendar_date= | The business days panel, read-only | [[id:1DC67FAD-7543-4E63-A91D-9EE878A2EE8D][ores.refdata.calendar_date]] |
+| =calendar_type= | The calendar type picker | [[id:1A454661-81B5-4F8F-93A6-06547412DD84][ores.refdata.calendar_type]] |
+| =diary_entry_type= | The diary entry type picker | [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][ores.refdata.diary_entry_type]] |
+| =country= | The country picker | [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][ores.refdata.country]] |
+
+The calendar, its rules, exceptions and events are versioned, so each has a
+history. The business days are derived and keep none; they are rebuilt, not
+edited.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the calendar | List the calendars | =refdata.v1.calendars.list= | exists |
+| Read the calendar | Read one calendar | =refdata.v1.calendars.get= | exists |
+| Read the calendar | List its rules | =refdata.v1.calendar_rules.list_by_calendar_code= | exists |
+| Read the calendar | List its exceptions | =refdata.v1.calendar_exceptions.list_by_calendar_code= | exists |
+| Read the calendar | List its diary events | =refdata.v1.calendar_events.list_by_calendar_code= | exists |
+| Derive a calendar | Write the new calendar | =refdata.v1.calendars.put= | exists |
+| Correct the calendar row | Fill the type and country pickers | =refdata.v1.calendar_types.list=, =refdata.v1.countries.list= | exists |
+| Correct the calendar row | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Correct the calendar row | Write the calendar | =refdata.v1.calendars.put= | exists |
+| Maintain the rules | Write or remove a rule | =refdata.v1.calendar_rules.put=, =.delete= | exists |
+| Add an exception | Write or remove an exception | =refdata.v1.calendar_exceptions.put=, =.delete= | exists |
+| Record diary events | Fill the diary entry type picker | =refdata.v1.diary_entry_types.list= | exists |
+| Record diary events | Write or remove an event | =refdata.v1.calendar_events.put=, =.delete= | exists |
+| Rebuild the business days | Regenerate the materialised dates | =refdata.v1.calendar_dates.regenerate= | exists |
+| Check the business days | Read the dates of one calendar | =refdata.v1.calendar_dates.list_by_calendar_code= | partial |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= | exists |
+| Check the history | Revert by writing the old values | the entity's =put= | exists |
+| Export for ORE | Read the calendar adjustments | =refdata.v1.calendar_adjustments.export= | partial |
+
+The history request is the generic one, with =entity_type=
+=ores.refdata.calendar=, =ores.refdata.calendar_rule=,
+=ores.refdata.calendar_exception= or =ores.refdata.calendar_event=; all four
+register a history provider. The pair view reads the dates of both calendars
+and unions them on the screen; it needs no operation of its own.
+
+* What is missing
+
+1. *The business days are not rebuilt when their inputs change.* Writing a
+   rule, an exception or a base does not regenerate =calendar_date=; only
+   =refdata.v1.calendar_dates.regenerate= does, and nothing records when a
+   calendar was last rebuilt. The candidate is to rebuild on every input write,
+   or to record a rebuilt-at time beside the inputs' last change. Until then
+   the screen rebuilds after every save it makes, and says that a change made
+   elsewhere is not visible until the dates are rebuilt.
+2. *The dates cannot be read by year.* The =calendar_dates_filter= takes only
+   calendar codes, so showing one year means paging through every materialised
+   date in order. The candidate is a date range on the filter. Until then the
+   screen pages from the start of the year it needs.
+3. *The ORE export is data, not a document.* =calendar_adjustments.export=
+   returns the adjustments, and the caller is expected to write the
+   =CalendarAdjustments= XML. A browser has no ORE writer. The candidate is for
+   the operation, or the web back end, to return the document. Until then the
+   screen offers no export.
+4. *Externally sourced holidays are not gated.* The administration model
+   expects a holiday from an untrusted source to wait for authorisation before
+   it takes effect. Nothing models a pending holiday or a trusted source. The
+   candidate is a status on the exception, or a workflow over imports. Until
+   then every written exception takes effect when the dates are rebuilt.
+5. *A holiday has no name.* A rule has no name column, and a materialised date
+   carries only whether it is a business day and how it was produced. The
+   screen cannot say "Good Friday"; only exceptions (description) and diary
+   events (name) carry words. The candidate is a name on the rule, carried onto
+   the materialised date. Until then the screen describes a rule by its shape,
+   such as "1st Monday of May".
+6. *Only a tenant administrator can run this journey.* No role below
+   =TenantAdmin= holds the calendar, rule, exception, event or date
+   permissions. The candidate is a reference data role.
+
+* Related journeys
+
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — the currencies that settle on this calendar
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — correct the calendar types or diary entry types the pickers offer
+
+* Related knowledge
+
+- [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]]
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]]
+- [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]]
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]]
+- [[id:7316C20B-1C0D-4BE3-A994-1957C7595771][ORE's AdvanceCalendar Convention Field]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+
+* See also
+
+- [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

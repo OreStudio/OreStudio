@@ -1,0 +1,73 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+@startuml
+
+salt
+{
+  <b>CALENDAR: ACME.LONDON (ACME LONDON SETTLEMENT)</b> | [ Back to calendars ]
+  --
+  {#
+    Calendar | Value
+    Code | ACME.LONDON
+    Name | Acme London settlement
+    Type | ^Settlement^
+    Country | ^GB^
+    Source | user (bespoke, editable)
+    Change reason | ^Correction^
+  }
+  [ Save calendar ]
+  --
+  {#
+    Rules | Kind | When | Shift | Years
+    . | fixed date | 1 Jan | nearest weekday | all
+    . | nth weekday | 1st Monday of May | none | all
+    . | Easter offset | -2 days | none | all
+    . | fixed date | 25 Dec | nearest weekday | all
+  }
+  [ Add rule ] | [ Change rule ] | [ Remove rule ]
+  --
+  {#
+    Exceptions | Date | Business day | Description
+    . | 2026-06-08 | no | Coronation holiday
+    . | 2026-05-04 | yes | Early May moved by decree
+  }
+  [ Add exception ]
+  --
+  {#
+    Diary events | Date | Type | Name
+    . | 2026-11-05 | central bank meeting | MPC decision
+  }
+  [ Add event ]
+  --
+  {
+    Business days up to year | "2030" | [ Rebuild business days ]
+    Show with second calendar | ^TARGET^
+  }
+  {#
+    2026 holidays | Date | Produced by | Calendar
+    . | 2026-01-01 | rule | ACME.LONDON
+    . | 2026-04-03 | rule | ACME.LONDON and TARGET
+    . | 2026-05-01 | QuantLib | TARGET
+    . | 2026-06-08 | exception | ACME.LONDON
+  }
+  --
+  [ History of selected row ] | [ Export for ORE ]
+}
+
+@enduml

@@ -8,7 +8,7 @@
 #+filetags: :sprint_26:v0:
 #+created: 2026-09-23
 #+updated: 2026-09-23
-#+environment: brave_hopper
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -52,7 +52,7 @@ each operation against the generated protocol.
 | [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workspace, reading its legacy screens in ores.qt/workspace. |
 | [[id:8EE415F7-0B51-4FA6-A3E0-D5BBAF751E1F][Extract the ores.workflow user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workflow, reading its legacy screens in ores.qt/workflow. |
 | [[id:78D214D7-84E8-4578-BF92-8A667F520E79][Extract the ores.iam user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.iam, reading its legacy screens in ores.qt/iam. |
-| [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.refdata, reading its legacy screens in ores.qt/refdata. |
+| [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] | STARTED | 2026-10-04 | | Run the User Journey Extraction Standard for ores.refdata, reading its legacy screens in ores.qt/refdata. |
 | [[id:B067A8C9-A7B0-4A28-AA6A-A701318D56B4][Extract the ores.analytics user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.analytics, reading its legacy screens in ores.qt/analytics. |
 | [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute. |
 | [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Extract the ores.reporting user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.reporting, reading its legacy screens in ores.qt/reporting. |

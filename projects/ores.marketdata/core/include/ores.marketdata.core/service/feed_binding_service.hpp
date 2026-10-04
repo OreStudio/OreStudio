@@ -143,7 +143,7 @@ public:
      * @return The feed binding if found, std::nullopt otherwise.
      */
     std::optional<domain::feed_binding>
-    get_feed_binding_by_oresmd_uri(const std::string& oresmd_uri);
+    get_feed_binding_by_source_name(const std::string& source_name);
 
     /**
      * @brief Retrieves a batch of feed bindings by primary key.

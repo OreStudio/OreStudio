@@ -25,8 +25,7 @@ written into.
 =ores.marketdata='s =market_series= table -- the official curve series
 this config publishes into -- deliberately not a hard FK constraint,
 matching the same soft-reference principle already used for
-=market_series.derivation_config_id= and =ir_curve_tick='s own
-producer/config identity: the referenced table lives in a different
+=market_series.derivation_config_id=: the referenced table lives in a different
 component/schema. The column is minted (the =market_series= catalog row
 created) at config-creation time by the owning service, never left
 null/deferred -- there is no "not yet published" state to guard against.

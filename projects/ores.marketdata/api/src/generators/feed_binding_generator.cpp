@@ -48,13 +48,7 @@ domain::feed_binding generate_synthetic_feed_binding(utility::generation::genera
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.oresmd_uri = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.source_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.asset_class = [idx] {
-        constexpr auto count =
-            sizeof(domain::asset_class_codes) / sizeof(domain::asset_class_codes[0]);
-        return std::string(domain::asset_class_codes[static_cast<std::size_t>(idx) % count]);
-    }();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

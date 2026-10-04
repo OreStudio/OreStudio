@@ -20,60 +20,46 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 #define ORES_MARKETDATA_API_DOMAIN_TICK_SUBJECTS_HPP
 
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include <algorithm>
 #include <string>
 #include <string_view>
 
 namespace ores::marketdata::domain {
 
 /**
- * @brief The unified synthetic tick subject scheme: synthetic.v1.tick.<kind>.<source_name>.
+ * @brief The subjects a live market_tick travels on.
  *
- * The kind token is the third subject segment and equals the factory kind
- * string of the producing feed (fx_spot_feed_kind / ir_curve_feed_kind in
- * ores.synthetic.api) — producers reuse the factory vocabulary as the
- * subject kind, with no per-kind subject family. The ingest loop dispatches
- * on this token, with one ingest branch per kind. The payloads
- * (fx_spot_tick / ir_curve_tick) are unchanged — the kind rides in the
- * subject, not in the wire type.
- *
- * Sandboxed feeds keep their own prefix (synthetic.v1.sandbox.tick.) — it is
- * structurally unreachable from the ingest loop's subscription and from any
- * bound-feed resolution path. The republished stream keeps its own prefix
- * (marketdata.v1.tick.) — the consumer-facing scheme is unchanged.
+ * A producer publishes on "synthetic.v1.tick.<source>", or under the sandbox
+ * prefix, which the ingest loop never subscribes to. The ingest loop
+ * republishes each tick to every consumer the source's feed bindings name, on
+ * the market_tick subject extended with the consumer and the datum's
+ * canonical ORE key.
  */
 inline constexpr std::string_view synthetic_tick_subject_prefix = "synthetic.v1.tick.";
 inline constexpr std::string_view synthetic_sandbox_tick_subject_prefix =
     "synthetic.v1.sandbox.tick.";
-inline constexpr std::string_view marketdata_tick_subject_prefix = "marketdata.v1.tick.";
+
+/// The subject a producer publishes @p source_name's ticks on.
+inline std::string synthetic_tick_subject(std::string_view source_name) {
+    return std::string(synthetic_tick_subject_prefix).append(source_name);
+}
 
 /**
- * @brief Wire kind tokens; must match the factory kind strings (fx_spot_feed_kind,
- * ir_curve_feed_kind in ores.synthetic.api).
+ * @brief The subject a consumer reads one datum's ticks on:
+ * "marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>", where the key is the
+ * datum's canonical ORE key, lower-cased, with its slashes turned to dots.
  */
-inline constexpr std::string_view fx_spot_kind_token = "fx_spot";
-inline constexpr std::string_view ir_curve_kind_token = "ir_curve";
-
-/**
- * @brief The asset class a producer of this kind declares, as a code from
- * refdata.asset_class_code.
- *
- * The pairing is a property of the producer kind, not of a series: every
- * ir_curve feed publishes interest-rate curves, whatever its source_name or
- * its config. fx_spot has no counterpart here because an fx_spot tick's
- * identity, asset class included, comes from its feed_binding row.
- */
-inline constexpr std::string_view ir_curve_asset_class = "interest_rates";
-
-/**
- * @brief Build the producer subject for a source_name: synthetic.v1.tick.<kind>.<source_name>.
- */
-inline std::string synthetic_tick_subject(std::string_view kind, std::string_view source_name) {
-    std::string subject;
-    subject.reserve(synthetic_tick_subject_prefix.size() + kind.size() + 1 + source_name.size());
-    subject.append(synthetic_tick_subject_prefix);
-    subject.append(kind);
-    subject.push_back('.');
-    subject.append(source_name);
+inline std::string market_tick_subject(std::string_view tenant_id,
+                                       std::string_view workspace_id,
+                                       std::string_view party_id,
+                                       std::string ore_key) {
+    std::ranges::transform(ore_key, ore_key.begin(), [](unsigned char c) {
+        return c == '/' ? '.' : static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
+    });
+    std::string subject(messaging::market_tick::nats_subject);
+    for (const auto part : {tenant_id, workspace_id, party_id, std::string_view(ore_key)})
+        subject.append(".").append(part);
     return subject;
 }
 

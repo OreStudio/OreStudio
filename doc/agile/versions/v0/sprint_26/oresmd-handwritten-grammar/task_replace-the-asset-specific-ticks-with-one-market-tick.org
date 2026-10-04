@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every live market data feed, whatever its asset class, publishes and ingests one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -47,9 +47,27 @@ Every live market data feed, whatever its asset class, publishes and ingests one
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The wire changes producers and consumers together, so this is one pull request
+of commits that each build:
+
+1. *The tick.* Model =market_tick= in =ores.marketdata.operations=, with
+   =:subject: marketdata.v1.tick=, and write the one republished-subject builder
+   in the api against its generated constant.
+2. *The binding.* A binding maps a source to the tenant, workspace and party
+   that consume it. Its =oresmd_uri= and =asset_class= go: the tick names its
+   own datum, and a curve source publishes many datums across several series.
+   Its natural key becomes the party and the source.
+3. *The ingest loop.* One path for every tick: find the source's enabled
+   bindings, read the URI with =oresmd_uri_codec=, classify with
+   =classification_key_of=, store the observation, republish under the builder's
+   subject.
+4. *The producers.* The synthetic FX and IR curve feeds publish =market_tick=.
+   Tenant provisioning creates a binding for every feed, FX and IR alike.
+5. *The deletions.* =fx_spot_tick=, =ir_curve_tick=, their JSON I/O, the two
+   copies of the subject function, and the FX-only client subscription, which
+   becomes a subscription to =market_tick=.
+6. *Proof.* The fleet runs both synthetic feeds, and observations from both
+   arrive under their datum URIs.
 
 * Measurements
 

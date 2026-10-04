@@ -49,12 +49,8 @@ struct feed_binding_entity {
     std::string party_id;
 
 
-    std::string oresmd_uri;
-
-
     std::string source_name;
 
-    std::string asset_class;
     bool enabled = true;
     std::string modified_by;
     std::string performed_by;

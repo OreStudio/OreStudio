@@ -55,14 +55,9 @@ inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
  * with '_' so a stray value cannot produce surprise routing or a publish
  * error.
  *
- * sandboxed feeds publish under a distinct "synthetic.v1.sandbox.tick."
- * prefix rather than the unified "synthetic.v1.tick.<kind>.<source>"
- * scheme — the marketdata ingest loop's subscription subject is always
- * derived from a feed_binding's source_name as
- * "synthetic.v1.tick.fx_spot." + source_name (see feed_ingest_loop.cpp),
- * so a sandboxed feed's ticks are structurally unreachable from the
- * bound-feed resolution path regardless of whether a feed_binding for this
- * source_name exists.
+ * A sandboxed feed publishes under "synthetic.v1.sandbox.tick." rather than
+ * "synthetic.v1.tick.<source>", which the marketdata ingest loop never
+ * subscribes to, so its ticks cannot be stored whatever bindings exist.
  */
 inline std::string synthetic_producer_subject(const std::string& source_name,
                                               ores::synthetic::domain::binding_mode binding_mode) {
@@ -73,8 +68,10 @@ inline std::string synthetic_producer_subject(const std::string& source_name,
         token += safe ? static_cast<char>(c) : '_';
     }
     const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ? "synthetic.v1.sandbox.tick." + token :
-                       ores::marketdata::domain::synthetic_tick_subject(fx_spot_feed_kind, token);
+    return sandboxed ?
+               std::string(ores::marketdata::domain::synthetic_sandbox_tick_subject_prefix) +
+                   token :
+               ores::marketdata::domain::synthetic_tick_subject(token);
 }
 
 /**
@@ -83,8 +80,9 @@ inline std::string synthetic_producer_subject(const std::string& source_name,
  * Implements IFeed. On start(), runs a tick loop on the calling thread
  * (caller must run it on a dedicated std::thread). Each tick:
  *   1. Advances the stochastic process to get a new price.
- *   2. Builds an fx_spot_tick (ore_key, utc now, price).
- *   3. Publishes the tick JSON to the NATS JetStream subject.
+ *   2. Builds a market_tick: the datum's oresmd quote URI, the price as decimal
+ *      text, utc now and the source.
+ *   3. Publishes it to the NATS JetStream subject.
  *
  * Persistence is handled by the marketdata ingest loop, which subscribes to
  * the JetStream subject, lazily creates the market series on first tick, and
@@ -132,6 +130,7 @@ public:
 private:
     ores::nats::service::client& nats_;
     std::string ore_key_;
+    std::string oresmd_uri_;
     std::string source_name_;
     std::string qualifier_;
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;

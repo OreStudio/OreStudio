@@ -24,14 +24,14 @@
  *
  * Feed Binding Table
  *
- * A feed binding records which raw producer channel feeds an official market
- * series, in which workspace. The marketdata service reads all enabled bindings
- * at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per
- * (tenant, party, workspace), persists each arriving tick as a
- * market_observation under the binding's party, and republishes on the
- * per-party realtime stream
- * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
- * binding's identity projects back to.
+ * A feed binding records that a party consumes one producer source, in one
+ * workspace. It is the one place a live tick finds its owners, for every feed and
+ * every asset class: a tick names its own datum by its oresmd quote URI and its
+ * producer by source, and the ingest loop stores it once for each enabled
+ * binding of that source, under the binding's tenant and party, and republishes
+ * it on the per-party realtime stream
+ * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
+ * key is the datum's canonical ORE key.
  *
  * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
  * which resolves in every tenant. It is the seam where the future workspaces
@@ -68,9 +68,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "oresmd_uri" text not null,
     "source_name" text not null,
-    "asset_class" text not null,
     "enabled" boolean not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -87,14 +85,12 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("oresmd_uri" <> ''),
-    check ("source_name" <> ''),
-    check ("asset_class" <> '')
+    check ("source_name" <> '')
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists feed_bindings_party_id_oresmd_uri_source_name_uniq_idx
-on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, oresmd_uri, source_name)
+create unique index if not exists feed_bindings_party_id_source_name_uniq_idx
+on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, source_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -124,9 +120,6 @@ begin
 
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
-
-    -- Validate asset_class
-    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

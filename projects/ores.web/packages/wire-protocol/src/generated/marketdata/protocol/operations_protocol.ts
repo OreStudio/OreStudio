@@ -398,6 +398,25 @@ export interface ExportMarketDataResponse {
     fixing_count: number;
 }
 
+/**
+ * @brief One live observation of one market datum.
+ *
+ * The datum is named by its oresmd quote URI, which carries the asset class,
+ * the instrument and every field, so no asset class has a tick type of its
+ * own. A curve is the set of ticks one producer publishes with one
+ * observation time.
+ */
+export interface MarketTick {
+    /** The quote URI of the datum observed, under the strict contract. */
+    oresmd_uri: string;
+    /** The observed value as decimal text, so it keeps the producer's digits. */
+    value: string;
+    /** When the value was observed. */
+    observation_time: string;
+    /** The producer, unique within a tenant; its feed bindings name the consumers. */
+    source: string;
+}
+
 export const subjects = {
     get_crm_rate_request: 'marketdata.v1.crm.rate',
     get_crm_rates_request: 'marketdata.v1.crm.rates',
@@ -411,6 +430,7 @@ export const subjects = {
     get_vintage_validity_request: 'marketdata.v1.market_feed_configs.vintage_validity',
     export_market_data_to_storage_request: 'marketdata.v1.series.export-to-storage',
     export_market_data_request: 'marketdata.v1.export',
+    market_tick: 'marketdata.v1.tick',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -430,4 +450,5 @@ export const requiresSession = {
     get_vintage_validity_request: true,
     export_market_data_to_storage_request: true,
     export_market_data_request: true,
+    market_tick: false,
 } as const;

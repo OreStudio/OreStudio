@@ -25,7 +25,6 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 #define ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 
-#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
@@ -34,17 +33,17 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Persisted mapping that binds an official ORE market series, by its oresmd identity, to one
- * raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
+ * @brief Persisted mapping that binds one producer source (source_name) to the party and workspace
+ * that consume it; enables/disables the ingest loop subscription.
  *
- * A feed binding records which raw producer channel feeds an official market
- * series, in which workspace. The marketdata service reads all enabled bindings
- * at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per
- * (tenant, party, workspace), persists each arriving tick as a
- * market_observation under the binding's party, and republishes on the
- * per-party realtime stream
- * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
- * binding's identity projects back to.
+ * A feed binding records that a party consumes one producer source, in one
+ * workspace. It is the one place a live tick finds its owners, for every feed and
+ * every asset class: a tick names its own datum by its oresmd quote URI and its
+ * producer by source, and the ingest loop stores it once for each enabled
+ * binding of that source, under the binding's tenant and party, and republishes
+ * it on the per-party realtime stream
+ * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
+ * key is the datum's canonical ORE key.
  *
  * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
  * which resolves in every tenant. It is the seam where the future workspaces
@@ -106,33 +105,11 @@ struct feed_binding final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief The oresmd identity of the series being bound: the same identity the tick's key
-     * projects to and the market_series row the ticks land under carries, so a binding names a
-     * series by what it is rather than by a spelling the ingest loop then has to decompose. The
-     * loop projects it back to the ORE key for the subject it republishes under, which is why the
-     * binding can carry the identity alone.
-     */
-    std::string oresmd_uri;
-
-    /**
-     * @brief Unique producer identity; the subject suffix of the producer's
-     * synthetic.v1.tick.fx_spot.<source_name> channel, keying the ingest loop's binding cache.
-     * Matches the source_name of the feed config the binding was created from.
+     * @brief The producer, unique within a tenant: the source every tick it publishes carries, and
+     * the key of the ingest loop's binding cache. Matches the source_name of the feed config the
+     * binding was created from.
      */
     std::string source_name;
-
-    /**
-     * @brief Asset class of the series being bound, as a code from refdata.asset_class_code
-     * (referenced asset_class_code.code), validated by ores_refdata_validate_asset_class_code_fn.
-     * Set client-side at bind time from the config being bound; consumers of the binding list
-     * filter on it.
-     *
-     * Carried as the code itself rather than a compiled enum: the taxonomy is runtime-managed, so
-     * no compiled list can be exhaustive over it, and the table is the single source of truth.
-     * There is no default -- an unset class must fail at the database boundary rather than silently
-     * claim to be FX.
-     */
-    std::string asset_class;
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

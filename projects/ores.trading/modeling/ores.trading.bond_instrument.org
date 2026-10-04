@@ -275,13 +275,9 @@ closes them when the last instrument of the issue is deleted.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
-
-** Checks
-
-| expression |
-|------------|
-| "trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot') |
 
 ** Indexes
 

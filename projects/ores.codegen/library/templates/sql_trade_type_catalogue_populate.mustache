@@ -1,0 +1,37 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.trade_type.catalogue_populate.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_trade_type_catalogue_populate.mustache
+ *
+ * Trade Types Population Script
+ *
+ * Seeds every trade type ORE knows. Generated from
+ * ores.trading.trade_type_catalogue, which also routes each type to the
+ * instrument table that holds it.
+ *
+ * This script is idempotent.
+ */
+
+\echo '--- Trade Types ---'
+
+insert into ores_trading_trade_types_tbl (
+    code, tenant_id, version, description,
+    product_type, has_options, has_extension,
+    modified_by, change_reason_code, change_commentary
+) values
+{{#trade_type_catalogue}}
+{{#rows}}
+    ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{description_sql}}',
+     '{{product_type}}', {{has_options}}, {{has_extension}},
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'){{comma}}
+{{/rows}}
+{{/trade_type_catalogue}}
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+select 'Trade Types' as entity, count(*) as count
+from ores_trading_trade_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();

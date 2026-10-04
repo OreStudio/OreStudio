@@ -244,6 +244,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fx_digital_option_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -255,7 +257,6 @@ its trade, so a row cannot exist without one.
 | "domestic_currency" <> '' |
 | "payoff_currency" <> '' |
 | "long_short" in ('Long', 'Short') |
-| "trade_type_code" in ('FxDigitalOption', 'FxDigitalBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption') |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
 | "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 

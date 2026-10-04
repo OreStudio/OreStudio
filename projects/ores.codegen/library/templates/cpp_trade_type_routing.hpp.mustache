@@ -1,0 +1,42 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.trade_type.routing.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_TYPE_ROUTING_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_TYPE_ROUTING_HPP
+
+#include <optional>
+#include <string_view>
+
+namespace ores::trading::domain {
+
+/**
+ * @brief The instrument tables a trade type can be routed to.
+ *
+ * Generated from ores.trading.trade_type_catalogue: one value per table the
+ * catalogue routes at least one trade type to.
+ */
+enum class instrument_table {
+{{#trade_type_catalogue}}
+{{#instruments}}
+    {{name}}{{comma}}
+{{/instruments}}
+{{/trade_type_catalogue}}
+};
+
+/**
+ * @brief The instrument table that holds a trade of the given type, or
+ * nullopt where no table holds the type.
+ */
+[[nodiscard]] inline std::optional<instrument_table>
+instrument_table_for(std::string_view trade_type) {
+{{#trade_type_catalogue}}
+{{#routes}}
+    if (trade_type == "{{code}}")
+        return instrument_table::{{instrument}};
+{{/routes}}
+{{/trade_type_catalogue}}
+    return std::nullopt;
+}
+
+}
+
+#endif

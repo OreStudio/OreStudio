@@ -76,6 +76,11 @@
 // and repository headers are needed too.
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+// Grand-parent seeding (ores_trading_trade_types_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too.
+#include "ores.trading.api/generators/trade_type_generator.hpp"
+#include "ores.trading.core/repository/trade_type_repository.hpp"
 // Grand-parent seeding (ores_dq_fsm_states_tbl): the parent's own mandatory soft FKs
 // reference rows the test seeds before the parent, so their generator
 // and repository headers are needed too.
@@ -276,6 +281,18 @@ TEST_CASE("write_equity_forward_instrument_publishes_an_event", tags) {
     ores::refdata::repository::portfolio_repository trade_id_parent_portfolio_parent_repo;
     trade_id_parent_portfolio_parent_repo.write(party_ctx, trade_id_parent_portfolio_parent);
     trade_id_parent.parties.portfolio_id = trade_id_parent_portfolio_parent.id;
+    // trade_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::trading::repository::trade_type_repository trade_id_parent_trade_type_parent_repo;
+        const auto trade_id_parent_trade_type_parent_catalogue =
+            trade_id_parent_trade_type_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(trade_id_parent_trade_type_parent_catalogue.empty());
+        trade_id_parent.classification.trade_type =
+            trade_id_parent_trade_type_parent_catalogue.front().code;
+    }
     // fsm_state is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent
     // system-tenant branch does.

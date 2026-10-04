@@ -58,14 +58,14 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('FxVarianceSwap')),
     check ("end_date" > "start_date"),
     check ("strike" > 0),
     check ("notional" > 0),
     check ("currency" <> ''),
     check ("underlying_code" <> ''),
     check ("long_short" in ('Long', 'Short')),
-    check ("moment_type" in ('Variance', 'Volatility')),
-    check ("trade_type_code" = 'FxVarianceSwap')
+    check ("moment_type" in ('Variance', 'Volatility'))
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 2d187ab0-0676-45aa-9e0f-aca18580d3e0
+:END:
+#+title: ores.cpp.trade_type
+#+description: Trade-type catalogue C++: the routing from a trade type to the instrument table that holds it.
+#+type: facet
+#+model_types: trade_type_catalogue
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is the node for the =ores.cpp.trade_type= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] technical space.
+
+* Summary
+
+One template projecting the /trade-type catalogue/'s routing onto C++: an
+enumeration of the instrument tables and the function that answers which one
+holds a trade type. The export handler reads it instead of keeping its own
+routing in hand-written conditions.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:1ddf3fc1-a3f6-44d8-936e-b9a5efcae9d0][ores.cpp.trade_type.routing]] | The trade type to instrument table routing. Output =projects/ores.trading/api/include/ores.trading.api/domain/trade_type_routing.hpp=. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space.

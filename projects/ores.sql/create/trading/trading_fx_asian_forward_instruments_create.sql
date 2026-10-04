@@ -67,8 +67,8 @@ create table if not exists "ores_trading_fx_asian_forward_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("fx_index" <> ''),
-    check ("trade_type_code" in ('FxAverageForward', 'FxTaRF'))
+    check ("trade_type_code" in ('FxAverageForward', 'FxTaRF')),
+    check ("fx_index" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

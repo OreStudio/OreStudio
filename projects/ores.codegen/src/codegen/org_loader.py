@@ -5787,6 +5787,105 @@ _ASSET_CLASS_CATALOGUE_PATH = (
 )
 
 
+_TRADE_TYPE_PRODUCT_TYPES = frozenset({
+    "swap", "fx", "bond", "credit", "equity", "commodity", "composite", "scripted"})
+
+
+def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
+    """Load the trade-type catalogue into the shape its readers want.
+
+    The ``* Trade types`` table holds one row per trade type: its code, its
+    description, its product type, its two flags and the ``instrument``, the
+    entity whose table holds a trade of that type, empty when none does.
+
+    ``rows`` feeds the seed; ``instruments`` groups the routed codes by the
+    entity they are routed to, for the routing header. Each instrument must
+    be an entity some model in the catalogue's component declares, so a typo
+    fails codegen rather than routing a trade to a table that does not exist.
+    """
+    path = Path(path)
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    fm = doc.frontmatter
+    section = _section(doc.root, "Trade types")
+    if not section or not section.tables:
+        raise ValueError(f"{path.name}: no * Trade types table.")
+    raw = _parse_org_table_rows(section)
+
+    known_entities = {
+        info["entity_singular"]
+        for info in _entity_org_by_table(path.parents[2]).values()
+    }
+    rows: list[dict[str, Any]] = []
+    for r in raw:
+        code = (r.get("code") or "").strip()
+        if not code:
+            continue
+        product_type = (r.get("product_type") or "").strip()
+        if product_type not in _TRADE_TYPE_PRODUCT_TYPES:
+            raise ValueError(
+                f"{path.name}: trade type {code} has product type "
+                f"{product_type!r}, which is not one of "
+                f"{', '.join(sorted(_TRADE_TYPE_PRODUCT_TYPES))}.")
+        flags = {}
+        for flag in ("has_options", "has_extension"):
+            value = (r.get(flag) or "").strip()
+            if value not in ("true", "false"):
+                raise ValueError(
+                    f"{path.name}: trade type {code} has {flag} {value!r}; "
+                    "it must be true or false.")
+            flags[flag] = value
+        instrument = (r.get("instrument") or "").strip()
+        if instrument and instrument not in known_entities:
+            raise ValueError(
+                f"{path.name}: trade type {code} is routed to {instrument}, "
+                "which no entity model declares.")
+        rows.append({
+            "code": code,
+            "description_sql": " ".join(
+                (r.get("description") or "").split()).replace("'", "''"),
+            "product_type": product_type,
+            **flags,
+            "instrument": instrument,
+        })
+    codes = [row["code"] for row in rows]
+    repeated = sorted({c for c in codes if codes.count(c) > 1})
+    if repeated:
+        raise ValueError(
+            f"{path.name}: duplicate trade type code(s): {', '.join(repeated)}")
+    for index, row in enumerate(rows):
+        row["comma"] = "" if index == len(rows) - 1 else ","
+
+    instruments = []
+    for name in sorted({row["instrument"] for row in rows if row["instrument"]}):
+        instruments.append({
+            "name": name,
+            "codes": [row["code"] for row in rows if row["instrument"] == name],
+        })
+    for index, entry in enumerate(instruments):
+        entry["comma"] = "" if index == len(instruments) - 1 else ","
+    routes = [row for row in rows if row["instrument"]]
+
+    catalogue: dict[str, Any] = {
+        key: fm[key] for key in ("component", "brief") if key in fm}
+    catalogue["rows"] = rows
+    catalogue["instruments"] = instruments
+    catalogue["routes"] = [
+        {"code": row["code"], "instrument": row["instrument"]} for row in routes]
+    return {"trade_type_catalogue": catalogue}
+
+
+def trade_type_catalogue_codes(catalogue_path: Path, entity: str) -> list[str]:
+    """The trade type codes the catalogue at ``catalogue_path`` routes to
+    ``entity``, in catalogue order."""
+    catalogue = _load_trade_type_catalogue_cached(Path(catalogue_path))
+    return [row["code"] for row in catalogue["rows"] if row["instrument"] == entity]
+
+
+@lru_cache(maxsize=None)
+def _load_trade_type_catalogue_cached(path: Path) -> dict[str, Any]:
+    return load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+
 @lru_cache(maxsize=None)
 def asset_class_catalogue_authorities() -> frozenset[str]:
     """The oresmd authorities the asset-class catalogue declares.

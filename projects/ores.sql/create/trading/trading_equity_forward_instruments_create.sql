@@ -56,10 +56,10 @@ create table if not exists "ores_trading_equity_forward_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('EquityForward')),
     check ("quantity" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityForward')),
     check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))
 );
 

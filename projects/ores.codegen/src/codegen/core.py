@@ -44,6 +44,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
     "ores.codegen.operation":         "operation",
     "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
+    "ores.codegen.trade_type_catalogue": "trade_type_catalogue",
 }
 
 # The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
@@ -1164,6 +1165,7 @@ def load_model(model_path):
             load_org_dataset_model,
             load_org_operation_model,
             load_org_asset_class_catalogue_model,
+            load_org_trade_type_catalogue_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
@@ -1189,6 +1191,8 @@ def load_model(model_path):
             return load_org_operation_model(model_path)
         if org_type == 'asset_class_catalogue':
             return load_org_asset_class_catalogue_model(model_path)
+        if org_type == 'trade_type_catalogue':
+            return load_org_trade_type_catalogue_model(model_path)
 
         # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):
@@ -1760,6 +1764,42 @@ def _unique_keys(de: dict[str, Any]) -> list[frozenset[str]]:
                 and all(re.fullmatch(r'[a-z_][a-z0-9_]*', c) for c in columns)):
             keys.append(frozenset(columns))
     return keys
+
+
+def _resolve_routed_check(domain_entity: dict[str, Any], model_path) -> None:
+    """Check a routed column against the codes its catalogue routes here.
+
+    A model that declares ``:routed_by:`` (a catalogue's title) and
+    ``:routed_column:`` in its SQL Flags gets a check that the column holds
+    one of the codes the catalogue routes to this entity. The list is the
+    catalogue's, not the model's, so every table's list comes from one
+    source and no two tables can accept the same code.
+    """
+    sql = domain_entity.get('sql') or {}
+    routed_by = sql.get('routed_by')
+    column = sql.get('routed_column')
+    if not routed_by and not column:
+        return
+    if not (routed_by and column):
+        raise ValueError(
+            f"{model_path}: :routed_by: and :routed_column: go together.")
+    if column not in _column_names(domain_entity):
+        raise ValueError(
+            f"{model_path}: :routed_column: {column} is not a column of "
+            "this model.")
+    matches = sorted(_projects_dir_from(model_path).glob(
+        f"*/modeling/{routed_by}.org"))
+    if len(matches) != 1:
+        raise ValueError(
+            f"{model_path}: :routed_by: {routed_by} names no catalogue model.")
+    from .org_loader import trade_type_catalogue_codes
+    entity = domain_entity.get('entity_singular')
+    codes = trade_type_catalogue_codes(matches[0], entity)
+    if not codes:
+        raise ValueError(
+            f"{model_path}: {routed_by} routes no code to {entity}.")
+    listed = ", ".join(f"'{code}'" for code in codes)
+    sql.setdefault('extra_checks', []).insert(0, f'"{column}" in ({listed})')
 
 
 def _resolve_pinned_keys(domain_entity: dict[str, Any], model_path) -> None:
@@ -2742,6 +2782,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if (model_type == 'asset_class_catalogue' and isinstance(model, dict)
             and 'asset_class_catalogue' in model):
         data['asset_class_catalogue'] = model['asset_class_catalogue']
+
+    # The trade-type catalogue renders at a top-level key of its own name too:
+    # the seed reads its rows and the routing header its instruments.
+    if (model_type == 'trade_type_catalogue' and isinstance(model, dict)
+            and 'trade_type_catalogue' in model):
+        data['trade_type_catalogue'] = model['trade_type_catalogue']
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:
@@ -4174,6 +4220,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     "longer than 63 characters and PostgreSQL would truncate "
                     "it; shorten the table name or the column name.")
         _resolve_pinned_keys(domain_entity, model_path)
+        _resolve_routed_check(domain_entity, model_path)
         # RLS policy names are composed from the short table base
         # (market_series_tbl_tenant_isolation_policy), the dominant
         # hand-written shape, while sql_name_base carries the full

@@ -57,11 +57,11 @@ create table if not exists "ores_trading_fx_forward_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('FxForward', 'FxSwap')),
     check ("bought_amount" > 0),
     check ("sold_amount" > 0),
     check ("bought_currency" <> ''),
-    check ("sold_currency" <> ''),
-    check ("trade_type_code" in ('FxForward', 'FxSwap'))
+    check ("sold_currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

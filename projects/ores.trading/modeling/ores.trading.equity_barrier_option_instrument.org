@@ -275,6 +275,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_barrier_option_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -285,7 +287,6 @@ its trade, so a row cannot exist without one.
 | "strike" >= 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| "trade_type_code" in ('EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption') |
 | "option_type" in ('Call', 'Put') |
 | "exercise_type" in ('European', 'Bermudan', 'American') |
 | "lower_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |

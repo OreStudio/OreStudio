@@ -65,11 +65,11 @@ create table if not exists "ores_trading_equity_asian_option_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('EquityAsianOption')),
     check ("notional" > 0),
     check ("strike" >= 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityAsianOption')),
     check ("option_type" in ('Call', 'Put')),
     check ("exercise_type" in ('European', 'Bermudan', 'American'))
 );

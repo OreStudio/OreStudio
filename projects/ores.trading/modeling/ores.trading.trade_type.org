@@ -196,3 +196,4 @@ drop function if exists ores_trading_validate_trade_type_fn;
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]] — the trade types this table is seeded with, and the instrument table that holds each.

@@ -58,12 +58,12 @@ create table if not exists "ores_trading_fx_accumulator_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('FxAccumulator')),
     check ("fixing_amount" > 0),
     check ("strike" > 0),
     check ("currency" <> ''),
     check ("underlying_code" <> ''),
-    check ("long_short" in ('Long', 'Short')),
-    check ("trade_type_code" = 'FxAccumulator')
+    check ("long_short" in ('Long', 'Short'))
 );
 
 -- Version uniqueness for optimistic concurrency

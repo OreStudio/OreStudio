@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: a476651f-1e28-4606-9543-fa5ac8e64f1c
+:END:
+#+title: ores.sql.trade_type
+#+description: Trade-type catalogue SQL: the trade types seed, generated from the catalogue.
+#+type: facet
+#+model_types: trade_type_catalogue
+#+level: cross
+#+facet_group: ores.sql
+#+filetags: :codegen:physical-space:sql:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is the node for the =ores.sql.trade_type= facet of the codegen
+template library, part of the [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] technical space.
+
+* Summary
+
+One template projecting the /trade-type catalogue/ onto the trade types seed
+that used to be hand-written: one row per trade type, with its description,
+product type and flags. The catalogue also routes each type to the instrument
+table that holds it; the instrument tables' checks read that routing through
+=:routed_column:=, and the C++ routing is a separate facet.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:e37eee11-119f-456a-ad08-541b2c226db4][ores.sql.trade_type.catalogue_populate]] | The trade types seed. Output =projects/ores.sql/populate/trading/trading_trade_types_populate.sql=. |
+
+* See also
+
+- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — the parent technical space.

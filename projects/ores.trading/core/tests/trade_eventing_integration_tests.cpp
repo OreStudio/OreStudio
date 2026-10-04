@@ -79,6 +79,10 @@
 // component, so its own component names the headers.
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+// Soft-FK parent seeding (ores_trading_trade_types_tbl): the parent may live in another
+// component, so its own component names the headers.
+#include "ores.trading.api/generators/trade_type_generator.hpp"
+#include "ores.trading.core/repository/trade_type_repository.hpp"
 // Soft-FK parent seeding (ores_dq_fsm_states_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.dq.api/generators/fsm_state_generator.hpp"
@@ -262,6 +266,18 @@ TEST_CASE("write_trade_publishes_an_event", tags) {
     ores::refdata::repository::portfolio_repository portfolio_id_repo;
     portfolio_id_repo.write(party_ctx, portfolio_id_parent);
     v.parties.portfolio_id = portfolio_id_parent.id;
+    // trade_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::trading::repository::trade_type_repository trade_type_catalogue_repo;
+        const auto trade_type_catalogue = trade_type_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(trade_type_catalogue.empty());
+        v.classification.trade_type = trade_type_catalogue.front().code;
+    }
     // fsm_state is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, so the shared system
     // catalogue keeps exactly the rows the populate scripts put there. The

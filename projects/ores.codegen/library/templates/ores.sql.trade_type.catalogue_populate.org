@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: e37eee11-119f-456a-ad08-541b2c226db4
+:END:
+#+title: ores.sql.trade_type.catalogue_populate
+#+description: The trade types seed, generated from the trade-type catalogue.
+#+type: archetype
+#+output: projects/ores.sql/populate/trading/trading_trade_types_populate.sql
+#+facet: ores.sql.trade_type
+#+model_types: trade_type_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The trade types seed: one =insert ... values= row per trade type the
+catalogue declares, in catalogue order. The script is idempotent, as the
+hand-written one was. =description_sql= is the description folded onto one
+line with its quotes doubled, so a description with an apostrophe cannot
+break the literal.
+
+* Template
+
+#+begin_src mustache :tangle sql_trade_type_catalogue_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.trade_type.catalogue_populate.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_trade_type_catalogue_populate.mustache
+ *
+ * Trade Types Population Script
+ *
+ * Seeds every trade type ORE knows. Generated from
+ * ores.trading.trade_type_catalogue, which also routes each type to the
+ * instrument table that holds it.
+ *
+ * This script is idempotent.
+ */
+
+\echo '--- Trade Types ---'
+
+insert into ores_trading_trade_types_tbl (
+    code, tenant_id, version, description,
+    product_type, has_options, has_extension,
+    modified_by, change_reason_code, change_commentary
+) values
+{{#trade_type_catalogue}}
+{{#rows}}
+    ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{description_sql}}',
+     '{{product_type}}', {{has_options}}, {{has_extension}},
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'){{comma}}
+{{/rows}}
+{{/trade_type_catalogue}}
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+select 'Trade Types' as entity, count(*) as count
+from ores_trading_trade_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+* See also
+
+- Parent facet: [[id:a476651f-1e28-4606-9543-fa5ac8e64f1c][ores.sql.trade_type]]

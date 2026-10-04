@@ -113,13 +113,9 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_composite_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
-
-** Checks
-
-| expression |
-|---|
-| "trade_type_code" in ('CompositeTrade') |
 
 ** Indexes
 

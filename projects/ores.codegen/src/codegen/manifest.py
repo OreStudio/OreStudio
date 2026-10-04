@@ -94,6 +94,7 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.service_registry",
     "ores.codegen.component",
     "ores.codegen.asset_class_catalogue",
+    "ores.codegen.trade_type_catalogue",
 })
 
 

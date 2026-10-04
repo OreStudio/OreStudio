@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: A8E9807F-1BC8-4DA5-9A66-720D2444DA1B
+:END:
+#+title: ores.trading.trade_type_catalogue
+#+description: The one declaration of the trade types: their seed, which instrument table holds each, and so every instrument table's trade_type check and the export routing.
+#+type: ores.codegen.trade_type_catalogue
+#+component: trading
+#+filetags: :model:trade_type:catalogue:trading:
+#+brief: The trade types and the instrument table that holds each.
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Every trade type ORE knows, and the instrument table that holds a trade of
+that type. Each instrument table used to list the codes it accepts by hand,
+ten of them listed all 121, and the export handler kept its own routing in
+hand-written conditions. The three disagreed: a type could be routed to a
+table that refused it, or accepted by a table export never read.
+
+This model is the single source. The trade types seed is generated from it;
+each instrument model that declares =:routed_column:= gets a =trade_type=
+check listing exactly the codes routed to it, so the lists are disjoint and
+a trade's instrument can sit in one table only; and the C++ routing the
+export handler reads is generated from it.
+
+An empty =instrument= means no table holds the type yet: nothing imports it,
+so nothing can export it. A type is routed where the ORE importer writes it.
+
+The =Failed= type ORE uses for a trade it could not load is deliberately
+absent: it is a placeholder, not a product.
+
+* Trade types
+
+| code                                | description                                  | product_type | has_options | has_extension | instrument                         |
+|-------------------------------------+----------------------------------------------+--------------+-------------+---------------+------------------------------------|
+| CompositeTrade                      | Composite Trade                              | composite    | false       | false         | composite_instrument               |
+| RateDigitalOption                   | Rate Digital Option                          | swap         | true        | false         |                                    |
+| SwaptionStraddle                    | Swaption Straddle                            | swap         | true        | false         |                                    |
+| ForwardVolatilityAgreement          | Forward Volatility Agreement                 | swap         | true        | false         |                                    |
+| Swap                                | Interest Rate Swap                           | swap         | false       | false         | vanilla_swap_instrument            |
+| CrossCurrencySwap                   | Cross Currency Swap                          | swap         | false       | false         | vanilla_swap_instrument            |
+| ForwardRateAgreement                | Forward Rate Agreement                       | swap         | false       | true          | fra_instrument                     |
+| CapFloor                            | Cap or Floor                                 | swap         | false       | false         | cap_floor_instrument               |
+| Swaption                            | Swaption                                     | swap         | false       | false         | swaption_instrument                |
+| FlexiSwap                           | Flexi Swap                                   | swap         | false       | false         | vanilla_swap_instrument            |
+| BalanceGuaranteedSwap               | Balance Guaranteed Swap                      | swap         | false       | true          | balance_guaranteed_swap_instrument |
+| CallableSwap                        | Callable Swap                                | swap         | false       | true          | callable_swap_instrument           |
+| KnockOutSwap                        | Knock-Out Swap                               | swap         | false       | true          | knock_out_swap_instrument          |
+| RiskParticipationAgreement          | Risk Participation Agreement                 | swap         | false       | true          | rpa_instrument                     |
+| InflationSwap                       | Inflation Swap                               | swap         | false       | true          | inflation_swap_instrument          |
+| FxForwardVolatilityAgreement        | FX Forward Volatility Agreement              | fx           | true        | false         |                                    |
+| FxForward                           | FX Forward                                   | fx           | false       | false         | fx_forward_instrument              |
+| FxSwap                              | FX Swap                                      | fx           | false       | false         | fx_forward_instrument              |
+| FxOption                            | FX Option                                    | fx           | true        | false         | fx_vanilla_option_instrument       |
+| FxDigitalOption                     | FX Digital Option                            | fx           | true        | false         | fx_digital_option_instrument       |
+| FxAverageForward                    | FX Average Forward                           | fx           | false       | false         | fx_asian_forward_instrument        |
+| FxAsianOption                       | FX Asian Option                              | fx           | true        | false         |                                    |
+| FxBarrierOption                     | FX Barrier Option                            | fx           | true        | false         | fx_barrier_option_instrument       |
+| FxDoubleBarrierOption               | FX Double Barrier Option                     | fx           | true        | false         | fx_barrier_option_instrument       |
+| FxEuropeanBarrierOption             | FX European Barrier Option                   | fx           | true        | false         | fx_barrier_option_instrument       |
+| FxWindowBarrierOption               | FX Window Barrier Option                     | fx           | true        | false         |                                    |
+| FxGenericBarrierOption              | FX Generic Barrier Option                    | fx           | true        | false         | fx_barrier_option_instrument       |
+| FxKIKOBarrierOption                 | FX Knock-In Knock-Out Barrier Option         | fx           | true        | false         | fx_barrier_option_instrument       |
+| FxTouchOption                       | FX Touch Option                              | fx           | true        | false         | fx_digital_option_instrument       |
+| FxDoubleTouchOption                 | FX Double Touch Option                       | fx           | true        | false         | fx_digital_option_instrument       |
+| FxDigitalBarrierOption              | FX Digital Barrier Option                    | fx           | true        | false         | fx_digital_option_instrument       |
+| FxVarianceSwap                      | FX Variance Swap                             | fx           | false       | false         | fx_variance_swap_instrument        |
+| FxPairwiseVarianceSwap              | FX Pairwise Variance Swap                    | fx           | false       | false         |                                    |
+| FxBasketVarianceSwap                | FX Basket Variance Swap                      | fx           | false       | false         |                                    |
+| FxAccumulator                       | FX Accumulator                               | fx           | false       | false         | fx_accumulator_instrument          |
+| FxTaRF                              | FX Target Redemption Forward                 | fx           | false       | false         | fx_asian_forward_instrument        |
+| FxWorstOfBasketSwap                 | FX Worst-Of Basket Swap                      | fx           | false       | false         |                                    |
+| FxBestEntryOption                   | FX Best Entry Option                         | fx           | true        | false         |                                    |
+| FxBasketOption                      | FX Basket Option                             | fx           | true        | false         |                                    |
+| FxRainbowOption                     | FX Rainbow Option                            | fx           | true        | false         |                                    |
+| FxStrikeResettableOption            | FX Strike Resettable Option                  | fx           | true        | false         |                                    |
+| CreditDefaultSwap                   | Credit Default Swap                          | credit       | false       | false         | credit_instrument                  |
+| CreditDefaultSwapOption             | Credit Default Swap Option                   | credit       | false       | true          | credit_instrument                  |
+| IndexCreditDefaultSwap              | Index Credit Default Swap                    | credit       | false       | true          | credit_instrument                  |
+| IndexCreditDefaultSwapOption        | Index Credit Default Swap Option             | credit       | false       | false         | credit_instrument                  |
+| SyntheticCDO                        | Synthetic CDO                                | credit       | false       | false         | credit_instrument                  |
+| CreditLinkedSwap                    | Credit Linked Swap                           | credit       | false       | false         | credit_instrument                  |
+| CBO                                 | Collateralised Bond Obligation               | credit       | false       | false         | credit_instrument                  |
+| BondFutureOption                    | Bond Future Option                           | bond         | true        | false         |                                    |
+| Bond                                | Fixed Income Bond                            | bond         | false       | false         | bond_instrument                    |
+| ForwardBond                         | Forward Bond                                 | bond         | false       | false         | bond_instrument                    |
+| BondFuture                          | Bond Future                                  | bond         | false       | true          | bond_instrument                    |
+| BondOption                          | Bond Option                                  | bond         | false       | true          | bond_instrument                    |
+| BondRepo                            | Bond Repo                                    | bond         | false       | false         | bond_instrument                    |
+| BondTRS                             | Bond Total Return Swap                       | bond         | false       | true          | bond_instrument                    |
+| BondPosition                        | Bond Position                                | bond         | false       | false         | bond_instrument                    |
+| CallableBond                        | Callable Bond                                | bond         | false       | false         | bond_instrument                    |
+| ConvertibleBond                     | Convertible Bond                             | bond         | false       | false         | bond_instrument                    |
+| Ascot                               | Asset Swapped Convertible Option Transaction | bond         | false       | true          | bond_instrument                    |
+| EquityAutoDeltaHedgedOption         | Equity Auto Delta Hedged Option              | equity       | true        | false         |                                    |
+| EquityForwardVolatilityAgreement    | Equity Forward Volatility Agreement          | equity       | true        | false         |                                    |
+| EquityOption                        | Equity Option                                | equity       | true        | false         | equity_option_instrument           |
+| EquityFutureOption                  | Equity Future Option                         | equity       | true        | false         |                                    |
+| EquityAsianOption                   | Equity Asian Option                          | equity       | true        | true          | equity_asian_option_instrument     |
+| EquityBarrierOption                 | Equity Barrier Option                        | equity       | true        | false         | equity_barrier_option_instrument   |
+| EquityDoubleBarrierOption           | Equity Double Barrier Option                 | equity       | true        | false         | equity_barrier_option_instrument   |
+| EquityEuropeanBarrierOption         | Equity European Barrier Option               | equity       | true        | false         | equity_barrier_option_instrument   |
+| EquityWindowBarrierOption           | Equity Window Barrier Option                 | equity       | true        | false         |                                    |
+| EquityGenericBarrierOption          | Equity Generic Barrier Option                | equity       | true        | false         |                                    |
+| EquityTouchOption                   | Equity Touch Option                          | equity       | true        | false         | equity_digital_option_instrument   |
+| EquityDoubleTouchOption             | Equity Double Touch Option                   | equity       | true        | false         |                                    |
+| EquityDigitalOption                 | Equity Digital Option                        | equity       | true        | false         | equity_digital_option_instrument   |
+| EquityForward                       | Equity Forward                               | equity       | false       | false         | equity_forward_instrument          |
+| EquitySwap                          | Equity Swap                                  | equity       | false       | false         | equity_swap_instrument             |
+| EquityVarianceSwap                  | Equity Variance Swap                         | equity       | false       | true          | equity_variance_swap_instrument    |
+| EquityPairwiseVarianceSwap          | Equity Pairwise Variance Swap                | equity       | false       | false         |                                    |
+| EquityBasketVarianceSwap            | Equity Basket Variance Swap                  | equity       | false       | false         |                                    |
+| EquityCliquetOption                 | Equity Cliquet Option                        | equity       | true        | true          | equity_option_instrument           |
+| EquityAccumulator                   | Equity Accumulator                           | equity       | false       | true          | equity_accumulator_instrument      |
+| EquityTaRF                          | Equity Target Redemption Forward             | equity       | false       | false         | equity_accumulator_instrument      |
+| EquityWorstOfBasketSwap             | Equity Worst-Of Basket Swap                  | equity       | false       | false         | equity_swap_instrument             |
+| EquityBestEntryOption               | Equity Best Entry Option                     | equity       | true        | false         |                                    |
+| EquityBasketOption                  | Equity Basket Option                         | equity       | true        | false         |                                    |
+| EquityRainbowOption                 | Equity Rainbow Option                        | equity       | true        | false         |                                    |
+| EquityOutperformanceOption          | Equity Outperformance Option                 | equity       | true        | false         | equity_option_instrument           |
+| EquityStrikeResettableOption        | Equity Strike Resettable Option              | equity       | true        | false         |                                    |
+| TotalReturnSwap                     | Total Return Swap                            | equity       | false       | false         | composite_instrument               |
+| ContractForDifference               | Contract for Difference                      | equity       | false       | false         | composite_instrument               |
+| EquityPosition                      | Equity Position                              | equity       | false       | false         | equity_position_instrument         |
+| EquityOptionPosition                | Equity Option Position                       | equity       | true        | false         | equity_position_instrument         |
+| CommodityForwardVolatilityAgreement | Commodity Forward Volatility Agreement       | commodity    | true        | false         | commodity_instrument               |
+| IntradayPowerForward                | Intraday Power Forward                       | commodity    | false       | false         | commodity_instrument               |
+| CommodityForward                    | Commodity Forward                            | commodity    | false       | false         | commodity_instrument               |
+| CommodityOption                     | Commodity Option                             | commodity    | false       | true          | commodity_instrument               |
+| CommodityDigitalOption              | Commodity Digital Option                     | commodity    | false       | true          | commodity_instrument               |
+| CommodityDigitalAveragePriceOption  | Commodity Digital Average Price Option       | commodity    | false       | true          | commodity_instrument               |
+| CommodityAsianOption                | Commodity Asian Option                       | commodity    | false       | true          | commodity_instrument               |
+| CommodityAveragePriceOption         | Commodity Average Price Option               | commodity    | false       | true          | commodity_instrument               |
+| CommoditySpreadOption               | Commodity Spread Option                      | commodity    | false       | true          | commodity_instrument               |
+| CommodityOptionStrip                | Commodity Option Strip                       | commodity    | false       | true          | commodity_instrument               |
+| CommoditySwap                       | Commodity Swap                               | commodity    | false       | false         | commodity_instrument               |
+| CommoditySwaption                   | Commodity Swaption                           | commodity    | false       | true          | commodity_instrument               |
+| CommodityVarianceSwap               | Commodity Variance Swap                      | commodity    | false       | true          | commodity_instrument               |
+| CommodityPairwiseVarianceSwap       | Commodity Pairwise Variance Swap             | commodity    | false       | true          | commodity_instrument               |
+| CommodityBasketVarianceSwap         | Commodity Basket Variance Swap               | commodity    | false       | true          | commodity_instrument               |
+| CommodityAccumulator                | Commodity Accumulator                        | commodity    | false       | true          | commodity_instrument               |
+| CommodityTaRF                       | Commodity Target Redemption Forward          | commodity    | false       | false         | commodity_instrument               |
+| CommodityWorstOfBasketSwap          | Commodity Worst-Of Basket Swap               | commodity    | false       | false         | commodity_instrument               |
+| CommodityBestEntryOption            | Commodity Best Entry Option                  | commodity    | false       | true          | commodity_instrument               |
+| CommodityWindowBarrierOption        | Commodity Window Barrier Option              | commodity    | false       | true          | commodity_instrument               |
+| CommodityGenericBarrierOption       | Commodity Generic Barrier Option             | commodity    | false       | true          | commodity_instrument               |
+| CommodityBasketOption               | Commodity Basket Option                      | commodity    | false       | true          | commodity_instrument               |
+| CommodityRainbowOption              | Commodity Rainbow Option                     | commodity    | false       | true          | commodity_instrument               |
+| CommodityStrikeResettableOption     | Commodity Strike Resettable Option           | commodity    | false       | true          | commodity_instrument               |
+| CommodityPosition                   | Commodity Position                           | commodity    | false       | false         | commodity_instrument               |
+| CashPosition                        | Cash Position                                | equity       | false       | false         |                                    |
+| ScriptedTrade                       | Scripted Trade (ORE generic payoff engine)   | scripted     | false       | false         | scripted_instrument                |
+| Autocallable_01                     | Autocallable (variant 01)                    | scripted     | false       | false         | scripted_instrument                |
+| DoubleDigitalOption                 | Double Digital Option                        | scripted     | false       | false         | scripted_instrument                |
+| EuropeanOptionBarrier               | European Option with Barrier                 | scripted     | false       | false         |                                    |
+| PerformanceOption_01                | Performance Option (variant 01)              | scripted     | false       | false         | scripted_instrument                |
+
+* See also
+
+- [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] — the entity the seed populates.
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

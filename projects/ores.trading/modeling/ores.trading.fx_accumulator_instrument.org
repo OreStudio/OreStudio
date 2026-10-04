@@ -194,6 +194,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fx_accumulator_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -205,7 +207,6 @@ its trade, so a row cannot exist without one.
 | "currency" <> '' |
 | "underlying_code" <> '' |
 | "long_short" in ('Long', 'Short') |
-| "trade_type_code" = 'FxAccumulator' |
 
 ** Indexes
 

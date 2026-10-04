@@ -56,10 +56,10 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('EquityVarianceSwap')),
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityVarianceSwap')),
     check ("variance_strike" >= 0)
 );
 

@@ -241,6 +241,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_option_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -251,7 +253,6 @@ its trade, so a row cannot exist without one.
 | "strike" >= 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| "trade_type_code" in ('EquityOption', 'EquityCliquetOption') |
 | ("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null) or ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null) |
 | "option_type" in ('Call', 'Put') |
 | "exercise_type" in ('European', 'Bermudan', 'American') |

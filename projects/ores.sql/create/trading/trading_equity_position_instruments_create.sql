@@ -61,9 +61,9 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition')),
     check ("underlying_name" <> ''),
-    check ("currency" <> ''),
-    check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition'))
+    check ("currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -36,8 +36,8 @@
  * The element carries one more field, RebasingEvents, and this table does not
  * model it: the ORE type holds it as a list of doubles, and the refdata schema has
  * no array column. No shipped file sets it. Rather than drop it silently the
- * mapper counts every element that carries one into
- * mapped_conventions::unmodelled under ZeroInflationIndex.RebasingEvents, so a
+ * mapper counts every element that carries one in
+ * conventions_mapper::unmodelled under ZeroInflationIndex.RebasingEvents, so a
  * document that uses it is excluded from the round-trip set and named in the
  * measurement.
  */

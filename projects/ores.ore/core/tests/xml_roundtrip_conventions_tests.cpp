@@ -63,7 +63,8 @@ conventions load(const std::filesystem::path& path) {
 }
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
-    return ores::ore::xml::make_roundtrip_kind<conventions, mapped_conventions>(
+    return ores::ore::xml::make_roundtrip_kind<conventions,
+                                               ores::refdata::domain::conventions_document>(
         "conventions",
         "conventions",
         &conventions_mapper::map,
@@ -281,7 +282,7 @@ TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
 
         // The two load profiles are written as text columns, so the mapper must
         // not report the category as skipped.
-        CHECK(mapped.unmodelled.empty());
+        CHECK(conventions_mapper::unmodelled(document).empty());
 
         const std::string exported = save_data(conventions_mapper::reverse(mapped));
         const int written = element_count(exported, "IntradayPowerLoad");
@@ -439,7 +440,7 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
 
         // The four list-bearing fields are written as text columns now, so the
         // mapper must not report any of them as skipped.
-        for (const auto& [name, count] : mapped.unmodelled) {
+        for (const auto& [name, count] : conventions_mapper::unmodelled(document)) {
             INFO(path.string() + ": unexpected skip " + name);
             CHECK(name.rfind("CommodityFuture.", 0) != 0);
         }
@@ -656,7 +657,8 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
         // columns, so the mapper must not report it as skipped.
         if (carries_a_schedule) {
             ++files_with_a_publication_schedule;
-            CHECK(mapped.unmodelled.count("InflationSwap.PublicationSchedule") == 0);
+            CHECK(conventions_mapper::unmodelled(document).count(
+                      "InflationSwap.PublicationSchedule") == 0);
             for (const auto& out : mapped.inflation_swap) {
                 if (out.publication_schedule_rules)
                     CHECK(!out.publication_schedule_rules->empty());
@@ -805,7 +807,7 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) 
 
     conventions document;
     document.ZeroInflationIndex.push_back(index);
-    CHECK(conventions_mapper::map(document).unmodelled.empty());
+    CHECK(conventions_mapper::unmodelled(document).empty());
 
     zeroInflationIndexType_RebasingEvents_t events;
     events.Event.push_back(zeroInflationIndexType_RebasingEvents_t_Event_t(1.5));
@@ -813,9 +815,9 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) 
     document.ZeroInflationIndex.clear();
     document.ZeroInflationIndex.push_back(index);
 
-    const auto mapped = conventions_mapper::map(document);
-    REQUIRE(mapped.unmodelled.count("ZeroInflationIndex.RebasingEvents") == 1);
-    CHECK(mapped.unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
+    const auto unmodelled = conventions_mapper::unmodelled(document);
+    REQUIRE(unmodelled.count("ZeroInflationIndex.RebasingEvents") == 1);
+    CHECK(unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
 }
 
 TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
@@ -927,7 +929,7 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
         // A file that carries a category the mapper does not model cannot round
         // trip, and saying which those are is the measurement's job rather than
         // this case's.
-        if (!conventions_mapper::map(load(path)).unmodelled.empty())
+        if (!conventions_mapper::unmodelled(load(path)).empty())
             continue;
 
         ++walked;
@@ -955,11 +957,11 @@ TEST_CASE("conventions_files_cleared_by_each_category", "[.][conventions][measur
     int files = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto mapped = conventions_mapper::map(load(path));
+        const auto unmodelled = conventions_mapper::unmodelled(load(path));
         ++files;
-        ++files_by_category_count[static_cast<int>(mapped.unmodelled.size())];
-        if (mapped.unmodelled.size() == 1)
-            ++cleared_by[mapped.unmodelled.begin()->first];
+        ++files_by_category_count[static_cast<int>(unmodelled.size())];
+        if (unmodelled.size() == 1)
+            ++cleared_by[unmodelled.begin()->first];
     }
 
     WARN("conventions files=" + std::to_string(files));
@@ -981,11 +983,11 @@ TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][mea
     int files_with_unmodelled = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto mapped = conventions_mapper::map(load(path));
+        const auto unmodelled = conventions_mapper::unmodelled(load(path));
         ++files;
-        if (!mapped.unmodelled.empty())
+        if (!unmodelled.empty())
             ++files_with_unmodelled;
-        for (const auto& [name, count] : mapped.unmodelled) {
+        for (const auto& [name, count] : unmodelled) {
             ++files_by_category[name];
             elements_by_category[name] += static_cast<int>(count);
         }

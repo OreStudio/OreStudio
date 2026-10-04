@@ -109,7 +109,7 @@ std::string exporter::export_calendar_adjustments(
     return domain::save_data(xsd);
 }
 
-std::string exporter::export_conventions(const domain::mapped_conventions& mc) {
+std::string exporter::export_conventions(const ores::refdata::domain::conventions_document& mc) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting conventions.";
     const auto xsd = domain::conventions_mapper::reverse(mc);
     return domain::save_data(xsd);

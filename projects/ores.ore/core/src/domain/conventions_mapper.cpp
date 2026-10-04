@@ -1341,7 +1341,7 @@ std::string fx_convention_id(const std::string& base_currency, const std::string
     return base_currency + "-" + quote_currency + "-FX-CONVENTIONS";
 }
 
-fxType reverse_fx(const domain::mapped_fx& v) {
+fxType reverse_fx(const ores::refdata::domain::fx_convention& v) {
     fxType r;
     static_cast<std::string&>(r.Id) = fx_convention_id(v.pair.base_currency, v.pair.quote_currency);
     r.SpotDays = static_cast<int64_t>(v.spot_days);
@@ -2514,10 +2514,10 @@ conventions_mapper::map_overnight_index(const overnightIndexType& v) {
     return r;
 }
 
-mapped_fx conventions_mapper::map_fx(const fxType& v) {
+ores::refdata::domain::fx_convention conventions_mapper::map_fx(const fxType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << std::string(v.Id);
 
-    mapped_fx r;
+    ores::refdata::domain::fx_convention r;
     r.spot_days = static_cast<int>(v.SpotDays);
 
     auto& pair = r.pair;
@@ -2595,7 +2595,26 @@ refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventions
 // Top-level mapper
 // ---------------------------------------------------------------------------
 
-mapped_conventions conventions_mapper::map(const conventions& v) {
+std::map<std::string, std::size_t> conventions_mapper::unmodelled(const conventions& v) {
+    // Every category the document carries that this mapper does not model. A
+    // skip that is counted is a gap a caller can read; a skip that is silent is
+    // a document losing content and saying nothing.
+    std::map<std::string, std::size_t> r;
+    const auto count = [&r](std::string_view name, std::size_t n) {
+        if (n != 0)
+            r.emplace(std::string(name), n);
+    };
+    count("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
+
+    std::size_t rebasing_events = 0;
+    for (const auto& x : v.ZeroInflationIndex)
+        if (x.RebasingEvents)
+            ++rebasing_events;
+    count("ZeroInflationIndex.RebasingEvents", rebasing_events);
+    return r;
+}
+
+ores::refdata::domain::conventions_document conventions_mapper::map(const conventions& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping ORE conventions. " << "Zero=" << v.Zero.size()
                                << " Deposit=" << v.Deposit.size() << " Swap=" << v.Swap.size()
                                << " OIS=" << v.OIS.size() << " FRA=" << v.FRA.size()
@@ -2603,7 +2622,7 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
                                << " OvernightIndex=" << v.OvernightIndex.size()
                                << " FX=" << v.FX.size() << " CDS=" << v.CDS.size();
 
-    mapped_conventions r;
+    ores::refdata::domain::conventions_document r;
 
     r.zero.reserve(v.Zero.size());
     std::ranges::transform(
@@ -2721,22 +2740,7 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
         return map_swap_index(x);
     });
 
-    // Every category the document carries that this mapper does not model. A
-    // skip that is counted is a gap a caller can read; a skip that is silent is
-    // a document losing content and saying nothing.
-    const auto count_unmodelled = [&r](std::string_view name, std::size_t count) {
-        if (count != 0)
-            r.unmodelled.emplace(std::string(name), count);
-    };
-    count_unmodelled("FxOptionTimeWeighting", v.FxOptionTimeWeighting.size());
-
-    std::size_t rebasing_events = 0;
-    for (const auto& x : v.ZeroInflationIndex)
-        if (x.RebasingEvents)
-            ++rebasing_events;
-    count_unmodelled("ZeroInflationIndex.RebasingEvents", rebasing_events);
-
-    for (const auto& [name, count] : r.unmodelled) {
+    for (const auto& [name, count] : unmodelled(v)) {
         BOOST_LOG_SEV(lg(), warn)
             << "Convention category '" << name << "' has " << count
             << " element(s) and no entity to hold them; the document cannot round trip.";
@@ -2753,10 +2757,10 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
 }
 
 // ---------------------------------------------------------------------------
-// Reverse — mapped_conventions → ORE XML conventions
+// Reverse — ores::refdata::domain::conventions_document → ORE XML conventions
 // ---------------------------------------------------------------------------
 
-conventions conventions_mapper::reverse(const mapped_conventions& v) {
+conventions conventions_mapper::reverse(const ores::refdata::domain::conventions_document& v) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. " << "Zero=" << v.zero.size()
                                << " Deposit=" << v.deposit.size() << " Swap=" << v.swap.size()
                                << " OIS=" << v.ois.size() << " FRA=" << v.fra.size()

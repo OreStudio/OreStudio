@@ -140,6 +140,7 @@ set(files
     "service/report_scheduling_service.cpp"
     "service/report_type_configuration_type_service.cpp"
     "service/report_type_service.cpp"
+    "service/run_document_service.cpp"
     "service/run_requirements.cpp"
     "service/scheduling_plan.cpp"
 )
@@ -288,6 +289,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_scheduling_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_type_configuration_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/report_type_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_document_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_requirements.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/scheduling_plan.hpp"
 )

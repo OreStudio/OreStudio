@@ -51,7 +51,7 @@ std::filesystem::path corpus_root() {
 
 ores::ore::xml::roundtrip_kind todays_market_kind() {
     return ores::ore::xml::make_roundtrip_kind<ores::ore::domain::todaysmarket,
-                                               ores::ore::domain::mapped_todays_market>(
+                                               ores::analytics::domain::todays_market_document>(
         "today's market",
         "todaysmarket",
         &ores::ore::domain::todays_market_mapper::map,
@@ -81,7 +81,7 @@ std::set<std::string> schema_collection_kinds() {
 
 template <typename Wrapper, typename Entry>
 void add(xsd::vector<Wrapper>& collections,
-         xsd::vector<Entry> Wrapper::*entries,
+         xsd::vector<Entry> Wrapper::* entries,
          const char* id,
          std::vector<Entry> values) {
     Wrapper w;

@@ -18,11 +18,11 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
+#include "ores.analytics.core/service/pricing_engines_document_service.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/pricing_engine_mapper.hpp"
-#include "ores.ore.core/store/document_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -48,7 +48,6 @@ std::filesystem::path ore_path(const std::string& relative) {
 }
 
 using ores::analytics::repository::pricing_model_config_repository;
-using ores::ore::domain::mapped_pricing_engines;
 using ores::ore::domain::pricing_engine_mapper;
 using ores::ore::domain::pricingengines;
 using ores::ore::xml::parsed_text_difference;
@@ -74,17 +73,18 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     pricingengines original;
     ores::ore::domain::load_data(content, original);
 
-    mapped_pricing_engines mapped = pricing_engine_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, boost::uuids::random_generator()());
+    ores::analytics::domain::pricing_engines_document mapped = pricing_engine_mapper::map(original);
+    ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.products.size() == original.Product.size());
     REQUIRE(!mapped.parameters.empty());
 
-    ores::ore::store::write(h.context(), mapped);
+    ores::analytics::service::pricing_engines_document_service(h.context()).save(mapped);
 
     // Read back from the store: the read is not allowed to be the write's own
     // memory.
     const auto from_database =
-        ores::ore::store::read_pricing_engines(h.context(), mapped.config.id);
+        ores::analytics::service::pricing_engines_document_service(h.context())
+            .get(mapped.config.id);
     INFO("products read back: " << from_database.products.size() << " of "
                                 << mapped.products.size());
     INFO("parameters read back: " << from_database.parameters.size() << " of "
@@ -111,7 +111,7 @@ TEST_CASE("a party sees only its own pricing engine configuration", tags) {
             ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")),
         original);
     auto mapped = pricing_engine_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, parties.a);
+    ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::pricing_model_config_repository repo;
     repo.write(parties.a_context, mapped.config);

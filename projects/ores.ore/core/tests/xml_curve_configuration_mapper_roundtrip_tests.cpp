@@ -54,7 +54,8 @@ std::string compare_documents(const curveconfiguration& original,
 }
 
 ores::ore::xml::roundtrip_kind curve_configuration_kind() {
-    return ores::ore::xml::make_roundtrip_kind<curveconfiguration, mapped_curve_configuration>(
+    return ores::ore::xml::make_roundtrip_kind<curveconfiguration,
+                                               ores::refdata::domain::curve_configuration_document>(
         "curve configuration documents",
         "curveconfig",
         &curve_configuration_mapper::map,

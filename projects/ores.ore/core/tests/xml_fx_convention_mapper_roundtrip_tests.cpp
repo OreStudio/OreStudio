@@ -50,8 +50,6 @@ const std::string tags("[ore][xml][mapper][roundtrip][fx_convention]");
 
 using ores::ore::domain::conventions;
 using ores::ore::domain::conventions_mapper;
-using ores::ore::domain::mapped_conventions;
-using ores::ore::domain::mapped_fx;
 using namespace ores::logging;
 
 /**
@@ -91,9 +89,9 @@ conventions load_conventions() {
  * aggregate reverse() (individual reverse_fx is not exposed publicly).
  */
 ores::ore::domain::fxType roundtrip_single(const ores::ore::domain::fxType& original) {
-    const mapped_fx mapped = conventions_mapper::map_fx(original);
+    const ores::refdata::domain::fx_convention mapped = conventions_mapper::map_fx(original);
 
-    mapped_conventions wrapper;
+    ores::refdata::domain::conventions_document wrapper;
     wrapper.fx.push_back(mapped);
     const conventions reversed = conventions_mapper::reverse(wrapper);
 

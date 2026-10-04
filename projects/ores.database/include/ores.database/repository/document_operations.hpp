@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_STORE_DETAIL_STORE_HELPERS_HPP
-#define ORES_ORE_CORE_STORE_DETAIL_STORE_HELPERS_HPP
+#ifndef ORES_DATABASE_REPOSITORY_DOCUMENT_OPERATIONS_HPP
+#define ORES_DATABASE_REPOSITORY_DOCUMENT_OPERATIONS_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
@@ -29,7 +29,11 @@
 #include <string_view>
 #include <vector>
 
-namespace ores::ore::store::detail {
+/**
+ * @file document_operations.hpp
+ * @brief Helpers for a component that stores a document across its tables.
+ */
+namespace ores::database::repository {
 
 /**
  * @brief Stamps the session's party on every row of a value, when the session

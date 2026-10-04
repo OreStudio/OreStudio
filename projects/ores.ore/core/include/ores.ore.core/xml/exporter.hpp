@@ -51,7 +51,7 @@ public:
     static std::string
     export_calendar_adjustments(const std::vector<refdata::messaging::calendar_adjustment>& v);
 
-    static std::string export_conventions(const domain::mapped_conventions& mc);
+    static std::string export_conventions(const ores::refdata::domain::conventions_document& mc);
 
     /**
      * @brief Reconstructs an ORE portfolio XML from a vector of

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 1446C9CA-DCE8-4DEC-B407-C5C79E647498
+:END:
+#+title: Task: Give each owning component its configuration document store
+#+description: Move each configuration document's type and its store out of ores.ore into the component that owns its tables, so ores.ore maps XML without touching another component's repositories.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/give-each-owning-component-its-configuration-document-store
+#+pr: 2624
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each component stores and reads its own configuration documents, and ores.ore holds only the mapping between ORE XML and those documents.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- refdata owns the curve configuration and conventions document types and stores; analytics owns pricing engines and today's market; reporting owns the run document, its configuration rows and bindings.
+- The ores.ore mappers produce and consume the owners' document types.
+- The corpus round trips in ores.ore exercise every owner's store, and each owner tests the rules ORE does not drive: the run document's refusals and bindings in reporting, the world and party conventions rule in refdata.
+- ores.ore.core's run store calls the owners' services instead of their repositories; [[id:2355DF78-E4AC-404E-8053-B8AE464538D6][Package the run input through the owners' operations]] removes it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Part of the redesign the operator asked for on 2026-10-04, after ruling that a service reading or writing another component's tables is an architectural error ([[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]]). Order: this store move, the owners' operations, the import saga, then the package step.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2624][#2624]] | [refdata,analytics,reporting] Store each configuration document in its owner |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | get throws a bare out_of_range for an unknown parameter definition | run_document_service.cpp | Accept | Throws a message naming the analytic and the definition id. |
+| 2 | save is not atomic and two imports can race | run_document_service.cpp | Accept | Written into the import saga task's acceptance, which is where it is fixed. |
+| 3 | A parse error after the first write leaves a half-imported run | run_store.cpp | Accept | Every document is parsed and mapped before the run document is saved; a test proves a run with an unparseable document writes nothing. |
+| 4 | Convention reads scan whole tables; world conventions are never replaced | conventions_document_service.cpp | Decline | Documented and tested; Read each document's rows by its parent covers the scans. |
+| 5 | No owner-level tests for pricing engines, today's market and curves | analytics, refdata | Decline here | Written into the operations task's acceptance: each owner tests its documents through its operations. |
+| 6 | header_of copies the service | run_store.cpp | Accept | Takes the service by reference. |
+| 7 | Two conventions bindings give the same output | run_store.cpp | Decline | By design: a conventions binding means the session's conventions. |
+
+* Result
+
+Each configuration document's type and store now live with the component that
+owns its tables, and =ores.ore= maps ORE XML to and from those types.
+
+- Types: =refdata::domain::curve_configuration_document=, =conventions_document=
+  (with =fx_convention=), =analytics::domain::pricing_engines_document=,
+  =todays_market_document= and =reporting::domain::run_document= (with
+  =run_analytic= and =run_parameter=). The =mapped_*= structs in =ores.ore= are
+  gone; the conventions mapper reports its unmodelled categories through its
+  own function, since they are not stored data.
+- Stores: =curve_configuration_document_service= and
+  =conventions_document_service= in refdata, which owns the world and party
+  conventions rule; =pricing_engines_document_service= and
+  =todays_market_document_service= in analytics; =run_document_service= in
+  reporting, which also creates the configuration rows and their bindings.
+- =assign_party= and the document read helpers moved to =ores.database=, so the
+  owners stamp parties without depending on =ores.ore=.
+- =ores.ore.core='s =document_store= is deleted. Its =run_store= calls the
+  owners' services; it remains only until [[id:2355DF78-E4AC-404E-8053-B8AE464538D6][Package the run input through the owners' operations]]
+  puts the package step on the owners' NATS operations.
+
+The corpus round trips in =ores.ore= exercise every store; reporting and refdata
+test the rules ORE does not drive. ctest 90/90 after a database recreate.
+

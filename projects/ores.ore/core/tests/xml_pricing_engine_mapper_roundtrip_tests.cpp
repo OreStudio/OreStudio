@@ -50,7 +50,7 @@ std::filesystem::path corpus_root() {
 
 ores::ore::xml::roundtrip_kind pricing_engines_kind() {
     return ores::ore::xml::make_roundtrip_kind<ores::ore::domain::pricingengines,
-                                               ores::ore::domain::mapped_pricing_engines>(
+                                               ores::analytics::domain::pricing_engines_document>(
         "pricing engines",
         "pricingengine",
         &ores::ore::domain::pricing_engine_mapper::map,

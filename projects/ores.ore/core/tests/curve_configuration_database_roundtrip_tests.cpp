@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
-#include "ores.ore.core/store/document_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
@@ -35,6 +34,7 @@
 #include "ores.refdata.core/repository/inflation_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
+#include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
@@ -129,15 +129,17 @@ void write_input_conventions(const ores::database::context& ctx) {
 
 // A curve configuration belongs to a party, so every document a case writes is
 // stamped with one; the cases that need two parties make their own.
-void write(const ores::database::context& ctx, mapped_curve_configuration m) {
+void write(const ores::database::context& ctx,
+           ores::refdata::domain::curve_configuration_document m) {
     static const auto owner = boost::uuids::random_generator()();
-    ores::ore::domain::assign_party(m, owner);
-    ores::ore::store::write(ctx, std::move(m));
+    ores::database::domain::assign_party(m, owner);
+    ores::refdata::service::curve_configuration_document_service(ctx).save(std::move(m));
 }
 
-mapped_curve_configuration read_back(const ores::database::context& ctx,
-                                     const mapped_curve_configuration& written) {
-    return ores::ore::store::read_curve_configuration(ctx, written.config.id);
+ores::refdata::domain::curve_configuration_document
+read_back(const ores::database::context& ctx,
+          const ores::refdata::domain::curve_configuration_document& written) {
+    return ores::refdata::service::curve_configuration_document_service(ctx).get(written.config.id);
 }
 
 }
@@ -407,7 +409,7 @@ TEST_CASE("a party sees only its own curve configuration", tags) {
     ores::testing::scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     auto mapped = curve_configuration_mapper::map(equity_and_securities());
-    ores::ore::domain::assign_party(mapped, parties.a);
+    ores::database::domain::assign_party(mapped, parties.a);
 
     curve_configuration_repository repo;
     repo.write(parties.a_context, mapped.config);

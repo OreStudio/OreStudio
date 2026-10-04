@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.testing/project_root.hpp"
@@ -61,8 +61,8 @@ TEST_CASE("two parties each hold conventions with the same ids", tags) {
     auto for_a = corpus_deposits();
     REQUIRE_FALSE(for_a.empty());
     auto for_b = for_a;
-    ores::ore::domain::assign_party(for_a, parties.a);
-    ores::ore::domain::assign_party(for_b, parties.b);
+    ores::database::domain::assign_party(for_a, parties.a);
+    ores::database::domain::assign_party(for_b, parties.b);
 
     ores::refdata::repository::deposit_convention_repository repo;
     repo.write(parties.a_context, for_a);

@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.ore.core/store/document_store.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <map>
 #include <string>
@@ -62,7 +61,13 @@ struct run_import_result {
      * portfolio, the market data and the fixings.
      */
     std::vector<std::string> not_stored;
-    conventions_write_result conventions;
+    /**
+     * World conventions the tenant already held. An import never changes world
+     * data, so the tenant's row stands.
+     */
+    std::vector<std::string> world_conventions_kept;
+    /** FX conventions, by ORE id, which have no store yet. */
+    std::vector<std::string> fx_conventions_skipped;
 };
 
 /**

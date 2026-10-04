@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T19:29:39.339148Z
+' Generated: 2026-10-04T20:18:34.410761Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6030,8 +6030,8 @@ package "refdata" #FFF3E0 {
     The element carries one more field, RebasingEvents, and this table does not
     model it: the ORE type holds it as a list of doubles, and the refdata schema has
     no array column. No shipped file sets it. Rather than drop it silently the
-    mapper counts every element that carries one into
-    mapped_conventions::unmodelled under ZeroInflationIndex.RebasingEvents, so a
+    mapper counts every element that carries one in
+    conventions_mapper::unmodelled under ZeroInflationIndex.RebasingEvents, so a
     document that uses it is excluded from the round-trip set and named in the
     measurement.
     end note

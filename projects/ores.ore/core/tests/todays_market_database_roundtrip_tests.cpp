@@ -19,11 +19,11 @@
  */
 #include "ores.analytics.core/repository/todays_market_collection_repository.hpp"
 #include "ores.analytics.core/repository/todays_market_config_repository.hpp"
+#include "ores.analytics.core/service/todays_market_document_service.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
-#include "ores.ore.core/store/document_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -50,7 +50,6 @@ std::filesystem::path ore_path(const std::string& relative) {
 
 using ores::analytics::repository::todays_market_collection_repository;
 using ores::analytics::repository::todays_market_config_repository;
-using ores::ore::domain::mapped_todays_market;
 using ores::ore::domain::todays_market_mapper;
 using ores::ore::domain::todaysmarket;
 using ores::ore::xml::parsed_text_difference;
@@ -75,18 +74,19 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     todaysmarket original;
     ores::ore::domain::load_data(content, original);
 
-    mapped_todays_market mapped = todays_market_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, boost::uuids::random_generator()());
+    ores::analytics::domain::todays_market_document mapped = todays_market_mapper::map(original);
+    ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(!mapped.collections.empty());
     REQUIRE(!mapped.entries.empty());
     REQUIRE(!mapped.configurations.empty());
     REQUIRE(!mapped.bindings.empty());
 
-    ores::ore::store::write(h.context(), mapped);
+    ores::analytics::service::todays_market_document_service(h.context()).save(mapped);
 
     // Read back from the store: the read is not allowed to be the write's own
     // memory.
-    const auto from_database = ores::ore::store::read_todays_market(h.context(), mapped.config.id);
+    const auto from_database =
+        ores::analytics::service::todays_market_document_service(h.context()).get(mapped.config.id);
     const auto& entries = from_database.entries;
     INFO("collections read back: " << from_database.collections.size() << " of "
                                    << mapped.collections.size());
@@ -141,7 +141,7 @@ TEST_CASE("a party sees only its own today's market configuration", tags) {
     ores::ore::domain::load_data(
         file::read_content(ore_path("examples/Products/Input/todaysmarket.xml")), original);
     auto mapped = todays_market_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, parties.a);
+    ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::todays_market_config_repository repo;
     repo.write(parties.a_context, mapped.config);

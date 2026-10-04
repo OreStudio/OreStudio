@@ -25,41 +25,11 @@
 #include "ores.reporting.api/domain/report_analytic.hpp"
 #include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
+#include "ores.reporting.api/domain/run_document.hpp"
 #include <string>
 #include <vector>
 
 namespace ores::ore::domain {
-
-/**
- * @brief One Parameter of one Analytic, before it is resolved to a definition.
- *
- * The entity holds a parameter as a definition id and a value, and the id is a
- * database concern. The mapper works one step earlier, where the parameter is
- * still the name ORE wrote, so the name rides beside the value and a later step
- * resolves it.
- */
-struct mapped_run_parameter {
-    std::string name;
-    std::string value;
-    int position = 0;
-
-    friend bool operator==(const mapped_run_parameter&, const mapped_run_parameter&) = default;
-};
-
-/**
- * @brief One Analytic of a run document: its type, its place in the list, and
- * the parameters it takes.
- *
- * The active flag is a parameter in ORE's schema and a column on the entity, so
- * the mapper moves it out of the parameter list and into the analytic. The
- * remaining parameters stay beside it, in the order the document wrote them.
- */
-struct mapped_run_analytic {
-    reporting::domain::report_analytic analytic;
-    std::vector<mapped_run_parameter> parameters;
-
-    friend bool operator==(const mapped_run_analytic&, const mapped_run_analytic&) = default;
-};
 
 /**
  * @brief Maps between an ORE run document and the reporting run entities.
@@ -111,7 +81,7 @@ public:
      * its own position within its analytic, so a later writer can fill the
      * column the schema asks for.
      */
-    static std::vector<mapped_run_analytic> map_analytics(const ore& v);
+    static std::vector<ores::reporting::domain::run_analytic> map_analytics(const ore& v);
 
     /**
      * @brief Reconstructs a run document's ordered analytic list.
@@ -119,7 +89,8 @@ public:
      * The active flag is written back as the first parameter, which is where
      * ORE writes it, and the rest follow in order.
      */
-    static analyticsType reverse_analytics(const std::vector<mapped_run_analytic>& v);
+    static analyticsType
+    reverse_analytics(const std::vector<ores::reporting::domain::run_analytic>& v);
 
     /**
      * @brief Maps a run document's named market bindings to the entities.

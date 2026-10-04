@@ -28,11 +28,11 @@ builds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] |
-| Now          | Fix written; local build running.      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -99,3 +99,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Linux build job now has =contents: read= and =actions: write=, so the
+sccache delete-then-save can replace the entry. The platform environment
+tests define =_CRT_SECURE_NO_WARNINGS=; the ORE coverage tests read
+=ORES_BOOTSTRAP_GOLDENS= through =environment::get_value=. Locally,
+=ores.platform.tests= and =ores.ore.core.tests= build with no warnings,
+and the =[environment]= (18 cases) and =[coverage]= (1 case) tests pass.
+The cache refresh can only be confirmed on the first Linux run after merge.

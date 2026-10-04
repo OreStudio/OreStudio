@@ -30,9 +30,9 @@ Bring the Linux and Windows continuous builds on main back to green.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Fix in review.                         |
+| Now           | Fix verified locally; PR raised.       |
 | Waiting on    | Nothing.                               |
 | Next          | Merge, then watch the next CI runs.    |
 | Last touched  | 2026-10-04                               |
@@ -48,10 +48,15 @@ Bring the Linux and Windows continuous builds on main back to green.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:347E67D3-60A6-4E9F-A5AB-D9FB4B2BCC5A][Scaffold story: Hotfix: Linux and Windows CI builds on main]] | STARTED | 2026-10-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:65440AF6-F71E-4FB7-941D-FF1A98BFC656][Implement Hotfix: Linux and Windows CI builds on main]] | STARTED | 2026-10-04 | | Initial task for: Hotfix: Linux and Windows CI builds on main |
+| [[id:347E67D3-60A6-4E9F-A5AB-D9FB4B2BCC5A][Scaffold story: Hotfix: Linux and Windows CI builds on main]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:65440AF6-F71E-4FB7-941D-FF1A98BFC656][Implement Hotfix: Linux and Windows CI builds on main]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Hotfix: Linux and Windows CI builds on main |
 
 * Decisions
+
+- Grant =actions: write= on the Linux build job only; the guard job keeps
+  the repository's read-only default.
+- Keep =std::getenv= in the platform environment tests, because they
+  compare the provider against the C runtime.
 
 * Out of scope
 

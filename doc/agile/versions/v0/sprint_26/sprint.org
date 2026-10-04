@@ -166,7 +166,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] | DONE | 2026-10-04 | 2026-10-04 | The shell names journeys and asks the administrator to enter a tenant, which are implementation terms. Reprototype the home screen, then show tenant management as a list with add and remove, and open a tenant's details with the tenant session held behind the scenes. |
 | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] | STARTED | 2026-10-04 | | The super-user's view of a running installation: the services that are up, the compute grid, the message bus, the logs, and the versions and database fingerprint. Five journeys written to the User Journey Extraction Standard, then proven with a prototype. |
 | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] | BACKLOG | | | Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system. |
-| [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] | BACKLOG | | | The Linux debug builds time out because the sccache entry is never refreshed, and the Windows clang builds fail on a deprecated getenv call in the ores.platform tests. |
+| [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] | DONE | 2026-10-04 | 2026-10-04 | The Linux debug builds time out because the sccache entry is never refreshed, and the Windows clang builds fail on a deprecated getenv call in the ores.platform tests. |
 
 * Achievements
 

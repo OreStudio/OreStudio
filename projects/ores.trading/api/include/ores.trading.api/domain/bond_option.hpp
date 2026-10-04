@@ -67,8 +67,7 @@ struct bond_option final {
     /**
      * @brief The trade the bond option fact row belongs to.
      *
-     * The trade row carries the workspace and the party; the fact row only carries the option
-     * terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the party; the fact row only carries the option terms.
      */
     boost::uuids::uuid trade_id;
 

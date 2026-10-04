@@ -280,7 +280,7 @@ public:
         // happening on the bound subject, which is not true (see start()'s
         // doc comment on binding_mode and should_ensure_feed_binding).
         if (should_ensure_feed_binding(already_running, binding_mode, stored_binding_mode))
-            ensure_feed_binding(ore_key, key, caller_bearer_token);
+            ensure_feed_binding(key, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
     }
 
@@ -482,25 +482,10 @@ private:
     // bind under. Failures are logged but non-fatal: the feed itself has
     // already started either way, and a missing binding is visible (no
     // ticks reach the CRM/market series) rather than silently wrong.
-    void ensure_feed_binding(const std::string& ore_key,
-                             const std::string& source_name,
+    void ensure_feed_binding(const std::string& source_name,
                              const std::string& caller_bearer_token) {
         if (caller_bearer_token.empty())
             return;
-
-        // The binding names the series by its URI, and the caller supplies the ORE
-        // key, so the series URI is written from the key's datum here -- the same
-        // codecs the tick's own key goes through in the ingest loop. A key the codec
-        // refuses has no series for a binding to name.
-        const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key);
-        if (!datum) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Not binding " << ore_key << ": " << datum.error();
-            return;
-        }
-        const auto oresmd_uri = ores::marketdata::datum::oresmd_uri_codec::write(
-                                    ores::marketdata::datum::series_of(*datum))
-                                    .value();
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -513,13 +498,12 @@ private:
             return;
         }
         for (const auto& b : *existing)
-            if (b.oresmd_uri == oresmd_uri && b.source_name == source_name)
-                return; // already bound
+            if (b.source_name == source_name)
+                return;
 
         ores::marketdata::domain::feed_binding b;
         boost::uuids::random_generator uuid_gen;
         b.id = uuid_gen();
-        b.oresmd_uri = oresmd_uri;
         b.source_name = source_name;
         b.enabled = true;
         b.change_reason_code = "system.new_record";
@@ -531,7 +515,7 @@ private:
             return;
         }
         BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Auto-created feed binding: " << oresmd_uri << " <- " << source_name;
+            << "Auto-created feed binding for source " << source_name;
     }
 
     // Core vintage-availability check shared by start() and validate(). Uses a

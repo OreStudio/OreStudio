@@ -76,8 +76,7 @@ struct bond_issue_leg final {
     /**
      * @brief The bond issue this leg belongs to.
      *
-     * The issue row carries the workspace and the party. The leg rows are family-owned and ride the
-     * issue's scope, so no workspace column rides them.
+     * The issue row carries the party. The leg rows are family-owned and ride the issue's scope.
      */
     boost::uuids::uuid issue_id;
 

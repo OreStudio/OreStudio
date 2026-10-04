@@ -46,8 +46,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -64,6 +62,7 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
@@ -1375,48 +1374,34 @@ private:
             return false;
         }
 
-        // Each pair is (source_name, the series URI). The config names the series by
-        // its ORE key, and the binding names it by the series URI of the datum that
-        // key names -- the same codecs the ingest loop applies to a tick -- so a key
-        // the codec refuses has no series to bind and is skipped.
-        std::vector<std::pair<std::string, std::string>> sources;
-        {
-            synthetic::messaging::list_fx_spot_generation_configs_request req;
+        // Every feed the config starts, FX and IR alike, is bound by its source:
+        // a tick names its own datum, so a binding names only who consumes it.
+        std::vector<std::string> sources;
+        const auto collect = [&](auto req, const char* what, auto configs_of) {
             req.limit = 1000;
             auto resp = resolve_client.request(req);
             if (resp.result.outcome != ores::utility::domain::outcome::ok) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list fx_spot_generation_configs failed: "
-                    << resp.result.message;
+                    << "create_theme_feed_bindings: list " << what
+                    << " failed: " << resp.result.message;
                 return false;
             }
-            for (auto& c : resp.fx_spot_generation_configs) {
-                if (!c.enabled || c.config_id != config_id)
-                    continue;
-                namespace datum = ores::marketdata::datum;
-                const auto skip = [&](const std::string& why) {
-                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                        << "create_theme_feed_bindings: no series for ORE key '" << c.ore_key
-                        << "' (" << why << "); skipping its binding";
-                };
-                const auto read = datum::ore_key_codec::read(c.ore_key);
-                if (!read) {
-                    skip(read.error());
-                    continue;
-                }
-                const auto uri = datum::oresmd_uri_codec::write(datum::series_of(*read));
-                if (!uri) {
-                    skip(uri.error());
-                    continue;
-                }
-                sources.emplace_back(c.source_name, *uri);
-            }
-        }
+            for (const auto& c : configs_of(resp))
+                if (c.enabled && c.config_id == config_id)
+                    sources.push_back(c.source_name);
+            return true;
+        };
+        if (!collect(synthetic::messaging::list_fx_spot_generation_configs_request{},
+                     "fx_spot_generation_configs",
+                     [](const auto& r) -> const auto& { return r.fx_spot_generation_configs; }) ||
+            !collect(synthetic::messaging::list_ir_curve_generation_configs_request{},
+                     "ir_curve_generation_configs",
+                     [](const auto& r) -> const auto& { return r.ir_curve_generation_configs; }))
+            return false;
 
-        // Active bindings already exist per natural key (tenant, party,
-        // oresmd_uri, source_name); skip them so re-provisioning does not trip
-        // the unique index. The list is tenant-scoped, so filter down to
-        // this party's rows.
+        // Active bindings already exist per natural key (tenant, party, source);
+        // skip them so re-provisioning does not trip the unique index. The list
+        // is tenant-scoped, so filter down to this party's rows.
         std::vector<std::string> existing;
         {
             marketdata::messaging::list_feed_bindings_request req;
@@ -1430,15 +1415,14 @@ private:
             }
             for (const auto& b : resp.feed_bindings)
                 if (boost::uuids::to_string(b.party_id) == party_id_str)
-                    existing.push_back(b.oresmd_uri + "|" + b.source_name);
+                    existing.push_back(b.source_name);
         }
 
         boost::uuids::random_generator uuid_gen;
         boost::uuids::string_generator sg;
         bool all_saved = true;
-        for (const auto& [source_name, oresmd_uri] : sources) {
-            if (std::find(existing.begin(), existing.end(), oresmd_uri + "|" + source_name) !=
-                existing.end()) {
+        for (const auto& source_name : sources) {
+            if (std::find(existing.begin(), existing.end(), source_name) != existing.end()) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "create_theme_feed_bindings: binding " << source_name << " for party "
                     << party_id_str << " already exists; skipping";
@@ -1446,20 +1430,16 @@ private:
             }
             marketdata::messaging::put_feed_binding_request req;
             req.change.write.id = uuid_gen();
-            req.change.write.oresmd_uri = oresmd_uri;
             req.change.write.source_name = source_name;
-            req.change.write.asset_class = "fx";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
             // The write states no expectation, because the store's
-            // must-not-exist claim is keyed on the identity alone while the
-            // binding's natural key is the party with the identity and the
-            // source. A must-not-exist claim therefore refuses the second
-            // party's binding for a source the first party already holds.
-            // The freshness check above is what keeps this idempotent, and
-            // the natural key's unique index
-            // (feed_bindings_party_id_oresmd_uri_source_name_uniq_idx) is what
-            // keeps it honest.
+            // must-not-exist claim is keyed on the source alone while the
+            // binding's natural key is the party with the source. A
+            // must-not-exist claim would refuse the second party's binding for
+            // a source the first party already holds. The freshness check above
+            // keeps this idempotent, and the natural key's unique index keeps
+            // it honest.
             req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
             req.intent.reason_code = "system.new_record";
             req.intent.commentary =
@@ -1472,16 +1452,16 @@ private:
                     << party_id_str << " failed: " << resp.result.message;
                 all_saved = false;
             } else {
-                // The freshness list is read once, so a pair this loop just wrote has
-                // to join it: two enabled configs whose keys project to one identity
-                // would otherwise both pass the check and the second would meet the
+                // The freshness list is read once, so a source this loop just bound
+                // has to join it: two enabled configs naming one source would
+                // otherwise both pass the check and the second would meet the
                 // unique index instead of the skip above.
-                existing.push_back(oresmd_uri + "|" + source_name);
+                existing.push_back(source_name);
             }
         }
         if (sources.empty())
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "create_theme_feed_bindings: no enabled FX sources for dataset " << dataset_code;
+                << "create_theme_feed_bindings: no enabled feed sources for dataset " << dataset_code;
         return all_saved;
     }
 

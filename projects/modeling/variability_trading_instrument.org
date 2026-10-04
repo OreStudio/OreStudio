@@ -2,7 +2,7 @@
 :ID: FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE
 :END:
 #+title: Profile: Trading instrument
-#+description: Flat ORE trading instrument sub-types: identity + audit field groups, the trade as the instrument's key, tenant+workspace scope, party_id from session, no UI surface.
+#+description: Flat ORE trading instrument sub-types: identity + audit field groups, the trade as the instrument's key, tenant scope, party_id from session, no UI surface.
 #+type: profile
 #+level: cross
 #+filetags: :codegen:variability:profile:
@@ -19,8 +19,8 @@ guarantee the exact feature combination below, with no ad hoc variation.
 Models a flat ORE trading instrument sub-type: a single-row instrument
 record with an identity group (=trade_id=, =trade_type_code=,
 =party_id=), an audit group, and the instrument's own flat
-payoff/term fields, scoped to both tenant and workspace (instruments
-are curated per trading desk/workspace). Party is stamped from the
+payoff/term fields, scoped to the tenant. No workspace: sandboxes and
+virtual books replaced workspaces in the trade shape design. Party is stamped from the
 session GUC; the trade type is validated at insert time against the
 trade-types lookup. No UI surface: the per-instrument forms were
 hand-crafted in the removed desktop client and consumed the generated
@@ -50,7 +50,7 @@ table can be read directly by whatever eventually resolves
 | Feature | Value |
 |------+-------|
 | [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
-| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
 | [[id:DDB365AA-E27A-42EA-84E2-1B316106363E][party_id_from_session]] | true |
 
 * See also

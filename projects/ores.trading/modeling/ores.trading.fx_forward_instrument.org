@@ -216,7 +216,7 @@ its trade, so a row cannot exist without one.
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
 pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
-columns (version, tenant_id, workspace_id, the primary key) and the
+columns (version, tenant_id, the primary key) and the
 columns marked =:group: identity= above fold into an
 =instrument_identity identity;= member (see the
 ores.trading.instrument_identity field-group model), the implicit audit

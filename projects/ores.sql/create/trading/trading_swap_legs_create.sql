@@ -40,9 +40,8 @@
  * parent the trades table holds rather than a table per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
- * whose legs it holds. Three table features justify the bind: the table is
- * tenant-scoped through tenant_id and the tenant isolation policy, it is
- * workspace-scoped through workspace_id, and its insert trigger stamps
+ * whose legs it holds. Two table features justify the bind: the table is
+ * tenant-scoped through tenant_id and the tenant isolation policy, its insert trigger stamps
  * party_id from the session variable app.current_party_id rather than taking
  * it from the client. The bind leaves the table with no UI surface -- the
  * per-instrument forms were hand-crafted in the removed desktop client and
@@ -70,7 +69,6 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "spread" numeric(18, 10) null,
     "notional" numeric(28, 10) not null,
     "currency" text not null,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -111,10 +109,6 @@ create index if not exists swap_legs_trade_id_idx
 on "ores_trading_swap_legs_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists swap_legs_workspace_idx
-on "ores_trading_swap_legs_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_trading_swap_legs_insert_fn()
 returns trigger as $$
 declare
@@ -122,9 +116,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;

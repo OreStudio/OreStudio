@@ -46,7 +46,6 @@ row, so leaving the two out would drop them from the round trip.
 :product:          ores
 :component:        trading
 :has_tenant_id:    true
-:has_workspace_id: true
 :END:
 
 * Columns

@@ -53,9 +53,8 @@ namespace ores::trading::domain {
  * parent the trades table holds rather than a table per family.
  *
  * It binds :profile: trading-instrument, like the nine instrument sub-types
- * whose legs it holds. Three table features justify the bind: the table is
- * tenant-scoped through tenant_id and the tenant isolation policy, it is
- * workspace-scoped through workspace_id, and its insert trigger stamps
+ * whose legs it holds. Two table features justify the bind: the table is
+ * tenant-scoped through tenant_id and the tenant isolation policy, its insert trigger stamps
  * party_id from the session variable app.current_party_id rather than taking
  * it from the client. The bind leaves the table with no UI surface -- the
  * per-instrument forms were hand-crafted in the removed desktop client and

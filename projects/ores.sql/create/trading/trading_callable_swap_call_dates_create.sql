@@ -39,9 +39,7 @@
  * readers must share, and a repeated date stays two rows because the
  * ordinal, not the date, is part of the key.
  *
- * The trade row carries the workspace and the party. The
- * call date rows are family-owned and ride the trade's scope, so no
- * workspace column rides them.
+ * The trade row carries the party. The call date rows are family-owned and ride the trade's scope.
  */
 
 create table if not exists "ores_trading_callable_swap_call_dates_tbl" (

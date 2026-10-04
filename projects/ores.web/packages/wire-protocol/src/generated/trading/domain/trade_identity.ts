@@ -30,7 +30,6 @@
  */
 export interface TradeIdentity {
     tenant_id: string;
-    workspace_id: string;
     id: string;
     version: number;
     party_id: string;

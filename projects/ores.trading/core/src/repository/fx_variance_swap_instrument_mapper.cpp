@@ -43,7 +43,6 @@ fx_variance_swap_instrument_mapper::map(const fx_variance_swap_instrument_entity
     domain::fx_variance_swap_instrument r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
@@ -73,7 +72,6 @@ fx_variance_swap_instrument_mapper::map(const domain::fx_variance_swap_instrumen
     fx_variance_swap_instrument_entity r;
     r.trade_id = boost::uuids::to_string(v.identity.trade_id);
     r.tenant_id = v.identity.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);

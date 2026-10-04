@@ -170,24 +170,9 @@ void composite_leg_repository::write(
 std::vector<domain::composite_leg> composite_leg_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<composite_leg_entity, domain::composite_leg>(
-            ctx,
-            query,
-            [](const auto& entities) { return composite_leg_mapper::map(entities); },
-            lg(),
-            "Reading latest composite legs (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<composite_leg_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -202,10 +187,8 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest(context
     BOOST_LOG_SEV(lg(), debug) << "Reading latest composite leg. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -220,9 +203,8 @@ std::vector<domain::composite_leg> composite_leg_repository::read_all(context ct
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all composite leg versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<composite_leg_entity, domain::composite_leg>(
@@ -238,10 +220,8 @@ std::optional<domain::composite_leg> composite_leg_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading composite leg at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<composite_leg_entity, domain::composite_leg>(
@@ -267,11 +247,10 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest_by_trad
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query =
+        sqlgen::read<std::vector<composite_leg_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -292,10 +271,9 @@ std::uint32_t composite_leg_repository::get_total_composite_leg_count_by_trade_i
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<composite_leg_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_count_query<composite_leg_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting composite legs by trade_id");
@@ -318,10 +296,9 @@ composite_leg_repository::remove_status composite_leg_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<composite_leg_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing composite leg from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -346,11 +323,9 @@ std::vector<domain::composite_leg> composite_leg_repository::read_latest(
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<composite_leg_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
@@ -368,10 +343,8 @@ std::uint32_t composite_leg_repository::get_total_composite_leg_count(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<composite_leg_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     return execute_count_query<composite_leg_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting composite legs");
@@ -383,10 +356,8 @@ composite_leg_repository::read_latest(context ctx, const std::vector<std::string
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<composite_leg_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<composite_leg_entity, domain::composite_leg>(
         ctx,
         query,
@@ -407,10 +378,8 @@ void composite_leg_repository::remove(context ctx, const std::vector<std::string
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<composite_leg_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing composite legs.");
 }
 

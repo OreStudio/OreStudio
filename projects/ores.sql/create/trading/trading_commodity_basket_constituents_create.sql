@@ -37,9 +37,7 @@
  * a binary float. The document may state no weight, and then the column is
  * null rather than a zero the document never wrote.
  *
- * The trade row carries the workspace and the party. The
- * constituent rows are family-owned and ride the trade's scope, so no
- * workspace column rides them.
+ * The trade row carries the party. The constituent rows are family-owned and ride the trade's scope.
  */
 
 create table if not exists "ores_trading_commodity_basket_constituents_tbl" (

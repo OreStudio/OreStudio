@@ -108,21 +108,21 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest feed bindings filtered by oresmd_uri.
+     * @brief Reads latest feed bindings filtered by source_name.
      */
-    std::vector<domain::feed_binding> read_latest_by_oresmd_uri(context ctx,
-                                                                const std::string& oresmd_uri);
+    std::vector<domain::feed_binding> read_latest_by_source_name(context ctx,
+                                                                 const std::string& source_name);
 
     /**
-     * @brief Reads the newest feed bindings filtered by oresmd_uri, current or not.
+     * @brief Reads the newest feed bindings filtered by source_name, current or not.
      *
      * History is addressed by the key the model declares and must stay readable
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::feed_binding> read_any_by_oresmd_uri(context ctx,
-                                                             const std::string& oresmd_uri);
+    std::vector<domain::feed_binding> read_any_by_source_name(context ctx,
+                                                              const std::string& source_name);
 
 
     /**

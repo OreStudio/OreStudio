@@ -44,7 +44,6 @@ generate_synthetic_rpa_instrument(utility::generation::generation_context& ctx) 
     r.identity.version = 0;
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};

@@ -49,8 +49,8 @@ namespace ores::refdata::domain {
  *
  * This table is the single source of truth for the taxonomy. Code carries
  * no parallel enumeration, because the list is runtime-managed and no
- * compiled list can be exhaustive over it. market_series and
- * ir_curve_tick FK-validate against this table. Managed by the system
+ * compiled list can be exhaustive over it. market_series
+ * FK-validates against this table. Managed by the system
  * tenant, like other shared code tables.
  */
 struct series_subclass_code final {

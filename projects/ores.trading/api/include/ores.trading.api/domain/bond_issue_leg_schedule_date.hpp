@@ -69,8 +69,7 @@ struct bond_issue_leg_schedule_date final {
     /**
      * @brief The bond issue whose leg states the owning schedule.
      *
-     * The issue row carries the workspace and the party. The date rows are family-owned and ride
-     * the issue's scope, so no workspace column rides them.
+     * The issue row carries the party. The date rows are family-owned and ride the issue's scope.
      */
     boost::uuids::uuid issue_id;
 

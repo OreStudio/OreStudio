@@ -49,9 +49,7 @@
  * a single date column would silently drop the rest of the list. That
  * shape belongs to defect 16, the observation schedule.
  *
- * The trade row carries the workspace and the party. The
- * entry rows are family-owned and ride the trade's scope, so no
- * workspace column rides them.
+ * The trade row carries the party. The entry rows are family-owned and ride the trade's scope.
  */
 
 create table if not exists "ores_trading_equity_position_option_underlyings_tbl" (

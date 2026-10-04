@@ -51,9 +51,8 @@ namespace ores::trading::domain {
  * a binary float. The document may state no weight, and then the column is
  * null rather than a zero the document never wrote.
  *
- * The trade row carries the workspace and the party. The
- * constituent rows are family-owned and ride the trade's scope, so no
- * workspace column rides them.
+ * The trade row carries the party. The constituent rows are family-owned and ride the trade's
+ * scope.
  */
 struct commodity_basket_constituent final {
     /**

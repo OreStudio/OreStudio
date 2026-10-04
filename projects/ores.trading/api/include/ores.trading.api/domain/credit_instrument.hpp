@@ -46,9 +46,9 @@ namespace ores::trading::domain {
  * CreditLinkedSwap.
  *
  * The table is a flat instrument sub-type, so it binds
- * :profile: trading-instrument. Three table features justify that binding:
+ * :profile: trading-instrument. Two table features justify that binding:
  * the table is tenant-scoped through tenant_id and the tenant isolation
- * policy, it is workspace-scoped through workspace_id, and its insert
+ * policy, its insert
  * trigger stamps party_id from the session variable app.current_party_id
  * rather than taking it from the client. The profile also fixes the identity
  * and audit field groups, the batch read and the generator facet, and leaves

@@ -33,7 +33,6 @@
 export interface LifecycleEvent {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     code: string;
     description: string;
     fsm_state_id: string | null;

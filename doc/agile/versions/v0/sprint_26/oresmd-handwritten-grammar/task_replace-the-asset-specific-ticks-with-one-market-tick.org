@@ -8,12 +8,12 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/replace-the-asset-specific-ticks-with-one-market-tick
-#+pr: 2602
+#+pr: 2607
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every live market data feed, whatever its asset class, publishes and ingests one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -47,9 +47,27 @@ Every live market data feed, whatever its asset class, publishes and ingests one
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The wire changes producers and consumers together, so this is one pull request
+of commits that each build:
+
+1. *The tick.* Model =market_tick= in =ores.marketdata.operations=, with
+   =:subject: marketdata.v1.tick=, and write the one republished-subject builder
+   in the api against its generated constant.
+2. *The binding.* A binding maps a source to the tenant, workspace and party
+   that consume it. Its =oresmd_uri= and =asset_class= go: the tick names its
+   own datum, and a curve source publishes many datums across several series.
+   Its natural key becomes the party and the source.
+3. *The ingest loop.* One path for every tick: find the source's enabled
+   bindings, read the URI with =oresmd_uri_codec=, classify with
+   =classification_key_of=, store the observation, republish under the builder's
+   subject.
+4. *The producers.* The synthetic FX and IR curve feeds publish =market_tick=.
+   Tenant provisioning creates a binding for every feed, FX and IR alike.
+5. *The deletions.* =fx_spot_tick=, =ir_curve_tick=, their JSON I/O, the two
+   copies of the subject function, and the FX-only client subscription, which
+   becomes a subscription to =market_tick=.
+6. *Proof.* The fleet runs both synthetic feeds, and observations from both
+   arrive under their datum URIs.
 
 * Measurements
 
@@ -63,9 +81,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Change size | 55 files, 549 insertions, 1,495 deletions | =git show --stat= | c87a9789b9 |
+| Test suites, recreated database | 90 of 90 passed | =compass test run= | c87a9789b9 |
+| Bindings after ACME provisioning | 34 sources (13 FX, 21 IR curve), 5 parties each | =compass sql=, current feed bindings by source | c87a9789b9 |
+| Sources ticking within five minutes of the feed start | 13 FX spot, 20 IR curve | =compass sql=, observations by instrument and source | c87a9789b9 |
+| New series, classified from the datum | 65 FX spot (=fx=, =spot=), 300 IR swap (=interest_rates=, =yield=) | =compass sql=, series by instrument, subclass and asset class | c87a9789b9 |
 
 * Notes
+
+** The live run
+
+The fleet ran on a recreated database with the ACME demonstration profile,
+whose last step starts the market feeds. Every FX source and 20 of the 21 curve
+sources ticked, and both kinds were stored through the one path. The remaining
+curve, =usdsofrfomc=, published nothing: its first pillar ended on the spot
+date, and =make_pillar_quote_key= refused it, failing the whole batch. The
+cause is older than this change: tenant provisioning drops the FOMC schedule,
+so every meeting tenor resolves to spot. [[id:D54611B9-5719-4FBD-9FEB-472F6F4363C1][Provision the FOMC meeting schedule into every tenant]]
+fixes it.
+
+** Deleted rather than ported
+
+=fx_spot_subscription= and the client's =subject_helpers.hpp= had no production
+consumer, so they went instead of being moved to =market_tick=.
 
 The model and its reasons are in [[id:F7F432FA-09C2-4508-8733-7AF7EBB00818][the market tick investigation]]. One point it leaves to this task:
 
@@ -87,6 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2607][#2607]] | [marketdata] Replace the asset-specific ticks with one market tick |
 | [[https://github.com/OreStudio/OreStudio/pull/2602][#2602]] | [agile] Investigate the market tick data model |
 
 * Review
@@ -99,5 +138,23 @@ via its "Verifies task" field.
 | 4 | PR 2602: settle the value type before the model is written. | investigation, task | Accepted | Decimal text, as stored observations are. |
 | 5 | PR 2602: the task's Status still shows template text, and =#+pr= names the investigation PR. | task | Not changed | The task is in BACKLOG until its work starts; =compass pr create= adds the implementation PR as another row. |
 | 6 | PR 2602: no step creates bindings for the IR feeds; is =source= unique? | investigation, task | Accepted | Provisioning creates them as it does for FX; a source names a producer uniquely within a tenant. |
+| 7 | PR 2607: =classifier_for= returns a reference into a map that =refresh()= clears on another thread. | =feed_ingest_loop= | Accepted | The map holds shared classifiers, and the caller keeps its own reference while it classifies. |
+| 8 | PR 2607: the set of unnameable URIs is never cleared. | =feed_ingest_loop= | Accepted | =refresh()= clears it, as it clears the unbound sources. |
+| 9 | PR 2607: one series read per tick and binding. | =feed_ingest_loop= | Not changed | The old paths read the series the same way, so it is not a regression. A series cache is a measured change for later. |
+| 10 | PR 2607: the stats count a tick before it is stored. | =feed_ingest_loop= | Accepted | A tick counts after its observation is stored. |
+| 11 | PR 2607: =feed_bindings= changes with no migration. | SQL | Not changed | No deployed database exists; the database is recreated, and the design decision allows no backwards compatibility. |
+| 12 | PR 2607: the value is stored without a check. | =feed_ingest_loop= | Accepted | A tick whose value is not a number is dropped, with one warning per source. |
+| 13 | PR 2607: no tests for the new =on_tick= behaviour. | tests | Not changed | =on_tick= needs NATS and a database; the test task, [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]], owns it and its notes say so. |
 
 * Result
+
+A live tick is one type for every feed and asset class: =market_tick=, the
+oresmd quote URI, the value as decimal text, the observation time and the
+source. Every feed takes its owners from its feed binding, which now maps a
+source to a party and nothing else, and the ingest loop has one path that
+classifies a new series from its datum, as the file import does. P02 holds for
+marketdata: =marketdata.v1.tick= is declared once, by the model, and the
+republished subject and both stream wildcards are built from it. On a recreated
+database, 90 of 90 suites passed, and a live ACME run stored FX and IR curve
+ticks from 33 of 34 sources; the one that published nothing fails on a
+pre-existing pillar defect, recorded as a capture.

@@ -44,7 +44,6 @@ domain::balance_guaranteed_swap_instrument generate_synthetic_balance_guaranteed
     r.identity.version = 0;
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("BalanceGuaranteedSwap");
     r.identity.party_id = ctx.generate_uuid();

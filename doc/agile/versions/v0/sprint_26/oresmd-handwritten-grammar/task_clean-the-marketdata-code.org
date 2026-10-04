@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-the-marketdata-comments
-#+pr: 2597
+#+pr: 2630
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -140,6 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2630][#2630]] | [marketdata] Clean the marketdata code, part 3: comments and as-of reads |
 | [[https://github.com/OreStudio/OreStudio/pull/2597][#2597]] | [marketdata] Clean the marketdata code, part 1: one repository each |
 
 * Review

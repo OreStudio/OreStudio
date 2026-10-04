@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/clean-the-marketdata-code
-#+pr:
+#+pr: 2597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2597][#2597]] | [marketdata] Clean the marketdata code, part 1: one repository each |
 
 * Review
 

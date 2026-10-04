@@ -75,6 +75,7 @@ stores. The same story closes the clean-standard findings that
 | [[id:C34E1985-B327-494E-B814-8586DDFF8EDE][Scaffold story: Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | DONE | 2026-10-02 | 2026-10-02 | The review, the story, its thirteen tasks and the agreed design ride this task and its PR. Close it before merging that PR. |
 | [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] | DONE | 2026-10-04 | 2026-10-04 | One tick type for every feed and asset class: the oresmd quote URI, the value, the observation time and the source, with the owner from the feed binding. Declares marketdata.v1.tick in a model, which closes P02. |
 | [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | BACKLOG | | | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
+| [[id:D54611B9-5719-4FBD-9FEB-472F6F4363C1][Provision the FOMC meeting schedule into every tenant]] | BACKLOG | | | Copy the schedule columns of the tenor convention resolutions and the central bank meeting dates into a new tenant, so FOMC pillars resolve to meeting dates and the FOMC curve feed publishes. |
 
 * Decisions
 

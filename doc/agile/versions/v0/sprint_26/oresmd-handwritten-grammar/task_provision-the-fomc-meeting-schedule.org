@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: D54611B9-5719-4FBD-9FEB-472F6F4363C1
+:END:
+#+title: Task: Provision the FOMC meeting schedule into every tenant
+#+description: Copy the schedule columns of the tenor convention resolutions and the central bank meeting dates into a new tenant, so FOMC pillars resolve to meeting dates and the FOMC curve feed publishes.
+#+type: task
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A new tenant resolves the FOMC tenors 1F to 8F to FOMC meeting dates, as the system tenant does, so the synthetic USD-SOFR-FOMC curve feed publishes its pillars.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The tenant provisioner copies schedule_code and schedule_step_count with each tenor convention resolution.
+- The tenant provisioner copies the central_bank_meeting calendar events into the new tenant.
+- A test resolves 1F in a newly provisioned tenant and gets the first FOMC meeting on or after spot.
+- On a live run, the USD-SOFR-FOMC feed publishes ticks for its bound parties.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** The cause
+
+The feed =synthetic.2026realistic.usdsofrfomc= has published nothing in a
+provisioned tenant since at least 2026-08-12. Its template starts with the
+pillar =SPOT= to =1F=, and =1F= to =8F= are SPECIAL tenors of the convention
+=RATES_SPOT_FOMC=. A resolution row of that convention names the schedule
+=FOMC_MEETING= and a step count, so =1F= is the first meeting on or after spot.
+
+On 2026-10-04, a database query found that the system tenant has these rows,
+but the ACME tenant has the rows without =schedule_code= and
+=schedule_step_count=. The provisioner's copy in
+=projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql= does not list
+the two columns. A row with neither column falls back to the calendar axis,
+which is spot plus the row's offset. The offset is =DAY 0=, so in the tenant
+every FOMC tenor resolves to spot. The first pillar then has zero length.
+Before the market tick change, the curve pricer refused it with "year_fraction
+must be positive". After that change, =make_pillar_quote_key= refuses it first.
+The cause is the same.
+
+The provisioner also copies no calendar events, and row security on
+=ores_refdata_calendar_events_tbl= shows a tenant only its own rows. So after
+the columns are fixed, the resolver finds no meeting dates and stops with "no
+event-lookup dates were supplied". Both gaps must close.
+
+No pillar check stops a curve from publishing past data. A curve's dates are
+calculated from its own as-of date, and only a pillar of zero length from spot
+is refused.
+
+** Captures this task replaces
+
+Two inbox captures described this failure with a wrong cause, a meeting on
+today's date or a meeting before the valuation date. They were removed when
+this task was added.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

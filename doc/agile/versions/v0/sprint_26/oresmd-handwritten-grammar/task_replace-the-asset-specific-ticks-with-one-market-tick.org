@@ -94,10 +94,11 @@ task and name that file in the Command column.
 The fleet ran on a recreated database with the ACME demonstration profile,
 whose last step starts the market feeds. Every FX source and 20 of the 21 curve
 sources ticked, and both kinds were stored through the one path. The remaining
-curve, =usdsofrfomc=, published nothing: one of its FOMC-meeting pillars ended
-on the spot date, and =make_pillar_quote_key= refused it, failing the whole
-batch. The same call sat in the same loop before this change, so it is recorded
-as [[id:648FC0CE-4EF8-4460-8FD3-0E2EDFDD110D][a capture]] rather than fixed here.
+curve, =usdsofrfomc=, published nothing: its first pillar ended on the spot
+date, and =make_pillar_quote_key= refused it, failing the whole batch. The
+cause is older than this change: tenant provisioning drops the FOMC schedule,
+so every meeting tenor resolves to spot. [[id:D54611B9-5719-4FBD-9FEB-472F6F4363C1][Provision the FOMC meeting schedule into every tenant]]
+fixes it.
 
 ** Deleted rather than ported
 

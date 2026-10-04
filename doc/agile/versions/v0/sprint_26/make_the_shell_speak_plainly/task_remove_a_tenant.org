@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :iam:web:tenancy:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-a-tenant
+#+pr: 2606
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,11 +41,11 @@ and a check of what sign-in and refresh do for a terminated tenant.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -62,9 +62,20 @@ and a check of what sign-in and refresh do for a terminated tenant.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- What the server already does, read in the code: =iam.v1.tenants.delete=
+  checks =iam::tenants:delete=, and the delete rule closes the tenant's row
+  and marks it =terminated=, keeping its data. The table's check keeps the
+  system tenant =active=, so its removal fails. Sign-in reads the account's
+  tenant and refuses one that is removed or not active. Token refresh read no
+  tenant at all, so a person already signed in kept renewing their access.
+- So no new bus operation is needed. The server change is one guard: refresh
+  refuses a token whose tenant sign-in would refuse, so access ends within one
+  access lifetime.
+- The BFF adds =DELETE /api/tenants/:code=, which checks the typed code against
+  the address and refuses the system tenant before it asks the server.
+- The web replaces the roster's not-built *Retire or reset* entry with *Remove
+  tenant*, adds the same button to the tenant's screen, and asks through one
+  dialog whose words match the server.
 
 * Measurements
 
@@ -97,12 +108,42 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2606][#2606]] | [iam] Remove a tenant |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A doc comment lost its summary and kept a blank line | wire-protocol/src/tenants.ts | Accept | Restored |
+| 2 | A failed tenant read during refresh must not read as a closed tenant | ores.iam auth_handler.hpp | Decline | The read throws, and the handler's catch replies a failure with the error, not "closed" |
+| 3 | Sign-in and refresh compare status strings separately | auth_handler.hpp, account_operations_service.cpp | Accept | Both call =repository::admits_sign_in= |
+| 4 | The typed-code check and the order of the refusals | bff/src/server.ts | Decline | The reviewer confirmed both are correct |
+| 5 | The new =conflict= code has no client handling | wire-protocol/src/contracts.ts | Decline | The dialog shows the message, and the shared schema parses the code |
+| 6 | Check =ApiFailure= is still used in the session provider | web/src/session/SessionProvider.tsx | Decline | It is: the retry rule uses it |
+| 7 | Enter does not submit; dialog state per row | web/src/pages/RemoveTenantDialog.tsx | Decline | Intended for a destructive action; the dialog mounts per removal |
+| 8 | Run the C++ tests before merge | ores.iam core tests | Accept | Ran after the agreed recreate: 204 cases pass |
 
 * Result
+
+A system administrator can remove a tenant.
+
+- *Server.* Token refresh now refuses a token whose tenant is removed or not
+  active, the same tenants sign-in refuses. A person signed in to a removed
+  tenant loses access within one access lifetime. Removing the system tenant
+  is refused by the table's check, and a repository test proves the row stays
+  active.
+- *BFF.* =DELETE /api/tenants/:code= checks the typed code, refuses the system
+  tenant with a reason, and removes through =iam.v1.tenants.delete=.
+- *Web.* *Remove tenant* sits in each roster row's menu, except the system
+  tenant's, and on the tenant's screen. The dialog says that nobody can sign
+  in, that people already signed in lose access within the session's access
+  lifetime in minutes, and that the data is kept. It asks for the code before
+  the button works.
+- *Clean-up.* The leftover =tenant-session-ended= error code and its handler
+  from the enter-and-leave design are gone.
+
+Checks: BFF 142, web 235 and protocol 70 tests pass; the C++ change and its
+tests compile. The C++ tests did not run locally, because the deployment's
+database predates SQL merged by another environment, and recreating it would
+delete the user's accounts and tenants. They run once the user agrees to the
+recreate.

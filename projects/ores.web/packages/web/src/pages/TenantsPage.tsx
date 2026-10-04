@@ -22,9 +22,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import type { TenantStatus, TenantSummary, TenantType } from '@ores/wire-protocol/browser';
+import {
+    SYSTEM_TENANT_ID,
+    type TenantStatus,
+    type TenantSummary,
+    type TenantType,
+} from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
+import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
 import { Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Input, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
@@ -113,6 +119,7 @@ export function TenantsPage(): ReactNode {
     /* The types paint the type column and fill its filter. */
     const types = useQuery({ queryKey: ['tenant-types'], queryFn: api.tenantTypes });
     const typeChoices = types.data ?? [];
+    const [removing, setRemoving] = useState<TenantSummary | null>(null);
 
     if (roster.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
@@ -151,6 +158,13 @@ export function TenantsPage(): ReactNode {
                     </LinkButton>
                 }
             />
+            {removing !== null && (
+                <RemoveTenantDialog
+                    tenant={removing}
+                    onClose={() => setRemoving(null)}
+                    onRemoved={() => setRemoving(null)}
+                />
+            )}
             {setupUnavailable && (
                 <div className="mb-4">
                     <Notice tone="warn">{t('tenants.setupUnavailable')}</Notice>
@@ -226,6 +240,7 @@ export function TenantsPage(): ReactNode {
                             tenants={tenants}
                             statuses={statuses.data ?? []}
                             types={types.data ?? []}
+                            onRemove={setRemoving}
                         />
                     )}
                     <Pager
@@ -250,10 +265,12 @@ function Roster({
     tenants,
     statuses,
     types,
+    onRemove,
 }: {
     readonly tenants: readonly TenantSummary[];
     readonly statuses: readonly TenantStatus[];
     readonly types: readonly TenantType[];
+    readonly onRemove: (tenant: TenantSummary) => void;
 }): ReactNode {
     const statusByCode = new Map(statuses.map((status) => [status.code, status]));
     const typeByCode = new Map(types.map((type) => [type.code, type]));
@@ -305,7 +322,7 @@ function Roster({
                                 <SetupCell setup={tenant.setup} />
                             </td>
                             <td className="py-2.5 text-right">
-                                <RowActions tenant={tenant} />
+                                <RowActions tenant={tenant} onRemove={onRemove} />
                             </td>
                         </tr>
                     ))}
@@ -321,11 +338,16 @@ function Roster({
  * A native disclosure holds the menu, so it opens without script and a
  * keyboard reaches it as it reaches any other control. Opening the tenant
  * leads to its own screen. Resuming setup is offered when the tenant's
- * provisioning run has not completed. Retiring or resetting it is a journey the
- * tree has not built, so it is shown and marked as such, the way the shell
- * marks a card, rather than hidden: a person can see what the menu will hold.
+ * provisioning run has not completed. Removing it asks first, and is not
+ * offered for the system tenant, which holds the deployment itself.
  */
-function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
+function RowActions({
+    tenant,
+    onRemove,
+}: {
+    readonly tenant: TenantSummary;
+    readonly onRemove: (tenant: TenantSummary) => void;
+}): ReactNode {
     const { t } = useTranslation();
     const setup = tenant.setup;
     const resumable = setup !== null && setup.status !== 'completed';
@@ -366,20 +388,22 @@ function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
                         {t('tenants.open')}
                     </Link>
                 </li>
-                <NotBuiltAction label={t('tenants.retireOrReset')} />
+                {tenant.id !== SYSTEM_TENANT_ID && (
+                    <li>
+                        <button
+                            type="button"
+                            onClick={(event) => {
+                                event.currentTarget.closest('details')?.removeAttribute('open');
+                                onRemove(tenant);
+                            }}
+                            className="block w-full px-3 py-1.5 text-left text-down hover:bg-surface-hover"
+                        >
+                            {t('tenants.removeAction')}
+                        </button>
+                    </li>
+                )}
             </ul>
         </details>
-    );
-}
-
-/** A menu entry for an action this release does not have: named, and marked so. */
-function NotBuiltAction({ label }: { readonly label: string }): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <li className="flex items-center justify-between gap-2 px-3 py-1.5 text-ink-faint">
-            <span>{label}</span>
-            <span className="text-[11px]">{t('tenants.notBuilt')}</span>
-        </li>
     );
 }
 

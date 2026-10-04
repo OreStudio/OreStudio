@@ -90,6 +90,9 @@ Two things the prototype draws have no server behind them yet:
 
 - *Remove tenant.* Its wording (everyone signed out, no more sign-ins, the data
   out of use, no undo) is the design's assumption. The server has no removal.
+  Since built: the server refuses sign-in at once, and people already signed
+  in lose access within one access lifetime rather than at once, so the
+  dialog says that instead.
 - *Recent activity.* The provisioning runs can tell a tenant's setup story, but
   no read gathers the deployment's activity in one place.
 

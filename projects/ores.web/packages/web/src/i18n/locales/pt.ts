@@ -103,8 +103,20 @@ const pt: SourceCatalogue = {
         open: 'Abrir',
         resumeSetup: 'Retomar a configuração',
         add: 'Adicionar inquilino',
-        notBuilt: 'Não incluído nesta versão',
-        retireOrReset: 'Retirar ou repor',
+        removeAction: 'Remover inquilino',
+        remove: {
+            title: 'Remover {name}?',
+            noSignIn: 'Ninguém pode voltar a iniciar sessão nele.',
+            signedIn: 'Quem já tem sessão iniciada perde o acesso dentro de {minutes} minutos.',
+            signedInSoon:
+                'Quem já tem sessão iniciada perde o acesso na próxima renovação da sessão.',
+            dataKept: 'Os seus dados são mantidos, e sai da lista de inquilinos.',
+            noUndo: 'Não pode ser reposto a partir deste ecrã.',
+            typeCode: 'Escreva {code} para confirmar',
+            confirm: 'Remover inquilino',
+            systemTenant:
+                'O inquilino de sistema contém a própria instalação e não pode ser removido.',
+        },
         code: 'Código',
         name: 'Nome',
         hostname: 'Nome do anfitrião',

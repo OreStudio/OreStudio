@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator suspends, terminates or resets a tenant.
@@ -143,7 +143,12 @@ nothing performs it.
 sets =status = 'terminated'= and closes the row. That is why it is =partial=
 rather than =missing=: it checks =iam::tenants:delete=, not
 =iam::tenants:terminate=, and unlike =ores_iam_terminate_tenant_fn= it does not
-require system tenant context and does not refuse the system tenant.
+require system tenant context. The system tenant is refused by the table's
+check rather than by the operation.
+
+The web offers this as *Remove tenant*, on the roster and on the tenant's
+screen, behind a dialog that asks for the tenant's code. The route is
+=DELETE /api/tenants/:code=.
 
 The permissions =iam::tenants:suspend= and =iam::tenants:terminate= are seeded
 and held by =SuperAdmin=, but no handler uses either one. They are placeholders
@@ -156,23 +161,21 @@ for the two subjects that do not exist.
    =iam.v1.tenants.suspend=, using the seeded =iam::tenants:suspend= permission
    and a function that writes the new status version. Until it exists the
    screen must not offer suspend.
-2. *A suspended tenant is not actually stopped.* Nothing in the sign-in path
-   reads a tenant's status, so an account in a tenant whose status is
-   =suspended= still signs in. The status would change nothing even if a
-   function wrote it. The candidate is a sign-in guard that refuses any tenant
-   whose status is not =active=. This is the more important of the two gaps:
-   the vocabulary promises an effect that no code delivers.
+2. *Closed: a tenant that is not active is stopped.* Sign-in reads the
+   account's tenant and refuses one that is removed, or whose status is
+   neither =active= nor =bootstrapping=. Token refresh refuses the same
+   tenants, so a person already signed in loses access within one access
+   lifetime ([[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]]).
 3. *No subject for terminate, deprovision or purge.* Each has a function and
    none has a message. The candidates are =iam.v1.tenants.terminate=,
    =iam.v1.tenants.deprovision= and =iam.v1.tenants.purge=, each requiring
    system tenant context and a system-level permission. Until they exist, these
    operations are console work, and the screen must say so.
-4. *The generic delete can terminate the system tenant.* The dedicated
-   functions all refuse =ffffffff-ffff-ffff-ffff-ffffffffffff=, and the delete
-   rule does not. A caller holding =iam::tenants:delete= can therefore end the
-   system tenant through =iam.v1.tenants.delete=. The candidate is to apply the
-   same guard to the delete path, or to give the destructive operations their
-   own subjects and take delete out of the lifecycle.
+4. *Closed: the generic delete cannot terminate the system tenant.* The
+   delete rule marks the row =terminated=, and the table's check keeps the
+   system tenant =active=, so the removal fails as a constraint violation and
+   the row stays. A repository test proves it. The web's *Remove tenant* also
+   refuses the system tenant before it asks the server.
 5. *No subject for a party-level reset.* =ores_iam_reset_tenant_fn= clears the
    admin-created data and leaves the tenant active and provisioned; it is
    SQL-only. The subject that exists runs the bootstrap reset instead, which

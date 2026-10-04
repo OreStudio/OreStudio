@@ -19,13 +19,7 @@
  *
  */
 
-import {
-    QueryCache,
-    QueryClient,
-    QueryClientProvider,
-    useQuery,
-    useQueryClient,
-} from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     createContext,
     use,
@@ -90,6 +84,18 @@ interface SessionContextValue {
 
 const SessionContext = createContext<SessionContextValue | undefined>(undefined);
 
+/**
+ * How long an access token lasts, in seconds, or nothing outside a signed-in
+ * session. A screen that states how soon a change reaches people already
+ * signed in reads it here rather than assuming a number.
+ */
+export function useAccessLifetimeSeconds(): number | undefined {
+    const value = use(SessionContext);
+    return value?.state.status === 'authenticated'
+        ? value.state.session.accessLifetimeSeconds
+        : undefined;
+}
+
 export function useSession(): SessionContextValue {
     const value = use(SessionContext);
     if (value === undefined) {
@@ -101,19 +107,7 @@ export function useSession(): SessionContextValue {
 export const SESSION_QUERY_KEY = ['session'] as const;
 
 export function createQueryClient(): QueryClient {
-    /*
-     * A session inside a tenant lapses on its own, and the server is already
-     * back in the session's own tenant when it says so. Reading the session
-     * again moves every screen back with it.
-     */
     const client: QueryClient = new QueryClient({
-        queryCache: new QueryCache({
-            onError: (error) => {
-                if (error instanceof ApiFailure && error.code === 'tenant-session-ended') {
-                    void client.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-                }
-            },
-        }),
         defaultOptions: {
             queries: {
                 // A 4xx is an expected answer, not a transient fault, so retrying it

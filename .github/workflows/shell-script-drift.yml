@@ -38,8 +38,9 @@ permissions:
 jobs:
   # The ores-shell .ores script library is tangled from the shell
   # recipes in doc/recipes/shell/. This job re-runs the tangle and fails
-  # if it produces a diff — i.e. someone edited a generated .ores
-  # artefact by hand instead of its recipe org source.
+  # if it produces a diff — someone edited a generated .ores artefact by
+  # hand instead of its recipe org source — or leaves untracked scripts,
+  # which a new recipe produced and nobody committed.
   drift:
     runs-on: ubuntu-24.04
     steps:
@@ -55,3 +56,9 @@ jobs:
       - name: Check scripts match their recipe sources
         run: |
           git diff --exit-code -- projects/ores.shell/scripts/library
+          untracked=$(git ls-files --others --exclude-standard -- projects/ores.shell/scripts/library)
+          if [ -n "$untracked" ]; then
+            echo "Scripts a recipe produces that are not committed:"
+            echo "$untracked"
+            exit 1
+          fi

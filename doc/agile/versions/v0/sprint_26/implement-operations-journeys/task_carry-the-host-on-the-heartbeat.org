@@ -33,11 +33,11 @@ services roster can name the machine behind an instance.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The model edit begins; the layers under it follow. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Regenerate the protocol, then fill the field at each layer. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -52,9 +52,33 @@ services roster can name the machine behind an instance.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The field travels one way: a publisher stamps it, the telemetry service
+copies it, and the database stores it. The work follows that path. Both
+messages keep one field order — =service_name=, =instance_id=, =host_id=,
+=version= — so the model, the entity and the stored row agree.
+
+1. Add =host_id= to =service_heartbeat_message= and =service_sample= in
+   =projects/ores.telemetry/modeling/ores.telemetry.service_samples.org=.
+   The field sits beside =instance_id=, and it is empty when the publisher
+   does not know the host.
+2. Regenerate the protocol from the model, and check the C++ and TypeScript
+   diffs carry the new field and nothing else.
+3. Fill the field where the value exists. =heartbeat_publisher= takes
+   =host_id= as a trailing defaulted constructor argument and stamps every
+   message with it, and the compute wrapper passes =cfg.host_id= — the
+   value it already stamps on its node samples. Every other service holds
+   no host id, so its beats carry the empty string.
+4. Copy the field at the receiving end:
+   =telemetry_handler::service_heartbeat= writes =hb->host_id= onto the
+   =service_sample= it builds.
+5. Store it. =service_sample_entity= gains =std::string host_id;=, the
+   mapper carries it both ways, and the create script adds
+   =host_id text not null default ''=.
+6. Prove it. Add a repository test that inserts a sample with a host id and
+   reads it back through =list_service_samples=, then build and run the
+   telemetry and compute tests against a recreated database.
+7. Close the loop. Move capture A1D7FC12 out of the inbox with the
+   evidence, and record the measurements on this task.
 
 * Measurements
 

@@ -89,6 +89,8 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_parties.small', 203, true);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.large', 204, true);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_parties.large', 205, true);
+    -- The ORE samples' counterparty names, as aliases of GLEIF counterparties.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.counterparty_aliases', 206, true);
 
     -- Badge system (self-published, DQ -> DQ; unlike coding_schemes, badge
     -- severities genuinely need a per-tenant copy, since BadgeCache/admin

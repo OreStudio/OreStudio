@@ -66,6 +66,7 @@
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_summary_handler.hpp"
+#include "ores.dq.core/messaging/counterparty_alias_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
@@ -315,6 +316,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(lei_relationship_subs.begin()),
                     std::make_move_iterator(lei_relationship_subs.end()));
+    }
+    {
+        auto counterparty_alias_subs = register_counterparty_alias_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(counterparty_alias_subs.begin()),
+                    std::make_move_iterator(counterparty_alias_subs.end()));
     }
     {
         auto report_definition_subs = register_report_definition_handlers(nats, ctx, verifier);

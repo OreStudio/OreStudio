@@ -96,3 +96,85 @@ begin
         raise exception 'ore.sample_counterparties selected % of its 11 banks from gleif.lei_entities.small.', v_copied;
     end if;
 end $$;
+
+-- =============================================================================
+-- ORE Counterparty Aliases Dataset
+--
+-- The names the ORE examples use for their counterparties, from an inventory of
+-- external/ore/examples recorded on the task that added this script, each
+-- keyed to the LEI of the bank it maps onto. The busiest names take the largest
+-- dealers; CPTY_1 to CPTY_10 appear together in one example and take ten
+-- different banks. CP takes the same bank as CPTY, because both trade under
+-- the netting set NS, which belongs to one counterparty. Published as ORE
+-- counterparty identifiers.
+-- =============================================================================
+
+\echo '--- ORE Counterparty Aliases Dataset ---'
+
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.counterparty_aliases',
+        'ORE',
+        'Parties',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Actual',
+        'Raw',
+        'GLEIF Golden Copy Extraction',
+        'ORE Counterparty Aliases',
+        'The counterparty names the ORE sample documents use, mapped onto GLEIF banks by LEI.',
+        'ORE',
+        'Counterparty aliases for importing the ORE samples',
+        '2026-10-04'::date,
+        'Open Data',
+        'counterparty_aliases'
+    );
+
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'ore.counterparty_aliases'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    delete from ores_dq_counterparty_aliases_artefact_tbl where dataset_id = v_dataset_id;
+
+    insert into ores_dq_counterparty_aliases_artefact_tbl (
+        dataset_id, tenant_id, id_value, version, id_scheme, lei, description
+    )
+    select v_dataset_id, ores_utility_system_tenant_id_fn(), a.alias, 0, 'ORE', a.lei,
+        'Counterparty name used by the ORE sample documents'
+    from (values
+        ('CPTY_A', 'G5GSEF7VJP5I7OUK5573'),
+        ('A', 'G5GSEF7VJP5I7OUK5573'),
+        ('CPTY_B', '7LTWFZYICNSX8D621K86'),
+        ('CPTY', '7H6GLXDRUGQFU57RNE97'),
+        ('CPTY_C', 'R0MUWSFPU8MPRO8K5P83'),
+        ('CP', '7H6GLXDRUGQFU57RNE97'),
+        ('CPTY_D', 'BFM8T61CT2L1QCEMIK50'),
+        ('DUMMY_CP', 'BFM8T61CT2L1QCEMIK50'),
+        ('DUMMY_CPTY', 'BFM8T61CT2L1QCEMIK50'),
+        ('ABC', 'O2RNE8IBXP4R0TD8PU41'),
+        ('EquityOption1', 'RR3QWICWWIPCS8A4S074'),
+        ('EquityOption2', 'RR3QWICWWIPCS8A4S074'),
+        ('001B456BCDEFGH67XY89', 'B4TYDEB6GKMZO031MB27'),
+        ('CPTY_1', 'O2RNE8IBXP4R0TD8PU41'),
+        ('CPTY_2', 'RR3QWICWWIPCS8A4S074'),
+        ('CPTY_3', 'B4TYDEB6GKMZO031MB27'),
+        ('CPTY_4', '1VUV7VQFKUOQSJ21A208'),
+        ('CPTY_5', 'K6Q0W1PS1L1O4IQL9C32'),
+        ('CPTY_6', 'G5GSEF7VJP5I7OUK5573'),
+        ('CPTY_7', '7LTWFZYICNSX8D621K86'),
+        ('CPTY_8', '7H6GLXDRUGQFU57RNE97'),
+        ('CPTY_9', 'R0MUWSFPU8MPRO8K5P83'),
+        ('CPTY_10', 'MP6I5ZYZBEU3UXPYFY54')
+    ) as a(alias, lei);
+
+    -- The aliases resolve against counterparties published from GLEIF, and the
+    -- sample banks are selected from the GLEIF entities.
+    perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.counterparty_aliases', 'gleif.lei_counterparties.small', 'counterparty_reference');
+    perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.sample_counterparties', 'gleif.lei_entities.small', 'entity_reference');
+end $$;

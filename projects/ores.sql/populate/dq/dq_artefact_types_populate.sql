@@ -175,6 +175,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'account_contact_informations', 0, 'Account Contact Informations', 'Generated staff real names/contact details (e.g. Acme Corporation); target/publish-from-dq wiring lands with the server-side-orchestration follow-up task',
      'dq_account_contact_informations_artefact_tbl', 'iam_account_contact_informations_tbl', 'iam.v1.account-contact-informations.publish-from-dq', 56,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'counterparty_aliases', 0, 'Counterparty Aliases', 'Names source systems use for counterparties, keyed by LEI and published as counterparty identifiers',
+     'dq_counterparty_aliases_artefact_tbl', 'refdata_counterparty_identifiers_tbl', 'refdata.v1.counterparty-aliases.publish-from-dq', 63,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

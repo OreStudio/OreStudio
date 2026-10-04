@@ -2132,6 +2132,77 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
+-- Counterparty Aliases
+-- =============================================================================
+
+/**
+ * Publishes counterparty aliases from a DQ dataset into a tenant.
+ *
+ * An alias is a name a source system uses for a counterparty, such as the
+ * CPTY_A an ORE document puts in its envelope. The staging row names the
+ * counterparty by LEI, because a counterparty's id differs from tenant to
+ * tenant: the alias is written as an identifier, under the row's scheme, of
+ * the counterparty that holds that LEI in the target tenant. A name already
+ * held, and a LEI the tenant holds no counterparty for, are skipped.
+ */
+create or replace function ores_refdata_publish_counterparty_aliases_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_counterparty_aliases_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_counterparty_identifiers_tbl (
+        tenant_id, id, version, counterparty_id, id_scheme, id_value, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select p_target_tenant_id, gen_random_uuid(), 0, ci.counterparty_id, a.id_scheme,
+        a.id_value, a.description,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_counterparty_aliases_artefact_tbl a
+    join ores_refdata_counterparty_identifiers_tbl ci
+      on ci.tenant_id = p_target_tenant_id
+     and ci.id_scheme = 'LEI'
+     and ci.id_value = a.lei
+     and ci.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_counterparty_identifiers_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.id_scheme = a.id_scheme
+          and o.id_value = a.id_value
+          and o.valid_to = ores_utility_infinity_timestamp_fn());
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
 -- LEI Counterparties
 -- =============================================================================
 

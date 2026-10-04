@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: F3534049-1E98-5474-B121-24A69AB6CC39
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the counterparty_aliases commands from the shell?
+#+description: Every command the counterparty_aliases submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:counterparty_aliases:
+
+This file documents the counterparty_aliases resource at the shell, one section per command. Every command is a subcommand of =counterparty_aliases=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1DD8B29C-1402-5AFA-9CFE-2B27D3632BE0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_aliases list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.counterparty_aliases.list=.
+
+#+name: counterparty_aliases-list
+#+begin_src ores-shell :tangle counterparty_aliases-list.ores :exports none
+counterparty_aliases list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5636471F-F6A6-5066-883E-69D7086611EC
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_aliases get <id_value>
+#+end_example
+
+It is addressed at =dq.v1.counterparty_aliases.get=.
+
+#+name: counterparty_aliases-get
+#+begin_src ores-shell :tangle counterparty_aliases-get.ores :exports none
+counterparty_aliases get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 05A55959-4105-51A5-B6AE-A859C8F37AA0
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+counterparty_aliases get-many <id_value>
+#+end_example
+
+It is addressed at =dq.v1.counterparty_aliases.get_many=.
+
+#+name: counterparty_aliases-get-many
+#+begin_src ores-shell :tangle counterparty_aliases-get-many.ores :exports none
+counterparty_aliases get-many __none__
+#+end_src
+

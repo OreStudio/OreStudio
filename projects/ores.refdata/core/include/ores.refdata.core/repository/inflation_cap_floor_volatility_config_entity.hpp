@@ -46,6 +46,7 @@ struct inflation_cap_floor_volatility_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_definition_id;
     std::string inflation_type;
     std::string quote_type;

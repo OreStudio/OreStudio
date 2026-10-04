@@ -34,6 +34,7 @@ export interface YieldVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     qualifier: string;
     dimension: string | null;

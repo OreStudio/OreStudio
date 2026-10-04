@@ -41,6 +41,7 @@ curve_security_config_mapper::map(const curve_security_config_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.curve_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.curve_definition_id);
     r.spread_quote = v.spread_quote;
     r.recovery_rate_quote = v.recovery_rate_quote;
@@ -65,6 +66,7 @@ curve_security_config_mapper::map(const domain::curve_security_config& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.curve_definition_id = boost::uuids::to_string(v.curve_definition_id);
     r.spread_quote = v.spread_quote;
     r.recovery_rate_quote = v.recovery_rate_quote;

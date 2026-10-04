@@ -45,6 +45,7 @@ generate_synthetic_inflation_curve_config(utility::generation::generation_contex
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.nominal_term_structure = std::string("Yield/EUR/EUR6M");
     r.inflation_type = std::string("ZC");

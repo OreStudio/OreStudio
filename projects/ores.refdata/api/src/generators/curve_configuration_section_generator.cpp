@@ -45,6 +45,7 @@ generate_synthetic_curve_configuration_section(utility::generation::generation_c
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_configuration_id = ctx.generate_uuid();
     r.section_code = std::string("YieldCurves");
     r.modified_by = modified_by;

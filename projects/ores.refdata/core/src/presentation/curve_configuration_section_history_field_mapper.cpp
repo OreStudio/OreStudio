@@ -35,6 +35,7 @@ render_curve_configuration_section_fields(const domain::curve_configuration_sect
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Curve Configuration ID",
                       .value = boost::uuids::to_string(v.curve_configuration_id)});
     fields.push_back({.name = "Section Code", .value = v.section_code});

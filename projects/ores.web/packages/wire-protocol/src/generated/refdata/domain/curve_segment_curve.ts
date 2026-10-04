@@ -34,6 +34,7 @@ export interface CurveSegmentCurve {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_segment_id: string;
     role: string;
     curve: string;

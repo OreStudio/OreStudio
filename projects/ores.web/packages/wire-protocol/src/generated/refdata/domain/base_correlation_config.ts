@@ -34,6 +34,7 @@ export interface BaseCorrelationConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     terms: string;
     detachment_points: string;

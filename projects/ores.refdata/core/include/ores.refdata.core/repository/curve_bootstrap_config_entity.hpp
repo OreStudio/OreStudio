@@ -45,6 +45,7 @@ struct curve_bootstrap_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_definition_id;
     std::optional<std::string> default_curve_configuration_id;
     std::optional<double> accuracy;

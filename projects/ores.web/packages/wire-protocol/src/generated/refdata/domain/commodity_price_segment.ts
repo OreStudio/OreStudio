@@ -34,6 +34,7 @@ export interface CommodityPriceSegment {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     segment_type: string;
     priority: number | null;

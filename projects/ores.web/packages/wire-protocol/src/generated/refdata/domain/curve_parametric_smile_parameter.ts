@@ -34,6 +34,7 @@ export interface CurveParametricSmileParameter {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     name: string;
     initial_value: string | null;

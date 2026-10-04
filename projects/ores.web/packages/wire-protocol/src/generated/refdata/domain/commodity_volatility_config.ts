@@ -34,6 +34,7 @@ export interface CommodityVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     currency: string;
     instrument_type: string | null;

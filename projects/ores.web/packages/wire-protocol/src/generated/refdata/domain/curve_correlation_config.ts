@@ -34,6 +34,7 @@ export interface CurveCorrelationConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     correlation_type: string;
     index_1: string | null;

@@ -34,6 +34,7 @@ export interface CapFloorVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     volatility_type: string | null;
     output_volatility_type: string | null;

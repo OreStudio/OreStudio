@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists cds_volatility_terms_tbl_party_isolation_policy on "ores_refdata_cds_volatility_terms_tbl";
 drop policy if exists cds_volatility_terms_tbl_tenant_isolation_policy on "ores_refdata_cds_volatility_terms_tbl";
 drop rule if exists ores_refdata_cds_volatility_terms_delete_rule on "ores_refdata_cds_volatility_terms_tbl";
 drop trigger if exists ores_refdata_cds_volatility_terms_insert_trg on "ores_refdata_cds_volatility_terms_tbl";

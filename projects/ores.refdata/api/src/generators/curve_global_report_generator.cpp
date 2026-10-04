@@ -45,6 +45,7 @@ generate_synthetic_curve_global_report(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_configuration_id = ctx.generate_uuid();
     r.family = std::string("FXVolatilities");
     r.has_report = true;

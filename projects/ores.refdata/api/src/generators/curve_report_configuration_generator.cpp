@@ -45,6 +45,7 @@ generate_synthetic_curve_report_configuration(utility::generation::generation_co
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.report_on_delta_grid = std::nullopt;
     r.report_on_moneyness_grid = std::nullopt;

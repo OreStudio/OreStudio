@@ -45,6 +45,7 @@ generate_synthetic_curve_configuration(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.name = std::string("default");
     r.description = std::nullopt;
     r.configuration_id = boost::uuids::nil_uuid();

@@ -34,6 +34,7 @@ export interface CdsVolatilityTerm {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     label: string;
     curve: string;

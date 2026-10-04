@@ -45,6 +45,7 @@ generate_synthetic_yield_curve_config(utility::generation::generation_context& c
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.currency = std::string("EUR");
     r.discount_curve = std::string("EUR-ESTR");

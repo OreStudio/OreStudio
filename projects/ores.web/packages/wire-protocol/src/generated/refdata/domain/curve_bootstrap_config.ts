@@ -34,6 +34,7 @@ export interface CurveBootstrapConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     default_curve_configuration_id: string;
     accuracy: number | null;

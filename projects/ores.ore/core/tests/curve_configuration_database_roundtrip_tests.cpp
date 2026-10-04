@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
+#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -60,8 +61,10 @@
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.testing/project_root.hpp"
+#include "party_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <algorithm>
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <stdexcept>
@@ -149,7 +152,11 @@ void write_input_conventions(const ores::database::context& ctx) {
     write_missing(ctx, cds_convention_repository(), mapped.cds);
 }
 
-void write(const ores::database::context& ctx, const mapped_curve_configuration& m) {
+// A curve configuration belongs to a party, so every document a case writes is
+// stamped with one; the cases that need two parties make their own.
+void write(const ores::database::context& ctx, mapped_curve_configuration m) {
+    static const auto owner = boost::uuids::random_generator()();
+    ores::ore::domain::assign_party(m, owner);
     curve_configuration_repository().write(ctx, m.config);
     curve_configuration_section_repository().write(ctx, m.sections);
     curve_global_report_repository().write(ctx, m.global_reports);
@@ -530,4 +537,20 @@ TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags
     curve_configuration_repository().write(h.context(), mapped.config);
     curve_definition_repository().write(h.context(), mapped.definitions);
     CHECK_NOTHROW(equity_curve_config_repository().write(h.context(), mapped.equity_curves.front()));
+}
+
+TEST_CASE("a party sees only its own curve configuration", tags) {
+    ores::testing::scoped_database_helper h;
+    auto parties = ores::ore::tests::make_two_parties(h);
+    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    ores::ore::domain::assign_party(mapped, parties.a);
+
+    curve_configuration_repository repo;
+    repo.write(parties.a_context, mapped.config);
+
+    const auto owns = [&](const auto& rows) {
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == mapped.config.id; });
+    };
+    CHECK(owns(repo.read_latest(parties.a_context)));
+    CHECK_FALSE(owns(repo.read_latest(parties.b_context)));
 }

@@ -34,6 +34,7 @@ export interface CurveVolatilityConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     kind: string;
     is_wrapped: boolean;

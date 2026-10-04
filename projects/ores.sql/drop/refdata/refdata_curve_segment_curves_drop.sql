@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists curve_segment_curves_tbl_party_isolation_policy on "ores_refdata_curve_segment_curves_tbl";
 drop policy if exists curve_segment_curves_tbl_tenant_isolation_policy on "ores_refdata_curve_segment_curves_tbl";
 drop rule if exists ores_refdata_curve_segment_curves_delete_rule on "ores_refdata_curve_segment_curves_tbl";
 drop trigger if exists ores_refdata_curve_segment_curves_insert_trg on "ores_refdata_curve_segment_curves_tbl";

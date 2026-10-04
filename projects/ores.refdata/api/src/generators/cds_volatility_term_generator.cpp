@@ -45,6 +45,7 @@ generate_synthetic_cds_volatility_term(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.label = std::string("5Y");
     r.curve = std::string("Default/USD/CPTY_A");

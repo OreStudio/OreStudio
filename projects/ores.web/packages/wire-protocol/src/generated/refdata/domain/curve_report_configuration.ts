@@ -34,6 +34,7 @@ export interface CurveReportConfiguration {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     curve_definition_id: string;
     report_on_delta_grid: string | null;
     report_on_moneyness_grid: string | null;

@@ -45,6 +45,7 @@ generate_synthetic_inflation_seasonality_factor(utility::generation::generation_
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.curve_definition_id = ctx.generate_uuid();
     r.factor = std::string("1.0");
     r.position = 1;

@@ -45,6 +45,7 @@ struct equity_volatility_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string curve_definition_id;
     std::optional<std::string> equity_id;
     std::string currency;

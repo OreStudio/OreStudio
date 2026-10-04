@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists commodity_curve_configs_tbl_party_isolation_policy on "ores_refdata_commodity_curve_configs_tbl";
 drop policy if exists commodity_curve_configs_tbl_tenant_isolation_policy on "ores_refdata_commodity_curve_configs_tbl";
 drop rule if exists ores_refdata_commodity_curve_configs_delete_rule on "ores_refdata_commodity_curve_configs_tbl";
 drop trigger if exists ores_refdata_commodity_curve_configs_insert_trg on "ores_refdata_commodity_curve_configs_tbl";

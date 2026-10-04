@@ -21,6 +21,7 @@
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -261,4 +262,34 @@ TEST_CASE("get_telemetry_summary", tags) {
 
     CHECK(after.total_logs - before.total_logs == 2);
     CHECK(after.error_count - before.error_count == 1);
+}
+
+TEST_CASE("create_and_list_service_sample", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    boost::uuids::random_generator gen;
+    service_sample sample;
+    sample.sampled_at = std::chrono::system_clock::now();
+    sample.service_name = "ores.test.service";
+    sample.instance_id = boost::uuids::to_string(gen());
+    sample.host_id = boost::uuids::to_string(gen());
+    sample.version = "1.0.0-test";
+    BOOST_LOG_SEV(lg, debug) << "Instance ID: " << sample.instance_id;
+
+    repo.insert_service_sample(h.context(), sample);
+
+    const auto samples = repo.list_service_samples(h.context());
+    const auto it = std::find_if(samples.begin(), samples.end(), [&](const service_sample& s) {
+        return s.instance_id == sample.instance_id;
+    });
+
+    REQUIRE(it != samples.end());
+    CHECK(it->service_name == sample.service_name);
+    CHECK(it->host_id == sample.host_id);
+    CHECK(it->version == sample.version);
+
+    BOOST_LOG_SEV(lg, debug) << "Service sample read back with host id " << it->host_id;
 }

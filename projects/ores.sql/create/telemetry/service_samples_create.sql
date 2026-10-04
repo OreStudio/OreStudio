@@ -30,6 +30,7 @@ create table if not exists ores_telemetry_service_samples_tbl (
     "sampled_at"    timestamp with time zone not null,
     "service_name"  text not null,
     "instance_id"   text not null,
+    "host_id"       text not null default '',
     "version"       text not null default '',
     primary key (sampled_at, service_name, instance_id)
 );

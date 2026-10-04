@@ -85,7 +85,7 @@ from the accepted design.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F9E6587E-30DD-4C39-9107-FE01A577E1C8][Scaffold story: Implement the operations journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] | BACKLOG | | | Initial task for: Implement the operations journeys in ores.web |
+| [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Implement the operations journeys in ores.web |
 | [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] | BACKLOG | | | Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing. |
 | [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]] | BACKLOG | | | Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own. |
 | [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]] | BACKLOG | | | Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back. |

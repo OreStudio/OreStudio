@@ -174,6 +174,7 @@ struct service_sample_entity {
     sqlgen::PrimaryKey<db_timestamp> sampled_at;
     sqlgen::PrimaryKey<std::string> service_name;
     sqlgen::PrimaryKey<std::string> instance_id;
+    std::string host_id;
     std::string version;
 };
 

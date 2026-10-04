@@ -40,6 +40,11 @@ export interface ServiceSample {
      */
     instance_id: string;
     /**
+     * @brief The host the instance runs on, empty when the publisher does not
+     * know it.
+     */
+    host_id: string;
+    /**
      * @brief Version the instance reports.
      */
     version: string;
@@ -61,6 +66,11 @@ export interface ServiceHeartbeatMessage {
      * @brief Per-process identifier, generated once at startup.
      */
     instance_id: string;
+    /**
+     * @brief The host the instance runs on, empty when the publisher does not
+     * know it.
+     */
+    host_id: string;
     /**
      * @brief Version the instance reports.
      */

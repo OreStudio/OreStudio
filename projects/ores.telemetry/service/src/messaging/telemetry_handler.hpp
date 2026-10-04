@@ -141,6 +141,7 @@ public:
         sample.sampled_at = std::chrono::system_clock::now();
         sample.service_name = hb->service_name;
         sample.instance_id = hb->instance_id;
+        sample.host_id = hb->host_id;
         sample.version = hb->version;
 
         try {

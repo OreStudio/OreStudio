@@ -11,7 +11,7 @@
 #+brief: service heartbeat and sample query messages.
 #+filetags: :model:operation:telemetry:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-10-04
 
 The service liveness surface: one heartbeat every service publishes, and one
 request/reply that lists the latest sample per running instance.
@@ -82,6 +82,18 @@ and the operations dashboard reads the samples.
  */
 #+end_src
 
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The host the instance runs on, empty when the publisher does not
+ * know it.
+ */
+#+end_src
+
 *** version
 :PROPERTIES:
 :cpp_type: std::string
@@ -128,6 +140,18 @@ and the operations dashboard reads the samples.
 #+begin_src cpp :name comment
 /**
  * @brief Per-process identifier, generated once at startup.
+ */
+#+end_src
+
+*** host_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The host the instance runs on, empty when the publisher does not
+ * know it.
  */
 #+end_src
 

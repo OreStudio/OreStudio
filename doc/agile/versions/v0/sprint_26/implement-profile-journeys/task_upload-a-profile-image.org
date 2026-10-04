@@ -28,10 +28,10 @@ Nothing uploads an image: the BFF serves /api/images/:id as a read only, so a me
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Plan written; implementing.            |
+| Now          | Implementation done and committed as =6bc0db1a2a=; the assets suites pass and both drift gates ran. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the model, validator, service, handler and tests. |
-| Last touched | 2026-10-04                               |
+| Next         | Push the branch, open the PR, and merge when CI is green. |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 
@@ -105,7 +105,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Assets core suite | 146 assertions in 46 test cases, all passed | ./compass build test_ores.assets.core.tests | 6bc0db1a2a |
+| Assets api suite | 38 assertions in 11 test cases, all passed | ./compass build test_ores.assets.api.tests | 6bc0db1a2a |
+| Assets service suite | 26 assertions in 10 test cases, all passed | ./compass build test_ores.assets.service.tests | 6bc0db1a2a |
+| Drift gate, whole tree | One finding, =trade_service.cpp=, outside this branch: local clang-format 21 against CI's 18. The file was restored, not committed; CI's gate is green on main at the same content. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all | 6bc0db1a2a |
+| Drift gate, sweep | Sweep clean: no file this branch touched would change. 68 files elsewhere in the catalogue would change, which belongs to those components' own clean-up. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --sweep | 6bc0db1a2a |
 
 * Notes
 
@@ -133,3 +137,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The upload path exists and the rule is stated once. The operation model
+=ores.assets.image_messages.org= renders the =upload_image= and
+=get_image_upload_policy= pairs to C++ and TypeScript. =
+image_upload_validator= states the rule in =policy()= and applies it in
+=validate()=: PNG, JPEG or WebP; at most 2 MB; at least 128 by 128 pixels;
+the format is read from the bytes, so bytes that are not the stated media
+type are refused rather than stored. =image_operations_service= decodes the
+base64, validates, and stores an accepted image with a minted id and the
+stated media type. =image_operations_handler= serves both subjects and the
+assets registrar subscribes them beside the generated per-entity subjects.
+A refusal carries =unsupported_media_type=, =image_too_large=,
+=image_too_small= or =invalid_image= on the result code and on the field
+failure, so the picker branches on one code.
+
+The work is committed as =6bc0db1a2a= (=[assets] Add the image upload path
+and its policy read=). The assets suites pass. The sweep drift gate is
+clean: no file this branch touched would change. The =--all= gate reported
+one finding outside this branch, =trade_service.cpp=, caused by the local
+clang-format version (21) against CI's (18): CI's drift gate is green on
+main at the same content, so the file was restored, not committed.

@@ -8,7 +8,7 @@
 #+filetags: :web:ui:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
 #+branch: feature/speak-plainly-on-home
-#+pr:
+#+pr: 2599
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2599][#2599]] | [web] Speak plainly on home and in the shell |
 
 * Review
 

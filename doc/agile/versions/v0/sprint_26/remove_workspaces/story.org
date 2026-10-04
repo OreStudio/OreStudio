@@ -21,11 +21,11 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Waiting on    | Removing =ores.workspace= waits on [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]], which drops the trading workspace references. |
+| Next          | Inventory and sequence the workspace removal. |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance
@@ -89,4 +89,6 @@ nats, service, utility) is the request context.
 
 * Out of scope
 
--
+- The trading tables and code, which [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] removes.
+- Migrating rows of workspaces other than the live one: the databases are
+  recreated, so no data is carried across.

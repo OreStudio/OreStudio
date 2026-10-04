@@ -63,6 +63,17 @@ task and name that file in the Command column.
 
 * Notes
 
+Points from the review of the scaffold (PR 2615) for this task to settle:
+
+- Confirm that nothing still relies on workspaces to keep work apart from
+  official data, so sandboxes and virtual books are the only way.
+- Order the steps so no default, policy or index still calls
+  =ores_utility_live_workspace_id_fn= or its kin while a column exists:
+  columns go before the functions.
+- Record the command and commit behind every inventory count in the
+  Measurements section; the trading counts fall as the trade shape story
+  lands.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

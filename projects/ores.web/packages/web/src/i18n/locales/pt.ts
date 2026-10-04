@@ -35,6 +35,8 @@ const pt: SourceCatalogue = {
     },
 
     nav: {
+        accountMenu: 'A sua conta',
+        security: 'Segurança',
         site: 'Site',
         accounts: 'Contas',
         notifications: 'Notificações',

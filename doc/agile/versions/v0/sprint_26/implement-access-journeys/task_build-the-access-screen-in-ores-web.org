@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 The access screens run in =ores.web=.
 
-- *My access* (=/access=, also the signed-in person's picture in the header):
+- *My access* (=/access=, from the account menu behind the person's picture):
   the roles held with who gave each one, when and why, a *Can I…?* search
   naming the role behind a yes, and the permissions by area; a role that
   grants everything says so.
@@ -113,6 +113,9 @@ The access screens run in =ores.web=.
   a filter, "Only what it allows", and a save that lists what it adds, removes
   and whose access changes. A role that grants everything, or a service's
   role, is not edited; a role somebody holds is not offered for deletion.
+- *The header* holds the person's picture alone, as most applications do; the
+  account menu behind it names the person, the tenant and the party, and holds
+  My access, Security and Sign out. The tenant stays in view beside the brand.
 - Pictures: =/api/accounts/:username/picture= serves any account's picture, and
   the header, "Given by", People, a person, "Held by" and Rescue access use it
   or the account's image.

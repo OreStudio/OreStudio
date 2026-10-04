@@ -30,6 +30,8 @@ const fr: SourceCatalogue = {
     },
 
     nav: {
+        accountMenu: 'Votre compte',
+        security: 'Sécurité',
         site: 'Site',
         accounts: 'Comptes',
         notifications: 'Notifications',

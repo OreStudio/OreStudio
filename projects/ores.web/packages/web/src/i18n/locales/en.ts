@@ -36,6 +36,8 @@ export const en: SourceCatalogue = {
     },
 
     nav: {
+        accountMenu: 'Your account',
+        security: 'Security',
         site: 'Site',
         accounts: 'Accounts',
         notifications: 'Notifications',

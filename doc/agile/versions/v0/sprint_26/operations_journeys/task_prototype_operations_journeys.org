@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :operations_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: prototype/operations-journeys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The prototype shows the five operations journeys as clickable screens: the runni
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:security:identity:navigation:
 #+created: 2026-09-30
-#+updated: 2026-10-01
+#+updated: 2026-10-04
 
 * Summary
 
@@ -34,6 +34,21 @@ Open the [[file:navigation/][shell]].
 Accepted on 2026-10-01: the menu, the cards and the avatar, with the mode read
 from the sign-in. This is the shell the Profile journeys hang from, and the
 implementation is scheduled from it.
+
+*** Revised on 2026-10-04
+
+The first screens built from this shell spoke the implementation's language:
+the landing page counted *journeys* and drew one card for each, and a system
+administrator reading a tenant was asked to *enter* it and *leave* it. The
+[[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen prototype]] replaces the landing page and the cards. Home shows
+the state of the work, the areas hold screens and buttons named for what a
+person does, *Tenants* is one list with *Add tenant* and *Remove tenant* on it,
+and a tenant opens in place with its session held behind the screen.
+
+What stands from this prototype: the menu across the header, the mode read from
+the sign-in, and the person's own screens under their name. Where this page
+says *journey* below, it names how a screen was designed, not what a person
+sees.
 
 ** What was rejected, and why
 

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: EBC5EE0F-6D71-43E6-B6D4-1C8CA3FDE51A
+:END:
+#+title: Task: Prototype the home screen
+#+description: Prototype the home screen and tenant management in a person's own words, and record the accepted design.
+#+type: task
+#+level: s1
+#+filetags: :make_the_shell_speak_plainly:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person sees the work they can do, in their own words. The home screen shows areas and actions, never journeys; system administration is tenant management, a list with add and remove; and a tenant's details open in place, with the session that reads them held for the screen and never offered as a step.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- A new home screen prototype is accepted, and its record says what changed from the application shell prototype and why.
+- No screen names a journey, and none asks the person to enter or leave a tenant.
+- Tenants is a list with an add button and a remove button; opening a tenant shows its details, read inside the tenant for the life of the screen.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen prototype]] was accepted on 2026-10-04 after four rounds.
+
+- The home page shows the state of the work: a system health card with a plain
+  verdict and recent activity, what needs attention, and a short tenant list.
+- No screen says *journey*; *Tenants* is one list with *Add tenant* and
+  *Remove tenant* on it; a tenant opens in place, and its session is held for
+  the screen and never offered as entering or leaving.
+- Status colours, the health card and recent activity came from a design
+  Gemini suggested; its *Act As* and *Edit* row actions were left out, and the
+  record says why.
+- The prototype is listed in the prototype index and deployed with the site;
+  the application shell prototype's record says what this revision replaces.

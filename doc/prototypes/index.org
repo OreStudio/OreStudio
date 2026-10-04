@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:index:ui:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-10-04
 
 * Summary
 
@@ -27,6 +27,7 @@ that describes it.
 | [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door]] | Registration has five states and one of them is "waiting for an administrator". The door must show that before the person submits, not at sign-in. | [[file:registration-door/][Registration door]] |
 | [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen]] | One profile screen is not in dispute; where the save boundary sits is. One Save, a save per panel, or the panels as rail steps — and how a read-only panel and a proposed reporting line read. | [[file:profile/][Profile screen]] |
 | [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell]] | The shell the journeys hang from: a menu of areas, the cards it opens, and the person's own journeys under their name — seen through the four sign-ins that decide the mode. | [[file:navigation/][Shell]] |
+| [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen]] | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][Home screen]] |
 
 * Adding a prototype
 

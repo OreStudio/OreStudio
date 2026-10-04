@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The home screen and tenant management, for three sign-ins. The bar at the
+  bottom switches who is signed in; "Show what changed" lists what differs
+  from the application shell prototype.
+-->
+<title>ORE Studio Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Layout: the product's own shell — a header with the areas, one working column, and a prototype bar pinned below.
+   Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css), so the prototype is judged
+   on its words and structure rather than on a new look. The product is dark only, and so is this. */
+:root {
+  color-scheme: dark;
+  --bg: #121214;
+  --raised: #1a1a1e;
+  --overlay: #26262b;
+  --line-subtle: #21262d;
+  --line: #30363d;
+  --line-strong: #4a5568;
+  --ink: #e3e3e6;
+  --ink-muted: #a1a1aa;
+  --ink-faint: #71717a;
+  --ink-inverse: #0d1117;
+  --accent: #58a6ff;
+  --accent-bright: #8ab4f8;
+  --accent-dim: #1b2a3d;
+  --up: #3fb950;
+  --up-strong: #238636;
+  --down-strong: #da3633;
+  --purple: #8957e5;
+  --down: #f85149;
+  --warn: #d29922;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 7rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-bright); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; }
+h2 { font-size: 1rem; }
+h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button:hover { background: var(--overlay); color: var(--ink); }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.menu button.soon { color: var(--ink-faint); }
+.me { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.125rem 0.625rem 0.125rem 0.125rem; cursor: pointer; }
+.me:hover { border-color: var(--line); }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+.me-menu { position: absolute; right: 1rem; top: 3.25rem; width: 16rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); }
+.me-menu .who { padding: 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.25rem; }
+.me-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0.4rem 0.5rem; border-radius: 6px; cursor: pointer; }
+.me-menu button:hover { background: var(--raised); }
+
+/* Page */
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.5rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.crumbs button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.4375rem 0.875rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+.btn.primary:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
+.btn.danger { color: var(--down); }
+.btn.danger.solid { background: #b62324; border-color: #b62324; color: #fff; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: 1.25rem; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.stat { display: grid; gap: 0.25rem; }
+.stat .big { font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .label { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.list { display: grid; }
+.row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--line-subtle); }
+.row:first-child { border-top: 0; }
+.row > .grow { flex: 1; min-width: 0; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none; }
+.dot.ok { background: var(--up); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--down); } .dot.idle { background: var(--ink-faint); }
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.0625rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip { font-weight: 600; }
+.chip.production { color: #0d1117; border-color: var(--accent); background: var(--accent); }
+.chip.evaluation { color: #fff; border-color: var(--purple); background: var(--purple); }
+.chip.automation { color: var(--ink-muted); border-color: var(--line-strong); background: var(--overlay); }
+.chip.active { color: #fff; border-color: var(--up-strong); background: var(--up-strong); }
+.chip.suspended { color: #1a1300; border-color: var(--warn); background: var(--warn); }
+.chip.setting-up { color: #0d1117; border-color: var(--accent-bright); background: var(--accent-bright); }
+.chip.failed { color: #fff; border-color: var(--down-strong); background: var(--down-strong); }
+.chip.view { color: var(--ink-muted); font-weight: 500; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+.tiles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+.tile { text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; cursor: pointer; display: grid; gap: 0.375rem; align-content: start; }
+.tile:hover { border-color: var(--line-strong); }
+.tile.soon { cursor: default; opacity: 0.7; }
+.tile.soon:hover { border-color: var(--line); }
+.tile .t { font-weight: 600; }
+
+/* Health */
+.health { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: start; }
+.verdict { display: flex; gap: 0.75rem; align-items: center; }
+.verdict .mark { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; }
+.verdict.ok .mark { background: #12361d; color: var(--up); border: 1px solid #1f5d2b; }
+.verdict.warn .mark { background: #3a2a0a; color: var(--warn); border: 1px solid #6b4e12; }
+.activity { border-left: 2px solid var(--up-strong); padding-left: 0.75rem; display: grid; gap: 0.5rem; font-size: 13px; }
+.activity .when { font-size: 12px; color: var(--ink-faint); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--ink-muted); font-size: 12px; padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #1f1f24; }
+tbody tr[aria-selected="true"] { background: var(--accent-dim); }
+td.code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--line); }
+.toolbar input[type=search], .toolbar select, .field input, .field select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.375rem 0.625rem; }
+.toolbar input[type=search] { flex: 1; min-width: 10rem; }
+.toolbar label { display: inline-flex; gap: 0.375rem; align-items: center; color: var(--ink-muted); font-size: 13px; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; font-size: 12px; color: var(--ink-muted); flex-wrap: wrap; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; width: 6rem; }
+.progress > span { display: block; height: 100%; background: var(--accent); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; margin: 0; }
+dt { font-size: 12px; color: var(--ink-faint); }
+dd { margin: 0.125rem 0 0; }
+
+/* Dialog */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: grid; place-items: center; padding: 1rem; z-index: 20; }
+.dialog { width: min(32rem, 100%); background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; display: grid; gap: 1rem; }
+.field { display: grid; gap: 0.375rem; }
+.field label { font-size: 13px; color: var(--ink-muted); }
+.field input, .field select { width: 100%; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.warnbox { border: 1px solid #7a2a28; background: #2a1414; border-radius: 6px; padding: 0.75rem; color: #ffb4ad; font-size: 13px; }
+.note { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 0.75rem; font-size: 13px; color: var(--ink-muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 6.5rem; background: var(--overlay); border: 1px solid var(--line); padding: 0.5rem 1rem; border-radius: 6px; z-index: 30; }
+
+/* Prototype bar */
+.proto { position: fixed; left: 0; right: 0; bottom: 0; background: #0b0b0d; border-top: 1px dashed var(--line-strong); padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); z-index: 10; }
+.proto-inner { max-width: 72rem; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; font-size: 12px; color: var(--ink-faint); }
+.proto strong { color: var(--warn); letter-spacing: 0.06em; }
+.proto .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.proto .seg button { background: none; border: 0; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .seg button[aria-pressed="true"] { background: var(--overlay); color: var(--ink); }
+.proto .why { margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .why[aria-pressed="true"] { background: var(--overlay); color: var(--ink); border-color: var(--line-strong); }
+.why-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.why-close { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.125rem 0.5rem; color: var(--ink-muted); cursor: pointer; }
+.why-panel { position: fixed; right: 1rem; bottom: 4.5rem; width: min(26rem, calc(100% - 2rem)); max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; z-index: 15; font-size: 13px; display: grid; gap: 0.625rem; }
+.why-panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.375rem; color: var(--ink-muted); }
+@media (prefers-reduced-motion: no-preference) { .tile, .btn, tbody tr { transition: border-color .15s, background .15s; } }
+@media (max-width: 40rem) { .place { display: none; } .hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</div>
+    <div class="place" id="place"></div>
+    <nav class="menu" id="menu" aria-label="Main"></nav>
+    <button class="me" id="me" aria-haspopup="true" aria-expanded="false"></button>
+  </div>
+</header>
+<div id="me-menu" class="me-menu" hidden></div>
+<main id="app"></main>
+<div id="dialog-host"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<aside id="why" class="why-panel" hidden></aside>
+
+<div class="proto">
+  <div class="proto-inner">
+    <strong>PROTOTYPE</strong><span>Mock data. Signed in as</span>
+    <span class="seg" id="persona-seg"></span>
+    <button class="why" id="why-btn" aria-expanded="false" aria-pressed="false" aria-controls="why">Show what changed</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const PEOPLE = {
+    system: { name: 'Marco Craveiro', initials: 'MC', email: 'admin@system.ores', place: 'System administration' },
+    tenant: { name: 'Priya Natarajan', initials: 'PN', email: 'priya@acme-corporation.example', place: 'Acme Corporation' },
+    party:  { name: 'Daniel Okafor', initials: 'DO', email: 'daniel@acme-corporation.example', place: 'Acme Corporation · Acme London' },
+  };
+
+  const TENANTS = [
+    { code: 'acme_corporation', name: 'Acme Corporation', host: 'acme-corporation.ores.example', type: 'production', status: 'active', setup: { state: 'complete', step: 7, of: 7 }, parties: 5, people: 14, created: '12 Sep 2026' },
+    { code: 'northwind', name: 'Northwind Traders', host: 'northwind.ores.example', type: 'evaluation', status: 'active', setup: { state: 'complete', step: 7, of: 7 }, parties: 3, people: 6, created: '20 Sep 2026' },
+    { code: 'globex', name: 'Globex Markets', host: 'globex.ores.example', type: 'production', status: 'setting-up', setup: { state: 'running', step: 4, of: 7, at: 'Loading reference data' }, parties: 1, people: 1, created: '4 Oct 2026' },
+    { code: 'initech', name: 'Initech Capital', host: 'initech.ores.example', type: 'evaluation', status: 'suspended', setup: { state: 'complete', step: 7, of: 7 }, parties: 2, people: 3, created: '2 Aug 2026' },
+    { code: 'umbrella', name: 'Umbrella Treasury', host: 'umbrella.ores.example', type: 'production', status: 'setting-up', setup: { state: 'failed', step: 5, of: 7, at: 'Publishing market data' }, parties: 1, people: 1, created: '3 Oct 2026' },
+    { code: 'ci_smoke_01', name: 'CI smoke 01', host: 'ci-smoke-01.test', type: 'automation', status: 'active', setup: { state: 'complete', step: 7, of: 7 }, parties: 1, people: 1, created: '4 Oct 2026' },
+    { code: 'ci_smoke_02', name: 'CI smoke 02', host: 'ci-smoke-02.test', type: 'automation', status: 'active', setup: { state: 'complete', step: 7, of: 7 }, parties: 1, people: 1, created: '4 Oct 2026' },
+  ];
+
+  const PARTIES = {
+    acme_corporation: [
+      { code: 'ACMCOR', name: 'Acme Corporation Plc', parent: '', status: 'active' },
+      { code: 'ACCOUK', name: 'Acme Corporation UK Ltd', parent: 'Acme Corporation Plc', status: 'active' },
+      { code: 'ACCOUS', name: 'Acme Corporation US Inc', parent: 'Acme Corporation Plc', status: 'active' },
+      { code: 'ACCOHK', name: 'Acme Corporation HK Ltd', parent: 'Acme Corporation Plc', status: 'active' },
+      { code: 'ACMLON', name: 'Acme London Branch', parent: 'Acme Corporation UK Ltd', status: 'active' },
+    ],
+  };
+  const PEOPLE_IN = [
+    { name: 'Priya Natarajan', login: 'priya', role: 'Tenant administrator', last: 'Today, 10:42', state: 'active' },
+    { name: 'Daniel Okafor', login: 'daniel', role: 'Trading', last: 'Today, 09:15', state: 'active' },
+    { name: 'Hannah Weiss', login: 'hannah', role: 'Sales', last: 'Yesterday', state: 'active' },
+    { name: 'Tomás Ribeiro', login: 'tomas', role: 'Operations', last: '3 days ago', state: 'locked' },
+  ];
+
+  const MENUS = {
+    system: [{ id: 'home', label: 'Home' }, { id: 'tenants', label: 'Tenants' }],
+    tenant: [{ id: 'home', label: 'Home' }, { id: 'parties', label: 'Parties' }, { id: 'people', label: 'People' }, { id: 'settings', label: 'Tenant settings', soon: true }],
+    party:  [{ id: 'home', label: 'Home' }, { id: 'refdata', label: 'Reference data', soon: true }, { id: 'marketdata', label: 'Market data', soon: true }, { id: 'trading', label: 'Trading', soon: true }, { id: 'reporting', label: 'Reporting', soon: true }],
+  };
+
+  const state = { persona: 'system', screen: 'home', tenant: null, tab: 'overview', selected: null, search: '', type: '', status: '', showTest: false, page: 0 };
+  let tenants = TENANTS.map((t) => ({ ...t }));
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1).replace('-', ' ');
+
+  function go(screen, extra) {
+    Object.assign(state, { screen }, extra || {});
+    closeMe();
+    render();
+    window.scrollTo({ top: 0 });
+  }
+  function toast(text) {
+    const t = $('toast');
+    t.textContent = text;
+    t.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+
+  function statusChip(t) {
+    if (t.setup.state === 'failed') return '<span class="chip failed">Setup failed</span>';
+    if (t.status === 'setting-up') return '<span class="chip setting-up">Setting up</span>';
+    return `<span class="chip ${t.status}">${titleCase(t.status)}</span>`;
+  }
+  function typeChip(type) { return `<span class="chip ${type}">${titleCase(type)}</span>`; }
+
+  /* Header */
+  function renderHeader() {
+    const p = PEOPLE[state.persona];
+    $('place').textContent = p.place;
+    const current = state.screen === 'tenant' || state.screen === 'add' ? 'tenants' : state.screen;
+    $('menu').innerHTML = MENUS[state.persona].map((m) =>
+      `<button data-go="${m.id}" class="${m.soon ? 'soon' : ''}" ${m.id === current ? 'aria-current="page"' : ''}>${esc(m.label)}</button>`).join('');
+    $('me').innerHTML = `<span class="avatar" aria-hidden="true">${p.initials}</span><span class="hide-sm">${esc(p.name.split(' ')[0])}</span>`;
+    $('me-menu').innerHTML = `
+      <div class="who"><div>${esc(p.name)}</div><div class="faint" style="font-size:12px">${esc(p.email)}</div></div>
+      <button data-me="profile">Profile</button>
+      <button data-me="security">Password and sign-ins</button>
+      ${state.persona === 'party' ? '<button data-me="work">Where I work</button>' : ''}
+      <button data-me="out">Sign out</button>`;
+  }
+  function closeMe() { $('me-menu').hidden = true; $('me').setAttribute('aria-expanded', 'false'); }
+
+  /* Screens: system administration */
+  function sysHome() {
+    const real = tenants.filter((t) => t.type !== 'automation');
+    const active = real.filter((t) => t.status === 'active').length;
+    const settingUp = real.filter((t) => t.status === 'setting-up' && t.setup.state !== 'failed');
+    const evaluation = real.filter((t) => t.type === 'evaluation').length;
+    const attention = real.filter((t) => t.setup.state === 'failed' || t.status === 'suspended');
+    const ok = attention.length === 0;
+    const recent = real.slice(0, 5);
+    return `
+      <div class="head"><div><h1>Good afternoon, Marco</h1><p class="muted">This deployment runs ${real.length} tenants.</p></div>
+        <div class="actions"><button class="btn primary" data-go="add">Add tenant</button></div></div>
+      <section class="card pad" style="display:grid;gap:1rem">
+        <h2>System health</h2>
+        <div class="health">
+          <div class="stat"><span class="big">${active}</span><span class="muted">Active tenants</span></div>
+          <div class="stat"><span class="big">${evaluation}</span><span class="muted">On evaluation</span></div>
+          <div class="stat"><span class="big">${settingUp.length}</span><span class="muted">Setting up</span></div>
+          <div class="verdict ${ok ? 'ok' : 'warn'}"><span class="mark" aria-hidden="true">${ok ? '&#10003;' : '!'}</span>
+            <div><div>${ok ? 'Everything is running' : `${attention.length} ${attention.length === 1 ? 'tenant needs' : 'tenants need'} attention`}</div><div class="faint" style="font-size:12px">Checked a minute ago</div></div></div>
+          <div class="activity"><span class="faint" style="font-size:12px">Recent activity</span>
+            <div><div>Globex Markets is loading reference data</div><div class="when">Step 4 of 7 · 2 minutes ago</div></div>
+            <div><div>Northwind Traders finished setting up</div><div class="when">20 Sep 2026</div></div></div>
+        </div>
+      </section>
+      ${attention.length ? `<section class="card"><div class="row"><h2 class="grow">Needs attention</h2></div>
+        ${attention.map((t) => `<div class="row"><span class="dot ${t.setup.state === 'failed' ? 'bad' : 'warn'}"></span>
+          <div class="grow"><div>${esc(t.name)}</div><div class="faint" style="font-size:12px">${t.setup.state === 'failed' ? `Setup stopped at step ${t.setup.step} of ${t.setup.of}: ${esc(t.setup.at)}` : 'Suspended: people cannot sign in'}</div></div>
+          <button class="btn" data-open="${t.code}">${t.setup.state === 'failed' ? 'See what failed' : 'Open'}</button></div>`).join('')}</section>` : ''}
+      <section class="card">
+        <div class="row"><div class="grow"><h2>Tenants</h2><p class="muted" style="font-size:13px">The organisations this deployment serves, and the state each one is in.</p></div><button class="btn" data-go="tenants">Manage tenants</button></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Name</th><th class="hide-sm">Sign-in address</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody>${recent.map((t) => `<tr data-open="${t.code}"><td>${esc(t.name)}</td><td class="hide-sm muted">${esc(t.host)}</td><td>${typeChip(t.type)}</td><td>${statusChip(t)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div class="foot"><span class="num">Showing ${recent.length} of ${real.length} tenants</span><button class="btn" data-go="tenants">See all</button></div>
+      </section>`;
+  }
+
+  function sysTenants() {
+    const PAGE = 5;
+    const q = state.search.toLowerCase();
+    const rows = tenants.filter((t) => (state.showTest || t.type !== 'automation')
+      && (!state.type || t.type === state.type)
+      && (!state.status || t.status === state.status)
+      && (!q || [t.code, t.name, t.host].some((v) => v.toLowerCase().includes(q))));
+    const hidden = state.showTest ? 0 : tenants.filter((t) => t.type === 'automation').length;
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+    state.page = Math.min(state.page, pages - 1);
+    const shown = rows.slice(state.page * PAGE, state.page * PAGE + PAGE);
+    const sel = tenants.find((t) => t.code === state.selected);
+    return `
+      <div class="head"><div><h1>Tenants</h1><p class="muted">The organisations this deployment serves. Select a row to remove it, or open it to see its details.</p></div>
+        <div class="actions">
+          <button class="btn danger" data-remove ${sel ? '' : 'disabled'} title="${sel ? 'Remove ' + esc(sel.name) : 'Select a tenant first'}">Remove tenant</button>
+          <button class="btn primary" data-go="add">Add tenant</button></div></div>
+      <section class="card">
+        <div class="toolbar">
+          <input type="search" id="search" placeholder="Search by name, code or address" value="${esc(state.search)}" aria-label="Search tenants">
+          <select id="type" aria-label="Type"><option value="">All types</option>${['production', 'evaluation', 'automation'].map((v) => `<option value="${v}" ${state.type === v ? 'selected' : ''}>${titleCase(v)}</option>`).join('')}</select>
+          <select id="status" aria-label="Status"><option value="">All statuses</option>${['active', 'setting-up', 'suspended'].map((v) => `<option value="${v}" ${state.status === v ? 'selected' : ''}>${titleCase(v)}</option>`).join('')}</select>
+          <label><input type="checkbox" id="showTest" ${state.showTest ? 'checked' : ''}> Show test tenants</label>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th style="width:2rem"><span class="hide-sm" aria-hidden="true"></span></th><th>Name</th><th class="hide-sm">Code</th><th>Type</th><th>Status</th><th class="hide-sm">Setup</th><th class="hide-sm">Parties</th></tr></thead>
+          <tbody>${shown.length ? shown.map((t) => `<tr data-open="${t.code}" aria-selected="${t.code === state.selected}">
+            <td><input type="radio" name="pick" aria-label="Select ${esc(t.name)}" data-pick="${t.code}" ${t.code === state.selected ? 'checked' : ''}></td>
+            <td><div>${esc(t.name)}</div><div class="faint" style="font-size:12px">${esc(t.host)}</div></td>
+            <td class="code hide-sm">${esc(t.code)}</td><td>${typeChip(t.type)}</td><td>${statusChip(t)}</td>
+            <td class="hide-sm">${t.setup.state === 'complete' ? '<span class="faint">Done</span>' : `<div style="display:flex;gap:.5rem;align-items:center"><div class="progress"><span style="width:${Math.round(100 * t.setup.step / t.setup.of)}%;${t.setup.state === 'failed' ? 'background:var(--down)' : ''}"></span></div><span class="num faint">${t.setup.step}/${t.setup.of}</span></div>`}</td>
+            <td class="num hide-sm">${t.parties}</td></tr>`).join('') : `<tr><td colspan="7" class="muted" style="padding:1.5rem">No tenant matches. Clear the search or the filters.</td></tr>`}</tbody>
+        </table></div>
+        <div class="foot"><span class="num">${rows.length} ${rows.length === 1 ? 'tenant' : 'tenants'}${hidden ? ` · ${hidden} test tenants hidden` : ''}</span>
+          <span class="actions"><button class="btn" data-page="-1" ${state.page === 0 ? 'disabled' : ''}>Previous</button><span class="num" style="align-self:center">Page ${state.page + 1} of ${pages}</span><button class="btn" data-page="1" ${state.page >= pages - 1 ? 'disabled' : ''}>Next</button></span></div>
+      </section>`;
+  }
+
+  function sysTenant() {
+    const t = tenants.find((x) => x.code === state.tenant);
+    if (!t) return '<p>That tenant no longer exists.</p>';
+    const tab = state.tab;
+    const parties = PARTIES[t.code] || [{ code: 'MAIN', name: t.name, parent: '', status: 'active' }];
+    let body = '';
+    if (tab === 'overview') {
+      body = `<div class="card pad"><dl>
+        <div><dt>Name</dt><dd>${esc(t.name)}</dd></div><div><dt>Code</dt><dd class="num" style="font-family:var(--mono);font-size:13px">${esc(t.code)}</dd></div>
+        <div><dt>Sign-in address</dt><dd>${esc(t.host)}</dd></div><div><dt>Type</dt><dd>${typeChip(t.type)}</dd></div>
+        <div><dt>Status</dt><dd>${statusChip(t)}</dd></div><div><dt>Added</dt><dd>${esc(t.created)}</dd></div>
+        <div><dt>Parties</dt><dd class="num">${t.parties}</dd></div><div><dt>People</dt><dd class="num">${t.people}</dd></div></dl></div>
+        <div class="card"><div class="row"><h2 class="grow">Setup</h2>${t.setup.state === 'failed' ? '<button class="btn primary" data-retry>Try again</button>' : ''}</div>
+          <div class="row"><span class="dot ${t.setup.state === 'complete' ? 'ok' : t.setup.state === 'failed' ? 'bad' : 'warn'}"></span>
+          <div class="grow">${t.setup.state === 'complete' ? 'Set up and ready.' : t.setup.state === 'failed' ? `Stopped at step ${t.setup.step} of ${t.setup.of}: ${esc(t.setup.at)}.` : `Step ${t.setup.step} of ${t.setup.of}: ${esc(t.setup.at)}.`}</div>
+          <div class="progress"><span style="width:${Math.round(100 * t.setup.step / t.setup.of)}%;${t.setup.state === 'failed' ? 'background:var(--down)' : ''}"></span></div></div></div>`;
+    } else if (tab === 'parties') {
+      body = `<section class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Code</th><th>Belongs to</th><th>Status</th></tr></thead><tbody>
+        ${parties.map((p) => `<tr style="cursor:default"><td>${esc(p.name)}</td><td class="code">${esc(p.code)}</td><td>${p.parent ? esc(p.parent) : '<span class="faint">Top of the group</span>'}</td><td><span class="chip active">Active</span></td></tr>`).join('')}
+        </tbody></table></div></section>`;
+    } else {
+      body = `<section class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Last signed in</th><th>Account</th></tr></thead><tbody>
+        ${PEOPLE_IN.map((p) => `<tr style="cursor:default"><td>${esc(p.name)}<div class="faint" style="font-size:12px">${esc(p.login)}</div></td><td>${esc(p.role)}</td><td>${esc(p.last)}</td><td>${p.state === 'locked' ? '<span class="chip suspended">Locked</span>' : '<span class="chip active">Active</span>'}</td></tr>`).join('')}
+        </tbody></table></div></section>`;
+    }
+    return `
+      <nav class="crumbs" aria-label="Breadcrumb"><button data-go="tenants">Tenants</button><span>/</span><span>${esc(t.name)}</span></nav>
+      <div class="head"><div><h1>${esc(t.name)}</h1><p class="muted">${esc(t.host)} <span class="chip view" title="Changes to this tenant's parties and people are made by its own administrators.">View only</span></p></div>
+        <div class="actions"><button class="btn danger" data-remove-this>Remove tenant</button></div></div>
+      <div class="tabs" role="tablist">${[['overview', 'Overview'], ['parties', 'Parties'], ['people', 'People']].map(([id, label]) => `<button role="tab" data-tab="${id}" aria-selected="${tab === id}">${label}</button>`).join('')}</div>
+      ${body}`;
+  }
+
+  function sysAdd() {
+    return `
+      <nav class="crumbs" aria-label="Breadcrumb"><button data-go="tenants">Tenants</button><span>/</span><span>Add tenant</span></nav>
+      <div class="head"><div><h1>Add tenant</h1><p class="muted">Set up a new organisation. Setup runs on its own and takes a few minutes; you can leave this screen while it runs.</p></div></div>
+      <form class="card pad" id="add-form" style="display:grid;gap:1.25rem">
+        <h2>The organisation</h2>
+        <div class="form-grid">
+          <div class="field"><label for="f-name">Name</label><input id="f-name" required value="Stark Industries"></div>
+          <div class="field"><label for="f-code">Code</label><input id="f-code" required value="stark_industries"></div>
+          <div class="field"><label for="f-host">Sign-in address</label><input id="f-host" required value="stark-industries.ores.example"></div>
+          <div class="field"><label for="f-type">Type</label><select id="f-type"><option value="production">Production</option><option value="evaluation" selected>Evaluation</option></select></div>
+        </div>
+        <h2>Start from</h2>
+        <div class="form-grid">
+          <label class="note" style="display:flex;gap:.625rem;cursor:pointer"><input type="radio" name="start" checked> <span><strong style="color:var(--ink)">Demo company</strong><br>A group of parties with sample people and data, to explore the product.</span></label>
+          <label class="note" style="display:flex;gap:.625rem;cursor:pointer"><input type="radio" name="start"> <span><strong style="color:var(--ink)">Empty</strong><br>One party and its administrator. Everything else is added later.</span></label>
+        </div>
+        <h2>Its administrator</h2>
+        <div class="form-grid">
+          <div class="field"><label for="f-admin">Username</label><input id="f-admin" required value="pepper"></div>
+          <div class="field"><label for="f-mail">Email</label><input id="f-mail" type="email" required value="pepper@stark-industries.example"></div>
+        </div>
+        <div class="actions"><button type="button" class="btn" data-go="tenants">Cancel</button><button type="submit" class="btn primary">Add tenant</button></div>
+      </form>`;
+  }
+
+  /* Screens: tenant administration */
+  function tenantHome() {
+    return `
+      <div class="head"><div><h1>Acme Corporation</h1><p class="muted">5 parties · 14 people · signed in as tenant administrator</p></div>
+        <div class="actions"><button class="btn" data-go="people">Unlock an account</button><button class="btn primary" data-go="parties">Add party</button></div></div>
+      <div class="card pad verdict warn"><span class="mark" aria-hidden="true">!</span><div><div>One account is locked</div><div class="faint" style="font-size:12px">Tomás Ribeiro, after 5 failed sign-ins</div></div><button class="btn" data-go="people" style="margin-left:auto">Review</button></div>
+      <div class="grid">
+        <div class="card pad stat"><span class="label">People signed in now</span><span class="big">6</span><span class="muted">across 4 parties</span></div>
+        <div class="card pad stat"><span class="label">Failed sign-ins today</span><span class="big">3</span><span class="muted">2 for tomas</span></div>
+        <div class="card pad stat"><span class="label">Locked accounts</span><span class="big">1</span><span class="muted">Tomás Ribeiro</span></div>
+      </div>
+      <div><p class="section-title" style="margin-bottom:.75rem">What you look after</p>
+      <div class="tiles">
+        <button class="tile" data-go="parties"><span class="t">Parties</span><span class="muted">The companies and branches in your group, and how they relate.</span></button>
+        <button class="tile" data-go="people"><span class="t">People</span><span class="muted">Who can sign in, lock or unlock an account, and see recent sign-ins.</span></button>
+        <div class="tile soon"><span class="t">Tenant settings</span><span class="muted">Names, addresses and sign-in rules. Coming later.</span></div>
+      </div></div>`;
+  }
+  function tenantParties() {
+    return `<div class="head"><div><h1>Parties</h1><p class="muted">The companies and branches in Acme Corporation.</p></div><div class="actions"><button class="btn primary">Add party</button></div></div>
+      <section class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Code</th><th>Belongs to</th></tr></thead><tbody>
+      ${PARTIES.acme_corporation.map((p) => `<tr style="cursor:default"><td>${esc(p.name)}</td><td class="code">${esc(p.code)}</td><td>${p.parent ? esc(p.parent) : '<span class="faint">Top of the group</span>'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  }
+  function tenantPeople() {
+    return `<div class="head"><div><h1>People</h1><p class="muted">Everyone who can sign in to Acme Corporation.</p></div></div>
+      <div class="tabs" role="tablist"><button role="tab" aria-selected="true">Accounts</button><button role="tab" aria-selected="false">Signed in now</button><button role="tab" aria-selected="false">Failed sign-ins</button></div>
+      <section class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Last signed in</th><th>Account</th><th></th></tr></thead><tbody>
+      ${PEOPLE_IN.map((p) => `<tr style="cursor:default"><td>${esc(p.name)}</td><td>${esc(p.role)}</td><td>${esc(p.last)}</td><td>${p.state === 'locked' ? '<span class="chip suspended">Locked</span>' : '<span class="chip active">Active</span>'}</td><td>${p.state === 'locked' ? '<button class="btn">Unlock</button>' : '<button class="btn">Lock</button>'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  }
+
+  /* Screens: party user */
+  function partyHome() {
+    return `
+      <div class="head"><div><h1>Good afternoon, Daniel</h1><p class="muted">Working for Acme London Branch</p></div></div>
+      <div class="note">The trading screens are not in this release yet. The areas below show what is coming; your account and sign-ins are under your name, top right.</div>
+      <div class="tiles">
+        ${['Reference data|Currencies, calendars, conventions and the parties you trade with.', 'Market data|Curves, surfaces and fixings, and where they came from.', 'Trading|Book, amend and review trades.', 'Reporting|Risk and P&L reports for your books.'].map((s) => { const [t, d] = s.split('|'); return `<div class="tile soon"><span class="t">${t}</span><span class="muted">${d}</span><span class="chip" style="justify-self:start">Coming later</span></div>`; }).join('')}
+      </div>`;
+  }
+  function soon(label) {
+    return `<div class="head"><div><h1>${esc(label)}</h1></div></div><div class="card pad muted">This area is not in this release yet.</div>`;
+  }
+
+  /* Dialogs */
+  function removeDialog(t) {
+    $('dialog-host').innerHTML = `<div class="scrim" id="scrim"><form class="dialog" id="remove-form" role="dialog" aria-modal="true" aria-labelledby="rm-title">
+      <h2 id="rm-title">Remove ${esc(t.name)}?</h2>
+      <div class="warnbox">Everyone in ${esc(t.name)} is signed out and can no longer sign in. Its parties, people and data are removed from use. This cannot be undone.</div>
+      <div class="field"><label for="rm-confirm">Type <strong style="color:var(--ink);font-family:var(--mono)">${esc(t.code)}</strong> to confirm</label><input id="rm-confirm" autocomplete="off"></div>
+      <div class="actions" style="justify-content:flex-end"><button type="button" class="btn" id="rm-cancel">Cancel</button><button type="submit" class="btn danger solid" id="rm-go" disabled>Remove tenant</button></div>
+    </form></div>`;
+    const input = $('rm-confirm');
+    input.focus();
+    input.addEventListener('input', () => { $('rm-go').disabled = input.value !== t.code; });
+    $('rm-cancel').onclick = () => { $('dialog-host').innerHTML = ''; };
+    $('scrim').addEventListener('click', (e) => { if (e.target.id === 'scrim') $('dialog-host').innerHTML = ''; });
+    $('remove-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      tenants = tenants.filter((x) => x.code !== t.code);
+      $('dialog-host').innerHTML = '';
+      go('tenants', { selected: null });
+      toast(`Removed ${t.name}`);
+    });
+  }
+
+  /* Render */
+  function render() {
+    renderHeader();
+    const s = state.screen;
+    let html = '';
+    if (state.persona === 'system') html = s === 'tenants' ? sysTenants() : s === 'tenant' ? sysTenant() : s === 'add' ? sysAdd() : sysHome();
+    else if (state.persona === 'tenant') html = s === 'parties' ? tenantParties() : s === 'people' ? tenantPeople() : s === 'home' ? tenantHome() : soon('Tenant settings');
+    else html = s === 'home' ? partyHome() : soon((MENUS.party.find((m) => m.id === s) || {}).label || 'Area');
+    $('app').innerHTML = html;
+    bindScreen();
+    $('persona-seg').innerHTML = [['system', 'System administrator'], ['tenant', 'Tenant administrator'], ['party', 'Party user']]
+      .map(([id, label]) => `<button data-persona="${id}" aria-pressed="${state.persona === id}">${label}</button>`).join('');
+  }
+
+  function bindScreen() {
+    const search = $('search');
+    if (search) {
+      search.addEventListener('input', () => { state.search = search.value; state.page = 0; const pos = search.selectionStart; render(); const s2 = $('search'); s2.focus(); s2.setSelectionRange(pos, pos); });
+      $('type').addEventListener('change', (e) => { state.type = e.target.value; state.page = 0; render(); });
+      $('status').addEventListener('change', (e) => { state.status = e.target.value; state.page = 0; render(); });
+      $('showTest').addEventListener('change', (e) => { state.showTest = e.target.checked; state.page = 0; render(); });
+    }
+    const form = $('add-form');
+    if (form) form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = $('f-name').value.trim() || 'New tenant';
+      const code = $('f-code').value.trim() || 'new_tenant';
+      tenants.unshift({ code, name, host: $('f-host').value, type: $('f-type').value, status: 'setting-up', setup: { state: 'running', step: 1, of: 7, at: 'Creating the tenant' }, parties: 0, people: 1, created: '4 Oct 2026' });
+      go('tenants', { selected: null });
+      toast(`Adding ${name}. Setup is running.`);
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-go],[data-open],[data-pick],[data-remove],[data-remove-this],[data-tab],[data-page],[data-persona],[data-me],[data-retry]');
+    if (!el) return;
+    if (el.dataset.pick !== undefined) { e.stopPropagation(); state.selected = el.dataset.pick; render(); return; }
+    if (el.dataset.go) { go(el.dataset.go, { selected: el.dataset.go === 'tenants' ? state.selected : null }); return; }
+    if (el.dataset.open) { go('tenant', { tenant: el.dataset.open, tab: 'overview' }); return; }
+    if (el.dataset.remove !== undefined) { const t = tenants.find((x) => x.code === state.selected); if (t) removeDialog(t); return; }
+    if (el.dataset.removeThis !== undefined) { const t = tenants.find((x) => x.code === state.tenant); if (t) removeDialog(t); return; }
+    if (el.dataset.tab) { state.tab = el.dataset.tab; render(); return; }
+    if (el.dataset.page) { state.page += Number(el.dataset.page); render(); return; }
+    if (el.dataset.persona) { state.persona = el.dataset.persona; go('home', { selected: null }); return; }
+    if (el.dataset.retry !== undefined) { const t = tenants.find((x) => x.code === state.tenant); t.setup = { state: 'running', step: t.setup.step, of: t.setup.of, at: t.setup.at }; render(); toast('Setup is running again'); return; }
+    if (el.dataset.me) { closeMe(); toast(el.dataset.me === 'out' ? 'Signed out (prototype)' : 'Opens your own account screens'); }
+  });
+  $('me').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const menu = $('me-menu');
+    menu.hidden = !menu.hidden;
+    $('me').setAttribute('aria-expanded', String(!menu.hidden));
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#me-menu') && !e.target.closest('#me')) closeMe(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeMe(); $('dialog-host').innerHTML = ''; setWhy(false); } });
+
+  $('why').innerHTML = `<div class="why-head"><h3>What changed from the application shell prototype</h3><button class="why-close" id="why-close" aria-label="Hide what changed">Hide</button></div>
+    <ul>
+      <li>No screen says <em>journey</em>. The areas hold screens and buttons, named for what a person does.</li>
+      <li>System administration is <em>Tenants</em>: one list, with <em>Add tenant</em> and <em>Remove tenant</em> as buttons on it, not cards.</li>
+      <li>Home shows the state of the work (what is in service, what is setting up, what needs attention) instead of a menu of cards.</li>
+      <li>Opening a tenant shows its details, parties and people. The read inside the tenant is held for the screen and never offered as <em>enter</em> or <em>leave</em>; a quiet <em>View only</em> label says changes are made by the tenant's own administrators.</li>
+      <li>Removing a tenant asks for its code, and says what removal does before it happens.</li>
+      <li>From the Gemini suggestion: filled status colours (green is in service, purple is evaluation, amber needs a look, red has failed), a system health card with a plain verdict, recent activity, and a short tenant list on Home. Its <em>Act As</em> action is left out on purpose: opening a tenant does that work behind the scenes.</li>
+      <li>An area not in this release says so, and is kept so people know it is coming.</li>
+    </ul>`;
+  function setWhy(open) {
+    $('why').hidden = !open;
+    const b = $('why-btn');
+    b.setAttribute('aria-expanded', String(open));
+    b.setAttribute('aria-pressed', String(open));
+    b.textContent = open ? 'Hide what changed' : 'Show what changed';
+  }
+  $('why-btn').addEventListener('click', () => setWhy($('why').hidden));
+  $('why-close').addEventListener('click', () => setWhy(false));
+
+  render();
+})();
+</script>
+
+</body>
+</html>

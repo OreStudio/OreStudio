@@ -20,22 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The roster, its provisioning runs and the parties page read through the list
+contract, with no hand-written search and no fixed cap.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- =iam.v1.tenants.search= and =ores_iam_tenants_search_fn= are removed, and the
+  roster reads =iam.v1.tenants.list= with a filter.
+- The roster's run read and the parties page's parent names read by the keys
+  on their page, with no fixed cap.
+- The roster and parties screens were read against the running deployment.
 
 * Plan
 
@@ -83,3 +88,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tenant reads are on the contract.
+
+- *Filterable columns.* A column may declare =:filterable: true= for equals and
+  one-of members; the specification and story decision 5 say so. The tenant's
+  =type= and =status= are filterable.
+- *The roster* reads =iam.v1.tenants.list=. It names the types a row may have
+  from the deployment's own type rows, never the system type, so the system
+  tenant is never shown, and the automation type only when asked, with a
+  second read counting what that hid. =iam.v1.tenants.search=, its handler,
+  its shell command, recipe and script, its tests and
+  =ores_iam_tenants_search_fn= are removed.
+- *Guarded reads.* The search checked =iam::tenants:read= and the list checked
+  nothing, so the tenant model now guards its reads. The reporting service,
+  which lists tenants with its own token, holds that permission.
+- *The run read* names the tenants on the roster's page through a new
+  =target_ids_filter= on the workflow summaries list; a page with no tenants
+  makes no read. The web and C++ boundary test carries the list.
+- *The parties page* reads the parents on other pages in one =id_one_of=
+  read, so a page costs two reads at most.
+- *Verified live* (=evidence/roster_live.out=, =evidence/parties_live.out=):
+  the roster answers Acme with its run and leaves the system tenant out,
+  searches ignoring case, answers nothing for the system type, and refuses
+  the tenant administrator (403); the parties page names =ACCOHK='s parent,
+  which sits on the page before it.
+- *A regression on main surfaced here.* The first live run of the roster
+  answered 502, and so did accounts, sessions and the other routes whose
+  hand-written requests left out the filter #2588 added. Hotfix #2590 fixed
+  it on main, and this branch is rebased onto it.
+- *Tests:* a generator case for the flag; BFF and wire-protocol cases for the
+  roster filter, the system type, the named runs and the parent read; all web
+  suites pass; ctest 90 of 90 on the branch before the rebase.

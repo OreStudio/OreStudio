@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 70F08058-E59E-43D2-BE33-876526CEFA93
+:END:
+#+title: Check every web request against the server's decoder
+#+description: The web server tests stub the server, so a request the C++ decoder refuses passes them. PR 2588 broke seven routes that way. A contract test should run every request the web client sends through the generated decoder.
+#+type: capture
+#+level: cross
+#+filetags: :web:protocol:testing:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A contract test that encodes every request the web client sends, as the
+client encodes it, and decodes it with the C++ struct the server reads it
+into. One such test exists for the workflow summaries list: the web test
+writes a fixture and an =ores.workflow.api= test decodes it. The idea is to
+cover every subject the web client calls, rather than one.
+
+* Why
+
+The web server tests stub the server, so a request the server's decoder
+refuses passes them. The decoder requires every member, optional ones
+included. When PR #2588 added an optional filter to the generated list
+requests, seven web routes whose requests were built from hand-written
+schemas answered 502 live, and every web test stayed green. The hotfix
+holds those schemas to the generated types with =satisfies=, but a request
+body built by hand outside a schema has no such guard.
+
+* References
+
+- [[https://github.com/OreStudio/OreStudio/pull/2590][#2590]] -- the hotfix
+- =projects/ores.web/packages/wire-protocol/src/workflow-boundary.test.ts= -- the one boundary test
+
+* See also
+
+-

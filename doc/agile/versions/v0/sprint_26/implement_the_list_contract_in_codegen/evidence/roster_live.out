@@ -1,13 +1,13 @@
-bootstrap 200
+bootstrap 409
 sign in 200
 provision acme 200
-roster 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?includeTest=true 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?search=ACME 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?search=zzz_nothing 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?type=system 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?status=active 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
-roster?limit=1&offset=0 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster 200 {'rows': [('acme_corporation', 'evaluation', 'bootstrapping', 'in_progress')], 'total': 1, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?includeTest=true 200 {'rows': [('acme_corporation', 'evaluation', 'bootstrapping', 'in_progress')], 'total': 1, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?search=ACME 200 {'rows': [('acme_corporation', 'evaluation', 'bootstrapping', 'in_progress')], 'total': 1, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?search=zzz_nothing 200 {'rows': [], 'total': 0, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?type=system 200 {'rows': [], 'total': 0, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?status=active 200 {'rows': [], 'total': 0, 'hiddenTest': 0, 'setupUnavailable': False}
+roster?limit=1&offset=0 200 {'rows': [('acme_corporation', 'evaluation', 'bootstrapping', 'in_progress')], 'total': 1, 'hiddenTest': 0, 'setupUnavailable': False}
 tenant admin sign in 200
 roster as tenant admin 403
 parties?offset=0&limit=5 200 1 [('acme_corporation_system', None)]

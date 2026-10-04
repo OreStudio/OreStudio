@@ -8,7 +8,7 @@
 #+filetags: :operations_journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-operations-journeys
-#+pr:
+#+pr: 2614
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2614][#2614]] | [docs] Write the operations journeys |
 
 * Review
 

@@ -67,6 +67,7 @@ import {
     readTenantTypes,
     readTenant,
     readPartiesPage,
+    readProvisioningRuns,
     readTenantSetups,
     listTenantsPage,
     retryWorkflowInstanceResultSchema,
@@ -79,6 +80,7 @@ import {
     partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
+    deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     workflowProgressSchema,
@@ -86,7 +88,9 @@ import {
     OperationFailedError,
     type LoginOutcome,
     type PartySummary,
+    type SetupActivity,
     type TenantSetup,
+    type TenantSummary,
 } from '@ores/wire-protocol';
 import { credentialsSchema, deploymentViewSchema, siteStateSchema } from '@ores/contracts';
 import type { ListChangeReasonsRequest } from '@ores/wire-protocol/generated/dq/protocol/change_reason_protocol';
@@ -1062,6 +1066,154 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             totalCount: read.totalCount,
             setupUnavailable,
             hiddenTestCount,
+        });
+    });
+
+    /** How many tenants and runs the system administrator's home shows. */
+    const OVERVIEW_TENANTS = 5;
+    const OVERVIEW_ACTIVITY = 5;
+    const OVERVIEW_ATTENTION = 10;
+
+    /**
+     * The state of the deployment's tenants, for the system administrator's
+     * home: how many are in service, on evaluation and setting up, which need
+     * attention and why, the first page of the roster, and the newest setups.
+     *
+     * Every count is a list read that asks for its total, so the counts are
+     * the registry's own and need no page of rows. The counts leave out the
+     * system tenant and test tenants, as the roster does. The runs are a
+     * second source: a failure to read them is not a failure to read the
+     * tenants, so the page goes out without activity and says so.
+     */
+    server.get('/api/overview', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('The deployment overview is read in system administration.');
+        }
+        const shown = (await readTenantTypes(session.client))
+            .map((type) => type.code)
+            .filter((code) => code !== SYSTEM_TENANT_TYPE && code !== TEST_TENANT_TYPE);
+        const count = async (query: { status?: string; type?: string }) =>
+            (await listTenantsPage(session.client, { ...query, types: shown, limit: 1 }))
+                .totalCount;
+        const [inService, onEvaluation, bootstrapping, suspended, first] = await Promise.all([
+            count({ status: 'active' }),
+            count({ type: 'evaluation' }),
+            count({ status: 'bootstrapping' }),
+            listTenantsPage(session.client, {
+                status: 'suspended',
+                types: shown,
+                limit: OVERVIEW_ATTENTION,
+            }),
+            listTenantsPage(session.client, { types: shown, limit: OVERVIEW_TENANTS }),
+        ]);
+
+        let activity: SetupActivity[] = [];
+        let failedSetups: TenantSummary[] = [];
+        let setups: ReadonlyMap<string, TenantSetup> = new Map();
+        let activityUnavailable = false;
+        try {
+            const [recent, failed] = await Promise.all([
+                readProvisioningRuns(session.client, { limit: OVERVIEW_ACTIVITY }),
+                readProvisioningRuns(session.client, {
+                    status: 'failed',
+                    limit: OVERVIEW_ATTENTION,
+                }),
+            ]);
+            const ids = [...new Set([...recent, ...failed].map((run) => run.tenantId))];
+            const named =
+                ids.length === 0
+                    ? []
+                    : (
+                          await listTenantsPage(session.client, {
+                              ids,
+                              types: shown,
+                              limit: ids.length,
+                          })
+                      ).tenants;
+            const byId = new Map<string, TenantSummary>(named.map((tenant) => [tenant.id, tenant]));
+            activity = recent.flatMap((run) => {
+                const tenant = byId.get(run.tenantId);
+                return tenant === undefined
+                    ? []
+                    : [
+                          {
+                              instanceId: run.instanceId,
+                              tenantName: tenant.name,
+                              status: run.status,
+                              currentStepIndex: run.currentStepIndex,
+                              stepCount: run.stepCount,
+                              error: run.error,
+                              at: run.at,
+                          },
+                      ];
+            });
+            /*
+             * A failed run stays in the engine after a second attempt sets the
+             * tenant up, so a failed run needs attention only while its tenant
+             * is still bootstrapping.
+             */
+            const seen = new Set<string>();
+            failedSetups = failed.flatMap((run) => {
+                const tenant = byId.get(run.tenantId);
+                if (
+                    tenant === undefined ||
+                    tenant.status !== 'bootstrapping' ||
+                    seen.has(tenant.id)
+                ) {
+                    return [];
+                }
+                seen.add(tenant.id);
+                return [
+                    {
+                        ...tenant,
+                        setup: {
+                            instanceId: run.instanceId,
+                            status: run.status,
+                            currentStepIndex: run.currentStepIndex,
+                            stepCount: run.stepCount,
+                            error: run.error,
+                        },
+                    },
+                ];
+            });
+        } catch (error) {
+            request.log.warn({ err: error }, 'The provisioning runs were not read.');
+            activityUnavailable = true;
+        }
+        try {
+            setups = (
+                await readTenantSetups(
+                    session.client,
+                    first.tenants.map((tenant) => tenant.id),
+                )
+            ).setups;
+        } catch (error) {
+            request.log.warn({ err: error }, "The first tenants' setups were not read.");
+        }
+
+        /*
+         * Setting up is the bootstrapping tenants less the ones whose setup
+         * failed. When the runs cannot be read, no failure can be named, so
+         * the figure counts the stalled setups too, and the page says the
+         * activity is unavailable.
+         */
+        const stalled = failedSetups.filter((tenant) => tenant.status === 'bootstrapping').length;
+        return deploymentOverviewSchema.parse({
+            inService,
+            onEvaluation,
+            settingUp: Math.max(0, bootstrapping - stalled),
+            attention: [
+                ...failedSetups.map((tenant) => ({ tenant, reason: 'setup-failed' })),
+                ...suspended.tenants.map((tenant) => ({ tenant, reason: 'suspended' })),
+            ],
+            tenants: first.tenants.map((tenant) => ({
+                ...tenant,
+                setup: setups.get(tenant.id) ?? null,
+            })),
+            totalCount: first.totalCount,
+            activity,
+            activityUnavailable,
         });
     });
 

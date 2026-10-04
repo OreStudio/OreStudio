@@ -7,35 +7,44 @@
 #+level: s1
 #+filetags: :web:ui:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/speak-plainly-on-home
+#+pr: 2599
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Home and the shell speak in a person's own words. No screen names a journey.
+The system administrator's home shows the state of the deployment's tenants,
+what needs attention, the newest setups and a short tenant list; each mode's
+menu names the screens a person goes to.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- No user-facing string, in any of the three languages, says journey.
+- The menu of each mode lists real screens, and marks the one that is open.
+- The system administrator's home answers from one read: the counts, the
+  tenants needing attention and why, the first tenants, and the newest setups,
+  with the setups' absence stated rather than failing the page.
+- The tenant administrator's and the party user's homes follow the prototype.
+- Tests prove each.
 
 * Plan
 
@@ -74,12 +83,49 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2599][#2599]] | [web] Speak plainly on home and in the shell |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed run can flag a tenant a later setup recovered | server.ts | Accept | A failed run needs attention only while its tenant is bootstrapping; the overview test now carries an old failed run for an active tenant, and fails without the fix. |
+| 2 | Setting up over-counts past ten failures or with no runs | server.ts | Accept in part | Documented: with no runs read, the figure counts stalled setups too, and the page says activity is unavailable. Ten failed setups at once is outside the short list. |
+| 3 | Run order is assumed | tenants.ts | Decline | The workflow handler sorts by its audit timestamp, newest first; every provisioning run names its tenant. |
+| 4 | A setups read failure hides under the activity message | server.ts | Accept | The first tenants' setups have their own try. |
+| 5 | The attention list has no total | server.ts | Decline | A short list by design; the roster's status filter shows every suspended tenant. |
+| 6 | Typed reason strings, unexported schemas | server.ts | Decline | The schema parse validates the reasons; nothing else needs the schemas. |
 
 * Result
+
+Home and the shell speak plainly.
+
+- *One read for the home.* =GET /api/overview= answers the counts (in
+  service, on evaluation, setting up), the tenants needing attention (a failed
+  setup leads to its run, a suspension to the tenant), the first five tenants
+  with their setups, and the five newest setups named by tenant. Every count
+  is a list read that asks for its total, so the counts are the registry's own;
+  the system tenant and test tenants are left out as the roster leaves them out.
+  A failed run read empties the activity and says so. The wire-protocol package
+  gains the shape, a tenant read by id, and a read of the newest runs.
+- *Menus, not journey cards.* Each mode's menu lists real screens and marks
+  the open one: Home and Tenants; Home, Parties, Rescue access and Sign-ins;
+  Home.
+- *Three homes.* The system administrator's follows the prototype: the health
+  card with a plain verdict, recent activity, needs attention and the first
+  tenants, with the status colours the badge catalogue already holds. The
+  tenant administrator's offers the tenant's screens as tiles; the prototype's
+  live figures are left out, because counting locked accounts or failed
+  sign-ins would need every page of those reads, and a first-page count would
+  be wrong in a large tenant. The party user's says where they work and marks
+  the areas this release does not have.
+- *Words.* Every user-facing journey string is gone in English, French and
+  Portuguese, and the roster names its own add button.
+- *Tests:* 4 BFF cases for the overview (counts by filter, never the system or
+  test tenants, the runs unavailable, refused outside system administration);
+  the home tests rewritten, including that no mode's home names a journey; the
+  route table and roster tests moved to the new words. BFF 129, web 232, wire
+  protocol 68, all passing; typecheck and prettier clean.
+- *Not read live.* The deployment holds the operator's own administrator, whose
+  password this session does not have; the live read is left to the story's
+  final deployment.

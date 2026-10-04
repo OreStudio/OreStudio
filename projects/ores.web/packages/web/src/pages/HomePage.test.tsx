@@ -20,109 +20,198 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { SessionMode } from '@ores/wire-protocol/browser';
+import type { DeploymentOverview, SessionMode, TenantSummary } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { HomePage } from './HomePage.js';
 
 /**
- * The landing, per mode.
+ * Home, per mode.
  *
- * The mode decides the shape of this page and nothing else does, so what is
- * asserted here is that each mode lands on its own content: the system
- * administrator on the tenant management journeys, and a mode whose journeys
- * are not implemented yet on the session it is working in. The card that opens
- * a journey is a link and the card for a journey the tree has not built is not,
- * which is the difference a person can act on.
+ * The answers are seeded into the query cache rather than stubbed, because
+ * what is checked is the screen: the state it states in words, the actions it
+ * offers, and that no mode names how the screens were designed.
  */
 
-function landing(mode: SessionMode): string {
-    return renderToStaticMarkup(
-        <TranslationProvider>
-            <MemoryRouter>
-                <HomePage
-                    username="super_admin"
-                    email="super_admin@system.ores"
-                    tenantName="System"
-                    partyName="System Party"
-                    mode={mode}
-                />
-            </MemoryRouter>
-        </TranslationProvider>,
-    );
+function tenant(code: string, name: string, status: string): TenantSummary {
+    return {
+        id: `${code}-0000-4000-8000-000000000000`,
+        code,
+        name,
+        type: 'production',
+        description: '',
+        hostname: `${code}.example`,
+        status,
+        registrationDefault: false,
+        setup: null,
+    };
 }
 
-describe('the system administration landing', () => {
-    it('states the mode and offers the tenant management journeys', () => {
-        const html = landing('system-administration');
+const acme = tenant('acme', 'Acme Corporation', 'active');
+const globex = {
+    ...tenant('globex', 'Globex Markets', 'bootstrapping'),
+    setup: {
+        instanceId: 'run-globex',
+        status: 'failed',
+        currentStepIndex: 4,
+        stepCount: 7,
+        error: 'Publishing failed.',
+    },
+};
+const initech = tenant('initech', 'Initech Capital', 'suspended');
 
-        expect(html).toContain('System administration');
-        expect(html).toContain('Tenants');
-        expect(html).toContain('See the tenants');
-        expect(html).toContain('New tenant');
-        expect(html).toContain('Retire or reset a tenant');
-    });
+const busy: DeploymentOverview = {
+    inService: 3,
+    onEvaluation: 1,
+    settingUp: 1,
+    attention: [
+        { tenant: globex, reason: 'setup-failed' },
+        { tenant: initech, reason: 'suspended' },
+    ],
+    tenants: [acme, globex],
+    totalCount: 9,
+    activity: [
+        {
+            instanceId: 'run-acme',
+            tenantName: 'Acme Corporation',
+            status: 'completed',
+            currentStepIndex: 6,
+            stepCount: 7,
+            error: '',
+            at: '2026-10-04T09:05:00Z',
+        },
+    ],
+    activityUnavailable: false,
+};
 
-    it('opens the journeys the tree has built, and only those', () => {
-        const html = landing('system-administration');
+const quiet: DeploymentOverview = {
+    ...busy,
+    attention: [],
+    activity: [],
+    activityUnavailable: true,
+};
 
-        expect(html).toContain('href="/tenants"');
-        expect(html).toContain('href="/tenants/new"');
-        expect(html).toContain('Not built yet');
-    });
-
-    /*
-     * The bootstrap journey belongs to a plain installation. There is no
-     * account to sign in with before it has run, so it is the door of that
-     * state rather than a place a signed-in person is offered.
-     */
-    it('does not offer the first run journey', () => {
-        expect(landing('system-administration')).not.toContain('First run');
-    });
-});
-
-describe('a mode with no journeys yet', () => {
-    it('lands on the session it is working in', () => {
-        const html = landing('application');
-
-        expect(html).toContain('Signed in');
-        expect(html).toContain('super_admin@system.ores');
-        expect(html).toContain('System Party');
-    });
-
-    it('offers no area of another mode', () => {
-        expect(landing('application')).not.toContain('Tenants');
-    });
-
-    /*
-     * Only system administration creates a tenant, and this card is what every
-     * other mode lands on, so it must not offer a journey the server refuses.
-     */
-    it('offers no change to a session that only reads', () => {
-        const html = renderToStaticMarkup(
+function home(mode: SessionMode, overview?: DeploymentOverview, readOnly = false): string {
+    const client = new QueryClient();
+    if (overview !== undefined) {
+        client.setQueryData(['overview'], overview);
+        client.setQueryData(['tenant-types'], []);
+        client.setQueryData(['tenant-statuses'], []);
+    }
+    return renderToStaticMarkup(
+        <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter>
                     <HomePage
-                        username="admin"
-                        email="admin@example.com"
+                        username="marco"
+                        email="marco@example.com"
                         tenantName="Acme Corporation"
-                        partyName="System Party"
-                        mode="tenant-administration"
-                        readOnly
+                        partyName="Acme London"
+                        mode={mode}
+                        readOnly={readOnly}
                     />
                 </MemoryRouter>
-            </TranslationProvider>,
-        );
+            </TranslationProvider>
+        </QueryClientProvider>,
+    );
+}
 
-        expect(html).not.toContain('href="/parties/new"');
-        expect(html).toContain('Acme Corporation');
+describe('every home', () => {
+    it('never names a journey', () => {
+        for (const html of [
+            home('system-administration', busy),
+            home('tenant-administration'),
+            home('application'),
+        ]) {
+            expect(html.toLowerCase()).not.toContain('journey');
+        }
+    });
+});
+
+describe("the system administrator's home", () => {
+    it('welcomes the person and offers to add and manage tenants', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).toContain('Welcome, marco');
+        expect(html).toContain('This deployment runs 9 tenants.');
+        expect(html).toContain('href="/tenants/new"');
+        expect(html).toContain('>Add tenant<');
+        expect(html).toContain('>Manage tenants<');
     });
 
-    it('does not offer a new tenant', () => {
-        const html = landing('tenant-administration');
+    it('states the counts and how many tenants need attention', () => {
+        const html = home('system-administration', busy);
 
-        expect(html).not.toContain('href="/tenants/new"');
-        expect(html).toContain('href="/parties/new"');
+        expect(html).toContain('System health');
+        expect(html).toContain('>3<');
+        expect(html).toContain('In service');
+        expect(html).toContain('2 tenants need attention');
+        expect(html).not.toContain('Everything is running');
+    });
+
+    it('says everything is running when nothing needs attention', () => {
+        const html = home('system-administration', quiet);
+
+        expect(html).toContain('Everything is running');
+        expect(html).not.toContain('Needs attention');
+    });
+
+    it('leads a failed setup to its run and a suspended tenant to its screen', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).toContain('Setup stopped at step 5 of 7.');
+        expect(html).toContain('href="/tenants/runs/run-globex"');
+        expect(html).toContain('Suspended: nobody in it can sign in.');
+        expect(html).toContain('href="/tenants/initech"');
+    });
+
+    it('names each setup by its tenant, and says so when the setups cannot be read', () => {
+        expect(home('system-administration', busy)).toContain(
+            'Acme Corporation finished setting up',
+        );
+        expect(home('system-administration', quiet)).toContain(
+            'The setup history could not be read.',
+        );
+    });
+
+    it('lists the first tenants, with a way to all of them', () => {
+        const html = home('system-administration', busy);
+
+        expect(html).toContain('href="/tenants/acme"');
+        expect(html).toContain('Showing 2 of 9 tenants');
+        expect(html).toContain('>See all<');
+    });
+});
+
+describe("the tenant administrator's home", () => {
+    it("offers the tenant's own screens and no tenant management", () => {
+        const html = home('tenant-administration');
+
+        expect(html).toContain('Acme Corporation');
+        for (const href of ['/parties', '/parties/new', '/rescue', '/audit', '/security']) {
+            expect(html).toContain(`href="${href}"`);
+        }
+        expect(html).not.toContain('href="/tenants');
+    });
+
+    it('offers no change to a session that only reads', () => {
+        const html = home('tenant-administration', undefined, true);
+
+        expect(html).not.toContain('href="/parties/new"');
+        expect(html).toContain('href="/parties"');
+    });
+});
+
+describe("a party user's home", () => {
+    it('says where they work, offers their own screens, and marks what is coming', () => {
+        const html = home('application');
+
+        expect(html).toContain('Working for Acme London');
+        expect(html).toContain('href="/security"');
+        expect(html).toContain('Trading');
+        expect(html).toContain('Coming later');
+        expect(html).not.toContain('href="/tenants');
     });
 });

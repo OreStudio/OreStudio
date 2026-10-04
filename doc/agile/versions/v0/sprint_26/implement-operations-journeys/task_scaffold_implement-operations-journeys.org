@@ -8,7 +8,7 @@
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-operations-journeys
-#+pr:
+#+pr: 2622
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2622 | [agile] Scaffold the operations journeys story |
 
 * Review
 
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 * Result
 
-Done 2026-10-04.
+Done 2026-10-04. PR #2622.
 
 The Operations group has a story, six tasks, a row in sprint 26 and a row in
 the programme's order table:

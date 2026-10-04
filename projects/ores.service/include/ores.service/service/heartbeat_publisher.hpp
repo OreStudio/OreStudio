@@ -47,6 +47,8 @@ namespace ores::service::service {
  *
  * A unique instance_id UUID is generated at construction time so that
  * multiple instances of the same service can be tracked independently.
+ * The host id names the machine the instance runs on; it stays empty for
+ * a caller that holds no host id.
  */
 class heartbeat_publisher {
 private:
@@ -62,9 +64,11 @@ public:
     heartbeat_publisher(std::string service_name,
                         std::string version,
                         ores::nats::service::client& nats,
+                        std::string host_id = {},
                         std::uint32_t interval_seconds = 15)
         : service_name_(std::move(service_name))
         , version_(std::move(version))
+        , host_id_(std::move(host_id))
         , nats_(nats)
         , interval_seconds_(interval_seconds) {
         // Generate a stable per-process instance UUID.
@@ -108,6 +112,7 @@ private:
             telemetry::messaging::service_heartbeat_message hb;
             hb.service_name = service_name_;
             hb.instance_id = instance_id_;
+            hb.host_id = host_id_;
             hb.version = version_;
 
             auto data = ores::nats::default_wire_codec().encode(hb);
@@ -122,6 +127,7 @@ private:
     std::string service_name_;
     std::string instance_id_;
     std::string version_;
+    std::string host_id_;
     ores::nats::service::client& nats_;
     std::uint32_t interval_seconds_;
 };

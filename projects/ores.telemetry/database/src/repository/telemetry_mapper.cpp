@@ -191,6 +191,7 @@ service_sample_entity telemetry_mapper::to_entity(const messaging::service_sampl
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.service_name = sample.service_name;
     r.instance_id = sample.instance_id;
+    r.host_id = sample.host_id;
     r.version = sample.version;
     return r;
 }
@@ -200,6 +201,7 @@ messaging::service_sample telemetry_mapper::to_domain(const service_sample_entit
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.service_name = entity.service_name.value();
     r.instance_id = entity.instance_id.value();
+    r.host_id = entity.host_id;
     r.version = entity.version;
     return r;
 }

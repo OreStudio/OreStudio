@@ -727,7 +727,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             // Service-health heartbeat — standard subject used by the service
             // dashboard (telemetry.v1.services.heartbeat).
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
-                std::string(service_name), std::string(service_version), nats);
+                std::string(service_name), std::string(service_version), nats, cfg.host_id);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
 
             // Compute-domain idle heartbeat and node telemetry reporter.

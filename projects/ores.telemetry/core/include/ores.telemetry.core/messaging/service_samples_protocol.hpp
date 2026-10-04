@@ -50,6 +50,11 @@ struct service_sample {
      */
     std::string instance_id;
     /**
+     * @brief The host the instance runs on, empty when the publisher does not
+     * know it.
+     */
+    std::string host_id;
+    /**
      * @brief Version the instance reports.
      */
     std::string version;
@@ -79,6 +84,11 @@ struct service_heartbeat_message {
      * @brief Per-process identifier, generated once at startup.
      */
     std::string instance_id;
+    /**
+     * @brief The host the instance runs on, empty when the publisher does not
+     * know it.
+     */
+    std::string host_id;
     /**
      * @brief Version the instance reports.
      */

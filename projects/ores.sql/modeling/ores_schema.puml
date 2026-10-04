@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T16:35:32.912790Z
+' Generated: 2026-10-04T18:38:57.241057Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -7827,6 +7827,7 @@ package "telemetry" #FCE4EC {
         * service_name : text <<PK>>
         * instance_id : text <<PK, FK>>
         --
+        * host_id : text <<FK>>
         * version : text
     }
 

@@ -58,7 +58,6 @@
 #include "ores.iam.core/messaging/session_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
-#include "ores.iam.core/messaging/tenant_roster_handler.hpp"
 #include "ores.iam.core/messaging/tenant_session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_type_registrar.hpp"
@@ -342,14 +341,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         signer, [pc](const std::string& tenant_id, const boost::uuids::uuid& party_id) {
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
-    // --- Tenant roster ---
-    // The roster's search is hand-written, because its query searches, filters
-    // and leaves the system tenant out; the generated list pages the registry.
-    auto trh = std::make_shared<tenant_roster_handler>(nats, ctx, signer);
-    subs.push_back(nats.queue_subscribe(
-        search_tenants_request::nats_subject, qg, [trh](ores::nats::message msg) {
-            trh->search(std::move(msg));
-        }));
     // Entering and leaving a tenant are hand-written, because they issue a
     // session rather than act on an entity. A tenant session lasts one access
     // lifetime, read from the auth handler's current token settings.

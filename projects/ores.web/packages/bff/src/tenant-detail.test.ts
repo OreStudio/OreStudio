@@ -198,7 +198,8 @@ describe('GET /api/tenants/:code', () => {
             key: { code: 'acme' },
         });
         expect(calls.find((c) => c.subject === 'workflow.v1.instances.list')?.body).toMatchObject({
-            target_id_filter: ACME_TENANT,
+            target_id_filter: '',
+            target_ids_filter: [ACME_TENANT],
         });
         expect(calls.map((c) => c.subject)).not.toContain('refdata.v1.parties.list');
     });

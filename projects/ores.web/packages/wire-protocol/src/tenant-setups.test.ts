@@ -68,6 +68,7 @@ describe('the tenant setup read', () => {
                 run('run-older', ACME, 'completed'),
                 run('run-other', NORTHWIND, 'in_progress'),
             ]),
+            [ACME, NORTHWIND],
         );
 
         expect(read.setups.get(ACME)?.instanceId).toBe('run-latest');
@@ -76,7 +77,9 @@ describe('the tenant setup read', () => {
     });
 
     it('ignores a run that names no target', async () => {
-        const read = await readTenantSetups(callerAnswering([run('untargeted', '', 'failed')]));
+        const read = await readTenantSetups(callerAnswering([run('untargeted', '', 'failed')]), [
+            ACME,
+        ]);
 
         expect(read.setups.size).toBe(0);
     });
@@ -91,8 +94,28 @@ describe('the tenant setup read', () => {
             run(`run-${index}`, ACME, 'completed'),
         );
 
-        const read = await readTenantSetups(callerAnswering(runs));
+        const read = await readTenantSetups(callerAnswering(runs), [ACME]);
 
         expect(read.complete).toBe(false);
+    });
+
+    /*
+     * An empty target list asks for every run, so a page with no tenants on
+     * it asks for nothing.
+     */
+    it('reads nothing when no tenant is named', async () => {
+        let called = false;
+        const caller = {
+            async callAuthenticated(): Promise<unknown> {
+                called = true;
+                return undefined;
+            },
+        } as unknown as AuthenticatedCaller;
+
+        const read = await readTenantSetups(caller, []);
+
+        expect(called).toBe(false);
+        expect(read.setups.size).toBe(0);
+        expect(read.complete).toBe(true);
     });
 });

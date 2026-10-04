@@ -263,6 +263,14 @@ export interface ListWorkflowInstanceSummariesRequest {
      * A run with no target matches no identity.
      */
     target_id_filter: string;
+    /**
+     * @brief Identities of the entities the run may act on. Empty means any.
+     *
+     * A screen names the entities on its page, so one read answers each of them
+     * whatever else the engine holds. A run with no target matches none. It holds
+     * at most 1000 identities.
+     */
+    target_ids_filter: string[];
 }
 
 export interface ListWorkflowInstanceSummariesResponse {

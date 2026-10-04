@@ -68,7 +68,7 @@ import {
     readTenant,
     readPartiesPage,
     readTenantSetups,
-    searchTenantsPage,
+    listTenantsPage,
     retryWorkflowInstanceResultSchema,
     selectPartyRequestSchema,
     seedProfilesResponseSchema,
@@ -959,14 +959,18 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /** The tenant type that marks test infrastructure, hidden unless asked for. */
     const TEST_TENANT_TYPE = 'automation';
 
+    /** The deployment's own tenant, which the roster never shows. */
+    const SYSTEM_TENANT_TYPE = 'system';
+
     /**
      * The tenants this deployment holds, one page of the ones that match.
      *
      * The roster the system administration area reads, and the list a screen
      * picks a tenant from before it retires or resets one. The search matches
-     * code, name and hostname, and the server leaves the system tenant out and
-     * counts the matches, beside the registry that owns the rule: the system
-     * tenant is the deployment's own bookkeeping, not a tenant somebody set up.
+     * code, name and hostname. The read names the types a row may have, so the
+     * server leaves out the system tenant, which is the deployment's own
+     * bookkeeping and not a tenant somebody set up, and the test tenants unless
+     * they are asked for; the page and its total then agree.
      */
     server.get('/api/tenants', async (request) => {
         const session = requireSession(request);
@@ -995,25 +999,31 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         /*
          * Test infrastructure is hidden unless the person asks for it or asks
-         * for that type by name. The server leaves it out, so the page and its
-         * total agree, and a second count says how many were hidden.
+         * for that type by name, and a second count says how many were hidden.
+         * The types come from the deployment's own rows, so a new type shows
+         * without a change here.
          */
         const hideTest = !page.data.includeTest && page.data.type !== TEST_TENANT_TYPE;
-        const read = await searchTenantsPage(session.client, {
+        const shown = (await readTenantTypes(session.client))
+            .map((type) => type.code)
+            .filter(
+                (code) => code !== SYSTEM_TENANT_TYPE && !(hideTest && code === TEST_TENANT_TYPE),
+            );
+        const read = await listTenantsPage(session.client, {
             search: page.data.search,
             type: page.data.type,
             status: page.data.status,
-            excludeType: hideTest ? TEST_TENANT_TYPE : '',
+            types: shown,
             offset: page.data.offset,
             limit: page.data.limit,
         });
         const hiddenTestCount =
             hideTest && page.data.type === ''
                 ? (
-                      await searchTenantsPage(session.client, {
+                      await listTenantsPage(session.client, {
                           search: page.data.search,
-                          type: TEST_TENANT_TYPE,
                           status: page.data.status,
+                          types: [TEST_TENANT_TYPE],
                           limit: 1,
                       })
                   ).totalCount
@@ -1022,14 +1032,18 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
          * Each tenant is joined with the run that provisioned it, which is how a
          * person who left the journey finds the work again. The runs belong to
          * the session's own tenant and name the tenant they act on as their
-         * target, so one read answers every row. A failure to read them is not a
+         * target, so one read naming the tenants on the page answers every row.
+         * A failure to read them is not a
          * failure to read the roster: the rows go out without a run, and the
          * page is told the runs are missing rather than that there are none.
          */
         let setups: ReadonlyMap<string, TenantSetup> = new Map();
         let setupUnavailable = false;
         try {
-            const runs = await readTenantSetups(session.client);
+            const runs = await readTenantSetups(
+                session.client,
+                read.tenants.map((tenant) => tenant.id),
+            );
             setups = runs.setups;
             if (!runs.complete) {
                 request.log.warn(
@@ -1075,7 +1089,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         let setupUnavailable = false;
         try {
             setup =
-                (await readTenantSetups(session.client, tenant.id)).setups.get(tenant.id) ?? null;
+                (await readTenantSetups(session.client, [tenant.id])).setups.get(tenant.id) ?? null;
         } catch (error) {
             request.log.warn({ err: error }, 'The provisioning runs were not read.');
             setupUnavailable = true;

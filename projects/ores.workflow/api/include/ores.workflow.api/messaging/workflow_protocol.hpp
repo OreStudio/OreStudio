@@ -312,6 +312,14 @@ struct list_workflow_instance_summaries_request {
      * A run with no target matches no identity.
      */
     std::string target_id_filter = {};
+    /**
+     * @brief Identities of the entities the run may act on. Empty means any.
+     *
+     * A screen names the entities on its page, so one read answers each of them
+     * whatever else the engine holds. A run with no target matches none. It holds
+     * at most 1000 identities.
+     */
+    std::vector<std::string> target_ids_filter = {};
 };
 
 struct list_workflow_instance_summaries_response {

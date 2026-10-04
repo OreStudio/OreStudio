@@ -31,19 +31,15 @@ import {
 import {
     subjects as tenantSubjects,
     type GetTenantRequest,
+    type ListTenantsRequest,
 } from './generated/iam/protocol/tenant_protocol.js';
 import type { Tenant } from './generated/iam/domain/tenant.js';
-import {
-    subjects as tenantRosterSubjects,
-    type SearchTenantsRequest,
-} from './generated/iam/protocol/tenant_roster_protocol.js';
 import {
     subjects as workflowSubjects,
     type ListWorkflowInstanceSummariesRequest,
     type ListWorkflowInstanceSummariesResponse,
     type WorkflowInstanceSummary,
 } from './generated/workflow/protocol/workflow_protocol.js';
-import { orderSchema } from './operations.js';
 
 /**
  * The tenants a deployment holds, as the registry answers them.
@@ -162,89 +158,78 @@ export async function readTenant(
 }
 
 /** What the roster asks the search for. */
-export interface TenantSearch {
+/**
+ * What a roster read narrows by. Every member is optional; the ones set must
+ * all hold.
+ */
+export interface TenantListQuery {
+    /** Text the code, the name or the hostname contains, ignoring case. */
     readonly search?: string;
+    /** The one type asked for. */
     readonly type?: string;
+    /** The one status asked for. */
     readonly status?: string;
-    readonly excludeType?: string;
+    /** The types a row may have; a row of any other type is left out. */
+    readonly types?: readonly string[];
     readonly offset?: number;
     readonly limit?: number;
 }
 
-/** The search's answer: one page of tenants and how many match in all. */
-const wireTenantSearchSchema = z
-    .object({
-        success: z.boolean().default(false),
-        message: z.string().default(''),
-        tenants: z.array(wireTenantSchema).default([]),
-        total: z.int().nonnegative().default(0),
-    })
-    .transform((row) => ({
-        success: row.success,
-        message: row.message,
-        tenants: row.tenants.map(summaryOf),
-        totalCount: row.total,
-    }));
-
-/**
- * One page of the tenants a deployment holds that match a search.
- *
- * The server leaves the system tenant out and counts the matches, so the page
- * and the total need no correction here.
- */
-export async function searchTenantsPage(
-    caller: AuthenticatedCaller,
-    input: TenantSearch = {},
-): Promise<WireTenantPage> {
-    const request: SearchTenantsRequest = {
-        search: input.search ?? '',
-        type_filter: input.type ?? '',
-        status_filter: input.status ?? '',
-        exclude_type_filter: input.excludeType ?? '',
-        offset: input.offset ?? 0,
-        limit: input.limit ?? 100,
-    };
-    const answer = await caller.callAuthenticated(
-        tenantRosterSubjects.search_tenants_request,
-        request,
-        wireTenantSearchSchema,
-    );
-    if (!answer.success) {
-        throw new Error(answer.message === '' ? 'The tenants were not read.' : answer.message);
-    }
-    return { tenants: answer.tenants, totalCount: answer.totalCount };
-}
-
-/** `list_tenants_request`, sent on `iam.v1.tenants.list`. */
-export const listTenantsRequestSchema = z.object({
-    offset: z.int().nonnegative().default(0),
-    limit: z.int().positive().max(1000).default(100),
-    order: orderSchema.default({ field: '', descending: false }),
-});
-export type ListTenantsRequest = z.infer<typeof listTenantsRequestSchema>;
-
 /** The page of tenants, translated from the wire's names. */
 export const wireTenantPageSchema = z
     .object({
+        result: z.object({
+            outcome: z.string(),
+            message: z.string().default(''),
+        }),
         tenants: z.array(wireTenantSchema).default([]),
         total: z.int().nonnegative().default(0),
     })
     .transform((row) => ({
+        outcome: row.result.outcome,
+        message: row.result.message,
         tenants: row.tenants.map(summaryOf),
         totalCount: row.total,
     }));
-export type WireTenantPage = z.infer<typeof wireTenantPageSchema>;
+export interface WireTenantPage {
+    readonly tenants: TenantSummary[];
+    readonly totalCount: number;
+}
 
-/** The page of tenants the caller may see. */
-export async function readTenantsPage(
+/**
+ * One page of the tenants that match, in code order, with how many match in
+ * all.
+ *
+ * The request is the generated type, so every field the server's decoder
+ * requires is present or the typecheck fails. A member left unset is sent as
+ * null, which sets no condition.
+ */
+export async function listTenantsPage(
     caller: AuthenticatedCaller,
-    input: { readonly offset?: number; readonly limit?: number } = {},
+    input: TenantListQuery = {},
 ): Promise<WireTenantPage> {
-    return caller.callAuthenticated(
+    const request: ListTenantsRequest = {
+        offset: input.offset ?? 0,
+        limit: input.limit ?? 100,
+        order: { field: 'code', descending: false },
+        filter: {
+            type: input.type === undefined || input.type === '' ? null : input.type,
+            status: input.status === undefined || input.status === '' ? null : input.status,
+            id_one_of: null,
+            type_one_of: input.types === undefined ? null : [...input.types],
+            status_one_of: null,
+            search: input.search === undefined || input.search === '' ? null : input.search,
+        },
+    };
+    const answer = await caller.callAuthenticated(
         TENANT_SUBJECTS.list,
-        listTenantsRequestSchema.parse(input),
+        request,
         wireTenantPageSchema,
     );
+    if (answer.outcome !== 'ok') {
+        throw new Error(answer.message === '' ? 'The tenants were not read.' : answer.message);
+    }
+    return { tenants: answer.tenants, totalCount: answer.totalCount };
 }
 
 /**
@@ -285,15 +270,18 @@ export const wireWorkflowInstancesSchema = z.object({
     instances: z.array(wireWorkflowInstanceSummarySchema).default([]),
 }) satisfies z.ZodType<ListWorkflowInstanceSummariesResponse>;
 
-/** The most provisioning runs one roster read asks for. */
+/**
+ * The most provisioning runs one read answers, and the most tenants it may
+ * name: the protocol's bound on one reply.
+ */
 export const TENANT_SETUP_READ_LIMIT = 1000;
 
 /**
- * The runs a roster read found, and whether it saw all of them.
+ * The runs a read found, and whether it saw all of them.
  *
- * `complete` is false when the answer reached the limit. The engine answers
- * the run that changed last first, so the runs cut off are the oldest, and a
- * tenant whose only run is among them shows no setup.
+ * `complete` is false when the answer reached the limit, which takes more than
+ * one run for each named tenant on average. The engine answers the run that
+ * changed last first, so the runs cut off are the oldest.
  */
 export interface TenantSetups {
     readonly setups: ReadonlyMap<string, TenantSetup>;
@@ -301,8 +289,11 @@ export interface TenantSetups {
 }
 
 /**
- * The latest provisioning run for each tenant it acts on, keyed by tenant id.
- * Naming a tenant reads only the runs that act on it.
+ * The latest provisioning run for each named tenant, keyed by tenant id.
+ *
+ * The read names the tenants, so it answers the runs that act on them and
+ * nothing else the engine holds; a roster names the tenants on its page. No
+ * tenant named is no read, because an empty list would ask for every run.
  *
  * A tenant may have more than one run, because nothing stops a second attempt.
  * The engine answers the run that changed last first, so the first run seen for
@@ -310,8 +301,11 @@ export interface TenantSetups {
  */
 export async function readTenantSetups(
     caller: AuthenticatedCaller,
-    tenantId = '',
+    tenantIds: readonly string[],
 ): Promise<TenantSetups> {
+    if (tenantIds.length === 0) {
+        return { setups: new Map(), complete: true };
+    }
     /*
      * The request is the generated type, so every field the server's decoder
      * requires is present or the typecheck fails. An empty filter is no filter.
@@ -321,7 +315,8 @@ export async function readTenantSetups(
         status_filter: '',
         type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
         target_kind_filter: PROVISION_TENANT_TARGET_KIND,
-        target_id_filter: tenantId,
+        target_id_filter: '',
+        target_ids_filter: [...tenantIds],
     };
     const answer = await caller.callAuthenticated(
         workflowSubjects.list_workflow_instance_summaries_request,

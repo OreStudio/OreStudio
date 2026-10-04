@@ -155,7 +155,12 @@ describe('GET /api/parties', () => {
         expect(calls).toEqual([
             {
                 subject: 'refdata.v1.parties.list',
-                body: { offset: 20, limit: 2, order: { field: '', descending: false } },
+                body: {
+                    offset: 20,
+                    limit: 2,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
     });

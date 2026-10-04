@@ -22,6 +22,7 @@
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { PartyPage, TenantParty } from './domain.js';
 import { OperationFailedError } from './errors.js';
+import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
 import { SUBJECTS, listPartiesReplySchema } from './operations.js';
 
 /** What one page of parties asks for. */
@@ -35,18 +36,23 @@ export interface PartyPageQuery {
  *
  * The tenant is the session's, so row-level security scopes the read from the
  * token and the request names no tenant. The server pages in key order. A
- * parent is named when it is on the same page; nothing reads a party by its
- * id, so naming one on another page would mean reading every page.
+ * parent on another page is read by its id in one more read that names every
+ * such parent, so a page costs two reads at most. A parent the session cannot
+ * see is not answered, and the row says its parent is elsewhere.
  */
 export async function readPartiesPage(
     caller: AuthenticatedCaller,
     query: PartyPageQuery,
 ): Promise<PartyPage> {
-    // The generated service refuses a stated order; the capture "Implement
-    // order and filter in the generated list contract" tracks it.
+    const pageRequest: ListPartiesRequest = {
+        offset: query.offset,
+        limit: query.limit,
+        order: { field: '', descending: false },
+        filter: null,
+    };
     const reply = await caller.callAuthenticated(
         SUBJECTS.listParties,
-        { offset: query.offset, limit: query.limit, order: { field: '', descending: false } },
+        pageRequest,
         listPartiesReplySchema,
     );
     if (reply.result.outcome !== 'ok') {
@@ -55,6 +61,32 @@ export async function readPartiesPage(
     const names = new Map<string, string>(
         reply.parties.map((party) => [party.id, party.full_name]),
     );
+    const elsewhere = [
+        ...new Set(
+            reply.parties
+                .map((party) => party.parent_party_id)
+                .filter((id): id is string => id !== null && !names.has(id)),
+        ),
+    ];
+    if (elsewhere.length > 0) {
+        const parentsRequest: ListPartiesRequest = {
+            offset: 0,
+            limit: elsewhere.length,
+            order: { field: '', descending: false },
+            filter: { id_one_of: elsewhere },
+        };
+        const parents = await caller.callAuthenticated(
+            SUBJECTS.listParties,
+            parentsRequest,
+            listPartiesReplySchema,
+        );
+        if (parents.result.outcome !== 'ok') {
+            throw new OperationFailedError(SUBJECTS.listParties, parents.result.message);
+        }
+        for (const parent of parents.parties) {
+            names.set(parent.id, parent.full_name);
+        }
+    }
     const parties = reply.parties.map((party): TenantParty => ({
         id: party.id,
         code: party.short_code,

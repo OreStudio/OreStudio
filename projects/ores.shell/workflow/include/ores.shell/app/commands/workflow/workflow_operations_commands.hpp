@@ -71,7 +71,7 @@ public:
 
     /**
      * @brief instances [--limit <v>] [--status_filter <v>] [--type_filter <v>]
-     * [--target_kind_filter <v>] [--target_id_filter <v>]
+     * [--target_kind_filter <v>] [--target_id_filter <v>] [--target_ids_filter <v>]
      */
     static void process_instances(std::ostream& out,
                                   ores::nats::service::nats_client& session,

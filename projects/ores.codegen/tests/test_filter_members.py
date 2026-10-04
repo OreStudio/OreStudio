@@ -87,3 +87,11 @@ def test_a_member_named_like_a_query_parameter_is_refused():
                columns=[{'name': 'limit', 'cpp_type': 'std::string'}])
     with pytest.raises(ValueError, match="widget: the filter member 'limit'"):
         filter_members(e)
+
+
+def test_a_filterable_column_gives_equals_and_one_of_members():
+    e = entity(columns=[{'name': 'status', 'cpp_type': 'std::string', 'filterable': True}])
+    members = by_member(filter_members(e))
+    assert members['status']['is_equals']
+    assert members['status']['cpp_type'] == 'std::string'
+    assert members['status_one_of']['cpp_type'] == 'std::vector<std::string>'

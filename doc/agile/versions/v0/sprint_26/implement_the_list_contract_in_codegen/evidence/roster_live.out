@@ -1,0 +1,14 @@
+bootstrap 200
+sign in 200
+provision acme 200
+roster 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?includeTest=true 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?search=ACME 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?search=zzz_nothing 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?type=system 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?status=active 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+roster?limit=1&offset=0 502 {'code': 'upstream-unavailable', 'message': 'The server refused the request (bad_request).'}
+tenant admin sign in 200
+roster as tenant admin 403
+parties?offset=0&limit=5 200 1 [('acme_corporation_system', None)]
+parties?offset=5&limit=5 200 1 []

@@ -3212,25 +3212,27 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
     The record the messages carry and the condition the repository builds are
     two readings of this one list, so they cannot disagree about a member.
 
-    - An equals member for each column the model already reads by: the list
-      filter column and every relation a scoped read is declared for. It
-      carries the column's own type, so a nullable column's member can ask for
-      null.
-    - A one-of member for a single-column primary key and every relation,
-      carrying a list of the column's value type.
+    - An equals member for each column the model already reads by -- the list
+      filter column and every relation a scoped read is declared for -- and
+      each column that declares ``:filterable: true``. It carries the column's
+      own type, so a nullable column's member can ask for null.
+    - A one-of member for a single-column primary key, every relation and
+      every filterable column, carrying a list of the column's value type.
     - The searchable columns, read by the one ``search`` member.
 
     Raises:
         ValueError: if a member's name is a reserved query parameter.
     """
     relations = _relation_columns(entity)
+    filterable = [_column_name(c) for c in write_record_columns(entity)
+                  if c.get("filterable") is True]
     equals = list(dict.fromkeys(
         ([entity["list_filter_column"]] if entity.get("list_filter_column") else [])
-        + relations))
+        + relations + filterable))
     primary_key = entity.get("primary_key") or {}
     key_columns = [_column_name(c) for c in primary_key.get("columns") or []]
     one_of = list(dict.fromkeys(
-        (key_columns if len(key_columns) == 1 else []) + relations))
+        (key_columns if len(key_columns) == 1 else []) + relations + filterable))
     members = []
     for name in equals:
         cpp_type = _column_cpp_type(entity, name)

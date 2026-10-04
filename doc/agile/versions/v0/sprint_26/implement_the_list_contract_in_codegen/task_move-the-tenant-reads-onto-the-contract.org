@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :iam:web:paging:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-tenant-reads-onto-the-contract
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

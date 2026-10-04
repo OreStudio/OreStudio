@@ -59,7 +59,11 @@ export interface TenantLookup {
 }
 
 export interface TenantsFilter {
+    type: string | null;
+    status: string | null;
     id_one_of: string[] | null;
+    type_one_of: string[] | null;
+    status_one_of: string[] | null;
     search: string | null;
 }
 

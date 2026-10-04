@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists credit_simulation_matrices_tbl_party_isolation_policy on "ores_analytics_credit_simulation_matrices_tbl";
 drop policy if exists credit_simulation_matrices_tbl_tenant_isolation_policy on "ores_analytics_credit_simulation_matrices_tbl";
 drop rule if exists ores_analytics_credit_simulation_matrices_delete_rule on "ores_analytics_credit_simulation_matrices_tbl";
 drop trigger if exists ores_analytics_credit_simulation_matrices_insert_trg on "ores_analytics_credit_simulation_matrices_tbl";

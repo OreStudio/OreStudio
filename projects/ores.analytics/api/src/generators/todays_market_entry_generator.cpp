@@ -45,6 +45,7 @@ generate_synthetic_todays_market_entry(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.todays_market_config_id = ctx.generate_uuid();
     r.todays_market_collection_id = ctx.generate_uuid();
     r.key_value = std::string("EUR");

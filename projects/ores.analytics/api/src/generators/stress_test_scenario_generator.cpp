@@ -45,6 +45,7 @@ generate_synthetic_stress_test_scenario(utility::generation::generation_context&
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.stress_test_library_id = ctx.generate_uuid();
     r.name = std::string("parallel_rates");
     r.date = std::nullopt;

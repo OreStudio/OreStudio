@@ -39,6 +39,21 @@ UUID uniquely identifying this product mapping.
 
 Surrogate key for the pricing model product.
 
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** pricing_model_config_id
 :PROPERTIES:
 :type:     uuid
@@ -121,6 +136,8 @@ carried here instead.
 ** Flags
 :PROPERTIES:
 :tablename: ores_analytics_pricing_model_products_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 * C++

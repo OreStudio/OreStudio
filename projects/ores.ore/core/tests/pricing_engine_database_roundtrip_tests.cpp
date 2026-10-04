@@ -23,10 +23,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "party_fixture.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <string>
@@ -75,7 +79,8 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     pricingengines original;
     ores::ore::domain::load_data(content, original);
 
-    const mapped_pricing_engines mapped = pricing_engine_mapper::map(original);
+    mapped_pricing_engines mapped = pricing_engine_mapper::map(original);
+    ores::ore::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.products.size() == original.Product.size());
     REQUIRE(!mapped.parameters.empty());
 
@@ -120,4 +125,23 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     const std::string difference = parsed_text_difference(original, exported, f.string());
     INFO(difference);
     CHECK(difference.empty());
+}
+
+TEST_CASE("a party sees only its own pricing engine configuration", tags) {
+    scoped_database_helper h;
+    auto parties = ores::ore::tests::make_two_parties(h);
+    pricingengines original;
+    ores::ore::domain::load_data(
+        file::read_content(ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")), original);
+    auto mapped = pricing_engine_mapper::map(original);
+    ores::ore::domain::assign_party(mapped, parties.a);
+
+    ores::analytics::repository::pricing_model_config_repository repo;
+    repo.write(parties.a_context, mapped.config);
+
+    const auto owns = [&](const auto& rows) {
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == mapped.config.id; });
+    };
+    CHECK(owns(repo.read_latest(parties.a_context)));
+    CHECK_FALSE(owns(repo.read_latest(parties.b_context)));
 }

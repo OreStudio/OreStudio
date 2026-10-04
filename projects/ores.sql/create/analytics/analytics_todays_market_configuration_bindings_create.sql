@@ -39,6 +39,7 @@ create table if not exists "ores_analytics_todays_market_configuration_bindings_
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "todays_market_configuration_id" uuid not null,
     "collection" text not null,
     "reference" text not null,
@@ -182,4 +183,24 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists todays_market_configuration_binding_tbl_party_isolation_policy
+    on ores_analytics_todays_market_configuration_bindings_tbl;
+
+create policy todays_market_configuration_binding_tbl_party_isolation_policy
+on ores_analytics_todays_market_configuration_bindings_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

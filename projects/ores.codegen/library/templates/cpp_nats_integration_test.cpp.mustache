@@ -336,6 +336,11 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     {{var}}_party_repo.write(party_ctx, {{var}}_party);
     {{var}}.{{{party_prefix}}}party_id = {{var}}_party.id;
 {{/requires_party}}
+{{#party_isolated}}
+    // {{parent_entity_singular}} is party-isolated, so it carries the session
+    // party, or the row that references it could not see it.
+    {{var}}.{{{party_prefix}}}party_id = *party_ctx.party_id();
+{{/party_isolated}}
 {{#use_system_tenant}}
     // {{parent_entity_singular}} is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent

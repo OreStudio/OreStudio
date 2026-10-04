@@ -34,6 +34,7 @@ export interface PricingModelProduct {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     pricing_model_config_id: string;
     pricing_engine_type_code: string;
     model: string;

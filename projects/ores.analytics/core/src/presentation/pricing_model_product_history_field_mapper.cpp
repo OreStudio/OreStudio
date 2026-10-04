@@ -35,6 +35,7 @@ render_pricing_model_product_fields(const domain::pricing_model_product& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Pricing Model Config ID",
                       .value = boost::uuids::to_string(v.pricing_model_config_id)});
     fields.push_back({.name = "Pricing Engine Type Code", .value = v.pricing_engine_type_code});

@@ -35,6 +35,7 @@ render_credit_simulation_matrix_config_fields(const domain::credit_simulation_ma
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "T0", .value = std::to_string(v.t0)});
     fields.push_back({.name = "T1", .value = std::to_string(v.t1)});

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T00:21:34.814799Z
+' Generated: 2026-10-04T00:29:32.260653Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -12761,6 +12761,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
           configuration_id : uuid <<FK>>
           market : text
@@ -12795,6 +12796,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * credit_simulation_config_id : uuid <<FK>>
         * name : text
         * transition_matrix_id : uuid <<FK>>
@@ -12825,6 +12827,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
         * t0 : double
         * t1 : double
@@ -12853,6 +12856,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * transition_matrix_id : uuid <<FK>>
         * from_rating : text
         * p_aaa : double
@@ -12890,6 +12894,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * credit_simulation_config_id : uuid <<FK>>
         * netting_set_id : text <<FK>>
         * position : integer
@@ -12943,6 +12948,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
           description : text
           config_variant : text
@@ -12970,6 +12976,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * pricing_model_config_id : uuid <<FK>>
           pricing_model_product_id : uuid <<FK>>
         * parameter_scope : text
@@ -12999,6 +13006,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * pricing_model_config_id : uuid <<FK>>
         * pricing_engine_type_code : text
         * model : text
@@ -13081,6 +13089,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
           configuration_id : uuid <<FK>>
           use_spreaded_term_structures : boolean
@@ -13109,6 +13118,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * stress_test_library_id : uuid <<FK>>
         * name : text
           date : text
@@ -13141,6 +13151,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * stress_test_scenario_id : uuid <<FK>>
         * family : text
         * object_key : text
@@ -13220,6 +13231,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * todays_market_config_id : uuid <<FK>>
         * collection : text
           collection_id : text <<FK>>
@@ -13253,6 +13265,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * name : text
           description : text
           config_variant : text
@@ -13286,6 +13299,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * todays_market_configuration_id : uuid <<FK>>
         * collection : text
         * reference : text
@@ -13318,6 +13332,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * todays_market_config_id : uuid <<FK>>
         * configuration_id : text <<FK>>
         * position : integer
@@ -13347,6 +13362,7 @@ package "analytics" #E8F5E9 {
         * id : uuid <<PK>>
         --
         * version : integer
+        * party_id : uuid <<FK>>
         * todays_market_config_id : uuid <<FK>>
         * todays_market_collection_id : uuid <<FK>>
           key_value : text

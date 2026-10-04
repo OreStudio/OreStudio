@@ -1994,6 +1994,9 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path, owner_
             'parent_component_include': f"{grandparent['component']}.api",
             'parent_component_core': f"{grandparent['component']}.core",
             'parent_has_identity_group': grandparent.get('has_identity_group'),
+            # A party-isolated ancestor carries the session party, or the
+            # next row down could not see it through its existence check.
+            'party_isolated': bool(grandparent.get('party_isolated')),
             # An ancestor may itself carry a mandatory party_id FK (a
             # portfolio seeded as a book's parent, say). Production sets
             # that from the session, so the test has to seed a party for

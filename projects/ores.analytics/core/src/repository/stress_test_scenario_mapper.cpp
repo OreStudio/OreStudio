@@ -41,6 +41,7 @@ stress_test_scenario_mapper::map(const stress_test_scenario_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.stress_test_library_id = boost::lexical_cast<boost::uuids::uuid>(v.stress_test_library_id);
     r.name = v.name;
     r.date = v.date;
@@ -63,6 +64,7 @@ stress_test_scenario_mapper::map(const domain::stress_test_scenario& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.stress_test_library_id = boost::uuids::to_string(v.stress_test_library_id);
     r.name = v.name;
     r.date = v.date;

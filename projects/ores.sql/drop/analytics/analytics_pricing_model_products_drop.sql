@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists pricing_model_products_tbl_party_isolation_policy on "ores_analytics_pricing_model_products_tbl";
+drop policy if exists pricing_model_products_tbl_tenant_isolation_policy on "ores_analytics_pricing_model_products_tbl";
 drop rule if exists ores_analytics_pricing_model_products_delete_rule on "ores_analytics_pricing_model_products_tbl";
 drop trigger if exists ores_analytics_pricing_model_products_insert_trg on "ores_analytics_pricing_model_products_tbl";
 drop function if exists ores_analytics_pricing_model_products_insert_fn;

@@ -45,6 +45,7 @@ struct credit_simulation_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string name;
     std::optional<std::string> configuration_id;
     std::optional<std::string> market;

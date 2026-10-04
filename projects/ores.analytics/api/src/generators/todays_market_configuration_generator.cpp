@@ -45,6 +45,7 @@ generate_synthetic_todays_market_configuration(utility::generation::generation_c
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.todays_market_config_id = ctx.generate_uuid();
     r.configuration_id = std::string("default");
     r.position = 0;

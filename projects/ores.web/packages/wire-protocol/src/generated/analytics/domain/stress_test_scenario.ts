@@ -34,6 +34,7 @@ export interface StressTestScenario {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     stress_test_library_id: string;
     name: string;
     date: string | null;

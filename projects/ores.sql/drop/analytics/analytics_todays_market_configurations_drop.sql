@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists todays_market_configurations_tbl_party_isolation_policy on "ores_analytics_todays_market_configurations_tbl";
 drop policy if exists todays_market_configurations_tbl_tenant_isolation_policy on "ores_analytics_todays_market_configurations_tbl";
 drop rule if exists ores_analytics_todays_market_configurations_delete_rule on "ores_analytics_todays_market_configurations_tbl";
 drop trigger if exists ores_analytics_todays_market_configurations_insert_trg on "ores_analytics_todays_market_configurations_tbl";

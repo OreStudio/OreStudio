@@ -35,6 +35,7 @@ std::vector<ores::diff::domain::field_value> render_credit_simulation_matrix_row
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back(
         {.name = "Transition Matrix ID", .value = boost::uuids::to_string(v.transition_matrix_id)});
     fields.push_back({.name = "From Rating", .value = v.from_rating});

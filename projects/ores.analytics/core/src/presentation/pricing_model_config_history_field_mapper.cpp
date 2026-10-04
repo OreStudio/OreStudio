@@ -35,6 +35,7 @@ render_pricing_model_config_fields(const domain::pricing_model_config& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Config Variant", .value = v.config_variant});

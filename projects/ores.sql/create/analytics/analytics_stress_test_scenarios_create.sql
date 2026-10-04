@@ -39,6 +39,7 @@ create table if not exists "ores_analytics_stress_test_scenarios_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "stress_test_library_id" uuid not null,
     "name" text not null,
     "date" text null,
@@ -160,4 +161,24 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists stress_test_scenarios_tbl_party_isolation_policy
+    on ores_analytics_stress_test_scenarios_tbl;
+
+create policy stress_test_scenarios_tbl_party_isolation_policy
+on ores_analytics_stress_test_scenarios_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

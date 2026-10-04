@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/party_scope.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.reporting.api/domain/report_analytic.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -50,7 +50,7 @@ TEST_CASE("assigning a party stamps every row of a mapped document", tags) {
     d.unmodelled["Element"] = 2;
 
     const auto party = boost::uuids::random_generator()();
-    ores::ore::domain::assign_party(d, party);
+    ores::database::domain::assign_party(d, party);
 
     CHECK(d.setup.party_id == party);
     for (const auto& a : d.analytics)

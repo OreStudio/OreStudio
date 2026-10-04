@@ -22,10 +22,10 @@
 #include "ores.analytics.core/repository/credit_simulation_matrix_config_repository.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_repository.hpp"
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -80,7 +80,7 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     ores::ore::domain::load_data(content, original);
 
     mapped_credit_simulation mapped = credit_simulation_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, boost::uuids::random_generator()());
+    ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.rows.size() == credit_rating_scale.size());
 
     credit_simulation_config_repository config_repo;
@@ -156,7 +156,7 @@ TEST_CASE("a party sees only its own credit simulation configuration", tags) {
             ore_path("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")),
         original);
     auto mapped = credit_simulation_mapper::map(original);
-    ores::ore::domain::assign_party(mapped, parties.a);
+    ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::credit_simulation_config_repository repo;
     repo.write(parties.a_context, mapped.config);

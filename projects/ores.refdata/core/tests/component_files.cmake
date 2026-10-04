@@ -50,6 +50,7 @@ set(files
     "commodity_price_segment_eventing_integration_tests.cpp"
     "commodity_volatility_config_eventing_integration_tests.cpp"
     "contact_type_eventing_integration_tests.cpp"
+    "conventions_document_service_tests.cpp"
     "counterparty_contact_information_eventing_integration_tests.cpp"
     "counterparty_eventing_integration_tests.cpp"
     "counterparty_identifier_eventing_integration_tests.cpp"

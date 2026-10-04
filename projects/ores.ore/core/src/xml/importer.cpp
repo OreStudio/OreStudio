@@ -183,7 +183,8 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 }
 
 
-domain::mapped_conventions importer::import_conventions(const std::filesystem::path& path) {
+ores::refdata::domain::conventions_document
+importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;

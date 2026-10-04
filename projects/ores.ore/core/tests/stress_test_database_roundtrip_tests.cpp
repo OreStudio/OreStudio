@@ -20,8 +20,8 @@
 #include "ores.analytics.core/repository/stress_test_library_repository.hpp"
 #include "ores.analytics.core/repository/stress_test_scenario_repository.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_repository.hpp"
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/stress_test_mapper.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -66,7 +66,7 @@ void stamp(Row& r) {
 // The mapper turns a document into rows and leaves identity and provenance to
 // whoever stores them, so the test supplies both before writing.
 mapped_stress_test persistable(mapped_stress_test m) {
-    ores::ore::domain::assign_party(m, boost::uuids::random_generator()());
+    ores::database::domain::assign_party(m, boost::uuids::random_generator()());
     boost::uuids::random_generator next;
     m.library.id = next();
     if (m.library.name.empty())
@@ -185,7 +185,7 @@ TEST_CASE("a party sees only its own stress test library", tags) {
     ores::testing::scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     auto mapped = persistable(stress_test_mapper::map(load_example()));
-    ores::ore::domain::assign_party(mapped, parties.a);
+    ores::database::domain::assign_party(mapped, parties.a);
 
     stress_test_library_repository repo;
     repo.write(parties.a_context, mapped.library);

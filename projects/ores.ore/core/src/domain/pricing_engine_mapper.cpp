@@ -107,7 +107,7 @@ using parameter_key = std::pair<std::optional<boost::uuids::uuid>, std::string>;
 // row with a product, or a model or engine row whose product is absent.
 // Dropping such a row would pass as a round trip while losing data.
 std::map<parameter_key, std::vector<const parameter_row*>>
-group_parameters(const mapped_pricing_engines& v) {
+group_parameters(const ores::analytics::domain::pricing_engines_document& v) {
     std::set<boost::uuids::uuid> product_ids;
     for (const auto& product : v.products)
         product_ids.insert(product.id);
@@ -138,8 +138,9 @@ group_parameters(const mapped_pricing_engines& v) {
 
 }
 
-mapped_pricing_engines pricing_engine_mapper::map(const pricingengines& v) {
-    mapped_pricing_engines mapped;
+ores::analytics::domain::pricing_engines_document
+pricing_engine_mapper::map(const pricingengines& v) {
+    ores::analytics::domain::pricing_engines_document mapped;
 
     auto& config = mapped.config;
     config.id = new_uuid();
@@ -183,7 +184,8 @@ mapped_pricing_engines pricing_engine_mapper::map(const pricingengines& v) {
     return mapped;
 }
 
-pricingengines pricing_engine_mapper::reverse(const mapped_pricing_engines& v) {
+pricingengines
+pricing_engine_mapper::reverse(const ores::analytics::domain::pricing_engines_document& v) {
     pricingengines document;
 
     const auto groups = group_parameters(v);

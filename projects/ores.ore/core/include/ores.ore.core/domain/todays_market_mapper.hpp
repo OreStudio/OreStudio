@@ -24,31 +24,13 @@
 #include "ores.analytics.api/domain/todays_market_config.hpp"
 #include "ores.analytics.api/domain/todays_market_configuration.hpp"
 #include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
+#include "ores.analytics.api/domain/todays_market_document.hpp"
 #include "ores.analytics.api/domain/todays_market_entry.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
-
-/**
- * @brief One ORE TodaysMarket document, mapped to the analytics entities.
- *
- * Five tables, not one per collection. A collection is a thing with its own id
- * and a position, so it has a table; the twenty-four collections are the same
- * shape, so they share it. An entry belongs to one collection. A configuration
- * is a bundle of references rather than a list of entries, so it and its
- * bindings have tables of their own. A binding refers to a collection by that
- * collection's id: =DiscountingCurvesId= =inccy= selects the
- * =DiscountingCurves= collection whose id is =inccy=.
- */
-struct mapped_todays_market {
-    analytics::domain::todays_market_config config;
-    std::vector<analytics::domain::todays_market_collection> collections;
-    std::vector<analytics::domain::todays_market_entry> entries;
-    std::vector<analytics::domain::todays_market_configuration> configurations;
-    std::vector<analytics::domain::todays_market_configuration_binding> bindings;
-};
 
 /**
  * @brief Maps between an ORE TodaysMarket XML document and the analytics
@@ -69,7 +51,7 @@ public:
     /**
      * @brief Maps an ORE TodaysMarket document to the analytics entities.
      */
-    static mapped_todays_market map(const todaysmarket& v);
+    static ores::analytics::domain::todays_market_document map(const todaysmarket& v);
 
     /**
      * @brief Reconstructs an ORE TodaysMarket document from mapped entities.
@@ -79,7 +61,7 @@ public:
      * name the same key twice and a reference cannot be sorted back into
      * document order.
      */
-    static todaysmarket reverse(const mapped_todays_market& v);
+    static todaysmarket reverse(const ores::analytics::domain::todays_market_document& v);
 };
 
 }

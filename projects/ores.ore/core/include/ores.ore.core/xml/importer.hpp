@@ -114,9 +114,11 @@ public:
      * skipped.
      *
      * @param path Path to the conventions.xml file
-     * @return @c mapped_conventions struct containing one vector per convention type
+     * @return @c ores::refdata::domain::conventions_document struct containing one vector per
+     * convention type
      */
-    static domain::mapped_conventions import_conventions(const std::filesystem::path& path);
+    static ores::refdata::domain::conventions_document
+    import_conventions(const std::filesystem::path& path);
 
     /**
      * @brief Validates a trade against minimum import requirements.

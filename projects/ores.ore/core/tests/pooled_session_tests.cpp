@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -53,7 +53,7 @@ ores::reporting::domain::report_run_setup make_setup(const boost::uuids::uuid& p
     auto setup = ores::ore::domain::run_document_mapper::map_setup(run);
     setup.id = next_id();
     setup.report_definition_id = next_id();
-    ores::ore::domain::assign_party(setup, party);
+    ores::database::domain::assign_party(setup, party);
     return setup;
 }
 

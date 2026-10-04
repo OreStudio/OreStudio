@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/store/run_store.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
@@ -124,7 +125,7 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
                                                       "todaysmarket.xml",
                                                       "pricingengine.xml"});
     CHECK(std::ranges::find(imported.not_stored, "portfolio.xml") != imported.not_stored.end());
-    CHECK(imported.conventions.fx_skipped == std::vector<std::string>{"EUR-GBP-FX-CONVENTIONS"});
+    CHECK(imported.fx_conventions_skipped == std::vector<std::string>{"EUR-GBP-FX-CONVENTIONS"});
 
     const auto exported = store::export_run(parties.a_context, definition);
     CHECK(exported.size() == imported.stored.size());

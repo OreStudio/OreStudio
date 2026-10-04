@@ -17,11 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_DOMAIN_CURVE_CONFIGURATION_MAPPER_HPP
-#define ORES_ORE_CORE_DOMAIN_CURVE_CONFIGURATION_MAPPER_HPP
+#ifndef ORES_REFDATA_API_DOMAIN_CURVE_CONFIGURATION_DOCUMENT_HPP
+#define ORES_REFDATA_API_DOMAIN_CURVE_CONFIGURATION_DOCUMENT_HPP
 
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
@@ -32,7 +30,6 @@
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
-#include "ores.refdata.api/domain/curve_configuration_document.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
@@ -57,43 +54,56 @@
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
+#include <string>
 #include <vector>
 
-namespace ores::ore::domain {
+namespace ores::refdata::domain {
 
 /**
- * @brief Maps between an ORE CurveConfiguration document and the refdata curve
- * entities.
+ * @brief One ORE curve configuration document as the rows refdata stores.
  *
- * Every curve section and the document's report configuration are mapped.
- * Elements of an entry the mapper cannot hold yet are refused rather than
- * dropped, because a dropped element would pass as a round trip while losing
- * data.
- *
- * Segments are restored in the order the document wrote them within each
- * segment element. The binding keeps one list per element, so the order across
- * elements is not part of the parsed document.
+ * The header row and every child row the document maps to, grouped by table.
+ * Refdata stores and reads the document whole; a caller in another component
+ * reaches it through refdata's operations, never its tables.
  */
-class ORES_ORE_CORE_EXPORT curve_configuration_mapper {
-public:
-    /**
-     * @brief Maps an ORE CurveConfiguration document to the refdata entities.
-     *
-     * @throws std::runtime_error for a report configuration or a section with
-     * entries the mapper does not model yet.
-     */
-    static ores::refdata::domain::curve_configuration_document map(const curveconfiguration& v);
+struct curve_configuration_document {
+    curve_configuration config;
+    std::vector<curve_configuration_section> sections;
+    std::vector<curve_definition> definitions;
+    std::vector<yield_curve_config> yield_curves;
+    std::vector<equity_curve_config> equity_curves;
+    std::vector<inflation_curve_config> inflation_curves;
+    std::vector<default_curve_config> default_curves;
+    std::vector<commodity_curve_config> commodity_curves;
+    std::vector<fx_volatility_config> fx_volatilities;
+    std::vector<yield_volatility_config> yield_volatilities;
+    std::vector<base_correlation_config> base_correlations;
+    std::vector<curve_correlation_config> correlations;
+    std::vector<curve_report_configuration> report_configurations;
+    std::vector<cds_volatility_config> cds_volatilities;
+    std::vector<cds_volatility_term> cds_volatility_terms;
+    std::vector<curve_volatility_config> volatility_configs;
+    std::vector<inflation_cap_floor_volatility_config> inflation_cap_floor_volatilities;
+    std::vector<swaption_volatility_config> swaption_volatilities;
+    std::vector<cap_floor_volatility_config> cap_floor_volatilities;
+    std::vector<curve_parametric_smile> parametric_smiles;
+    std::vector<curve_parametric_smile_parameter> parametric_smile_parameters;
+    std::vector<equity_volatility_config> equity_volatilities;
+    std::vector<commodity_volatility_config> commodity_volatilities;
+    std::vector<bond_future_volatility_config> bond_future_volatilities;
+    std::vector<curve_global_report> global_reports;
+    std::vector<commodity_price_segment> commodity_price_segments;
+    std::vector<default_curve_configuration> default_curve_configurations;
+    std::vector<inflation_seasonality_factor> seasonality_factors;
+    std::vector<curve_security_config> securities;
+    std::vector<intraday_power_curve_config> intraday_power_curves;
+    std::vector<curve_bootstrap_config> bootstrap_configs;
+    std::vector<curve_segment> segments;
+    std::vector<curve_segment_curve> segment_curves;
+    std::vector<curve_quote> quotes;
 
-    /**
-     * @brief Reconstructs an ORE CurveConfiguration document from mapped
-     * entities.
-     *
-     * @throws std::runtime_error for a row the document has no place for: an
-     * unknown section or segment type, a detail or child row whose parent is
-     * absent, or a quote directly on an entry whose section holds quotes only on
-     * its segments.
-     */
-    static curveconfiguration reverse(const ores::refdata::domain::curve_configuration_document& v);
+    friend bool operator==(const curve_configuration_document&,
+                           const curve_configuration_document&) = default;
 };
 
 }

@@ -147,6 +147,7 @@ set(files
     "service/credit_simulation_matrix_row_config_service.cpp"
     "service/credit_simulation_netting_set_config_service.cpp"
     "service/pricing_engine_type_service.cpp"
+    "service/pricing_engines_document_service.cpp"
     "service/pricing_model_config_service.cpp"
     "service/pricing_model_product_parameter_service.cpp"
     "service/pricing_model_product_service.cpp"
@@ -160,6 +161,7 @@ set(files
     "service/todays_market_config_service.cpp"
     "service/todays_market_configuration_binding_service.cpp"
     "service/todays_market_configuration_service.cpp"
+    "service/todays_market_document_service.cpp"
     "service/todays_market_entry_service.cpp"
 )
 
@@ -314,6 +316,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/credit_simulation_matrix_row_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/credit_simulation_netting_set_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_engine_type_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_engines_document_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_product_parameter_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_product_service.hpp"
@@ -327,5 +330,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_configuration_binding_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_configuration_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_document_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_entry_service.hpp"
 )

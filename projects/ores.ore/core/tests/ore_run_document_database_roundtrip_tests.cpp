@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
@@ -57,7 +57,7 @@ TEST_CASE("a party sees only its own run document", tags) {
     auto setup = run_document_mapper::map_setup(original);
     setup.id = next_id();
     setup.report_definition_id = next_id();
-    ores::ore::domain::assign_party(setup, parties.a);
+    ores::database::domain::assign_party(setup, parties.a);
 
     report_run_setup_repository setups;
     setups.write(parties.a_context, setup);

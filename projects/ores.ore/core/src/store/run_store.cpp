@@ -19,59 +19,48 @@
  */
 
 #include "ores.ore.core/store/run_store.hpp"
-#include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
-#include "ores.analytics.core/repository/todays_market_config_repository.hpp"
+#include "ores.analytics.core/service/pricing_engines_document_service.hpp"
+#include "ores.analytics.core/service/todays_market_document_service.hpp"
+#include "ores.database/repository/document_operations.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
-#include "ores.ore.core/store/detail/store_helpers.hpp"
-#include "ores.refdata.core/repository/curve_configuration_repository.hpp"
-#include "ores.reporting.core/repository/configuration_repository.hpp"
-#include "ores.reporting.core/repository/parameter_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_analytic_parameter_repository.hpp"
-#include "ores.reporting.core/repository/report_analytic_repository.hpp"
-#include "ores.reporting.core/repository/report_configuration_repository.hpp"
+#include "ores.ore.core/domain/todays_market_mapper.hpp"
+#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_market_binding_repository.hpp"
-#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/random_generator.hpp>
+#include "ores.reporting.core/service/run_document_service.hpp"
 #include <algorithm>
 #include <filesystem>
 #include <format>
-#include <map>
 #include <optional>
-#include <set>
 #include <stdexcept>
-#include <utility>
 
 namespace ores::ore::store {
 
 using database::context;
-using detail::read_where;
-using detail::stamp_party;
 using reporting::domain::report_run_setup;
-using namespace ores::reporting::repository;
 
 namespace {
 
 /**
- * @brief A configuration document the store holds: the configuration type it
- * fills, the component that owns its rows, and the run setup column that names
- * its file.
+ * @brief A configuration document a run can name: the configuration type it
+ * fills and the run setup column that names its file.
  */
 struct document_kind {
     std::string_view code;
-    std::string_view owning_component;
     std::optional<std::string> report_run_setup::* file;
 };
 
 // In the order an import writes them: a curve segment names its conventions,
 // so the conventions are written before the curves.
 constexpr document_kind document_kinds[] = {
-    {"conventions", "ores.refdata", &report_run_setup::conventions_file},
-    {"curve_configuration", "ores.refdata", &report_run_setup::curve_config_file},
-    {"todays_market", "ores.analytics", &report_run_setup::market_config_file},
-    {"pricing_engines", "ores.analytics", &report_run_setup::pricing_engines_file},
+    {"conventions", &report_run_setup::conventions_file},
+    {"curve_configuration", &report_run_setup::curve_config_file},
+    {"todays_market", &report_run_setup::market_config_file},
+    {"pricing_engines", &report_run_setup::pricing_engines_file},
 };
 
 const document_kind* find_kind(std::string_view code) {
@@ -81,61 +70,54 @@ const document_kind* find_kind(std::string_view code) {
     return nullptr;
 }
 
-// Analytic parameter definitions are seeded once, for the system tenant.
-std::vector<reporting::domain::parameter_definition>
-analytic_parameter_definitions(const context& ctx) {
-    const auto system = ctx.with_tenant(utility::uuid::tenant_id::system(), "ores.ore.store");
-    return read_where(system, parameter_definition_repository(), [](const auto& d) {
-        return d.scope == "analytic";
-    });
-}
-
 template <typename Document>
-void parse_file(const std::string& file, const std::string& content, Document& d) {
+Document parse_file(const std::string& file, const std::string& content) {
+    Document d;
     try {
         domain::load_data(content, d);
     } catch (const std::exception& e) {
         throw std::invalid_argument(std::format("{}: {}", file, e.what()));
     }
+    return d;
 }
 
-template <typename Document, typename Mapped>
-Mapped parse_and_map(const std::string& content, Mapped (*map)(const Document&)) {
-    Document d;
-    domain::load_data(content, d);
-    return map(d);
-}
-
-// Stores one configuration document under its configuration row. A document
-// with a header carries the configuration's id and name on it, which is what
-// the export finds it by.
-conventions_write_result store_document(const context& ctx,
-                                        std::string_view code,
-                                        const std::string& content,
-                                        const reporting::domain::configuration& c) {
-    const auto with_header = [&](auto mapped) {
-        mapped.config.configuration_id = c.id;
-        mapped.config.name = c.name;
-        write(ctx, std::move(mapped));
+// Hands one configuration document to the component that owns it. A document
+// with a header carries the configuration's id and name, which is what the
+// export finds it by.
+void store_document(const context& ctx,
+                    std::string_view code,
+                    const std::string& file,
+                    const std::string& content,
+                    const reporting::domain::configuration& c,
+                    run_import_result& r) {
+    const auto with_header = [&](auto document) {
+        document.config.configuration_id = c.id;
+        document.config.name = c.name;
+        return document;
     };
-    if (code == "pricing_engines")
-        with_header(parse_and_map(content, &domain::pricing_engine_mapper::map));
-    else if (code == "todays_market")
-        with_header(parse_and_map(content, &domain::todays_market_mapper::map));
-    else if (code == "curve_configuration")
-        with_header(parse_and_map(content, &domain::curve_configuration_mapper::map));
-    else if (code == "conventions")
-        return write(ctx, parse_and_map(content, &domain::conventions_mapper::map));
-    return {};
+    if (code == "pricing_engines") {
+        analytics::service::pricing_engines_document_service(ctx).save(with_header(
+            domain::pricing_engine_mapper::map(parse_file<domain::pricingengines>(file, content))));
+    } else if (code == "todays_market") {
+        analytics::service::todays_market_document_service(ctx).save(with_header(
+            domain::todays_market_mapper::map(parse_file<domain::todaysmarket>(file, content))));
+    } else if (code == "curve_configuration") {
+        refdata::service::curve_configuration_document_service(ctx).save(
+            with_header(domain::curve_configuration_mapper::map(
+                parse_file<domain::curveconfiguration>(file, content))));
+    } else if (code == "conventions") {
+        const auto saved = refdata::service::conventions_document_service(ctx).save(
+            domain::conventions_mapper::map(parse_file<domain::conventions>(file, content)));
+        r.world_conventions_kept = saved.world_kept;
+        r.fx_conventions_skipped = saved.fx_skipped;
+    }
 }
 
-template <typename Repository>
-boost::uuids::uuid header_of(const context& ctx,
-                             Repository repo,
+template <typename Service>
+boost::uuids::uuid header_of(Service service,
                              const reporting::domain::report_configuration& binding) {
-    for (const auto& h : repo.read_latest(ctx))
-        if (h.configuration_id == binding.configuration_id)
-            return h.id;
+    if (const auto id = service.find_by_configuration(binding.configuration_id))
+        return *id;
     throw std::runtime_error(std::format("No {} document holds the configuration the report "
                                          "definition binds in that slot.",
                                          binding.configuration_type_code));
@@ -145,17 +127,21 @@ boost::uuids::uuid header_of(const context& ctx,
 // session sees, which are the party's own and the tenant's world conventions.
 std::string load_document(const context& ctx, const reporting::domain::report_configuration& b) {
     const auto& code = b.configuration_type_code;
-    if (code == "pricing_engines")
-        return domain::save_data(domain::pricing_engine_mapper::reverse(read_pricing_engines(
-            ctx, header_of(ctx, analytics::repository::pricing_model_config_repository(), b))));
-    if (code == "todays_market")
-        return domain::save_data(domain::todays_market_mapper::reverse(read_todays_market(
-            ctx, header_of(ctx, analytics::repository::todays_market_config_repository(), b))));
-    if (code == "curve_configuration")
+    if (code == "pricing_engines") {
+        analytics::service::pricing_engines_document_service s(ctx);
+        return domain::save_data(domain::pricing_engine_mapper::reverse(s.get(header_of(s, b))));
+    }
+    if (code == "todays_market") {
+        analytics::service::todays_market_document_service s(ctx);
+        return domain::save_data(domain::todays_market_mapper::reverse(s.get(header_of(s, b))));
+    }
+    if (code == "curve_configuration") {
+        refdata::service::curve_configuration_document_service s(ctx);
         return domain::save_data(
-            domain::curve_configuration_mapper::reverse(read_curve_configuration(
-                ctx, header_of(ctx, refdata::repository::curve_configuration_repository(), b))));
-    return domain::save_data(domain::conventions_mapper::reverse(read_conventions(ctx)));
+            domain::curve_configuration_mapper::reverse(s.get(header_of(s, b))));
+    }
+    return domain::save_data(domain::conventions_mapper::reverse(
+        refdata::service::conventions_document_service(ctx).get()));
 }
 
 }
@@ -169,66 +155,16 @@ run_import_result import_run(const context& ctx,
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    const auto of_definition = [&](const auto& row) {
-        return row.report_definition_id == report_definition_id;
-    };
-    if (!read_where(ctx, report_run_setup_repository(), of_definition).empty())
-        throw std::invalid_argument(
-            "The report definition already holds a run document; import into a new definition.");
-
-    domain::ore run;
-    parse_file(std::string(run_document_file), run_file->second, run);
-
-    auto next_id = boost::uuids::random_generator();
-    auto setup = domain::run_document_mapper::map_setup(run);
-    setup.id = next_id();
-    setup.report_definition_id = report_definition_id;
-    stamp_party(ctx, setup);
-
-    auto analytics = domain::run_document_mapper::map_analytics(run);
-    std::vector<reporting::domain::report_analytic> analytic_rows;
-    for (auto& a : analytics) {
-        a.analytic.id = next_id();
-        a.analytic.report_definition_id = report_definition_id;
-        stamp_party(ctx, a.analytic);
-        analytic_rows.push_back(a.analytic);
-    }
-
-    auto bindings = domain::run_document_mapper::map_market_bindings(run);
-    for (auto& b : bindings) {
-        b.id = next_id();
-        b.report_definition_id = report_definition_id;
-    }
-    stamp_party(ctx, bindings);
-
-    std::map<std::pair<std::string, std::string>, boost::uuids::uuid> definition_ids;
-    for (const auto& d : analytic_parameter_definitions(ctx))
-        definition_ids[{d.subtype, d.name}] = d.id;
-
-    std::vector<reporting::domain::report_analytic_parameter> parameters;
-    for (const auto& a : analytics) {
-        for (const auto& p : a.parameters) {
-            const auto it = definition_ids.find({a.analytic.analytic_type_code, p.name});
-            if (it == definition_ids.end())
-                throw std::invalid_argument(
-                    std::format("The {} analytic sets {}, which no parameter definition describes.",
-                                a.analytic.analytic_type_code,
-                                p.name));
-            reporting::domain::report_analytic_parameter row;
-            row.id = next_id();
-            row.report_analytic_id = a.analytic.id;
-            row.parameter_definition_id = it->second;
-            row.value = p.value;
-            row.position = p.position;
-            parameters.push_back(std::move(row));
-        }
-    }
-    stamp_party(ctx, parameters);
+    const auto run = parse_file<domain::ore>(std::string(run_document_file), run_file->second);
+    reporting::domain::run_document document;
+    document.setup = domain::run_document_mapper::map_setup(run);
+    document.analytics = domain::run_document_mapper::map_analytics(run);
+    document.market_bindings = domain::run_document_mapper::map_market_bindings(run);
 
     // Everything an import can refuse is checked before its first write, since
     // the writes are not one transaction.
     for (const auto& kind : document_kinds) {
-        const auto& file = setup.*kind.file;
+        const auto& file = document.setup.*kind.file;
         if (file && !files.contains(*file))
             throw std::invalid_argument(std::format(
                 "The run document names {} as its {} file, which the input does not hold.",
@@ -236,43 +172,21 @@ run_import_result import_run(const context& ctx,
                 kind.code));
     }
 
-    report_run_setup_repository().write(ctx, setup);
-    report_analytic_repository().write(ctx, analytic_rows);
-    report_market_binding_repository().write(ctx, bindings);
-    report_analytic_parameter_repository().write(ctx, parameters);
+    reporting::service::run_document_service runs(ctx);
+    runs.save(report_definition_id, document);
 
     run_import_result r;
     r.stored.push_back(std::string(run_document_file));
     for (const auto& kind : document_kinds) {
-        const auto& file = setup.*kind.file;
+        const auto& file = document.setup.*kind.file;
         if (!file)
             continue;
-        const auto& content = files.at(*file);
-
-        reporting::domain::configuration c;
-        c.id = next_id();
-        c.name = name + "/" + *file;
-        c.configuration_type_code = std::string(kind.code);
-        c.owning_component = std::string(kind.owning_component);
-        stamp_party(ctx, c);
-        configuration_repository().write(ctx, c);
-
-        conventions_write_result written;
+        const auto c = runs.bind(report_definition_id, std::string(kind.code), name + "/" + *file);
         try {
-            written = store_document(ctx, kind.code, content, c);
+            store_document(ctx, kind.code, *file, files.at(*file), c, r);
         } catch (const std::exception& e) {
             throw std::runtime_error(std::format("{}: {}", *file, e.what()));
         }
-        if (kind.code == "conventions")
-            r.conventions = std::move(written);
-
-        reporting::domain::report_configuration binding;
-        binding.id = next_id();
-        binding.report_definition_id = report_definition_id;
-        binding.configuration_type_code = c.configuration_type_code;
-        binding.configuration_id = c.id;
-        stamp_party(ctx, binding);
-        report_configuration_repository().write(ctx, binding);
         r.stored.push_back(*file);
     }
 
@@ -286,67 +200,36 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     const auto ctx = [&] {
         if (session.party_id())
             return session;
-        const auto definition = detail::read_one(
-            session, report_definition_repository(), "report definition", report_definition_id);
+        const auto definition =
+            database::repository::read_one(session,
+                                           reporting::repository::report_definition_repository(),
+                                           "report definition",
+                                           report_definition_id);
         return session.with_party(
             session.tenant_id(), definition.party_id, {definition.party_id}, session.actor());
     }();
-    const auto of_definition = [&](const auto& row) {
-        return row.report_definition_id == report_definition_id;
-    };
-    const auto setups = read_where(ctx, report_run_setup_repository(), of_definition);
-    if (setups.empty())
+
+    reporting::service::run_document_service runs(ctx);
+    const auto document = runs.get(report_definition_id);
+    if (!document)
         throw std::invalid_argument("The report definition holds no run document.");
-    const auto& setup = setups.front();
-
-    auto analytic_rows = read_where(ctx, report_analytic_repository(), of_definition);
-    std::ranges::sort(analytic_rows, [](const auto& l, const auto& r) {
-        return l.display_order < r.display_order;
-    });
-    std::set<boost::uuids::uuid> analytic_ids;
-    for (const auto& a : analytic_rows)
-        analytic_ids.insert(a.id);
-
-    std::map<boost::uuids::uuid, std::string> definition_names;
-    for (const auto& d : analytic_parameter_definitions(ctx))
-        definition_names[d.id] = d.name;
-
-    auto parameter_rows =
-        read_where(ctx, report_analytic_parameter_repository(), [&](const auto& p) {
-            return analytic_ids.contains(p.report_analytic_id);
-        });
-    std::ranges::sort(parameter_rows,
-                      [](const auto& l, const auto& r) { return l.position < r.position; });
-
-    std::vector<domain::mapped_run_analytic> analytics;
-    for (const auto& a : analytic_rows) {
-        domain::mapped_run_analytic m{a, {}};
-        for (const auto& p : parameter_rows)
-            if (p.report_analytic_id == a.id)
-                m.parameters.push_back(
-                    {definition_names.at(p.parameter_definition_id), p.value, p.position});
-        analytics.push_back(std::move(m));
-    }
-
-    auto bindings = read_where(ctx, report_market_binding_repository(), of_definition);
-    std::ranges::sort(bindings,
-                      [](const auto& l, const auto& r) { return l.position < r.position; });
 
     domain::ore run;
-    run.Setup = domain::run_document_mapper::reverse_setup(setup);
-    run.Analytics = domain::run_document_mapper::reverse_analytics(analytics);
-    if (!bindings.empty())
-        run.Markets = domain::run_document_mapper::reverse_market_bindings(bindings);
+    run.Setup = domain::run_document_mapper::reverse_setup(document->setup);
+    run.Analytics = domain::run_document_mapper::reverse_analytics(document->analytics);
+    if (!document->market_bindings.empty())
+        run.Markets =
+            domain::run_document_mapper::reverse_market_bindings(document->market_bindings);
 
     input_files files;
     files[std::string(run_document_file)] = domain::save_data(run);
-    for (const auto& b : read_where(ctx, report_configuration_repository(), of_definition)) {
+    for (const auto& b : runs.bindings(report_definition_id)) {
         const auto* kind = find_kind(b.configuration_type_code);
         if (kind == nullptr)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, which the export cannot write.",
                 b.configuration_type_code));
-        const auto& file = setup.*kind->file;
+        const auto& file = document->setup.*kind->file;
         if (!file)
             throw std::invalid_argument(std::format(
                 "The report definition binds a {} configuration, but its run document names no "
@@ -385,8 +268,9 @@ input_files archive_layout(const input_files& files) {
 
     input_files layout;
     for (const auto& [name, content] : files) {
-        const std::filesystem::path directory =
-            name == run_document_file ? std::filesystem::path("Input") : std::filesystem::path(input_path);
+        const std::filesystem::path directory = name == run_document_file ?
+                                                    std::filesystem::path("Input") :
+                                                    std::filesystem::path(input_path);
         const auto path = directory / name;
         if (!inside(std::filesystem::path(name)) || !inside(path))
             throw std::invalid_argument(

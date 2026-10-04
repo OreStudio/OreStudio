@@ -37,6 +37,7 @@ set(files
     "repository_report_definition_repository_tests.cpp"
     "repository_report_input_bundle_repository_tests.cpp"
     "repository_report_type_repository_tests.cpp"
+    "run_document_service_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
     "service_run_requirements_tests.cpp"

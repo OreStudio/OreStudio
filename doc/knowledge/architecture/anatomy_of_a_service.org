@@ -189,7 +189,7 @@ missing):
 - [ ] *IAM account* — row in =ores_iam_accounts_tbl= (from registry).
 - [ ] *IAM role* — row in =ores_iam_roles_tbl= (from registry).
 - [ ] *IAM role permissions* — hand-added in =iam_roles_populate.sql= for every
-  endpoint the service calls (e.g. =marketdata::series:write=). *Not generated.*
+  endpoint the service calls (e.g. =marketdata::feed_bindings:write=). *Not generated.*
 - [ ] *Controller service definition* — row in
   =ores_controller_service_definitions_tbl= (=controller_service_definitions_populate.sql=),
   =enabled = true=.

@@ -26,8 +26,11 @@
  * send today, minus the fields those replies drop, so the screens show what a
  * deployment would really state:
  *
- * - the service samples come from telemetry.v1.services.list, which keeps the
- *   latest sample of each instance among the rows of the last five minutes;
+ * - the service instances join the registry (projects/modeling/
+ *   service_registry.org, which states the replicas each service expects) with
+ *   telemetry.v1.services.list, which keeps the latest sample of each instance
+ *   among the rows of the last five minutes; the interval is the instance id,
+ *   a UUID the heartbeat publisher generates at startup;
  * - the grid summary is the compute.v1.telemetry.get_grid_stats reply, whose
  *   node summaries carry no failure counts;
  * - the bus samples are the nats_samples reply, whose counters run since the
@@ -35,25 +38,57 @@
  * - the log entries are telemetry.v1.logs.list rows; every one is source
  *   server, because nothing publishes a client line;
  * - the versions are the client build stamp, the server build string, and the
- *   database row that has no read at all.
+ *   database row, which the login answer must learn to carry.
  */
 
-/** telemetry.v1.services.list: one row per instance that reported in the last five minutes. */
-export interface PrototypeServiceSample {
+/*
+ * The state of one expected instance, as the services screen needs it.
+ *
+ * The state comes from the installation's own service manager, the one
+ * `compass services status` reports with the same words: running, stopped,
+ * failed, missing. No operation serves it today; the read of the samples can
+ * say only who reported. The fixture carries the states the design needs.
+ */
+export interface PrototypeServiceInstance {
     readonly serviceName: string;
-    readonly instanceId: string;
-    readonly version: string;
-    readonly lastHeartbeatSeconds: number;
-    readonly sampledAt: string;
+    readonly instanceId: string | undefined;
+    readonly state: 'running' | 'stopped' | 'missing';
+    readonly version: string | undefined;
+    readonly lastHeartbeatSeconds: number | undefined;
 }
 
-export const serviceSamples: readonly PrototypeServiceSample[] = [
-    { serviceName: 'ores.telemetry.service', instanceId: '2a9977f6', version: 'v0.0.25', lastHeartbeatSeconds: 2, sampledAt: '14:32:04' },
-    { serviceName: 'ores.compute.service', instanceId: '6f2c19a1', version: 'v0.0.25', lastHeartbeatSeconds: 4, sampledAt: '14:32:02' },
-    { serviceName: 'ores.iam.service', instanceId: '91b0f33d', version: 'v0.0.25', lastHeartbeatSeconds: 12, sampledAt: '14:31:54' },
-    { serviceName: 'ores.compute.service', instanceId: 'c47e5508', version: 'v0.0.24', lastHeartbeatSeconds: 21, sampledAt: '14:31:45' },
-    { serviceName: 'ores.reporting.service', instanceId: 'b8d41e70', version: 'v0.0.25', lastHeartbeatSeconds: 47, sampledAt: '14:31:19' },
-    { serviceName: 'ores.nats.poller', instanceId: 'f0a112c9', version: 'v0.0.25', lastHeartbeatSeconds: 58, sampledAt: '14:31:08' },
+/**
+ * The registry's replicas per service, and the instances that answer them.
+ *
+ * 20 services, 24 expected instances: the compute wrapper is the one service
+ * the registry gives more than one replica. Two are not running: the reporting
+ * service is stopped, and one wrapper replica is missing.
+ */
+export const serviceInstances: readonly PrototypeServiceInstance[] = [
+    { serviceName: 'ores.analytics.service', instanceId: 'a3f81c02-6d44-4b0e-9c21-7f5e0d8a1b34', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 6 },
+    { serviceName: 'ores.assets.service', instanceId: '5d21b7e4-90c1-4a37-b8f4-2e6d9c05a7b1', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 9 },
+    { serviceName: 'ores.compute.service', instanceId: '6f2c19a1-3e7d-4c58-a1b2-0d4f8e6c9a23', state: 'running', version: 'v0.0.24', lastHeartbeatSeconds: 4 },
+    { serviceName: 'ores.compute.wrapper', instanceId: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 5 },
+    { serviceName: 'ores.compute.wrapper', instanceId: '84b36cd1-7c2e-4a09-93b1-2c3d4e5f6a7b', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 7 },
+    { serviceName: 'ores.compute.wrapper', instanceId: 'f27a03be-9d4f-4b21-84c3-5e6f7a8b9c0d', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 6 },
+    { serviceName: 'ores.compute.wrapper', instanceId: '5c18e4a9-1e0f-4c32-95d5-8a9b0c1d2e3f', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 8 },
+    { serviceName: 'ores.compute.wrapper', instanceId: undefined, state: 'missing', version: undefined, lastHeartbeatSeconds: undefined },
+    { serviceName: 'ores.dq.service', instanceId: '77c0e5a3-2f10-4d43-a6e7-0b1c2d3e4f50', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 11 },
+    { serviceName: 'ores.http.server', instanceId: '0be2a911-3a21-4e54-b7f8-1c2d3e4f5061', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 3 },
+    { serviceName: 'ores.iam.service', instanceId: '91b0f33d-4b32-4f65-8809-2d3e4f506172', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 12 },
+    { serviceName: 'ores.marketdata.service', instanceId: 'e14d9077-5c43-4a76-991a-3e4f50617283', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 8 },
+    { serviceName: 'ores.ore.service', instanceId: '3c7b12d5-6d54-4b87-8a2b-4f5061728394', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 14 },
+    { serviceName: 'ores.refdata.service', instanceId: 'b6e0a4c8-7e65-4c98-9b3c-5061728394a5', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 7 },
+    { serviceName: 'ores.reporting.service', instanceId: 'c9a3f10b-8f76-4da9-8c4d-61728394a5b6', state: 'stopped', version: undefined, lastHeartbeatSeconds: undefined },
+    { serviceName: 'ores.scheduler.service', instanceId: '8f4a1139-9087-4eba-9d5e-728394a5b6c7', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 10 },
+    { serviceName: 'ores.storage.service', instanceId: '2d9710fe-a198-4fcb-8e6f-8394a5b6c7d8', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 13 },
+    { serviceName: 'ores.synthetic.service', instanceId: '51ba6cc3-b2a9-40dc-9f70-94a5b6c7d8e9', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 16 },
+    { serviceName: 'ores.telemetry.service', instanceId: '2a9977f6-c3ba-41ed-8071-a5b6c7d8e9f0', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 2 },
+    { serviceName: 'ores.trading.service', instanceId: 'd4c8b210-d4cb-42fe-9182-b6c7d8e9f0a1', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 15 },
+    { serviceName: 'ores.variability.service', instanceId: '9e07ab45-e5dc-430f-8293-c7d8e9f0a1b2', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 6 },
+    { serviceName: 'ores.web.service', instanceId: '4021d7aa-f6ed-4410-93a4-d8e9f0a1b2c3', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 1 },
+    { serviceName: 'ores.workflow.service', instanceId: '66d5e2f1-a7fe-4521-84b5-e9f0a1b2c3d4', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 12 },
+    { serviceName: 'ores.workspace.service', instanceId: 'c13f8b96-b80f-4632-95c6-f0a1b2c3d4e5', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 9 },
 ];
 
 /** compute.v1.telemetry.get_grid_stats: the summary and one row per known node. */
@@ -159,7 +194,7 @@ export const logEntries: readonly PrototypeLogEntry[] = [
     { id: 2430, time: '14:30:58.902', level: 'WARN', source: 'server', sourceName: 'ores.compute.service', component: 'ores.compute.poller', message: 'retrying fetch after timeout', tag: 'compute.fetch', sessionId: undefined },
     { id: 2429, time: '14:30:44.201', level: 'INFO', source: 'server', sourceName: 'ores.iam.service', component: 'ores.iam.auth', message: 'session opened', tag: 'iam.session', sessionId: 'e8f1a7c2' },
     { id: 2428, time: '14:30:41.550', level: 'DEBUG', source: 'server', sourceName: 'ores.telemetry.service', component: 'ores.telemetry.ingest', message: 'stored 18 service samples', tag: 'telemetry.ingest', sessionId: undefined },
-    { id: 2427, time: '14:30:30.008', level: 'INFO', source: 'server', sourceName: 'ores.nats.poller', component: 'ores.nats.monitor', message: 'sampled the NATS server', tag: 'nats.sample', sessionId: undefined },
+    { id: 2427, time: '14:30:30.008', level: 'INFO', source: 'server', sourceName: 'ores.telemetry.service', component: 'ores.telemetry.service.app.nats_poller', message: 'sampled the NATS server', tag: 'nats.sample', sessionId: undefined },
     { id: 2426, time: '14:30:12.731', level: 'WARN', source: 'server', sourceName: 'ores.iam.service', component: 'ores.iam.auth', message: 'sign-in rejected: unknown account', tag: 'iam.signin', sessionId: undefined },
     { id: 2425, time: '14:29:59.440', level: 'INFO', source: 'server', sourceName: 'ores.reporting.service', component: 'ores.reporting.queue', message: 'batch queued for the grid', tag: 'reporting.queue', sessionId: 'c02d55b9' },
     { id: 2424, time: '14:29:47.020', level: 'ERROR', source: 'server', sourceName: 'ores.workflow.service', component: 'ores.workflow.engine', message: 'step timed out, instance paused', tag: 'workflow.step', sessionId: undefined },
@@ -190,18 +225,24 @@ export const serverVersion: PrototypeServerVersion = {
 };
 
 export interface PrototypeDatabaseState {
-    readonly fingerprint: string | undefined;
-    readonly environment: string | undefined;
-    readonly commit: string | undefined;
-    readonly created: string | undefined;
+    readonly fingerprint: string;
+    readonly environment: string;
+    readonly commit: string;
+    readonly created: string;
 }
 
-/** ores_database_info_tbl has no read operation, so the panel has no values. */
+/**
+ * The database row, as the login answer should carry it.
+ *
+ * The values are the row `compass db recreate` stamps: the schema fingerprint
+ * every service compares at its own startup, the build environment, the commit
+ * the schema was cut from, and when it was written.
+ */
 export const databaseState: PrototypeDatabaseState = {
-    fingerprint: undefined,
-    environment: undefined,
-    commit: undefined,
-    created: undefined,
+    fingerprint: '1109eccab21e8fe8',
+    environment: 'development',
+    commit: 'a1e507d',
+    created: '2026-10-04 14:02',
 };
 
 export function asGiB(bytes: number): string {

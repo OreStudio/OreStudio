@@ -31,7 +31,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsNav, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import {
     asGiB,
     asMiB,
@@ -55,8 +55,8 @@ const VARIANTS = [
 
 const GAPS: readonly ScreenGap[] = [
     {
-        title: 'One tenant sees its own grid only',
-        body: 'The read is tenant-scoped, so the summary and the nodes cover the tenant of the session. No operation rolls the tenants up.',
+        title: 'The read narrows a shared grid to one tenant',
+        body: "The grid belongs to the installation: every tenant's work runs on the same hosts. The read filters by the tenant of the session anyway, so an administrator sees one tenant's slice of it. The read must serve the whole grid.",
     },
     {
         title: 'The failures are stored and then dropped',
@@ -89,16 +89,16 @@ export function GridPrototype(): ReactNode {
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
-                <OperationsNav pathname="/prototype/grid" />
                 <PageHeader
                     title="Operations: compute grid"
-                    description="The host and work summary, and one row per node."
+                    description="The installation's host and work summary, and one row per node."
                     actions={
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-ink-faint">Updated {updatedAt}</span>
                             <Button variant="secondary" onClick={refresh}>
                                 Refresh
                             </Button>
+                            <OperationsBack />
                         </div>
                     }
                 />
@@ -143,7 +143,7 @@ export function GridPrototype(): ReactNode {
                             </span>
                         </div>
                         <p className="text-ink-faint">
-                            Signed in as system administrator, tenant Acme Corporation.
+                            Signed in as system administrator, on the system tenant.
                         </p>
                         {log.length === 0 ? (
                             <p className="text-ink-faint">No action yet.</p>
@@ -198,8 +198,9 @@ function SummaryPanel(): ReactNode {
                 </div>
             </div>
             <p className="text-xs text-ink-faint">
-                The summary covers the tenant of the session. The failure counts are the outcomes
-                the server sends; the per-node failures are dropped before they arrive (see below).
+                The grid is the installation's: every tenant's work runs on the same hosts. The
+                failure counts are the outcomes the server sends; the per-node failures are dropped
+                before they arrive (see below).
             </p>
         </section>
     );

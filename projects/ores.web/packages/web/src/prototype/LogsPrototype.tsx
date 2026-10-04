@@ -31,7 +31,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsNav, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { logEntries, type PrototypeLogEntry } from './fixtures.js';
 
 const VARIANTS = [
@@ -107,11 +107,15 @@ export function LogsPrototype(): ReactNode {
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
-                <OperationsNav pathname="/prototype/logs" />
                 <PageHeader
                     title="Operations: telemetry logs"
                     description="The lines behind a symptom, found by time, level, source, component, tag or session."
-                    actions={<span className="text-xs text-ink-faint">Read at {readAt}</span>}
+                    actions={
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-ink-faint">Read at {readAt}</span>
+                            <OperationsBack />
+                        </div>
+                    }
                 />
 
                 <section className="card flex flex-wrap items-end gap-4 p-4">

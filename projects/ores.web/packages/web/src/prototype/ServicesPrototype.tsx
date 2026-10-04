@@ -24,41 +24,51 @@
  *
  * See the running services, from
  * doc/knowledge/journeys/operations/journey_see_the_running_services.org.
- * The rows are fixtures shaped by the telemetry.v1.services.list reply: the
- * latest sample of every instance that reported in the last five minutes.
+ * The screen answers the roster the registry expects with the samples the
+ * instances send, so a service that stopped keeps its row and a version that
+ * lags behind is visible. The states use the installation's own words and the
+ * shell's tag tones.
  */
 
 import { useState, type ReactNode } from 'react';
 import { Button, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsNav, type ScreenGap } from './OperationsParts.js';
-import { asMinutes, serviceSamples } from './fixtures.js';
+import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
+import { asMinutes, serviceInstances, type PrototypeServiceInstance } from './fixtures.js';
 
 const VARIANTS = [
     {
         id: 'reporting',
         name: 'Reporting',
-        gist: 'Six instances reported in the last five minutes, two of them two builds of ores.compute.service.',
+        gist: 'The roster the registry expects, met by the samples: two instances are not running and one build is older.',
     },
     {
-        id: 'empty',
+        id: 'nothing',
         name: 'Nothing reported',
-        gist: 'The case the installation shows while it starts, or after the services stop.',
+        gist: 'No instance reported in five minutes; every row says so, and the screen cannot say why.',
     },
 ] as const satisfies readonly [PrototypeVariant, ...PrototypeVariant[]];
 
 const GAPS: readonly ScreenGap[] = [
     {
-        title: 'A stopped instance disappears from the list',
-        body: 'The read keeps the latest sample of each instance among the rows of the last five minutes, so an instance that went quiet is simply absent — the screen cannot show its last heartbeat or state that it stopped.',
+        title: 'The expected services are not a read',
+        body: 'The registry that states which services exist and how many replicas each expects is a codegen model, projects/modeling/service_registry.org; no operation serves it. Without it the screen can only be drawn from the samples, and a service that stops leaves the list when five minutes pass.',
+    },
+    {
+        title: 'The state comes from absence, not from a read',
+        body: "Running here means \"reported in the last five minutes\"; stopped and missing come from the installation's service manager, the one compass services status asks. Nothing serves that state to a screen, so a reader cannot tell a service somebody stopped from one that fell over.",
     },
     {
         title: 'The version is the release only',
-        body: 'The heartbeat carries the release the service was built with, not the full build string, so two builds of one release look identical here.',
+        body: 'The heartbeat carries the release string, not the full build string, so two builds of one release read the same and the older-build label can only compare releases.',
     },
     {
-        title: 'The reply is in no particular order',
-        body: 'telemetry.v1.services.list orders nothing, so the table is sorted on the screen; the server offers no order.',
+        title: 'The reply is unordered',
+        body: 'telemetry.v1.services.list orders nothing; this screen sorts by service name, then instance. A stable order from the read — service, then instance — would settle it once.',
+    },
+    {
+        title: 'No uptime',
+        body: 'Nothing says when an instance started, so an instance that just restarted reads like one that has run for weeks.',
     },
     {
         title: 'No permission gates the read',
@@ -68,36 +78,138 @@ const GAPS: readonly ScreenGap[] = [
 
 export function ServicesPrototype(): ReactNode {
     const { active, choose } = useVariant(VARIANTS, 'reporting');
-    const [updatedAt, setUpdatedAt] = useState('14:32:05');
+    const [readAt, setReadAt] = useState('14:32:05');
     const [log, setLog] = useState<readonly string[]>([]);
 
     const refresh = (): void => {
-        setUpdatedAt('14:33:02');
+        setReadAt('14:33:02');
         setLog((entries) => [...entries, 'refresh · re-read every instance at 14:33:02']);
     };
+
+    const instances =
+        active.id === 'reporting'
+            ? serviceInstances
+            : serviceInstances.map(
+                  (instance): PrototypeServiceInstance => ({
+                      serviceName: instance.serviceName,
+                      instanceId: undefined,
+                      state: 'missing',
+                      version: undefined,
+                      lastHeartbeatSeconds: undefined,
+                  }),
+              );
+
+    const groups = groupByService(instances);
+    const running = instances.filter((instance) => instance.state === 'running');
+    const stopped = instances.filter((instance) => instance.state === 'stopped');
+    const missing = instances.filter((instance) => instance.state === 'missing');
+    const newestVersion = newestOf(running);
 
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
-                <OperationsNav pathname="/prototype/services" />
                 <PageHeader
                     title="Operations: services"
-                    description="Every service instance that reported in the last five minutes."
+                    description="Every service the registry expects, met by the instances that report."
                     actions={
                         <div className="flex items-center gap-3">
-                            <span className="text-xs text-ink-faint">Updated {updatedAt}</span>
+                            <span className="text-xs text-ink-faint">Updated {readAt}</span>
                             <Button variant="secondary" onClick={refresh}>
                                 Refresh
                             </Button>
+                            <OperationsBack />
                         </div>
                     }
                 />
                 <Notice tone="warn">
-                    PROTOTYPE. Every row below is a fixture shaped by the
-                    telemetry.v1.services.list reply. Nothing on this page reads the server.
+                    PROTOTYPE. The counts, states and versions below are fixtures: the roster comes
+                    from the service registry and the state from the installation's service manager,
+                    and no operation serves either yet. Nothing on this page reads the server.
                 </Notice>
 
-                {active.id === 'reporting' ? <ReportingPanel /> : <EmptyPanel />}
+                {active.id === 'reporting' && newestVersion !== undefined && hasSkew(running, newestVersion) ? (
+                    <Notice tone="warn">
+                        Version skew: {skewSummary(running, newestVersion)}. After a rollout, an
+                        instance that did not take the build is what this line is for.
+                    </Notice>
+                ) : null}
+
+                <section className="card space-y-4 p-6">
+                    <header className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 className="text-lg font-medium">Instances</h2>
+                        <div className="flex items-center gap-2 text-xs text-ink-faint">
+                            <span>
+                                {running.length} of {instances.length} instances reported in the
+                                last five minutes
+                            </span>
+                            {stopped.length > 0 && <Tag tone="muted">{stopped.length} stopped</Tag>}
+                            {missing.length > 0 && <Tag tone="warn">{missing.length} missing</Tag>}
+                        </div>
+                    </header>
+
+                    <table className="w-full text-sm">
+                        <thead className="text-left text-xs text-ink-faint">
+                            <tr>
+                                <th className="py-1 font-normal">Service</th>
+                                <th className="py-1 font-normal">Instances</th>
+                                <th className="py-1 font-normal">Instance</th>
+                                <th className="py-1 font-normal">Status</th>
+                                <th className="py-1 font-normal">Version</th>
+                                <th className="py-1 font-normal">Last heartbeat</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line-subtle">
+                            {groups.map((group) =>
+                                group.instances.map((instance, index) => (
+                                    <tr key={`${group.serviceName}-${instance.instanceId ?? 'missing'}`}>
+                                        {index === 0 && (
+                                            <td className="py-2" rowSpan={group.instances.length}>
+                                                <span className="font-mono">
+                                                    {group.serviceName}
+                                                </span>
+                                            </td>
+                                        )}
+                                        {index === 0 && (
+                                            <td className="py-2" rowSpan={group.instances.length}>
+                                                <InstanceCount
+                                                    reported={group.instances.filter(
+                                                        (row) => row.state === 'running',
+                                                    ).length}
+                                                    expected={group.instances.length}
+                                                />
+                                            </td>
+                                        )}
+                                        <td className="py-2 font-mono" title={instance.instanceId}>
+                                            {instance.instanceId === undefined
+                                                ? '—'
+                                                : instance.instanceId.slice(0, 8)}
+                                        </td>
+                                        <td className="py-2">
+                                            <StatusTag state={instance.state} />
+                                        </td>
+                                        <td className="py-2">
+                                            <VersionCell
+                                                instance={instance}
+                                                newestVersion={newestVersion}
+                                            />
+                                        </td>
+                                        <td className="py-2 font-mono">
+                                            {instance.lastHeartbeatSeconds === undefined
+                                                ? '—'
+                                                : `${asMinutes(instance.lastHeartbeatSeconds)} ago`}
+                                        </td>
+                                    </tr>
+                                )),
+                            )}
+                        </tbody>
+                    </table>
+
+                    <p className="text-xs text-ink-faint">
+                        Read-only. One row per expected instance, whether it reports or not. The
+                        instance id is a UUID the heartbeat publisher generates at startup; the
+                        column shows its first eight characters.
+                    </p>
+                </section>
 
                 <GapPanel gaps={GAPS} />
             </div>
@@ -113,14 +225,24 @@ export function ServicesPrototype(): ReactNode {
                                 fixture: <span className="font-mono text-ink">{active.id}</span>
                             </span>
                             <span>
-                                rows: <span className="font-mono text-ink">{active.id === 'reporting' ? String(serviceSamples.length) : '0'}</span>
+                                updated: <span className="font-mono text-ink">{readAt}</span>
                             </span>
                             <span>
-                                updated: <span className="font-mono text-ink">{updatedAt}</span>
+                                instances reporting:{' '}
+                                <span className="font-mono text-ink">
+                                    {running.length} of {instances.length}
+                                </span>
+                            </span>
+                            <span>
+                                newest release:{' '}
+                                <span className="font-mono text-ink">
+                                    {newestVersion ?? '—'}
+                                </span>
                             </span>
                         </div>
                         <p className="text-ink-faint">
-                            Signed in as system administrator, on the system tenant.
+                            Signed in as system administrator, on the system tenant. The roster is
+                            the registry's; the samples are telemetry.v1.services.list.
                         </p>
                         {log.length === 0 ? (
                             <p className="text-ink-faint">No action yet.</p>
@@ -140,58 +262,110 @@ export function ServicesPrototype(): ReactNode {
     );
 }
 
-function ReportingPanel(): ReactNode {
+interface ServiceGroup {
+    readonly serviceName: string;
+    readonly instances: readonly PrototypeServiceInstance[];
+}
+
+function groupByService(
+    instances: readonly PrototypeServiceInstance[],
+): readonly ServiceGroup[] {
+    const made = new Map<string, PrototypeServiceInstance[]>();
+    for (const instance of instances) {
+        const held = made.get(instance.serviceName);
+        if (held === undefined) {
+            made.set(instance.serviceName, [instance]);
+        } else {
+            held.push(instance);
+        }
+    }
+    return [...made.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([serviceName, held]) => ({ serviceName, instances: held }));
+}
+
+function InstanceCount({
+    reported,
+    expected,
+}: {
+    readonly reported: number;
+    readonly expected: number;
+}): ReactNode {
+    if (reported < expected) {
+        return (
+            <Tag tone="warn">
+                {reported} of {expected}
+            </Tag>
+        );
+    }
     return (
-        <section className="card space-y-4 p-6">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">Reported instances</h2>
-                <span className="text-xs text-ink-faint">
-                    {serviceSamples.length} instances · two services run more than one
-                </span>
-            </header>
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-ink-faint">
-                    <tr>
-                        <th className="py-1 font-normal">Service</th>
-                        <th className="py-1 font-normal">Instance</th>
-                        <th className="py-1 font-normal">Version</th>
-                        <th className="py-1 font-normal">Last heartbeat</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-line-subtle">
-                    {serviceSamples.map((row) => (
-                        <tr key={`${row.serviceName}-${row.instanceId}`}>
-                            <td className="py-2 font-mono">{row.serviceName}</td>
-                            <td className="py-2 font-mono">{row.instanceId}</td>
-                            <td className="py-2 font-mono">{row.version}</td>
-                            <td className="py-2">
-                                {asMinutes(row.lastHeartbeatSeconds)} ago
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <p className="text-xs text-ink-faint">
-                Read-only. One row per instance that reported in the last five minutes. Two
-                instances of one service are two rows. The version is the release the instance
-                sends with its heartbeat.
-            </p>
-        </section>
+        <span className="font-mono text-ink-muted">
+            {reported} of {expected}
+        </span>
     );
 }
 
-function EmptyPanel(): ReactNode {
+function StatusTag({ state }: { readonly state: PrototypeServiceInstance['state'] }): ReactNode {
+    if (state === 'running') {
+        return <Tag tone="accent">running</Tag>;
+    }
+    if (state === 'stopped') {
+        return <Tag tone="muted">stopped</Tag>;
+    }
+    return <Tag tone="warn">missing</Tag>;
+}
+
+function VersionCell({
+    instance,
+    newestVersion,
+}: {
+    readonly instance: PrototypeServiceInstance;
+    readonly newestVersion: string | undefined;
+}): ReactNode {
+    if (instance.version === undefined) {
+        return <span className="font-mono text-ink-faint">—</span>;
+    }
     return (
-        <section className="card space-y-4 p-6">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">Reported instances</h2>
-                <Tag tone="warn">Nothing reported in the last five minutes</Tag>
-            </header>
-            <p className="text-sm text-ink-muted">
-                No service instance has reported. The installation may be starting, or the services
-                may have stopped. The screen cannot tell which: an instance that went quiet leaves
-                the list without a trace.
-            </p>
-        </section>
+        <span className="flex items-center gap-2">
+            <span className="font-mono">{instance.version}</span>
+            {instance.state === 'running' && instance.version !== newestVersion && (
+                <Tag tone="warn">older build</Tag>
+            )}
+        </span>
     );
+}
+
+function newestOf(running: readonly PrototypeServiceInstance[]): string | undefined {
+    return running
+        .map((instance) => instance.version)
+        .filter((version): version is string => version !== undefined)
+        .reduce<string | undefined>(
+            (newest, version) => (newest === undefined || version > newest ? version : newest),
+            undefined,
+        );
+}
+
+function hasSkew(running: readonly PrototypeServiceInstance[], newestVersion: string): boolean {
+    return running.some((instance) => instance.version !== newestVersion);
+}
+
+function skewSummary(
+    running: readonly PrototypeServiceInstance[],
+    newestVersion: string,
+): string {
+    const behind = [
+        ...new Set(
+            running
+                .filter((instance) => instance.version !== newestVersion)
+                .map((instance) => instance.serviceName),
+        ),
+    ];
+    const versions = [
+        ...new Set(
+            running
+                .filter((instance) => instance.version !== newestVersion)
+                .map((instance) => instance.version ?? ''),
+        ),
+    ].sort();
+    return `${behind.join(', ')} runs ${versions.join(', ')} while the rest run ${newestVersion}`;
 }

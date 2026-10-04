@@ -23,11 +23,13 @@
  * PROTOTYPE. Throwaway. Delete with the branch.
  *
  * The prototype's own route table, reached before the application's gate. A
- * prototype renders with no session and no server, so a reviewer starts the dev
- * server and opens one URL.
+ * prototype renders with no session and no server, so a reviewer opens one URL
+ * on the standard web server of the environment:
  *
- *   npm run dev:web --workspace @ores.web
- *   http://localhost:5173/prototype
+ *   http://127.0.0.1:20402/prototype
+ *
+ * Operations is an area, like Tenants or Rescue: this route is the area's hub,
+ * each journey has its own route, and every screen carries the way back here.
  */
 
 import type { ReactNode } from 'react';
@@ -85,9 +87,10 @@ function screenFor(pathname: string): ReactNode {
             <div className="card space-y-2 p-6 text-sm">
                 <h1 className="text-lg font-medium">Operations prototypes</h1>
                 <p className="text-ink-muted">
-                    One route per journey of the operations group. Every screen is a fixture shaped
-                    by the operations the journey names, and every gap the journey records is shown
-                    on the screen it belongs to.
+                    The operations area. One route per journey; each screen carries the way back
+                    here, the same way a tenant detail carries the way back to the roster. Every
+                    screen is a fixture shaped by the operations the journey names, and every gap
+                    the journey records is shown on the screen it belongs to.
                 </p>
                 <ul className="space-y-1 font-mono">
                     <li>

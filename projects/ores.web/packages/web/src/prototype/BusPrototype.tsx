@@ -31,7 +31,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsNav, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { asMiB, natsServerSamples, natsStreamSamples } from './fixtures.js';
 
 const VARIANTS = [
@@ -84,7 +84,6 @@ export function BusPrototype(): ReactNode {
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
-                <OperationsNav pathname="/prototype/bus" />
                 <PageHeader
                     title="Operations: message bus"
                     description="The NATS server's vitals and one row per stream."
@@ -101,6 +100,7 @@ export function BusPrototype(): ReactNode {
                             <Button variant="secondary" onClick={apply}>
                                 Apply
                             </Button>
+                            <OperationsBack />
                         </div>
                     }
                 />

@@ -24,37 +24,34 @@
  *
  * Check the versions and the database, from
  * doc/knowledge/journeys/operations/journey_check_the_versions_and_the_database.org.
- * The client and the server have their real shapes; the database panel stands
- * for the read that does not exist at all.
+ * The client comes from the bundle stamp; the server and the database come from
+ * the login answer, which must learn to carry the database row. The screen
+ * stands for the read that does not exist yet.
  */
 
 import { type ReactNode } from 'react';
 import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsNav, type ScreenGap } from './OperationsParts.js';
+import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
 import { clientVersion, databaseState, serverVersion } from './fixtures.js';
 
 const VARIANTS = [
     {
-        id: 'read',
-        name: 'Deployment answers',
-        gist: 'The footer and this screen both state the server build the login answer carried.',
+        id: 'carried',
+        name: 'Login answer carries it',
+        gist: 'The answer that opened the session states the server build and the database row; the screen reads both from it.',
     },
     {
         id: 'unreachable',
         name: 'Deployment silent',
-        gist: 'The server build is unknown and the screen says so, rather than inventing one.',
+        gist: 'The deployment has not answered, so the server and the database read unknown rather than inventing values.',
     },
 ] as const satisfies readonly [PrototypeVariant, ...PrototypeVariant[]];
 
 const GAPS: readonly ScreenGap[] = [
     {
-        title: 'The database fingerprint has no read',
-        body: 'Exactly one reader touches the recorded row: each service at its own startup, comparing the fingerprint and refusing to start on a mismatch. No subject serves it to a person, so the panel reads unknown.',
-    },
-    {
-        title: 'The fingerprint read needs its audience decided',
-        body: 'The row names the commit and the environment the database was built from — build forensics, not customer data. The read should state who may see it when it exists.',
+        title: 'The login answer does not carry the database row yet',
+        body: 'The row is recorded and one reader touches it: every service compares the fingerprint at its own startup and refuses to start on a mismatch. No operation serves it to a person. The design puts it in the login answer, beside the server build — the same answer that states what the session is talking to. Until the answer carries it, a real session shows unknown here.',
     },
     {
         title: 'The client and the server strings do not share a shape',
@@ -67,21 +64,21 @@ const GAPS: readonly ScreenGap[] = [
 ];
 
 export function VersionsPrototype(): ReactNode {
-    const { active, choose } = useVariant(VARIANTS, 'read');
-    const serverKnown = active.id === 'read';
+    const { active, choose } = useVariant(VARIANTS, 'carried');
+    const serverKnown = active.id === 'carried';
 
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
-                <OperationsNav pathname="/prototype/versions" />
                 <PageHeader
-                    title="About: versions and the database"
+                    title="Operations: versions and the database"
                     description="What this browser runs, what the deployment runs, and what the deployment stores."
+                    actions={<OperationsBack />}
                 />
                 <Notice tone="warn">
                     PROTOTYPE. The client and the server panels carry the real build shapes; the
-                    database panel stands in for the read that does not exist. Nothing on this page
-                    reads the server.
+                    database panel shows the row the login answer must learn to carry. Nothing on
+                    this page reads the server.
                 </Notice>
 
                 <section className="card space-y-4 p-6">
@@ -119,14 +116,14 @@ export function VersionsPrototype(): ReactNode {
                             <Detail label="Address" value={serverVersion.address} mono />
                             <p className="text-sm text-ink-muted sm:col-span-2">
                                 The deployment has not answered, so its build is unknown. The screen
-                                says unknown rather than inventing a version, and the footer reads
-                                the same session value.
+                                says unknown rather than inventing a version.
                             </p>
                         </div>
                     )}
                     <p className="text-xs text-ink-faint">
-                        The login answer states this build in full, and the session keeps it; the
-                        footer reads it from there.
+                        In a real session the login answer states this build in full, and the
+                        session keeps it; the footer reads the same value. The prototype shell has
+                        no session, so its footer shows a placeholder.
                     </p>
                 </section>
 
@@ -138,20 +135,28 @@ export function VersionsPrototype(): ReactNode {
                     <div className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
                         <Detail
                             label="Fingerprint"
-                            value={databaseState.fingerprint ?? 'unknown'}
+                            value={serverKnown ? databaseState.fingerprint : 'unknown'}
+                            mono={serverKnown}
                         />
                         <Detail
                             label="Environment"
-                            value={databaseState.environment ?? 'unknown'}
+                            value={serverKnown ? databaseState.environment : 'unknown'}
                         />
-                        <Detail label="Commit" value={databaseState.commit ?? 'unknown'} />
-                        <Detail label="Created" value={databaseState.created ?? 'unknown'} />
+                        <Detail
+                            label="Commit"
+                            value={serverKnown ? databaseState.commit : 'unknown'}
+                            mono={serverKnown}
+                        />
+                        <Detail
+                            label="Created"
+                            value={serverKnown ? databaseState.created : 'unknown'}
+                        />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        <Tag tone="warn">no read exists</Tag>
+                        <Tag tone="warn">not carried yet</Tag>
                         <span className="text-xs text-ink-faint">
-                            The row is recorded and nothing serves it; the panel stays unknown until
-                            a read exists.
+                            The login answer must state these four fields beside the server build;
+                            it does not today, so a real session reads unknown here.
                         </span>
                     </div>
                 </section>
@@ -181,7 +186,9 @@ export function VersionsPrototype(): ReactNode {
                             </span>
                             <span>
                                 database from:{' '}
-                                <span className="font-mono text-ink">no read exists</span>
+                                <span className="font-mono text-ink">
+                                    {serverKnown ? 'the login answer (target)' : 'no answer'}
+                                </span>
                             </span>
                         </div>
                         <p className="text-ink-faint">

@@ -22,45 +22,24 @@
 /*
  * PROTOTYPE. Throwaway. Delete with the branch.
  *
- * The parts the five operations screens share: the strip that moves between
- * them, and the panel that records what each screen cannot show yet.
+ * The parts the five operations screens share: the way back to the operations
+ * area, and the panel that records what each screen cannot show yet.
+ *
+ * The screens are an area like Tenants or Rescue, not a set of tabs: a person
+ * enters the area, opens one journey, and comes back. The header carries the
+ * one action that belongs to every journey screen, as the tenant detail
+ * carries its way back to the roster.
  */
 
 import type { ReactNode } from 'react';
-import { cx } from '../ui/Primitives.js';
+import { LinkButton } from '../ui/Primitives.js';
 
-interface ScreenLink {
-    readonly path: string;
-    readonly name: string;
-}
-
-const SCREENS: readonly ScreenLink[] = [
-    { path: '/prototype', name: 'Index' },
-    { path: '/prototype/services', name: 'Services' },
-    { path: '/prototype/grid', name: 'Compute grid' },
-    { path: '/prototype/bus', name: 'Message bus' },
-    { path: '/prototype/logs', name: 'Telemetry logs' },
-    { path: '/prototype/versions', name: 'Versions' },
-];
-
-export function OperationsNav({ pathname }: { readonly pathname: string }): ReactNode {
+/** The way back to the operations area, for a screen's header actions. */
+export function OperationsBack(): ReactNode {
     return (
-        <nav className="flex flex-wrap gap-1 border-b border-line pb-2">
-            {SCREENS.map((screen) => (
-                <a
-                    key={screen.path}
-                    href={screen.path}
-                    className={cx(
-                        'rounded px-3 py-1 text-sm',
-                        screen.path === pathname
-                            ? 'bg-surface-overlay text-ink'
-                            : 'text-ink-muted hover:text-ink',
-                    )}
-                >
-                    {screen.name}
-                </a>
-            ))}
-        </nav>
+        <LinkButton to="/prototype" variant="secondary">
+            Back to operations
+        </LinkButton>
     );
 }
 

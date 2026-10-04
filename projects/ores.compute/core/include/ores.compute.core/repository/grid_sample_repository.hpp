@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::compute::repository {
@@ -124,13 +125,24 @@ public:
 
 
     /**
+     * @brief Whether a list of grid samples can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest grid samples with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::grid_sample>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::grid_sample> read_latest(context ctx,
+                                                 std::uint32_t offset,
+                                                 std::uint32_t limit,
+                                                 const ores::utility::domain::order& order = {});
 
     /**
      * @brief Reads the newest sample for the caller.

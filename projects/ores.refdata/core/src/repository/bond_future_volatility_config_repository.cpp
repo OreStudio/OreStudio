@@ -25,11 +25,16 @@
 #include "ores.refdata.core/repository/bond_future_volatility_config_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/bond_future_volatility_config_entity.hpp"
 #include "ores.refdata.core/repository/bond_future_volatility_config_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::refdata::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string bond_future_volatility_config_repository::sql() {
     return generate_create_table_sql<bond_future_volatility_config_entity>(lg());
+}
+
+bool bond_future_volatility_config_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!bond_future_volatility_config_repository::is_sortable(order.field))
+        throw std::invalid_argument(
+            "A list of bond future volatility configs cannot be ordered by " + order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition bond_future_volatility_config_repository::replace_claim(
@@ -236,19 +266,21 @@ void bond_future_volatility_config_repository::remove(context ctx, const std::st
 std::vector<domain::bond_future_volatility_config>
 bond_future_volatility_config_repository::read_latest(context ctx,
                                                       std::uint32_t offset,
-                                                      std::uint32_t limit) {
+                                                      std::uint32_t limit,
+                                                      const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond future volatility configs with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_future_volatility_config_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<bond_future_volatility_config_entity,
-                              domain::bond_future_volatility_config>(
+    return execute_ordered_read_query<bond_future_volatility_config_entity,
+                                      domain::bond_future_volatility_config>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return bond_future_volatility_config_mapper::map(entities); },
         lg(),
         "Reading latest bond future volatility configs with pagination.");

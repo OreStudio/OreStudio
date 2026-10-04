@@ -104,11 +104,13 @@ messaging::list_credit_simulation_configs_response
 credit_simulation_config_service::list_credit_simulation_configs(
     const messaging::list_credit_simulation_configs_request& request) {
     messaging::list_credit_simulation_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::credit_simulation_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of credit simulation configurations cannot be ordered by " +
+            request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -117,7 +119,7 @@ credit_simulation_config_service::list_credit_simulation_configs(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.configs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_config_count(ctx_);
     return response;
 }
@@ -126,11 +128,13 @@ messaging::list_by_configuration_id_credit_simulation_configs_response
 credit_simulation_config_service::list_by_configuration_id_credit_simulation_configs(
     const messaging::list_by_configuration_id_credit_simulation_configs_request& request) {
     messaging::list_by_configuration_id_credit_simulation_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::credit_simulation_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of credit simulation configurations cannot be ordered by " +
+            request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -146,8 +150,8 @@ credit_simulation_config_service::list_by_configuration_id_credit_simulation_con
         return response;
     }
     const auto relation = boost::uuids::to_string(request.configuration_id);
-    response.configs =
-        repo_.read_latest_by_configuration_id(ctx_, relation, request.offset, request.limit);
+    response.configs = repo_.read_latest_by_configuration_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_config_count_by_configuration_id(ctx_, relation);
     return response;
 }

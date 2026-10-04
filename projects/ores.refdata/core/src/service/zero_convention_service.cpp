@@ -100,14 +100,16 @@ domain::zero_convention to_domain(const messaging::zero_convention_write& write)
 messaging::list_zero_conventions_response zero_convention_service::list_zero_conventions(
     const messaging::list_zero_conventions_request& request) {
     messaging::list_zero_conventions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::zero_convention_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of zero conventions cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.zero_conventions = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.zero_conventions =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_zero_convention_count(ctx_);
     return response;
 }

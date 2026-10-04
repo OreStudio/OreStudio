@@ -102,14 +102,15 @@ domain::bond_forward to_domain(const messaging::bond_forward_write& write) {
 messaging::list_bond_forwards_response
 bond_forward_service::list_bond_forwards(const messaging::list_bond_forwards_request& request) {
     messaging::list_bond_forwards_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::bond_forward_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of bond forwards cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.bond_forwards = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.bond_forwards = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_bond_forward_count(ctx_);
     return response;
 }

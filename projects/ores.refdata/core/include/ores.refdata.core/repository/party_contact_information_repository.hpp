@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -153,9 +154,14 @@ public:
      * @param party_id The party_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::party_contact_information> read_latest_by_party_id(
-        context ctx, const std::string& party_id, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::party_contact_information>
+    read_latest_by_party_id(context ctx,
+                            const std::string& party_id,
+                            std::uint32_t offset,
+                            std::uint32_t limit,
+                            const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active party contact informations filtered by party_id.
@@ -182,13 +188,25 @@ public:
                            std::chrono::system_clock::time_point valid_to_bound);
 
     /**
+     * @brief Whether a list of party contact informations can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest party contact informations with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::party_contact_information>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active party contact informations.

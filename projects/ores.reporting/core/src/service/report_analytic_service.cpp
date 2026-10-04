@@ -95,11 +95,12 @@ domain::report_analytic to_domain(const messaging::report_analytic_write& write)
 messaging::list_report_analytics_response report_analytic_service::list_report_analytics(
     const messaging::list_report_analytics_request& request) {
     messaging::list_report_analytics_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::report_analytic_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of report analytics cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -108,7 +109,7 @@ messaging::list_report_analytics_response report_analytic_service::list_report_a
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.analytics = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.analytics = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_analytic_count(ctx_);
     return response;
 }
@@ -117,11 +118,12 @@ messaging::list_by_analytic_type_code_report_analytics_response
 report_analytic_service::list_by_analytic_type_code_report_analytics(
     const messaging::list_by_analytic_type_code_report_analytics_request& request) {
     messaging::list_by_analytic_type_code_report_analytics_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::report_analytic_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of report analytics cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -137,8 +139,8 @@ report_analytic_service::list_by_analytic_type_code_report_analytics(
         return response;
     }
     const auto relation = request.analytic_type_code;
-    response.analytics =
-        repo_.read_latest_by_analytic_type_code(ctx_, relation, request.offset, request.limit);
+    response.analytics = repo_.read_latest_by_analytic_type_code(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_analytic_count_by_analytic_type_code(ctx_, relation);
     return response;
 }

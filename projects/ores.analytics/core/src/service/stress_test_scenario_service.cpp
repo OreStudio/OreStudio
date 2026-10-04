@@ -97,14 +97,16 @@ messaging::list_stress_test_scenarios_response
 stress_test_scenario_service::list_stress_test_scenarios(
     const messaging::list_stress_test_scenarios_request& request) {
     messaging::list_stress_test_scenarios_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::stress_test_scenario_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of stress test scenarios cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.stress_test_scenarios = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.stress_test_scenarios =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_stress_test_scenario_count(ctx_);
     return response;
 }

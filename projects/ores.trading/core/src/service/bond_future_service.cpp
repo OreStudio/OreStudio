@@ -96,14 +96,15 @@ domain::bond_future to_domain(const messaging::bond_future_write& write) {
 messaging::list_bond_futures_response
 bond_future_service::list_bond_futures(const messaging::list_bond_futures_request& request) {
     messaging::list_bond_futures_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::bond_future_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of bond futures cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.futures = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.futures = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_future_count(ctx_);
     return response;
 }

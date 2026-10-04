@@ -95,14 +95,16 @@ messaging::list_default_curve_configs_response
 default_curve_config_service::list_default_curve_configs(
     const messaging::list_default_curve_configs_request& request) {
     messaging::list_default_curve_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::default_curve_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of default curve configs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.default_curve_configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.default_curve_configs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_default_curve_config_count(ctx_);
     return response;
 }

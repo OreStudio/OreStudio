@@ -94,14 +94,15 @@ domain::diary_entry_type to_domain(const messaging::diary_entry_type_write& writ
 messaging::list_diary_entry_types_response diary_entry_type_service::list_diary_entry_types(
     const messaging::list_diary_entry_types_request& request) {
     messaging::list_diary_entry_types_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::diary_entry_type_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of diary entry types cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.entry_types = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.entry_types = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_entry_type_count(ctx_);
     return response;
 }

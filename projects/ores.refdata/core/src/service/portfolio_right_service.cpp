@@ -95,11 +95,12 @@ domain::portfolio_right to_domain(const messaging::portfolio_right_write& write)
 messaging::list_portfolio_rights_response portfolio_right_service::list_portfolio_rights(
     const messaging::list_portfolio_rights_request& request) {
     messaging::list_portfolio_rights_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::portfolio_right_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of portfolio rights cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -108,7 +109,8 @@ messaging::list_portfolio_rights_response portfolio_right_service::list_portfoli
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.portfolio_rights = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.portfolio_rights =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_portfolio_right_count(ctx_);
     return response;
 }
@@ -117,11 +119,12 @@ messaging::list_by_account_id_portfolio_rights_response
 portfolio_right_service::list_by_account_id_portfolio_rights(
     const messaging::list_by_account_id_portfolio_rights_request& request) {
     messaging::list_by_account_id_portfolio_rights_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::portfolio_right_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of portfolio rights cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -137,8 +140,8 @@ portfolio_right_service::list_by_account_id_portfolio_rights(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.account_id);
-    response.portfolio_rights =
-        repo_.read_latest_by_account_id(ctx_, relation, request.offset, request.limit);
+    response.portfolio_rights = repo_.read_latest_by_account_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_portfolio_right_count_by_account_id(ctx_, relation);
     return response;
 }
@@ -147,11 +150,12 @@ messaging::list_by_portfolio_id_portfolio_rights_response
 portfolio_right_service::list_by_portfolio_id_portfolio_rights(
     const messaging::list_by_portfolio_id_portfolio_rights_request& request) {
     messaging::list_by_portfolio_id_portfolio_rights_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::portfolio_right_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of portfolio rights cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -167,8 +171,8 @@ portfolio_right_service::list_by_portfolio_id_portfolio_rights(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.portfolio_id);
-    response.portfolio_rights =
-        repo_.read_latest_by_portfolio_id(ctx_, relation, request.offset, request.limit);
+    response.portfolio_rights = repo_.read_latest_by_portfolio_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_portfolio_right_count_by_portfolio_id(ctx_, relation);
     return response;
 }

@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::analytics::repository {
@@ -152,12 +153,14 @@ public:
      * @param todays_market_configuration_id The todays_market_configuration_id to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::todays_market_configuration_binding>
     read_latest_by_todays_market_configuration_id(context ctx,
                                                   const std::string& todays_market_configuration_id,
                                                   std::uint32_t offset,
-                                                  std::uint32_t limit);
+                                                  std::uint32_t limit,
+                                                  const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active today's market configuration bindings filtered by
@@ -168,13 +171,25 @@ public:
 
 
     /**
+     * @brief Whether a list of today's market configuration bindings can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest today's market configuration bindings with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::todays_market_configuration_binding>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active today's market configuration bindings.

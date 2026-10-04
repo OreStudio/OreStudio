@@ -94,14 +94,15 @@ domain::asset_class_code to_domain(const messaging::asset_class_code_write& writ
 messaging::list_asset_class_codes_response asset_class_code_service::list_asset_class_codes(
     const messaging::list_asset_class_codes_request& request) {
     messaging::list_asset_class_codes_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::asset_class_code_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of asset class codes cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.asset_classes = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.asset_classes = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_asset_class_count(ctx_);
     return response;
 }

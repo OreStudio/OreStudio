@@ -33,6 +33,7 @@ The full template source. Edit here and re-tangle with
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -190,10 +191,12 @@ public:
      * @param {{column}} The {{column}} to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::{{entity_singular}}>
     read_latest_by_{{column}}(context ctx, const std::string& {{column}},
-                             std::uint32_t offset, std::uint32_t limit);
+                             std::uint32_t offset, std::uint32_t limit,
+                             const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active {{entity_plural_words}} filtered by {{column}}.
@@ -223,13 +226,23 @@ public:
 
 {{/foreign_keys}}
     /**
+     * @brief Whether a list of {{entity_plural_words}} can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest {{entity_plural_words}} with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::{{entity_singular}}>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 {{#domain_entity.has_newest_read}}
 
     /**

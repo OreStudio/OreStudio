@@ -96,14 +96,16 @@ domain::crm_driver_pair to_domain(const messaging::crm_driver_pair_write& write)
 messaging::list_crm_driver_pairs_response crm_driver_pair_service::list_crm_driver_pairs(
     const messaging::list_crm_driver_pairs_request& request) {
     messaging::list_crm_driver_pairs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::crm_driver_pair_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of CRM driver pairs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.crm_driver_pairs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.crm_driver_pairs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_crm_driver_pair_count(ctx_);
     return response;
 }

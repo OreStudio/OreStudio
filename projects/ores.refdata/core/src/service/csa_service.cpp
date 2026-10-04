@@ -112,11 +112,12 @@ domain::csa to_domain(const messaging::csa_write& write) {
 
 messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_request& request) {
     messaging::list_csas_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::csa_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of CSAs cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -125,7 +126,7 @@ messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.csas = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.csas = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_csa_count(ctx_);
     return response;
 }
@@ -133,11 +134,12 @@ messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_
 messaging::list_by_netting_set_id_csas_response csa_service::list_by_netting_set_id_csas(
     const messaging::list_by_netting_set_id_csas_request& request) {
     messaging::list_by_netting_set_id_csas_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::csa_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of CSAs cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -153,8 +155,8 @@ messaging::list_by_netting_set_id_csas_response csa_service::list_by_netting_set
         return response;
     }
     const auto relation = boost::uuids::to_string(request.netting_set_id);
-    response.csas =
-        repo_.read_latest_by_netting_set_id(ctx_, relation, request.offset, request.limit);
+    response.csas = repo_.read_latest_by_netting_set_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_csa_count_by_netting_set_id(ctx_, relation);
     return response;
 }

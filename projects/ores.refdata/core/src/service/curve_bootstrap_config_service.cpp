@@ -104,14 +104,16 @@ messaging::list_curve_bootstrap_configs_response
 curve_bootstrap_config_service::list_curve_bootstrap_configs(
     const messaging::list_curve_bootstrap_configs_request& request) {
     messaging::list_curve_bootstrap_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::curve_bootstrap_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of curve bootstrap configs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.bootstrap_configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.bootstrap_configs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_bootstrap_config_count(ctx_);
     return response;
 }

@@ -94,14 +94,15 @@ domain::currency_pair to_domain(const messaging::currency_pair_write& write) {
 messaging::list_currency_pairs_response
 currency_pair_service::list_currency_pairs(const messaging::list_currency_pairs_request& request) {
     messaging::list_currency_pairs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::currency_pair_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of currency pairs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.pairs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.pairs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_pair_count(ctx_);
     return response;
 }

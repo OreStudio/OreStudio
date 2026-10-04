@@ -28,8 +28,13 @@
 #include "ores.compute.core/repository/workunit_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::compute::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string workunit_repository::sql() {
     return generate_create_table_sql<workunit_entity>(lg());
+}
+
+bool workunit_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!workunit_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of workunits cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition workunit_repository::replace_claim(context ctx,
@@ -175,8 +205,12 @@ workunit_repository::read_at_version(context ctx, const std::string& id, std::ui
     return entities.front();
 }
 
-std::vector<domain::workunit> workunit_repository::read_latest_by_batch_id(
-    context ctx, const std::string& batch_id, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::workunit>
+workunit_repository::read_latest_by_batch_id(context ctx,
+                                             const std::string& batch_id,
+                                             std::uint32_t offset,
+                                             std::uint32_t limit,
+                                             const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workunits. batch_id: " << batch_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -184,11 +218,12 @@ std::vector<domain::workunit> workunit_repository::read_latest_by_batch_id(
     const auto query =
         sqlgen::read<std::vector<workunit_entity>> |
         where("tenant_id"_c == tid && "batch_id"_c == batch_id && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<workunit_entity, domain::workunit>(
+    return execute_ordered_read_query<workunit_entity, domain::workunit>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return workunit_mapper::map(entities); },
         lg(),
         "Reading latest workunits by batch_id.");
@@ -253,18 +288,22 @@ void workunit_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::workunit>
-workunit_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+workunit_repository::read_latest(context ctx,
+                                 std::uint32_t offset,
+                                 std::uint32_t limit,
+                                 const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workunits with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workunit_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<workunit_entity, domain::workunit>(
+    return execute_ordered_read_query<workunit_entity, domain::workunit>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return workunit_mapper::map(entities); },
         lg(),
         "Reading latest workunits with pagination.");

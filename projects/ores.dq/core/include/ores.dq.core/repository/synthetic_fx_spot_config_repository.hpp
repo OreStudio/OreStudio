@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -122,13 +123,25 @@ public:
 
 
     /**
+     * @brief Whether a list of synthetic FX spot configs can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest synthetic FX spot configs with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::synthetic_fx_spot_config>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active synthetic FX spot configs.

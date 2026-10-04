@@ -96,14 +96,15 @@ messaging::list_day_count_fraction_types_response
 day_count_fraction_type_service::list_day_count_fraction_types(
     const messaging::list_day_count_fraction_types_request& request) {
     messaging::list_day_count_fraction_types_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::day_count_fraction_type_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of day count fraction types cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.types = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.types = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_type_count(ctx_);
     return response;
 }

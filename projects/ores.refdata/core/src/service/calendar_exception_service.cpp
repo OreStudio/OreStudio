@@ -95,11 +95,12 @@ domain::calendar_exception to_domain(const messaging::calendar_exception_write& 
 messaging::list_calendar_exceptions_response calendar_exception_service::list_calendar_exceptions(
     const messaging::list_calendar_exceptions_request& request) {
     messaging::list_calendar_exceptions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::calendar_exception_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of calendar exceptions cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -108,7 +109,8 @@ messaging::list_calendar_exceptions_response calendar_exception_service::list_ca
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.calendar_exceptions = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.calendar_exceptions =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_calendar_exception_count(ctx_);
     return response;
 }
@@ -117,11 +119,12 @@ messaging::list_by_calendar_code_calendar_exceptions_response
 calendar_exception_service::list_by_calendar_code_calendar_exceptions(
     const messaging::list_by_calendar_code_calendar_exceptions_request& request) {
     messaging::list_by_calendar_code_calendar_exceptions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::calendar_exception_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of calendar exceptions cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -137,8 +140,8 @@ calendar_exception_service::list_by_calendar_code_calendar_exceptions(
         return response;
     }
     const auto relation = request.calendar_code;
-    response.calendar_exceptions =
-        repo_.read_latest_by_calendar_code(ctx_, relation, request.offset, request.limit);
+    response.calendar_exceptions = repo_.read_latest_by_calendar_code(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_calendar_exception_count_by_calendar_code(ctx_, relation);
     return response;
 }

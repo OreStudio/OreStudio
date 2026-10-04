@@ -97,11 +97,12 @@ messaging::list_configuration_parameters_response
 configuration_parameter_service::list_configuration_parameters(
     const messaging::list_configuration_parameters_request& request) {
     messaging::list_configuration_parameters_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::configuration_parameter_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of configuration parameters cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -110,7 +111,8 @@ configuration_parameter_service::list_configuration_parameters(
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.parameter_values = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.parameter_values =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_parameter_value_count(ctx_);
     return response;
 }
@@ -119,11 +121,12 @@ messaging::list_by_configuration_id_configuration_parameters_response
 configuration_parameter_service::list_by_configuration_id_configuration_parameters(
     const messaging::list_by_configuration_id_configuration_parameters_request& request) {
     messaging::list_by_configuration_id_configuration_parameters_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::configuration_parameter_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of configuration parameters cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -139,8 +142,8 @@ configuration_parameter_service::list_by_configuration_id_configuration_paramete
         return response;
     }
     const auto relation = boost::uuids::to_string(request.configuration_id);
-    response.parameter_values =
-        repo_.read_latest_by_configuration_id(ctx_, relation, request.offset, request.limit);
+    response.parameter_values = repo_.read_latest_by_configuration_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_parameter_value_count_by_configuration_id(ctx_, relation);
     return response;
 }
@@ -149,11 +152,12 @@ messaging::list_by_parameter_definition_id_configuration_parameters_response
 configuration_parameter_service::list_by_parameter_definition_id_configuration_parameters(
     const messaging::list_by_parameter_definition_id_configuration_parameters_request& request) {
     messaging::list_by_parameter_definition_id_configuration_parameters_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::configuration_parameter_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of configuration parameters cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -169,8 +173,8 @@ configuration_parameter_service::list_by_parameter_definition_id_configuration_p
         return response;
     }
     const auto relation = boost::uuids::to_string(request.parameter_definition_id);
-    response.parameter_values =
-        repo_.read_latest_by_parameter_definition_id(ctx_, relation, request.offset, request.limit);
+    response.parameter_values = repo_.read_latest_by_parameter_definition_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total =
         repo_.get_total_parameter_value_count_by_parameter_definition_id(ctx_, relation);
     return response;

@@ -25,11 +25,16 @@
 #include "ores.trading.core/repository/booking_nature_type_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/booking_nature_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/booking_nature_type_entity.hpp"
 #include "ores.trading.core/repository/booking_nature_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::trading::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string booking_nature_type_repository::sql() {
     return generate_create_table_sql<booking_nature_type_entity>(lg());
+}
+
+bool booking_nature_type_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"code"});
+    if (!booking_nature_type_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of booking nature types cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"code"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -173,16 +203,20 @@ void booking_nature_type_repository::remove(context ctx, const std::string& code
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::booking_nature_type> booking_nature_type_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::booking_nature_type>
+booking_nature_type_repository::read_latest(context ctx,
+                                            std::uint32_t offset,
+                                            std::uint32_t limit,
+                                            const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest booking nature types with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<booking_nature_type_entity>> | order_by("code"_c) |
+    const auto query = sqlgen::read<std::vector<booking_nature_type_entity>> |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<booking_nature_type_entity, domain::booking_nature_type>(
+    return execute_ordered_read_query<booking_nature_type_entity, domain::booking_nature_type>(
         ctx,
         query,
+        list_order(order, {"code"}, false),
         [](const auto& entities) { return booking_nature_type_mapper::map(entities); },
         lg(),
         "Reading latest booking nature types with pagination.");

@@ -100,14 +100,16 @@ domain::stress_test_shift to_domain(const messaging::stress_test_shift_write& wr
 messaging::list_stress_test_shifts_response stress_test_shift_service::list_stress_test_shifts(
     const messaging::list_stress_test_shifts_request& request) {
     messaging::list_stress_test_shifts_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::stress_test_shift_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of stress test shifts cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.stress_test_shifts = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.stress_test_shifts =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_stress_test_shift_count(ctx_);
     return response;
 }

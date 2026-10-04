@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -130,12 +131,14 @@ public:
      * @param analytic_type_code The analytic_type_code to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::report_analytic>
     read_latest_by_analytic_type_code(context ctx,
                                       const std::string& analytic_type_code,
                                       std::uint32_t offset,
-                                      std::uint32_t limit);
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active report analytics filtered by analytic_type_code.
@@ -146,13 +149,25 @@ public:
 
 
     /**
+     * @brief Whether a list of report analytics can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest report analytics with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::report_analytic>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active report analytics.

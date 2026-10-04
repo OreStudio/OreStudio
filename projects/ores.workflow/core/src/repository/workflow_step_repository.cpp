@@ -25,11 +25,16 @@
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.core/repository/workflow_step_entity.hpp"
 #include "ores.workflow.core/repository/workflow_step_mapper.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::workflow::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string workflow_step_repository::sql() {
     return generate_create_table_sql<workflow_step_entity>(lg());
+}
+
+bool workflow_step_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!workflow_step_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of workflow steps cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -173,18 +203,23 @@ std::optional<domain::workflow_step> workflow_step_repository::read_at_version(
     return entities.front();
 }
 
-std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_workflow_id(
-    context ctx, const std::string& workflow_id, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::workflow_step>
+workflow_step_repository::read_latest_by_workflow_id(context ctx,
+                                                     const std::string& workflow_id,
+                                                     std::uint32_t offset,
+                                                     std::uint32_t limit,
+                                                     const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow steps. workflow_id: " << workflow_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
                        where("workflow_id"_c == workflow_id && "valid_to"_c == max.value()) |
-                       order_by("step_index"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<workflow_step_entity, domain::workflow_step>(
+    return execute_ordered_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
         query,
+        list_order(order, {"step_index"}, false),
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
         lg(),
         "Reading latest workflow steps by workflow_id.");
@@ -248,17 +283,21 @@ void workflow_step_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::workflow_step>
-workflow_step_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+workflow_step_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow steps with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("id"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
-    return execute_read_query<workflow_step_entity, domain::workflow_step>(
+    return execute_ordered_read_query<workflow_step_entity, domain::workflow_step>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
         lg(),
         "Reading latest workflow steps with pagination.");

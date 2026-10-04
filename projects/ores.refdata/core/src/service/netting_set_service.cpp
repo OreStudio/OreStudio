@@ -99,11 +99,12 @@ domain::netting_set to_domain(const messaging::netting_set_write& write) {
 messaging::list_netting_sets_response
 netting_set_service::list_netting_sets(const messaging::list_netting_sets_request& request) {
     messaging::list_netting_sets_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::netting_set_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting sets cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -112,7 +113,7 @@ netting_set_service::list_netting_sets(const messaging::list_netting_sets_reques
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.netting_sets = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.netting_sets = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_netting_set_count(ctx_);
     return response;
 }
@@ -121,11 +122,12 @@ messaging::list_by_netting_agreement_id_netting_sets_response
 netting_set_service::list_by_netting_agreement_id_netting_sets(
     const messaging::list_by_netting_agreement_id_netting_sets_request& request) {
     messaging::list_by_netting_agreement_id_netting_sets_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::netting_set_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of netting sets cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -150,8 +152,8 @@ netting_set_service::list_by_netting_agreement_id_netting_sets(
         return response;
     }
     const auto relation = boost::uuids::to_string(*request.netting_agreement_id);
-    response.netting_sets =
-        repo_.read_latest_by_netting_agreement_id(ctx_, relation, request.offset, request.limit);
+    response.netting_sets = repo_.read_latest_by_netting_agreement_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_netting_set_count_by_netting_agreement_id(ctx_, relation);
     return response;
 }

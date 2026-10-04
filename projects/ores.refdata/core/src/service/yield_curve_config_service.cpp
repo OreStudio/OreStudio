@@ -104,14 +104,16 @@ domain::yield_curve_config to_domain(const messaging::yield_curve_config_write& 
 messaging::list_yield_curve_configs_response yield_curve_config_service::list_yield_curve_configs(
     const messaging::list_yield_curve_configs_request& request) {
     messaging::list_yield_curve_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::yield_curve_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of yield curve configs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.yield_curve_configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.yield_curve_configs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_yield_curve_config_count(ctx_);
     return response;
 }

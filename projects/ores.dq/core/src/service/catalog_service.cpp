@@ -93,14 +93,15 @@ domain::catalog to_domain(const messaging::catalog_write& write) {
 messaging::list_catalogs_response
 catalog_service::list_catalogs(const messaging::list_catalogs_request& request) {
     messaging::list_catalogs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::catalog_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of catalogs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.catalogs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.catalogs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_catalog_count(ctx_);
     return response;
 }

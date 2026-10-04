@@ -107,11 +107,12 @@ domain::workflow_step to_domain(const messaging::workflow_step_write& write) {
 messaging::list_workflow_steps_response
 workflow_step_service::list_workflow_steps(const messaging::list_workflow_steps_request& request) {
     messaging::list_workflow_steps_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::workflow_step_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of workflow steps cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -120,7 +121,7 @@ workflow_step_service::list_workflow_steps(const messaging::list_workflow_steps_
         response.result.message = "Filtering is not served for this resource yet.";
         return response;
     }
-    response.steps = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.steps = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_step_count(ctx_);
     return response;
 }
@@ -129,11 +130,12 @@ messaging::list_by_workflow_id_workflow_steps_response
 workflow_step_service::list_by_workflow_id_workflow_steps(
     const messaging::list_by_workflow_id_workflow_steps_request& request) {
     messaging::list_by_workflow_id_workflow_steps_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::workflow_step_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of workflow steps cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter) {
@@ -149,8 +151,8 @@ workflow_step_service::list_by_workflow_id_workflow_steps(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.workflow_id);
-    response.steps =
-        repo_.read_latest_by_workflow_id(ctx_, relation, request.offset, request.limit);
+    response.steps = repo_.read_latest_by_workflow_id(
+        ctx_, relation, request.offset, request.limit, request.order);
     response.total = repo_.get_total_step_count_by_workflow_id(ctx_, relation);
     return response;
 }

@@ -96,14 +96,15 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
 messaging::list_feed_bindings_response
 feed_binding_service::list_feed_bindings(const messaging::list_feed_bindings_request& request) {
     messaging::list_feed_bindings_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::feed_binding_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of feed bindings cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.feed_bindings = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.feed_bindings = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_feed_binding_count(ctx_);
     return response;
 }

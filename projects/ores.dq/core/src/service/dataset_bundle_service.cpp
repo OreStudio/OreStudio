@@ -94,14 +94,15 @@ domain::dataset_bundle to_domain(const messaging::dataset_bundle_write& write) {
 messaging::list_dataset_bundles_response dataset_bundle_service::list_dataset_bundles(
     const messaging::list_dataset_bundles_request& request) {
     messaging::list_dataset_bundles_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::dataset_bundle_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of dataset bundles cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.bundles = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.bundles = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_bundle_count(ctx_);
     return response;
 }

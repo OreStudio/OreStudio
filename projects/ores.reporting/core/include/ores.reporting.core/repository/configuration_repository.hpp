@@ -35,6 +35,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::reporting::repository {
@@ -145,12 +146,14 @@ public:
      * @param configuration_type_code The configuration_type_code to filter by
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::configuration>
     read_latest_by_configuration_type_code(context ctx,
                                            const std::string& configuration_type_code,
                                            std::uint32_t offset,
-                                           std::uint32_t limit);
+                                           std::uint32_t limit,
+                                           const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active configurations filtered by configuration_type_code.
@@ -160,13 +163,24 @@ public:
 
 
     /**
+     * @brief Whether a list of configurations can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest configurations with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::configuration>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::configuration> read_latest(context ctx,
+                                                   std::uint32_t offset,
+                                                   std::uint32_t limit,
+                                                   const ores::utility::domain::order& order = {});
 
     /**
      * @brief Gets the total count of active configurations.

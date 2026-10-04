@@ -25,11 +25,16 @@
 #include "ores.trading.core/repository/payoff_type_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/payoff_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/payoff_type_entity.hpp"
 #include "ores.trading.core/repository/payoff_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::trading::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string payoff_type_repository::sql() {
     return generate_create_table_sql<payoff_type_entity>(lg());
+}
+
+bool payoff_type_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"code"});
+    if (!payoff_type_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of payoff types cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"code"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -214,18 +244,22 @@ void payoff_type_repository::remove(context ctx, const std::string& code) {
 }
 
 std::vector<domain::payoff_type>
-payoff_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+payoff_type_repository::read_latest(context ctx,
+                                    std::uint32_t offset,
+                                    std::uint32_t limit,
+                                    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest payoff types with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<payoff_type_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<payoff_type_entity, domain::payoff_type>(
+    return execute_ordered_read_query<payoff_type_entity, domain::payoff_type>(
         ctx,
         query,
+        list_order(order, {"code"}, false),
         [](const auto& entities) { return payoff_type_mapper::map(entities); },
         lg(),
         "Reading latest payoff types with pagination.");

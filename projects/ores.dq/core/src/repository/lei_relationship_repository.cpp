@@ -25,11 +25,16 @@
 #include "ores.dq.core/repository/lei_relationship_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.dq.api/domain/lei_relationship_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/lei_relationship_entity.hpp"
 #include "ores.dq.core/repository/lei_relationship_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::dq::repository {
 
@@ -40,6 +45,33 @@ using namespace ores::database::repository;
 
 std::string lei_relationship_repository::sql() {
     return generate_create_table_sql<lei_relationship_entity>(lg());
+}
+
+bool lei_relationship_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns,
+                          default_descending != order.descending,
+                          {"relationship_start_node_node_id"});
+    if (!lei_relationship_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of LEI relationships cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"relationship_start_node_node_id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -195,16 +227,19 @@ void lei_relationship_repository::remove(context ctx,
 }
 
 std::vector<domain::lei_relationship>
-lei_relationship_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+lei_relationship_repository::read_latest(context ctx,
+                                         std::uint32_t offset,
+                                         std::uint32_t limit,
+                                         const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI relationships with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<lei_relationship_entity>> |
-                       order_by("relationship_start_node_node_id"_c) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<lei_relationship_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
-    return execute_read_query<lei_relationship_entity, domain::lei_relationship>(
+    return execute_ordered_read_query<lei_relationship_entity, domain::lei_relationship>(
         ctx,
         query,
+        list_order(order, {"relationship_start_node_node_id"}, false),
         [](const auto& entities) { return lei_relationship_mapper::map(entities); },
         lg(),
         "Reading latest LEI relationships with pagination.");

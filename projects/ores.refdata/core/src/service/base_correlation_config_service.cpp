@@ -110,14 +110,16 @@ messaging::list_base_correlation_configs_response
 base_correlation_config_service::list_base_correlation_configs(
     const messaging::list_base_correlation_configs_request& request) {
     messaging::list_base_correlation_configs_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::base_correlation_config_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of base correlation configs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.base_correlation_configs = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.base_correlation_configs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_base_correlation_config_count(ctx_);
     return response;
 }

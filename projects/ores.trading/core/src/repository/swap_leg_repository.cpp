@@ -25,11 +25,16 @@
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::trading::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string swap_leg_repository::sql() {
     return generate_create_table_sql<swap_leg_entity>(lg());
+}
+
+bool swap_leg_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!swap_leg_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of swap legs cannot be ordered by " + order.field +
+                                    ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition swap_leg_repository::replace_claim(context ctx,
@@ -195,8 +225,12 @@ swap_leg_repository::read_at_version(context ctx, const std::string& id, std::ui
     return entities.front();
 }
 
-std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_trade_id(
-    context ctx, const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::swap_leg>
+swap_leg_repository::read_latest_by_trade_id(context ctx,
+                                             const std::string& trade_id,
+                                             std::uint32_t offset,
+                                             std::uint32_t limit,
+                                             const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap legs. trade_id: " << trade_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -205,11 +239,12 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_trade_id(
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
                              "trade_id"_c == trade_id && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<swap_leg_entity, domain::swap_leg>(
+    return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
         "Reading latest swap legs by trade_id.");
@@ -276,7 +311,10 @@ void swap_leg_repository::remove(context ctx, const std::string& id) {
 }
 
 std::vector<domain::swap_leg>
-swap_leg_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+swap_leg_repository::read_latest(context ctx,
+                                 std::uint32_t offset,
+                                 std::uint32_t limit,
+                                 const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap legs with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -285,11 +323,12 @@ swap_leg_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_
     const auto query =
         sqlgen::read<std::vector<swap_leg_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+        sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<swap_leg_entity, domain::swap_leg>(
+    return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
         "Reading latest swap legs with pagination.");

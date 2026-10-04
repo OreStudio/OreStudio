@@ -93,14 +93,15 @@ domain::batch to_domain(const messaging::batch_write& write) {
 messaging::list_batches_response
 batch_service::list_batches(const messaging::list_batches_request& request) {
     messaging::list_batches_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::batch_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of compute batches cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.batches = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.batches = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_batch_count(ctx_);
     return response;
 }

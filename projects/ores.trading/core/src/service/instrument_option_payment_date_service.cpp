@@ -99,14 +99,17 @@ messaging::list_instrument_option_payment_dates_response
 instrument_option_payment_date_service::list_instrument_option_payment_dates(
     const messaging::list_instrument_option_payment_dates_request& request) {
     messaging::list_instrument_option_payment_dates_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::instrument_option_payment_date_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of instrument option payment dates cannot be ordered by " +
+            request.order.field + ".";
         return response;
     }
-    response.option_payment_dates = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.option_payment_dates =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_option_payment_date_count(ctx_);
     return response;
 }

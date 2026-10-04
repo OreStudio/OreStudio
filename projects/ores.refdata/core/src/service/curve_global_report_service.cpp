@@ -108,14 +108,15 @@ messaging::list_curve_global_reports_response
 curve_global_report_service::list_curve_global_reports(
     const messaging::list_curve_global_reports_request& request) {
     messaging::list_curve_global_reports_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::curve_global_report_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of curve global reports cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.global_reports = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.global_reports = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_global_report_count(ctx_);
     return response;
 }

@@ -94,14 +94,15 @@ messaging::list_treatment_dimensions_response
 treatment_dimension_service::list_treatment_dimensions(
     const messaging::list_treatment_dimensions_request& request) {
     messaging::list_treatment_dimensions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
+    if (!request.order.field.empty() &&
+        !repository::treatment_dimension_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+            "A list of treatment dimensions cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.dimensions = repo_.read_latest(ctx_, request.offset, request.limit);
+    response.dimensions = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
     response.total = repo_.get_total_dimension_count(ctx_);
     return response;
 }

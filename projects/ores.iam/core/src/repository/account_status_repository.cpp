@@ -25,11 +25,16 @@
 #include "ores.iam.core/repository/account_status_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.iam.api/domain/account_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_status_entity.hpp"
 #include "ores.iam.core/repository/account_status_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::iam::repository {
 
@@ -40,6 +45,31 @@ using namespace ores::database::repository;
 
 std::string account_status_repository::sql() {
     return generate_create_table_sql<account_status_entity>(lg());
+}
+
+bool account_status_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"status"});
+    if (!account_status_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of account statuses cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"status"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -218,18 +248,22 @@ void account_status_repository::remove(context ctx, const std::string& status) {
 }
 
 std::vector<domain::account_status>
-account_status_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+account_status_repository::read_latest(context ctx,
+                                       std::uint32_t offset,
+                                       std::uint32_t limit,
+                                       const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account statuses with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_status_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("status"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<account_status_entity, domain::account_status>(
+    return execute_ordered_read_query<account_status_entity, domain::account_status>(
         ctx,
         query,
+        list_order(order, {"status"}, false),
         [](const auto& entities) { return account_status_mapper::map(entities); },
         lg(),
         "Reading latest account statuses with pagination.");

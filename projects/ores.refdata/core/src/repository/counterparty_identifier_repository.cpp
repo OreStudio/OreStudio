@@ -25,12 +25,17 @@
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_identifier_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <algorithm>
+#include <initializer_list>
 #include <sqlgen/postgres.hpp>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::refdata::repository {
 
@@ -41,6 +46,31 @@ using namespace ores::database::repository;
 
 std::string counterparty_identifier_repository::sql() {
     return generate_create_table_sql<counterparty_identifier_entity>(lg());
+}
+
+bool counterparty_identifier_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"id"});
+    if (!counterparty_identifier_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of counterparty identifiers cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"id"});
+}
+
 }
 
 ores::utility::domain::precondition
@@ -249,7 +279,11 @@ std::optional<domain::counterparty_identifier> counterparty_identifier_repositor
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_counterparty_id(
-    context ctx, const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    context ctx,
+    const std::string& counterparty_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers. counterparty_id: "
                                << counterparty_id << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -257,11 +291,13 @@ counterparty_identifier_repository::read_latest_by_counterparty_id(
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
                        where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
                              "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+    return execute_ordered_read_query<counterparty_identifier_entity,
+                                      domain::counterparty_identifier>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
         lg(),
         "Reading latest counterparty identifiers by counterparty_id.");
@@ -356,19 +392,24 @@ void counterparty_identifier_repository::remove(context ctx, const std::string& 
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::counterparty_identifier> counterparty_identifier_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_latest(context ctx,
+                                                std::uint32_t offset,
+                                                std::uint32_t limit,
+                                                const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifiers with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+    return execute_ordered_read_query<counterparty_identifier_entity,
+                                      domain::counterparty_identifier>(
         ctx,
         query,
+        list_order(order, {"id"}, false),
         [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
         lg(),
         "Reading latest counterparty identifiers with pagination.");

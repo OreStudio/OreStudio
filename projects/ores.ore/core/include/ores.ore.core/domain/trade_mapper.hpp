@@ -31,7 +31,6 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <optional>
@@ -76,17 +75,6 @@ private:
     }
 
 public:
-    /**
-     * @brief Maps a single ORE XSD trade to an ORES trading domain trade.
-     */
-    static trading::domain::trade map(const trade& v);
-
-    /**
-     * @brief Maps an ORE portfolio (collection of trades) to a vector of ORES
-     * trading domain trades.
-     */
-    static std::vector<trading::domain::trade> map(const portfolio& v);
-
     /**
      * @brief Dispatches a swap-family trade to swap_instrument_mapper.
      *

@@ -337,16 +337,15 @@ TEST_CASE("plan_trades_have_book_id_and_portfolio_id_stamped", tags) {
         return;
     }
 
-    // All trades must have non-nil book_id and portfolio_id
+    // Every trade is booked into a book, and its booking names its anchor.
     boost::uuids::uuid nil;
     for (const auto& item : plan.trades) {
-        INFO("Trade: " << item.trade.identity.external_id);
-        CHECK(item.trade.parties.book_id != nil);
-        CHECK(item.trade.parties.portfolio_id != nil);
+        INFO("Trade: " << item.ore_id);
+        CHECK(item.booking.book_id != nil);
+        CHECK(item.booking.trade_id == item.anchor.id);
     }
 
-    BOOST_LOG_SEV(lg, info) << "All " << plan.trades.size()
-                            << " trades have valid book/portfolio IDs";
+    BOOST_LOG_SEV(lg, info) << "All " << plan.trades.size() << " trades have a book";
 }
 
 TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
@@ -376,8 +375,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
     const boost::uuids::uuid nil{};
     int checked = 0;
     for (const auto& item : plan.trades) {
-        INFO("Trade external_id: " << item.trade.identity.external_id);
-        REQUIRE(item.trade.identity.id != nil);
+        INFO("Trade external_id: " << item.ore_id);
+        REQUIRE(item.anchor.id != nil);
 
         std::visit(
             [&](const auto& r) {
@@ -394,7 +393,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            CHECK(instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.anchor.id);
                             ++checked;
                         },
                         r.instrument);
@@ -402,7 +401,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            CHECK(instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.anchor.id);
                             ++checked;
                         },
                         r);
@@ -410,22 +409,22 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
-                            CHECK(instr.identity.trade_id == item.trade.identity.id);
+                            CHECK(instr.identity.trade_id == item.anchor.id);
                             ++checked;
                         },
                         r.instrument);
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
                 } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
-                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
-                    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
                 } else {
                     // credit/commodity/scripted — identity at the top level.
-                    CHECK(r.identity.trade_id == item.trade.identity.id);
+                    CHECK(r.identity.trade_id == item.anchor.id);
                     ++checked;
                 }
             },
@@ -461,8 +460,8 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
     }
 
     for (const auto& item : plan.trades) {
-        INFO("Trade: " << item.trade.identity.external_id);
-        CHECK(ore_iso(item.trade.lifecycle.trade_date) == "2026-01-01");
-        CHECK(item.trade.classification.activity_type_code == "novation");
+        INFO("Trade: " << item.ore_id);
+        CHECK(ore_iso(item.booking.trade_date) == "2026-01-01");
+        CHECK(item.activity_type_code == "novation");
     }
 }

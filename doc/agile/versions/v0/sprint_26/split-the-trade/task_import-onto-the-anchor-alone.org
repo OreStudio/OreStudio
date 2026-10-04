@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: A966F3BF-42E9-4CB2-A6FF-4064BD50A27D
+:END:
+#+title: Task: Import ORE trades onto the anchor alone
+#+description: Carry an imported trade as its anchor, its booking and its ORE id instead of the wide trade, stop writing the wide trade, and roll back an import by closing the bookings it wrote.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/import-onto-the-anchor-alone
+#+pr: 2636
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An ORE import writes only the anchor and its components; nothing in the import reads or writes the wide trade.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The import item carries the anchor, the booking, the activity type and the ORE id; the planner fills them, and no import code names the wide trade.
+- The import no longer writes the wide trade; the instruments still save against the anchor.
+- A rollback closes the bookings of the trades the import booked, keyed by trade id; the immutable anchors stay.
+- The import defaults that only the wide trade held (effective and termination date) are removed.
+- The round trip stays at in-scope lost 0, with every envelope as stated; build, ctest and the local check set pass.
+
+* Plan
+
+- Reshape =trade_import_item= around what the import books: the ORE id,
+  the anchor, the booking and the activity type, beside the envelope, the
+  instrument and the source file. The importer fills the ORE id and the
+  trade type and leaves every id nil.
+- Give the planner one helper that places a trade: it mints the id, sets
+  the party and the book, stamps the instrument, and applies the defaults.
+  The effective and termination date defaults go: no caller sets them and
+  only the wide trade held them.
+- Delete =importer::validate_trade= and the two =trade_mapper::map=
+  overloads, which only built the wide trade, with their tests.
+- In the execute handler, book from the item and stop writing the wide
+  trade. A trade counts as saved once it is booked, and the result lists
+  it by trade id.
+- Rename the result's =saved_trade_external_ids= to =saved_trade_ids=. The
+  rollback closes those trades' bookings, because the anchor is immutable:
+  a trade with no live booking is off its book, and the export reads only
+  live bookings.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Round trip, merged portfolio: trades saved and exported | 16 and 16 | =reset_and_roundtrip.sh rtx= | ce52983a60 + working tree |
+| Round trip, in scope | lost 0, unexplained 0 | =scripts/ore_mapper_roundtrip_diff.py= | ce52983a60 + working tree |
+| Round trip, out of scope | lost 314, unexplained 3 (same as before the change) | =scripts/ore_mapper_roundtrip_diff.py= | ce52983a60 + working tree |
+| Envelopes as stated, empty elements ignored | 16 of 16 | per-trade compare of type and envelope | ce52983a60 + working tree |
+| Wide trades, anchors, live bookings, ORE ids after the import | 0, 16, 16, 16 | psql counts under the ACME tenant | ce52983a60 + working tree |
+| Booking close probe: live bookings, anchors, exported trades | 15, 16, 15 (CDS left out) | =trade_bookings delete-many= then =ore export= | ce52983a60 + working tree |
+| ctest | 90 of 90 | =compass test run= | ce52983a60 + working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2636][#2636]] | [ore] Import ORE trades onto the anchor alone |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the empty ORE id comment explained the check through the wide trade's key. | =ore_import_execute_handler.cpp= | accept | Reworded around the ORE identifier. |
+| 2 | PR review: a write after the booking can fail and leave a live booking with partial components. | =ore_import_execute_handler.cpp= | accept | The booking closes again when a later write fails; the rollback and this path share =close_bookings=. |
+| 3 | PR review: an unparsable id aborts the whole rollback. | =ore_import_execute_handler.cpp= | accept | The rollback skips and logs an unparsable id. |
+| 4 | PR review: match step 8 by uuid, not string. | =ore_import_execute_handler.cpp= | decline | Correct as is; the set holds the ids the result reports. |
+| 5 | PR review: the planner still checks the parent portfolio id it no longer reads. | =ore_import_planner.cpp= | decline | The import choice names a book and its parent together; the check keeps that pairing. |
+
+* Result
+
+The ORE import carries each trade as its ORE id, anchor, booking and
+activity type, and books it without writing the wide trade. The planner
+places a trade through one helper; the effective and termination defaults,
+=validate_trade= and the wide =trade_mapper::map= overloads are gone. The
+result lists booked trades by id, and the rollback closes their bookings,
+leaving the immutable anchors. The merged portfolio round trip writes no
+wide trade, keeps in-scope lost 0 and returns every envelope as stated.

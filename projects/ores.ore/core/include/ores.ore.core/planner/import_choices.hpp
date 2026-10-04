@@ -55,8 +55,6 @@ enum class reimport_mode {
  */
 struct trade_defaults {
     std::string trade_date;
-    std::string effective_date;
-    std::string termination_date;
     std::string activity_type_code;
     std::optional<boost::uuids::uuid> default_counterparty_id;
 };

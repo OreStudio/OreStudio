@@ -26,8 +26,6 @@
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-#include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
-#include <boost/uuid/nil_generator.hpp>
 
 namespace ores::ore::domain {
 
@@ -52,48 +50,6 @@ std::string underlying_sub_trade_type(const trade& v) {
 }
 
 } // namespace
-
-trading::domain::trade trade_mapper::map(const trade& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML trade: " << std::string(v.id);
-
-    const auto nil = boost::uuids::nil_uuid();
-    trading::domain::trade r;
-    r.identity.id = nil;
-    r.identity.party_id = nil;
-    r.identity.external_id = std::string(v.id);
-    r.classification.trade_type = to_string(v.TradeType);
-
-    // Book, portfolio and counterparty require external mapping context.
-    r.parties.book_id = nil;
-    r.parties.portfolio_id = nil;
-
-    // The netting set id projects from the envelope, which stays the
-    // carrier of record: it holds the element's presence as well as its
-    // text, and the column holds only the text.
-    const auto envelope = map_envelope(v);
-    if (envelope)
-        r.classification.netting_set_id = envelope->netting_set_id.value_or(std::string());
-
-    r.classification.activity_type_code = "new_booking";
-    r.classification.status_id = boost::uuids::nil_uuid();
-    r.audit.modified_by = "ores";
-    r.audit.change_reason_code = "system.external_data_import";
-    r.audit.change_commentary = "Imported from ORE XML portfolio";
-
-    BOOST_LOG_SEV(lg(), trace) << "Mapped trade. Result: " << r;
-    return r;
-}
-
-std::vector<trading::domain::trade> trade_mapper::map(const portfolio& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML portfolio. Total trades: " << v.Trade.size();
-
-    std::vector<trading::domain::trade> r;
-    r.reserve(v.Trade.size());
-    std::ranges::transform(v.Trade, std::back_inserter(r), [](const auto& ve) { return map(ve); });
-
-    BOOST_LOG_SEV(lg(), trace) << "Mapped portfolio trades.";
-    return r;
-}
 
 std::optional<trading::domain::swap_instrument_data>
 trade_mapper::map_swap_instrument(const trade& v) {

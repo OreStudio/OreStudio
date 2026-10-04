@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-export-from-the-anchor
-#+pr:
+#+pr: 2609
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2609][#2609]] | [trading] Export ORE envelopes from the anchor and its components |
 
 * Review
 

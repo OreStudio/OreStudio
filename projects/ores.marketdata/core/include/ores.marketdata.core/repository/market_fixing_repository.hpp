@@ -183,6 +183,10 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    void insert(context ctx, const std::vector<domain::market_fixing>& v);
+
+    std::vector<domain::market_fixing> read_latest_for_series(context ctx,
+                                                              const boost::uuids::uuid& series_id);
 
 private:
     /**

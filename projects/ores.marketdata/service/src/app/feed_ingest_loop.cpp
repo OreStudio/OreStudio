@@ -27,7 +27,7 @@
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -474,8 +474,8 @@ bool feed_ingest_loop::persist_tick_observation(const ores::database::context& c
         obs.source = source;
         obs.oresmd_uri = datum::oresmd_uri_codec::write(tick_datum).value();
 
-        repository::market_observations_repository obs_repo;
-        obs_repo.write(tenant_ctx, obs);
+        repository::market_observation_repository obs_repo;
+        obs_repo.insert(tenant_ctx, obs);
         return true;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to persist observation for " << series_type << "/"

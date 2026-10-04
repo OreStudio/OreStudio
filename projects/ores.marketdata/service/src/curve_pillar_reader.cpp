@@ -19,7 +19,7 @@
  */
 #include "curve_pillar_reader.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -44,7 +44,7 @@ read_pillar_rates(ores::database::context ctx,
     namespace core = ores::marketdata::core;
 
     repository::market_series_repository series_repo;
-    repository::market_observations_repository obs_repo;
+    repository::market_observation_repository obs_repo;
 
     pillar_read out;
     for (const auto& p : pillars) {

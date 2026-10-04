@@ -209,6 +209,23 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    void insert(context ctx, const domain::market_observation& v);
+    void insert(context ctx, const std::vector<domain::market_observation>& v);
+
+    std::vector<domain::market_observation>
+    read_latest_for_series(context ctx, const boost::uuids::uuid& series_id);
+
+    std::vector<domain::market_observation>
+    read_as_of(context ctx,
+               const boost::uuids::uuid& series_id,
+               const std::chrono::system_clock::time_point& as_of_datetime);
+
+    std::vector<std::vector<domain::market_observation>>
+    read_as_of_buckets(context ctx,
+                       const boost::uuids::uuid& series_id,
+                       const std::chrono::system_clock::time_point& latest_boundary,
+                       const std::chrono::seconds& bucket_size,
+                       unsigned int bucket_count);
 
 private:
     /**

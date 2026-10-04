@@ -8,7 +8,7 @@
 #+filetags: :iam:access:implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/give-a-role-for-a-reason
-#+pr:
+#+pr: 2616
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2616][#2616]] | [iam] Give a role for a reason |
 
 * Review
 

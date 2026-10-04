@@ -22,8 +22,7 @@
 #include "ores.nats/domain/wire_format.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument_payload.hpp"
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -53,8 +52,8 @@ trade_export_item make_bond_item(boost::uuids::uuid trade_id, boost::uuids::uuid
     bond.trs_price_type = "Dirty";
 
     trade_export_item item;
-    item.trade.identity.external_id = "CodecBond001";
-    item.trade.classification.trade_type = "Bond";
+    item.ore_id = "CodecBond001";
+    item.anchor.trade_type = "Bond";
     item.instrument =
         ores::trading::domain::encode_instrument(ores::trading::domain::trade_instrument{bond});
     return item;
@@ -73,7 +72,7 @@ std::string check_bond_survives_the_codec(wire_format format) {
     const auto decoded = codec.decode<export_portfolio_response>(bytes);
     REQUIRE(decoded.has_value());
     REQUIRE(decoded->items.size() == 1);
-    CHECK(decoded->items[0].trade.identity.external_id == "CodecBond001");
+    CHECK(decoded->items[0].ore_id == "CodecBond001");
 
     // An untagged variant decodes as its first alternative, so a bond that
     // comes back as monostate is a silent loss, not an error: the codec
@@ -84,7 +83,7 @@ std::string check_bond_survives_the_codec(wire_format format) {
     CHECK(bond.instrument.identity.trade_id == trade_id);
     CHECK(bond.instrument.issue_id == issue_id);
     CHECK(bond.trs_price_type == "Dirty");
-    return decoded->items[0].trade.identity.external_id;
+    return decoded->items[0].ore_id;
 }
 
 }
@@ -109,7 +108,7 @@ TEST_CASE("export_portfolio_response_carries_an_absent_instrument", tags) {
     export_portfolio_response sent;
     sent.success = true;
     sent.items.push_back(trade_export_item{});
-    sent.items[0].trade.identity.external_id = "NoInstrument001";
+    sent.items[0].ore_id = "NoInstrument001";
 
     const auto decoded = codec.decode<export_portfolio_response>(codec.encode(sent));
     REQUIRE(decoded.has_value());
@@ -127,7 +126,7 @@ TEST_CASE("export_portfolio_response_carries_the_envelope", tags) {
     export_portfolio_response sent;
     sent.success = true;
     trade_export_item item;
-    item.trade.identity.external_id = "EnvelopedTrade001";
+    item.ore_id = "EnvelopedTrade001";
     ores::trading::domain::trade_envelope_data env;
     env.counter_party = "CPTY";
     env.netting_set_id = "NS-1";

@@ -40,8 +40,7 @@ inline constexpr auto queue_name = "ores.trading.service";
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_trade_handlers(ores::nats::service::client& nats,
                         ores::database::context ctx,
-                        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                        const std::string& http_base_url);
+                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_rates_handlers(ores::nats::service::client& nats,

@@ -1,0 +1,593 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.trading.core/service/trade_export_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
+#include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/composite_leg_repository.hpp"
+#include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_repository.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.trading.core/service/callable_swap_instrument_service.hpp"
+#include "ores.trading.core/service/cap_floor_instrument_service.hpp"
+#include "ores.trading.core/service/commodity_instrument_service.hpp"
+#include "ores.trading.core/service/composite_instrument_service.hpp"
+#include "ores.trading.core/service/credit_instrument_service.hpp"
+#include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_forward_instrument_service.hpp"
+#include "ores.trading.core/service/equity_option_instrument_service.hpp"
+#include "ores.trading.core/service/equity_position_instrument_service.hpp"
+#include "ores.trading.core/service/equity_swap_instrument_service.hpp"
+#include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/fra_instrument_service.hpp"
+#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
+#include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
+#include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
+#include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
+#include "ores.trading.core/service/rpa_instrument_service.hpp"
+#include "ores.trading.core/service/scripted_instrument_service.hpp"
+#include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/trade_envelope_reader.hpp"
+#include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <algorithm>
+#include <boost/uuid/uuid_io.hpp>
+#include <unordered_map>
+#include <unordered_set>
+
+namespace ores::trading::service {
+
+using namespace ores::logging;
+using messaging::trade_export_item;
+
+namespace {
+
+std::string to_uuid_array(const std::vector<std::string>& ids) {
+    std::string r = "{";
+    for (std::size_t i = 0; i < ids.size(); ++i) {
+        if (i != 0)
+            r += ',';
+        r += ids[i];
+    }
+    return r + "}";
+}
+
+/**
+ * Resolves a page of trades to their instrument payloads and envelopes: bucket
+ * the trade ids by the table the trade-type catalogue routes each type to,
+ * read each table in one batch, then read the envelopes for the whole page.
+ */
+template <typename Ctx>
+void populate_instruments_for_trades(const Ctx& ctx,
+                                            std::vector<trade_export_item>& items) {
+    using ores::trading::domain::instrument_table;
+    using ores::trading::domain::instrument_table_for;
+    using ores::trading::domain::trade_instrument;
+    using ores::trading::domain::swap_instrument_data;
+    using ores::trading::domain::commodity_instrument_data;
+    using ores::trading::domain::composite_instrument_data;
+
+    // Phase 1: bucket instrument IDs by the table that holds them
+    std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
+        fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids,
+        infl_ids, rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids,
+        fxvar_ids, eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids,
+        eq_dig_ids, eq_acc_ids, eq_pos_ids;
+
+    for (const auto& item : items) {
+        const auto& t = item.anchor;
+        // The trade-type catalogue decides which table holds each type;
+        // a type it routes nowhere has no instrument to read.
+        const auto table = instrument_table_for(t.trade_type);
+        if (!table)
+            continue;
+        // The instrument is keyed by the trade it belongs to, so the
+        // trade's own id is the key the product tables are read by.
+        const auto id = boost::uuids::to_string(t.id);
+        switch (*table) {
+            case instrument_table::balance_guaranteed_swap_instrument:
+                bgs_ids.push_back(id);
+                break;
+            case instrument_table::bond_instrument:
+                bond_ids.push_back(id);
+                break;
+            case instrument_table::callable_swap_instrument:
+                callable_ids.push_back(id);
+                break;
+            case instrument_table::cap_floor_instrument:
+                capfloor_ids.push_back(id);
+                break;
+            case instrument_table::commodity_instrument:
+                commodity_ids.push_back(id);
+                break;
+            case instrument_table::composite_instrument:
+                composite_ids.push_back(id);
+                break;
+            case instrument_table::credit_instrument:
+                credit_ids.push_back(id);
+                break;
+            case instrument_table::equity_accumulator_instrument:
+                eq_acc_ids.push_back(id);
+                break;
+            case instrument_table::equity_asian_option_instrument:
+                eq_asn_ids.push_back(id);
+                break;
+            case instrument_table::equity_barrier_option_instrument:
+                eq_bar_ids.push_back(id);
+                break;
+            case instrument_table::equity_digital_option_instrument:
+                eq_dig_ids.push_back(id);
+                break;
+            case instrument_table::equity_forward_instrument:
+                eq_fwd_ids.push_back(id);
+                break;
+            case instrument_table::equity_option_instrument:
+                eq_opt_ids.push_back(id);
+                break;
+            case instrument_table::equity_position_instrument:
+                eq_pos_ids.push_back(id);
+                break;
+            case instrument_table::equity_swap_instrument:
+                eq_swp_ids.push_back(id);
+                break;
+            case instrument_table::equity_variance_swap_instrument:
+                eq_var_ids.push_back(id);
+                break;
+            case instrument_table::fra_instrument:
+                fra_ids.push_back(id);
+                break;
+            case instrument_table::fx_accumulator_instrument:
+                fxacc_ids.push_back(id);
+                break;
+            case instrument_table::fx_asian_forward_instrument:
+                fxasn_ids.push_back(id);
+                break;
+            case instrument_table::fx_barrier_option_instrument:
+                fxbar_ids.push_back(id);
+                break;
+            case instrument_table::fx_digital_option_instrument:
+                fxdig_ids.push_back(id);
+                break;
+            case instrument_table::fx_forward_instrument:
+                fxfwd_ids.push_back(id);
+                break;
+            case instrument_table::fx_vanilla_option_instrument:
+                fxopt_ids.push_back(id);
+                break;
+            case instrument_table::fx_variance_swap_instrument:
+                fxvar_ids.push_back(id);
+                break;
+            case instrument_table::inflation_swap_instrument:
+                infl_ids.push_back(id);
+                break;
+            case instrument_table::knock_out_swap_instrument:
+                koswap_ids.push_back(id);
+                break;
+            case instrument_table::rpa_instrument:
+                rpa_ids.push_back(id);
+                break;
+            case instrument_table::scripted_instrument:
+                scripted_ids.push_back(id);
+                break;
+            case instrument_table::swaption_instrument:
+                swaption_ids.push_back(id);
+                break;
+            case instrument_table::vanilla_swap_instrument:
+                vswap_ids.push_back(id);
+                break;
+        }
+    }
+
+    // Phase 2: batch-fetch legs (one call covers all swap types)
+    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg>> legs_map;
+    {
+        std::vector<std::string> all_swap;
+        for (auto* v : {&fra_ids,
+                        &vswap_ids,
+                        &capfloor_ids,
+                        &swaption_ids,
+                        &bgs_ids,
+                        &callable_ids,
+                        &koswap_ids,
+                        &infl_ids,
+                        &rpa_ids})
+            all_swap.insert(all_swap.end(), v->begin(), v->end());
+        if (!all_swap.empty()) {
+            repository::swap_leg_repository leg_repo;
+            for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
+                legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(
+                    std::move(leg));
+        }
+    }
+    std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
+        comp_legs_map;
+    if (!composite_ids.empty()) {
+        repository::composite_leg_repository comp_leg_repo;
+        const std::unordered_set<std::string> wanted(composite_ids.begin(),
+                                                     composite_ids.end());
+        for (auto& leg : comp_leg_repo.read_latest(ctx)) {
+            const auto key = boost::uuids::to_string(leg.identity.trade_id);
+            if (wanted.contains(key))
+                comp_legs_map[key].push_back(std::move(leg));
+        }
+    }
+
+    // The callable swap's exercise schedule is a collection of its own,
+    // so it is fetched beside the legs and only for the instruments
+    // that state one.
+    std::unordered_map<std::string,
+                       std::vector<ores::trading::domain::callable_swap_call_date>>
+        call_dates_map;
+    if (!callable_ids.empty()) {
+        repository::callable_swap_call_date_repository call_date_repo;
+        for (auto& call_date :
+             call_date_repo.read_by_instruments_batch(ctx, callable_ids))
+            call_dates_map[boost::uuids::to_string(call_date.trade_id)].push_back(
+                std::move(call_date));
+    }
+
+    // Phase 3: batch-fetch instruments, build lookup map
+    std::unordered_map<std::string, trade_instrument> imap;
+
+    auto take_legs = [&](const std::string& id) {
+        auto it = legs_map.find(id);
+        return it != legs_map.end() ? std::move(it->second) :
+                                      std::vector<ores::trading::domain::swap_leg>{};
+    };
+
+    auto take_call_dates = [&](const std::string& id) {
+        auto it = call_dates_map.find(id);
+        return it != call_dates_map.end() ?
+                   std::move(it->second) :
+                   std::vector<ores::trading::domain::callable_swap_call_date>{};
+    };
+
+    // A commodity basket's constituents are a collection of their own, so
+    // they are fetched beside the instrument and only for the instruments
+    // that state one.
+    std::unordered_map<std::string,
+                       std::vector<ores::trading::domain::commodity_basket_constituent>>
+        constituents_map;
+    if (!commodity_ids.empty()) {
+        repository::commodity_basket_constituent_repository constituent_repo;
+        for (auto& constituent :
+             constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
+            constituents_map[boost::uuids::to_string(constituent.trade_id)].push_back(
+                std::move(constituent));
+    }
+
+    auto take_constituents = [&](const std::string& id) {
+        auto it = constituents_map.find(id);
+        return it != constituents_map.end() ?
+                   std::move(it->second) :
+                   std::vector<ores::trading::domain::commodity_basket_constituent>{};
+    };
+
+    // Single-table types (credit, scripted).
+    auto add_flat = [&](auto&& results) {
+        for (auto& v : results)
+            imap[boost::uuids::to_string(v.identity.trade_id)] = std::move(v);
+    };
+
+    if (!bond_ids.empty()) {
+        service::bond_instrument_reader reader(ctx);
+        for (auto& [id, data] : reader.read_instruments(bond_ids))
+            imap[id] = std::move(data);
+    }
+    if (!credit_ids.empty()) {
+        service::credit_instrument_service svc(ctx);
+        add_flat(svc.get_credit_instruments(credit_ids));
+    }
+    if (!commodity_ids.empty()) {
+        service::commodity_instrument_service svc(ctx);
+        for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
+            const auto id = boost::uuids::to_string(v.identity.trade_id);
+            commodity_instrument_data data;
+            data.instrument = std::move(v);
+            data.constituents = take_constituents(id);
+            imap[id] = std::move(data);
+        }
+    }
+    if (!scripted_ids.empty()) {
+        service::scripted_instrument_service svc(ctx);
+        add_flat(svc.get_scripted_instruments(scripted_ids));
+    }
+    if (!composite_ids.empty()) {
+        service::composite_instrument_service svc(ctx);
+        for (auto& v : svc.get_composite_instruments(composite_ids)) {
+            const auto id = boost::uuids::to_string(v.identity.trade_id);
+            composite_instrument_data data;
+            data.instrument = std::move(v);
+            auto it = comp_legs_map.find(id);
+            if (it != comp_legs_map.end())
+                data.legs = std::move(it->second);
+            imap[id] = std::move(data);
+        }
+    }
+
+    // Rates / swap types (9 sub-types, all share swap_legs table)
+    auto add_swap = [&](auto&& results) {
+        for (auto& v : results) {
+            const auto id = boost::uuids::to_string(v.identity.trade_id);
+            swap_instrument_data data;
+            data.instrument = std::move(v);
+            data.legs = take_legs(id);
+            data.call_dates = take_call_dates(id);
+            imap[id] = std::move(data);
+        }
+    };
+    if (!fra_ids.empty()) {
+        service::fra_instrument_service svc(ctx);
+        add_swap(svc.get_fra_instruments(fra_ids));
+    }
+    if (!vswap_ids.empty()) {
+        service::vanilla_swap_instrument_service svc(ctx);
+        add_swap(svc.get_vanilla_swap_instruments(vswap_ids));
+    }
+    if (!capfloor_ids.empty()) {
+        service::cap_floor_instrument_service svc(ctx);
+        add_swap(svc.get_cap_floor_instruments(capfloor_ids));
+    }
+    if (!swaption_ids.empty()) {
+        service::swaption_instrument_service svc(ctx);
+        add_swap(svc.get_swaption_instruments(swaption_ids));
+    }
+    if (!bgs_ids.empty()) {
+        service::balance_guaranteed_swap_instrument_service svc(ctx);
+        add_swap(svc.get_balance_guaranteed_swap_instruments(bgs_ids));
+    }
+    if (!callable_ids.empty()) {
+        service::callable_swap_instrument_service svc(ctx);
+        add_swap(svc.get_callable_swap_instruments(callable_ids));
+    }
+    if (!koswap_ids.empty()) {
+        service::knock_out_swap_instrument_service svc(ctx);
+        add_swap(svc.get_knock_out_swap_instruments(koswap_ids));
+    }
+    if (!infl_ids.empty()) {
+        service::inflation_swap_instrument_service svc(ctx);
+        add_swap(svc.get_inflation_swap_instruments(infl_ids));
+    }
+    if (!rpa_ids.empty()) {
+        service::rpa_instrument_service svc(ctx);
+        add_swap(svc.get_rpa_instruments(rpa_ids));
+    }
+
+    // FX types
+    auto add_fx = [&](auto&& results) {
+        for (auto& v : results)
+            imap[boost::uuids::to_string(v.identity.trade_id)] =
+                ores::trading::domain::fx_instrument_variant{std::move(v)};
+    };
+    if (!fxfwd_ids.empty()) {
+        service::fx_forward_instrument_service svc(ctx);
+        add_fx(svc.get_fx_forward_instruments(fxfwd_ids));
+    }
+    if (!fxopt_ids.empty()) {
+        service::fx_vanilla_option_instrument_service svc(ctx);
+        add_fx(svc.get_fx_vanilla_option_instruments(fxopt_ids));
+    }
+    if (!fxbar_ids.empty()) {
+        service::fx_barrier_option_instrument_service svc(ctx);
+        add_fx(svc.get_fx_barrier_option_instruments(fxbar_ids));
+    }
+    if (!fxdig_ids.empty()) {
+        service::fx_digital_option_instrument_service svc(ctx);
+        add_fx(svc.get_fx_digital_option_instruments(fxdig_ids));
+    }
+    if (!fxasn_ids.empty()) {
+        service::fx_asian_forward_instrument_service svc(ctx);
+        add_fx(svc.get_fx_asian_forward_instruments(fxasn_ids));
+    }
+    if (!fxacc_ids.empty()) {
+        service::fx_accumulator_instrument_service svc(ctx);
+        add_fx(svc.get_fx_accumulator_instruments(fxacc_ids));
+    }
+    if (!fxvar_ids.empty()) {
+        service::fx_variance_swap_instrument_service svc(ctx);
+        add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
+    }
+
+    // Equity types. An equity option position states its entries as rows
+    // of their own, so they are fetched beside the instrument and only
+    // for the positions that state one.
+    std::unordered_map<std::string,
+                       std::vector<ores::trading::domain::equity_position_option_underlying>>
+        equity_underlyings_map;
+    if (!eq_pos_ids.empty()) {
+        repository::equity_position_option_underlying_repository underlying_repo;
+        for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
+            equity_underlyings_map[boost::uuids::to_string(underlying.trade_id)]
+                .push_back(std::move(underlying));
+    }
+
+    auto take_equity_underlyings = [&](const std::string& id) {
+        auto it = equity_underlyings_map.find(id);
+        return it != equity_underlyings_map.end() ?
+                   std::move(it->second) :
+                   std::vector<ores::trading::domain::equity_position_option_underlying>{};
+    };
+
+    auto add_eq = [&](auto&& results) {
+        for (auto& v : results) {
+            const auto id = boost::uuids::to_string(v.identity.trade_id);
+            ores::trading::domain::equity_instrument_data data;
+            data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
+            data.underlyings = take_equity_underlyings(id);
+            imap[id] = std::move(data);
+        }
+    };
+    if (!eq_opt_ids.empty()) {
+        service::equity_option_instrument_service svc(ctx);
+        add_eq(svc.get_equity_option_instruments(eq_opt_ids));
+    }
+    if (!eq_fwd_ids.empty()) {
+        service::equity_forward_instrument_service svc(ctx);
+        add_eq(svc.get_equity_forward_instruments(eq_fwd_ids));
+    }
+    if (!eq_swp_ids.empty()) {
+        service::equity_swap_instrument_service svc(ctx);
+        add_eq(svc.get_equity_swap_instruments(eq_swp_ids));
+    }
+    if (!eq_var_ids.empty()) {
+        service::equity_variance_swap_instrument_service svc(ctx);
+        add_eq(svc.get_equity_variance_swap_instruments(eq_var_ids));
+    }
+    if (!eq_bar_ids.empty()) {
+        service::equity_barrier_option_instrument_service svc(ctx);
+        add_eq(svc.get_equity_barrier_option_instruments(eq_bar_ids));
+    }
+    if (!eq_asn_ids.empty()) {
+        service::equity_asian_option_instrument_service svc(ctx);
+        add_eq(svc.get_equity_asian_option_instruments(eq_asn_ids));
+    }
+    if (!eq_dig_ids.empty()) {
+        service::equity_digital_option_instrument_service svc(ctx);
+        add_eq(svc.get_equity_digital_option_instruments(eq_dig_ids));
+    }
+    if (!eq_acc_ids.empty()) {
+        service::equity_accumulator_instrument_service svc(ctx);
+        add_eq(svc.get_equity_accumulator_instruments(eq_acc_ids));
+    }
+    if (!eq_pos_ids.empty()) {
+        service::equity_position_instrument_service svc(ctx);
+        add_eq(svc.get_equity_position_instruments(eq_pos_ids));
+    }
+
+    // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
+    for (auto& item : items) {
+        const auto& t = item.anchor;
+        // The instrument is keyed by the trade it belongs to, so the
+        // trade's own id is the key the product tables are read by.
+        const auto id = boost::uuids::to_string(t.id);
+        if (auto it = imap.find(id); it != imap.end())
+            item.instrument = encode_instrument(it->second);
+    }
+
+    // Phase 5: fill the trade-level envelope, which is keyed by the
+    // trade rather than the instrument and so crosses product types.
+    std::vector<std::string> trade_ids;
+    trade_ids.reserve(items.size());
+    for (const auto& item : items)
+        trade_ids.push_back(boost::uuids::to_string(item.anchor.id));
+
+    service::trade_envelope_reader envelope_reader(ctx);
+    auto envelopes = envelope_reader.read_envelopes(trade_ids);
+    for (auto& item : items) {
+        const auto id = boost::uuids::to_string(item.anchor.id);
+        if (auto it = envelopes.find(id); it != envelopes.end())
+            item.envelope = std::move(it->second);
+    }
+}
+
+}
+
+trade_export_service::trade_export_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+std::vector<trade_export_item> trade_export_service::export_node(const std::string& node_id,
+                                                                 std::uint32_t offset,
+                                                                 std::uint32_t limit) const {
+    using database::repository::execute_parameterized_string_query;
+    const auto trade_ids = execute_parameterized_string_query(
+        ctx_,
+        "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
+        "WHERE b.tenant_id = $1::uuid "
+        "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
+        "AND (NULLIF($2::text, '') IS NULL "
+        "OR b.book_id IN (SELECT t.id FROM ores_trading_get_book_ids_for_node_fn($1::uuid, "
+        "NULLIF($2::text, '')::uuid) AS t(id))) "
+        "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer",
+        {ctx_.tenant_id().to_string(), node_id, std::to_string(offset), std::to_string(limit)},
+        lg(),
+        "Reading the trades booked under a node.");
+    return export_trades(trade_ids);
+}
+
+std::vector<trade_export_item>
+trade_export_service::export_books(const std::vector<std::string>& book_ids,
+                                   std::uint32_t offset,
+                                   std::uint32_t limit) const {
+    using database::repository::execute_parameterized_string_query;
+    if (book_ids.empty())
+        return {};
+    const auto trade_ids = execute_parameterized_string_query(
+        ctx_,
+        "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
+        "WHERE b.tenant_id = $1::uuid "
+        "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
+        "AND b.book_id = ANY($2::uuid[]) "
+        "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer",
+        {ctx_.tenant_id().to_string(),
+         to_uuid_array(book_ids),
+         std::to_string(offset),
+         std::to_string(limit)},
+        lg(),
+        "Reading the trades booked in a set of books.");
+    return export_trades(trade_ids);
+}
+
+std::vector<trade_export_item>
+trade_export_service::export_trades(const std::vector<std::string>& trade_ids) const {
+    using database::repository::execute_parameterized_multi_column_query;
+    if (trade_ids.empty())
+        return {};
+
+    std::unordered_map<std::string, std::string> ore_ids;
+    for (const auto& row : execute_parameterized_multi_column_query(
+             ctx_,
+             "SELECT trade_id::text, id_value FROM ores_trading_trade_identifiers_tbl "
+             "WHERE tenant_id = ores_iam_current_tenant_id_fn() AND id_type = 'ORE' "
+             "AND valid_to = ores_utility_infinity_timestamp_fn() "
+             "AND trade_id = ANY($1::uuid[])",
+             {to_uuid_array(trade_ids)},
+             lg(),
+             "Reading the ORE identifiers of the exported trades."))
+        ore_ids.emplace(*row[0], row[1].value_or(""));
+
+    auto anchors = repository::trade_anchor_repository().read_latest(ctx_, trade_ids);
+    std::ranges::sort(anchors, {}, [](const auto& a) { return boost::uuids::to_string(a.id); });
+
+    std::vector<trade_export_item> items;
+    items.reserve(anchors.size());
+    for (auto& anchor : anchors) {
+        const auto id = boost::uuids::to_string(anchor.id);
+        const auto ore_id = ore_ids.find(id);
+        items.push_back({.anchor = std::move(anchor),
+                         .ore_id = ore_id != ore_ids.end() ? ore_id->second : id});
+    }
+    populate_instruments_for_trades(ctx_, items);
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
+    return items;
+}
+
+}

@@ -133,7 +133,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url) {
 
-    auto subs = detail::register_trade_handlers(nats, ctx, verifier, http_base_url);
+    auto subs = detail::register_trade_handlers(nats, ctx, verifier);
     // Capacity for the ~250 subscriptions the masters below return.
     subs.reserve(256);
 
@@ -174,11 +174,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_anchor_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
-        auto toh = std::make_shared<trade_operations_handler>(nats, ctx, verifier);
+        auto toh = std::make_shared<trade_operations_handler>(nats, ctx, verifier, http_base_url);
         subs.push_back(nats.queue_subscribe(
             book_trade_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->book_trade(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            export_portfolio_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
+                toh->export_portfolio(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(export_trades_to_storage_request::nats_subject,
+                                            queue_group,
+                                            [toh](ores::nats::message msg) {
+                                                toh->export_trades_to_storage(std::move(msg));
+                                            }));
     }
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_envelope_additional_field_handlers(nats, ctx, verifier));

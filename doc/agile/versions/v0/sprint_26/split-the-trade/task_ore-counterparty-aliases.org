@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-counterparty-aliases
-#+pr:
+#+pr: 2587
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2587][#2587]] | [refdata] Map ORE sample counterparties onto GLEIF banks |
 
 * Review
 

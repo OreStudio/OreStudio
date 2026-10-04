@@ -104,6 +104,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the aliases are published only into the system tenant, where ACME is | populate script | Accept as is | Another tenant adds aliases through the counterparty identifier commands; publishing the sample banks per tenant through a DQ bundle needs an artefact type and a service publish handler of its own. |
 | 2 | Local review: a newly published bank's generated short code could collide with one the tenant already holds | =refdata_publish_from_dq_create.sql= | Accept as is | Unchanged from before; the eleven banks' codes are distinct from ACME's. |
+| 3 | @claude: a new counterparty whose parent the tenant already holds loses its parent link | =refdata_publish_from_dq_create.sql= | Accept | The publish resolves a parent the tenant already holds as well as one it writes; a pgTAP case publishes a Barclays subsidiary and checks it links to the bank. |
+| 4 | @claude: fail fast if a sample bank is missing from GLEIF | =ore_sample_counterparties_dataset_populate.sql= | Accept | The script raises unless all eleven banks were selected. The bank names stay in the list as readable data. |
+| 5 | @claude: test the partial publish path | pgTAP | Accept | A dataset holding a bank the tenant has and a new subsidiary publishes only the subsidiary. |
+| 6 | @claude: the scheme string repeats; the ER diagram churns; an alias is not re-pointed | various | Decline | The index's comment says why other schemes share values; the diagram is generated and checked by CI; keeping an existing alias is intended. |
 
 * Result
 
@@ -116,7 +120,7 @@ via its "Verifies task" field.
   skipping a tenant that already has any.
 - Verified: db recreate clean (11 banks, 11 LEI identifiers, 23 aliases, 15
   counterparties in the system tenant); pgTAP
-  =refdata_counterparty_ore_aliases_test.sql= 6/6; build clean; ctest 90/90;
+  =refdata_counterparty_ore_aliases_test.sql= 8/8; build clean; ctest 90/90;
   drift none under clang-format 18; sweep, paste blocks, reachability,
   permissions, populate references, SQL hygiene, ER strict, lint, structure
   notes, misspell and site page clean.

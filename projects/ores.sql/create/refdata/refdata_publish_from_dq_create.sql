@@ -2229,8 +2229,8 @@ begin
 
     -- A tenant may already hold some of these counterparties, from this
     -- dataset or another: a second dataset adds the LEIs the tenant lacks
-    -- and leaves the rest alone. Removing them here, before parents are
-    -- resolved, keeps every parent link within the rows this run writes.
+    -- and leaves the rest alone. A parent is linked whether this run writes
+    -- it or the tenant already holds it.
     delete from lei_counterparty_uuid_map m
     using ores_refdata_counterparty_identifiers_tbl ci
     where ci.tenant_id = p_target_tenant_id
@@ -2251,8 +2251,13 @@ begin
       and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
       and r.relationship_relationship_status = 'ACTIVE'
       and r.dataset_id = v_rel_dataset_id
-      and exists (select 1 from lei_counterparty_uuid_map p
-                  where p.lei = r.relationship_end_node_node_id);
+      and (exists (select 1 from lei_counterparty_uuid_map p
+                   where p.lei = r.relationship_end_node_node_id)
+           or exists (select 1 from ores_refdata_counterparty_identifiers_tbl ci
+                      where ci.tenant_id = p_target_tenant_id
+                        and ci.id_scheme = 'LEI'
+                        and ci.id_value = r.relationship_end_node_node_id
+                        and ci.valid_to = ores_utility_infinity_timestamp_fn()));
 
     declare
         v_changed boolean := true;
@@ -2308,13 +2313,19 @@ begin
                 m.counterparty_uuid, 0,
                 m.entity_legal_name,
                 m.short_code, m.entity_transliterated_name_1, 'Corporate',
-                parent_map.counterparty_uuid,
+                coalesce(parent_map.counterparty_uuid, held_parent.counterparty_id),
                 coalesce(bc_map.business_center_code, 'WRLD'),
                 'Active',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_counterparty_uuid_map m
             left join lei_counterparty_uuid_map parent_map on parent_map.lei = m.parent_lei
+            left join ores_refdata_counterparty_identifiers_tbl held_parent
+                on parent_map.lei is null
+               and held_parent.tenant_id = p_target_tenant_id
+               and held_parent.id_scheme = 'LEI'
+               and held_parent.id_value = m.parent_lei
+               and held_parent.valid_to = ores_utility_infinity_timestamp_fn()
             left join (values
                 ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
                 ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),

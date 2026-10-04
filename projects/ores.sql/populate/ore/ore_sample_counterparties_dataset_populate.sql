@@ -38,6 +38,7 @@ do $$
 declare
     v_dataset_id uuid;
     v_source_id uuid;
+    v_copied bigint;
 begin
     perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.sample_counterparties',
@@ -89,4 +90,9 @@ begin
             ('K6Q0W1PS1L1O4IQL9C32', 'J.P. Morgan Securities PLC')
         ) as bank(lei, legal_name)
       );
+
+    get diagnostics v_copied = row_count;
+    if v_copied <> 11 then
+        raise exception 'ore.sample_counterparties selected % of its 11 banks from gleif.lei_entities.small.', v_copied;
+    end if;
 end $$;

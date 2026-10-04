@@ -26,13 +26,14 @@
  * - A counterparty may answer to several ORE names
  * - An ORE name answers to one counterparty per tenant
  * - The LEI counterparty publish adds what a tenant lacks and skips the rest
+ * - A published counterparty links to a parent the tenant already holds
  *
  * Run with: pg_prove -d <database> test/refdata_counterparty_ore_aliases_test.sql
  */
 
 begin;
 
-select plan(6);
+select plan(8);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -91,6 +92,50 @@ select results_eq(
         ores_utility_system_tenant_id_fn())$$,
     array['skipped'],
     'a second publish of the same banks adds nothing');
+
+-- A dataset holding a bank the tenant already has and one of its
+-- subsidiaries: the publish adds only the subsidiary, under the bank.
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'test.ore_partial_publish', 'ORE', 'Parties', 'Reference Data', 'LEI',
+        'Primary', 'Actual', 'Raw', 'GLEIF Golden Copy Extraction',
+        'Partial publish test', 'Test dataset.', 'GLEIF', 'Test', current_date,
+        'Open Data', 'lei_entities');
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'test.ore_partial_publish'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    insert into ores_dq_lei_entities_artefact_tbl (dataset_id, tenant_id, lei, version, entity_legal_name, entity_entity_category, entity_entity_sub_category, entity_entity_status, entity_legal_form_entity_legal_form_code, entity_legal_form_other_legal_form, entity_legal_jurisdiction, entity_legal_address_first_address_line, entity_legal_address_city, entity_legal_address_region, entity_legal_address_country, entity_legal_address_postal_code, entity_headquarters_address_first_address_line, entity_headquarters_address_city, entity_headquarters_address_region, entity_headquarters_address_country, entity_headquarters_address_postal_code, entity_entity_creation_date, registration_initial_registration_date, registration_last_update_date, registration_next_renewal_date, registration_registration_status, entity_transliterated_name_1, entity_transliterated_name_1_type)
+    select v_dataset_id, e.tenant_id, e.lei, e.version, e.entity_legal_name, e.entity_entity_category, e.entity_entity_sub_category, e.entity_entity_status, e.entity_legal_form_entity_legal_form_code, e.entity_legal_form_other_legal_form, e.entity_legal_jurisdiction, e.entity_legal_address_first_address_line, e.entity_legal_address_city, e.entity_legal_address_region, e.entity_legal_address_country, e.entity_legal_address_postal_code, e.entity_headquarters_address_first_address_line, e.entity_headquarters_address_city, e.entity_headquarters_address_region, e.entity_headquarters_address_country, e.entity_headquarters_address_postal_code, e.entity_entity_creation_date, e.registration_initial_registration_date, e.registration_last_update_date, e.registration_next_renewal_date, e.registration_registration_status, e.entity_transliterated_name_1, e.entity_transliterated_name_1_type
+    from ores_dq_lei_entities_artefact_tbl e
+    join ores_dq_datasets_tbl d on d.id = e.dataset_id
+     and d.code = 'gleif.lei_entities.small'
+     and d.valid_to = ores_utility_infinity_timestamp_fn()
+    where e.lei in ('G5GSEF7VJP5I7OUK5573', '2138002D2Q4SDWONEG28');
+end $$;
+
+select is(
+    (select record_count::int from ores_refdata_publish_lei_counterparties_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'test.ore_partial_publish'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn(),
+        p_params => '{"relationship_dataset_code": "gleif.lei_relationships.small"}'::jsonb)
+     where action = 'inserted'),
+    1,
+    'a publish adds only the counterparties the tenant lacks');
+
+select is(
+    (select c.parent_counterparty_id::text
+     from ores_refdata_counterparties_tbl c
+     join ores_refdata_counterparty_identifiers_tbl ci
+       on ci.tenant_id = c.tenant_id and ci.counterparty_id = c.id
+      and ci.id_scheme = 'LEI' and ci.id_value = '2138002D2Q4SDWONEG28'
+      and ci.valid_to = ores_utility_infinity_timestamp_fn()
+     where c.valid_to = ores_utility_infinity_timestamp_fn()),
+    pg_temp.alias_target('CPTY_A'),
+    'a new counterparty links to a parent the tenant already holds');
 
 select * from finish();
 

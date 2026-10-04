@@ -97,6 +97,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: a precompiled header would load =<cstdlib>= before the define | =environment_environment_tests.cpp= | Declined | The platform tests use no precompiled header, so the define comes first. |
+| 2 | Round 1: check the build job needs no other token scopes | =continuous-linux.yml= | Declined | The job uses checkout, cache, setup, upload-artifact and =gh api= on the cache only; none needs =packages= or =id-token=. |
+| 3 | Round 1: say why the define is there | =environment_environment_tests.cpp= | Accepted | Comment added above the define. |
+| 4 | Round 1: a precompiled header would make the define too late | =environment_environment_tests.cpp= | Declined | Same as row 1. |
+| 5 | Round 1: merge once the Windows clang jobs pass | — | Declined | Windows CI runs on a schedule on main only, so it cannot gate this PR; check the first run after merge. |
 
 * Result
 

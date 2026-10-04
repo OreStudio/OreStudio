@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// The tests compare the provider with the C runtime, so they call std::getenv,
+// which the Windows CRT marks deprecated.
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "ores.platform/environment/environment.hpp"

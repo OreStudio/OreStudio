@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D
+:END:
+#+title: Notification requirements
+#+description: What a notification subsystem must do before any is built: who is told what, through which channel, how a person reads and clears it, and what it must never carry.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:notification:requirements:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+* Summary
+
+Nothing in ORE Studio tells a person that something happened. A role request
+waits until an administrator happens to open the queue, a failed tenant setup
+is found on the home page, and a forgotten password has no recovery because
+nothing can send a mail. These are requirements for one notification subsystem
+that any activity in the system can use, written before anything is built.
+
+A notification is a short, durable message to a person or to everyone who holds
+a permission, about one thing that happened, with a link to where it is dealt
+with. A component raises it from an activity it owns; the subsystem works out
+who receives it, keeps it until it is read, and delivers it through the
+channels each person has. The first users are the
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][approval requests]], built at the
+same time, but nothing in the subsystem knows about approvals.
+
+* Detail
+
+** What raises a notification
+
+Any component, from any activity it owns. The subsystem has no list of
+activities: a component states the kind, the subject, the audience and the
+words, and the subsystem does the rest. Examples it must serve from the start:
+
+| Activity | Who is told | What |
+|----------+-------------+------|
+| A role is asked for | Holders of the permission that decides it | A request waits, with a link to it |
+| A request is decided | The person who asked | Given or refused, with the reason |
+| A role is given or taken away | The person | Their access changed |
+| A tenant setup fails | System administrators | Which tenant, which step, the error |
+| A tenant is removed | Its administrators | It is closed, and when access ends |
+| An account is locked by failed sign-ins | The tenant's administrators | Who, and from where |
+| A trade waits for operational authorisation | Holders of the authorising permission | The queue has work |
+| A report run finishes or fails | The person who ran it | Where the output is |
+| A password recovery is asked for | The account's own address | A single-use link |
+
+** Requirements
+
+1. *Generic.* A notification names a kind, a subject and an audience. No
+   activity is built into the subsystem, and a new kind needs no change to it.
+2. *Audience by person or by permission.* A notification goes to named accounts
+   or to every account that holds a permission in the tenant, resolved when it
+   is raised, so a new administrator is not told about yesterday's requests.
+3. *Tenant-scoped.* A notification belongs to one tenant and row-level security
+   scopes it; a system notification belongs to the system tenant.
+4. *Durable and personal.* Each recipient has their own copy, kept until they
+   read or clear it, and a person reads only their own.
+5. *Read state.* A person sees what is unread, marks one or all as read, and
+   clears what they no longer need. The count of unread ones is cheap to read,
+   because it sits on every screen.
+6. *A link to the thing.* Every notification links to where it is dealt with:
+   the request, the tenant, the account. A notification never asks a person to
+   act inside it.
+7. *Channels.* In the application first: a bell in the header with a list, and
+   live arrival through the server-sent event channel the screens already use.
+   Mail second, for what a person must see without signing in, which a password
+   recovery needs by definition. A channel is a delivery of the same
+   notification, not a different message.
+8. *Preferences.* A person chooses, per kind, whether mail is sent as well; the
+   in-application copy is always kept. A kind may be marked as one that cannot
+   be turned off, such as a password recovery.
+9. *Words in the person's language.* A notification carries a kind and its
+   values, not a finished sentence, so the screen renders it in the reader's
+   language, as every other screen does.
+10. *No secrets and no data beyond the subject.* A notification names what
+    happened and links to it. It carries no password, token or trade
+    economics, because mail leaves the system; a recovery link is single-use
+    and short-lived.
+11. *Grouping.* Many notifications of one kind about one subject collapse to
+    one with a count, so a bulk import does not bury a person.
+12. *Retention.* Read notifications are removed after a period, as a setting.
+13. *Audit.* Whether a notification was raised, delivered and read is recorded,
+    so "were they told?" has an answer.
+14. *Raising never blocks the activity.* A failed delivery does not fail what
+    raised it; it is retried and recorded.
+
+** How it relates to the approval requests
+
+The two are built together because each is the other's first proof. A request
+waiting is the notification's first kind, and a decision is its second; the
+request's change events are what the subsystem listens to. Neither depends on
+the other's internals: the approval record raises notifications as any
+component would, and the subsystem would serve a failed tenant setup the same
+way.
+
+** What exists today
+
+- A server-sent event channel from the browser backend to the screen, carrying
+  entity change events; a notification's live arrival can use it.
+- Change events published by every generated entity; a notification can be
+  raised from them, but they are not notifications: they carry no audience and
+  no words.
+- No mail: there is no SMTP client, no mail service and no template pipeline
+  ([[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][the password recovery capture]]).
+
+** Open questions
+
+1. Its own component, or beside the approval requests in one component.
+2. Which mail transport, and how its credentials are held.
+3. Whether a permission audience is resolved when raised (proposed) or when read.
+4. The retention period, and whether it is per tenant.
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the first activity built on it.
+- [[id:B3C92954-8DBC-41F3-A9ED-E1EB74313F76][The tree cannot send an email]] — the recovery need that makes mail a requirement.
+- [[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Workflow waiting and deadlines]] — the event channels a notification can travel.

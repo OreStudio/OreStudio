@@ -26,11 +26,11 @@ The access prototype shows a member asking for a role with a reason, waiting and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -86,3 +86,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The access prototype draws asking for a role: *Ask for a role* and *Your
+requests* in My access, and a *Requests* queue for the tenant administrator in
+which nobody answers their own request. Accepted on 2026-10-04.
+
+The user turned the request into a wider design: one approval record for
+anything in the system that waits on a decision, and a notification subsystem
+for any activity, built together. Both are written up in
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and
+[[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]], and the
+role request is built on them.

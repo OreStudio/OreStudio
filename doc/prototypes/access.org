@@ -84,6 +84,12 @@ reuses =iam.v1.roles.assign=, so the grant carries the same audit tail as any
 other. What it still lacks, as the journey records, is a notice to either
 person and a deadline after which an unanswered request closes.
 
+Accepted on 2026-10-04. The user asked for the request to be held in a table
+that any approval in the system can use, an operations authorisation queue
+among them, and for notifications to be designed for any activity. Both are
+written up: [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and
+[[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]].
+
 ** What is real and what is not
 
 The permission catalogue, its descriptions and the eight human roles with

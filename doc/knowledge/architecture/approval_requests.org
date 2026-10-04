@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF
+:END:
+#+title: Approval requests
+#+description: One record for anything that waits on a person's decision: a member asking for a role, a trade awaiting operational authorisation, a sensitive change awaiting a second authoriser.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:approval:four-eyes:workflow:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+* Summary
+
+Some work waits on a person's decision: a member asks for a role, a trade waits
+for Operations to authorise it, a change to a counterparty waits for a second
+authoriser. Each of these is the same thing underneath: somebody asks, somebody
+else decides, and both the ask and the decision are kept. This document proposes
+one record and one queue for all of them, the *approval request*, rather than a
+table per feature or a workflow instance that waits.
+
+The record holds who asked, what kind of request it is, what it is about, why,
+its state, and who decided, when and why. A kind is registered by the component
+that owns the thing asked about, and that component applies an approval through
+its own operation, so the record never writes another component's data. The
+queue is one read filtered by kind, and four-eyes, required comments and expiry
+are rules of the record, not of each feature.
+
+The first two kinds are the role request of
+[[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] and the
+deferred [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][four-eyes authorisation framework]].
+The trade's [[id:785C68A0-DD94-404A-BF16-57814554DA12][operational authorisation queue]]
+is the third, with one caution set out below.
+
+* Detail
+
+** Why a record, and not a waiting workflow
+
+The journey first held a role request as a workflow instance that waits. The
+workflow engine cannot wait on a person: its states are pending, in progress,
+completed, failed, compensating and compensated, nothing suspends a run, and
+[[id:C71A0118-63B5-4150-9C9F-007C690CBF11][the waiting design]] treats a wait as
+a bounded budget whose expiry is a failure. A person's decision is neither: it
+may take days, and an unanswered request is not a failure of anything.
+
+A record is the smaller change. It needs no engine state, it is listed and
+filtered like any other entity, and its history is the audit. A workflow can
+still start one, and continue when the decision is made, by watching the
+record's change event; the record does not need the workflow.
+
+** The record
+
+| Field | What it holds |
+|-------+---------------|
+| =id= | The request's identity |
+| =tenant_id= | The tenant it belongs to; row-level security scopes every read |
+| =kind= | What is asked, from a registered list: =iam.role_grant=, =trading.operational_authorisation=, ... |
+| =subject_ref= | What the request is about, as the owning component names it: an account and a role, a trade id |
+| =payload= | The kind's own detail, as JSON the kind defines and validates |
+| =requested_by=, =requested_at= | Who asked and when; a system may ask, as an automated feed does |
+| =reason= | Why they ask, in their words |
+| =state= | Where it is: see the lifecycle |
+| =decided_by=, =decided_at=, =decision_comment= | Who decided, when and why |
+| =expires_at= | When an unanswered request closes, or none |
+
+The record is bitemporal like the other IAM and reference entities, so every
+change of state is a version and the history is the audit trail an auditor reads.
+
+** The lifecycle
+
+| State | Meaning | Exits |
+|-------+---------+-------|
+| =waiting= | Asked, not yet decided | approve, refuse, hold, withdraw, expire |
+| =held= | Parked pending a question; a suspension, not a refusal | approve, refuse, back to waiting |
+| =approved= | Decided yes; the owning component has applied it | reverse, with a comment |
+| =refused= | Decided no | none |
+| =withdrawn= | The person who asked took it back | none |
+| =expired= | Nobody decided before =expires_at= | none |
+
+Three rules come from the operational authorisation queue and hold for every
+kind:
+
+- *A refusal is final.* A refused request cannot be approved; the route is a new
+  request. Reversing a terminal decision is evidence that something went wrong.
+- *An approval is reversed, not edited.* Undoing an approval is its own step with
+  a comment, and the owning component undoes what it applied.
+- *Concurrency is a notice, not a lock.* Two people may open the same request; the
+  second decision is refused by its version, and the screen says who decided.
+
+=held= is optional per kind: a role request has no use for it, a trade does.
+
+** Rules the record enforces for every kind
+
+- *Four-eyes.* The person who decides is not the person who asked. A kind may
+  require more, for example a decider from another desk.
+- *Who may decide.* Each kind names the permission a decider needs, such as
+  =iam::roles:assign= for a role request, so the queue a person sees is the kinds
+  they may decide.
+- *Comments.* A kind states which decisions need a comment. A refusal always
+  does, because the person who asked reads it.
+- *One open request per subject.* A second request for the same subject while one
+  waits is refused, so a person cannot flood the queue.
+
+** How an approval is applied
+
+The record never writes another component's data. When a request is approved,
+the decision publishes the request's change event, and the component that owns
+the kind applies it through its own operation: IAM grants the role with
+=iam.v1.roles.assign=, carrying the request as the grant's reason, so the grant
+has the same audit tail as any other. If applying fails, the request returns to
+=waiting= with the failure as a comment, rather than reading as approved.
+
+** What is generic and what a kind adds
+
+Set against the operational authorisation queue, the role request and the
+deferred four-eyes item, almost all of the queue is the same for every kind.
+
+| Part | Generic | What a kind adds |
+|------+---------+------------------|
+| The record and its history | Who asked, when, why, state, who decided, when and why | Its =subject_ref= and =payload= shape |
+| The lifecycle | Waiting, approved, refused, withdrawn, expired; a refusal is final; an approval is reversed with a comment | Whether =held= is allowed, and its reasons (a trade's handover markers) |
+| Four-eyes | The decider is not the asker | A stronger rule, such as another desk or a second decider |
+| Who may decide | A permission per kind | The permission's code |
+| Comments | A refusal always needs one | Which other decisions need one; a trade needs one on every decision |
+| Concurrency | The second decision is refused by its version | Nothing |
+| Expiry | A request closes when =expires_at= passes | The default window, or none |
+| One open request per subject | Refused while one waits | What "the same subject" means |
+| Applying the decision | The decision publishes a change event | The operation that applies it, in the owning component |
+| Raising a request | A person asks, or a system asks on their behalf | Whether the system raises it (a trade on arrival) and whether it can decide on its own (auto-authorisation) |
+| The queue | One paged read: kind, state, subject, age; oldest first; scoped by tenant and the decider's permissions | Its own columns from the payload, its grouping, highlighted changes |
+| Reports | Time waiting, decisions by person, what stayed open overnight | A kind's own reports, such as held-over trades |
+| Notifications | Tell the deciders a request waits; tell the asker the decision | The words |
+
+So a kind is a small declaration: its name, its subject and payload, the
+permission that decides it, its comment and hold rules, its expiry, and the
+operation that applies an approval. The record, the lifecycle, the rules, the
+queue, the reports and the notifications are written once.
+
+** Where it lives
+
+The record belongs to no single business area, and every component may register
+a kind, so it is its own small component, or a part of =ores.workflow=, which
+already owns long-running processes and their events. That choice is open.
+
+** The queue
+
+The queue is one paged read of the record, filtered by kind, state and subject,
+ordered oldest first, and limited by row-level security and the decider's
+permissions. A screen shows a kind's own columns from the payload. The trade
+queue's grouping, highlighted changes and reports are views over this read.
+
+** The caution about trades
+
+A trade's operational authorisation is not a request somebody makes: every trade
+arrives needing it, its states (unseen, held over, authorised, denied) are
+metadata of the trade, and auto-authorisation decides many without a person.
+Folding it in means one request per trade, raised by the system on arrival.
+That fits the record, but its volume and its reports are the trade queue's own,
+so the trade kind is designed with Operations before it is built.
+
+** What notifications add
+
+A request waits until somebody looks. The queue's count on the menu is the only
+signal today. Telling the decider that something waits, and telling the person
+who asked what was decided, is the
+[[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][notification subsystem's]] first use, and the record's
+change events are what it listens to.
+
+** Open questions
+
+1. Its own component, or a part of =ores.workflow=.
+2. Whether =payload= is free JSON validated by the kind, or a typed table per kind
+   beside a common header.
+3. The expiry default, and whether expiry is a setting per kind or per tenant.
+4. Whether a reversal of an approval is a state of the same request or a request
+   of its own kind.
+
+* See also
+
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind: a member asks for a role.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]] — the trade queue whose rules this record takes.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] — why authorisation is metadata, and the four-eyes principle.
+- [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item this design answers.
+- [[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Workflow waiting and deadlines]] — why a person's decision is not a workflow wait.

@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-refdata-journeys
-#+pr:
+#+pr: 2634
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2634][#2634]] | [agile] Scaffold the story that builds the refdata journeys in ores.web |
 
 * Review
 

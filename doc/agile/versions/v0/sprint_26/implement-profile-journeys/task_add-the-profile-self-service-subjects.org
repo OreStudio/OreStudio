@@ -28,9 +28,9 @@ A member cannot write their own profile: iam.v1.accounts.update and iam.v1.accou
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | PR #2632 open; the review is settled in 7b1649c2ca and the branch is pushed. |
+| Waiting on   | The CI run on the review settlement.   |
+| Next         | Merge when CI is green.                |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -101,9 +101,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build | =ores.iam.core.lib=, =ores.iam.core.tests= and =ores.shell.iam.tests= built, exit 0 | =compass build ores.iam.core.lib ores.iam.core.tests ores.shell.iam.tests= | 4503af654d |
+| iam suites | 3 of 3 tests passed; =ores.iam.core.tests= 20.21s | =compass test run -- -R 'ores\.iam\.'= | 4503af654d |
+| New self-write tests | All tests passed (29 assertions in 3 test cases) | =ORES_TEST_PASSWORD_FAST=1 publish/bin/ores.iam.core.tests "update_self*"= | 4503af654d |
+| Branch-local drift sweep | Sweep clean: no file this branch touched would change. | =check_component_drift.py --sweep= | 4503af654d |
+| Full local drift gate | 1 drifted file: =projects/ores.trading/core/src/service/trade_service.cpp=, a clang-format 21.1.8-vs-18.1.3 reflow in a file this branch does not touch | =check_component_drift.py --all= | 4503af654d |
+| Build, review settlement | =ores.iam.core.lib=, =ores.iam.core.tests= and =ores.shell.iam.tests= built, exit 0 | =compass build ores.iam.core.lib ores.iam.core.tests ores.shell.iam.tests= | 7b1649c2ca |
+| New self-write tests, review settlement | All tests passed (53 assertions in 7 test cases) | =ORES_TEST_PASSWORD_FAST=1 publish/bin/ores.iam.core.tests "update_self*"= | 7b1649c2ca |
+| iam suites, review settlement | 3 of 3 tests passed; =ores.iam.core.tests= 20.48s | =ctest --test-dir build/output/linux-clang-debug-make -R 'ores\.iam\.'=, the pass =compass test run= wraps | 7b1649c2ca |
+| Branch-local drift sweep, review settlement | Sweep clean: no file this branch touched would change. | =check_component_drift.py --sweep= | 7b1649c2ca |
 
 * Notes
+
+- Both self writes live in =account_operations_service= and
+  =account_operations_handler=, one handler and one queue subscriber for the
+  two subjects. The Plan placed the contact write in a separate
+  =account_contact_information_service= method; the shared home avoids a
+  second service that would hold the same three collaborators.
+- The unowned-field refusal runs inside the service, before any repository
+  write, and returns =denied= with code =field_not_self_writable= and one
+  field entry per refused field. The Plan placed the refusal in the handler;
+  the service keeps the field list beside the field mapping it already holds.
 
 * Test Scenarios
 
@@ -126,6 +144,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Full-replace semantics can erase data; document on the request message or treat empty as unchanged | =account_operations_service.cpp= | Accepted | Kept the whole-write and documented it on both request messages: an empty string replaces an owned field with nothing, and on an unowned field it means the field is not stated. The model change regenerated the C++ and TypeScript protocol comments. |
+| 2 | No input validation on the contact write or on =full_name= | =account_operations_service.cpp= | Accepted | A stated contact email goes through =validation::email_validator=; a stated country code must be two characters (ISO 3166-1 alpha-2). A failure refuses the write with =invalid_field_value= and the field named. The free-text fields have no validator in the repo and stay free text. |
+| 3 | A missing field cannot be told apart from an empty one; state the rule in the message model | =ores.iam.account_messages.org= | Accepted | The model now says: an empty string is not a stated value, it means the field is not stated. |
+| 4 | Duplicated handler code across the two self writes | =account_operations_handler.hpp= | Accepted | One private =self_request_scope()= resolves the caller's account and context, or answers the refusal itself. |
+| 5 | A token subject that is not a UUID becomes =internal_error=, and =e.what()= goes to the client | =account_operations_handler.hpp= | Accepted | A subject that is not an account id now answers =unauthorized= and logs a warning with the subject. The catch block answers a fixed message; the store's text stays in the log. |
+| 6 | A race on the first contact write could create two records | =iam_account_contact_informations_create.sql= | No action | The store already enforces one live record per account: =account_contact_informations_account_id_uniq_idx= on =(tenant_id, account_id) where valid_to = ores_utility_infinity_timestamp_fn()=. A racing create fails at the store rather than producing a second live record. |
+| 7 | Test gaps: invalid =image_id=, missing account, update of an existing record; handler paths untested | =service_account_service_tests.cpp= | Accepted | Four service tests added, one per gap plus a bad email with a bad country code. Handler-level tests declined: the repo has no NATS test double, and the handler is a thin adapter whose token and context paths are shared with every handler in the file. |
+
+Verdict: ready to merge. No blocking bugs; the one point with no code change (6) is settled by the schema.
 
 * Result

@@ -95,7 +95,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed centre or country read fails the whole party page | wire-protocol/src/party-page.ts | Accept | The page goes out with no flags; a test covers it |
+| 2 | Each image request looks the tenant up by code | bff/src/server.ts | Decline | One small read; a code cache would need its own invalidation when a tenant is removed |
+| 3 | Concurrent cache misses are not merged | bff/src/server.ts | Decline | Only after eviction from 64 MB; the page read fills the cache first |
+| 4 | The cache can serve an image of a deleted tenant or image | bff/src/image-cache.ts | Decline | The routes resolve the tenant first, so a removed tenant answers 404; a removed image stays viewable until evicted, which is harmless |
+| 5 | The avatar and flag keep a failure after the picture changes | web/src/ui/Images.tsx | Accept | The failure is remembered for that picture only |
+| 6 | An image larger than the cache is answered 404 | bff/src/server.ts | Accept | The route serves the image it read, kept or not |
+| 7 | The 404 for a malformed id now has a body | bff/src/server.ts | Decline | Nothing reads that body; it matches every other not-found answer |
 
 * Result
 
@@ -116,5 +122,5 @@ A tenant's people and parties now show faces and flags.
 
 Acceptance is met: the BFF tests check the reads each page makes and that a
 named picture is served with no second entry; the screen tests check the
-pictures, the initials and the flags. BFF 135, web 231 and protocol 69 tests
+pictures, the initials and the flags. BFF 135, web 231 and protocol 70 tests
 pass. Not checked live: signing in needs the administrator's password.

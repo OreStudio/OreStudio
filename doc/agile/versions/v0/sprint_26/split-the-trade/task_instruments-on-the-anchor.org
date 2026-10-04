@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 4E707015-12F4-4389-B311-6A20555B5C18
+:END:
+#+title: Task: Reference the anchor from every instrument
+#+description: Point every instrument and instrument child table's trade reference at the trade anchor instead of the wide trade.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/instruments-on-the-anchor
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No instrument table checks its trade against the wide trade; each checks the anchor.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The 52 trading models that reference ores_trading_trades_tbl reference ores_trading_trade_anchors_tbl, generated from the models.
+- The ORE import still saves its instruments, and the round trip stays lossless in scope.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+Retarget every instrument's trade reference with a script over the models,
+regenerate, and fix what the generator assumed about the target.
+
+- =retarget_trade_fk.py= points the =trade_id= foreign key of the 52 models
+  that named =ores_trading_trades_tbl= at =ores_trading_trade_anchors_tbl=.
+  The wide trade's own model is left as it is.
+- The reference stays a trigger check rather than a database foreign key:
+  the tenant purger deletes no instrument rows, so an enforced key would stop
+  a tenant that holds instruments from being purged. The acceptance's purge
+  order covers enforced keys only.
+- The generator assumed every trigger-checked target is temporal and filtered
+  on =valid_to=, which the immutable anchor has no column for. A target whose
+  model is immutable now gets no current-version filter.
+- The derived parent seeding in the generated tests assumed an audited,
+  temporal parent with text lookups; the anchor is neither. A script adds the
+  same =parent_seed= snippet the booking uses to each model, writing the
+  trade's anchor at the column's group path.
+- The hand-written instrument tests' shared seed writes an anchor instead of a
+  wide trade.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Models retargeted from the wide trade to the anchor | 52 | =retarget_trade_fk.py= (scratchpad) | branch head before commit |
+| Merged portfolio round trip, in-scope pairs | lost 0, unexplained 0; out of scope lost 314, as before the switch | =reset_and_roundtrip.sh= | branch head before commit |
+| Instrument rows the import saved that have an anchor | 14 of 14 (12 vanilla swap, 1 cap floor, 1 bond) | query on the ACME tenant | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| Codegen tests | 1134 pass, including test_soft_fk_target.py | =pytest projects/ores.codegen/tests= | branch head before commit |
+
+* Notes
+
+- Follow-up: the tenant purger deletes no instrument rows and no wide trades.
+  A purge of a tenant that holds trades leaves them behind.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The generated trigger check filtered the anchor on valid_to, a column it does not have. | sql_schema_domain_entity_create.mustache | Accept | No current-version filter for an immutable target; generator test added. |
+| 2 | The derived anchor seed in the generated tests did not compile. | instrument models | Accept | A parent_seed snippet, as on the booking. |
+
+* Result
+
+Every instrument and instrument child table now checks its trade against the
+trade anchor rather than the wide trade. The generator learned that a trigger
+check against an immutable table reads its row without a current-version
+filter. The ORE import still saves its instruments, each with its anchor, and
+the round trip reads as it did before the switch.

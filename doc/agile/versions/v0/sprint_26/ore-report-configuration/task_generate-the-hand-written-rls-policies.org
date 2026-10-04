@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-rls-policies
-#+pr:
+#+pr: 2583
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2583][#2583]] | [sql] Generate the refdata and trading RLS policies from model flags |
 
 * Review
 

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ The three Profile journeys run in ores.web as one screen with panels, on the jou
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The design is settled and the plan is written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Next         | Add the wire-protocol schemas and helpers. |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 
@@ -49,9 +49,128 @@ The three Profile journeys run in ores.web as one screen with panels, on the jou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three journeys run as one page with panels. Variant *B* of the prototype
+is accepted: each writable panel carries its own save and its own change
+reason. No route sends a pair of writes, so the partial state the prototype
+drew cannot arise, and the screen shows each panel's own outcome and its own
+new version.
+
+The page is a journey that is a page. The rail runtime does not render it, and
+it adds no journey entity: the route, the panels and the operations are
+ordinary screen work, in the shape [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]] states: one hand-written
+BFF route per operation, each parsing a generated schema.
+
+** Reads
+
+1. The account read is =iam.v1.accounts.get= through =GET
+   /api/accounts/:username=, the read the journeys already record. The member
+   reads the username the session carries; the administrator reads the person
+   the search picked. The person search is =GET /api/accounts=, the tenant
+   list the directory already reads, filtered in the browser by username and
+   name.
+2. The account read needs =iam::accounts:read=, which the default *Viewer*
+   role does not hold: a plain member's read of their own account is refused.
+   The screen states that refusal and its consequence. The identity panel
+   offers no write it cannot ground, because an empty field clears the value
+   on the self write, and the shell trigger falls back to the username and
+   the initials. The reconnaissance found this gap; the screen states it, and
+   the task records it in the journey documents.
+3. The contact read is =iam.v1.account_contact_informations.list_by_account_id=,
+   which carries no permission guard: =GET /api/me/contact-information= for
+   the member's own record (the session names the account, so the route takes
+   no id) and =GET /api/accounts/:accountId/contact-information= for the
+   administrator, mirroring the =/api/me/access= pair.
+4. The rule the picker states is a read and not a copy: =GET
+   /api/image-upload-policy= answers the formats, the largest size and the
+   smallest dimensions from the validator that enforces them.
+
+** Writes
+
+5. Member, account: =PUT /api/me/profile= calls
+   =iam.v1.accounts.update-self= with =full_name=, =job_title=, =image_id=
+   and the reason. The three fields a member does not own go empty, which the
+   protocol defines as not stated, and the session names the account, so the
+   body carries no account id.
+6. Member, contact: =PUT /api/me/contact-information= calls
+   =iam.v1.account_contact_informations.update-self= with the nine fields and
+   the reason. It names no record; a member without one gets it on the first
+   write.
+7. Administrator, account: =PUT /api/accounts/:username/profile= calls
+   =iam.v1.accounts.update=, which is a whole-record write. The route reads
+   the account inside the request, applies the panel's three fields to that
+   read, echoes =email=, =default_party_id= and =reports_to_account_id= as
+   read, and sends the record whole. The server asks for
+   =iam::accounts:update=, which the tenant-administrator role holds.
+8. Administrator, contact: =PUT /api/accounts/:accountId/contact-information=
+   calls =iam.v1.account_contact_informations.put= with the version the panel
+   showed as its claim: =must_match_version= when the panel showed a record,
+   =must_not_exist= when it showed none, with the id minted by the route. The
+   store decides the claim in the write's own transaction, so a record that
+   moved under the save is refused with the server's own code and message, and
+   the panel says the record changed.
+9. The photo is uploaded first, through =POST /api/images=
+   (=assets.v1.images.upload=, the bytes base64 and their media type). The
+   upload sets no photo: the returned id rides into the panel's own save. A
+   refused upload branches on the server's code (=unsupported_media_type=,
+   =image_too_large=, =image_too_small=, =invalid_image=).
+10. A refusal the panel must read with its code travels as an answer, not a
+    failed call: the reply carries the result — outcome, code, message and
+    the field failures — and the browser parses it with a schema of its own,
+    because the shared result envelope drops =fields= on purpose. The screen
+    draws each field failure from the server's code, and
+    =field_not_self_writable= reads as the prototype's sentence, naming the
+    field and the administrator who owns it. A call the permission does not
+    cover is refused by the server, and the panel shows the message it
+    carries.
+
+** Panels and statements
+
+11. The identity panel shows the photo, the username and the sign-in address
+    read-only with their reasons, the full name, the job title and the
+    reporting line. A reporting-line change is drawn as a proposal beside the
+    value it would replace: it names who must approve (the person's
+    hierarchical superior or a tenant administrator), states that nothing in
+    the platform holds an approval today, and points at Draw the reporting
+    line. The value does not move while the proposal waits.
+12. The two email fields are labelled apart: the sign-in address
+    (=account.email=, owned by an administrator) and the contact address (the
+    contact record's =email=, the member's own), neither reading as the other.
+13. The sign-in and access panel is a read-only summary. It names its owners
+    and points at Protect my account (=/security=) and Know what I may do
+    (=/access=).
+14. The page reads the caller's own grants (=GET /api/me/access=, the read My
+    access already makes) only to decide which panels to draw: the person
+    search and the administrator saves appear for a holder of a write
+    permission. The server still refuses a call the permission does not
+    cover.
+15. The shell's account menu gains the *My profile* entry, and its trigger
+    shows the person's own name and photo once the account has been read.
+
+** Where the gaps land
+
+16. Closed: no self-service update (task Add the profile self-service
+    subjects), no image upload and no stated rule (task Upload a profile
+    image), the pair write (this screen sends none), the two emails (labelled
+    apart here). Stated and recorded: the reporting-line approval, and the
+    read gap in item 2, recorded in the three journey documents beside their
+    gap lists.
+
+** Order of work
+
+17. The wire protocol first: the browser contact schema and mapper, a result
+    that keeps the field failures, and thin helpers over the generated
+    subjects (the two self writes, the contact read, the administrator
+    account write, the contact put with its claim, the upload and the
+    policy), each with tests.
+18. The BFF routes next: each parses a generated schema, calls one helper and
+    answers. Each is listed in the component specification's HTTP surface,
+    and the route tests sit beside the existing ones.
+19. The web last: the api client methods, the page with its panels and
+    states, the account-menu entry and trigger, the i18n keys in the three
+    languages, and the page tests.
+20. Verify: build and run the suites; recreate the database; run the journeys
+    end to end as the member and as the tenant administrator; then the drift
+    gates.
 
 * Measurements
 

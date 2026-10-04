@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch: feature/clean-the-marketdata-code
+#+branch: feature/clean-the-marketdata-comments
 #+pr: 2597
 #+blocked_on:
 #+blocked_since:
@@ -41,7 +41,7 @@ standard.
 - G02/H02: each of =market_observations= and =market_fixings= has one repository, and the survivor keeps the consumers both had.
 - The =market_series= table comment no longer describes the dropped columns.
 - Observation values convert through =ores::platform::numeric::parse_double=, not =std::stod= (=curve_pillar_reader.cpp:59=, =curve_republish_service.cpp:128=).
-- H03: no comment narrates edit history, no end-of-line comment remains, and comment volume follows the project rules, in hand-written code and in the templates that produce marketdata code.
+- H03: no comment narrates edit history, no end-of-line comment remains, and comment volume follows the project rules, in marketdata's hand-written code and in the comments its models carry. The 14 shared templates that end every generated namespace with an end-of-line comment moved to [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]], because the change reaches every component.
 
 * Plan
 
@@ -70,9 +70,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ files in =projects/ores.marketdata= | 285: 103 hand-written, 182 generated | =find= for =*.cpp= and =*.hpp=, split on the =AUTO-GENERATED FILE= header | =9fb7fc1eaf= |
+| End-of-line comments in hand-written files, before and after | 33 before, 0 after, apart from 2 URIs in doc comments the scan misreads | =scratchpad/scan_comments.py= | =9fb7fc1eaf= |
+| Comments narrating history, story or task in hand-written files and models | 10 rewritten | the same scan, plus =grep= for story, task, now, no longer and deprecated | =9fb7fc1eaf= |
+| Generated files with a namespace closer comment, across all components | 2,873 from 14 templates | =git grep= for the closer, filtered on the =Template:= header | =9fb7fc1eaf= |
 
 * Notes
+
+** Part 3: the comment rules
+
+The pass covered the 103 hand-written C++ files and the comments in the models.
+
+- Namespace closers lose their end-of-line comment: =} // namespace= becomes
+  =}=, as the project's own files write it.
+- Ten other end-of-line comments moved to their own line above the code.
+- Comments that narrated history, stories or tasks now state the behaviour:
+  "no longer splits keys", "now the series' oresmd identity", "the CRM story's
+  architecture decision", "the config-creation task's own doc comment" and
+  "today's synchronous publish" among them.
+- Comments that use "removed" or "added" to describe behaviour, such as "a
+  field added to the enum and not here fails", stay.
+
+The two review points PR 2597 deferred are in the same PR, as model edits
+regenerated into the repositories:
+
+- =read_latest_for_series= on observations and fixings reads the maximum
+  timestamp once, as a static, as the other reads do.
+- =read_as_of= and =read_as_of_buckets= throw on a row with too few columns, a
+  bucket with no ordinal, or an ordinal outside the requested buckets, rather
+  than dropping the row. A dropped row would make a curve snapshot silently
+  short a pillar.
+
 
 ** Part 1: the two repositories
 

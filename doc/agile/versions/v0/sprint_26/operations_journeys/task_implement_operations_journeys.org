@@ -26,11 +26,11 @@ Five journeys document how a system administrator sees a running installation: S
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -42,9 +42,21 @@ Five journeys document how a system administrator sees a running installation: S
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Agree the catalogue with the product owner before any document is written, as
+   the standard requires. Agreed before scaffolding: five journeys in a new
+   =operations= group.
+2. Read the generated protocol pages for =ores.telemetry=, =ores.compute= and
+   =ores.nats=, the model pages behind them, and the repository code behind
+   every handler, so each operation's status is checked, not assumed.
+3. Write the five journey documents with =compass add user_journey=, each
+   following the document type's section contract.
+4. Draw one PlantUML =salt= wireframe per journey, render it beside the
+   document, and embed it with a caption.
+5. Write the group hub with the catalogue and the disposition of every legacy
+   =ores.qt= telemetry and super-admin screen, and add the group row to the
+   journeys index.
+6. Verify with =compass lint= and =compass site page=, review the diff, and
+   land it.
 
 * Measurements
 
@@ -58,9 +70,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journey documents | 5 | =ls doc/knowledge/journeys/operations/journey_*.org= | a1e507dc04 |
+| Wireframe pairs (source and rendered) | 5 | =ls doc/knowledge/journeys/operations/wireframe_*.png= | a1e507dc04 |
+| Lint | passes: filetags and generator markers are valid | =./compass.sh lint= | a1e507dc04 |
+| Site pages | 584 files, 0 failures | =./compass.sh site page= | a1e507dc04 |
 
 * Notes
+
+*The handler checks changed four claims.* Reading the code behind the
+operations, not only the protocol pages, moved four statements: the heartbeat
+states a release and not a build, the services list keeps only the last five
+minutes, the grid read drops the failure counts the ingest stores, and the
+NATS counters are cumulative since the server started. Each became a gap the
+journey records.
+
+*The database fingerprint is the one genuinely missing read.* The row exists,
+and exactly one reader touches it: each service at its own startup. No
+subject serves it to a person, so the versions journey states the panel as
+unknown until the read exists.
+
+*The legacy inventory lives on the hub.* The standard asks for it, and the
+story put it in the group hub's =* Where the legacy screens went=, next to the
+journeys that carry the screens.
 
 * Test Scenarios
 
@@ -86,3 +117,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Written 2026-10-04. The five journeys, their wireframes, the group hub and the
+index row are on =feature/implement-operations-journeys=; =compass lint= passes
+and every page publishes. The prototype acceptance is carried by
+[[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]],
+which draws these screens on a throwaway branch.

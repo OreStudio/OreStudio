@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: FDC6B6BD-7899-4214-9C8B-F9E436259C90
+:END:
+#+title: Task: Map ORE sample counterparties onto GLEIF banks
+#+description: Add an ORE counterparty identifier scheme, so an ORE document's CounterParty name is an alias of a real counterparty, and seed the aliases that map the ORE samples' placeholder names onto GLEIF banks.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-counterparty-aliases
+#+pr: 2587
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every counterparty name the ORE samples use resolves, through an ORE identifier, to one GLEIF bank in the tenant the samples are imported into.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The ORE scheme is a party identifier scheme with no cardinality limit, and an alias names at most one counterparty per tenant.
+- An inventory of the counterparty names in the ORE samples is recorded with the count of each.
+- A fresh database publishes the chosen GLEIF banks as counterparties beside ACME's own, and gives each sample name an ORE alias onto one of them.
+- The LEI counterparty publish adds the LEIs a tenant lacks instead of skipping a tenant that already has any.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- The owner chose an import alias over a mapping table: an ORE document's
+  CounterParty name is an identifier of a real counterparty, under a new =ORE=
+  party identifier scheme with no cardinality limit. It mirrors task 4, where
+  ORE's =Trade/@id= became a trade identifier scheme, and a later source
+  system gets a scheme of its own the same way.
+- A unique index on =(tenant_id, id_scheme, id_value)= for current =ORE= rows
+  makes a name answer to one counterparty per tenant; other schemes keep the
+  per-counterparty key.
+- The samples' placeholder names map onto eleven GLEIF banks the owner asked me
+  to pick, all active in the small GLEIF dataset. The busiest names take the
+  largest dealers; =CPTY_1= to =CPTY_10=, which one example uses together, take
+  ten different banks. The inventory is in
+  =evidence/ore_sample_counterparties.txt=.
+- =ore.sample_counterparties= is an LEI entities dataset in the =ORE= catalog
+  whose rows are selected from =gleif.lei_entities.small=, not copied. A
+  populate script publishes it into the system tenant, where ACME publishes,
+  and adds the 23 aliases.
+- The LEI counterparty publish skipped any tenant that already had an LEI
+  counterparty, so a second dataset could never publish beside ACME's. It now
+  removes the LEIs the tenant already holds and skips only when none is
+  left.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2587][#2587]] | [refdata] Map ORE sample counterparties onto GLEIF banks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the aliases are published only into the system tenant, where ACME is | populate script | Accept as is | Another tenant adds aliases through the counterparty identifier commands; publishing the sample banks per tenant through a DQ bundle needs an artefact type and a service publish handler of its own. |
+| 2 | Local review: a newly published bank's generated short code could collide with one the tenant already holds | =refdata_publish_from_dq_create.sql= | Accept as is | Unchanged from before; the eleven banks' codes are distinct from ACME's. |
+| 3 | @claude: a new counterparty whose parent the tenant already holds loses its parent link | =refdata_publish_from_dq_create.sql= | Accept | The publish resolves a parent the tenant already holds as well as one it writes; a pgTAP case publishes a Barclays subsidiary and checks it links to the bank. |
+| 4 | @claude: fail fast if a sample bank is missing from GLEIF | =ore_sample_counterparties_dataset_populate.sql= | Accept | The script raises unless all eleven banks were selected. The bank names stay in the list as readable data. |
+| 5 | @claude: test the partial publish path | pgTAP | Accept | A dataset holding a bank the tenant has and a new subsidiary publishes only the subsidiary. |
+| 6 | @claude: the scheme string repeats; the ER diagram churns; an alias is not re-pointed | various | Decline | The index's comment says why other schemes share values; the diagram is generated and checked by CI; keeping an existing alias is intended. |
+
+* Result
+
+- An =ORE= party identifier scheme, with no cardinality limit, and a unique
+  index that makes an ORE name answer to one counterparty per tenant.
+- =ore.sample_counterparties= selects eleven GLEIF banks; a fresh database
+  publishes them beside ACME's four counterparties and gives the 23 names the
+  ORE samples use an ORE alias onto them.
+- The LEI counterparty publish adds the LEIs a tenant lacks instead of
+  skipping a tenant that already has any.
+- Verified: db recreate clean (11 banks, 11 LEI identifiers, 23 aliases, 15
+  counterparties in the system tenant); pgTAP
+  =refdata_counterparty_ore_aliases_test.sql= 8/8; build clean; ctest 90/90;
+  drift none under clang-format 18; sweep, paste blocks, reachability,
+  permissions, populate references, SQL hygiene, ER strict, lint, structure
+  notes, misspell and site page clean.

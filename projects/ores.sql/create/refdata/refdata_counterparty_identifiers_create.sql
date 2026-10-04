@@ -71,6 +71,11 @@ create index if not exists counterparty_identifiers_tenant_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists counterparty_identifiers_ore_alias_idx
+on "ores_refdata_counterparty_identifiers_tbl" (tenant_id, id_scheme, id_value)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and id_scheme = 'ORE';
+
 create or replace function ores_refdata_counterparty_identifiers_insert_fn()
 returns trigger as $$
 declare

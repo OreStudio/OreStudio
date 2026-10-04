@@ -23,9 +23,9 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Trade-type checks and routing come from the catalogue. |
+| Now           | ORE sample counterparty names map onto GLEIF banks. |
 | Waiting on    | Nothing.                               |
-| Next          | ORE import and export onto the new entities. |
+| Next          | ORE import onto the anchor, resolving counterparties through the aliases. |
 | Last touched  | 2026-10-03 |
 
 * Acceptance
@@ -50,6 +50,8 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 | [[id:CD7ED388-A0E8-4904-B678-6B657BF22A71][Book a trade in one write]] | DONE | | 2026-10-03 | Add the booking operation: write a trade's anchor, booking and state in one transaction, and report a second booking of the same trade id as a domain error. |
 | [[id:2FA3C2C8-8F53-4EFE-945A-67AA6BC8ADB1][Key identifiers, party roles and additional fields by the anchor]] | DONE | 2026-10-03 | 2026-10-04 | Reshape trade_identifier and trade_party_role around the anchor and add trade_additional_field: each keyed by the trade with a database foreign key to the anchor, ORE's Trade/@id one identifier scheme among others, and no workspace. |
 | [[id:2D7BADA0-BF4B-4A91-89C2-C3CC517AD9BF][Generate trade-type checks and routing from the catalogue]] | DONE | 2026-10-04 | 2026-10-04 | Make the trade-type catalogue a codegen input: each trade type names the instrument table that holds it, and the generator renders the catalogue's seed, every instrument table's trade_type check and the export routing from it. |
+| [[id:682A8966-C751-43EC-8D49-260706B88490][Import ORE trades onto the anchor and its components]] | STARTED | 2026-10-04 | | Make the ORE import book each trade's anchor, booking and state, record ORE's Trade/@id as an identifier and the envelope's additional fields, resolve the envelope's counterparty (rejecting a name that matches none) and its netting set (creating one that does not exist), while still writing the wide trade the instruments reference. |
+| [[id:FDC6B6BD-7899-4214-9C8B-F9E436259C90][Map ORE sample counterparties onto GLEIF banks]] | DONE | 2026-10-04 | 2026-10-04 | Add an ORE counterparty identifier scheme, so an ORE document's CounterParty name is an alias of a real counterparty, and seed the aliases that map the ORE samples' placeholder names onto GLEIF banks. |
 
 * Decisions
 
@@ -75,6 +77,12 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 - A booking's netting set is pinned to the trade's counterparty and party.
   A netting set read from an ORE document names neither, so the ORE import
   task fills the set's parties from the trade it imports.
+- An ORE document's CounterParty name is an alias of a real counterparty
+  (owner's choice), held as a counterparty identifier under an =ORE= scheme:
+  the ORE samples' placeholder names map onto GLEIF banks, and the import
+  resolves an envelope's counterparty through the alias, rejecting a name
+  that resolves to none. An envelope's netting set that does not exist is
+  created for the trade (owner's choice).
 - Task order: the anchor; booking and state; the booking operation, which
   writes all three in one transaction; identifiers, party roles and
   additional fields; catalogue-generated trade-type checks and routing; ORE

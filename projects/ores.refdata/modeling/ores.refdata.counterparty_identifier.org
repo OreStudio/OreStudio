@@ -118,6 +118,16 @@ std::string("Test identifier")
 :rls_tenant_isolation: true
 :END:
 
+** Indexes
+
+An ORE alias is a name an ORE document uses, and an import resolves the name
+to one counterparty, so within a tenant a name may be the alias of one
+counterparty only. Other schemes keep the per-counterparty key above.
+
+| name      | columns                        | unique | current_only | where_extra       |
+|-----------+--------------------------------+--------+--------------+-------------------|
+| ore_alias | tenant_id, id_scheme, id_value | true   | true         | id_scheme = 'ORE' |
+
 * Foreign keys
 
 ** counterparty_id

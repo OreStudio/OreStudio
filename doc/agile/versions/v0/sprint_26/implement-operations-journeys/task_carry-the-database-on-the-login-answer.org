@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7
+:END:
+#+title: Task: Carry the database on the login answer
+#+description: Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/carry-the-database-on-the-login-answer
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The versions screen states the database under the deployment: the fingerprint
+of the schema it was built from, the build environment, the commit and the
+created time. All four live in =ores_database_info_tbl=, and one reader
+touches the row today: each service's startup check, which compares the
+stored fingerprint with the one compiled into the code. No subject serves the
+row to a person. This task gives it its second reader
+([[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]):
+the =login_response= states the database row beside the build it already
+states, read once per login, and the versions panel needs no request of its
+own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- =login_response= carries the database row: fingerprint, environment, commit
+  and created.
+- The iam service reads =ores_database_info_tbl= at login and fills the
+  fields; no new subject and no new permission appear.
+- The session keeps the row, so the versions panel reads it from the answer
+  that opened the session.
+- The capture [[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]
+  moves out of the inbox with this task's evidence.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The row travels with the build the answer already states, so the audience is
+the server build's audience and no subject of its own is needed. Exactly one
+row exists, written when the database is created or recreated.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

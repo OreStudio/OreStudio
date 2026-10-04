@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: F9E6587E-30DD-4C39-9107-FE01A577E1C8
+:END:
+#+title: Task: Scaffold story: Implement the operations journeys in ores.web
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/implement-operations-journeys
+#+pr: 2622
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Land the story that owns the
+[[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] journey group: the
+story page, the six tasks, the sprint row and the programme's order table.
+The design is already accepted — the five journeys and the throwaway
+prototype carry it — and this task does not touch the journey documents.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The story exists in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]], and the sprint's =* Stories= table links it.
+- The programme story's order table names this story against the Operations group.
+- The six tasks are wired into the story's =* Tasks= table: the five data-model linkages are one task each, and the screens build is one task.
+- The story names the accepted prototype branch as its design record and states that the prototype is ported, not merged.
+- =compass lint= passes and the pages publish.
+
+* Plan
+
+1. Scaffold the story with =compass story new=.
+2. Write the goal, the acceptance, the plan, the decisions, the out-of-scope list and the documents.
+3. Scaffold the six tasks with =compass task new=, so each one is wired into the story's =* Tasks= table.
+4. Wire the story into the sprint's =* Stories= table, and into the programme's order table.
+5. Raise the scaffold PR. The six tasks stay BACKLOG until the PR merges.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Operations journeys in the catalogue | 5 | =ls doc/knowledge/journeys/operations/journey_*.org= | 00b369b9d7 |
+| Groups in the journey catalogue | 9 | =ls -d doc/knowledge/journeys/*/= | 00b369b9d7 |
+| Data-model captures the record filed | 5 | =git show --name-only --format= 7d61b3ba7e -- doc/agile/product_backlog/inbox/= | 00b369b9d7 |
+
+* Notes
+
+- The group is the ninth in
+  [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]],
+  after Tenancy. It was the catalogue's last group written, and it is the
+  only one whose design arrived settled: the five journeys were written and
+  walked against a clickable prototype in sprint 26, and the user accepted
+  the walk on 2026-10-04.
+- The prototype branch =prototype/operations-journeys= at =285519db99= is
+  the design record and never merges. Each journey names the branch and its
+  route under =* Prototype=.
+- The five captures the walk filed are the story's first tasks: the heartbeat
+  host ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][A1D7FC12]]),
+  the roster read ([[id:B7B53CD1-4A11-403E-8844-13177864F0E7][B7B53CD1]]),
+  the login-answer database ([[id:B7AE6C4F-5597-419D-A396-AD64D871C900][B7AE6C4F]]),
+  the grid read's scope ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][3621E2BC]]) and
+  the node summary's failure fields
+  ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][8C1D6E61]]).
+- The journey documents are fresh — written on 2026-10-04 against this tree —
+  so no survey task precedes the build: each task re-checks its own claims as
+  it works.
+- The tree at the branch point already carries the journey runtime from the
+  Setup group (=projects/ores.web/packages/web/src/journeys/runtime.ts=).
+- The shell already carries one operations read: =compute grid-stats= and its
+  recipe at =projects/ores.shell/scripts/library/compute/=, so the grid tasks
+  verify the shell side as they change the read.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 2622 | [agile] Scaffold the operations journeys story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =Next= names one task although the five data-model linkages have no fixed order | story.org | Fixed | =Next= now says the five run in any order, and the heartbeat task is one of them. |
+| 2 | The sprint row and the story dates agree although both were written the same day | sprint.org | No change | The review found them consistent. |
+| 3 | The task pages keep the empty template sections | the six task pages | No change | Normal for a scaffold; each =Plan= fills in when its task starts. |
+| 4 | Row 9 could read as a dependency order | story.org | No change | The note paragraph under the order table explains the row placements. |
+
+* Result
+
+Done 2026-10-04. PR #2622.
+
+The Operations group has a story, six tasks, a row in sprint 26 and a row in
+the programme's order table:
+
+| Artefact | Id |
+|----------+----|
+| Story: Implement the operations journeys in ores.web | 435E6F02-C2AF-4C2B-BB56-654A86A424A7 |
+| Task: Carry the host on the heartbeat | BAE5860D-49CF-4063-A63A-76DA8AFAB166 |
+| Task: Serve the services roster | D495FB06-E711-4DCB-A4C6-2E4722FF973F |
+| Task: Carry the database on the login answer | 9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7 |
+| Task: Read the whole grid | E3FF9B97-A7F5-494F-BECE-DBB8910244C6 |
+| Task: Keep the failure fields on the node summary | 4DC1AFB6-F687-4314-A5B3-C7A786A93F57 |
+| Task: Build the operations screens in ores.web | 5E83118A-1342-4088-B371-3367EF63FF17 |
+
+Two facts were checked while scaffolding, and both are recorded on the story:
+
+- The five journey documents are fresh. They were written and accepted
+  against this tree on 2026-10-04, so no survey task precedes the build, and
+  each task re-checks its own claims as it works.
+- Both clients' starting points exist on the tree. The journey runtime is
+  already there (=projects/ores.web/packages/web/src/journeys/runtime.ts=,
+  landed by the Setup group), and the shell already carries one operations
+  read: =compute grid-stats= and its recipe under
+  =projects/ores.shell/scripts/library/compute/=.
+
+The sprint's =* Stories= row needed one hand-edit: =compass story new= left it
+at =BACKLOG= while the story opened =STARTED=. The row states =STARTED= with
+2026-10-04 as its start.
+
+Verification: =compass lint= passes on this branch (filetags and generator
+markers valid; the durable-document link advisory stands at 224 links across
+105 files). =compass site page= rebuilt 19 page(s) with 0 failure(s). The
+story row was read back from the sprint's =* Stories= table, and its six tasks
+were wired into its =* Tasks= table by =compass task new=.

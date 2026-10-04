@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: 435E6F02-C2AF-4C2B-BB56-654A86A424A7
+:END:
+#+title: Story: Implement the operations journeys in ores.web
+#+description: The ninth group: the installation's own life — the services running, the compute grid, the message bus, the logs, and the versions and database under them.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:operations:v0:sprint_26:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The five [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] journeys run in
+=ores.web= against the real server:
+
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] —
+  every service the installation expects, with its instance count, its state
+  and its version; rows never disappear.
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the
+  host and work summary, one row per node, and the compute wrappers that
+  report for those nodes.
+- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] — the
+  server's vitals and one row per stream: messages, bytes and consumers over
+  time.
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] —
+  the lines behind a symptom, found by time, level, source, component, tag or
+  session.
+- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the
+  database]] — the client build, the server build, and the database
+  fingerprint.
+
+This is the ninth group of
+[[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]].
+It reuses the journey runtime the Setup group landed and adds no journey
+entity.
+
+This group starts where no other group does: its design is already settled.
+The five journeys were written and walked against a clickable prototype in
+sprint 26, and the user accepted the walk on 2026-10-04
+([[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations
+journeys]]; branch =prototype/operations-journeys= at =285519db99=, kept as
+the design record and never merged). The walk also found five data-model
+linkages between the accepted screens and the models, and they sit as captures
+in the product backlog's inbox. This story closes them and builds the screens
+from the accepted design.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | The scaffold lands the story and its six tasks; the tasks stay BACKLOG until their work begins. |
+| Waiting on    | Nothing.                               |
+| Next          | The five data-model linkages, in any order; [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] is one of them. |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- The five journeys run in =ores.web= against the real server, on the journey
+  runtime the Setup group landed, and no journey entity is added.
+- The five data-model linkages are closed or explicitly deferred, and each
+  capture leaves the inbox with its task's evidence.
+- The whole grid is read, not the session tenant's slice, under the permission
+  the journey records, and the shell's grid stats command follows the same
+  read.
+- The services roster keeps every expected instance with its state word —
+  running, stopped or missing — and the heartbeat carries its host, so a
+  wrapper's row can name its node and an instance's row its host.
+- The login answer carries the database row, so the versions panel adds no
+  request.
+- Every gap the five journeys record is either closed with its evidence or
+  stated on the screen, and every Related journeys entry is a link on the
+  screen.
+- The Operations area carries the five screens with "Back to operations"
+  navigation, and every screen carries the footer with both builds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F9E6587E-30DD-4C39-9107-FE01A577E1C8][Scaffold story: Implement the operations journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] | BACKLOG | | | Initial task for: Implement the operations journeys in ores.web |
+| [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] | BACKLOG | | | Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing. |
+| [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]] | BACKLOG | | | Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own. |
+| [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]] | BACKLOG | | | Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back. |
+| [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]] | BACKLOG | | | Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle. |
+| [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] | BACKLOG | | | The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer. |
+
+* Plan
+
+| # | Step | What it leaves behind |
+|---+------+-----------------------|
+| 1 | Scaffold the story and wire it into the programme | The story, its tasks, the sprint row and the programme's order table. |
+| 2 | Close the data-model linkages | The five fixes, each with its evidence, and each capture moved out of the inbox. |
+| 3 | Build the operations screens | The five screens, the Operations area and the footer in =ores.web=, on the runtime the Setup group landed. |
+| 4 | Line up the shell side | The grid stats command follows the changed read, and the story records where the shell carries no operations journey. |
+
+* Decisions
+
+- *The accepted design is the build's input.* The five journeys were written
+  and walked against a clickable prototype in sprint 26, and the user accepted
+  the walk on 2026-10-04. The prototype branch is the design record; this
+  build ports its screens onto the journey runtime rather than merging them,
+  and each task re-checks its own claims against the tree as it works.
+- *The data-model linkages are the story's first tasks.* The walk found five
+  linkages between the accepted screens and the models, and each one sits in
+  the inbox as a capture. They are the story's first tasks, so the build sizes
+  from them instead of finding them mid-screen.
+- *The grid belongs to the installation.* The grid reads drop the session
+  tenant's filter, and the stored tenant id stays on the sample as
+  attribution. The read grows the permission the journey records, so the whole
+  grid and who may see it stay two separate decisions.
+- *The heartbeat carries one new field, not a new entity.* A host id on the
+  service heartbeat answers both questions the record found — which node runs
+  a wrapper, and which host runs an instance — and the publishing process
+  already holds the id.
+- *The database rides the login answer.* The versions panel needs no read of
+  its own: the login answer states the deployment's build already, and it
+  gains the database row beside it. The row's audience is the server build's
+  audience.
+- *The roster keeps every expected row.* A services screen drawn from samples
+  alone fails worst when the list is short: the operator cannot tell what is
+  missing. The screen draws the installation's expected services and their
+  replicas, and the read that serves them is the roster task.
+- *Both clients reach one operation.* Where the shell carries an operations
+  journey today — the grid stats command and its recipe — it follows the same
+  subject when the read changes. Where it carries none, this story records
+  that rather than inventing a shell surface.
+- *A journey a person cannot reach from a screen is not finished.* Each
+  journey's Related journeys list is links on the screen; a screen that omits
+  them has not implemented the journey.
+- *The screens follow the accepted contracts.* The
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]], the
+  [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] and the
+  [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] bind
+  the work.
+- *A cross-sprint group closes DONE and gets a successor.* The programme's
+  rule applies here: if the group does not close in sprint 26, what lands is
+  recorded and the rest continues in a successor story.
+
+* Out of scope
+
+- The journey documents, which the extraction pass and their stories own —
+  where this build proves one wrong, the correction goes to the document and
+  is recorded here.
+- Host, workunit and app management — the pages behind the grid's read-only
+  view — deferred by the record to
+  [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]].
+- The charts over the stored telemetry aggregates, which the logs journey
+  records as a gap of its own
+  ([[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]) —
+  this group states the gap on the screen rather than building the charts.
+- The system-wide permission gap for hand-written operation handlers
+  ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]) —
+  this group gates the reads it adds or changes and links the capture for the
+  rest.
+
+* Documents
+
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] | knowledge | The group page: five journeys, two actors, and where the legacy screens went. |
+| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | user_journey | The roster, its state words and its version skew. |
+| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | user_journey | The nodes, the wrappers, and the failures. |
+| [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | user_journey | The server's vitals and the streams. |
+| [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | user_journey | The filter bar, the entries and the page count. |
+| [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | user_journey | The three builds and the footer. |
+| [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] | story | The story that wrote the journeys and accepted the walk. |
+| [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]] | task | The accepted prototype: branch =prototype/operations-journeys= at =285519db99=. |
+| [[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]] | capture | The grid's wrapper-to-node join and the services screen's instance-to-host question. |
+| [[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]] | capture | The expected roster, the replica counts, and the states beyond running. |
+| [[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]] | capture | The versions panel's database row, on the login answer. |
+| [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]] | capture | The filter the grid's ownership removes. |
+| [[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]] | capture | The failures a node row must state. |
+| [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | story | The programme this group belongs to, and the order it keeps. |
+| [[id:6A63AAC7-4869-493A-97E7-55B919874784][The journey runtime]] | knowledge | The step and the rail the screens use. |
+| [[id:CDE625E2-96AE-4644-9921-282339925F3E][TypeScript Clean Standard]] | knowledge | The standard the screens are held to. |
+| [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | knowledge | The composition classes, and why no journey entity is added. |

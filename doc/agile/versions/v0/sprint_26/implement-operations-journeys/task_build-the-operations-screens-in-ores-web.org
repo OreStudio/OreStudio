@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 5E83118A-1342-4088-B371-3367EF63FF17
+:END:
+#+title: Task: Build the operations screens in ores.web
+#+description: The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-the-operations-screens-in-ores-web
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The five operations journeys run in =ores.web= against the real server, as
+the accepted prototype draws them: the services roster, the whole grid with
+its node table and wrapper panel, the bus vitals and streams, the logs filter
+bar, and the versions panels with the footer. The screens ride the journey
+runtime the Setup group landed, with a hand-written BFF route per screen, and
+Operations is an area with "Back to operations" navigation rather than tabs.
+Where the data-model linkages are not yet closed, the screen states the gap
+as the prototype does rather than showing a guess.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The five screens run against the real server on the journey runtime, and no
+  journey entity is added.
+- Each screen carries its Related journeys links, and the versions panel reads
+  the database from the login answer with no request of its own.
+- The Operations area offers the five screens with "Back to operations"
+  navigation, and every screen carries the footer with both builds.
+- Every gap the five journeys record is either closed or stated on the
+  screen, and the statement is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

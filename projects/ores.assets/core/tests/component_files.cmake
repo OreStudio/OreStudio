@@ -28,5 +28,7 @@ set(files
     "repository_image_repository_tests.cpp"
     "repository_image_tag_repository_tests.cpp"
     "repository_tag_repository_tests.cpp"
+    "service_image_operations_service_tests.cpp"
     "tag_eventing_integration_tests.cpp"
+    "validation_image_upload_validator_tests.cpp"
 )

@@ -38,9 +38,11 @@ set(files
     "repository/tag_entity.cpp"
     "repository/tag_mapper.cpp"
     "repository/tag_repository.cpp"
+    "service/image_operations_service.cpp"
     "service/image_service.cpp"
     "service/image_tag_service.cpp"
     "service/tag_service.cpp"
+    "validation/image_upload_validator.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -48,6 +50,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/image_tag_registrar.hpp"
@@ -69,7 +72,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/repository/tag_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_operations_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/image_tag_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/service/tag_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/validation/image_upload_validator.hpp"
 )

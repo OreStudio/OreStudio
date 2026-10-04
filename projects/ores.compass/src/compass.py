@@ -6810,6 +6810,51 @@ def _run_logged(cmd, cwd, log, env=None):
     return proc.returncode
 
 
+# The worktree lock a build or test run holds for the life of its process. A
+# host slot caps how many builds the host runs; it says nothing about two of
+# them sharing one worktree, which is how two builds once took both slots and
+# linked the same library in one build tree for over an hour.
+_WORKTREE_BUILD_LOCK = None
+
+
+def _worktree_build_lock_path():
+    return PROJECT_ROOT / "build" / "output" / "compass-build.lock"
+
+
+def _acquire_worktree_build_lock():
+    """Hold this worktree's build lock, or refuse because another holds it.
+
+    Taken before a host slot, so a second build of the same worktree is
+    refused at once rather than queueing behind, or beside, the first: two
+    builds in one build tree overwrite each other's outputs. flock releases
+    the lock when the process exits, however it exits. A second call in the
+    same process keeps the lock it already holds.
+    """
+    global _WORKTREE_BUILD_LOCK
+    if fcntl is None or _WORKTREE_BUILD_LOCK is not None:
+        return
+    path = _worktree_build_lock_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o666)
+    lock_file = os.fdopen(fd, "r+")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        holder = lock_file.read().strip()
+        lock_file.close()
+        print("⚠️  Another compass build or test run is already running in this worktree:\n"
+              f"   {holder or 'holder unknown'}\n"
+              "   Two builds in one build tree overwrite each other's outputs. Wait for it to\n"
+              "   finish, or stop the session that started it, before starting another.")
+        sys.exit(1)
+    lock_file.seek(0)
+    lock_file.truncate()
+    lock_file.write(f"pid={os.getpid()} | {' '.join(sys.argv)} | since "
+                    f"{datetime.datetime.now().isoformat(timespec='seconds')}\n")
+    lock_file.flush()
+    _WORKTREE_BUILD_LOCK = lock_file
+
+
 def _acquire_build_lock():
     """Acquire one of the host-wide build-lock slots, blocking until free.
 
@@ -6849,6 +6894,7 @@ def _acquire_build_lock():
               "-- building unlocked.")
         return None, None, BUILD_LOCK_SLOTS[0][1]
 
+    _acquire_worktree_build_lock()
     announced = False
     while True:
         for name, jobs in BUILD_LOCK_SLOTS:

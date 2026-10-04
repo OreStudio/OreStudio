@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 8D47C644-5253-4476-9597-8BD4DEDD0ADB
+:END:
+#+title: Story: Hotfix: Linux and Windows CI builds on main
+#+description: The Linux debug builds time out because the sccache entry is never refreshed, and the Windows clang builds fail on a deprecated getenv call in the ores.platform tests.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring the Linux and Windows continuous builds on main back to green.
+
+- Linux: the debug jobs hit GitHub's 6-hour job limit. The sccache hit
+  rate is 0% for debug and 24-34% for release. The =Delete sccache entry=
+  step fails with HTTP 403, because the repository's default token is
+  read-only. The old entry stays, every save then fails with "Unable to
+  reserve cache", and every =sccache-linux-*= entry dates from 2026-10-01.
+- Windows clang: =environment_environment_tests.cpp= calls =std::getenv=,
+  which clang-cl reports as deprecated; warnings are errors.
+  =xml_example_coverage_tests.cpp= has the same call.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Fix in review.                         |
+| Waiting on    | Nothing.                               |
+| Next          | Merge, then watch the next CI runs.    |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- The Linux build job saves a new =sccache-linux-*= entry after a run.
+- No source file outside =real_environment_provider.cpp= calls
+  =std::getenv= without =_CRT_SECURE_NO_WARNINGS=.
+- Both test targets build and pass locally.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:347E67D3-60A6-4E9F-A5AB-D9FB4B2BCC5A][Scaffold story: Hotfix: Linux and Windows CI builds on main]] | STARTED | 2026-10-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:65440AF6-F71E-4FB7-941D-FF1A98BFC656][Implement Hotfix: Linux and Windows CI builds on main]] | STARTED | 2026-10-04 | | Initial task for: Hotfix: Linux and Windows CI builds on main |
+
+* Decisions
+
+* Out of scope
+
+- The MSVC C1202 on =bond_instrument_data= (capture
+  [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]]).
+- The macOS debug runner running out of disk.

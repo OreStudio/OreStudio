@@ -8,7 +8,7 @@
 #+filetags: :web:prototype:access:implement-access-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/prototype-the-access-screens
-#+pr:
+#+pr: 2611
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2611][#2611]] | [doc] Prototype the access screens |
 
 * Review
 

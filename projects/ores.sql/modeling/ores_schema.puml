@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T14:07:15.404176Z
+' Generated: 2026-10-04T14:57:25.998899Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11151,6 +11151,40 @@ package "trading" #E8F5E9 {
     database foreign key. It copies the anchor's party, pinned to the anchor,
     because row-level security needs the party on every row. The issuer is
     the party or counterparty that issued the value, when it is known.
+    end note
+
+    entity ores_trading_trade_portfolios_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * portfolio_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_portfolios_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Portfolio Table
+    A portfolio a trade is reported in. A trade is filed in one book, and the
+    book sits in one portfolio tree; a trade may also be reported in other
+    portfolios, as ORE's Envelope/PortfolioIds states, each by the portfolio's
+    name. The row resolves such a name to a portfolio of the trade's party, so a
+    name that names no portfolio is refused rather than kept as text. The order is
+    the source's order, and the ordinal preserves it.
+    The row is keyed by the trade and the ordinal, and references the
+    [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]] with a database foreign key. It copies the anchor's party,
+    pinned to the anchor and to the portfolio, because row-level security needs
+    the party on every row and a trade is reported only in its own party's
+    portfolios. It replaces the envelope's portfolio id table.
     end note
 
     entity ores_trading_trade_states_tbl <<junction>> #ECECEC {

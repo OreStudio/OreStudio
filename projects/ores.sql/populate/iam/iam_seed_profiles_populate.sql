@@ -132,7 +132,7 @@ cross join (values
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
-        {"name": "Acme Corporation Plc", "bundles": ["acme_group", "ore_sample_netting"], "default": true},
+        {"name": "Acme Corporation Plc", "bundles": ["acme_group", "ore_samples"], "default": true},
         {"name": "ACME Corporation UK plc", "bundles": ["acme_uk"]},
         {"name": "ACME Corporation US Inc", "bundles": ["acme_us"]},
         {"name": "ACME Corporation HK Ltd", "bundles": ["acme_hk"]}

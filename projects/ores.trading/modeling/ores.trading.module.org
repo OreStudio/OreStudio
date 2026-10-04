@@ -22,6 +22,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 | [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | An identifier of a trade under one scheme (UTI, USI, Internal, ORE). |
 | [[id:E031135C-5728-401B-BBD4-88B197B937B1][ores.trading.trade_party_role]] | The role another party plays on a trade. |
 | [[id:EDEBBAAB-C045-4D67-957C-C7F18497A8E6][ores.trading.trade_additional_field]] | A field a trade carries that ORE Studio does not model. |
+| [[id:FC9528F7-7469-4D0A-87A8-C5FCE558CA52][ores.trading.trade_portfolio]] | A portfolio a trade is reported in, beside the book it is filed in. |
 | [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] | ORE instrument type code (e.g. Swap, FxForward, CapFloor, Swaption). |
 | [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][ores.trading.trade_id_type]] | Trade identifier type code (e.g. UTI, USI, Internal). |
 | [[id:D18832B9-0D51-4617-A789-AB33E14AA41A][ores.trading.party_role_type]] | FpML-aligned party role code (e.g. Counterparty, CalculationAgent, ExecutingBroker). |

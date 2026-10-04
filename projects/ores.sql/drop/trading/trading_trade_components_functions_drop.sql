@@ -29,3 +29,4 @@ drop function if exists ores_trading_status_may_be_virtual_fn(uuid, uuid, uuid);
 drop function if exists ores_trading_status_is_draft_fn(uuid);
 drop function if exists ores_trading_book_is_virtual_fn(uuid, uuid);
 drop function if exists ores_trading_trade_envelope_names_fn(uuid[]);
+drop function if exists ores_trading_trade_portfolio_names_fn(uuid[]);

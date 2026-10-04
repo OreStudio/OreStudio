@@ -216,6 +216,33 @@ for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
+-- -----------------------------------------------------------------------------
+-- Trade Portfolios
+-- -----------------------------------------------------------------------------
+alter table ores_trading_trade_portfolios_tbl enable row level security;
+
+drop policy if exists trade_portfolios_tenant_isolation_policy
+    on ores_trading_trade_portfolios_tbl;
+
+create policy trade_portfolios_tenant_isolation_policy on ores_trading_trade_portfolios_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement, as on the anchor. FOR SELECT only.
+drop policy if exists trade_portfolios_party_isolation_policy
+    on ores_trading_trade_portfolios_tbl;
+
+create policy trade_portfolios_party_isolation_policy
+on ores_trading_trade_portfolios_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- =============================================================================
 -- Instrument Tables
 -- =============================================================================

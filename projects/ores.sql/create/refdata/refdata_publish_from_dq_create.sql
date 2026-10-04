@@ -2581,6 +2581,82 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
+-- Named Portfolios
+-- =============================================================================
+
+/**
+ * Publishes portfolios by name from a DQ dataset to a party.
+ *
+ * Each staged portfolio is written as a top-level portfolio of the target
+ * party under its staged name; the staged id and parent are not used, because
+ * a portfolio a document names by its name needs no place in a tree. A name
+ * the party already holds is skipped, so the publish adds names to a party
+ * that already has portfolios, which the portfolio tree publish does not. A
+ * publish only inserts.
+ */
+create or replace function ores_refdata_publish_named_portfolios_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_staged bigint;
+    v_inserted bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
+    if v_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    select count(*) into v_staged
+    from ores_dq_portfolios_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    insert into ores_refdata_portfolios_tbl (
+        tenant_id, id, version, party_id, name, parent_portfolio_id, owner_unit_id,
+        purpose_type, aggregation_ccy, is_virtual, status,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct on (s.name)
+        p_target_tenant_id, gen_random_uuid(), 0, v_party_id, s.name, null, null,
+        s.purpose_type, s.aggregation_ccy, s.is_virtual, 'Active',
+        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+        'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from ores_dq_portfolios_artefact_tbl s
+    where s.dataset_id = p_dataset_id
+      and not exists (
+        select 1 from ores_refdata_portfolios_tbl o
+        where o.tenant_id = p_target_tenant_id
+          and o.party_id = v_party_id
+          and o.name = s.name
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+    order by s.name;
+
+    get diagnostics v_inserted = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'skipped'::text, v_staged - v_inserted
+    where v_staged - v_inserted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
 -- LEI Counterparties
 -- =============================================================================
 

@@ -92,10 +92,9 @@
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
-#include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
-#include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.trading.api/messaging/trade_portfolio_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.utility/decimal/decimal.hpp"
@@ -230,53 +229,6 @@ ores::refdata::messaging::book_write to_write(const ores::refdata::domain::book&
 }
 
 /**
- * @brief Saves the part of one trade's envelope the trade's components do not
- * hold yet: its portfolio ids.
- *
- * The counterparty, netting set and additional fields live on the booking and
- * the trade's additional fields, so the envelope row carries none of them.
- * The envelope row is keyed by the trade, so the trade must be saved first. A
- * document that stated no envelope writes no row. The list ordinals are the
- * document's order and start at one.
- *
- * @return An empty string on success, or the first failure.
- */
-template <typename Nats>
-std::string
-save_envelope(Nats& nats,
-              const boost::uuids::uuid& trade_id,
-              const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
-    if (!envelope)
-        return {};
-
-    using ores::trading::messaging::put_trade_envelope_portfolio_id_request;
-    using ores::trading::messaging::put_trade_envelope_request;
-
-    std::string error;
-    put_trade_envelope_request envelope_req;
-    envelope_req.change.write.trade_id = trade_id;
-    envelope_req.change.write.has_portfolio_ids = envelope->portfolio_ids.has_value();
-    auto resp = nats_call(nats, envelope_req, error);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_trade_envelope failed" : error;
-
-    if (envelope->portfolio_ids) {
-        int sequence_number = 0;
-        for (const auto& portfolio_id : *envelope->portfolio_ids) {
-            put_trade_envelope_portfolio_id_request child_req;
-            child_req.change.write.trade_id = trade_id;
-            child_req.change.write.sequence_number = ++sequence_number;
-            child_req.change.write.portfolio_id = portfolio_id;
-            auto child_resp = nats_call(nats, child_req, error);
-            if (!child_resp || child_resp->result.outcome != ores::utility::domain::outcome::ok)
-                return error.empty() ? "save_trade_envelope_portfolio_id failed" : error;
-        }
-    }
-
-    return {};
-}
-
-/**
  * @brief An entity an ORE envelope names, and the identifier that named it.
  *
  * The identifier is absent when the name matched the entity's own code rather
@@ -296,6 +248,7 @@ struct resolved_envelope {
     std::optional<boost::uuids::uuid> counterparty_identifier_id;
     std::optional<boost::uuids::uuid> netting_set_id;
     std::optional<boost::uuids::uuid> netting_set_identifier_id;
+    std::vector<boost::uuids::uuid> portfolio_ids;
 };
 
 /**
@@ -381,11 +334,40 @@ resolve_netting_set(Nats& nats, const std::string& netting_set_id, std::string& 
 }
 
 /**
+ * @brief The portfolio an ORE envelope's PortfolioId names: a portfolio of the
+ * importing party with that name.
+ *
+ * @return The portfolio's id, or nullopt when the name matches none; on a
+ * failed read, nullopt with out_error set.
+ */
+template <typename Nats>
+std::optional<boost::uuids::uuid>
+resolve_portfolio(Nats& nats, const std::string& name, std::string& out_error) {
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::refdata::messaging::get_portfolio_request req;
+    req.key.name = name;
+    auto resp = nats_call(nats, req, error);
+    if (!resp) {
+        out_error = error;
+        return std::nullopt;
+    }
+    if (resp->result.outcome != outcome::ok && resp->result.outcome != outcome::missing) {
+        out_error = resp->result.message;
+        return std::nullopt;
+    }
+    if (resp->result.outcome == outcome::ok && resp->portfolio)
+        return resp->portfolio->id;
+    return std::nullopt;
+}
+
+/**
  * @brief Books an imported trade into its anchor and components.
  *
  * The anchor, booking and state are one write. ORE's Trade/@id becomes an
- * identifier under the ORE scheme, and each envelope additional field a row
- * of its own, in the document's order.
+ * identifier under the ORE scheme, and each envelope portfolio and additional
+ * field a row of its own, in the document's order.
  *
  * @return An empty string on success, or the first failure.
  */
@@ -428,6 +410,18 @@ book_imported_trade(Nats& nats,
     auto identified = nats_call(nats, id_req, error);
     if (!identified || identified->result.outcome != outcome::ok)
         return error.empty() ? "save_trade_identifier failed" : error;
+
+    int portfolio_sequence = 0;
+    for (const auto& portfolio_id : resolved.portfolio_ids) {
+        error.clear();
+        ores::trading::messaging::put_trade_portfolio_request portfolio_req;
+        portfolio_req.change.write.trade_id = trade.identity.id;
+        portfolio_req.change.write.sequence_number = ++portfolio_sequence;
+        portfolio_req.change.write.portfolio_id = portfolio_id;
+        auto saved = nats_call(nats, portfolio_req, error);
+        if (!saved || saved->result.outcome != outcome::ok)
+            return error.empty() ? "save_trade_portfolio failed" : error;
+    }
 
     if (envelope && envelope->additional_fields) {
         int sequence_number = 0;
@@ -1886,6 +1880,32 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             resolved.netting_set_identifier_id = netting_set->identifier_id;
         }
 
+        if (envelope && envelope->portfolio_ids) {
+            std::string unresolved;
+            for (const auto& name : *envelope->portfolio_ids) {
+                std::string portfolio_error;
+                const auto portfolio = resolve_portfolio(delegated_nats, name, portfolio_error);
+                if (!portfolio) {
+                    unresolved =
+                        portfolio_error.empty() ?
+                            std::format("PortfolioId {} matches no portfolio of the party: give "
+                                        "the party a portfolio with this name.",
+                                        name) :
+                            portfolio_error;
+                    break;
+                }
+                resolved.portfolio_ids.push_back(*portfolio);
+            }
+            if (!unresolved.empty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "ore.import.execute portfolio unresolved | corr=" << req.correlation_id
+                    << " trade_id=" << tid << " source=" << src << " error=" << unresolved;
+                result.item_errors.push_back(
+                    {.source_file = src, .item_id = ext_id, .message = unresolved});
+                continue;
+            }
+        }
+
         // The booking is written first: it checks the trade's book, counterparty
         // and netting set against one another, so a trade it refuses leaves
         // nothing behind.
@@ -1935,14 +1955,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 {.source_file = src, .item_id = ext_id, .message = trade_msg});
         } else {
             result.saved_trade_external_ids.push_back(ext_id);
-            const auto envelope_error = save_envelope(delegated_nats, trade_id, item.envelope);
-            if (!envelope_error.empty()) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "ore.import.execute envelope save failed | corr=" << req.correlation_id
-                    << " trade_id=" << tid << " source=" << src << " error=" << envelope_error;
-                result.item_errors.push_back(
-                    {.source_file = src, .item_id = ext_id, .message = envelope_error});
-            }
         }
     }
 

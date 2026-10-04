@@ -63,6 +63,9 @@ export interface PrototypeServiceInstance {
  * 20 services, 24 expected instances: the compute wrapper is the one service
  * the registry gives more than one replica. Two are not running: the reporting
  * service is stopped, and one wrapper replica is missing.
+ *
+ * The wrapper instances belong to the grid screen: a wrapper runs on a node
+ * and reports for it, so the services screen leaves them out.
  */
 export const serviceInstances: readonly PrototypeServiceInstance[] = [
     { serviceName: 'ores.analytics.service', instanceId: 'a3f81c02-6d44-4b0e-9c21-7f5e0d8a1b34', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 6 },
@@ -90,6 +93,9 @@ export const serviceInstances: readonly PrototypeServiceInstance[] = [
     { serviceName: 'ores.workflow.service', instanceId: '66d5e2f1-a7fe-4521-84b5-e9f0a1b2c3d4', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 12 },
     { serviceName: 'ores.workspace.service', instanceId: 'c13f8b96-b80f-4632-95c6-f0a1b2c3d4e5', state: 'running', version: 'v0.0.25', lastHeartbeatSeconds: 9 },
 ];
+
+/** The one service whose instances run on the grid's nodes. */
+export const computeWrapperServiceName = 'ores.compute.wrapper';
 
 /** compute.v1.telemetry.get_grid_stats: the summary and one row per known node. */
 export interface PrototypeNodeSummary {

@@ -27,20 +27,33 @@
  * The screen answers the roster the registry expects with the samples the
  * instances send, so a service that stopped keeps its row and a version that
  * lags behind is visible. The states use the installation's own words and the
- * shell's tag tones.
+ * shell's tag tones. The compute wrappers belong to the grid screen, which
+ * shows them against the nodes they run on.
  */
 
 import { useState, type ReactNode } from 'react';
 import { Button, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import { GapPanel, OperationsBack, type ScreenGap } from './OperationsParts.js';
-import { asMinutes, serviceInstances, type PrototypeServiceInstance } from './fixtures.js';
+import {
+    GapPanel,
+    InstanceStateTag,
+    InstanceVersion,
+    OperationsBack,
+    newestVersionOf,
+    type ScreenGap,
+} from './OperationsParts.js';
+import {
+    asMinutes,
+    computeWrapperServiceName,
+    serviceInstances,
+    type PrototypeServiceInstance,
+} from './fixtures.js';
 
 const VARIANTS = [
     {
         id: 'reporting',
         name: 'Reporting',
-        gist: 'The roster the registry expects, met by the samples: two instances are not running and one build is older.',
+        gist: 'The roster the registry expects, met by the samples: one instance is stopped and one build is older.',
     },
     {
         id: 'nothing',
@@ -86,10 +99,14 @@ export function ServicesPrototype(): ReactNode {
         setLog((entries) => [...entries, 'refresh · re-read every instance at 14:33:02']);
     };
 
+    const reported = serviceInstances.filter(
+        (instance) => instance.serviceName !== computeWrapperServiceName,
+    );
+
     const instances =
         active.id === 'reporting'
-            ? serviceInstances
-            : serviceInstances.map(
+            ? reported
+            : reported.map(
                   (instance): PrototypeServiceInstance => ({
                       serviceName: instance.serviceName,
                       instanceId: undefined,
@@ -103,14 +120,14 @@ export function ServicesPrototype(): ReactNode {
     const running = instances.filter((instance) => instance.state === 'running');
     const stopped = instances.filter((instance) => instance.state === 'stopped');
     const missing = instances.filter((instance) => instance.state === 'missing');
-    const newestVersion = newestOf(running);
+    const newestVersion = newestVersionOf(running);
 
     return (
         <>
             <div className="mx-auto max-w-[1200px] space-y-6 pb-[45vh]">
                 <PageHeader
                     title="Operations: services"
-                    description="Every service the registry expects, met by the instances that report."
+                    description="Every service the registry expects, met by the instances that report. The compute wrappers are the grid screen's."
                     actions={
                         <div className="flex items-center gap-3">
                             <span className="text-xs text-ink-faint">Updated {readAt}</span>
@@ -185,10 +202,10 @@ export function ServicesPrototype(): ReactNode {
                                                 : instance.instanceId.slice(0, 8)}
                                         </td>
                                         <td className="py-2">
-                                            <StatusTag state={instance.state} />
+                                            <InstanceStateTag state={instance.state} />
                                         </td>
                                         <td className="py-2">
-                                            <VersionCell
+                                            <InstanceVersion
                                                 instance={instance}
                                                 newestVersion={newestVersion}
                                             />
@@ -242,7 +259,8 @@ export function ServicesPrototype(): ReactNode {
                         </div>
                         <p className="text-ink-faint">
                             Signed in as system administrator, on the system tenant. The roster is
-                            the registry's; the samples are telemetry.v1.services.list.
+                            the registry's, less the compute wrappers the grid screen owns; the
+                            samples are telemetry.v1.services.list.
                         </p>
                         {log.length === 0 ? (
                             <p className="text-ink-faint">No action yet.</p>
@@ -303,46 +321,6 @@ function InstanceCount({
             {reported} of {expected}
         </span>
     );
-}
-
-function StatusTag({ state }: { readonly state: PrototypeServiceInstance['state'] }): ReactNode {
-    if (state === 'running') {
-        return <Tag tone="accent">running</Tag>;
-    }
-    if (state === 'stopped') {
-        return <Tag tone="muted">stopped</Tag>;
-    }
-    return <Tag tone="warn">missing</Tag>;
-}
-
-function VersionCell({
-    instance,
-    newestVersion,
-}: {
-    readonly instance: PrototypeServiceInstance;
-    readonly newestVersion: string | undefined;
-}): ReactNode {
-    if (instance.version === undefined) {
-        return <span className="font-mono text-ink-faint">—</span>;
-    }
-    return (
-        <span className="flex items-center gap-2">
-            <span className="font-mono">{instance.version}</span>
-            {instance.state === 'running' && instance.version !== newestVersion && (
-                <Tag tone="warn">older build</Tag>
-            )}
-        </span>
-    );
-}
-
-function newestOf(running: readonly PrototypeServiceInstance[]): string | undefined {
-    return running
-        .map((instance) => instance.version)
-        .filter((version): version is string => version !== undefined)
-        .reduce<string | undefined>(
-            (newest, version) => (newest === undefined || version > newest ? version : newest),
-            undefined,
-        );
 }
 
 function hasSkew(running: readonly PrototypeServiceInstance[], newestVersion: string): boolean {

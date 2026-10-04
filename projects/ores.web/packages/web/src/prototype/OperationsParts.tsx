@@ -32,7 +32,8 @@
  */
 
 import type { ReactNode } from 'react';
-import { LinkButton } from '../ui/Primitives.js';
+import { LinkButton, Tag } from '../ui/Primitives.js';
+import type { PrototypeServiceInstance } from './fixtures.js';
 
 /** The way back to the operations area, for a screen's header actions. */
 export function OperationsBack(): ReactNode {
@@ -41,6 +42,55 @@ export function OperationsBack(): ReactNode {
             Back to operations
         </LinkButton>
     );
+}
+
+/** The state label of one instance, in the installation's own words. */
+export function InstanceStateTag({
+    state,
+}: {
+    readonly state: PrototypeServiceInstance['state'];
+}): ReactNode {
+    if (state === 'running') {
+        return <Tag tone="accent">running</Tag>;
+    }
+    if (state === 'stopped') {
+        return <Tag tone="muted">stopped</Tag>;
+    }
+    return <Tag tone="warn">missing</Tag>;
+}
+
+/** The release an instance runs, warned when it trails the newest running one. */
+export function InstanceVersion({
+    instance,
+    newestVersion,
+}: {
+    readonly instance: PrototypeServiceInstance;
+    readonly newestVersion: string | undefined;
+}): ReactNode {
+    if (instance.version === undefined) {
+        return <span className="font-mono text-ink-faint">—</span>;
+    }
+    return (
+        <span className="flex items-center gap-2">
+            <span className="font-mono">{instance.version}</span>
+            {instance.state === 'running' && instance.version !== newestVersion && (
+                <Tag tone="warn">older build</Tag>
+            )}
+        </span>
+    );
+}
+
+/** The newest release among the running instances. */
+export function newestVersionOf(
+    running: readonly PrototypeServiceInstance[],
+): string | undefined {
+    return running
+        .map((instance) => instance.version)
+        .filter((version): version is string => version !== undefined)
+        .reduce<string | undefined>(
+            (newest, version) => (newest === undefined || version > newest ? version : newest),
+            undefined,
+        );
 }
 
 export interface ScreenGap {

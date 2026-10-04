@@ -2143,7 +2143,9 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * counterparty by LEI, because a counterparty's id differs from tenant to
  * tenant: the alias is written as an identifier, under the row's scheme, of
  * the counterparty that holds that LEI in the target tenant. A name already
- * held, and a LEI the tenant holds no counterparty for, are skipped.
+ * held, and a LEI the tenant holds no counterparty for, are skipped. A publish
+ * only inserts: it never changes an alias the tenant already holds, whatever
+ * the mode.
  */
 create or replace function ores_refdata_publish_counterparty_aliases_from_dq_fn(
     p_dataset_id uuid,
@@ -2174,7 +2176,8 @@ begin
         tenant_id, id, version, counterparty_id, id_scheme, id_value, description,
         modified_by, performed_by, change_reason_code, change_commentary
     )
-    select p_target_tenant_id, gen_random_uuid(), 0, ci.counterparty_id, a.id_scheme,
+    select distinct on (a.id_scheme, a.id_value)
+        p_target_tenant_id, gen_random_uuid(), 0, ci.counterparty_id, a.id_scheme,
         a.id_value, a.description,
         coalesce(ores_iam_current_service_fn(), current_user), current_user,
         'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
@@ -2190,7 +2193,8 @@ begin
         where o.tenant_id = p_target_tenant_id
           and o.id_scheme = a.id_scheme
           and o.id_value = a.id_value
-          and o.valid_to = ores_utility_infinity_timestamp_fn());
+          and o.valid_to = ores_utility_infinity_timestamp_fn())
+    order by a.id_scheme, a.id_value, ci.counterparty_id;
 
     get diagnostics v_inserted = row_count;
 

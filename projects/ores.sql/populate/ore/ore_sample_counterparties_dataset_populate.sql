@@ -95,6 +95,9 @@ begin
     if v_copied <> 11 then
         raise exception 'ore.sample_counterparties selected % of its 11 banks from gleif.lei_entities.small.', v_copied;
     end if;
+
+    perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ore.sample_counterparties', 'gleif.lei_entities.small', 'entity_reference');
 end $$;
 
 -- =============================================================================
@@ -171,10 +174,7 @@ begin
         ('CPTY_10', 'MP6I5ZYZBEU3UXPYFY54')
     ) as a(alias, lei);
 
-    -- The aliases resolve against counterparties published from GLEIF, and the
-    -- sample banks are selected from the GLEIF entities.
+    -- The aliases resolve against counterparties published from GLEIF.
     perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore.counterparty_aliases', 'gleif.lei_counterparties.small', 'counterparty_reference');
-    perform ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'ore.sample_counterparties', 'gleif.lei_entities.small', 'entity_reference');
 end $$;

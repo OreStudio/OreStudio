@@ -2,7 +2,7 @@
 :ID: 682A8966-C751-43EC-8D49-260706B88490
 :END:
 #+title: Task: Import ORE trades onto the anchor and its components
-#+description: Make the ORE import book each trade's anchor, booking and state, record ORE's Trade/@id as an identifier and the envelope's additional fields, resolve the envelope's counterparty (rejecting a name that matches none) and its netting set (creating one that does not exist), while still writing the wide trade the instruments reference.
+#+description: Make the ORE import book each trade's anchor, booking and state, record ORE's Trade/@id as an identifier and the envelope's additional fields, resolve the envelope's counterparty (rejecting a name that matches none) and its netting set through their ORE aliases (rejecting a name that matches none), while still writing the wide trade the instruments reference.
 #+type: task
 #+level: s1
 #+filetags: :split-the-trade:sprint_26:v0:
@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-An imported ORE trade lives in the anchor and its components, with its envelope resolved to entities: a counterparty that does not resolve rejects the trade, and a netting set that does not exist is created for it.
+An imported ORE trade lives in the anchor and its components, with its envelope resolved to entities: a counterparty or netting set that does not resolve rejects the trade.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -38,15 +38,32 @@ An imported ORE trade lives in the anchor and its components, with its envelope 
 - The import books each trade's anchor, booking and state in one write, with entry channel stp.
 - ORE's Trade/@id is a trade_identifier row under the ORE scheme, and each envelope additional field is a trade_additional_field row.
 - An envelope counterparty is resolved by name; a name that matches no counterparty is an item error and nothing is written for the trade. The default counterparty applies only when the envelope names none.
-- An envelope netting set is resolved by code; one that does not exist is created under the trade's counterparty and party.
+- An envelope netting set is resolved through its ORE alias; one that resolves to none rejects the trade.
 - The wide trade and the envelope are still written, so export and the instruments keep working until their own tasks.
 - Build, ctest, pgTAP and the local check set pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The import resolves the envelope before it writes anything, then books the
+trade, then writes the wide trade the instruments still reference.
+
+- The counterparty: the envelope's CounterParty as an ORE counterparty
+  identifier, then as a short code. A name that matches none rejects the
+  trade. The import's default counterparty applies only when the envelope
+  names none.
+- The netting set: the envelope's NettingSetId as an ORE netting set
+  identifier. An id that matches none rejects the trade (owner's choice: the
+  sample netting dataset carries the aliases, instead of the import creating
+  sets). A trade with no NettingSetId books with no netting set, as in ORE.
+- The booking comes first. The anchor, booking and state are one write whose
+  pins check the book, counterparty and netting set against the trade's
+  party, so a trade the booking refuses leaves nothing behind. The booking is
+  =stp= and =actual=; the scope is external when the trade has a
+  counterparty. ORE's Trade/@id becomes an ORE trade identifier, and the
+  envelope's additional fields become rows in the document's order.
+- The trade date becomes optional on the booking: ORE documents may omit it.
+- The instrument step skips a trade the trade step did not save, so a
+  rejected trade reports its one reason.
 
 * Measurements
 
@@ -60,9 +77,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Example_63 import: trades booked onto the anchor | 4 of 4, counterparties and netting sets resolved through ORE aliases | round-trip recipe, then the query in [[file:evidence/ore_import_onto_the_anchor.txt][evidence/ore_import_onto_the_anchor.txt]] | branch head before commit |
+| Example_63 round trip, in-scope pairs | lost 0, unexplained 0 | =scripts/ore_mapper_roundtrip_diff.py= | branch head before commit |
+| Unknown counterparty and netting set id | 2 trades rejected, one reason each, nothing written | the same evidence file | branch head before commit |
 
 * Notes
+
+- Follow-up: the identifier get request matches on the value alone and
+  returns one row, which the import then checks for the ORE scheme. A value
+  that another scheme also holds can hide an ORE alias. A lookup by scheme
+  and value would close it.
+- Follow-up: the handler has no automated test; it needs a service harness
+  with NATS. The live runs in the evidence file stand in for it.
+- Seen, not changed: the CDS instrument of Example_63 fails the credit
+  tenor check in the instrument step, which this task does not touch.
+- The anchor's identifier and additional fields are written after the
+  booking. A failure there leaves a booked anchor without them and skips the
+  wide trade; the import reports it against the trade.
 
 * Test Scenarios
 
@@ -85,6 +116,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The WIP wrote the wide trade before the booking, so a refused booking left a wide trade behind. | ore_import_execute_handler.cpp | Accept | The booking is written first. |
+| 2 | The instrument step saved instruments for trades the trade step rejected, adding a second, misleading error. | ore_import_execute_handler.cpp | Accept | It skips trades the trade step did not save. |
+| 3 | The WIP created a netting set the tenant lacked. | ore_import_execute_handler.cpp | Accept | Owner's choice: resolve through the ORE alias and reject an unresolved id. |
 
 * Result
+
+An ORE import now books every trade onto the anchor, its booking and its
+state, records ORE's Trade/@id as an ORE trade identifier and the envelope's
+additional fields as rows, and still writes the wide trade the instruments
+reference. The envelope's counterparty and netting set resolve through their
+ORE aliases. A name that resolves to neither rejects the trade before
+anything is written. Against the ACME tenant, Example_63 books all four trades
+onto the sample banks and netting sets, and its envelope round trips with no
+loss.

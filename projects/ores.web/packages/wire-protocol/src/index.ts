@@ -120,7 +120,6 @@ export {
     ServerError,
     ServiceUnavailableError,
     SessionExpiredError,
-    TenantSessionEndedError,
     TransportError,
     serverErrorFor,
     X_ERROR_HEADER,
@@ -146,7 +145,6 @@ export { DEFAULT_TIMEOUTS, OresClient } from './client.js';
 export type {
     ActiveSession,
     LoginCredentials,
-    EnteredTenant,
     LoginOutcome,
     LoginRejected,
     OresClientOptions,

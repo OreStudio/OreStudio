@@ -39,9 +39,6 @@ const pt: SourceCatalogue = {
         accounts: 'Contas',
         notifications: 'Notificações',
         alerts: 'Alertas',
-        actingIn: 'A agir em {tenant} como {username}',
-        readOnly: 'Só de leitura',
-        leaveTenant: 'Sair do inquilino',
         signOut: 'Terminar sessão',
         signIn: 'Iniciar sessão',
         menu: 'Menu',
@@ -131,9 +128,20 @@ const pt: SourceCatalogue = {
             done: 'A execução terminou. O inquilino está pronto.',
         },
         detail: {
-            readInside:
-                'As suas partes, contas e inícios de sessão leem-se dentro do inquilino. Aja neste inquilino para os ler.',
-            enter: 'Agir neste inquilino',
+            viewOnly: 'Só consulta',
+            viewOnlyHint:
+                'As partes e as pessoas deste inquilino são alteradas pelos seus próprios administradores.',
+            tab: { overview: 'Resumo', parties: 'Partes', people: 'Pessoas' },
+            noParties: 'Este inquilino ainda não tem partes.',
+            noPeople: 'Ainda ninguém pode entrar neste inquilino.',
+            topOfGroup: 'Topo do grupo',
+            person: 'Nome',
+            username: 'Utilizador',
+            email: 'Email',
+            showingPeople: {
+                one: '{first}–{last} de {count} pessoa',
+                other: '{first}–{last} de {count} pessoas',
+            },
             lead: 'Um inquilino deste ambiente: o que é, e como correu a sua configuração.',
             back: 'Voltar aos inquilinos',
             notFound: 'Nenhum inquilino tem este código.',
@@ -170,7 +178,7 @@ const pt: SourceCatalogue = {
         type: 'Tipo',
         status: 'Estado',
         parent: 'Pai',
-        parentElsewhere: 'Noutra página',
+        parentElsewhere: 'Fora do seu alcance',
         showing: {
             one: '{first}–{last} de {count} parte',
             other: '{first}–{last} de {count} partes',

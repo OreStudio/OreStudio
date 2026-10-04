@@ -92,15 +92,6 @@ export const sessionViewSchema = z.object({
     /** Seconds the token remains valid for, so the browser can renew early. */
     accessLifetimeSeconds: z.int().positive(),
     passwordResetRequired: z.boolean(),
-    /**
-     * The tenant a system administrator entered, reading only, or `null` in
-     * the session's own tenant. While set, the tenant, the party and the mode
-     * above are the entered tenant's.
-     */
-    actingIn: z
-        .object({ tenantId: z.string(), tenantCode: z.string(), tenantName: z.string() })
-        .nullable()
-        .default(null),
 });
 export type SessionView = z.infer<typeof sessionViewSchema>;
 

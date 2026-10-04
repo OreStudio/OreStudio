@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 738628F9-DBAD-4626-9A22-CAA9AF5C88BF
+:END:
+#+title: Task: Scaffold story: Implement the refdata journeys in ores.web
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/implement-refdata-journeys
+#+pr: 2634
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story exists with its goal, acceptance, build order, decisions and scope, and is broken into one task per refdata journey screen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The story and its five screen tasks are scaffolded and wired into sprint 26.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2634][#2634]] | [agile] Scaffold the story that builds the refdata journeys in ores.web |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story STARTED but sprint row BACKLOG | =sprint.org= | Accepted | Sprint row set to STARTED with today's start date |
+| 2 | Placeholder Goal and Acceptance in the task files | task files | Accepted | Four screen tasks and the scaffold task filled; the scaffold Result was already written |
+| 3 | Task environment is empty | task files | Declined | Intended: a task takes its environment when it starts |
+| 4 | State row padding | story, tasks | Declined | Generator output; compass lint passes |
+| 5 | The 139 protocols claim has no measurement | first task | Accepted | Measurement with command and commit added |
+
+* Result
+
+The story is scaffolded with its goal, acceptance, build order, decisions and
+scope, and broken into five tasks, one per refdata journey screen, starting
+with the classification list.

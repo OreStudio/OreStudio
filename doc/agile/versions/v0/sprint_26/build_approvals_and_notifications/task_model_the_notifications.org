@@ -7,41 +7,64 @@
 #+level: s1
 #+filetags: :inbox:notification:codegen:build_approvals_and_notifications:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-approvals-and-notifications
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The notification record exists in the database and in C++: codegen models for
+the notification kinds, channels, delivery outcomes, notifications, arguments,
+recipients, deliveries and preferences in ores.inbox, the generated domain,
+repository, service, protocol, shell and web types, and the seed rows for the
+first two kinds.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- Eight codegen models in projects/ores.inbox/modeling generate the tables, with
+  primary keys, foreign keys to IAM accounts, permissions and the system-tenant
+  lookups, and row-level security on every tenant table.
+- A delivery's outcome is the enum domain::delivery_outcome, stored as text
+  with a database foreign key to its closed lookup, and a failed delivery says
+  why while no other outcome does.
+- A preference is keyed by the account, the kind and the channel together.
+- A recreate seeds the two channels, the three outcomes, the
+  inbox.approval_waiting and inbox.approval_decided kinds, and the
+  permissions.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Kinds and channels use the simple-lookup profile, held by the system tenant;
+  every reference to them is a foreign key with =:use_system_tenant:=.
+- The delivery outcome follows trading's closed enum pattern: a tenant-less,
+  immutable lookup under the read-only-current-state profile, a hand-written
+  C++ enum header, and an enforced database foreign key.
+- Arguments and recipients are tenant-scoped junctions keyed by the
+  notification and the name or account. Junctions carry no generated drop or
+  row-level security, so both are hand-written, as other components do.
+- The notification and the delivery use the uuid-identified-lookup profile;
+  the preference is a simple-lookup with a three-part primary key.
+- =link_id=, =audience_permission_code= and =failure_reason= are nullable,
+  because each is absent in a real case: a link to a whole screen, a
+  notification to named people, a delivery that did not fail.
 
 * Measurements
 
@@ -83,3 +106,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Eight models generate the notification tables: kinds and channels as
+system-tenant lookups, the delivery outcome as a closed tenant-less lookup
+behind the C++ enum domain::delivery_outcome, the notification, its arguments
+and recipients as junctions, the delivery, and the preference keyed by account,
+kind and channel together. Every tenant table has row-level security; the
+junctions' policies and drop scripts are hand-written, as other components'
+are.
+
+A recreate seeds the in_app and mail channels, the three outcomes, and the
+inbox.approval_waiting and inbox.approval_decided kinds. The probe in
+=evidence/inbox_notifications_probe.sql= shows the database refusing an unknown
+kind, audience permission, channel and outcome, a failure without a reason and
+a second preference for the same account, kind and channel, and accepting the
+rest.
+

@@ -49,7 +49,7 @@ package "ores.inbox: approvals" {
     * allows_hold : boolean
     * comment_on_approve : boolean
     * approvals_required : integer
-    expires_after : interval
+    expires_after_days : integer
   }
   entity ores_inbox_approval_request_states_tbl <<temporal>> #C6F0D8 {
     * code : text <<PK>>
@@ -58,12 +58,6 @@ package "ores.inbox: approvals" {
   }
   entity ores_inbox_approval_decision_types_tbl <<temporal>> #C6F0D8 {
     * code : text <<PK>>
-  }
-  entity ores_inbox_approval_hold_reasons_tbl <<temporal>> #C6F0D8 {
-    * kind_code : text <<PK>> <<FK>>
-    * code : text <<PK>>
-    --
-    * description : text
   }
   entity ores_inbox_approval_requests_tbl <<temporal>> #C6F0D8 {
     * id : uuid <<PK>>
@@ -87,7 +81,6 @@ package "ores.inbox: approvals" {
     * decided_by : uuid <<FK>>
     * decided_at : timestamptz
     comment : text
-    hold_reason_code : text <<FK>>
   }
 }
 
@@ -161,11 +154,9 @@ ores_inbox_approval_kinds_tbl }o--|| ores_iam_permissions_tbl
 ores_inbox_approval_requests_tbl }o--|| ores_inbox_approval_kinds_tbl
 ores_inbox_approval_requests_tbl }o--|| ores_inbox_approval_request_states_tbl
 ores_inbox_approval_requests_tbl }o--|| ores_iam_accounts_tbl
-ores_inbox_approval_hold_reasons_tbl }o--|| ores_inbox_approval_kinds_tbl
 ores_inbox_approval_decisions_tbl }o--|| ores_inbox_approval_requests_tbl
 ores_inbox_approval_decisions_tbl }o--|| ores_inbox_approval_decision_types_tbl
 ores_inbox_approval_decisions_tbl }o--|| ores_iam_accounts_tbl
-ores_inbox_approval_decisions_tbl }o--o| ores_inbox_approval_hold_reasons_tbl
 ores_iam_role_grant_requests_tbl |o--|| ores_inbox_approval_requests_tbl
 ores_iam_role_grant_requests_tbl }o--|| ores_iam_accounts_tbl
 ores_iam_role_grant_request_roles_tbl }|--|| ores_iam_role_grant_requests_tbl

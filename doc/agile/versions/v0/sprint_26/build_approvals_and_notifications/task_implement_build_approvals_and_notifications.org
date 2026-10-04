@@ -20,24 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-One component, ores.inbox, holds the approval requests and the notifications as designed: a relational schema generated from codegen models, the approval rules enforced in the database and the service, notifications raised by any component, and the role request built as the first kind with its screens.
+The ores.inbox component exists as a standard codegen composite with api, core
+and service parts, registered in the build and the codegen catalogue, so the
+models of the next tasks have a home.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
-- ores.inbox is a standard codegen component: overviews, generated CMake, C++, SQL, protocol and web types.
-- The approval and notification tables match the accepted schema, with keys and foreign keys and no JSON.
-- A member asks for a role, an administrator answers from the queue, and both are told through in-application notifications.
+- ores.inbox is a standard codegen component: overviews and generated CMake for
+  each part, and a shell adapter part.
+- The parts build and their test suites pass.
+- The placeholder stubs are gone once the first models land.
 
 * Plan
 
@@ -82,6 +85,25 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the inbox service has no database identity, service registry entry or registrar wiring, so it cannot run yet | projects/ores.inbox/service | Deferred | The serve task registers the service and wires the sub-registrar and event registrar, per the post-generation checklist. |
+| 2 | Local review: only the inbox, shell inbox and shell targets were rebuilt, not the whole tree | projects/ores.codegen | Accepted | The codegen changes alter no other component's output, which the drift sweep shows; the PR states the limitation. |
 
 * Result
+
+Shipped the ores.inbox composite: api, core and service parts generated from
+their component overviews, registered in projects/CMakeLists.txt and the codegen
+catalogue, and an ores.shell.inbox adapter part wired into the shell. The
+placeholder stubs were removed in the same change as the first models.
+
+Building the first new component in a while exposed codegen defects, fixed in
+the templates and generator rather than in the output:
+
+- the api part template linked ores.eventing.lib, which no longer exists;
+- the service stub test declared an unused variable, an error under -Werror;
+- the junction mapper had no branch for optional timestamps;
+- the test seeding planner seeded the parents of a system-tenant reference,
+  which is only read from the catalogue, and seeded enforced enum lookups the
+  populate scripts already hold.
+
+The drift sweep shows none of these changes alters another component's output.
+

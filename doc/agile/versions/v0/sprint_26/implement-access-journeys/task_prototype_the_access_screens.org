@@ -26,11 +26,11 @@ A throwaway prototype of the three access screens, drawn from the wireframes and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -85,3 +85,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The access screens prototype is accepted: =doc/prototypes/access/=, recorded
+in =doc/prototypes/access.org= and listed in the prototype index. It draws
+My access with a "Can I…?" answer, People with giving and taking away a role
+for a reason, and Roles with a permission grid by area on the real catalogue
+of 890 permissions. Asking for a role is left to the role-request task,
+because it has no server yet.

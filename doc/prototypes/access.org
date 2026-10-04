@@ -33,7 +33,12 @@ directly, for example =access/#persona=tenant&screen=role&role=Operations=.
 
 ** The verdict
 
-Not yet reviewed.
+Accepted on 2026-10-04. The user asked how a member requests a role: the
+prototype does not draw it. Asking is the fourth access journey,
+[[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]], and it has
+no server yet (no request subject, no waiting state in the workflow engine,
+no notice), so it belongs to its own task in the access story and gets its
+own prototype there.
 
 ** What it argues
 

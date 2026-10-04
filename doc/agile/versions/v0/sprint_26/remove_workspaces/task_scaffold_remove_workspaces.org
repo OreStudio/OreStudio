@@ -8,7 +8,7 @@
 #+filetags: :remove_workspaces:sprint_26:v0:
 #+owner: marco
 #+branch: feature/remove-workspaces
-#+pr:
+#+pr: 2615
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2615][#2615]] | [agile] Scaffold the story to remove workspaces from every component |
 
 * Review
 

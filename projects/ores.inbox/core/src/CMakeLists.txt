@@ -56,6 +56,9 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
-
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.history.core.lib
+        ores.diff.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

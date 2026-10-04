@@ -14,12 +14,6 @@
 #+full_name: ores.inbox
 #+brief: Approvals and notifications
 
-* Diagram
-
-#+attr_html: :width 100% :alt ores.inbox component diagram
-#+caption: ores.inbox
-[[file:ores.inbox.png][file:ores.inbox.png]]
-
 * Summary
 
 =ores.inbox= holds what waits on a person and what a person is told. Its

@@ -20,6 +20,15 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "approval_decision_eventing_integration_tests.cpp"
+    "approval_decision_type_eventing_integration_tests.cpp"
+    "approval_kind_eventing_integration_tests.cpp"
+    "approval_request_eventing_integration_tests.cpp"
+    "approval_request_state_eventing_integration_tests.cpp"
     "main.cpp"
-    "stub_tests.cpp"
+    "notification_channel_eventing_integration_tests.cpp"
+    "notification_delivery_eventing_integration_tests.cpp"
+    "notification_eventing_integration_tests.cpp"
+    "notification_kind_eventing_integration_tests.cpp"
+    "notification_preference_eventing_integration_tests.cpp"
 )

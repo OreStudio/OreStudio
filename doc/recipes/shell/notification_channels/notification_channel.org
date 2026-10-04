@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 356BBAC7-DE25-5BE8-A75D-6634E08FC7E8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notification_channels commands from the shell?
+#+description: Every command the notification_channels submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notification_channels:
+
+This file documents the notification_channels resource at the shell, one section per command. Every command is a subcommand of =notification_channels=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 5F8880DA-565F-51E5-8E30-18BC3E525B1C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.list=.
+
+#+name: notification_channels-list
+#+begin_src ores-shell :tangle notification_channels-list.ores :exports none
+notification_channels list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 18C9255E-BA31-5384-8B62-7F58564DFDE9
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels get <code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.get=.
+
+#+name: notification_channels-get
+#+begin_src ores-shell :tangle notification_channels-get.ores :exports none
+notification_channels get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 147DAB28-B59F-5903-8BE6-8B1C840F3943
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels get-many <code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.get_many=.
+
+#+name: notification_channels-get-many
+#+begin_src ores-shell :tangle notification_channels-get-many.ores :exports none
+notification_channels get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8616BBF6-7E68-53F2-BAA5-45BF4FC99648
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.put=.
+
+#+name: notification_channels-add
+#+begin_src ores-shell :tangle notification_channels-add.ores :exports none
+notification_channels add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8D41CA26-5DAA-5DC4-8C56-011D3A835C38
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.put=.
+
+#+name: notification_channels-set
+#+begin_src ores-shell :tangle notification_channels-set.ores :exports none
+notification_channels set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 3B7CDBE0-4ECC-581A-B019-E23E0C070945
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.put_many=.
+
+#+name: notification_channels-put-many
+#+begin_src ores-shell :tangle notification_channels-put-many.ores :exports none
+notification_channels put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 96C033BD-F266-5C80-9310-24D1C8FEC0E0
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.delete=.
+
+#+name: notification_channels-delete
+#+begin_src ores-shell :tangle notification_channels-delete.ores :exports none
+notification_channels delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EEC2BAAE-729C-58C4-844C-677D69D9E0ED
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels.delete_many=.
+
+#+name: notification_channels-delete-many
+#+begin_src ores-shell :tangle notification_channels-delete-many.ores :exports none
+notification_channels delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 95B10576-CF60-59C2-AC6F-DEAE3D885B1F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels_versions.list=.
+
+#+name: notification_channels-versions
+#+begin_src ores-shell :tangle notification_channels-versions.ores :exports none
+notification_channels versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: CB6E608C-47B8-5F20-B1B6-A8AC41EB4D8F
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_channels version <code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.notification_channels_versions.get=.
+
+#+name: notification_channels-version
+#+begin_src ores-shell :tangle notification_channels-version.ores :exports none
+notification_channels version __none__ --version 1
+#+end_src
+

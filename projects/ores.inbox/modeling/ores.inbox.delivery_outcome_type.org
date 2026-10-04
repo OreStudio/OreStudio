@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: DE939606-47FE-458E-B009-EC34DE815DBA
+:END:
+#+title: ores.inbox.delivery_outcome_type
+#+description: Codegen entity model for the inbox delivery_outcome_type table: the closed set of outcome codes a notification delivery carries.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: The closed set of outcomes of a notification delivery.
+#+entity_singular: delivery_outcome_type
+#+entity_plural: delivery_outcome_types
+#+entity_title: Delivery Outcome Type
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The outcomes of one attempt to reach a person through one channel: 'pending',
+'delivered' and 'failed'.
+
+The set is closed, and the C++ enum =domain::delivery_outcome= holds the same
+values. A code with no enum value cannot be read back, so the table is
+immutable: it is seeded once and never changes at run time. Because it is
+immutable, a delivery references it with a database foreign key rather than a
+trigger check. The table has no tenant: the set is the same for every tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     inbox
+:profile:       read-only-current-state
+:has_tenant_id: false
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique delivery outcome code.
+
+Examples: 'pending', 'delivered'.
+
+#+begin_src cpp :name generator
+std::string("pending")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the code means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_inbox_delivery_outcome_types_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: delivery_outcome_type
+:entity_plural_short:   delivery_outcome_types
+:entity_singular_words: delivery outcome type
+:entity_plural_words:   delivery outcome types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dot
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the audit requirement the outcome serves.
+- [[id:AEE6449A-FAE3-4FC2-994D-796A6EFF286C][ores.inbox.notification_delivery]] — the delivery whose outcome this lookup names.

@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: 5A850240-1C64-506E-B579-770BB341ED43
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notification_recipients commands from the shell?
+#+description: Every command the notification_recipients submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notification_recipients:
+
+This file documents the notification_recipients resource at the shell, one section per command. Every command is a subcommand of =notification_recipients=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 67A7CAC1-1757-5ABF-A270-530B3583D454
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.list=.
+
+#+name: notification_recipients-list
+#+begin_src ores-shell :tangle notification_recipients-list.ores :exports none
+notification_recipients list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 67175EFC-3240-51B0-9397-144D7F7C1DB0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients get <notification_id> <account_id>
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.get=.
+
+#+name: notification_recipients-get
+#+begin_src ores-shell :tangle notification_recipients-get.ores :exports none
+notification_recipients get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C39A471C-BCB5-519C-94D1-C2D050E46CBB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients get-many <notification_id> <account_id>
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.get_many=.
+
+#+name: notification_recipients-get-many
+#+begin_src ores-shell :tangle notification_recipients-get-many.ores :exports none
+notification_recipients get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B76FF6F8-BD4C-5C96-8AEE-8AECC6F2FCFC
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients add <notification_id> <account_id> <read_at> <cleared_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.put=.
+
+#+name: notification_recipients-add
+#+begin_src ores-shell :tangle notification_recipients-add.ores :exports none
+notification_recipients add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 93DE37C0-C56A-548A-8B27-A32F450CAD23
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients set <notification_id> <account_id> <read_at> <cleared_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.put=.
+
+#+name: notification_recipients-set
+#+begin_src ores-shell :tangle notification_recipients-set.ores :exports none
+notification_recipients set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 30C31230-291A-51EC-B678-80072005B4AC
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients put-many --count <n> <notification_id> <account_id> <read_at> <cleared_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.put_many=.
+
+#+name: notification_recipients-put-many
+#+begin_src ores-shell :tangle notification_recipients-put-many.ores :exports none
+notification_recipients put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 3C06D00C-F7B6-518E-8DC4-49E0E37774CE
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients delete <notification_id> <account_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.delete=.
+
+#+name: notification_recipients-delete
+#+begin_src ores-shell :tangle notification_recipients-delete.ores :exports none
+notification_recipients delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: EE2536AD-FB08-51FE-B91C-7D1BB8653327
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients delete-many <notification_id> <account_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.delete_many=.
+
+#+name: notification_recipients-delete-many
+#+begin_src ores-shell :tangle notification_recipients-delete-many.ores :exports none
+notification_recipients delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: 98ED734A-C8FA-5D6B-87BC-BE40E48B9C2B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_recipients by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_recipients.list_by_account_id=.
+
+#+name: notification_recipients-by-account-id
+#+begin_src ores-shell :tangle notification_recipients-by-account-id.ores :exports none
+notification_recipients by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

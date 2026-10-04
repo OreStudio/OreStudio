@@ -54,7 +54,9 @@ target_link_libraries(${lib_target_name}
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
 
-
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

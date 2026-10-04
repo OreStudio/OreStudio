@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05
+:END:
+#+title: ores.inbox.approval_decision_type
+#+description: Codegen entity model for the inbox =approval_decision_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: What a decision on an approval request does.
+#+entity_singular: approval_decision_type
+#+entity_plural: approval_decision_types
+#+entity_title: Approval Decision Type
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Reference data table of the decisions a person can take on an approval request:
+'approve', 'refuse', 'hold', 'resume', 'withdraw', 'reverse'.
+
+=requires_comment= states which decisions always need a comment, whatever the
+kind: a refusal and a reversal do, because the person who asked reads them. A
+kind can ask for more, through its =comment_on_approve= flag.
+
+Decision types are managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique decision code.
+
+Examples: 'approve', 'refuse'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the decision.
+
+#+begin_src cpp :name generator
+std::string(faker::word::verb()) + " Decision"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the decision does to the request.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** requires_comment
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether a decision of this type always needs a comment.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_approval_decision_types_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: decision_type
+:entity_plural_short:   decision_types
+:entity_singular_words: approval decision type
+:entity_plural_words:   approval decision types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dt
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| name             | Name             |
+| requires_comment | Requires Comment |
+| display_order    | Order            |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Presentation
+:PROPERTIES:
+:collection_name: approval_decision_types
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter decision code |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the lifecycle these decisions move.
+- [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] — the decision whose type this lookup names.

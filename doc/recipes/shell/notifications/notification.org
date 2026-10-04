@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 6B42670E-6575-56EF-B902-50793B3ABC6F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notifications commands from the shell?
+#+description: Every command the notifications submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notifications:
+
+This file documents the notifications resource at the shell, one section per command. Every command is a subcommand of =notifications=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A07A37CA-9769-5827-A7F7-6DD12841CD11
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notifications.list=.
+
+#+name: notifications-list
+#+begin_src ores-shell :tangle notifications-list.ores :exports none
+notifications list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: E22FEE0E-E7D0-5D30-8A8C-2D47BF2B3134
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications get <id>
+#+end_example
+
+It is addressed at =inbox.v1.notifications.get=.
+
+#+name: notifications-get
+#+begin_src ores-shell :tangle notifications-get.ores :exports none
+notifications get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 83B8C087-75CC-55B1-8F1C-A1799CF25AA7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications get-many <id>
+#+end_example
+
+It is addressed at =inbox.v1.notifications.get_many=.
+
+#+name: notifications-get-many
+#+begin_src ores-shell :tangle notifications-get-many.ores :exports none
+notifications get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 04DB1B21-A34F-5986-8532-0A489913A9FE
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications add <kind_code> <raised_by> <raised_at> <link_route> <link_id> <audience_permission_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notifications.put=.
+
+#+name: notifications-add
+#+begin_src ores-shell :tangle notifications-add.ores :exports none
+notifications add __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 75DD732F-051D-5BD2-95B4-4D7FE4CB0538
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications set <id> <kind_code> <raised_by> <raised_at> <link_route> <link_id> <audience_permission_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notifications.put=.
+
+#+name: notifications-set
+#+begin_src ores-shell :tangle notifications-set.ores :exports none
+notifications set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7CF1E034-4483-5A25-B80E-B5D2C6011F7A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications put-many --count <n> <id> <kind_code> <raised_by> <raised_at> <link_route> <link_id> <audience_permission_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notifications.put_many=.
+
+#+name: notifications-put-many
+#+begin_src ores-shell :tangle notifications-put-many.ores :exports none
+notifications put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 8DD72880-E0D9-5851-B3E4-26368B21732E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notifications.delete=.
+
+#+name: notifications-delete
+#+begin_src ores-shell :tangle notifications-delete.ores :exports none
+notifications delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: AF74558B-1850-52F1-A763-73E3E154A2FF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notifications.delete_many=.
+
+#+name: notifications-delete-many
+#+begin_src ores-shell :tangle notifications-delete-many.ores :exports none
+notifications delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-kind-code=
+:PROPERTIES:
+:ID: 8FC76A47-9F89-5AEB-86EE-284285D0E510
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications by-kind-code <kind_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notifications.list_by_kind_code=.
+
+#+name: notifications-by-kind-code
+#+begin_src ores-shell :tangle notifications-by-kind-code.ores :exports none
+notifications by-kind-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 59C21406-A3AC-5717-B231-F1A80C17DD85
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notifications_versions.list=.
+
+#+name: notifications-versions
+#+begin_src ores-shell :tangle notifications-versions.ores :exports none
+notifications versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 30098BBE-E550-5486-B76A-32448764C6C4
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notifications version <id> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.notifications_versions.get=.
+
+#+name: notifications-version
+#+begin_src ores-shell :tangle notifications-version.ores :exports none
+notifications version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

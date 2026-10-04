@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 1C966173-16C3-4B5D-A396-AD73DB80B7F8
-:ores.cpp.scaffold.enabled: true
 :END:
 #+title: ores.inbox.service
 #+description: NATS service entrypoint for approval requests and notifications.
@@ -43,6 +42,19 @@ the core's handlers.
 
 - =ores.inbox.core= — the handlers.
 - =ores.service= — the service host.
+
+* Build dependencies
+
+What the shared service profile cannot know, declared here rather than
+hand-edited into the generated build file. The event registrars bridge the
+database's change notifications onto the event bus, which the eventing core
+holds.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

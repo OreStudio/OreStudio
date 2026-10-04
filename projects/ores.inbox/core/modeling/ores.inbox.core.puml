@@ -1,0 +1,1133 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.inbox.core Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace inbox #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class approval_decision_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_approval_decisions(ores::nats::message msg) : void
+                +get_approval_decision(ores::nats::message msg) : void
+                +get_many_approval_decisions(ores::nats::message msg) : void
+                +put_approval_decision(ores::nats::message msg) : void
+                +put_many_approval_decisions(ores::nats::message msg) : void
+                +delete_approval_decision(ores::nats::message msg) : void
+                +delete_many_approval_decisions(ores::nats::message msg) : void
+                +list_by_request_id_approval_decisions(ores::nats::message msg) : void
+                +list_approval_decision_versions(ores::nats::message msg) : void
+                +get_approval_decision_version(ores::nats::message msg) : void
+            }
+            class approval_decision_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_approval_decision_types(ores::nats::message msg) : void
+                +get_approval_decision_type(ores::nats::message msg) : void
+                +get_many_approval_decision_types(ores::nats::message msg) : void
+                +put_approval_decision_type(ores::nats::message msg) : void
+                +put_many_approval_decision_types(ores::nats::message msg) : void
+                +delete_approval_decision_type(ores::nats::message msg) : void
+                +delete_many_approval_decision_types(ores::nats::message msg) : void
+                +list_approval_decision_type_versions(ores::nats::message msg) : void
+                +get_approval_decision_type_version(ores::nats::message msg) : void
+            }
+            class approval_kind_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_approval_kinds(ores::nats::message msg) : void
+                +get_approval_kind(ores::nats::message msg) : void
+                +get_many_approval_kinds(ores::nats::message msg) : void
+                +put_approval_kind(ores::nats::message msg) : void
+                +put_many_approval_kinds(ores::nats::message msg) : void
+                +delete_approval_kind(ores::nats::message msg) : void
+                +delete_many_approval_kinds(ores::nats::message msg) : void
+                +list_approval_kind_versions(ores::nats::message msg) : void
+                +get_approval_kind_version(ores::nats::message msg) : void
+            }
+            class approval_request_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_approval_requests(ores::nats::message msg) : void
+                +get_approval_request(ores::nats::message msg) : void
+                +get_many_approval_requests(ores::nats::message msg) : void
+                +put_approval_request(ores::nats::message msg) : void
+                +put_many_approval_requests(ores::nats::message msg) : void
+                +delete_approval_request(ores::nats::message msg) : void
+                +delete_many_approval_requests(ores::nats::message msg) : void
+                +list_by_kind_code_approval_requests(ores::nats::message msg) : void
+                +list_approval_request_versions(ores::nats::message msg) : void
+                +get_approval_request_version(ores::nats::message msg) : void
+            }
+            class approval_request_state_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_approval_request_states(ores::nats::message msg) : void
+                +get_approval_request_state(ores::nats::message msg) : void
+                +get_many_approval_request_states(ores::nats::message msg) : void
+                +put_approval_request_state(ores::nats::message msg) : void
+                +put_many_approval_request_states(ores::nats::message msg) : void
+                +delete_approval_request_state(ores::nats::message msg) : void
+                +delete_many_approval_request_states(ores::nats::message msg) : void
+                +list_approval_request_state_versions(ores::nats::message msg) : void
+                +get_approval_request_state_version(ores::nats::message msg) : void
+            }
+            class delivery_outcome_type_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_delivery_outcome_types(ores::nats::message msg) : void
+                +get_delivery_outcome_type(ores::nats::message msg) : void
+                +get_many_delivery_outcome_types(ores::nats::message msg) : void
+            }
+            class notification_argument_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_arguments(ores::nats::message msg) : void
+                +get_notification_argument(ores::nats::message msg) : void
+                +get_many_notification_arguments(ores::nats::message msg) : void
+                +put_notification_argument(ores::nats::message msg) : void
+                +put_many_notification_arguments(ores::nats::message msg) : void
+                +delete_notification_argument(ores::nats::message msg) : void
+                +delete_many_notification_arguments(ores::nats::message msg) : void
+                +list_by_notification_id_notification_arguments(ores::nats::message msg) : void
+            }
+            class notification_channel_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_channels(ores::nats::message msg) : void
+                +get_notification_channel(ores::nats::message msg) : void
+                +get_many_notification_channels(ores::nats::message msg) : void
+                +put_notification_channel(ores::nats::message msg) : void
+                +put_many_notification_channels(ores::nats::message msg) : void
+                +delete_notification_channel(ores::nats::message msg) : void
+                +delete_many_notification_channels(ores::nats::message msg) : void
+                +list_notification_channel_versions(ores::nats::message msg) : void
+                +get_notification_channel_version(ores::nats::message msg) : void
+            }
+            class notification_delivery_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_deliveries(ores::nats::message msg) : void
+                +get_notification_delivery(ores::nats::message msg) : void
+                +get_many_notification_deliveries(ores::nats::message msg) : void
+                +put_notification_delivery(ores::nats::message msg) : void
+                +put_many_notification_deliveries(ores::nats::message msg) : void
+                +delete_notification_delivery(ores::nats::message msg) : void
+                +delete_many_notification_deliveries(ores::nats::message msg) : void
+                +list_by_notification_id_notification_deliveries(ores::nats::message msg) : void
+                +list_notification_delivery_versions(ores::nats::message msg) : void
+                +get_notification_delivery_version(ores::nats::message msg) : void
+            }
+            class notification_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notifications(ores::nats::message msg) : void
+                +get_notification(ores::nats::message msg) : void
+                +get_many_notifications(ores::nats::message msg) : void
+                +put_notification(ores::nats::message msg) : void
+                +put_many_notifications(ores::nats::message msg) : void
+                +delete_notification(ores::nats::message msg) : void
+                +delete_many_notifications(ores::nats::message msg) : void
+                +list_by_kind_code_notifications(ores::nats::message msg) : void
+                +list_notification_versions(ores::nats::message msg) : void
+                +get_notification_version(ores::nats::message msg) : void
+            }
+            class notification_kind_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_kinds(ores::nats::message msg) : void
+                +get_notification_kind(ores::nats::message msg) : void
+                +get_many_notification_kinds(ores::nats::message msg) : void
+                +put_notification_kind(ores::nats::message msg) : void
+                +put_many_notification_kinds(ores::nats::message msg) : void
+                +delete_notification_kind(ores::nats::message msg) : void
+                +delete_many_notification_kinds(ores::nats::message msg) : void
+                +list_notification_kind_versions(ores::nats::message msg) : void
+                +get_notification_kind_version(ores::nats::message msg) : void
+            }
+            class notification_preference_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_preferences(ores::nats::message msg) : void
+                +get_notification_preference(ores::nats::message msg) : void
+                +get_many_notification_preferences(ores::nats::message msg) : void
+                +put_notification_preference(ores::nats::message msg) : void
+                +put_many_notification_preferences(ores::nats::message msg) : void
+                +delete_notification_preference(ores::nats::message msg) : void
+                +delete_many_notification_preferences(ores::nats::message msg) : void
+                +list_by_account_id_notification_preferences(ores::nats::message msg) : void
+                +list_notification_preference_versions(ores::nats::message msg) : void
+                +get_notification_preference_version(ores::nats::message msg) : void
+            }
+            class notification_recipient_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_notification_recipients(ores::nats::message msg) : void
+                +get_notification_recipient(ores::nats::message msg) : void
+                +get_many_notification_recipients(ores::nats::message msg) : void
+                +put_notification_recipient(ores::nats::message msg) : void
+                +put_many_notification_recipients(ores::nats::message msg) : void
+                +delete_notification_recipient(ores::nats::message msg) : void
+                +delete_many_notification_recipients(ores::nats::message msg) : void
+                +list_by_account_id_notification_recipients(ores::nats::message msg) : void
+            }
+        }
+        namespace repository #F2F2F2 {
+            class approval_decision_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +request_id : string
+                +decision_code : string
+                +decided_by : string
+                +decided_at : string
+                +comment : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class approval_decision_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const approval_decision_entity& v) : domain::approval_decision
+                +map(const domain::approval_decision& v) : approval_decision_entity
+                +map(const vector<approval_decision_entity>& v) : vector<domain::approval_decision>
+                +map(const vector<domain::approval_decision>& v) : vector<approval_decision_entity>
+            }
+            class approval_decision_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::approval_decision& v) : void
+                +write(context ctx, const vector<domain::approval_decision>& v) : void
+                +write(context ctx, const domain::approval_decision& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::approval_decision>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::approval_decision>
+                +read_latest(context ctx, const string& id) : vector<domain::approval_decision>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::approval_decision>
+                +read_all(context ctx, const string& id) : vector<domain::approval_decision>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::approval_decision>
+                +get_total_decision_count_by_request_id(context ctx, const string& request_id, const optional<messaging::approval_decisions_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_decision_count(context ctx, const optional<messaging::approval_decisions_filter>& filter) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::approval_decision& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::approval_decision& v, const ores::utility::domain::precondition& claim) : domain::approval_decision
+            }
+            class approval_decision_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +requires_comment : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class approval_decision_type_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const approval_decision_type_entity& v) : domain::approval_decision_type
+                +map(const domain::approval_decision_type& v) : approval_decision_type_entity
+                +map(const vector<approval_decision_type_entity>& v) : vector<domain::approval_decision_type>
+                +map(const vector<domain::approval_decision_type>& v) : vector<approval_decision_type_entity>
+            }
+            class approval_decision_type_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::approval_decision_type& v) : void
+                +write(context ctx, const vector<domain::approval_decision_type>& v) : void
+                +write(context ctx, const domain::approval_decision_type& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::approval_decision_type>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::approval_decision_type>
+                +read_latest(context ctx, const string& code) : vector<domain::approval_decision_type>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::approval_decision_type>
+                +read_all(context ctx, const string& code) : vector<domain::approval_decision_type>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::approval_decision_type>
+                +is_sortable(string_view field) : bool
+                +get_total_decision_type_count(context ctx, const optional<messaging::approval_decision_types_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::approval_decision_type& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::approval_decision_type& v, const ores::utility::domain::precondition& claim) : domain::approval_decision_type
+            }
+            class approval_kind_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +decide_permission_code : string
+                +allows_hold : bool
+                +comment_on_approve : bool
+                +expires_after_days : optional<int>
+                +approvals_required : int
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class approval_kind_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const approval_kind_entity& v) : domain::approval_kind
+                +map(const domain::approval_kind& v) : approval_kind_entity
+                +map(const vector<approval_kind_entity>& v) : vector<domain::approval_kind>
+                +map(const vector<domain::approval_kind>& v) : vector<approval_kind_entity>
+            }
+            class approval_kind_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::approval_kind& v) : void
+                +write(context ctx, const vector<domain::approval_kind>& v) : void
+                +write(context ctx, const domain::approval_kind& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::approval_kind>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::approval_kind>
+                +read_latest(context ctx, const string& code) : vector<domain::approval_kind>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::approval_kind>
+                +read_all(context ctx, const string& code) : vector<domain::approval_kind>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::approval_kind>
+                +is_sortable(string_view field) : bool
+                +get_total_kind_count(context ctx, const optional<messaging::approval_kinds_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::approval_kind& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::approval_kind& v, const ores::utility::domain::precondition& claim) : domain::approval_kind
+            }
+            class approval_request_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +kind_code : string
+                +state_code : string
+                +requested_by : string
+                +requested_at : string
+                +reason : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class approval_request_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const approval_request_entity& v) : domain::approval_request
+                +map(const domain::approval_request& v) : approval_request_entity
+                +map(const vector<approval_request_entity>& v) : vector<domain::approval_request>
+                +map(const vector<domain::approval_request>& v) : vector<approval_request_entity>
+            }
+            class approval_request_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::approval_request& v) : void
+                +write(context ctx, const vector<domain::approval_request>& v) : void
+                +write(context ctx, const domain::approval_request& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::approval_request>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::approval_request>
+                +read_latest(context ctx, const string& id) : vector<domain::approval_request>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::approval_request>
+                +read_all(context ctx, const string& id) : vector<domain::approval_request>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::approval_request>
+                +get_total_request_count_by_kind_code(context ctx, const string& kind_code, const optional<messaging::approval_requests_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_request_count(context ctx, const optional<messaging::approval_requests_filter>& filter) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::approval_request& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::approval_request& v, const ores::utility::domain::precondition& claim) : domain::approval_request
+            }
+            class approval_request_state_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +is_final : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class approval_request_state_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const approval_request_state_entity& v) : domain::approval_request_state
+                +map(const domain::approval_request_state& v) : approval_request_state_entity
+                +map(const vector<approval_request_state_entity>& v) : vector<domain::approval_request_state>
+                +map(const vector<domain::approval_request_state>& v) : vector<approval_request_state_entity>
+            }
+            class approval_request_state_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::approval_request_state& v) : void
+                +write(context ctx, const vector<domain::approval_request_state>& v) : void
+                +write(context ctx, const domain::approval_request_state& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::approval_request_state>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::approval_request_state>
+                +read_latest(context ctx, const string& code) : vector<domain::approval_request_state>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::approval_request_state>
+                +read_all(context ctx, const string& code) : vector<domain::approval_request_state>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::approval_request_state>
+                +is_sortable(string_view field) : bool
+                +get_total_state_count(context ctx, const optional<messaging::approval_request_states_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::approval_request_state& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::approval_request_state& v, const ores::utility::domain::precondition& claim) : domain::approval_request_state
+            }
+            class delivery_outcome_type_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +description : string
+            }
+            class delivery_outcome_type_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const delivery_outcome_type_entity& v) : domain::delivery_outcome_type
+                +map(const domain::delivery_outcome_type& v) : delivery_outcome_type_entity
+                +map(const vector<delivery_outcome_type_entity>& v) : vector<domain::delivery_outcome_type>
+                +map(const vector<domain::delivery_outcome_type>& v) : vector<delivery_outcome_type_entity>
+            }
+            class delivery_outcome_type_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::delivery_outcome_type& v) : void
+                +write(context ctx, const vector<domain::delivery_outcome_type>& v) : void
+                +write(context ctx, const domain::delivery_outcome_type& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::delivery_outcome_type>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::delivery_outcome_type>
+                +read_latest(context ctx, const string& code) : vector<domain::delivery_outcome_type>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::delivery_outcome_type>
+                +read_all(context ctx, const string& code) : vector<domain::delivery_outcome_type>
+                +is_sortable(string_view field) : bool
+                +get_total_delivery_outcome_type_count(context ctx, const optional<messaging::delivery_outcome_types_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::delivery_outcome_type& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::delivery_outcome_type& v, const ores::utility::domain::precondition& claim) : domain::delivery_outcome_type
+            }
+            class notification_argument_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +notification_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +name : string
+                +version : int
+                +value : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_argument_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_argument_entity& v) : domain::notification_argument
+                +map(const domain::notification_argument& v) : notification_argument_entity
+                +map(const vector<notification_argument_entity>& v) : vector<domain::notification_argument>
+                +map(const vector<domain::notification_argument>& v) : vector<notification_argument_entity>
+            }
+            class notification_argument_repository {
+                +remove_status : enum class
+                -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +notification_argument_repository(context ctx)
+                +sql() : string
+                +write(const domain::notification_argument& v) : void
+                +write(const vector<domain::notification_argument>& v) : void
+                +write(const domain::notification_argument& v, const ores::utility::domain::precondition& claim) : void
+                +write(const vector<domain::notification_argument>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest() : vector<domain::notification_argument>
+                +read_latest(uint32_t offset, uint32_t limit) : vector<domain::notification_argument>
+                +read_latest(const boost::uuids::uuid& notification_id, const string& name) : vector<domain::notification_argument>
+                +get_total_argument_count() : uint32_t
+                +read_latest_by_notification(const boost::uuids::uuid& notification_id) : vector<domain::notification_argument>
+                +read_latest_by_notification(const boost::uuids::uuid& notification_id, uint32_t offset, uint32_t limit) : vector<domain::notification_argument>
+                +get_total_argument_count_by_notification(const boost::uuids::uuid& notification_id) : uint32_t
+                +read_latest_by_name(const string& name) : vector<domain::notification_argument>
+                +get_total_argument_count_by_name(const string& name) : uint32_t
+                +remove(const boost::uuids::uuid& notification_id, const string& name) : void
+                +remove(const boost::uuids::uuid& notification_id, const string& name, optional<uint32_t> version) : remove_status
+                +remove(const vector<boost::uuids::uuid>& notification_ids, const vector<string>& names) : void
+                +remove_by_notification(const boost::uuids::uuid& notification_id) : void
+                -replace_claim(const domain::notification_argument& v) : ores::utility::domain::precondition
+                -apply_claim(const domain::notification_argument& v, const ores::utility::domain::precondition& claim) : domain::notification_argument
+            }
+            class notification_channel_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_channel_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_channel_entity& v) : domain::notification_channel
+                +map(const domain::notification_channel& v) : notification_channel_entity
+                +map(const vector<notification_channel_entity>& v) : vector<domain::notification_channel>
+                +map(const vector<domain::notification_channel>& v) : vector<notification_channel_entity>
+            }
+            class notification_channel_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::notification_channel& v) : void
+                +write(context ctx, const vector<domain::notification_channel>& v) : void
+                +write(context ctx, const domain::notification_channel& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::notification_channel>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::notification_channel>
+                +read_latest(context ctx, const string& code) : vector<domain::notification_channel>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::notification_channel>
+                +read_all(context ctx, const string& code) : vector<domain::notification_channel>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::notification_channel>
+                +is_sortable(string_view field) : bool
+                +get_total_channel_count(context ctx, const optional<messaging::notification_channels_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::notification_channel& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::notification_channel& v, const ores::utility::domain::precondition& claim) : domain::notification_channel
+            }
+            class notification_delivery_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +notification_id : string
+                +account_id : string
+                +channel_code : string
+                +attempted_at : string
+                +outcome : string
+                +failure_reason : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_delivery_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_delivery_entity& v) : domain::notification_delivery
+                +map(const domain::notification_delivery& v) : notification_delivery_entity
+                +map(const vector<notification_delivery_entity>& v) : vector<domain::notification_delivery>
+                +map(const vector<domain::notification_delivery>& v) : vector<notification_delivery_entity>
+            }
+            class notification_delivery_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::notification_delivery& v) : void
+                +write(context ctx, const vector<domain::notification_delivery>& v) : void
+                +write(context ctx, const domain::notification_delivery& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::notification_delivery>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::notification_delivery>
+                +read_latest(context ctx, const string& id) : vector<domain::notification_delivery>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::notification_delivery>
+                +read_all(context ctx, const string& id) : vector<domain::notification_delivery>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::notification_delivery>
+                +get_total_delivery_count_by_notification_id(context ctx, const string& notification_id, const optional<messaging::notification_deliveries_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_delivery_count(context ctx, const optional<messaging::notification_deliveries_filter>& filter) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::notification_delivery& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::notification_delivery& v, const ores::utility::domain::precondition& claim) : domain::notification_delivery
+            }
+            class notification_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +kind_code : string
+                +raised_by : string
+                +raised_at : string
+                +link_route : string
+                +link_id : optional<string>
+                +audience_permission_code : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_kind_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +name : string
+                +description : string
+                +message_key : string
+                +mail_optional : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_kind_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_kind_entity& v) : domain::notification_kind
+                +map(const domain::notification_kind& v) : notification_kind_entity
+                +map(const vector<notification_kind_entity>& v) : vector<domain::notification_kind>
+                +map(const vector<domain::notification_kind>& v) : vector<notification_kind_entity>
+            }
+            class notification_kind_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::notification_kind& v) : void
+                +write(context ctx, const vector<domain::notification_kind>& v) : void
+                +write(context ctx, const domain::notification_kind& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::notification_kind>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::notification_kind>
+                +read_latest(context ctx, const string& code) : vector<domain::notification_kind>
+                +read_latest(context ctx, const vector<string>& codes) : vector<domain::notification_kind>
+                +read_all(context ctx, const string& code) : vector<domain::notification_kind>
+                +read_at_version(context ctx, const string& code, uint32_t version) : optional<domain::notification_kind>
+                +is_sortable(string_view field) : bool
+                +get_total_notification_kind_count(context ctx, const optional<messaging::notification_kinds_filter>& filter) : uint32_t
+                +remove(context ctx, const string& code) : void
+                +remove(context ctx, const string& code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& codes) : void
+                -replace_claim(context ctx, const domain::notification_kind& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::notification_kind& v, const ores::utility::domain::precondition& claim) : domain::notification_kind
+            }
+            class notification_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_entity& v) : domain::notification
+                +map(const domain::notification& v) : notification_entity
+                +map(const vector<notification_entity>& v) : vector<domain::notification>
+                +map(const vector<domain::notification>& v) : vector<notification_entity>
+            }
+            class notification_preference_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +account_id : sqlgen::PrimaryKey<string>
+                +kind_code : sqlgen::PrimaryKey<string>
+                +channel_code : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_preference_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_preference_entity& v) : domain::notification_preference
+                +map(const domain::notification_preference& v) : notification_preference_entity
+                +map(const vector<notification_preference_entity>& v) : vector<domain::notification_preference>
+                +map(const vector<domain::notification_preference>& v) : vector<notification_preference_entity>
+            }
+            class notification_preference_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::notification_preference& v) : void
+                +write(context ctx, const vector<domain::notification_preference>& v) : void
+                +write(context ctx, const domain::notification_preference& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::notification_preference>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::notification_preference>
+                +read_latest(context ctx, const string& account_id, const string& kind_code, const string& channel_code) : vector<domain::notification_preference>
+                +read_latest(context ctx, const vector<string>& account_ids, const vector<string>& kind_codes, const vector<string>& channel_codes) : vector<domain::notification_preference>
+                +read_all(context ctx, const string& account_id, const string& kind_code, const string& channel_code) : vector<domain::notification_preference>
+                +read_at_version(context ctx, const string& account_id, const string& kind_code, const string& channel_code, uint32_t version) : optional<domain::notification_preference>
+                +get_total_preference_count_by_account_id(context ctx, const string& account_id, const optional<messaging::notification_preferences_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_preference_count(context ctx, const optional<messaging::notification_preferences_filter>& filter) : uint32_t
+                +remove(context ctx, const string& account_id, const string& kind_code, const string& channel_code) : void
+                +remove(context ctx, const string& account_id, const string& kind_code, const string& channel_code, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& account_ids, const vector<string>& kind_codes, const vector<string>& channel_codes) : void
+                -replace_claim(context ctx, const domain::notification_preference& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::notification_preference& v, const ores::utility::domain::precondition& claim) : domain::notification_preference
+            }
+            class notification_recipient_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +notification_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +account_id : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class notification_recipient_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const notification_recipient_entity& v) : domain::notification_recipient
+                +map(const domain::notification_recipient& v) : notification_recipient_entity
+                +map(const vector<notification_recipient_entity>& v) : vector<domain::notification_recipient>
+                +map(const vector<domain::notification_recipient>& v) : vector<notification_recipient_entity>
+            }
+            class notification_recipient_repository {
+                +remove_status : enum class
+                -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +notification_recipient_repository(context ctx)
+                +sql() : string
+                +write(const domain::notification_recipient& v) : void
+                +write(const vector<domain::notification_recipient>& v) : void
+                +write(const domain::notification_recipient& v, const ores::utility::domain::precondition& claim) : void
+                +write(const vector<domain::notification_recipient>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest() : vector<domain::notification_recipient>
+                +read_latest(uint32_t offset, uint32_t limit) : vector<domain::notification_recipient>
+                +read_latest(const boost::uuids::uuid& notification_id, const boost::uuids::uuid& account_id) : vector<domain::notification_recipient>
+                +get_total_recipient_count() : uint32_t
+                +read_latest_by_notification(const boost::uuids::uuid& notification_id) : vector<domain::notification_recipient>
+                +get_total_recipient_count_by_notification(const boost::uuids::uuid& notification_id) : uint32_t
+                +read_latest_by_account(const boost::uuids::uuid& account_id) : vector<domain::notification_recipient>
+                +read_latest_by_account(const boost::uuids::uuid& account_id, uint32_t offset, uint32_t limit) : vector<domain::notification_recipient>
+                +get_total_recipient_count_by_account(const boost::uuids::uuid& account_id) : uint32_t
+                +remove(const boost::uuids::uuid& notification_id, const boost::uuids::uuid& account_id) : void
+                +remove(const boost::uuids::uuid& notification_id, const boost::uuids::uuid& account_id, optional<uint32_t> version) : remove_status
+                +remove(const vector<boost::uuids::uuid>& notification_ids, const vector<boost::uuids::uuid>& account_ids) : void
+                +remove_by_notification(const boost::uuids::uuid& notification_id) : void
+                -replace_claim(const domain::notification_recipient& v) : ores::utility::domain::precondition
+                -apply_claim(const domain::notification_recipient& v, const ores::utility::domain::precondition& claim) : domain::notification_recipient
+            }
+            class notification_repository {
+                +remove_status : enum class
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::notification& v) : void
+                +write(context ctx, const vector<domain::notification>& v) : void
+                +write(context ctx, const domain::notification& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::notification>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::notification>
+                +read_latest(context ctx, const string& id) : vector<domain::notification>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::notification>
+                +read_all(context ctx, const string& id) : vector<domain::notification>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::notification>
+                +get_total_notification_count_by_kind_code(context ctx, const string& kind_code, const optional<messaging::notifications_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_notification_count(context ctx, const optional<messaging::notifications_filter>& filter) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::notification& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::notification& v, const ores::utility::domain::precondition& claim) : domain::notification
+            }
+        }
+        namespace service #F2F2F2 {
+            class approval_decision_service {
+                -ctx_ : context
+                -repo_ : repository::approval_decision_repository
+                -lg() : [[nodiscard]] static auto&
+                +approval_decision_service(context ctx)
+                +list_approval_decisions(const messaging::list_approval_decisions_request& request) : messaging::list_approval_decisions_response
+                +get_approval_decision(const messaging::get_approval_decision_request& request) : messaging::get_approval_decision_response
+                +get_many_approval_decisions(const messaging::get_many_approval_decisions_request& request) : messaging::get_many_approval_decisions_response
+                +put_approval_decision(const messaging::put_approval_decision_request& request) : messaging::put_approval_decision_response
+                +put_many_approval_decisions(const messaging::put_many_approval_decisions_request& request) : messaging::put_many_approval_decisions_response
+                +delete_approval_decision(const messaging::delete_approval_decision_request& request) : messaging::delete_approval_decision_response
+                +delete_many_approval_decisions(const messaging::delete_many_approval_decisions_request& request) : messaging::delete_many_approval_decisions_response
+                +list_by_request_id_approval_decisions(const messaging::list_by_request_id_approval_decisions_request& request) : messaging::list_by_request_id_approval_decisions_response
+                +list_approval_decision_versions(const messaging::list_approval_decision_versions_request& request) : messaging::list_approval_decision_versions_response
+                +get_approval_decision_version(const messaging::get_approval_decision_version_request& request) : messaging::get_approval_decision_version_response
+                +list_decisions(uint32_t offset, uint32_t limit) : vector<domain::approval_decision>
+                +count_decisions() : uint32_t
+                +list_decisions_by_request_id(const string& request_id, uint32_t offset, uint32_t limit) : vector<domain::approval_decision>
+                +count_decisions_by_request_id(const string& request_id) : uint32_t
+                +get_decision_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::approval_decision>
+                +get_decision(const boost::uuids::uuid& id) : optional<domain::approval_decision>
+                +get_decisions(const vector<string>& ids) : vector<domain::approval_decision>
+                +save_decision(const domain::approval_decision& decision) : void
+                +save_decisions(const vector<domain::approval_decision>& decisions) : void
+                +delete_decision(const boost::uuids::uuid& id) : void
+                +delete_decisions(const vector<string>& ids) : void
+                +get_decision_history(const string& id) : vector<domain::approval_decision>
+                -prepare_change(const messaging::approval_decision_change& change, const ores::utility::domain::change_intent& intent, domain::approval_decision& out) : ores::utility::domain::result
+            }
+            class approval_decision_type_service {
+                -ctx_ : context
+                -repo_ : repository::approval_decision_type_repository
+                -lg() : [[nodiscard]] static auto&
+                +approval_decision_type_service(context ctx)
+                +list_approval_decision_types(const messaging::list_approval_decision_types_request& request) : messaging::list_approval_decision_types_response
+                +get_approval_decision_type(const messaging::get_approval_decision_type_request& request) : messaging::get_approval_decision_type_response
+                +get_many_approval_decision_types(const messaging::get_many_approval_decision_types_request& request) : messaging::get_many_approval_decision_types_response
+                +put_approval_decision_type(const messaging::put_approval_decision_type_request& request) : messaging::put_approval_decision_type_response
+                +put_many_approval_decision_types(const messaging::put_many_approval_decision_types_request& request) : messaging::put_many_approval_decision_types_response
+                +delete_approval_decision_type(const messaging::delete_approval_decision_type_request& request) : messaging::delete_approval_decision_type_response
+                +delete_many_approval_decision_types(const messaging::delete_many_approval_decision_types_request& request) : messaging::delete_many_approval_decision_types_response
+                +list_approval_decision_type_versions(const messaging::list_approval_decision_type_versions_request& request) : messaging::list_approval_decision_type_versions_response
+                +get_approval_decision_type_version(const messaging::get_approval_decision_type_version_request& request) : messaging::get_approval_decision_type_version_response
+                +list_decision_types(uint32_t offset, uint32_t limit) : vector<domain::approval_decision_type>
+                +count_decision_types() : uint32_t
+                +get_decision_type_at_version(const string& code, uint32_t version) : optional<domain::approval_decision_type>
+                +find_decision_type(const string& code) : optional<domain::approval_decision_type>
+                +get_decision_types(const vector<string>& codes) : vector<domain::approval_decision_type>
+                +save_decision_type(const domain::approval_decision_type& decision_type) : void
+                +save_decision_types(const vector<domain::approval_decision_type>& decision_types) : void
+                +delete_decision_type(const string& code) : void
+                +delete_decision_types(const vector<string>& codes) : void
+                +get_decision_type_history(const string& code) : vector<domain::approval_decision_type>
+                -prepare_change(const messaging::approval_decision_type_change& change, const ores::utility::domain::change_intent& intent, domain::approval_decision_type& out) : ores::utility::domain::result
+            }
+            class approval_kind_service {
+                -ctx_ : context
+                -repo_ : repository::approval_kind_repository
+                -lg() : [[nodiscard]] static auto&
+                +approval_kind_service(context ctx)
+                +list_approval_kinds(const messaging::list_approval_kinds_request& request) : messaging::list_approval_kinds_response
+                +get_approval_kind(const messaging::get_approval_kind_request& request) : messaging::get_approval_kind_response
+                +get_many_approval_kinds(const messaging::get_many_approval_kinds_request& request) : messaging::get_many_approval_kinds_response
+                +put_approval_kind(const messaging::put_approval_kind_request& request) : messaging::put_approval_kind_response
+                +put_many_approval_kinds(const messaging::put_many_approval_kinds_request& request) : messaging::put_many_approval_kinds_response
+                +delete_approval_kind(const messaging::delete_approval_kind_request& request) : messaging::delete_approval_kind_response
+                +delete_many_approval_kinds(const messaging::delete_many_approval_kinds_request& request) : messaging::delete_many_approval_kinds_response
+                +list_approval_kind_versions(const messaging::list_approval_kind_versions_request& request) : messaging::list_approval_kind_versions_response
+                +get_approval_kind_version(const messaging::get_approval_kind_version_request& request) : messaging::get_approval_kind_version_response
+                +list_kinds(uint32_t offset, uint32_t limit) : vector<domain::approval_kind>
+                +count_kinds() : uint32_t
+                +get_kind_at_version(const string& code, uint32_t version) : optional<domain::approval_kind>
+                +find_kind(const string& code) : optional<domain::approval_kind>
+                +get_kinds(const vector<string>& codes) : vector<domain::approval_kind>
+                +save_kind(const domain::approval_kind& kind) : void
+                +save_kinds(const vector<domain::approval_kind>& kinds) : void
+                +delete_kind(const string& code) : void
+                +delete_kinds(const vector<string>& codes) : void
+                +get_kind_history(const string& code) : vector<domain::approval_kind>
+                -prepare_change(const messaging::approval_kind_change& change, const ores::utility::domain::change_intent& intent, domain::approval_kind& out) : ores::utility::domain::result
+            }
+            class approval_request_service {
+                -ctx_ : context
+                -repo_ : repository::approval_request_repository
+                -lg() : [[nodiscard]] static auto&
+                +approval_request_service(context ctx)
+                +list_approval_requests(const messaging::list_approval_requests_request& request) : messaging::list_approval_requests_response
+                +get_approval_request(const messaging::get_approval_request_request& request) : messaging::get_approval_request_response
+                +get_many_approval_requests(const messaging::get_many_approval_requests_request& request) : messaging::get_many_approval_requests_response
+                +put_approval_request(const messaging::put_approval_request_request& request) : messaging::put_approval_request_response
+                +put_many_approval_requests(const messaging::put_many_approval_requests_request& request) : messaging::put_many_approval_requests_response
+                +delete_approval_request(const messaging::delete_approval_request_request& request) : messaging::delete_approval_request_response
+                +delete_many_approval_requests(const messaging::delete_many_approval_requests_request& request) : messaging::delete_many_approval_requests_response
+                +list_by_kind_code_approval_requests(const messaging::list_by_kind_code_approval_requests_request& request) : messaging::list_by_kind_code_approval_requests_response
+                +list_approval_request_versions(const messaging::list_approval_request_versions_request& request) : messaging::list_approval_request_versions_response
+                +get_approval_request_version(const messaging::get_approval_request_version_request& request) : messaging::get_approval_request_version_response
+                +list_requests(uint32_t offset, uint32_t limit) : vector<domain::approval_request>
+                +count_requests() : uint32_t
+                +list_requests_by_kind_code(const string& kind_code, uint32_t offset, uint32_t limit) : vector<domain::approval_request>
+                +count_requests_by_kind_code(const string& kind_code) : uint32_t
+                +get_request_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::approval_request>
+                +get_request(const boost::uuids::uuid& id) : optional<domain::approval_request>
+                +get_requests(const vector<string>& ids) : vector<domain::approval_request>
+                +save_request(const domain::approval_request& request) : void
+                +save_requests(const vector<domain::approval_request>& requests) : void
+                +delete_request(const boost::uuids::uuid& id) : void
+                +delete_requests(const vector<string>& ids) : void
+                +get_request_history(const string& id) : vector<domain::approval_request>
+                -prepare_change(const messaging::approval_request_change& change, const ores::utility::domain::change_intent& intent, domain::approval_request& out) : ores::utility::domain::result
+            }
+            class approval_request_state_service {
+                -ctx_ : context
+                -repo_ : repository::approval_request_state_repository
+                -lg() : [[nodiscard]] static auto&
+                +approval_request_state_service(context ctx)
+                +list_approval_request_states(const messaging::list_approval_request_states_request& request) : messaging::list_approval_request_states_response
+                +get_approval_request_state(const messaging::get_approval_request_state_request& request) : messaging::get_approval_request_state_response
+                +get_many_approval_request_states(const messaging::get_many_approval_request_states_request& request) : messaging::get_many_approval_request_states_response
+                +put_approval_request_state(const messaging::put_approval_request_state_request& request) : messaging::put_approval_request_state_response
+                +put_many_approval_request_states(const messaging::put_many_approval_request_states_request& request) : messaging::put_many_approval_request_states_response
+                +delete_approval_request_state(const messaging::delete_approval_request_state_request& request) : messaging::delete_approval_request_state_response
+                +delete_many_approval_request_states(const messaging::delete_many_approval_request_states_request& request) : messaging::delete_many_approval_request_states_response
+                +list_approval_request_state_versions(const messaging::list_approval_request_state_versions_request& request) : messaging::list_approval_request_state_versions_response
+                +get_approval_request_state_version(const messaging::get_approval_request_state_version_request& request) : messaging::get_approval_request_state_version_response
+                +list_states(uint32_t offset, uint32_t limit) : vector<domain::approval_request_state>
+                +count_states() : uint32_t
+                +get_state_at_version(const string& code, uint32_t version) : optional<domain::approval_request_state>
+                +find_state(const string& code) : optional<domain::approval_request_state>
+                +get_states(const vector<string>& codes) : vector<domain::approval_request_state>
+                +save_state(const domain::approval_request_state& state) : void
+                +save_states(const vector<domain::approval_request_state>& states) : void
+                +delete_state(const string& code) : void
+                +delete_states(const vector<string>& codes) : void
+                +get_state_history(const string& code) : vector<domain::approval_request_state>
+                -prepare_change(const messaging::approval_request_state_change& change, const ores::utility::domain::change_intent& intent, domain::approval_request_state& out) : ores::utility::domain::result
+            }
+            class delivery_outcome_type_service {
+                -ctx_ : context
+                -repo_ : repository::delivery_outcome_type_repository
+                -lg() : [[nodiscard]] static auto&
+                +delivery_outcome_type_service(context ctx)
+                +list_delivery_outcome_types(const messaging::list_delivery_outcome_types_request& request) : messaging::list_delivery_outcome_types_response
+                +get_delivery_outcome_type(const messaging::get_delivery_outcome_type_request& request) : messaging::get_delivery_outcome_type_response
+                +get_many_delivery_outcome_types(const messaging::get_many_delivery_outcome_types_request& request) : messaging::get_many_delivery_outcome_types_response
+                +list_delivery_outcome_types(uint32_t offset, uint32_t limit) : vector<domain::delivery_outcome_type>
+                +count_delivery_outcome_types() : uint32_t
+                +get_delivery_outcome_type(const string& code) : optional<domain::delivery_outcome_type>
+                +get_delivery_outcome_types(const vector<string>& codes) : vector<domain::delivery_outcome_type>
+                +save_delivery_outcome_type(const domain::delivery_outcome_type& delivery_outcome_type) : void
+                +save_delivery_outcome_types(const vector<domain::delivery_outcome_type>& delivery_outcome_types) : void
+                +delete_delivery_outcome_type(const string& code) : void
+                +delete_delivery_outcome_types(const vector<string>& codes) : void
+            }
+            class notification_argument_service {
+                -ctx_ : context
+                -repo_ : repository::notification_argument_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_argument_service(context ctx)
+                +list_notification_arguments(const messaging::list_notification_arguments_request& request) : messaging::list_notification_arguments_response
+                +get_notification_argument(const messaging::get_notification_argument_request& request) : messaging::get_notification_argument_response
+                +get_many_notification_arguments(const messaging::get_many_notification_arguments_request& request) : messaging::get_many_notification_arguments_response
+                +put_notification_argument(const messaging::put_notification_argument_request& request) : messaging::put_notification_argument_response
+                +put_many_notification_arguments(const messaging::put_many_notification_arguments_request& request) : messaging::put_many_notification_arguments_response
+                +delete_notification_argument(const messaging::delete_notification_argument_request& request) : messaging::delete_notification_argument_response
+                +delete_many_notification_arguments(const messaging::delete_many_notification_arguments_request& request) : messaging::delete_many_notification_arguments_response
+                +list_by_notification_id_notification_arguments(const messaging::list_by_notification_id_notification_arguments_request& request) : messaging::list_by_notification_id_notification_arguments_response
+                -prepare_change(const messaging::notification_argument_change& change, const ores::utility::domain::change_intent& intent, domain::notification_argument& out) : ores::utility::domain::result
+            }
+            class notification_channel_service {
+                -ctx_ : context
+                -repo_ : repository::notification_channel_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_channel_service(context ctx)
+                +list_notification_channels(const messaging::list_notification_channels_request& request) : messaging::list_notification_channels_response
+                +get_notification_channel(const messaging::get_notification_channel_request& request) : messaging::get_notification_channel_response
+                +get_many_notification_channels(const messaging::get_many_notification_channels_request& request) : messaging::get_many_notification_channels_response
+                +put_notification_channel(const messaging::put_notification_channel_request& request) : messaging::put_notification_channel_response
+                +put_many_notification_channels(const messaging::put_many_notification_channels_request& request) : messaging::put_many_notification_channels_response
+                +delete_notification_channel(const messaging::delete_notification_channel_request& request) : messaging::delete_notification_channel_response
+                +delete_many_notification_channels(const messaging::delete_many_notification_channels_request& request) : messaging::delete_many_notification_channels_response
+                +list_notification_channel_versions(const messaging::list_notification_channel_versions_request& request) : messaging::list_notification_channel_versions_response
+                +get_notification_channel_version(const messaging::get_notification_channel_version_request& request) : messaging::get_notification_channel_version_response
+                +list_channels(uint32_t offset, uint32_t limit) : vector<domain::notification_channel>
+                +count_channels() : uint32_t
+                +get_channel_at_version(const string& code, uint32_t version) : optional<domain::notification_channel>
+                +find_channel(const string& code) : optional<domain::notification_channel>
+                +get_channels(const vector<string>& codes) : vector<domain::notification_channel>
+                +save_channel(const domain::notification_channel& channel) : void
+                +save_channels(const vector<domain::notification_channel>& channels) : void
+                +delete_channel(const string& code) : void
+                +delete_channels(const vector<string>& codes) : void
+                +get_channel_history(const string& code) : vector<domain::notification_channel>
+                -prepare_change(const messaging::notification_channel_change& change, const ores::utility::domain::change_intent& intent, domain::notification_channel& out) : ores::utility::domain::result
+            }
+            class notification_delivery_service {
+                -ctx_ : context
+                -repo_ : repository::notification_delivery_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_delivery_service(context ctx)
+                +list_notification_deliveries(const messaging::list_notification_deliveries_request& request) : messaging::list_notification_deliveries_response
+                +get_notification_delivery(const messaging::get_notification_delivery_request& request) : messaging::get_notification_delivery_response
+                +get_many_notification_deliveries(const messaging::get_many_notification_deliveries_request& request) : messaging::get_many_notification_deliveries_response
+                +put_notification_delivery(const messaging::put_notification_delivery_request& request) : messaging::put_notification_delivery_response
+                +put_many_notification_deliveries(const messaging::put_many_notification_deliveries_request& request) : messaging::put_many_notification_deliveries_response
+                +delete_notification_delivery(const messaging::delete_notification_delivery_request& request) : messaging::delete_notification_delivery_response
+                +delete_many_notification_deliveries(const messaging::delete_many_notification_deliveries_request& request) : messaging::delete_many_notification_deliveries_response
+                +list_by_notification_id_notification_deliveries(const messaging::list_by_notification_id_notification_deliveries_request& request) : messaging::list_by_notification_id_notification_deliveries_response
+                +list_notification_delivery_versions(const messaging::list_notification_delivery_versions_request& request) : messaging::list_notification_delivery_versions_response
+                +get_notification_delivery_version(const messaging::get_notification_delivery_version_request& request) : messaging::get_notification_delivery_version_response
+                +list_deliveries(uint32_t offset, uint32_t limit) : vector<domain::notification_delivery>
+                +count_deliveries() : uint32_t
+                +list_deliveries_by_notification_id(const string& notification_id, uint32_t offset, uint32_t limit) : vector<domain::notification_delivery>
+                +count_deliveries_by_notification_id(const string& notification_id) : uint32_t
+                +get_delivery_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::notification_delivery>
+                +get_delivery(const boost::uuids::uuid& id) : optional<domain::notification_delivery>
+                +get_deliveries(const vector<string>& ids) : vector<domain::notification_delivery>
+                +save_delivery(const domain::notification_delivery& delivery) : void
+                +save_deliveries(const vector<domain::notification_delivery>& deliveries) : void
+                +delete_delivery(const boost::uuids::uuid& id) : void
+                +delete_deliveries(const vector<string>& ids) : void
+                +get_delivery_history(const string& id) : vector<domain::notification_delivery>
+                -prepare_change(const messaging::notification_delivery_change& change, const ores::utility::domain::change_intent& intent, domain::notification_delivery& out) : ores::utility::domain::result
+            }
+            class notification_kind_service {
+                -ctx_ : context
+                -repo_ : repository::notification_kind_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_kind_service(context ctx)
+                +list_notification_kinds(const messaging::list_notification_kinds_request& request) : messaging::list_notification_kinds_response
+                +get_notification_kind(const messaging::get_notification_kind_request& request) : messaging::get_notification_kind_response
+                +get_many_notification_kinds(const messaging::get_many_notification_kinds_request& request) : messaging::get_many_notification_kinds_response
+                +put_notification_kind(const messaging::put_notification_kind_request& request) : messaging::put_notification_kind_response
+                +put_many_notification_kinds(const messaging::put_many_notification_kinds_request& request) : messaging::put_many_notification_kinds_response
+                +delete_notification_kind(const messaging::delete_notification_kind_request& request) : messaging::delete_notification_kind_response
+                +delete_many_notification_kinds(const messaging::delete_many_notification_kinds_request& request) : messaging::delete_many_notification_kinds_response
+                +list_notification_kind_versions(const messaging::list_notification_kind_versions_request& request) : messaging::list_notification_kind_versions_response
+                +get_notification_kind_version(const messaging::get_notification_kind_version_request& request) : messaging::get_notification_kind_version_response
+                +list_notification_kinds(uint32_t offset, uint32_t limit) : vector<domain::notification_kind>
+                +count_notification_kinds() : uint32_t
+                +get_notification_kind_at_version(const string& code, uint32_t version) : optional<domain::notification_kind>
+                +find_notification_kind(const string& code) : optional<domain::notification_kind>
+                +get_notification_kinds(const vector<string>& codes) : vector<domain::notification_kind>
+                +save_notification_kind(const domain::notification_kind& notification_kind) : void
+                +save_notification_kinds(const vector<domain::notification_kind>& notification_kinds) : void
+                +delete_notification_kind(const string& code) : void
+                +delete_notification_kinds(const vector<string>& codes) : void
+                +get_notification_kind_history(const string& code) : vector<domain::notification_kind>
+                -prepare_change(const messaging::notification_kind_change& change, const ores::utility::domain::change_intent& intent, domain::notification_kind& out) : ores::utility::domain::result
+            }
+            class notification_preference_service {
+                -ctx_ : context
+                -repo_ : repository::notification_preference_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_preference_service(context ctx)
+                +list_notification_preferences(const messaging::list_notification_preferences_request& request) : messaging::list_notification_preferences_response
+                +get_notification_preference(const messaging::get_notification_preference_request& request) : messaging::get_notification_preference_response
+                +get_many_notification_preferences(const messaging::get_many_notification_preferences_request& request) : messaging::get_many_notification_preferences_response
+                +put_notification_preference(const messaging::put_notification_preference_request& request) : messaging::put_notification_preference_response
+                +put_many_notification_preferences(const messaging::put_many_notification_preferences_request& request) : messaging::put_many_notification_preferences_response
+                +delete_notification_preference(const messaging::delete_notification_preference_request& request) : messaging::delete_notification_preference_response
+                +delete_many_notification_preferences(const messaging::delete_many_notification_preferences_request& request) : messaging::delete_many_notification_preferences_response
+                +list_by_account_id_notification_preferences(const messaging::list_by_account_id_notification_preferences_request& request) : messaging::list_by_account_id_notification_preferences_response
+                +list_notification_preference_versions(const messaging::list_notification_preference_versions_request& request) : messaging::list_notification_preference_versions_response
+                +get_notification_preference_version(const messaging::get_notification_preference_version_request& request) : messaging::get_notification_preference_version_response
+                +list_preferences(uint32_t offset, uint32_t limit) : vector<domain::notification_preference>
+                +count_preferences() : uint32_t
+                +list_preferences_by_account_id(const string& account_id, uint32_t offset, uint32_t limit) : vector<domain::notification_preference>
+                +count_preferences_by_account_id(const string& account_id) : uint32_t
+                +get_preference_at_version(const string& account_id, const string& kind_code, const string& channel_code, uint32_t version) : optional<domain::notification_preference>
+                +get_preference(const string& account_id, const string& kind_code, const string& channel_code) : optional<domain::notification_preference>
+                +get_preferences(const vector<string>& account_ids, const vector<string>& kind_codes, const vector<string>& channel_codes) : vector<domain::notification_preference>
+                +save_preference(const domain::notification_preference& preference) : void
+                +save_preferences(const vector<domain::notification_preference>& preferences) : void
+                +delete_preference(const string& account_id, const string& kind_code, const string& channel_code) : void
+                +delete_preferences(const vector<string>& account_ids, const vector<string>& kind_codes, const vector<string>& channel_codes) : void
+                +get_preference_history(const string& account_id, const string& kind_code, const string& channel_code) : vector<domain::notification_preference>
+                -prepare_change(const messaging::notification_preference_change& change, const ores::utility::domain::change_intent& intent, domain::notification_preference& out) : ores::utility::domain::result
+            }
+            class notification_recipient_service {
+                -ctx_ : context
+                -repo_ : repository::notification_recipient_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_recipient_service(context ctx)
+                +list_notification_recipients(const messaging::list_notification_recipients_request& request) : messaging::list_notification_recipients_response
+                +get_notification_recipient(const messaging::get_notification_recipient_request& request) : messaging::get_notification_recipient_response
+                +get_many_notification_recipients(const messaging::get_many_notification_recipients_request& request) : messaging::get_many_notification_recipients_response
+                +put_notification_recipient(const messaging::put_notification_recipient_request& request) : messaging::put_notification_recipient_response
+                +put_many_notification_recipients(const messaging::put_many_notification_recipients_request& request) : messaging::put_many_notification_recipients_response
+                +delete_notification_recipient(const messaging::delete_notification_recipient_request& request) : messaging::delete_notification_recipient_response
+                +delete_many_notification_recipients(const messaging::delete_many_notification_recipients_request& request) : messaging::delete_many_notification_recipients_response
+                +list_by_account_id_notification_recipients(const messaging::list_by_account_id_notification_recipients_request& request) : messaging::list_by_account_id_notification_recipients_response
+                -prepare_change(const messaging::notification_recipient_change& change, const ores::utility::domain::change_intent& intent, domain::notification_recipient& out) : ores::utility::domain::result
+            }
+            class notification_service {
+                -ctx_ : context
+                -repo_ : repository::notification_repository
+                -lg() : [[nodiscard]] static auto&
+                +notification_service(context ctx)
+                +list_notifications(const messaging::list_notifications_request& request) : messaging::list_notifications_response
+                +get_notification(const messaging::get_notification_request& request) : messaging::get_notification_response
+                +get_many_notifications(const messaging::get_many_notifications_request& request) : messaging::get_many_notifications_response
+                +put_notification(const messaging::put_notification_request& request) : messaging::put_notification_response
+                +put_many_notifications(const messaging::put_many_notifications_request& request) : messaging::put_many_notifications_response
+                +delete_notification(const messaging::delete_notification_request& request) : messaging::delete_notification_response
+                +delete_many_notifications(const messaging::delete_many_notifications_request& request) : messaging::delete_many_notifications_response
+                +list_by_kind_code_notifications(const messaging::list_by_kind_code_notifications_request& request) : messaging::list_by_kind_code_notifications_response
+                +list_notification_versions(const messaging::list_notification_versions_request& request) : messaging::list_notification_versions_response
+                +get_notification_version(const messaging::get_notification_version_request& request) : messaging::get_notification_version_response
+                +list_notifications(uint32_t offset, uint32_t limit) : vector<domain::notification>
+                +count_notifications() : uint32_t
+                +list_notifications_by_kind_code(const string& kind_code, uint32_t offset, uint32_t limit) : vector<domain::notification>
+                +count_notifications_by_kind_code(const string& kind_code) : uint32_t
+                +get_notification_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::notification>
+                +get_notification(const boost::uuids::uuid& id) : optional<domain::notification>
+                +get_notifications(const vector<string>& ids) : vector<domain::notification>
+                +save_notification(const domain::notification& notification) : void
+                +save_notifications(const vector<domain::notification>& notifications) : void
+                +delete_notification(const boost::uuids::uuid& id) : void
+                +delete_notifications(const vector<string>& ids) : void
+                +get_notification_history(const string& id) : vector<domain::notification>
+                -prepare_change(const messaging::notification_change& change, const ores::utility::domain::change_intent& intent, domain::notification& out) : ores::utility::domain::result
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.inbox.core.puml"
+' End:
+@enduml

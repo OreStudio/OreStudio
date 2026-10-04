@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: D246CF5B-132C-4F85-874F-65D8871C0231
+:END:
+#+title: ores.inbox.notification_kind
+#+description: Codegen entity model for the inbox =notification_kind= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: What kind of thing a notification tells a person.
+#+entity_singular: notification_kind
+#+entity_plural: notification_kinds
+#+entity_title: Notification Kind
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Reference data table of the kinds of notification. Examples:
+'inbox.approval_waiting', 'inbox.approval_decided'.
+
+A notification carries a kind and its values, not a finished sentence. The kind
+names the message key the screen renders in the reader's language. A component
+adds a kind with a seed row and needs no change to the subsystem.
+
+=mail_optional= says whether a person may turn the mail copy of this kind off.
+A password recovery is a kind a person cannot turn off. The in-application copy
+is always kept.
+
+Kinds are managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique kind code, prefixed by the component that raises it.
+
+Examples: 'inbox.approval_waiting'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the kind.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Notice"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the kind tells a person.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** message_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The key of the message the screen renders, with the notification's arguments,
+in the reader's language.
+
+Examples: 'notification.inbox.approval_waiting'.
+
+#+begin_src cpp :name generator
+std::string("notification.") + std::string(faker::word::noun())
+#+end_src
+
+** mail_optional
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       true
+:default_value: true
+:END:
+
+Whether a person may turn the mail copy of this kind off.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_notification_kinds_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: notification_kind
+:entity_plural_short:   notification_kinds
+:entity_singular_words: notification kind
+:entity_plural_words:   notification kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: nk
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| message_key   | Message Key   |
+| mail_optional | Mail Optional |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:collection_name: notification_kinds
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter kind code     |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+| message_key | Message Key | messageKeyEdit  | line_edit |        | true        | Enter a message key |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 200   |
+| Name         | name          | Name        | string    | 200   |
+| MessageKey   | message_key   | Message Key | string    | 240   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the design this lookup implements.
+- [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] — the notification whose kind this lookup names.

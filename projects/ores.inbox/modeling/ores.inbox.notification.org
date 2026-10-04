@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 0AC22038-6060-4B08-81E8-F79768714F6B
+:END:
+#+title: ores.inbox.notification
+#+description: Codegen entity model for the inbox =notification= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: One thing that happened that people are told about.
+#+entity_singular: notification
+#+entity_plural: notifications
+#+entity_title: Notification
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+One thing that happened: its kind, who raised it and when, and where it is dealt
+with. The values its message names are rows of
+[[id:9A498098-9038-4930-9074-67F84BAFB19E][ores.inbox.notification_argument]], and the people it reaches are rows of
+[[id:2451E78F-269A-4C48-819F-F7F24E03B4D8][ores.inbox.notification_recipient]], each with their own read state.
+
+Every notification links to where it is dealt with: =link_route= names the
+screen, and =link_id= names the thing on it, when there is one. A notification
+never asks a person to act inside it, and it carries no password, token or
+trade economics, because mail leaves the system.
+
+When a notification is raised to every holder of a permission, the permission
+is resolved into recipient rows at that moment, and =audience_permission_code=
+records which permission it was.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key for the notification.
+
+** kind_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What kind of thing happened. FK reference to ores_inbox_notification_kinds_tbl,
+which the system tenant holds.
+
+** raised_by
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The account that raised it: a person, or a service through its own account.
+FK reference to ores_iam_accounts_tbl.
+
+** raised_at
+:PROPERTIES:
+:type:          timestamp with time zone
+:cpp_type:      std::chrono::system_clock::time_point
+:nullable:      false
+:default_value: {}
+:END:
+
+When it was raised.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** link_route
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The screen where the notification is dealt with.
+
+Examples: 'requests', 'tenants'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** link_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The thing on that screen, such as a request's id, or null when the screen is
+the whole of the link.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** audience_permission_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The permission whose holders the notification was raised to, or null when it
+was raised to named people. FK reference to ores_iam_permissions_tbl.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** kind_code
+:PROPERTIES:
+:table:             ores_inbox_notification_kinds_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid kind_code: %. No notification kind found with this code.
+:list_by:           true
+:END:
+
+The lookup is system reference data, so the check reads the system tenant.
+
+** raised_by
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid raised_by: %. No account found with this id.
+:END:
+
+** audience_permission_code
+:PROPERTIES:
+:table:             ores_iam_permissions_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid audience_permission_code: %. No permission found with this code.
+:END:
+
+Permissions are held by the system tenant, so the check reads it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_inbox_notifications_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: notification
+:entity_plural_short:   notifications
+:entity_singular_words: notification
+:entity_plural_words:   notifications
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: n
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| kind_code   | Kind        |
+| raised_by   | Raised By   |
+| raised_at   | Raised At   |
+| link_route  | Link        |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the design this record implements.
+- [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] — what kind of thing happened.
+- [[id:2451E78F-269A-4C48-819F-F7F24E03B4D8][ores.inbox.notification_recipient]] — who is told.

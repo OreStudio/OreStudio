@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 0241FD4B-59BB-44FC-81A5-B4D0192F93D4
-:ores.cpp.scaffold.enabled: true
 :END:
 #+title: ores.inbox.api
 #+description: Domain types, JSON I/O and NATS protocol schemas for approval requests and notifications.

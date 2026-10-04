@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: B269E536-5267-432E-A1F8-2AA43DD75AC0
+:END:
+#+title: ores.inbox.notification_channel
+#+description: Codegen entity model for the inbox =notification_channel= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: A way a person is reached by a notification.
+#+entity_singular: notification_channel
+#+entity_plural: notification_channels
+#+entity_title: Notification Channel
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Reference data table of the ways a person is reached: 'in_app' and 'mail'. A
+channel is a delivery of the same notification, not a different message.
+
+Channels are managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique channel code.
+
+Examples: 'in_app', 'mail'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the channel.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Channel"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the channel reaches a person.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_notification_channels_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: channel
+:entity_plural_short:   channels
+:entity_singular_words: notification channel
+:entity_plural_words:   notification channels
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: nc
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: notification_channels
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter channel code  |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the channels requirement this lookup implements.
+- [[id:AEE6449A-FAE3-4FC2-994D-796A6EFF286C][ores.inbox.notification_delivery]] — a delivery through one channel.

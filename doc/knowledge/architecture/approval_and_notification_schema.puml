@@ -1,0 +1,186 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-04T18:48:50.529117Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+@startuml
+
+title Approval requests and notifications (proposed schema)
+hide circle
+skinparam linetype ortho
+
+package "ores.iam (existing)" {
+  entity ores_iam_accounts_tbl <<temporal>> #C6F0D8 {
+    * id : uuid <<PK>>
+    --
+    * username : text
+  }
+  entity ores_iam_roles_tbl <<temporal>> #C6F0D8 {
+    * id : uuid <<PK>>
+    --
+    * name : text
+  }
+  entity ores_iam_permissions_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+  }
+}
+
+package "ores.inbox: approvals" {
+  entity ores_inbox_approval_kinds_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+    --
+    * description : text
+    * decide_permission_code : text <<FK>>
+    * allows_hold : boolean
+    * comment_on_approve : boolean
+    * approvals_required : integer
+    expires_after : interval
+  }
+  entity ores_inbox_approval_request_states_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+    --
+    * is_final : boolean
+  }
+  entity ores_inbox_approval_decision_types_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+  }
+  entity ores_inbox_approval_hold_reasons_tbl <<temporal>> #C6F0D8 {
+    * kind_code : text <<PK>> <<FK>>
+    * code : text <<PK>>
+    --
+    * description : text
+  }
+  entity ores_inbox_approval_requests_tbl <<temporal>> #C6F0D8 {
+    * id : uuid <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * kind_code : text <<FK>>
+    * state_code : text <<FK>>
+    * requested_by : uuid <<FK>>
+    * requested_at : timestamptz
+    * reason : text
+    expires_at : timestamptz
+    * version : integer
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+  entity ores_inbox_approval_decisions_tbl #F7E5FF {
+    * id : uuid <<PK>>
+    --
+    * request_id : uuid <<FK>>
+    * decision_code : text <<FK>>
+    * decided_by : uuid <<FK>>
+    * decided_at : timestamptz
+    comment : text
+    hold_reason_code : text <<FK>>
+  }
+}
+
+package "ores.iam: the role request kind" {
+  entity ores_iam_role_grant_requests_tbl <<temporal>> #C6F0D8 {
+    * request_id : uuid <<PK>> <<FK>>
+    --
+    * account_id : uuid <<FK>>
+  }
+  entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
+    * request_id : uuid <<PK>> <<FK>>
+    * role_id : uuid <<PK>> <<FK>>
+  }
+}
+
+package "ores.inbox: notifications" {
+  entity ores_inbox_notification_kinds_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+    --
+    * description : text
+    * message_key : text
+    * mail_optional : boolean
+  }
+  entity ores_inbox_notification_channels_tbl <<temporal>> #C6F0D8 {
+    * code : text <<PK>>
+  }
+  entity ores_inbox_notifications_tbl #F7E5FF {
+    * id : uuid <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * kind_code : text <<FK>>
+    * raised_by : uuid <<FK>>
+    * raised_at : timestamptz
+    * link_route : text
+    link_id : text
+    audience_permission_code : text <<FK>>
+  }
+  entity ores_inbox_notification_arguments_tbl #F7E5FF {
+    * notification_id : uuid <<PK>> <<FK>>
+    * name : text <<PK>>
+    --
+    * value : text
+  }
+  entity ores_inbox_notification_recipients_tbl #F7E5FF {
+    * notification_id : uuid <<PK>> <<FK>>
+    * account_id : uuid <<PK>> <<FK>>
+    --
+    read_at : timestamptz
+    cleared_at : timestamptz
+  }
+  entity ores_inbox_notification_deliveries_tbl #F7E5FF {
+    * id : uuid <<PK>>
+    --
+    * notification_id : uuid <<FK>>
+    * account_id : uuid <<FK>>
+    * channel_code : text <<FK>>
+    * attempted_at : timestamptz
+    * outcome : delivery_outcome <<enum>>
+    failure_reason : text
+  }
+  entity ores_inbox_notification_preferences_tbl <<temporal>> #C6F0D8 {
+    * account_id : uuid <<PK>> <<FK>>
+    * kind_code : text <<PK>> <<FK>>
+    * channel_code : text <<PK>> <<FK>>
+    --
+    * enabled : boolean
+  }
+}
+
+ores_inbox_approval_kinds_tbl }o--|| ores_iam_permissions_tbl
+ores_inbox_approval_requests_tbl }o--|| ores_inbox_approval_kinds_tbl
+ores_inbox_approval_requests_tbl }o--|| ores_inbox_approval_request_states_tbl
+ores_inbox_approval_requests_tbl }o--|| ores_iam_accounts_tbl
+ores_inbox_approval_hold_reasons_tbl }o--|| ores_inbox_approval_kinds_tbl
+ores_inbox_approval_decisions_tbl }o--|| ores_inbox_approval_requests_tbl
+ores_inbox_approval_decisions_tbl }o--|| ores_inbox_approval_decision_types_tbl
+ores_inbox_approval_decisions_tbl }o--|| ores_iam_accounts_tbl
+ores_inbox_approval_decisions_tbl }o--o| ores_inbox_approval_hold_reasons_tbl
+ores_iam_role_grant_requests_tbl |o--|| ores_inbox_approval_requests_tbl
+ores_iam_role_grant_requests_tbl }o--|| ores_iam_accounts_tbl
+ores_iam_role_grant_request_roles_tbl }|--|| ores_iam_role_grant_requests_tbl
+ores_iam_role_grant_request_roles_tbl }o--|| ores_iam_roles_tbl
+
+ores_inbox_notifications_tbl }o--|| ores_inbox_notification_kinds_tbl
+ores_inbox_notifications_tbl }o--|| ores_iam_accounts_tbl
+ores_inbox_notifications_tbl }o--o| ores_iam_permissions_tbl
+ores_inbox_notification_arguments_tbl }o--|| ores_inbox_notifications_tbl
+ores_inbox_notification_recipients_tbl }|--|| ores_inbox_notifications_tbl
+ores_inbox_notification_recipients_tbl }o--|| ores_iam_accounts_tbl
+ores_inbox_notification_deliveries_tbl }o--|| ores_inbox_notification_recipients_tbl
+ores_inbox_notification_deliveries_tbl }o--|| ores_inbox_notification_channels_tbl
+ores_inbox_notification_preferences_tbl }o--|| ores_iam_accounts_tbl
+ores_inbox_notification_preferences_tbl }o--|| ores_inbox_notification_kinds_tbl
+ores_inbox_notification_preferences_tbl }o--|| ores_inbox_notification_channels_tbl
+
+@enduml

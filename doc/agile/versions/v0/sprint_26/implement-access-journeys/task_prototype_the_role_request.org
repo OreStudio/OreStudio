@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 7822F25D-E5A3-4AB4-B822-373E7605CC5D
+:END:
+#+title: Task: Prototype the role request
+#+description: Add asking for a role and answering the ask to the access screens prototype, before the request is built.
+#+type: task
+#+level: s1
+#+filetags: :web:prototype:access:implement-access-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/prototype-the-role-request
+#+pr: 2627
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The access prototype shows a member asking for a role with a reason, waiting and withdrawing, and a tenant administrator answering from a queue, so the user can accept or correct the flow before it is built.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- My access offers Ask for a role, lists the person's requests and their answers, and lets a waiting one be withdrawn.
+- The administrator has a Requests queue, oldest first, and answers each with what the role would allow in view.
+- Nobody answers their own request.
+- The prototype record states what the server lacks and proposes how the request is held.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2627][#2627]] | [doc] Prototype the role request; design approvals and notifications |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The access prototype draws asking for a role: *Ask for a role* and *Your
+requests* in My access, and a *Requests* queue for the tenant administrator in
+which nobody answers their own request. Accepted on 2026-10-04.
+
+The user turned the request into a wider design: one approval record for
+anything in the system that waits on a decision, and a notification subsystem
+for any activity, built together. Both are written up in
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and
+[[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]], and the
+role request is built on them.

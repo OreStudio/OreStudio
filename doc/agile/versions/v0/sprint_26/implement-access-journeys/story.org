@@ -81,6 +81,7 @@ from the survey rather than from the documents as they stand.
 | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |
 | [[id:130C4375-6B3A-4BA6-8C85-A4873FEBF7A3][Prototype the access screens]] | DONE | 2026-10-04 | 2026-10-04 | Prototype the member's own access, the administrator's grant and revoke, and the role catalogue against the real roles and permission catalogue, before the screens are built. |
 | [[id:49701581-4597-4CC8-BCDD-2CE60084037D][Give a role for a reason]] | DONE | 2026-10-04 | 2026-10-04 | Giving a role carries the reason and the note the administrator chose, from an access reason category, and nobody takes a role away from themselves. |
+| [[id:7822F25D-E5A3-4AB4-B822-373E7605CC5D][Prototype the role request]] | DONE | 2026-10-04 | 2026-10-04 | Add asking for a role and answering the ask to the access screens prototype, before the request is built. |
 
 * Plan
 

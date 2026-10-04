@@ -173,6 +173,7 @@ const fr: SourceCatalogue = {
         type: 'Type',
         status: 'Statut',
         parent: 'Parent',
+        businessCentre: 'Centre d’affaires',
         parentElsewhere: 'Hors de votre périmètre',
         showing: {
             one: '{first}–{last} sur {count} partie',

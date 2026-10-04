@@ -175,6 +175,7 @@ export const en: SourceCatalogue = {
         type: 'Type',
         status: 'Status',
         parent: 'Parent',
+        businessCentre: 'Business centre',
         parentElsewhere: 'Not one you can see',
         showing: {
             one: 'Showing {first}–{last} of {count} party',

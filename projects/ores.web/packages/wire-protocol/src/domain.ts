@@ -90,6 +90,8 @@ export const accountSchema = z.object({
     reportsToAccountId: uuidSchema.nullable(),
     /** Quick-login party, or `null` when the account always picks a party. */
     defaultPartyId: uuidSchema.nullable(),
+    /** The person's picture, or `null` when they have none. */
+    imageId: uuidSchema.nullable(),
     modifiedBy: z.string(),
     changeReasonCode: z.string(),
     changeCommentary: z.string(),
@@ -253,6 +255,10 @@ export const tenantPartySchema = z.object({
     status: z.string(),
     parentId: z.string().nullable(),
     parentName: z.string().nullable(),
+    /** FpML business-centre code, for example `GBLO`, or empty when unset. */
+    businessCentreCode: z.string(),
+    /** The flag of the centre's country, or `null` when it has none. */
+    flagImageId: z.string().nullable(),
 });
 
 export type TenantParty = z.infer<typeof tenantPartySchema>;

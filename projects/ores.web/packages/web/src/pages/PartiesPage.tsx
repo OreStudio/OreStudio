@@ -25,6 +25,7 @@ import type { TenantParty } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
+import { CentreFlag, imageUrl } from '../ui/Images.js';
 import { Pager, pageBounds } from '../ui/Pager.js';
 
 /** How many parties one page shows. */
@@ -74,6 +75,7 @@ export function PartiesPage(): ReactNode {
                             <th className="py-2 pr-4 font-medium">{t('parties.category')}</th>
                             <th className="py-2 pr-4 font-medium">{t('parties.type')}</th>
                             <th className="py-2 pr-4 font-medium">{t('parties.status')}</th>
+                            <th className="py-2 pr-4 font-medium">{t('parties.businessCentre')}</th>
                             <th className="py-2 font-medium">{t('parties.parent')}</th>
                         </tr>
                     </thead>
@@ -105,6 +107,12 @@ function PartyRow({ party }: { readonly party: TenantParty }): ReactNode {
             <td className="py-2.5 pr-4">{party.category}</td>
             <td className="py-2.5 pr-4">{party.type}</td>
             <td className="py-2.5 pr-4">{party.status}</td>
+            <td className="py-2.5 pr-4">
+                <CentreFlag
+                    code={party.businessCentreCode}
+                    src={party.flagImageId === null ? null : imageUrl(party.flagImageId)}
+                />
+            </td>
             <td className="py-2.5">
                 {party.parentId === null ? (
                     ''

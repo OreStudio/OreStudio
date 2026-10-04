@@ -27,6 +27,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
+import { Avatar, CentreFlag, imageUrl } from '../ui/Images.js';
 import { Pager, pageBounds } from '../ui/Pager.js';
 import { Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 
@@ -230,6 +231,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
                         <tr className="border-b border-line text-xs text-ink-muted">
                             <th className="py-2 pr-4 font-medium">{t('parties.name')}</th>
                             <th className="py-2 pr-4 font-medium">{t('parties.code')}</th>
+                            <th className="py-2 pr-4 font-medium">{t('parties.businessCentre')}</th>
                             <th className="py-2 pr-4 font-medium">{t('parties.parent')}</th>
                         </tr>
                     </thead>
@@ -239,6 +241,16 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
                                 <td className="py-2 pr-4 text-ink">{party.name}</td>
                                 <td className="py-2 pr-4 font-mono text-xs text-ink-muted">
                                     {party.code}
+                                </td>
+                                <td className="py-2 pr-4 text-ink-muted">
+                                    <CentreFlag
+                                        code={party.businessCentreCode}
+                                        src={
+                                            party.flagImageId === null
+                                                ? null
+                                                : imageUrl(party.flagImageId, code)
+                                        }
+                                    />
                                 </td>
                                 <td className="py-2 pr-4">
                                     {party.parentId === null ? (
@@ -308,7 +320,23 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
                         {accounts.map((account) => (
                             <tr key={account.id} className="border-b border-line-subtle">
                                 <td className="py-2 pr-4 text-ink">
-                                    {account.fullName === '' ? account.username : account.fullName}
+                                    <span className="flex items-center gap-3">
+                                        <Avatar
+                                            name={
+                                                account.fullName === ''
+                                                    ? account.username
+                                                    : account.fullName
+                                            }
+                                            src={
+                                                account.imageId === null
+                                                    ? null
+                                                    : imageUrl(account.imageId, code)
+                                            }
+                                        />
+                                        {account.fullName === ''
+                                            ? account.username
+                                            : account.fullName}
+                                    </span>
                                 </td>
                                 <td className="py-2 pr-4 font-mono text-xs text-ink-muted">
                                     {account.username}

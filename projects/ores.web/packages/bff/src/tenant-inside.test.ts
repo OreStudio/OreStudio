@@ -96,6 +96,14 @@ const acmeParty = {
     status: 'active',
 };
 
+const GB_FLAG = '99999999-9999-9999-9999-999999999991';
+const PRIYA_PHOTO = '99999999-9999-9999-9999-999999999992';
+
+const images: Record<string, { mime_type: string; data: string | number[] }> = {
+    [GB_FLAG]: { mime_type: 'image/svg+xml', data: '<svg id="gb"/>' },
+    [PRIYA_PHOTO]: { mime_type: 'image/jpeg', data: [0xff, 0xd8, 0xff, 0xe0] },
+};
+
 const acmePerson = {
     version: 1,
     id: '88888888-8888-8888-8888-888888888888',
@@ -105,6 +113,7 @@ const acmePerson = {
     email: 'priya@acme.example',
     account_type: 'user',
     job_title: '',
+    image_id: PRIYA_PHOTO,
     modified_by: 'system',
     change_reason_code: 'new',
     change_commentary: '',
@@ -112,7 +121,9 @@ const acmePerson = {
     recorded_at: '2026-10-01 09:00:00Z',
 };
 
-function buildTestServer(options: { mode?: SessionMode; refuseEntry?: string } = {}) {
+function buildTestServer(
+    options: { mode?: SessionMode; refuseEntry?: string; imagesFail?: boolean } = {},
+) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: string[] = [];
     const reply = (subject: string, body: unknown): unknown => {
@@ -131,6 +142,33 @@ function buildTestServer(options: { mode?: SessionMode; refuseEntry?: string } =
         }
         if (subject === 'iam.v1.accounts.list') {
             return { accounts: [acmePerson], total: 1 };
+        }
+        if (subject === 'refdata.v1.business_centres.list') {
+            const codes = (body as { filter: { code_one_of: string[] } }).filter.code_one_of;
+            expect(codes).toEqual(['GBLO']);
+            return {
+                result: { outcome: 'ok' },
+                centres: [{ code: 'GBLO', country_alpha2_code: 'GB' }],
+            };
+        }
+        if (subject === 'refdata.v1.countries.list') {
+            const codes = (body as { filter: { alpha2_code_one_of: string[] } }).filter
+                .alpha2_code_one_of;
+            expect(codes).toEqual(['GB']);
+            return {
+                result: { outcome: 'ok' },
+                countries: [{ alpha2_code: 'GB', image_id: GB_FLAG }],
+            };
+        }
+        if (subject === 'assets.v1.images.list') {
+            if (options.imagesFail === true) throw new Error('assets service unavailable');
+            const ids = (body as { filter: { id_one_of: string[] } }).filter.id_one_of;
+            return {
+                result: { outcome: 'ok' },
+                images: ids
+                    .filter((id) => images[id] !== undefined)
+                    .map((id) => ({ id, ...images[id] })),
+            };
         }
         throw new Error(`unexpected subject ${subject}`);
     };
@@ -213,12 +251,23 @@ describe("a tenant's data, read from system administration", () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({
             totalCount: 1,
-            parties: [{ code: 'ACMCOR', name: 'Acme Corporation Plc', parentId: null }],
+            parties: [
+                {
+                    code: 'ACMCOR',
+                    name: 'Acme Corporation Plc',
+                    parentId: null,
+                    businessCentreCode: 'GBLO',
+                    flagImageId: GB_FLAG,
+                },
+            ],
         });
         expect(calls).toEqual([
             'outside iam.v1.tenants.get',
             `enter ${ACME}`,
             'inside refdata.v1.parties.list',
+            'inside refdata.v1.business_centres.list',
+            'inside refdata.v1.countries.list',
+            'inside assets.v1.images.list',
             'leave',
         ]);
     });
@@ -236,14 +285,95 @@ describe("a tenant's data, read from system administration", () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({
             totalCount: 1,
-            accounts: [{ username: 'priya', fullName: 'Priya Natarajan' }],
+            accounts: [{ username: 'priya', fullName: 'Priya Natarajan', imageId: PRIYA_PHOTO }],
         });
         expect(calls).toEqual([
             'outside iam.v1.tenants.get',
             `enter ${ACME}`,
             'inside iam.v1.accounts.list',
+            'inside assets.v1.images.list',
             'leave',
         ]);
+    });
+
+    /*
+     * The page read the pictures in its own visit, so fetching one enters
+     * nothing: a page of twenty faces costs one entry, not twenty-one.
+     */
+    it('serves a picture the page named without entering the tenant again', async () => {
+        const { server, cookies, calls } = buildTestServer();
+
+        await server.inject({
+            method: 'GET',
+            url: '/api/tenants/acme_corporation/people',
+            cookies,
+        });
+        calls.length = 0;
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/tenants/acme_corporation/images/${PRIYA_PHOTO}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
+        expect([...response.rawPayload]).toEqual([0xff, 0xd8, 0xff, 0xe0]);
+        expect(calls).toEqual(['outside iam.v1.tenants.get']);
+    });
+
+    it('reads a picture inside the tenant when no page has named it', async () => {
+        const { server, cookies, calls } = buildTestServer();
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/tenants/acme_corporation/images/${GB_FLAG}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/svg+xml');
+        expect(response.body).toBe('<svg id="gb"/>');
+        expect(calls).toEqual([
+            'outside iam.v1.tenants.get',
+            `enter ${ACME}`,
+            'inside assets.v1.images.list',
+            'leave',
+        ]);
+    });
+
+    it('answers the people page when their pictures cannot be read', async () => {
+        const { server, cookies } = buildTestServer({ imagesFail: true });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/acme_corporation/people',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ accounts: [{ imageId: PRIYA_PHOTO }] });
+    });
+
+    it('answers no image for an identifier the tenant does not hold', async () => {
+        const { server, cookies } = buildTestServer();
+
+        const unknown = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/acme_corporation/images/99999999-9999-9999-9999-999999999999',
+            cookies,
+        });
+        const malformed = await server.inject({
+            method: 'GET',
+            url: '/api/tenants/acme_corporation/images/not-an-id',
+            cookies,
+        });
+        await server.close();
+
+        expect(unknown.statusCode).toBe(404);
+        expect(malformed.statusCode).toBe(404);
     });
 
     /*

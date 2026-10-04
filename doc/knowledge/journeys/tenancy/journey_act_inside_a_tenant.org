@@ -50,9 +50,11 @@ the ordinary reads do the rest.
    the tenant is and how its setup went.
 2. *Read its parties.* The administrator chooses the *Parties* tab. The server
    enters the tenant, lists its parties with =refdata.v1.parties.list= a page
-   at a time, and leaves. Each party names the party it belongs to.
+   at a time, and leaves. Each party names the party it belongs to, and shows
+   its business centre with the flag of the centre's country.
 3. *Read its people.* The *People* tab lists the accounts that can sign in to
-   the tenant, the same way.
+   the tenant, the same way, each with their picture or, without one, their
+   initials.
 4. *Move on.* The administrator goes back to the roster, or anywhere else.
    Their session is system administration throughout: the menu, the home page
    and every other read are unchanged by the tabs.
@@ -114,8 +116,11 @@ request the BFF enters the tenant, reads, and leaves, whether or not the read
 succeeds. The tenant token is held for that read alone and never put on the
 browser's session, so any other request the browser makes meanwhile is answered
 as system administration. Each read therefore records one entry and one exit
-in the tenant's audit trail. Leaving does not revoke the tenant token, because
-no token is revoked in this system; it lasts at most one access lifetime.
+in the tenant's audit trail. The pictures and flags a page names are read in
+that same visit and kept by the BFF, so the browser fetches each one from
+=GET /api/tenants/:code/images/:id= with no further entry. Leaving does not
+revoke the tenant token, because no token is revoked in this system; it lasts
+at most one access lifetime.
 
 * What is missing
 

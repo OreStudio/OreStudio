@@ -20,18 +20,20 @@
  */
 
 import { z } from 'zod';
+import type { AuthenticatedCaller } from '../account-operations.js';
+import { OperationFailedError } from '../errors.js';
+import type { ListImagesRequest } from '../generated/assets/protocol/image_protocol.js';
+import { SUBJECTS, resultEnvelopeSchema } from '../operations.js';
 
 /**
- * An image, and the flags that are images.
+ * An image, and the pictures and flags that are images.
  *
- * Flags are not a separate concept in ORE Studio: a country carries an
- * `image_id`, and the image is an SVG in the assets service. That is why there
- * is no "flag" field anywhere — there is a reference to an image, and the image
- * happens to be a flag.
+ * Flags and pictures are not separate concepts in ORE Studio: a country or an
+ * account carries an `image_id`, and the image lives in the assets service.
  *
  * The bytes arrive in whatever form the codec chose for a byte vector, so all
  * three plausible shapes are accepted and normalised at the boundary. Guessing
- * one would produce a route that works against one codec and silently returns
+ * one would produce a reader that works against one codec and silently returns
  * nothing against another.
  */
 const imageBytes = z.union([
@@ -40,32 +42,25 @@ const imageBytes = z.union([
     z.instanceof(Uint8Array),
 ]);
 
-export const imageSchema = z.object({
-    version: z.int().nonnegative().default(0),
-    image_id: z.string().default(''),
-    tenant_id: z.string().default(''),
-    key: z.string().default(''),
-    description: z.string().default(''),
-    mime_type: z.string().default('image/svg+xml'),
-    data: imageBytes,
-    modified_by: z.string().default(''),
-    change_reason_code: z.string().default(''),
-    change_commentary: z.string().default(''),
-    performed_by: z.string().default(''),
-    recorded_at: z.string().default(''),
+const listImagesReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    images: z
+        .array(
+            z.object({
+                id: z.string(),
+                mime_type: z.string().default('image/svg+xml'),
+                data: imageBytes,
+            }),
+        )
+        .default([]),
 });
 
-export type WireImage = z.infer<typeof imageSchema>;
-
-export const getImagesRequestSchema = z.object({
-    image_ids: z.array(z.string()),
-});
-
-export const getImagesResponseSchema = z.object({
-    success: z.boolean().default(true),
-    message: z.string().default(''),
-    images: z.array(imageSchema).default([]),
-});
+/** One image's bytes and what they are. */
+export interface ImageContent {
+    readonly imageId: string;
+    readonly mimeType: string;
+    readonly bytes: Buffer;
+}
 
 /**
  * The bytes, as a buffer.
@@ -74,52 +69,41 @@ export const getImagesResponseSchema = z.object({
  * one, and a `Uint8Array` is the codec's own binary type. All three end up the
  * same way, so nothing downstream has to care which arrived.
  */
-export function imageBytesToBuffer(data: WireImage['data']): Buffer {
+function toBuffer(data: z.infer<typeof imageBytes>): Buffer {
     if (typeof data === 'string') return Buffer.from(data, 'binary');
-    if (data instanceof Uint8Array) return Buffer.from(data);
     return Buffer.from(data);
 }
 
 /**
- * The bytes as text.
+ * The images named, in the caller's tenant.
  *
- * Most of these images are SVG, which is text, so the useful form for an
- * inspection or a test is the markup rather than a byte count.
+ * Row-level security scopes the read from the caller's token, so an image of
+ * another tenant is not answered, and an identifier nothing holds is left out.
  */
-export function imageBytesToText(data: WireImage['data']): string {
-    if (typeof data === 'string') return data;
-    return Buffer.from(data instanceof Uint8Array ? data : Uint8Array.from(data)).toString('utf8');
+export async function readImages(
+    caller: AuthenticatedCaller,
+    imageIds: readonly string[],
+): Promise<ImageContent[]> {
+    if (imageIds.length === 0) {
+        return [];
+    }
+    const request: ListImagesRequest = {
+        offset: 0,
+        limit: imageIds.length,
+        order: { field: '', descending: false },
+        filter: { id_one_of: [...imageIds] },
+    };
+    const reply = await caller.callAuthenticated(
+        SUBJECTS.listImages,
+        request,
+        listImagesReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(SUBJECTS.listImages, reply.result.message);
+    }
+    return reply.images.map((image) => ({
+        imageId: image.id,
+        mimeType: image.mime_type === '' ? 'image/svg+xml' : image.mime_type,
+        bytes: toBuffer(image.data),
+    }));
 }
-
-/**
- * An image's metadata, without its bytes.
- *
- * What a picker needs: enough to show a grid of things to choose from, and not
- * the contents of every one of them. The bytes are fetched only for the chosen
- * image, which is what keeps a picker over six hundred flags from being six
- * hundred downloads.
- */
-export const imageInfoSchema = z.object({
-    image_id: z.string(),
-    key: z.string().default(''),
-    description: z.string().default(''),
-    size_bytes: z.int().nonnegative().default(0),
-});
-
-export type WireImageInfo = z.infer<typeof imageInfoSchema>;
-
-/**
- * The list call.
- *
- * `modified_since` has no default because the C++ struct has none and the
- * decoder requires every member; null means everything.
- */
-export const listImagesRequestSchema = z.object({
-    modified_since: z.string().nullable(),
-});
-
-export const listImagesResponseSchema = z.object({
-    success: z.boolean().default(true),
-    message: z.string().default(''),
-    images: z.array(imageInfoSchema).default([]),
-});

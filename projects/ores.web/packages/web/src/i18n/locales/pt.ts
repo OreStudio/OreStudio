@@ -178,6 +178,7 @@ const pt: SourceCatalogue = {
         type: 'Tipo',
         status: 'Estado',
         parent: 'Pai',
+        businessCentre: 'Centro de negócios',
         parentElsewhere: 'Fora do seu alcance',
         showing: {
             one: '{first}–{last} de {count} parte',

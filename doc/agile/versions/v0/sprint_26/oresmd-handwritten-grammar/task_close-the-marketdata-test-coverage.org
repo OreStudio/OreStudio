@@ -63,6 +63,9 @@ task and name that file in the Command column.
 
 * Notes
 
+[[id:8B193823-0382-4FE3-A95B-A34799B5972D][Correct the marketdata clean-standard record]] recorded G07 and H04 as Pass at =ec37b05f77=. V08 and
+G04 are still open and stay with this task.
+
 A name match finds no test for 73 of 102 source files. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3,
 "Test coverage".
 

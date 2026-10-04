@@ -63,6 +63,11 @@ task and name that file in the Command column.
 
 * Notes
 
+[[id:8B193823-0382-4FE3-A95B-A34799B5972D][Correct the marketdata clean-standard record]] added the three namespace headers, so G08 already
+passes, and made =subject_helpers.hpp= use the api constant
+=marketdata_tick_subject_prefix=. What is left of P02 is declaring the subject in
+a model and generating that constant.
+
 See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], sections 3 and 4.
 
 * Test Scenarios

@@ -13,11 +13,21 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Six hand-written =ores.marketdata.api= protocol headers carried wire types that
+no model described, so checklist items M06 and P04 failed for marketdata.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+A wire type no model describes has no generated TypeScript twin and drifts from
+the generated protocols.
+
+* Resolution
+
+RESOLVED before this capture was written up. The six headers became one
+operation model, =ores.marketdata.operations=, during the marketdata clean
+pass, and all seven protocol headers in =ores.marketdata.api/messaging= carry
+the generated marker. [[id:8B193823-0382-4FE3-A95B-A34799B5972D][Correct the marketdata clean-standard record]]
+re-measured M06 and P04 as Pass at =ec37b05f77=.
 
 * References
 

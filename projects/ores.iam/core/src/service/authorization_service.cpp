@@ -308,7 +308,8 @@ authorization_service::replace_role_permissions(const boost::uuids::uuid& caller
 void authorization_service::assign_role(const boost::uuids::uuid& account_id,
                                         const boost::uuids::uuid& role_id,
                                         const std::string& assigned_by,
-                                        const std::string& change_commentary) {
+                                        const std::string& change_commentary,
+                                        const std::string& change_reason_code) {
     BOOST_LOG_SEV(lg(), info) << "Assigning role " << role_id << " to account " << account_id;
 
     // Verify role exists
@@ -329,7 +330,8 @@ void authorization_service::assign_role(const boost::uuids::uuid& account_id,
     ar.account_id = account_id;
     ar.role_id = role_id;
     ar.assigned_by = assigned_by;
-    ar.change_reason_code = std::string{reason::codes::new_record};
+    ar.change_reason_code =
+        change_reason_code.empty() ? std::string{reason::codes::new_record} : change_reason_code;
     ar.change_commentary = change_commentary;
 
     account_role_repo_.write(ar);

@@ -63,7 +63,7 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief assign-role <account_id> <role_id>
+     * @brief assign-role <account_id> <role_id> <change_reason_code> <change_commentary>
      */
     static void process_assign_role(std::ostream& out,
                                     ores::nats::service::nats_client& session,

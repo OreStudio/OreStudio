@@ -26,6 +26,7 @@
 #include "ores.iam.api/generators/account_role_generator.hpp"
 #include "ores.iam.api/generators/permission_generator.hpp"
 #include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.core/messaging/authorization_handler.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/account_role_repository.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
@@ -38,6 +39,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -374,4 +376,61 @@ TEST_CASE("replace_role_permissions_can_empty_a_bundle", tags) {
     REQUIRE(answer.result.outcome == outcome::ok);
     CHECK(answer.permission_codes.empty());
     CHECK(svc.get_role_permissions(role.id).empty());
+}
+
+/*
+ * Giving a role records why. The reason is the administrator's, from the
+ * access category, and the grant row carries it beside who gave the role.
+ */
+TEST_CASE("assign_role_records_the_reason_it_was_given_for", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto member = write_account(h, gen);
+    auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    svc.assign_role(member.id, r.id, "priya", "Covers the settlement desk", "access.cover_for_absence");
+
+    const auto access = svc.read_own_access(member.id);
+    REQUIRE(access.roles.size() == 1);
+    CHECK(access.roles.front().assigned_by == "priya");
+    CHECK(access.roles.front().change_reason_code == "access.cover_for_absence");
+    CHECK(access.roles.front().change_commentary == "Covers the settlement desk");
+}
+
+TEST_CASE("assign_role_without_a_reason_records_a_new_record", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto member = write_account(h, gen);
+    auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    svc.assign_role(member.id, r.id, "ores.iam.service");
+
+    const auto access = svc.read_own_access(member.id);
+    REQUIRE(access.roles.size() == 1);
+    CHECK(access.roles.front().change_reason_code == "system.new_record");
+}
+
+TEST_CASE("assign_role_refuses_a_reason_nobody_defined", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    auto member = write_account(h, gen);
+    auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
+
+    authorization_service svc(h.context());
+    CHECK_THROWS(svc.assign_role(member.id, r.id, "priya", "", "access.because_i_said_so"));
+    CHECK(svc.read_own_access(member.id).roles.empty());
+}
+
+TEST_CASE("nobody_takes_a_role_away_from_themselves", tags) {
+    using ores::iam::messaging::authorization_revoke_refusal;
+    const auto me = boost::uuids::random_generator()();
+    const auto colleague = boost::uuids::random_generator()();
+
+    CHECK(authorization_revoke_refusal(me, me) == "You cannot take a role away from yourself.");
+    CHECK_FALSE(authorization_revoke_refusal(me, colleague).has_value());
 }

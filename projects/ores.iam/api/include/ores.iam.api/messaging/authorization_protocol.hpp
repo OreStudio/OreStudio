@@ -46,6 +46,8 @@ struct assign_role_request {
     static constexpr bool requires_session = true;
     std::string account_id;
     std::string role_id;
+    std::string change_reason_code;
+    std::string change_commentary;
 };
 
 struct assign_role_response {

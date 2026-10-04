@@ -28,6 +28,8 @@ import type { Result } from '../../../utility/protocol.js';
 export interface AssignRoleRequest {
     account_id: string;
     role_id: string;
+    change_reason_code: string;
+    change_commentary: string;
 }
 
 export interface AssignRoleResponse {

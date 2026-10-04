@@ -47,6 +47,22 @@ The authorization protocol messages.
 :cpp_type: std::string
 :END:
 
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the role is given: a change reason that applies to a new record, such as
+=access.new_joiner=. Empty means the service records =system.new_record=, for
+callers that act on the platform's behalf.
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+A note the administrator adds to the reason. It is stored on the grant.
+
 ** assign_role_response
 
 *** success

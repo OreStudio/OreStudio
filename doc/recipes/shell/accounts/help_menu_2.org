@@ -52,7 +52,7 @@ ores-shell> accounts> Commands available:
 	Logout the current user
  - roles <string>
 	List roles assigned to an account (account_id)
- - assign-role <string> <string>
+ - assign-role <string> <string> <string> <string>
 	Assign a role to an account (account_id role_id | principal role_name)
  - revoke-role <string> <string>
 	Revoke a role from an account (account_id role_id | principal role_name)

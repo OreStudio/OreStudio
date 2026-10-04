@@ -69,6 +69,11 @@ BEGIN
         'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
     );
 
+    PERFORM ores_dq_change_reason_categories_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'access',
+        'Why a person is given a role, in the words an administrator uses'
+    );
+
     -- =============================================================================
     -- Change Reasons: System Category
     -- =============================================================================
@@ -389,6 +394,58 @@ BEGIN
     );
 
     -- =============================================================================
+    -- Change Reasons: Access Category
+    -- =============================================================================
+
+    -- --- Change Reasons: Access ---
+
+    -- Why a role is given. They apply to a new grant only: taking a role away
+    -- closes the grant, which records no reason of its own.
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'access.new_joiner',
+        'A new joiner needs the role to do their work',
+        'access',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        10
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'access.role_change',
+        'The person moved to work that needs the role',
+        'access',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        20
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'access.cover_for_absence',
+        'The person covers for a colleague who is away',
+        'access',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        30
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'access.access_review',
+        'An access review found the role is needed',
+        'access',
+        true,   -- applies to new
+        false,  -- not for amend
+        false,  -- not for delete
+        false,  -- no commentary required
+        40
+    );
+
+    -- =============================================================================
     -- Summary
     -- =============================================================================
 END $$;
@@ -406,4 +463,7 @@ from ores_dq_change_reasons_tbl where category_code = 'common' and valid_to = or
 union all
 select 'Change Reasons (trade)', count(*)
 from ores_dq_change_reasons_tbl where category_code = 'trade' and valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Change Reasons (access)', count(*)
+from ores_dq_change_reasons_tbl where category_code = 'access' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

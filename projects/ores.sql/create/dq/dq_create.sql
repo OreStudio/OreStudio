@@ -85,6 +85,8 @@
 \ir ./dq_calendar_types_artefact_create.sql
 \ir ./dq_payment_frequencies_artefact_create.sql
 \ir ./dq_calendars_artefact_create.sql
+\ir ./dq_calendar_events_artefact_create.sql
+\ir ./dq_tenor_schedules_artefact_create.sql
 \ir ./dq_currency_calendars_artefact_create.sql
 \ir ./dq_currency_countries_artefact_create.sql
 \ir ./dq_currency_pair_convention_calendars_artefact_create.sql

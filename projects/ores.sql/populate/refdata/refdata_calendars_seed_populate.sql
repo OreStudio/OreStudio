@@ -22,8 +22,9 @@
  * Calendars Seed Population Script
  *
  * Registers the refdata.calendars dataset and seeds its DQ artefact table
- * with the same QuantLib calendar set already loaded straight into
- * ores_refdata_calendars_tbl by refdata_calendars_populate.sql (kept in
+ * with the same calendar set, the QuantLib calendars and US.FOMC, already
+ * loaded straight into ores_refdata_calendars_tbl by
+ * refdata_calendars_populate.sql (kept in
  * lockstep by hand -- the two exist for different purposes: that one is
  * the system tenant's own live rows, this one is the Librarian-publishable
  * dataset a party bundle-Applies to get its own copy).
@@ -174,7 +175,10 @@ begin
         (v_dataset_id, v_tenant_id, 'Indonesia.IDX', 0, 'Indonesia (Indonesia Stock Exchange)', 'financial_centre', 'ID'),
         -- Israel (Market enum)
         (v_dataset_id, v_tenant_id, 'Israel.Settlement', 0, 'Israel (Settlement)', 'public_holiday', 'IL'),
-        (v_dataset_id, v_tenant_id, 'Israel.TASE', 0, 'Israel (Tel-Aviv Stock Exchange)', 'financial_centre', 'IL');
+        (v_dataset_id, v_tenant_id, 'Israel.TASE', 0, 'Israel (Tel-Aviv Stock Exchange)', 'financial_centre', 'IL'),
+        -- ORE-native calendars: the FOMC meeting calendar, whose meeting
+        -- dates the refdata.calendar_events dataset publishes
+        (v_dataset_id, v_tenant_id, 'US.FOMC', 0, 'US Federal Reserve (FOMC meeting calendar)', 'central_bank_meeting', 'US');
 
     get diagnostics v_count = row_count;
 

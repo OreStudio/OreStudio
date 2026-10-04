@@ -49,6 +49,14 @@
 \ir ./refdata_calendars_seed_populate.sql
 
 \echo ''
+\echo '--- Tenor Schedules Seed Data ---'
+\ir ./refdata_tenor_schedules_seed_populate.sql
+
+\echo ''
+\echo '--- Calendar Events Seed Data ---'
+\ir ./refdata_calendar_events_seed_populate.sql
+
+\echo ''
 \echo '--- Currency Calendars Seed Data ---'
 \ir ./refdata_currency_calendars_seed_populate.sql
 

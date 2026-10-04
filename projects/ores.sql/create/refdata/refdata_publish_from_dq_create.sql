@@ -4198,6 +4198,256 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
+-- =============================================================================
+-- Calendar events
+-- =============================================================================
+
+-- A calendar event's natural key is (calendar_code, event_date,
+-- diary_entry_type). Its id belongs to the tenant: an event the tenant
+-- already has keeps its id, and a new one gets a fresh id, so the
+-- artefact's own id never reaches a tenant.
+create or replace function ores_refdata_publish_calendar_events_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_existing_id uuid;
+    v_new_version integer;
+begin
+    perform ores_utility_allow_version_replace_fn();
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    if p_mode = 'replace_all' then
+        update ores_refdata_calendar_events_tbl
+        set valid_to = current_timestamp
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select
+            dq.calendar_code,
+            dq.event_date,
+            dq.diary_entry_type,
+            dq.name,
+            dq.description,
+            dq.source
+        from ores_dq_calendar_events_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+    loop
+        select existing.id into v_existing_id
+        from ores_refdata_calendar_events_tbl existing
+        where existing.tenant_id = p_target_tenant_id
+          and existing.calendar_code = r.calendar_code
+          and existing.event_date = r.event_date
+          and existing.diary_entry_type = r.diary_entry_type
+          and existing.valid_to = ores_utility_infinity_timestamp_fn();
+
+        if p_mode = 'insert_only' and v_existing_id is not null then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_refdata_calendar_events_tbl (
+            id, tenant_id, version,
+            calendar_code, event_date, diary_entry_type, name, description, source,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            coalesce(v_existing_id, gen_random_uuid()), p_target_tenant_id, 0,
+            r.calendar_code, r.event_date, r.diary_entry_type, r.name, r.description, r.source,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        )
+        returning version into v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Tenor schedules
+-- =============================================================================
+
+-- Provisioning copies the tenor convention resolutions before any schedule
+-- exists in the tenant, so it leaves their schedule_code and
+-- schedule_step_count empty. Once the schedules are published, this
+-- function sets those columns from the system tenant's rows, for every
+-- resolution whose schedule the tenant now has.
+create or replace function ores_refdata_publish_tenor_schedules_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_resolutions bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_exists boolean;
+    v_new_version integer;
+begin
+    perform ores_utility_allow_version_replace_fn();
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    if p_mode = 'replace_all' then
+        update ores_refdata_tenor_schedules_tbl
+        set valid_to = current_timestamp
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select
+            dq.code,
+            dq.name,
+            dq.description,
+            dq.display_order,
+            dq.schedule_source,
+            dq.calendar_code,
+            dq.diary_entry_type
+        from ores_dq_tenor_schedules_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+    loop
+        select exists (
+            select 1 from ores_refdata_tenor_schedules_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_refdata_tenor_schedules_tbl (
+            tenant_id,
+            code, version, name, description, display_order,
+            schedule_source, calendar_code, diary_entry_type,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            p_target_tenant_id,
+            r.code, 0, r.name, r.description, r.display_order,
+            r.schedule_source, r.calendar_code, r.diary_entry_type,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        )
+        returning version into v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
+
+    insert into ores_refdata_tenor_convention_resolutions_tbl (
+        convention_code, tenant_id, tenor_code, version,
+        anchor_override, offset_unit, offset_multiplier,
+        schedule_code, schedule_step_count,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.convention_code, t.tenant_id, t.tenor_code, 0,
+        t.anchor_override, t.offset_unit, t.offset_multiplier,
+        s.schedule_code, s.schedule_step_count,
+        coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
+        'Schedule set from DQ dataset: ' || v_dataset_name
+    from ores_refdata_tenor_convention_resolutions_tbl t
+    join ores_refdata_tenor_convention_resolutions_tbl s
+      on s.tenant_id = ores_utility_system_tenant_id_fn()
+     and s.convention_code = t.convention_code
+     and s.tenor_code = t.tenor_code
+     and s.valid_to = ores_utility_infinity_timestamp_fn()
+    where t.tenant_id = p_target_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn()
+      and s.schedule_code is not null
+      and (t.schedule_code is distinct from s.schedule_code
+           or t.schedule_step_count is distinct from s.schedule_step_count)
+      and exists (
+          select 1 from ores_refdata_tenor_schedules_tbl ts
+          where ts.tenant_id = p_target_tenant_id
+            and ts.code = s.schedule_code
+            and ts.valid_to = ores_utility_infinity_timestamp_fn()
+      );
+
+    get diagnostics v_resolutions = row_count;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated + v_resolutions
+    where v_updated + v_resolutions > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace function ores_refdata_publish_currency_calendars_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

@@ -49,6 +49,8 @@ const page: PartyPage = {
             status: 'Active',
             parentId: null,
             parentName: null,
+            businessCentreCode: 'GBLO',
+            flagImageId: '66666666-6666-6666-6666-666666666666',
         },
         {
             id: '77777777-7777-7777-7777-777777777777',
@@ -59,6 +61,8 @@ const page: PartyPage = {
             status: 'Active',
             parentId: SYSTEM,
             parentName: 'Acme System',
+            businessCentreCode: 'GBLO',
+            flagImageId: '66666666-6666-6666-6666-666666666666',
         },
         {
             id: '88888888-8888-8888-8888-888888888888',
@@ -69,6 +73,8 @@ const page: PartyPage = {
             status: 'Active',
             parentId: '99999999-9999-9999-9999-999999999999',
             parentName: null,
+            businessCentreCode: '',
+            flagImageId: null,
         },
     ],
     totalCount: 30,
@@ -95,6 +101,14 @@ describe('PartiesPage', () => {
         expect(html).toContain('acme_group');
         expect(html).toContain('>Acme System</td>');
         expect(html).toContain('Not one you can see');
+    });
+
+    it('shows each business centre with its country flag, read as the session', () => {
+        const html = render();
+
+        expect(html).toContain('Business centre');
+        expect(html).toContain('src="/api/images/66666666-6666-6666-6666-666666666666"');
+        expect(html.match(/<img/g)).toHaveLength(2);
     });
 
     it('pages with the server total', () => {

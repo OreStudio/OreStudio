@@ -201,6 +201,7 @@ describe('GET /api/accounts', () => {
                     jobTitle: 'Analyst',
                     reportsToAccountId: null,
                     defaultPartyId: null,
+                    imageId: null,
                     modifiedBy: 'admin',
                     changeReasonCode: 'new',
                     changeCommentary: '',

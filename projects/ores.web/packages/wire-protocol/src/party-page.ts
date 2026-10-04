@@ -19,11 +19,105 @@
  *
  */
 
+import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { PartyPage, TenantParty } from './domain.js';
 import { OperationFailedError } from './errors.js';
+import type { ListBusinessCentresRequest } from './generated/refdata/protocol/business_centre_protocol.js';
+import type { ListCountriesRequest } from './generated/refdata/protocol/country_protocol.js';
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
-import { SUBJECTS, listPartiesReplySchema } from './operations.js';
+import { SUBJECTS, listPartiesReplySchema, resultEnvelopeSchema } from './operations.js';
+
+const centresReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    centres: z
+        .array(z.object({ code: z.string(), country_alpha2_code: z.string().default('') }))
+        .default([]),
+});
+
+const countriesReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    countries: z
+        .array(
+            z.object({
+                alpha2_code: z.string(),
+                image_id: z
+                    .string()
+                    .nullish()
+                    .transform((value) => (value === undefined || value === '' ? null : value)),
+            }),
+        )
+        .default([]),
+});
+
+/**
+ * The flag of each business centre named, by the centre's code.
+ *
+ * A centre has no flag of its own: it sits in a country, and the country
+ * carries the flag. A centre or a country that has none is left out, so the
+ * caller reads a missing entry as no flag.
+ */
+async function readCentreFlags(
+    caller: AuthenticatedCaller,
+    codes: readonly string[],
+): Promise<Map<string, string>> {
+    const flags = new Map<string, string>();
+    if (codes.length === 0) {
+        return flags;
+    }
+    const centresRequest: ListBusinessCentresRequest = {
+        offset: 0,
+        limit: codes.length,
+        order: { field: '', descending: false },
+        filter: { code_one_of: [...codes] },
+    };
+    const centres = await caller.callAuthenticated(
+        SUBJECTS.listBusinessCentres,
+        centresRequest,
+        centresReplySchema,
+    );
+    if (centres.result.outcome !== 'ok') {
+        throw new OperationFailedError(SUBJECTS.listBusinessCentres, centres.result.message);
+    }
+    const countryCodes = [
+        ...new Set(
+            centres.centres
+                .map((centre) => centre.country_alpha2_code)
+                .filter((code) => code !== ''),
+        ),
+    ];
+    if (countryCodes.length === 0) {
+        return flags;
+    }
+    const countriesRequest: ListCountriesRequest = {
+        offset: 0,
+        limit: countryCodes.length,
+        order: { field: '', descending: false },
+        filter: { alpha2_code_one_of: countryCodes },
+        as_of: null,
+    };
+    const countries = await caller.callAuthenticated(
+        SUBJECTS.listCountries,
+        countriesRequest,
+        countriesReplySchema,
+    );
+    if (countries.result.outcome !== 'ok') {
+        throw new OperationFailedError(SUBJECTS.listCountries, countries.result.message);
+    }
+    const countryFlags = new Map<string, string>();
+    for (const country of countries.countries) {
+        if (country.image_id !== null) {
+            countryFlags.set(country.alpha2_code, country.image_id);
+        }
+    }
+    for (const centre of centres.centres) {
+        const flag = countryFlags.get(centre.country_alpha2_code);
+        if (flag !== undefined) {
+            flags.set(centre.code, flag);
+        }
+    }
+    return flags;
+}
 
 /** What one page of parties asks for. */
 export interface PartyPageQuery {
@@ -37,8 +131,9 @@ export interface PartyPageQuery {
  * The tenant is the session's, so row-level security scopes the read from the
  * token and the request names no tenant. The server pages in key order. A
  * parent on another page is read by its id in one more read that names every
- * such parent, so a page costs two reads at most. A parent the session cannot
- * see is not answered, and the row says its parent is elsewhere.
+ * such parent. The flags of the page's business centres take two more reads,
+ * one for the centres and one for their countries. A parent the session
+ * cannot see is not answered, and the row says its parent is elsewhere.
  */
 export async function readPartiesPage(
     caller: AuthenticatedCaller,
@@ -87,6 +182,15 @@ export async function readPartiesPage(
             names.set(parent.id, parent.full_name);
         }
     }
+    /*
+     * A flag is decoration: a page whose flags cannot be read is still the
+     * page, so its rows go out without them rather than the page failing.
+     */
+    const flags = await readCentreFlags(caller, [
+        ...new Set(
+            reply.parties.map((party) => party.business_center_code).filter((code) => code !== ''),
+        ),
+    ]).catch(() => new Map<string, string>());
     const parties = reply.parties.map((party): TenantParty => ({
         id: party.id,
         code: party.short_code,
@@ -97,6 +201,8 @@ export async function readPartiesPage(
         parentId: party.parent_party_id,
         parentName:
             party.parent_party_id === null ? null : (names.get(party.parent_party_id) ?? null),
+        businessCentreCode: party.business_center_code,
+        flagImageId: flags.get(party.business_center_code) ?? null,
     }));
     return { parties, totalCount: reply.total };
 }

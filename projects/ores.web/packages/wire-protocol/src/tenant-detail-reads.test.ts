@@ -208,6 +208,92 @@ describe('the party page', () => {
         expect(page.parties[0]?.parentId).toBe(SYSTEM_PARTY);
     });
 
+    /*
+     * A centre has no flag of its own: its country has. The page's centres are
+     * read once by code and their countries once by code, so the flags cost
+     * two reads however many parties share a centre.
+     */
+    it('carries the flag of each party business centre country', async () => {
+        const GB_FLAG = '99999999-9999-9999-9999-999999999991';
+        const sent: Recorded[] = [];
+        const page = await readPartiesPage(
+            callerAnsweringInTurn(
+                [
+                    reply(
+                        [
+                            {
+                                ...party(ACME, 'acme', 'Acme', 'Operational', null),
+                                business_center_code: 'GBLO',
+                            },
+                            {
+                                ...party(LONDON, 'acme_london', 'Acme London', 'Operational', ACME),
+                                business_center_code: 'GBLO',
+                            },
+                            {
+                                ...party(PARIS, 'acme_paris', 'Acme Paris', 'Operational', ACME),
+                                business_center_code: 'FRPA',
+                            },
+                            party(GROUP, 'acme_group', 'Acme Group', 'Operational', ACME),
+                        ],
+                        4,
+                    ),
+                    {
+                        result: { outcome: 'ok' },
+                        centres: [
+                            { code: 'GBLO', country_alpha2_code: 'GB' },
+                            { code: 'FRPA', country_alpha2_code: 'FR' },
+                        ],
+                    },
+                    {
+                        result: { outcome: 'ok' },
+                        countries: [
+                            { alpha2_code: 'GB', image_id: GB_FLAG },
+                            { alpha2_code: 'FR', image_id: null },
+                        ],
+                    },
+                ],
+                sent,
+            ),
+            { offset: 0, limit: 4 },
+        );
+
+        expect(sent.map((r) => r.subject)).toEqual([
+            'refdata.v1.parties.list',
+            'refdata.v1.business_centres.list',
+            'refdata.v1.countries.list',
+        ]);
+        expect(sent[1]?.body).toMatchObject({ filter: { code_one_of: ['GBLO', 'FRPA'] } });
+        expect(sent[2]?.body).toMatchObject({ filter: { alpha2_code_one_of: ['GB', 'FR'] } });
+        expect(page.parties.map((p) => [p.businessCentreCode, p.flagImageId])).toEqual([
+            ['GBLO', GB_FLAG],
+            ['GBLO', GB_FLAG],
+            ['FRPA', null],
+            ['', null],
+        ]);
+    });
+
+    it('answers the page without flags when the centres cannot be read', async () => {
+        const page = await readPartiesPage(
+            callerAnsweringInTurn([
+                reply(
+                    [
+                        {
+                            ...party(ACME, 'acme', 'Acme', 'Operational', null),
+                            business_center_code: 'GBLO',
+                        },
+                    ],
+                    1,
+                ),
+                { result: { outcome: 'denied', message: 'Refused.' }, centres: [] },
+            ]),
+            { offset: 0, limit: 1 },
+        );
+
+        expect(page.parties.map((p) => [p.name, p.businessCentreCode, p.flagImageId])).toEqual([
+            ['Acme', 'GBLO', null],
+        ]);
+    });
+
     it('fails with the server words when the read is refused', async () => {
         await expect(
             readPartiesPage(

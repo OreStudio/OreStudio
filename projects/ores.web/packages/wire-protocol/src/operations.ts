@@ -46,6 +46,9 @@ import type {
     ProvisionTenantCommand,
 } from './generated/iam/protocol/tenant_provisioning_protocol.js';
 import { subjects as partySubjects } from './generated/refdata/protocol/party_protocol.js';
+import { subjects as businessCentreSubjects } from './generated/refdata/protocol/business_centre_protocol.js';
+import { subjects as countrySubjects } from './generated/refdata/protocol/country_protocol.js';
+import { subjects as imageSubjects } from './generated/assets/protocol/image_protocol.js';
 import {
     subjects as workflowSubjects,
     type GetWorkflowStepsRequest,
@@ -75,8 +78,7 @@ export const SUBJECTS = {
     switchParty: 'iam.v1.accounts.switch-party',
     listAccounts: 'iam.v1.accounts.list',
     listChangeReasons: 'dq.v1.change_reasons.list',
-    getImages: 'assets.v1.images.get',
-    listImages: 'assets.v1.images.list',
+    listImages: imageSubjects.list_images_request,
     bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
     createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
@@ -89,6 +91,8 @@ export const SUBJECTS = {
     provisionParty: tenantProvisioningSubjects.provision_party_command,
     listParties: partySubjects.list_parties_request,
     putParty: partySubjects.put_party_request,
+    listBusinessCentres: businessCentreSubjects.list_business_centres_request,
+    listCountries: countrySubjects.list_countries_request,
     workflowInstanceSteps: workflowSubjects.get_workflow_steps_request,
     retryWorkflowInstance: workflowSubjects.retry_workflow_instance_request,
     passwordPolicy: 'iam.v1.auth.password-policy',
@@ -376,6 +380,7 @@ const wireAccountSchema = z.object({
     job_title: text,
     reports_to_account_id: uuidSchema.nullable().default(null),
     default_party_id: uuidSchema.nullable().default(null),
+    image_id: uuidSchema.nullable().default(null),
     modified_by: text,
     change_reason_code: text,
     change_commentary: text,
@@ -388,8 +393,8 @@ const wireAccountSchema = z.object({
  *
  * The nil UUID is the server's "no value" sentinel on the reference fields, so
  * it becomes `null` here. Every credential field the struct carries --
- * `password_hash`, `password_salt`, `totp_secret`, `image_id` -- is absent
- * from the schema, so it is dropped rather than forwarded.
+ * `password_hash`, `password_salt`, `totp_secret` -- is absent from the
+ * schema, so it is dropped rather than forwarded.
  */
 function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
     return {
@@ -403,6 +408,7 @@ function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
         jobTitle: row.job_title,
         reportsToAccountId: orNil(row.reports_to_account_id),
         defaultPartyId: orNil(row.default_party_id),
+        imageId: orNil(row.image_id),
         modifiedBy: row.modified_by,
         changeReasonCode: row.change_reason_code,
         changeCommentary: row.change_commentary,
@@ -631,7 +637,7 @@ export const changeReasonPageSchema = z.object({
  * code, and the field failures a validation carries are for a form that is
  * not what reads these.
  */
-const resultEnvelopeSchema = z.object({
+export const resultEnvelopeSchema = z.object({
     outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
     code: z.string().default(''),
     message: z.string().default(''),

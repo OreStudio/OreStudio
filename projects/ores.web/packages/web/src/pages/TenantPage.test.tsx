@@ -130,6 +130,8 @@ describe('TenantPage', () => {
                             status: 'active',
                             parentId: null,
                             parentName: null,
+                            businessCentreCode: 'GBLO',
+                            flagImageId: '99999999-9999-9999-9999-999999999991',
                         },
                         {
                             id: '88888888-8888-8888-8888-888888888888',
@@ -140,6 +142,8 @@ describe('TenantPage', () => {
                             status: 'active',
                             parentId: '77777777-7777-7777-7777-777777777777',
                             parentName: 'Acme Corporation Plc',
+                            businessCentreCode: 'HKHK',
+                            flagImageId: null,
                         },
                     ],
                     totalCount: 2,
@@ -153,6 +157,12 @@ describe('TenantPage', () => {
         expect(html).toContain('Top of the group');
         expect(html).toContain('>Acme Corporation Plc</td>');
         expect(html).not.toContain('Provenance');
+        // The flag is read inside the tenant; a centre with no flag keeps its code.
+        expect(html).toContain(
+            'src="/api/tenants/acme_corporation/images/99999999-9999-9999-9999-999999999991"',
+        );
+        expect(html.match(/<img/g)).toHaveLength(1);
+        expect(html).toContain('HKHK');
     });
 
     it('lists the people on the people tab', () => {
@@ -172,9 +182,23 @@ describe('TenantPage', () => {
                             jobTitle: '',
                             reportsToAccountId: null,
                             defaultPartyId: null,
+                            imageId: '99999999-9999-9999-9999-999999999992',
+                        },
+                        {
+                            version: 1,
+                            id: '99999999-9999-9999-9999-999999999998',
+                            tenantId: '44444444-4444-4444-4444-444444444444',
+                            username: 'tom.reed',
+                            fullName: '',
+                            email: 'tom@acme.example',
+                            accountType: 'user',
+                            jobTitle: '',
+                            reportsToAccountId: null,
+                            defaultPartyId: null,
+                            imageId: null,
                         },
                     ],
-                    totalCount: 1,
+                    totalCount: 2,
                 });
             },
             'acme_corporation',
@@ -183,6 +207,12 @@ describe('TenantPage', () => {
 
         expect(html).toContain('Priya Natarajan');
         expect(html).toContain('priya@acme.example');
+        // A person with a picture shows it; one without shows their initials.
+        expect(html).toContain(
+            'src="/api/tenants/acme_corporation/images/99999999-9999-9999-9999-999999999992"',
+        );
+        expect(html.match(/<img/g)).toHaveLength(1);
+        expect(html).toContain('>TR</span>');
     });
 
     /*

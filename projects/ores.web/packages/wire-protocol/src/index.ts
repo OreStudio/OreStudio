@@ -263,17 +263,8 @@ export type {
     WorkflowStepSummary,
 } from './operations.js';
 
-export {
-    imageInfoSchema,
-    listImagesRequestSchema,
-    listImagesResponseSchema,
-    getImagesRequestSchema,
-    getImagesResponseSchema,
-    imageBytesToBuffer,
-    imageBytesToText,
-    imageSchema,
-} from './entities/image.js';
-export type { WireImage, WireImageInfo } from './entities/image.js';
+export { readImages } from './entities/image.js';
+export type { ImageContent } from './entities/image.js';
 
 export {
     ACCOUNT_SUBJECTS,

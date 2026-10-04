@@ -34,17 +34,14 @@ import {
     SUBJECTS,
     SYSTEM_TENANT_ID,
     bootstrapStatusSchema,
+    isUuid,
     changeOwnPassword,
     changeOwnPasswordRequestSchema,
     changeReasonPageSchema,
     createAdministratorRequestSchema,
-    getImagesRequestSchema,
     initialAdministratorSchema,
     searchLeiEntitiesResponseSchema,
-    listImagesRequestSchema,
-    listImagesResponseSchema,
-    getImagesResponseSchema,
-    imageBytesToBuffer,
+    readImages,
     toWireTimestamp,
     loginResultSchema,
     loginInfoKeyRequestSchema,
@@ -89,6 +86,7 @@ import {
     type LoginOutcome,
     type PartySummary,
     type AuthenticatedCaller,
+    type ImageContent,
     type SetupActivity,
     type TenantSetup,
     type TenantSummary,
@@ -98,6 +96,7 @@ import type { ListChangeReasonsRequest } from '@ores/wire-protocol/generated/dq/
 import type { LoadedSiteConfiguration } from './site-config.js';
 import { resolveBroker } from './broker.js';
 import type { Config } from './config.js';
+import { createImageCache } from './image-cache.js';
 import { createRateLimiter, type RateLimiter } from './rate-limit.js';
 import { createSessionStore, type LiveSession, type SessionStore } from './sessions.js';
 import { sessionModeFor } from './session-mode.js';
@@ -140,6 +139,14 @@ const SESSION_COOKIE = 'ores_web_session';
  */
 const POLICY_READS_PER_MINUTE = 120;
 
+/**
+ * How many bytes of tenant pictures and flags the BFF keeps.
+ *
+ * A staff photo is about a hundred kilobytes and a flag is a few, so this holds
+ * several hundred pages' worth while staying a small part of the process.
+ */
+const TENANT_IMAGE_CACHE_BYTES = 64 * 1024 * 1024;
+
 /** One page of parties, as the browser asks for it. */
 const partyPageQuerySchema = z.object({
     offset: z.int().nonnegative(),
@@ -166,6 +173,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const policyLimiter =
         dependencies.policyLimiter ??
         createRateLimiter({ maxAttempts: POLICY_READS_PER_MINUTE, windowSeconds: 60 });
+    const tenantImages = createImageCache(TENANT_IMAGE_CACHE_BYTES);
 
     const injectedClient = dependencies.createClient;
     const createClient = (): { client: OresClient; connect: () => Promise<void> } => {
@@ -1174,10 +1182,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * The session's own token is untouched, so any other request the browser
      * makes meanwhile is answered as system administration.
      */
-    async function readInside<T>(
-        request: FastifyRequest,
-        read: (caller: AuthenticatedCaller) => Promise<T>,
-    ): Promise<T> {
+    async function tenantToRead(request: FastifyRequest): Promise<{
+        readonly session: LiveSession;
+        readonly tenantId: string;
+    }> {
         const session = requireSession(request);
         if (session.mode !== 'system-administration') {
             throw notPermitted('A tenant of the deployment is read in system administration.');
@@ -1187,6 +1195,23 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (tenant === null || tenant.id === SYSTEM_TENANT_ID) {
             throw notFound('No tenant has this code.');
         }
+        return { session, tenantId: tenant.id };
+    }
+
+    async function readInside<T>(
+        request: FastifyRequest,
+        read: (caller: AuthenticatedCaller, tenantId: string) => Promise<T>,
+    ): Promise<T> {
+        const { session, tenantId } = await tenantToRead(request);
+        return readInsideKnownTenant(request, session, tenantId, read);
+    }
+
+    async function readInsideKnownTenant<T>(
+        request: FastifyRequest,
+        session: LiveSession,
+        tenantId: string,
+        read: (caller: AuthenticatedCaller, tenantId: string) => Promise<T>,
+    ): Promise<T> {
         /*
          * Only a refused entry is a refusal. A read that fails inside the
          * tenant is carried out as itself, so the browser is not told it may
@@ -1195,10 +1220,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         let failedRead: { readonly error: unknown } | undefined;
         try {
             return await session.client.readInsideTenant(
-                tenant.id,
+                tenantId,
                 async (caller) => {
                     try {
-                        return await read(caller);
+                        return await read(caller, tenantId);
                     } catch (error) {
                         failedRead = { error };
                         throw error;
@@ -1226,7 +1251,16 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
         return partyPageSchema.parse(
-            await readInside(request, (caller) => readPartiesPage(caller, page.data)),
+            await readInside(request, async (caller, tenantId) => {
+                const parties = await readPartiesPage(caller, page.data);
+                await keepPageImages(
+                    request,
+                    caller,
+                    tenantId,
+                    parties.parties.map((party) => party.flagImageId),
+                );
+                return parties;
+            }),
         );
     });
 
@@ -1240,8 +1274,82 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!page.success) {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
-        return readInside(request, (caller) => readAccountsPage(caller, page.data));
+        return readInside(request, async (caller, tenantId) => {
+            const people = await readAccountsPage(caller, page.data);
+            await keepPageImages(
+                request,
+                caller,
+                tenantId,
+                people.accounts.map((account) => account.imageId),
+            );
+            return people;
+        });
     });
+
+    /**
+     * One picture or flag of a tenant, as the tenant's pages named it.
+     *
+     * The page that names an image reads it in the same visit, so this answers
+     * from what that visit kept. An image the cache has let go is read inside
+     * the tenant again. Cached hard in the browser, because an image's
+     * identifier is its identity and its bytes never change.
+     */
+    server.get('/api/tenants/:code/images/:id', async (request, reply) => {
+        const { id } = request.params as { id: string };
+        if (!isUuid(id)) {
+            throw notFound('No image has this identifier.');
+        }
+        const { session, tenantId } = await tenantToRead(request);
+        let image = tenantImages.get(tenantId, id);
+        if (image === undefined) {
+            [image] = await readInsideKnownTenant(request, session, tenantId, (caller) =>
+                keepImages(caller, tenantId, [id]),
+            );
+        }
+        if (image === undefined) {
+            throw notFound('No image has this identifier.');
+        }
+        return sendImage(reply, image);
+    });
+
+    /**
+     * Keeps the images a page names, without failing the page.
+     *
+     * A page without its pictures is still the page: an image the cache does
+     * not hold is read again when the browser asks for it.
+     */
+    async function keepPageImages(
+        request: FastifyRequest,
+        caller: AuthenticatedCaller,
+        tenantId: string,
+        imageIds: readonly (string | null)[],
+    ): Promise<void> {
+        try {
+            await keepImages(caller, tenantId, imageIds);
+        } catch (error) {
+            request.log.warn({ err: error }, 'The images a page names could not be read.');
+        }
+    }
+
+    /**
+     * Reads the images named that the cache does not hold yet, keeps them, and
+     * answers what it read, so an image too large to keep is still served.
+     */
+    async function keepImages(
+        caller: AuthenticatedCaller,
+        tenantId: string,
+        imageIds: readonly (string | null)[],
+    ): Promise<ImageContent[]> {
+        const missing = tenantImages.missing(
+            tenantId,
+            imageIds.filter((id): id is string => id !== null),
+        );
+        const images = await readImages(caller, missing);
+        for (const image of images) {
+            tenantImages.put(tenantId, image);
+        }
+        return images;
+    }
 
     /**
      * One page of the parties of the session's own tenant.
@@ -1512,62 +1620,33 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * The images that can be chosen, without their bytes.
+     * One image of the session's own tenant, by its identifier.
      *
-     * A picker over six hundred flags must not fetch six hundred flags, so this
-     * returns metadata and the chosen one is fetched through the route below.
-     */
-    server.get('/api/images', async (request) => {
-        const session = requireSession(request);
-        const response = await session.client.callAuthenticated(
-            SUBJECTS.listImages,
-            listImagesRequestSchema.parse({ modified_since: null }),
-            listImagesResponseSchema,
-        );
-        return {
-            images: response.images
-                .map((image) => ({
-                    imageId: image.image_id,
-                    key: image.key,
-                    description: image.description,
-                    sizeBytes: image.size_bytes,
-                }))
-                .sort((a, b) => a.key.localeCompare(b.key)),
-        };
-    });
-
-    /**
-     * One image, by its identifier.
-     *
-     * Flags live in the assets service as ordinary images, so this is what a flag
-     * cell points at. Fetched through the BFF because the browser never reaches
-     * NATS, which is the same reason every other read goes through here.
-     *
-     * Cached hard, and safely: an image's identifier is its identity and its bytes
-     * never change, so a record that points at `abc` will always point at the same
-     * picture. That also means a page of twenty-five flags costs one request each
-     * the first time and none afterwards.
+     * Flags and pictures live in the assets service as ordinary images, so this
+     * is what a flag cell points at. Fetched through the BFF because the
+     * browser never reaches NATS, which is the same reason every other read
+     * goes through here. Cached hard, because an image's identifier is its
+     * identity and its bytes never change.
      */
     server.get('/api/images/:id', async (request, reply) => {
         const session = requireSession(request);
         const { id } = request.params as { id: string };
-
-        const response = await session.client.callAuthenticated(
-            SUBJECTS.getImages,
-            getImagesRequestSchema.parse({ image_ids: [id] }),
-            getImagesResponseSchema,
-        );
-
-        const image = response.images[0];
-        if (image === undefined) {
-            return reply.code(404).send();
+        if (!isUuid(id)) {
+            throw notFound('No image has this identifier.');
         }
-
-        return reply
-            .header('content-type', image.mime_type.length > 0 ? image.mime_type : 'image/svg+xml')
-            .header('cache-control', 'private, max-age=31536000, immutable')
-            .send(imageBytesToBuffer(image.data));
+        const [image] = await readImages(session.client, [id]);
+        if (image === undefined) {
+            throw notFound('No image has this identifier.');
+        }
+        return sendImage(reply, image);
     });
+
+    function sendImage(reply: FastifyReply, image: ImageContent): FastifyReply {
+        return reply
+            .header('content-type', image.mimeType)
+            .header('cache-control', 'private, max-age=31536000, immutable')
+            .send(image.bytes);
+    }
 
     /*
      * One stream per session, carrying everything the interface hears about.

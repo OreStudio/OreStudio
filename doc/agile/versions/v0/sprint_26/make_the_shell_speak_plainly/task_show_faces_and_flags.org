@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: EAF108C1-2AE5-4415-B8C7-1F69911EE3BC
+:END:
+#+title: Task: Show faces and flags in a tenant
+#+description: Show each person's picture on a tenant's People tab and each party's business centre flag on its Parties tab.
+#+type: task
+#+level: s1
+#+filetags: :web:tenancy:images:make_the_shell_speak_plainly:sprint_26:v0:
+#+owner: marco
+#+branch: feature/show-faces-and-flags
+#+pr: 2601
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant's People tab shows each person's picture, and its Parties tab shows the flag of each party's business centre, as the desktop client does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The People tab shows each person's picture, or their initials when they have none.
+- The Parties tab shows each party's business centre with the flag of its country.
+- The pictures and flags are read inside the tenant, with one entry into the tenant for each page.
+- A tenant administrator's own Parties screen shows the same flags.
+
+* Plan
+
+- The account and the party already point at their images: an account by its
+  =image_id=, a party through its business centre, whose country holds the
+  flag. Carry both through the domain types as =imageId= and =flagImageId=.
+- Read the flags with two more reads per party page: the page's business
+  centres by code, then their countries by code.
+- The images belong to the tenant, so the BFF reads them inside it. A page of
+  twenty photos must not cost twenty entries, so the page reads the images it
+  names in its own visit and the BFF keeps them in a cache bounded by size.
+  The browser then fetches each one by URL from that cache.
+- The BFF image routes still sent the old request shapes (=image_ids= and
+  =modified_since=), which the server no longer accepts. Replace them with one
+  reader that lists images by identifier, and drop the image list route, which
+  nothing called.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Acme accounts with a picture | 58 of 59 | =compass sql -u postgres= count on =ores_iam_accounts_tbl= | 176fbb0ffd |
+| Acme business centres whose country has a flag | 210 of 213 | =compass sql -u postgres= join of centres to countries | 176fbb0ffd |
+| Size of one staff photo | about 120 kB | =compass sql -u postgres= =length(data)= on =ores_assets_images_tbl= | 176fbb0ffd |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2601][#2601]] | [web] Show faces and flags in a tenant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A failed centre or country read fails the whole party page | wire-protocol/src/party-page.ts | Accept | The page goes out with no flags; a test covers it |
+| 2 | Each image request looks the tenant up by code | bff/src/server.ts | Decline | One small read; a code cache would need its own invalidation when a tenant is removed |
+| 3 | Concurrent cache misses are not merged | bff/src/server.ts | Decline | Only after eviction from 64 MB; the page read fills the cache first |
+| 4 | The cache can serve an image of a deleted tenant or image | bff/src/image-cache.ts | Decline | The routes resolve the tenant first, so a removed tenant answers 404; a removed image stays viewable until evicted, which is harmless |
+| 5 | The avatar and flag keep a failure after the picture changes | web/src/ui/Images.tsx | Accept | The failure is remembered for that picture only |
+| 6 | An image larger than the cache is answered 404 | bff/src/server.ts | Accept | The route serves the image it read, kept or not |
+| 7 | The 404 for a malformed id now has a body | bff/src/server.ts | Decline | Nothing reads that body; it matches every other not-found answer |
+
+* Result
+
+A tenant's people and parties now show faces and flags.
+
+- *People.* Each row shows the person's picture, or their initials when they
+  have none or the picture fails to load.
+- *Parties.* A new *Business centre* column shows the centre's code with the
+  flag of its country. The tenant administrator's own Parties screen has the
+  same column, read as the session through =/api/images/:id=.
+- *One entry per page.* The parties and people pages read the images they name
+  in the same visit to the tenant. The BFF keeps them in a cache of 64 MB, keyed
+  by tenant, and =GET /api/tenants/:code/images/:id= answers from it. An image
+  the cache has let go is read inside the tenant again. A page whose images
+  cannot be read is still answered.
+- *Image reads fixed.* The BFF reads images with =assets.v1.images.list= by
+  identifier. The old request shapes are gone, with the unused list route.
+
+Acceptance is met: the BFF tests check the reads each page makes and that a
+named picture is served with no second entry; the screen tests check the
+pictures, the initials and the flags. BFF 135, web 231 and protocol 70 tests
+pass. Not checked live: signing in needs the administrator's password.

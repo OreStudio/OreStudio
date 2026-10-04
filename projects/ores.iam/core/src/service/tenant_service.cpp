@@ -112,6 +112,20 @@ tenant_service::list_tenants(const messaging::list_tenants_request& request) {
         response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
+    if (request.filter && request.filter->type_one_of &&
+        request.filter->type_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in type_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->status_one_of &&
+        request.filter->status_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in status_one_of.";
+        return response;
+    }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "filter_too_large";

@@ -82,11 +82,27 @@ filter_condition(const std::optional<messaging::tenants_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->type)
+        r.push_back(equals("type", filter_value(*filter->type)));
+    if (filter->status)
+        r.push_back(equals("status", filter_value(*filter->status)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->type_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->type_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("type", std::move(values)));
+    }
+    if (filter->status_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->status_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("status", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
         r.push_back(contains_any({"code", "name", "hostname"}, *filter->search));

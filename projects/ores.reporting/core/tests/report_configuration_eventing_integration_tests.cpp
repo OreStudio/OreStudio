@@ -184,15 +184,20 @@ TEST_CASE("write_report_configuration_publishes_an_event", tags) {
     ores::reporting::repository::report_definition_repository report_definition_id_repo;
     report_definition_id_repo.write(party_ctx, report_definition_id_parent);
     v.report_definition_id = report_definition_id_parent.id;
-    // Seed the active configuration_type row ores_reporting_configuration_types_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto configuration_type_code_parent =
-        ores::reporting::generators::generate_synthetic_configuration_type(ctx);
-    configuration_type_code_parent.change_reason_code = "system.test";
-    ores::reporting::repository::configuration_type_repository configuration_type_code_repo;
-    configuration_type_code_repo.write(party_ctx, configuration_type_code_parent);
-    v.configuration_type_code = configuration_type_code_parent.code;
+    // configuration_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::reporting::repository::configuration_type_repository
+            configuration_type_code_catalogue_repo;
+        const auto configuration_type_code_catalogue =
+            configuration_type_code_catalogue_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(configuration_type_code_catalogue.empty());
+        v.configuration_type_code = configuration_type_code_catalogue.front().code;
+    }
     // Seed the active configuration row ores_reporting_configurations_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
@@ -203,18 +208,19 @@ TEST_CASE("write_report_configuration_publishes_an_event", tags) {
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     configuration_id_parent.party_id = *party_ctx.party_id();
-    auto configuration_id_parent_configuration_type_parent =
-        ores::reporting::generators::generate_synthetic_configuration_type(ctx);
-    configuration_id_parent_configuration_type_parent.change_reason_code = "system.test";
-    // Seed the active configuration_type row ores_reporting_configuration_types_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::reporting::repository::configuration_type_repository
-        configuration_id_parent_configuration_type_parent_repo;
-    configuration_id_parent_configuration_type_parent_repo.write(
-        party_ctx, configuration_id_parent_configuration_type_parent);
-    configuration_id_parent.configuration_type_code =
-        configuration_id_parent_configuration_type_parent.code;
+    // configuration_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::reporting::repository::configuration_type_repository
+            configuration_id_parent_configuration_type_parent_repo;
+        const auto configuration_id_parent_configuration_type_parent_catalogue =
+            configuration_id_parent_configuration_type_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(configuration_id_parent_configuration_type_parent_catalogue.empty());
+        configuration_id_parent.configuration_type_code =
+            configuration_id_parent_configuration_type_parent_catalogue.front().code;
+    }
     ores::reporting::repository::configuration_repository configuration_id_repo;
     configuration_id_repo.write(party_ctx, configuration_id_parent);
     v.configuration_id = configuration_id_parent.id;

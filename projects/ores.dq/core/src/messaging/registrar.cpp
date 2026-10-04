@@ -66,6 +66,11 @@
 #include "ores.dq.core/messaging/fsm_transition_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_registrar.hpp"
 #include "ores.dq.core/messaging/lei_entity_summary_handler.hpp"
+#include "ores.dq.core/messaging/counterparty_alias_registrar.hpp"
+#include "ores.dq.core/messaging/netting_agreement_registrar.hpp"
+#include "ores.dq.core/messaging/netting_set_registrar.hpp"
+#include "ores.dq.core/messaging/csa_registrar.hpp"
+#include "ores.dq.core/messaging/netting_set_alias_registrar.hpp"
 #include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/methodology_registrar.hpp"
@@ -315,6 +320,36 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(lei_relationship_subs.begin()),
                     std::make_move_iterator(lei_relationship_subs.end()));
+    }
+    {
+        auto counterparty_alias_subs = register_counterparty_alias_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(counterparty_alias_subs.begin()),
+                    std::make_move_iterator(counterparty_alias_subs.end()));
+    }
+    {
+        auto netting_agreement_subs = register_netting_agreement_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(netting_agreement_subs.begin()),
+                    std::make_move_iterator(netting_agreement_subs.end()));
+    }
+    {
+        auto netting_set_subs = register_netting_set_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(netting_set_subs.begin()),
+                    std::make_move_iterator(netting_set_subs.end()));
+    }
+    {
+        auto csa_subs = register_csa_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(csa_subs.begin()),
+                    std::make_move_iterator(csa_subs.end()));
+    }
+    {
+        auto netting_set_alias_subs = register_netting_set_alias_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(netting_set_alias_subs.begin()),
+                    std::make_move_iterator(netting_set_alias_subs.end()));
     }
     {
         auto report_definition_subs = register_report_definition_handlers(nats, ctx, verifier);

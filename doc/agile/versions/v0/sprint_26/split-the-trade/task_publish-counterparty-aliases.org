@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 92407514-F6FC-496B-88E3-AA832F9B2964
+:END:
+#+title: Task: Publish ORE counterparty aliases to provisioned tenants
+#+description: Stage counterparty aliases in DQ and publish them as counterparty identifiers, so a provisioned tenant gets the ORE sample aliases against the GLEIF counterparties it already holds.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/publish-counterparty-aliases
+#+pr: 2592
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant provisioned with the acme_demo profile resolves every counterparty name the ORE samples use, as the system tenant already does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- Counterparty aliases are a DQ artefact type, keyed to each counterparty's LEI, with a publish function that writes them as counterparty identifiers of the tenant's counterparty holding that LEI.
+- ore.counterparty_aliases holds the 23 sample aliases, depends on gleif.lei_counterparties.small, and is an optional member of the base bundle that acme_demo opts into.
+- CP maps onto the same bank as CPTY, so the netting set NS, which both use, belongs to one counterparty.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+The system tenant got its ORE aliases from an inline insert in the ORE sample
+publication script. A provisioned tenant never runs that script: it gets
+reference data only through DQ bundles. So the aliases become a DQ artefact.
+
+- Add the staging model =ores.dq.counterparty_alias= (id_value, id_scheme, lei,
+  description) with the artefact staging only profile, and generate it.
+- Add the artefact type =counterparty_aliases=, which targets
+  =refdata_counterparty_identifiers_tbl= through
+  =refdata.v1.counterparty-aliases.publish-from-dq=.
+- Add =ores_refdata_publish_counterparty_aliases_from_dq_fn=. A counterparty id
+  differs per tenant, so the alias names its counterparty by LEI, and the
+  function joins through the tenant's LEI identifier. An alias already held,
+  and an alias whose LEI has no counterparty in the tenant, are skipped.
+- Move the 23 aliases into the dataset =ore.counterparty_aliases=. It depends on
+  =gleif.lei_counterparties.small=, is an optional member of =base=, and
+  =acme_demo= opts in to it. The system tenant publishes it through the same
+  function.
+- Remap =CP= from HSBC onto JPMorgan Chase, the bank of =CPTY=: both use the
+  netting set =NS=, and a netting set belongs to one counterparty.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ORE aliases in the ACME tenant after provisioning | 23 aliases, 11 counterparties | provisioning recipe, then the query in [[file:evidence/acme_counterparty_aliases.txt][evidence/acme_counterparty_aliases.txt]] | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| pgTAP alias cases | 12/12 pass | =pg_prove projects/ores.sql/test/refdata_counterparty_ore_aliases_test.sql= | branch head before commit |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2592][#2592]] | [dq] Publish ORE counterparty aliases through DQ |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The publish function ignores =p_mode=. | refdata_publish_from_dq_create.sql | Decline | The generic handler passes the mode to every function. The LEI counterparty publish also ignores it. An alias is insert-only. |
+| 2 | The alias handler checks no permission code. | counterparty_alias_handler.hpp | Decline | Generated read-only staging handler, the same as the other staging models. |
+| 3 | The staging inserts omitted the not-null =version= column. | ore_sample_counterparties_dataset_populate.sql | Accept | Fixed in the populate and in the pgTAP setup. |
+| 4 | PR 2592 review 1: one publish can write a name twice, from a name staged twice or a LEI two counterparties hold. | refdata_publish_from_dq_create.sql | Accept | =distinct on (id_scheme, id_value)=; pgTAP case 12 stages a name twice. |
+| 5 | PR 2592 review 2: say the publish is insert-only whatever the mode. | refdata_publish_from_dq_create.sql | Accept | Added to the function's doc comment. |
+| 6 | PR 2592 review 3: raise a notice that lists the unresolved names. | refdata_publish_from_dq_create.sql | Decline | The result already reports the skipped count, and pgTAP covers that case. |
+| 7 | PR 2592 review 4: the sample counterparties dependency sits in the aliases block. | ore_sample_counterparties_dataset_populate.sql | Accept | Moved into the sample counterparties block. |
+| 8 | PR 2592 review 5: other examples may use CP with another netting set. | ore_sample_counterparties_dataset_populate.sql | Decline | The inventory shows CP only with NS, which CPTY shares. |
+| 9 | PR 2592 review 6: check where the generated include sits in dq_create.sql. | dq_create.sql | Decline | The codegen drift check passes. |
+
+* Result
+
+ORE counterparty aliases are now a DQ artefact type. A provisioned tenant gets
+them through the =base= bundle. After the ACME provisioning recipe, the ACME
+tenant resolves all 23 ORE names onto 11 GLEIF banks, and =CP= and =CPTY= name
+the same counterparty (JPMorgan Chase Bank). The dataset
+=ore.counterparty_aliases= depends on =gleif.lei_counterparties.small=, so a
+publication orders the counterparties before the aliases. pgTAP covers the
+resolution, the shared bank of =CP= and =CPTY=, a second publish that writes
+nothing, and an alias whose LEI the tenant lacks.

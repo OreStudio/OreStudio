@@ -31,6 +31,7 @@
 #include <rfl/json.hpp>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -102,6 +103,13 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         return;
     }
 
+    if (req->target_ids_filter.size() > 1000) {
+        reply(nats_,
+              msg,
+              list_workflow_instance_summaries_response{
+                  .success = false, .message = "The request names more than 1000 targets."});
+        return;
+    }
     const int limit = std::clamp(req->limit, 1, 1000);
 
     // read_latest uses ctx.tenant_id() for RLS filtering.
@@ -130,6 +138,15 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
             // A run with no target does not act on the one that was asked for.
             return inst.target_id == boost::uuids::uuid{} ||
                    boost::uuids::to_string(inst.target_id) != filter;
+        });
+    }
+
+    if (!req->target_ids_filter.empty()) {
+        const std::unordered_set<std::string> targets(req->target_ids_filter.begin(),
+                                                      req->target_ids_filter.end());
+        std::erase_if(instances, [&](const auto& inst) {
+            return inst.target_id == boost::uuids::uuid{} ||
+                   !targets.contains(boost::uuids::to_string(inst.target_id));
         });
     }
 

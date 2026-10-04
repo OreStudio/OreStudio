@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: A66D44D3-493E-46D8-BE41-F70271F003C1
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.counterparty_alias
+#+description: Codegen entity model for the dq counterparty_alias staging table: names a source system uses for counterparties, keyed to each counterparty's LEI, published as counterparty identifiers.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+entity_singular: counterparty_alias
+#+entity_plural: counterparty_aliases
+#+entity_title: Counterparty Alias
+#+brief: A name a source system uses for a counterparty, keyed to the counterparty's LEI.
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A name a source system uses for a counterparty, such as the =CPTY_A= an ORE
+document puts in its envelope, staged with the identifier scheme it belongs
+to and the LEI of the counterparty it names. A counterparty's id differs from
+tenant to tenant, so the alias names it by LEI; publishing resolves the LEI to
+the tenant's counterparty and writes the alias as a counterparty identifier.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** id_value
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The name the source system uses.
+
+#+begin_src cpp :name generator
+std::string("CPTY_A")
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The party identifier scheme the name belongs to, such as ORE.
+
+#+begin_src cpp :name generator
+std::string("ORE")
+#+end_src
+
+** lei
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The LEI of the counterparty the name stands for.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional note on where the name comes from.
+
+#+begin_src cpp :name generator
+std::string("Test alias")
+#+end_src
+
+* Artefact indexes
+
+** lei
+:PROPERTIES:
+:columns: lei
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_counterparty_aliases_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: counterparty_alias
+:entity_plural_short:   counterparty_aliases
+:entity_singular_words: counterparty alias
+:entity_plural_words:   counterparty aliases
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ca
+:END:
+
+** Table display
+
+| column    | header |
+|-----------+--------|
+| id_value  | Name   |
+| id_scheme | Scheme |
+| lei       | LEI    |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_class:                dq::domain::counterparty_alias
+:collection_name:             counterparty_aliases
+:key_field:                   id_value
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:END:
+
+*** Columns
+
+| enum_name | field     | header | type   | width |
+|-----------+-----------+--------+--------+-------|
+| Name      | id_value  | Name   | string |   150 |
+| Scheme    | id_scheme | Scheme | string |   100 |
+| Lei       | lei       | LEI    | string |   200 |
+
+* Notes
+
+Bound to the artefact staging only profile: the table is staging, and its
+artefact type publishes through =ores_refdata_publish_counterparty_aliases_from_dq_fn=,
+which writes each alias as a counterparty identifier of the counterparty
+holding its LEI in the target tenant.
+
+* See also
+
+- [[id:B3776F91-B146-47DA-B76E-7C79FBD2E342][ores.dq.lei_relationship]] — the staging model this one follows.

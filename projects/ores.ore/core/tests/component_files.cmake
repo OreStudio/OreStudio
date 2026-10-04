@@ -36,6 +36,7 @@ set(files
     "party_scope_tests.cpp"
     "planner_import_planner_tests.cpp"
     "pricing_engine_database_roundtrip_tests.cpp"
+    "run_store_database_tests.cpp"
     "scanner_directory_scanner_tests.cpp"
     "stress_test_database_roundtrip_tests.cpp"
     "todays_market_database_roundtrip_tests.cpp"

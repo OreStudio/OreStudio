@@ -66,7 +66,11 @@ struct tenant_lookup {
 };
 
 struct tenants_filter {
+    std::optional<std::string> type;
+    std::optional<std::string> status;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> type_one_of;
+    std::optional<std::vector<std::string>> status_one_of;
     std::optional<std::string> search;
 };
 

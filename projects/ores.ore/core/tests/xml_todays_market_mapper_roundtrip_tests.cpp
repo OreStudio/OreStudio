@@ -67,7 +67,8 @@ using namespace ores::ore::domain;
 // branches to the lookup.
 std::set<std::string> schema_collection_kinds() {
     std::ifstream in(ores::testing::project_root::resolve("external/ore/xsd/todaysmarket.xsd"));
-    const std::string schema((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    const std::string schema((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
     const auto start = schema.find("<xs:complexType name=\"todaysmarket\"");
     const auto root = schema.substr(start, schema.find("</xs:complexType>", start) - start);
     const std::regex child(R"re(<xs:element type="[A-Za-z]+"\s+name=\s*"([A-Za-z]+)")re");

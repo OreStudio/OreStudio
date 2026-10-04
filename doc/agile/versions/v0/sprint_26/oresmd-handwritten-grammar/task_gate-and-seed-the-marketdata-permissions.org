@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/gate-and-seed-the-marketdata-permissions
+#+pr: 2594
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ that need it, and checked by the gate.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -45,6 +45,16 @@ that need it, and checked by the gate.
 Decide one spelling per code (the handlers use =market_series=, the seeds use
 =series=), then seed and grant.
 
+The handlers' spelling wins, because the generated handlers write it from the
+entity's plural and every other component's codes follow the same rule. So:
+
+1. Add =marketdata= to =REGISTRY= in =check_handler_permissions.py= and let the
+   gate list what is missing.
+2. Seed each code a handler checks, and remove each seeded code no handler
+   checks.
+3. Map every caller outside the component to the handler it calls, and grant
+   each service role the codes those handlers check.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -57,12 +67,42 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Codes the marketdata handlers check | 17 | =check_handler_permissions.required_codes("marketdata")= | c24fb780ff |
+| Of those, seeded before this task | 1 (=marketdata::observations:read=) | the same, against =seeded_codes()= | c24fb780ff |
+| Seeded codes no handler checked | 6 (=series:read/write/delete=, =observations:write=, =fixings:read/write=) | =iam_permissions_populate.sql= against the 17 | c24fb780ff |
+| Gate after the change | 9 components, 597 codes, all seeded | =check_handler_permissions.py= | c24fb780ff |
 
 * Notes
 
 16 of 17 checked codes are not seeded today. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 4, W02, and
 capture =CCB1D9D1=.
+
+** Who calls a marketdata handler
+
+| Caller | Calls | Code it needs | Grant |
+|--------+-------+---------------+-------|
+| =SyntheticService= | =find_series_by_uri=, =list_observations_page=, =list_feed_bindings=, =save_feed_binding= | =marketdata::feed_bindings:write=; the read handlers check no code | =marketdata::feed_bindings:write= only |
+| Tenant provisioning in =ores.iam= | =list_feed_bindings=, =put_feed_binding= | =marketdata::feed_bindings:write= | None: it mints a token for the tenant's acting admin, who holds =*= |
+| =ReportingService= | =export_market_data_to_storage= | None: that handler checks no code | None |
+| The shell | CRM, curve bootstrap, import, ORE export and entity verbs | the matching code | Through the user's role; =TenantAdmin= and =SuperAdmin= hold =*= |
+
+** Decisions
+
+- =MarketdataService= keeps =marketdata::*=. Every service role holds its own
+  component's wildcard, and the service is the handler, not a caller of it.
+- =marketdata::observations:read= stays under its old name. It is the one code
+  the ORE export checks, and it reads every series, observation and fixing; the
+  seed's description now says so.
+- The six seeded codes no handler checked are removed, and so are
+  =SyntheticService='s four grants of them.
+
+** Found here, not fixed here
+
+The handler for =marketdata.v1.series.export-to-storage=, in
+=market_series_handler.hpp=, checks no code: any authenticated caller can write
+every series, observation and fixing of its tenant to object storage. It is the
+class of gap capture =CCB1D9D1= describes, an operation handler the gate cannot
+see checking nothing, and it is recorded there.
 
 * Test Scenarios
 
@@ -79,12 +119,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2594][#2594]] | [marketdata] Gate and seed the marketdata permissions |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 2594: a design doc uses the removed =marketdata::series:write= as its example. | =anatomy_of_a_service.org= | Accepted | The example is =marketdata::feed_bindings:write=, the code =SyntheticService= now holds. |
+| 2 | PR 2594: make clear that only the export to storage is ungated, not the ORE export. | capture =CCB1D9D1= | Accepted | The capture names the ORE export and the code it checks. |
 
 * Result
+
+W02 passes for marketdata. =marketdata= is in the permission gate's =REGISTRY=,
+and every one of the 17 codes its handlers check is seeded under the handlers'
+spelling. The six seeded codes no handler checked are gone. =SyntheticService=
+holds only =marketdata::feed_bindings:write=, the one code its calls need;
+tenant provisioning and reporting need none. On a recreated database the fleet
+started and 90 of 90 test suites passed. One ungated operation, the export to
+storage, is recorded on capture =CCB1D9D1=.

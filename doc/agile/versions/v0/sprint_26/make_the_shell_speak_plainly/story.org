@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 4F510088-2ABB-4204-A5E1-90B1C112BAA7
+:END:
+#+title: Story: Make the shell speak to people plainly
+#+description: The shell names journeys and asks the administrator to enter a tenant, which are implementation terms. Reprototype the home screen, then show tenant management as a list with add and remove, and open a tenant's details with the tenant session held behind the scenes.
+#+type: story
+#+level: s2
+#+filetags: :web:ui:prototype:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person sees the work they can do, in their own words. The home screen shows areas and actions, never journeys; system administration is tenant management, a list with add and remove; and a tenant's details open in place, with the session that reads them held for the screen and never offered as a step.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- A new home screen prototype is accepted, and its record says what changed from the application shell prototype and why.
+- No screen names a journey, and none asks the person to enter or leave a tenant.
+- Tenants is a list with an add button and a remove button; opening a tenant shows its details, read inside the tenant for the life of the screen.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:89A81961-6ADE-48AD-9098-37B19CFB0AA5][Scaffold story: Make the shell speak to people plainly]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EBC5EE0F-6D71-43E6-B6D4-1C8CA3FDE51A][Prototype the home screen]] | DONE | | 2026-10-04 | Prototype the home screen and tenant management in a person's own words, and record the accepted design. |
+| [[id:4FF72D46-37B4-478D-8F7A-7964BC609342][Speak plainly on home and in the shell]] | DONE | 2026-10-04 | 2026-10-04 | No screen says journey. The system administrator's home shows system health, what needs attention, recent setup activity and a short tenant list; status badges carry colour; the tenant administrator's and party user's homes follow the prototype. |
+| [[id:CB77A11C-63D2-4D64-B615-5E3CF69054FC][Manage tenants as a list and open one in place]] | BACKLOG | | | Tenants is one list with add and remove buttons. Opening a tenant shows its overview, parties and people, with the tenant session started and ended by the screen; nothing offers entering or leaving a tenant. |
+| [[id:D825FA3C-D4DE-47A4-8E31-2420C0457CE2][Remove a tenant]] | BACKLOG | | | A system administrator removes a tenant from the list or its screen, confirming with its code. The operation terminates the tenant over the bus, and the confirmation says exactly what removal does to sign-in and to sessions already open. |
+
+* Decisions
+
+* Out of scope
+
+-

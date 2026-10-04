@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 759255D2-7920-5CA2-BCFF-DBD057DA8740
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the netting_set_aliases commands from the shell?
+#+description: Every command the netting_set_aliases submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:netting_set_aliases:
+
+This file documents the netting_set_aliases resource at the shell, one section per command. Every command is a subcommand of =netting_set_aliases=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 54F6AA2C-FB95-58FE-80ED-3CCDA6279F9A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_aliases list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =dq.v1.netting_set_aliases.list=.
+
+#+name: netting_set_aliases-list
+#+begin_src ores-shell :tangle netting_set_aliases-list.ores :exports none
+netting_set_aliases list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B2D8DC68-05EF-5593-A58A-59A1207B712F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_aliases get <id_value>
+#+end_example
+
+It is addressed at =dq.v1.netting_set_aliases.get=.
+
+#+name: netting_set_aliases-get
+#+begin_src ores-shell :tangle netting_set_aliases-get.ores :exports none
+netting_set_aliases get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: DBA4485F-EAF6-5752-8B98-2373D98AE435
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+netting_set_aliases get-many <id_value>
+#+end_example
+
+It is addressed at =dq.v1.netting_set_aliases.get_many=.
+
+#+name: netting_set_aliases-get-many
+#+begin_src ores-shell :tangle netting_set_aliases-get-many.ores :exports none
+netting_set_aliases get-many __none__
+#+end_src
+

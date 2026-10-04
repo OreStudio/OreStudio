@@ -128,11 +128,11 @@ cross join (values
     ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"], "opted_in_datasets": ["gleif.lei_counterparties.small"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"], "opted_in_datasets": ["gleif.lei_counterparties.small", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
-        {"name": "Acme Corporation Plc", "bundles": ["acme_group"], "default": true},
+        {"name": "Acme Corporation Plc", "bundles": ["acme_group", "ore_sample_netting"], "default": true},
         {"name": "ACME Corporation UK plc", "bundles": ["acme_uk"]},
         {"name": "ACME Corporation US Inc", "bundles": ["acme_us"]},
         {"name": "ACME Corporation HK Ltd", "bundles": ["acme_hk"]}

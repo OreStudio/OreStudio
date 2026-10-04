@@ -115,6 +115,7 @@ parameter of every analytic, so the row carries it rather than inferring it.
 :PROPERTIES:
 :table:         ores_reporting_analytic_types_tbl
 :target_column: code
+:use_system_tenant: true
 :parent_entity: analytic_type
 :nullable:      false
 :error_message: Invalid analytic_type_code: %. No active analytic type found with this code.

@@ -91,9 +91,10 @@ public:
         } catch (const std::exception& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  enter_tenant_response{.success = false, .message = "The tenant was not entered."});
+            reply(
+                nats_,
+                msg,
+                enter_tenant_response{.success = false, .message = "The tenant was not entered."});
         }
     }
 
@@ -127,7 +128,8 @@ private:
      * The permissions are read in the caller's own tenant: an administrator
      * inside another tenant is still the system tenant's account.
      */
-    std::optional<service::tenant_session_caller> read_caller(const ores::nats::message& msg) const {
+    std::optional<service::tenant_session_caller>
+    read_caller(const ores::nats::message& msg) const {
         const auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
         if (it == msg.headers.end() || !it->second.starts_with(ores::nats::headers::bearer_prefix))
             return std::nullopt;
@@ -145,14 +147,14 @@ private:
         } catch (const boost::bad_lexical_cast&) {
             return std::nullopt;
         }
-        service::tenant_session_caller caller{
-            .account_id = account_id,
-            .username = claims->username.value_or(""),
-            .session_id = claims->session_id.value_or(""),
-            .tenant_id = *tenant,
-            .party_id = claims->party_id,
-            .acting_from_tenant_id = claims->acting_from_tenant_id,
-            .permissions = {}};
+        service::tenant_session_caller caller{.account_id = account_id,
+                                              .username = claims->username.value_or(""),
+                                              .session_id = claims->session_id.value_or(""),
+                                              .tenant_id = *tenant,
+                                              .party_id = claims->party_id,
+                                              .acting_from_tenant_id =
+                                                  claims->acting_from_tenant_id,
+                                              .permissions = {}};
         // A session already inside a tenant carries no permissions here: the
         // service refuses its entry as already inside before it reads them,
         // and leaving needs none.

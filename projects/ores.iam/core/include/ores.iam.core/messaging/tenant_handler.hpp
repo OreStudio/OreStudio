@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenants_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_tenants_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -383,6 +395,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenant_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -424,6 +440,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenant_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;

@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 16E4FA80-7564-4CB2-9136-793F5106B62F
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.netting_set
+#+description: Codegen entity model for the dq netting_set staging table: a netting set staged with the number of its agreement and its counterparty's LEI.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+entity_singular: netting_set
+#+entity_plural: netting_sets
+#+entity_title: Netting Set
+#+brief: A netting set staged with the number of its agreement and its counterparty's LEI.
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A netting set of the party a publish targets. It names its master agreement
+by number and its counterparty by LEI; publishing resolves both in the
+target tenant. A set with no agreement holds trades that do not net.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The set's code, unique within the tenant.
+
+#+begin_src cpp :name generator
+std::string("NS-0001")
+#+end_src
+
+** agreement_number
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The number of the agreement the set is opened under.
+
+#+begin_src cpp :name generator
+std::string("ISDA-2002-0001")
+#+end_src
+
+** counterparty_lei
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The LEI of the set's counterparty.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** call_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+ORE's call type for the set.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** initial_margin_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+ORE's initial margin type for the set.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** risk_weight
+:PROPERTIES:
+:type:        double precision
+:cpp_type:    std::optional<double>
+:nullable:    true
+:END:
+
+ORE's risk weight for the set.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+Optional note on the set.
+
+#+begin_src cpp :name generator
+std::string("Test netting set")
+#+end_src
+
+* Artefact indexes
+
+** agreement_number
+:PROPERTIES:
+:columns: agreement_number
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_netting_sets_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: netting_set
+:entity_plural_short:   netting_sets
+:entity_singular_words: netting set
+:entity_plural_words:   netting sets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ns
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| code | Code |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_class:                dq::domain::netting_set
+:collection_name:             netting_sets
+:key_field:                   code
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:END:
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| Code | code | Code | string | 150 |
+
+* Notes
+
+Bound to the artefact staging only profile: the table is staging, and its
+artefact type publishes through =ores_refdata_publish_netting_sets_from_dq_fn=.
+
+* See also
+
+- [[id:A66D44D3-493E-46D8-BE41-F70271F003C1][ores.dq.counterparty_alias]] — the staging model this one follows.

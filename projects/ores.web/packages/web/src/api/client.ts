@@ -37,6 +37,7 @@ import {
     partyPageSchema,
     tenantDetailResponseSchema,
     tenantPageSchema,
+    deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     workflowProgressSchema,
@@ -64,6 +65,7 @@ import {
     type PartyPage,
     type TenantDetailResponse,
     type TenantPage,
+    type DeploymentOverview,
     type TenantStatus,
     type TenantType,
     type WorkflowProgress,
@@ -363,6 +365,15 @@ export const api = {
         }
         const suffix = params.size === 0 ? '' : `?${params.toString()}`;
         return tenantPageSchema.parse(await request(`/api/tenants${suffix}`, { method: 'GET' }));
+    },
+
+    /**
+     * The state of the deployment's tenants, for the system administrator's
+     * home: the counts, what needs attention, the first tenants and the newest
+     * setups.
+     */
+    async overview(): Promise<DeploymentOverview> {
+        return deploymentOverviewSchema.parse(await request('/api/overview', { method: 'GET' }));
     },
 
     /** One page of the parties of the session's own tenant. */

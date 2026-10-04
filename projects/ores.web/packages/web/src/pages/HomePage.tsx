@@ -19,26 +19,29 @@
  *
  */
 
+import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import type { SessionMode } from '@ores/wire-protocol/browser';
+import type {
+    DeploymentOverview,
+    SessionMode,
+    SetupActivity,
+    TenantStatus,
+    TenantSummary,
+    TenantType,
+} from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
-import { Detail, LinkButton, PageHeader } from '../ui/Primitives.js';
-import { areasFor, modeKey, type ShellArea, type ShellJourney } from '../shell/areas.js';
+import { api } from '../api/client.js';
+import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
+import { PaintedValue } from './TenantParts.js';
 
 /**
  * Where a signed-in person lands.
  *
- * The mode is what decides the shape of this page. A mode whose journeys have
- * been implemented lands on that mode's areas, each holding its journeys as
- * cards: that is the shell's menu, drawn in full rather than only in the
- * header, because a person who has signed in should be able to see what they
- * can do without opening anything.
- *
- * A mode no group has implemented yet lands on the session instead. That is not
- * a placeholder for a landing that is coming — it is the honest content: the
- * tenant and the party the person is working in are facts, and a screen that
- * shows real state is readable where a hero that promises features is not.
+ * Home shows the state of the work in the person's own words, and the next
+ * things they can do. What it shows is decided by the mode the session runs
+ * in: the deployment's tenants for the system administrator, the tenant's own
+ * screens for its administrator, and the person's work for everyone else.
  */
 export interface HomePageProps {
     readonly username: string;
@@ -48,138 +51,403 @@ export interface HomePageProps {
     /** The context the session runs in, which decides what this page shows. */
     readonly mode: SessionMode;
     /**
-     * Whether the session only reads, as it does inside a tenant a system
-     * administrator entered. A read-only session is offered no change.
+     * Whether the session only reads. A read-only session is offered no change.
      */
     readonly readOnly?: boolean;
 }
 
 export function HomePage({
     username,
-    email,
     tenantName,
     partyName,
     mode,
     readOnly = false,
 }: HomePageProps): ReactNode {
-    const areas = areasFor(mode);
-
-    if (areas.length > 0) {
-        return <ModeLanding mode={mode} areas={areas} />;
+    if (mode === 'system-administration') {
+        return <SystemHome username={username} />;
     }
-
-    return (
-        <SessionCard
-            username={username}
-            email={email}
-            tenantName={tenantName}
-            partyName={partyName}
-            readOnly={readOnly}
-        />
-    );
+    if (mode === 'tenant-administration') {
+        return <TenantHome username={username} tenantName={tenantName} readOnly={readOnly} />;
+    }
+    return <PartyHome username={username} partyName={partyName} />;
 }
 
-/** The landing for a mode whose journeys exist: its areas, and their cards. */
-function ModeLanding({
-    mode,
-    areas,
-}: {
-    readonly mode: SessionMode;
-    readonly areas: readonly ShellArea[];
-}): ReactNode {
+function SystemHome({ username }: { readonly username: string }): ReactNode {
     const { t, plural } = useTranslation();
-    const count = areas.reduce((total, area) => total + area.journeys.length, 0);
+    const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview });
+    /*
+     * The types and statuses paint the badges. They are a second read, and a
+     * failure to read them leaves the words unpainted rather than the page
+     * unread.
+     */
+    const types = useQuery({ queryKey: ['tenant-types'], queryFn: api.tenantTypes });
+    const statuses = useQuery({ queryKey: ['tenant-statuses'], queryFn: api.tenantStatuses });
+    const data = overview.data;
 
     return (
-        <div className="space-y-8">
-            <div className="card p-6">
-                <PageHeader
-                    title={t(modeKey(mode))}
-                    description={plural('shell.journeyCount', count)}
-                />
-            </div>
-            {areas.map((area) => (
-                <section key={area.nameKey} id={area.nameKey} className="space-y-4">
-                    <h2 className="text-sm font-semibold tracking-tight text-ink">
-                        {t(area.nameKey)}
-                    </h2>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {area.journeys.map((journey) => (
-                            <JourneyCard key={journey.nameKey} journey={journey} />
-                        ))}
+        <div className="space-y-6">
+            <PageHeader
+                title={t('home.welcome', { name: username })}
+                {...(data === undefined
+                    ? {}
+                    : { description: plural('home.system.lead', data.totalCount) })}
+                actions={
+                    <div className="flex flex-wrap gap-2">
+                        <LinkButton to="/tenants" variant="secondary">
+                            {t('home.system.manageTenants')}
+                        </LinkButton>
+                        <LinkButton to="/tenants/new" variant="primary">
+                            {t('home.system.addTenant')}
+                        </LinkButton>
                     </div>
-                </section>
-            ))}
+                }
+            />
+            {overview.isError && <Notice tone="error">{overview.error.message}</Notice>}
+            {data !== undefined && (
+                <>
+                    <Health overview={data} />
+                    {data.attention.length > 0 && <Attention overview={data} />}
+                    <FirstTenants
+                        overview={data}
+                        types={types.data ?? []}
+                        statuses={statuses.data ?? []}
+                    />
+                </>
+            )}
         </div>
     );
 }
 
-/**
- * One journey, as a card.
- *
- * A journey the tree has not built is drawn as a card that names itself and
- * says so, so the area reads as work that is partly done rather than as an area
- * nobody has looked at. It is not a link, because there is nothing to open.
- */
-function JourneyCard({ journey }: { readonly journey: ShellJourney }): ReactNode {
-    const { t } = useTranslation();
-    const name = t(journey.nameKey);
-
-    if (journey.to === undefined) {
-        return (
-            <div className="card flex items-start justify-between gap-3 p-4">
-                <span className="text-sm text-ink-muted">{name}</span>
-                <span className="shrink-0 rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-faint">
-                    {t('shell.notBuilt')}
-                </span>
-            </div>
-        );
-    }
+function Health({ overview }: { readonly overview: DeploymentOverview }): ReactNode {
+    const { t, plural } = useTranslation();
+    const allClear = overview.attention.length === 0;
 
     return (
-        <Link
-            to={journey.to}
-            className="card block p-4 text-sm text-ink hover:border-accent/60 focus-visible:outline-accent"
-        >
-            {name}
-        </Link>
+        <section className="card grid gap-6 p-5 sm:grid-cols-2 lg:grid-cols-5">
+            <h2 className="text-sm font-semibold text-ink sm:col-span-2 lg:col-span-5">
+                {t('home.system.health')}
+            </h2>
+            <Figure value={overview.inService} label={t('home.system.inService')} />
+            <Figure value={overview.onEvaluation} label={t('home.system.onEvaluation')} />
+            <Figure value={overview.settingUp} label={t('home.system.settingUp')} />
+            <div className="flex items-center gap-3" role="status">
+                <span
+                    aria-hidden="true"
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border font-bold ${
+                        allClear
+                            ? 'border-up/50 bg-up/10 text-up'
+                            : 'border-warn/50 bg-warn/10 text-warn'
+                    }`}
+                >
+                    {allClear ? '✓' : '!'}
+                </span>
+                <span className="text-sm text-ink">
+                    {allClear
+                        ? t('home.system.allClear')
+                        : plural('home.system.needAttention', overview.attention.length)}
+                </span>
+            </div>
+            <Activity overview={overview} />
+        </section>
     );
 }
 
-/** What a mode with no journeys yet shows: the session it was opened with. */
-function SessionCard({
-    username,
-    email,
-    tenantName,
-    partyName,
-    readOnly,
-}: Omit<HomePageProps, 'mode' | 'readOnly'> & { readonly readOnly: boolean }): ReactNode {
+function Figure({ value, label }: { readonly value: number; readonly label: string }): ReactNode {
+    return (
+        <div className="grid gap-1">
+            <span className="text-3xl font-semibold tabular-nums text-ink">{value}</span>
+            <span className="text-xs text-ink-muted">{label}</span>
+        </div>
+    );
+}
+
+/** The engine states the activity list has words for; any other is shown as written. */
+const ACTIVITY_STATES = ['completed', 'in_progress', 'failed', 'compensating', 'compensated'];
+
+function Activity({ overview }: { readonly overview: DeploymentOverview }): ReactNode {
+    const { t } = useTranslation();
+    const describe = (run: SetupActivity): string =>
+        ACTIVITY_STATES.includes(run.status)
+            ? t(`home.system.activity.${run.status}`, {
+                  tenant: run.tenantName,
+                  step: run.currentStepIndex + 1,
+                  count: run.stepCount,
+              })
+            : `${run.tenantName}: ${run.status}`;
+
+    return (
+        <div className="grid content-start gap-2 border-l-2 border-up pl-3 text-sm">
+            <span className="text-xs text-ink-faint">{t('home.system.recentActivity')}</span>
+            {overview.activityUnavailable ? (
+                <span className="text-ink-muted">{t('home.system.activityUnavailable')}</span>
+            ) : overview.activity.length === 0 ? (
+                <span className="text-ink-muted">{t('home.system.noActivity')}</span>
+            ) : (
+                overview.activity.map((run) => (
+                    <Link
+                        key={run.instanceId}
+                        to={`/tenants/runs/${encodeURIComponent(run.instanceId)}`}
+                        className="grid text-ink hover:text-accent-bright"
+                    >
+                        <span>{describe(run)}</span>
+                        <span className="text-xs text-ink-faint">
+                            {new Date(run.at).toLocaleString()}
+                        </span>
+                    </Link>
+                ))
+            )}
+        </div>
+    );
+}
+
+function Attention({ overview }: { readonly overview: DeploymentOverview }): ReactNode {
     const { t } = useTranslation();
 
     return (
-        <div className="card p-6">
-            <PageHeader title={t('home.title')} description={t('home.next')} />
-            <dl className="grid gap-4 sm:grid-cols-2">
-                <Detail label={t('home.username')} value={username} />
-                <Detail label={t('home.email')} value={email} />
-                <Detail label={t('home.tenant')} value={tenantName} />
-                <Detail label={t('home.party')} value={partyName} />
-            </dl>
-            {/*
-             * A party is added from here until the Parties page is its home. A
-             * tenant is not: the Tenants area of system administration is where
-             * one is created, and this card is shown to sessions that cannot.
-             */}
-            <div className="mt-6 flex flex-wrap gap-3">
-                <LinkButton to="/parties" variant="secondary">
-                    {t('home.parties')}
-                </LinkButton>
-                {!readOnly && (
-                    <LinkButton to="/parties/new" variant="secondary">
-                        {t('home.newParty')}
-                    </LinkButton>
-                )}
+        <section className="card">
+            <h2 className="px-5 pt-4 pb-2 text-sm font-semibold text-ink">
+                {t('home.system.attention')}
+            </h2>
+            <ul>
+                {overview.attention.map(({ tenant, reason }) => {
+                    const failed = reason === 'setup-failed' && tenant.setup !== null;
+                    return (
+                        <li
+                            key={`${reason}-${tenant.id}`}
+                            className="flex items-center gap-3 border-t border-line-subtle px-5 py-3"
+                        >
+                            <span
+                                aria-hidden="true"
+                                className={`h-2 w-2 shrink-0 rounded-full ${failed ? 'bg-down' : 'bg-warn'}`}
+                            />
+                            <div className="min-w-0 flex-1">
+                                <div className="text-sm text-ink">{tenant.name}</div>
+                                <div className="text-xs text-ink-faint">
+                                    {failed && tenant.setup !== null
+                                        ? t('home.system.setupFailed', {
+                                              step: tenant.setup.currentStepIndex + 1,
+                                              count: tenant.setup.stepCount,
+                                          })
+                                        : t('home.system.suspended')}
+                                </div>
+                            </div>
+                            {failed && tenant.setup !== null ? (
+                                <LinkButton
+                                    to={`/tenants/runs/${encodeURIComponent(tenant.setup.instanceId)}`}
+                                    size="sm"
+                                >
+                                    {t('home.system.seeFailure')}
+                                </LinkButton>
+                            ) : (
+                                <LinkButton
+                                    to={`/tenants/${encodeURIComponent(tenant.code)}`}
+                                    size="sm"
+                                >
+                                    {t('home.system.open')}
+                                </LinkButton>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </section>
+    );
+}
+
+function FirstTenants({
+    overview,
+    types,
+    statuses,
+}: {
+    readonly overview: DeploymentOverview;
+    readonly types: readonly TenantType[];
+    readonly statuses: readonly TenantStatus[];
+}): ReactNode {
+    const { t, plural } = useTranslation();
+    const typeByCode = new Map(types.map((type) => [type.code, type]));
+    const statusByCode = new Map(statuses.map((status) => [status.code, status]));
+
+    return (
+        <section className="card">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4 pb-2">
+                <div>
+                    <h2 className="text-sm font-semibold text-ink">{t('home.system.tenants')}</h2>
+                    <p className="text-xs text-ink-muted">{t('home.system.tenantsLead')}</p>
+                </div>
             </div>
+            {overview.tenants.length === 0 ? (
+                <p className="px-5 pb-5 text-sm text-ink-muted">{t('home.system.noTenants')}</p>
+            ) : (
+                <>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr className="border-b border-line text-xs text-ink-muted">
+                                    <th className="px-5 py-2 font-medium">
+                                        {t('home.system.name')}
+                                    </th>
+                                    <th className="py-2 pr-4 font-medium">
+                                        {t('home.system.hostname')}
+                                    </th>
+                                    <th className="py-2 pr-4 font-medium">
+                                        {t('home.system.type')}
+                                    </th>
+                                    <th className="py-2 pr-5 font-medium">
+                                        {t('home.system.status')}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {overview.tenants.map((tenant: TenantSummary) => (
+                                    <tr key={tenant.id} className="border-b border-line-subtle">
+                                        <td className="px-5 py-2">
+                                            <Link
+                                                to={`/tenants/${encodeURIComponent(tenant.code)}`}
+                                                className="text-ink hover:text-accent-bright"
+                                            >
+                                                {tenant.name}
+                                            </Link>
+                                        </td>
+                                        <td className="py-2 pr-4 text-ink-muted">
+                                            {tenant.hostname}
+                                        </td>
+                                        <td className="py-2 pr-4">
+                                            <PaintedValue
+                                                value={tenant.type}
+                                                known={typeByCode.get(tenant.type)}
+                                            />
+                                        </td>
+                                        <td className="py-2 pr-5">
+                                            <PaintedValue
+                                                value={tenant.status}
+                                                known={statusByCode.get(tenant.status)}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-xs text-ink-muted">
+                        <span className="tabular-nums">
+                            {plural('home.system.showing', overview.totalCount, {
+                                shown: overview.tenants.length,
+                            })}
+                        </span>
+                        <LinkButton to="/tenants" size="sm">
+                            {t('home.system.seeAll')}
+                        </LinkButton>
+                    </div>
+                </>
+            )}
+        </section>
+    );
+}
+
+interface Tile {
+    readonly title: string;
+    readonly body: string;
+    readonly to?: string;
+}
+
+function Tiles({ tiles, later }: { readonly tiles: readonly Tile[]; readonly later?: string }) {
+    return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {tiles.map((tile) =>
+                tile.to === undefined ? (
+                    <div
+                        key={tile.title}
+                        className="card grid content-start gap-1.5 p-4 opacity-70"
+                    >
+                        <span className="text-sm font-semibold text-ink">{tile.title}</span>
+                        <span className="text-sm text-ink-muted">{tile.body}</span>
+                        {later !== undefined && (
+                            <span className="mt-1 justify-self-start rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-faint">
+                                {later}
+                            </span>
+                        )}
+                    </div>
+                ) : (
+                    <Link
+                        key={tile.title}
+                        to={tile.to}
+                        className="card grid content-start gap-1.5 p-4 hover:border-line-strong focus-visible:outline-accent"
+                    >
+                        <span className="text-sm font-semibold text-ink">{tile.title}</span>
+                        <span className="text-sm text-ink-muted">{tile.body}</span>
+                    </Link>
+                ),
+            )}
+        </div>
+    );
+}
+
+function TenantHome({
+    username,
+    tenantName,
+    readOnly,
+}: {
+    readonly username: string;
+    readonly tenantName: string;
+    readonly readOnly: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    const tiles: Tile[] = [
+        { title: t('home.tenant.parties'), body: t('home.tenant.partiesBody'), to: '/parties' },
+        ...(readOnly
+            ? []
+            : [
+                  {
+                      title: t('home.tenant.newParty'),
+                      body: t('home.tenant.newPartyBody'),
+                      to: '/parties/new',
+                  },
+              ]),
+        { title: t('home.tenant.rescue'), body: t('home.tenant.rescueBody'), to: '/rescue' },
+        { title: t('home.tenant.audit'), body: t('home.tenant.auditBody'), to: '/audit' },
+        { title: t('home.tenant.security'), body: t('home.tenant.securityBody'), to: '/security' },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title={tenantName}
+                description={t('home.tenant.lead', { name: username })}
+            />
+            <Tiles tiles={tiles} />
+        </div>
+    );
+}
+
+function PartyHome({
+    username,
+    partyName,
+}: {
+    readonly username: string;
+    readonly partyName: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const coming: Tile[] = (['refdata', 'marketdata', 'trading', 'reporting'] as const).map(
+        (area) => ({ title: t(`home.party.${area}`), body: t(`home.party.${area}Body`) }),
+    );
+
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title={t('home.welcome', { name: username })}
+                description={t('home.party.lead', { party: partyName })}
+            />
+            <Tiles
+                tiles={[
+                    {
+                        title: t('home.party.security'),
+                        body: t('home.party.securityBody'),
+                        to: '/security',
+                    },
+                ]}
+            />
+            <Notice tone="info">{t('home.party.note')}</Notice>
+            <Tiles tiles={coming} later={t('home.party.comingLater')} />
         </div>
     );
 }

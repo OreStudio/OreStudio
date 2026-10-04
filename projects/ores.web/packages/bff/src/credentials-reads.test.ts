@@ -213,7 +213,12 @@ describe('GET /api/accounts', () => {
         expect(calls).toEqual([
             {
                 subject: 'iam.v1.accounts.list',
-                body: { offset: 0, limit: 100, order: { field: '', descending: false } },
+                body: {
+                    offset: 0,
+                    limit: 100,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
 
@@ -236,7 +241,12 @@ describe('GET /api/accounts', () => {
         expect(calls).toEqual([
             {
                 subject: 'iam.v1.accounts.list',
-                body: { offset: 20, limit: 5, order: { field: '', descending: false } },
+                body: {
+                    offset: 20,
+                    limit: 5,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
 
@@ -349,7 +359,12 @@ describe('GET /api/login-info', () => {
         expect(calls).toEqual([
             {
                 subject: 'iam.v1.login_info.list',
-                body: { offset: 0, limit: 100, order: { field: '', descending: false } },
+                body: {
+                    offset: 0,
+                    limit: 100,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
 

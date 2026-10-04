@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 3EF42586-7CE1-49DF-9CE9-32CF94DBA603
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.netting_agreement
+#+description: Codegen entity model for the dq netting_agreement staging table: a master agreement the party holds with a counterparty, staged with the counterparty's LEI.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+entity_singular: netting_agreement
+#+entity_plural: netting_agreements
+#+entity_title: Netting Agreement
+#+brief: A master agreement the party holds with a counterparty, staged with the counterparty's LEI.
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A master netting agreement, such as an ISDA Master Agreement, between the
+party a publish targets and a counterparty. The counterparty is named by
+LEI, because its id differs from tenant to tenant, and the party is the one
+the publish names: a staged agreement belongs to no party until published.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** agreement_number
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The agreement's reference, unique within the tenant.
+
+#+begin_src cpp :name generator
+std::string("ISDA-2002-0001")
+#+end_src
+
+** counterparty_lei
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:no_generator_suffix: true
+:END:
+
+The LEI of the counterparty the agreement is with.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** agreement_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:no_generator_suffix: true
+:END:
+
+ISDA, AFB, FBF or OTHER.
+
+#+begin_src cpp :name generator
+std::string("ISDA")
+#+end_src
+
+** governing_law
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+The law the agreement is governed by.
+
+#+begin_src cpp :name generator
+std::string("English")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+Optional note on the agreement.
+
+#+begin_src cpp :name generator
+std::string("Test agreement")
+#+end_src
+
+* Artefact indexes
+
+** counterparty_lei
+:PROPERTIES:
+:columns: counterparty_lei
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_netting_agreements_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: netting_agreement
+:entity_plural_short:   netting_agreements
+:entity_singular_words: netting agreement
+:entity_plural_words:   netting agreements
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: na
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| agreement_number | Number |
+| counterparty_lei | LEI |
+| agreement_type   | Type |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_class:                dq::domain::netting_agreement
+:collection_name:             netting_agreements
+:key_field:                   agreement_number
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:END:
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| AgreementNumber | agreement_number | Number | string | 150 |
+| CounterpartyLei | counterparty_lei | LEI | string | 150 |
+| AgreementType | agreement_type | Type | string | 150 |
+
+* Notes
+
+Bound to the artefact staging only profile: the table is staging, and its
+artefact type publishes through =ores_refdata_publish_netting_agreements_from_dq_fn=.
+
+* See also
+
+- [[id:A66D44D3-493E-46D8-BE41-F70271F003C1][ores.dq.counterparty_alias]] — the staging model this one follows.

@@ -83,6 +83,11 @@
 \ir ./dq_lei_bic_artefact_drop.sql
 \ir ./dq_lei_entities_artefact_drop.sql
 \ir ./dq_lei_relationships_artefact_drop.sql
+\ir ./dq_counterparty_aliases_artefact_drop.sql
+\ir ./dq_netting_set_aliases_artefact_drop.sql
+\ir ./dq_csas_artefact_drop.sql
+\ir ./dq_netting_sets_artefact_drop.sql
+\ir ./dq_netting_agreements_artefact_drop.sql
 \ir ./dq_tags_artefact_drop.sql
 
 -- Datasets

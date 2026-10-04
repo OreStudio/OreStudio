@@ -188,7 +188,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_provisioning_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_roster_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_session_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_status_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp"

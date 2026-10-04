@@ -101,7 +101,7 @@ TEST_CASE("the seeded collection kinds are the schema's, with their entries and 
     std::map<std::string, kind_facts> seeded;
     for (const auto& k :
          ores::analytics::repository::todays_market_collection_kind_repository().read_latest(ctx))
-        seeded.emplace(k.code,
-                       kind_facts{k.entry_element, k.key_attribute, k.key_attribute_2.value_or("")});
+        seeded.emplace(
+            k.code, kind_facts{k.entry_element, k.key_attribute, k.key_attribute_2.value_or("")});
     CHECK(seeded == expected);
 }

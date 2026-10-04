@@ -97,7 +97,8 @@ std::string("EUR")
 :END:
 
 The curve the entry's instruments are discounted on, by its =CurveId=. An
-entry may name itself.
+entry may name itself. Empty when the document leaves the element empty, which
+ORE reads as the curve discounting on itself; the corpus does this often.
 
 #+begin_src cpp :name generator
 std::string("EUR-ESTR")
@@ -270,7 +271,6 @@ std::nullopt
 | expression             |
 |------------------------|
 | "currency" <> ''       |
-| "discount_curve" <> '' |
 
 * C++
 

@@ -19,6 +19,7 @@
  *
  */
 
+import type { ListTenantStatusesRequest as GeneratedListTenantStatusesRequest } from './generated/iam/protocol/tenant_status_protocol.js';
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import { readBadgeCatalogue } from './badges.js';
@@ -58,7 +59,8 @@ export const listTenantStatusesRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListTenantStatusesRequest>;
 
 /** Every tenant status, in the order the rows declare. */
 export async function readTenantStatuses(

@@ -175,6 +175,21 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'account_contact_informations', 0, 'Account Contact Informations', 'Generated staff real names/contact details (e.g. Acme Corporation); target/publish-from-dq wiring lands with the server-side-orchestration follow-up task',
      'dq_account_contact_informations_artefact_tbl', 'iam_account_contact_informations_tbl', 'iam.v1.account-contact-informations.publish-from-dq', 56,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'counterparty_aliases', 0, 'Counterparty Aliases', 'Names source systems use for counterparties, keyed by LEI and published as counterparty identifiers',
+     'dq_counterparty_aliases_artefact_tbl', 'refdata_counterparty_identifiers_tbl', 'refdata.v1.counterparty-aliases.publish-from-dq', 63,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'netting_agreements', 0, 'Netting Agreements', 'Master netting agreements between a party and its counterparties, keyed by counterparty LEI',
+     'dq_netting_agreements_artefact_tbl', 'refdata_netting_agreements_tbl', 'refdata.v1.netting-agreements.publish-from-dq', 64,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'netting_sets', 0, 'Netting Sets', 'Netting sets of a party, keyed by agreement number and counterparty LEI',
+     'dq_netting_sets_artefact_tbl', 'refdata_netting_sets_tbl', 'refdata.v1.netting-sets.publish-from-dq', 65,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'csas', 0, 'CSAs', 'Credit support annexes of netting sets, keyed by netting set code, with their eligible currencies',
+     'dq_csas_artefact_tbl', 'refdata_csas_tbl', 'refdata.v1.csas.publish-from-dq', 66,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'netting_set_aliases', 0, 'Netting Set Aliases', 'Names source systems use for netting sets, keyed by netting set code and published as netting set identifiers',
+     'dq_netting_set_aliases_artefact_tbl', 'refdata_netting_set_identifiers_tbl', 'refdata.v1.netting-set-aliases.publish-from-dq', 67,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

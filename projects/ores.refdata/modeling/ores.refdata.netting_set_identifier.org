@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: 2A4B8FD6-62B5-406C-A3E7-88AA0B6B4A46
+:END:
+#+title: ores.refdata.netting_set_identifier
+#+description: Codegen entity model for the refdata =netting_set_identifier= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A name a netting set answers to under a specific scheme, such as the id an ORE document uses.
+#+entity_singular: netting_set_identifier
+#+entity_plural: netting_set_identifiers
+#+entity_title: Netting Set Identifier
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Names a netting set answers to outside ORE Studio. An ORE document names a
+trade's netting set by its =NettingSetId=, such as =CPTY_A=, and an import
+resolves that id through the set's ORE identifier, as it resolves the
+document's =CounterParty= through a counterparty identifier. A set's own code
+stays the name the tenant gives it. A set may answer to several ORE ids.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this netting set identifier.
+
+Surrogate key for the netting set identifier record.
+
+** netting_set_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The netting set this identifier belongs to.
+
+References the parent netting set record.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:no_generator_suffix: true
+:natural_key:         true
+:END:
+
+The identification scheme for this identifier.
+
+References the party_id_scheme lookup table. A netting set uses the schemes
+that name things inside one system, such as ORE and INTERNAL.
+
+#+begin_src cpp :name generator
+[idx]{
+    static constexpr const char* schemes[] = {"ORE", "INTERNAL"};
+    return std::string(schemes[idx % 2]);
+}()
+#+end_src
+
+** id_value
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The identifier value.
+
+The actual identifier string within the scheme. Part of the natural
+key alongside netting_set_id and id_scheme — a netting set can hold
+more than one identifier under the same scheme as long as the value
+differs.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional description of this identifier.
+
+Free text description providing additional context.
+
+#+begin_src cpp :name generator
+std::string("Test identifier")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_netting_set_identifiers_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Indexes
+
+An ORE alias is a name an ORE document uses, and an import resolves the name
+to one netting set, so within a tenant a name may be the alias of one
+netting set only. Other schemes keep the per-set key above.
+
+| name      | columns                        | unique | current_only | where_extra       |
+|-----------+--------------------------------+--------+--------------+-------------------|
+| ore_alias | tenant_id, id_scheme, id_value | true   | true         | id_scheme = 'ORE' |
+
+* Foreign keys
+
+** netting_set_id
+:PROPERTIES:
+:table:         ores_refdata_netting_sets_tbl
+:parent_entity: netting_set
+:nullable:      false
+:error_message: Invalid netting_set_id: %. No active netting set found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column    | validation_function                       | cardinality_limit_table            | cardinality_limit_column | cardinality_scope_column | cardinality_noun |
+|-----------+--------------------------------------------+--------------------------------------+---------------------------+---------------------------+-------------------|
+| id_scheme | ores_refdata_validate_party_id_scheme_fn | ores_refdata_party_id_schemes_tbl | max_cardinality           | netting_set_id           | identifier       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:                       api
+:service_find_by_uuid:               true
+:service_find_by_code_column:        id_scheme
+:service_find_by_code_parent_column: netting_set_id
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: netting_set_identifier
+:entity_plural_short:   netting_set_identifiers
+:entity_singular_words: netting set identifier
+:entity_plural_words:   netting set identifiers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ci
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| netting_set_id | Netting Set  |
+| id_scheme       | Scheme       |
+| id_value        | Value        |
+| description     | Description  |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/netting_set_identifier.hpp
+:domain_class:            refdata::domain::netting_set_identifier
+:protocol_include:        ores.refdata.api/messaging/netting_set_identifier_protocol.hpp
+:collection_name:         netting_set_identifiers
+:key_field:               id_value
+:save_request_item_field: data
+:END:
+
+Note: =netting_set_id= is deliberately not exposed as a Detail field
+-- like Book's =parent_portfolio_id=, it's always known from the
+owning context (the netting set's own Identifiers tab) and set
+programmatically before the dialog is shown, never user-chosen.
+
+*** Detail fields
+
+| field       | label       | widget          | type          | is_key | is_required | placeholder            | combo_domain_type              | combo_fetch_include        | combo_fetch_fn         | combo_watcher_name  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
+|-------------+-------------+-----------------+---------------+--------+-------------+-------------------------+----------------------------------+-----------------------------+--------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
+| id          | Id          | idEdit          | line_edit     | true   | true        | Netting set identifier id |                             |                             |                          |                      |                    |                        |                    |                 |                        |            |
+| id_scheme   | Scheme      | idSchemeCombo   | dynamic_combo | false  | true        |                         | refdata::domain::party_id_scheme |    | fetch_party_id_schemes  | idSchemeWatcher      | code               | description            | display_order      | id schemes      | IdSchemeCombo         |            |
+| id_value    | Value       | idValueEdit     | line_edit     | false  | true        | Enter identifier value  |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
+| description | Description | descriptionEdit | line_edit     | false  | false       | Enter description       |                                 |                             |                          |                      |                    |                        |                    |                 |                        |            |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| IdScheme    | id_scheme   | Scheme      | string    |   100 |
+| IdValue     | id_value    | Value       | string    |   180 |
+| Description | description | Description | string    |   200 |
+| Version     | version     | Version     | int       |    80 |
+| ModifiedBy  | modified_by | Modified By | string    |   120 |
+| RecordedAt  | recorded_at | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

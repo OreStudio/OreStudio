@@ -43,12 +43,12 @@ uses a one-of member in place of a single read capped at 1000.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Done.                                  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-03                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-04                               |
 
 * Acceptance
 
@@ -70,7 +70,7 @@ uses a one-of member in place of a single read capped at 1000.
 | [[id:A24A43C8-804F-43DA-9334-4225C57D9854][Amend the list contract specification]] | DONE | 2026-10-03 | 2026-10-03 | State the searchable and one-of filter members in the NATS entity protocol specification, and how a model declares sortable columns and a default order. |
 | [[id:A8A5C4E4-67EB-4CD5-8786-1C4F790EA18B][Generate a stated order]] | DONE | 2026-10-03 | 2026-10-03 | Sortable columns and a default order in the model; the generated repository orders by an allow-list with the key as tie-break, and the service refuses an undeclared field. |
 | [[id:28598EF6-342E-434A-A329-71324C973B49][Generate the filter record, search and one-of members]] | DONE | 2026-10-04 | 2026-10-04 | The generated repository applies each set filter member, a searchable text member, and list-typed one-of members for keys and relations. |
-| [[id:C6D29D53-2E3E-4557-A469-6FD755ABF151][Move the tenant reads onto the contract]] | BACKLOG | | | The roster reads iam.v1.tenants.list with a filter and the search function goes; the roster's run read and the parties page's parent names use one-of members with no fixed cap. |
+| [[id:C6D29D53-2E3E-4557-A469-6FD755ABF151][Move the tenant reads onto the contract]] | DONE | 2026-10-04 | 2026-10-04 | The roster reads iam.v1.tenants.list with a filter and the search function goes; the roster's run read and the parties page's parent names use one-of members with no fixed cap. |
 
 * Decisions
 
@@ -84,10 +84,12 @@ uses a one-of member in place of a single read capped at 1000.
    empty list matches no row; the page still applies.
 4. *Search is literal.* A case-insensitive substring match; =%= and =_= are
    not wildcards; an empty string sets no condition.
-5. *Equals members need no new flag.* A column is filterable when the model
-   already reads by it: =:list_filter_column:= and the scoped-read relation
-   columns. Sorting and searching have flags because no existing declaration
-   states them.
+5. *A column the model reads by is filterable, and so is one that says so.*
+   =:list_filter_column:= and the scoped-read relation columns are filterable
+   with no flag. A column that is neither declares =:filterable: true= and
+   gets the same equals and one-of members. The roster's type and status are
+   such columns: the first version of this decision had no flag, and the
+   roster could not be moved without one.
 6. *Query parameter names are reserved.* =offset=, =limit=, =order=,
    =descending=, =search=, =scope=, =as_of= and =keys=; the generator refuses a
    filter member with one of them.

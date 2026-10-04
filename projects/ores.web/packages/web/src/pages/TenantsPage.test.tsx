@@ -216,10 +216,10 @@ describe('the tenant roster', () => {
         expect(render([acme], 1)).not.toContain('class="card');
     });
 
-    it('offers the journey that creates a tenant from the header, at any row count', () => {
+    it('offers to add a tenant from the header, at any row count', () => {
         for (const html of [render([acme], 1), render([], 0)]) {
             expect(html).toContain('href="/tenants/new"');
-            expect(html).toContain('New tenant');
+            expect(html).toContain('Add tenant');
         }
     });
 
@@ -445,15 +445,14 @@ describe('the tenant roster', () => {
     });
 
     /*
-     * Retiring or resetting a tenant is a journey the tree has not built. The
-     * menu names it and says so, as the shell's cards do, rather than hiding it
-     * or offering a link that goes nowhere.
+     * Retiring or resetting a tenant is not in this release. The menu names it
+     * and says so, rather than hiding it or offering a link that goes nowhere.
      */
-    it('names the action the tree has not built, and marks it', () => {
+    it('names the action this release does not have, and marks it', () => {
         const html = render([acme], 1);
 
         expect(html).toContain('>Retire or reset<');
-        expect(html.match(/Not built yet/g)).toHaveLength(1);
+        expect(html.match(/Not in this release/g)).toHaveLength(1);
     });
 
     it('says so when the deployment holds no tenant, without repeating the action', () => {

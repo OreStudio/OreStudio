@@ -82,6 +82,7 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Data Catalogues Layer ---'
 \ir catalogues/catalogues_populate.sql
 \ir ore/ore_sample_counterparties_dataset_populate.sql
+\ir ore/ore_sample_netting_dataset_populate.sql
 
 -- =============================================================================
 -- Acme Corporation Dataset (self-published DQ artefact; synthetic reference-data
@@ -233,6 +234,7 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Reference Data Publication ---'
 \ir acme/acme_publish_populate.sql
 \ir ore/ore_sample_counterparties_publish_populate.sql
+\ir ore/ore_sample_netting_publish_populate.sql
 
 -- =============================================================================
 -- Report Instance FSM Test Fixture

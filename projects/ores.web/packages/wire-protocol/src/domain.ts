@@ -176,6 +176,52 @@ export const tenantPageSchema = z.object({
 export type TenantPage = z.infer<typeof tenantPageSchema>;
 
 /**
+ * Why a tenant is on the system administrator's attention list: its setup
+ * stopped on an error, or it is suspended and nobody in it can sign in.
+ */
+export const attentionReasonSchema = z.enum(['setup-failed', 'suspended']);
+
+/** One provisioning run on the activity list, named for its tenant. */
+export const setupActivitySchema = z.object({
+    instanceId: z.string(),
+    tenantName: z.string(),
+    status: z.string(),
+    currentStepIndex: z.int().nonnegative(),
+    stepCount: z.int().nonnegative(),
+    error: z.string(),
+    at: z.string(),
+});
+
+export type SetupActivity = z.infer<typeof setupActivitySchema>;
+
+/**
+ * The state of the deployment's tenants, as the system administrator's home
+ * shows it.
+ *
+ * The counts leave out the system tenant and test tenants, as the roster does.
+ * `tenants` is the roster's first page, and `activity` the newest provisioning
+ * runs. A failed run read empties `activity` and the failed setups and says so,
+ * because the tenants are still the registry's answer.
+ */
+export const deploymentOverviewSchema = z.object({
+    inService: z.int().nonnegative(),
+    onEvaluation: z.int().nonnegative(),
+    settingUp: z.int().nonnegative(),
+    attention: z.array(
+        z.object({
+            tenant: tenantSummarySchema,
+            reason: attentionReasonSchema,
+        }),
+    ),
+    tenants: z.array(tenantSummarySchema),
+    totalCount: z.int().nonnegative(),
+    activity: z.array(setupActivitySchema),
+    activityUnavailable: z.boolean().default(false),
+});
+
+export type DeploymentOverview = z.infer<typeof deploymentOverviewSchema>;
+
+/**
  * One tenant as its own screen reads it: the roster's summary and the row's
  * provenance, which the roster leaves out because it is not about who last
  * edited the row.

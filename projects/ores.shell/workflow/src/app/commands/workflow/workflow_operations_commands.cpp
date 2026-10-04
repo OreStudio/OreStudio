@@ -46,6 +46,34 @@ namespace ores::shell::app::commands {
 using namespace logging;
 using ores::nats::service::nats_client;
 
+namespace {
+
+/**
+ * @brief Split a comma-separated token into the elements of a list field.
+ *
+ * The token __none__ states the empty list, because the command line cannot
+ * carry an empty argument: the tokenizer drops one, and a command whose list
+ * field should be empty has no other way to say so.
+ */
+std::vector<std::string> split_list_token(const std::string& value) {
+    if (value == "__none__")
+        return {};
+    std::vector<std::string> parts;
+    std::string current;
+    for (const char c : value) {
+        if (c == ',') {
+            parts.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(c);
+        }
+    }
+    parts.push_back(current);
+    return parts;
+}
+
+} // namespace
+
 void workflow_operations_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("workflow");
 
@@ -62,7 +90,7 @@ void workflow_operations_commands::register_commands(cli::Menu& root_menu, nats_
             process_instances(std::ref(out), std::ref(session), std::move(args));
         },
         "instances [--limit <v>] [--status_filter <v>] [--type_filter <v>] [--target_kind_filter "
-        "<v>] [--target_id_filter <v>]");
+        "<v>] [--target_id_filter <v>] [--target_ids_filter <v>]");
 
     menu->Insert(
         "steps",
@@ -164,6 +192,7 @@ void workflow_operations_commands::process_instances(std::ostream& out,
         {.name = "type_filter", .requires_value = true, .default_value = ""},
         {.name = "target_kind_filter", .requires_value = true, .default_value = ""},
         {.name = "target_id_filter", .requires_value = true, .default_value = ""},
+        {.name = "target_ids_filter", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
@@ -197,6 +226,10 @@ void workflow_operations_commands::process_instances(std::ostream& out,
         if (const auto& raw_target_id_filter = parsed->flag("target_id_filter");
             !raw_target_id_filter.empty()) {
             req.target_id_filter = raw_target_id_filter;
+        }
+        if (const auto& raw_target_ids_filter = parsed->flag("target_ids_filter");
+            !raw_target_ids_filter.empty()) {
+            req.target_ids_filter = split_list_token(raw_target_ids_filter);
         }
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;

@@ -119,6 +119,7 @@ The order the document wrote the parameter in.
 :PROPERTIES:
 :table:         ores_reporting_parameter_definitions_tbl
 :target_column: id
+:use_system_tenant: true
 :parent_entity: parameter_definition
 :nullable:      false
 :error_message: Invalid parameter_definition_id: %. No active parameter definition found with this id.

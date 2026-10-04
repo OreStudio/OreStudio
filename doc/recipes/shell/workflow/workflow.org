@@ -44,7 +44,7 @@ Sends =list_workflow_instance_summaries_request= and prints =list_workflow_insta
 The command is shaped like this:
 
 #+begin_example
-workflow instances [--limit <v>] [--status_filter <v>] [--type_filter <v>] [--target_kind_filter <v>] [--target_id_filter <v>]
+workflow instances [--limit <v>] [--status_filter <v>] [--type_filter <v>] [--target_kind_filter <v>] [--target_id_filter <v>] [--target_ids_filter <v>]
 #+end_example
 
 It is addressed at =workflow.v1.instances.list=.

@@ -107,6 +107,7 @@ The configuration that fills the slot.
 :PROPERTIES:
 :table:         ores_reporting_configuration_types_tbl
 :target_column: code
+:use_system_tenant: true
 :parent_entity: configuration_type
 :nullable:      false
 :error_message: Invalid configuration_type_code: %. No active configuration type found with this code.

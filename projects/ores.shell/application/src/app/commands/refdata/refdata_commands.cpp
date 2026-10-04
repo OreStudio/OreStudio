@@ -53,6 +53,7 @@
 #include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_agreement_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_set_commands.hpp"
+#include "ores.shell/app/commands/refdata/netting_set_identifier_commands.hpp"
 #include "ores.shell/app/commands/refdata/ois_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/overnight_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_commands.hpp"
@@ -67,11 +68,11 @@
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
-#include "ores.shell/app/commands/refdata/sandbox_commands.hpp"
-#include "ores.shell/app/commands/refdata/sandbox_member_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/sandbox_commands.hpp"
+#include "ores.shell/app/commands/refdata/sandbox_member_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
@@ -142,6 +143,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     monetary_nature_commands::register_commands(root_menu, session);
     netting_agreement_commands::register_commands(root_menu, session);
     netting_set_commands::register_commands(root_menu, session);
+    netting_set_identifier_commands::register_commands(root_menu, session);
     ois_convention_commands::register_commands(root_menu, session);
     overnight_index_convention_commands::register_commands(root_menu, session);
     party_commands::register_commands(root_menu, session);

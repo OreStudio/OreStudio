@@ -140,6 +140,14 @@
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql
+\ir ./dq_counterparty_aliases_artefact_create.sql
+
+-- ORE sample netting artefact tables
+\ir ./dq_netting_agreements_artefact_create.sql
+\ir ./dq_netting_sets_artefact_create.sql
+\ir ./dq_csas_artefact_create.sql
+\ir ./dq_netting_set_aliases_artefact_create.sql
+
 \ir ./dq_lei_bic_artefact_create.sql
 \ir ./dq_lei_entities_query_functions_create.sql
 

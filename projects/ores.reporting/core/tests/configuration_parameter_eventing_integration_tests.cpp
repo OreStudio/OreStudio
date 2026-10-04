@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -41,6 +45,7 @@
 #include "ores.reporting.api/messaging/configuration_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_parameter_repository.hpp"
 #include "ores.reporting.core/service/configuration_parameter_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_reporting_configurations_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.reporting.api/generators/configuration_generator.hpp"
@@ -164,42 +169,36 @@ TEST_CASE("write_configuration_parameter_publishes_an_event", tags) {
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     configuration_id_parent.party_id = *party_ctx.party_id();
-    auto configuration_id_parent_configuration_type_parent =
-        ores::reporting::generators::generate_synthetic_configuration_type(ctx);
-    configuration_id_parent_configuration_type_parent.change_reason_code = "system.test";
-    // Seed the active configuration_type row ores_reporting_configuration_types_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::reporting::repository::configuration_type_repository
-        configuration_id_parent_configuration_type_parent_repo;
-    configuration_id_parent_configuration_type_parent_repo.write(
-        party_ctx, configuration_id_parent_configuration_type_parent);
-    configuration_id_parent.configuration_type_code =
-        configuration_id_parent_configuration_type_parent.code;
+    // configuration_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, as the direct-parent
+    // system-tenant branch does.
+    {
+        ores::reporting::repository::configuration_type_repository
+            configuration_id_parent_configuration_type_parent_repo;
+        const auto configuration_id_parent_configuration_type_parent_catalogue =
+            configuration_id_parent_configuration_type_parent_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(configuration_id_parent_configuration_type_parent_catalogue.empty());
+        configuration_id_parent.configuration_type_code =
+            configuration_id_parent_configuration_type_parent_catalogue.front().code;
+    }
     ores::reporting::repository::configuration_repository configuration_id_repo;
     configuration_id_repo.write(party_ctx, configuration_id_parent);
     v.configuration_id = configuration_id_parent.id;
-    // Seed the active parameter_definition row ores_reporting_parameter_definitions_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto parameter_definition_id_parent =
-        ores::reporting::generators::generate_synthetic_parameter_definition(ctx);
-    parameter_definition_id_parent.change_reason_code = "system.test";
-    auto parameter_definition_id_parent_parameter_value_domain_parent =
-        ores::reporting::generators::generate_synthetic_parameter_value_domain(ctx);
-    parameter_definition_id_parent_parameter_value_domain_parent.change_reason_code = "system.test";
-    // Seed the active parameter_value_domain row ores_reporting_parameter_value_domains_tbl
-    // references: the referencing row's insert trigger rejects a synthetic key that matches no
-    // active row, so it must be written first.
-    ores::reporting::repository::parameter_value_domain_repository
-        parameter_definition_id_parent_parameter_value_domain_parent_repo;
-    parameter_definition_id_parent_parameter_value_domain_parent_repo.write(
-        party_ctx, parameter_definition_id_parent_parameter_value_domain_parent);
-    parameter_definition_id_parent.parameter_value_domain_code =
-        parameter_definition_id_parent_parameter_value_domain_parent.code;
-    ores::reporting::repository::parameter_definition_repository parameter_definition_id_repo;
-    parameter_definition_id_repo.write(party_ctx, parameter_definition_id_parent);
-    v.parameter_definition_id = parameter_definition_id_parent.id;
+    // parameter_definition is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::reporting::repository::parameter_definition_repository
+            parameter_definition_id_catalogue_repo;
+        const auto parameter_definition_id_catalogue =
+            parameter_definition_id_catalogue_repo.read_latest(
+                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(parameter_definition_id_catalogue.empty());
+        v.parameter_definition_id = parameter_definition_id_catalogue.front().id;
+    }
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Configuration Parameter: " << v;
 

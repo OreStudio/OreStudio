@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 94DE38EB-1544-4BBE-84B6-C7957CEC691B
+:END:
+#+title: Story: Send the filter with every web list request
+#+description: The generated list requests gained an optional filter member, and the server's decoder requires every member, so every web route whose hand-written request leaves it out is refused as a bad request.
+#+type: story
+#+level: s2
+#+filetags: :web:protocol:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every list request the web client builds by hand states the filter, and its schema is held to the generated request type so a member the protocol adds fails the typecheck instead of the live read.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Done.                                  |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- The hand-written list request schemas carry the filter and satisfy the generated request types.
+- The accounts, login info, sessions, seed profiles, tenant types, tenant statuses and badge routes answer live.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A3DD4D6C-CD97-4118-AC5A-1BB75813524D][Scaffold story: Send the filter with every web list request]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:408E31B8-FBA0-44C3-8494-BFB6D5407AE8][Send the filter with every web list request]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Send the filter with every web list request |
+
+* Decisions
+
+* Out of scope
+
+-

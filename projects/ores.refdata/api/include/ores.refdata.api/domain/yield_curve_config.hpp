@@ -82,7 +82,8 @@ struct yield_curve_config final {
 
     /**
      * @brief The curve the entry's instruments are discounted on, by its CurveId. An entry may name
-     * itself.
+     * itself. Empty when the document leaves the element empty, which ORE reads as the curve
+     * discounting on itself; the corpus does this often.
      */
     std::string discount_curve;
 

@@ -80,4 +80,6 @@ TEST_CASE("the instances list request the web client sends decodes", tags) {
     CHECK(decoded->type_filter == "provision_tenant_workflow");
     CHECK(decoded->target_kind_filter == "tenant");
     CHECK(decoded->target_id_filter.empty());
+    CHECK(decoded->target_ids_filter ==
+          std::vector<std::string>{"11111111-1111-1111-1111-111111111111"});
 }

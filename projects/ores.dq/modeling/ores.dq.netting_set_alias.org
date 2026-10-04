@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 04BD95EE-EBCA-4970-A6AF-24767A1FB8D5
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.netting_set_alias
+#+description: Codegen entity model for the dq netting_set_alias staging table: a name a source system uses for a netting set, keyed to the set's code.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+entity_singular: netting_set_alias
+#+entity_plural: netting_set_aliases
+#+entity_title: Netting Set Alias
+#+brief: A name a source system uses for a netting set, keyed to the set's code.
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A name a source system uses for a netting set, such as the =CPTY_A= an ORE
+document puts in a trade's envelope, staged with the identifier scheme it
+belongs to and the code of the set it names. Publishing resolves the code
+in the target tenant and writes the alias as a netting set identifier.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   simple-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** id_value
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The name the source system uses.
+
+#+begin_src cpp :name generator
+std::string("CPTY_A")
+#+end_src
+
+** id_scheme
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:no_generator_suffix: true
+:END:
+
+The party identifier scheme the name belongs to, such as ORE.
+
+#+begin_src cpp :name generator
+std::string("ORE")
+#+end_src
+
+** netting_set_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:no_generator_suffix: true
+:END:
+
+The code of the netting set the name stands for.
+
+#+begin_src cpp :name generator
+std::string("NS-0001")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:no_generator_suffix: true
+:END:
+
+Optional note on where the name comes from.
+
+#+begin_src cpp :name generator
+std::string("Test alias")
+#+end_src
+
+* Artefact indexes
+
+** netting_set_code
+:PROPERTIES:
+:columns: netting_set_code
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_netting_set_aliases_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: netting_set_alias
+:entity_plural_short:   netting_set_aliases
+:entity_singular_words: netting set alias
+:entity_plural_words:   netting set aliases
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: nsa
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| id_value         | Name |
+| id_scheme        | Scheme |
+| netting_set_code | Netting Set |
+
+** Custom repository methods
+
+** Presentation
+:PROPERTIES:
+:domain_class:                dq::domain::netting_set_alias
+:collection_name:             netting_set_aliases
+:key_field:                   id_value
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:END:
+
+*** Columns
+
+| enum_name | field | header | type | width |
+|-----------+-------+--------+------+-------|
+| IdValue | id_value | Name | string | 150 |
+| IdScheme | id_scheme | Scheme | string | 150 |
+| NettingSetCode | netting_set_code | Netting Set | string | 150 |
+
+* Notes
+
+Bound to the artefact staging only profile: the table is staging, and its
+artefact type publishes through =ores_refdata_publish_netting_set_aliases_from_dq_fn=.
+
+* See also
+
+- [[id:A66D44D3-493E-46D8-BE41-F70271F003C1][ores.dq.counterparty_alias]] — the staging model this one follows.

@@ -33,6 +33,7 @@ const ACME = '44444444-4444-4444-4444-444444444444';
 const SYSTEM_PARTY = '11111111-1111-1111-1111-111111111111';
 const GROUP = '22222222-2222-2222-2222-222222222222';
 const LONDON = '33333333-3333-3333-3333-333333333333';
+const PARIS = '66666666-6666-6666-6666-666666666666';
 
 interface Recorded {
     subject: string;
@@ -48,6 +49,21 @@ function callerAnswering(answer: unknown, sent: Recorded[] = []): AuthenticatedC
         ): Promise<unknown> {
             sent.push({ subject, body });
             return schema.parse(answer);
+        },
+    } as unknown as AuthenticatedCaller;
+}
+
+/** A caller that answers each call with the next answer in turn. */
+function callerAnsweringInTurn(answers: unknown[], sent: Recorded[] = []): AuthenticatedCaller {
+    let next = 0;
+    return {
+        async callAuthenticated(
+            subject: string,
+            body: unknown,
+            schema: { parse: (value: unknown) => unknown },
+        ): Promise<unknown> {
+            sent.push({ subject, body });
+            return schema.parse(answers[next++]);
         },
     } as unknown as AuthenticatedCaller;
 }
@@ -109,9 +125,9 @@ describe('the tenant read', () => {
 describe('the run read for one tenant', () => {
     it('filters the runs on the tenant as target', async () => {
         const sent: Recorded[] = [];
-        await readTenantSetups(callerAnswering({ success: true, instances: [] }, sent), ACME);
+        await readTenantSetups(callerAnswering({ success: true, instances: [] }, sent), [ACME]);
 
-        expect(sent[0]?.body).toMatchObject({ target_id_filter: ACME });
+        expect(sent[0]?.body).toMatchObject({ target_id_filter: '', target_ids_filter: [ACME] });
     });
 });
 
@@ -132,21 +148,64 @@ describe('the party page', () => {
                     [
                         party(SYSTEM_PARTY, 'system', 'Acme System', 'System', null),
                         party(GROUP, 'acme_group', 'Acme Group', 'Operational', SYSTEM_PARTY),
-                        party(LONDON, 'acme_london', 'Acme London', 'Operational', ACME),
                     ],
                     40,
                 ),
                 sent,
             ),
+            { offset: 20, limit: 2 },
+        );
+
+        expect(sent).toHaveLength(1);
+        expect(sent[0]?.subject).toBe('refdata.v1.parties.list');
+        expect(sent[0]?.body).toEqual({
+            offset: 20,
+            limit: 2,
+            order: { field: '', descending: false },
+            filter: null,
+        });
+        expect(page.totalCount).toBe(40);
+        expect(page.parties.map((p) => p.parentName)).toEqual([null, 'Acme System']);
+    });
+
+    /*
+     * A parent on another page is read by its id, once for every such parent,
+     * so a page costs two reads at most however its parents fall.
+     */
+    it('reads the parents on other pages in one read by id', async () => {
+        const sent: Recorded[] = [];
+        const page = await readPartiesPage(
+            callerAnsweringInTurn(
+                [
+                    reply(
+                        [
+                            party(GROUP, 'acme_group', 'Acme Group', 'Operational', SYSTEM_PARTY),
+                            party(LONDON, 'acme_london', 'Acme London', 'Operational', ACME),
+                            party(PARIS, 'acme_paris', 'Acme Paris', 'Operational', ACME),
+                        ],
+                        40,
+                    ),
+                    reply([party(ACME, 'acme', 'Acme Corporation', 'Operational', null)], 1),
+                ],
+                sent,
+            ),
             { offset: 20, limit: 3 },
         );
 
-        expect(sent[0]?.subject).toBe('refdata.v1.parties.list');
-        expect(sent[0]?.body).toMatchObject({ offset: 20, limit: 3 });
-        expect(sent[0]?.body).not.toHaveProperty('tenant_id');
-        expect(page.totalCount).toBe(40);
-        expect(page.parties.map((p) => p.parentName)).toEqual([null, 'Acme System', null]);
-        expect(page.parties[2]?.parentId).toBe(ACME);
+        expect(sent).toHaveLength(2);
+        expect(sent[1]?.body).toEqual({
+            offset: 0,
+            limit: 2,
+            order: { field: '', descending: false },
+            filter: { id_one_of: [SYSTEM_PARTY, ACME] },
+        });
+        // The system party is not visible to this session, so it is not answered.
+        expect(page.parties.map((p) => p.parentName)).toEqual([
+            null,
+            'Acme Corporation',
+            'Acme Corporation',
+        ]);
+        expect(page.parties[0]?.parentId).toBe(SYSTEM_PARTY);
     });
 
     it('fails with the server words when the read is refused', async () => {

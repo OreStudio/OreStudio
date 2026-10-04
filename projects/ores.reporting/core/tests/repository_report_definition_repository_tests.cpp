@@ -58,8 +58,8 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
  */
 std::string seeded_report_type(ores::testing::database_helper& h) {
     ores::reporting::repository::report_type_repository rt_repo;
-    const auto types =
-        rt_repo.read_latest(ores::database::service::tenant_context::with_system_tenant(h.context()));
+    const auto types = rt_repo.read_latest(
+        ores::database::service::tenant_context::with_system_tenant(h.context()));
     REQUIRE_FALSE(types.empty());
     return types.front().code;
 }

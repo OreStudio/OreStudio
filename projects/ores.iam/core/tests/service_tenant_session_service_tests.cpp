@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/service/tenant_session_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.iam.core/service/tenant_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -97,9 +97,10 @@ TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", t
 }
 
 TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds", tags) {
-    const std::vector<std::string> catalogue{
-        "iam::accounts:read", "iam::accounts:write", "refdata::parties:delete",
-        "refdata::parties:read"};
+    const std::vector<std::string> catalogue{"iam::accounts:read",
+                                             "iam::accounts:write",
+                                             "refdata::parties:delete",
+                                             "refdata::parties:read"};
 
     CHECK(tenant_session_service::read_only({"*"}, catalogue) ==
           std::vector<std::string>{"iam::accounts:read", "refdata::parties:read"});
@@ -129,14 +130,14 @@ TEST_CASE("an_entry_is_refused_for_each_rule_it_breaks", tags) {
     CHECK(refused_with(svc.enter(administrator({"iam::tenants:read"}), target),
                        tenant_session_refusal::not_permitted));
 
-    CHECK(refused_with(
-        svc.enter(administrator(), enter_tenant_request{.tenant_id = "not-a-tenant"}),
-        tenant_session_refusal::unreadable_tenant_id));
+    CHECK(
+        refused_with(svc.enter(administrator(), enter_tenant_request{.tenant_id = "not-a-tenant"}),
+                     tenant_session_refusal::unreadable_tenant_id));
 
-    CHECK(refused_with(
-        svc.enter(administrator(),
-                  enter_tenant_request{.tenant_id = tenant_id::system().to_string()}),
-        tenant_session_refusal::system_tenant));
+    CHECK(
+        refused_with(svc.enter(administrator(),
+                               enter_tenant_request{.tenant_id = tenant_id::system().to_string()}),
+                     tenant_session_refusal::system_tenant));
 
     const auto nobody = boost::uuids::to_string(boost::uuids::random_generator()());
     CHECK(refused_with(svc.enter(administrator(), enter_tenant_request{.tenant_id = nobody}),

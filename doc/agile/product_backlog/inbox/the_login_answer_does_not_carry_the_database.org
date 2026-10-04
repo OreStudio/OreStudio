@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: B7AE6C4F-5597-419D-A396-AD64D871C900
+:END:
+#+title: The login answer does not carry the database
+#+description: The versions screen reads the database fingerprint, environment, commit and created time. The row exists in ores_database_info_tbl and only each service's startup reads it. The accepted design: the login answer carries the row beside the build it already states, so no subject of its own is needed.
+#+type: capture
+#+level: cross
+#+filetags: :iam:database:data_model:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The versions screen states the database under the deployment: the fingerprint
+of the schema it was built from, the build environment, the commit and the
+created time. All four live in =ores_database_info_tbl=, written when the
+database is created or recreated. One reader touches the row today: the
+service context factory, which compares the stored fingerprint with the one
+compiled into the code and refuses to start on a mismatch. No subject serves
+the row to a person.
+
+The accepted design gives it the second reader it needs. The =login_response=
+already states the deployment's build in full through its =version= field,
+and it must state the database row beside it: the fingerprint, the
+environment, the commit and the created time. The iam service reads
+=ores_database_info_tbl= at login and fills the fields. See the prototype
+section of [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]].
+
+* Why
+
+The versions screen and the footer answer the same question — what am I
+talking to — and the database is its missing third. The server build rides
+the login answer already, so the session keeps it with no second read; the
+database row travels the same way, at the cost of one query against a
+one-row table. It needs no new subject, no new permission and no new BFF
+route, and it settles the audience question the journey raised: the row
+reaches exactly the people the server build already reaches.
+
+* References
+
+- =projects/ores.iam/modeling/ores.iam.login_messages.org= — =login_response=, which states =version= today
+- =projects/ores.sql/create/database/database_database_info_create.sql= — the table, written at database create
+- =projects/ores.database/src/service/context_factory.cpp:49= — the startup read, the row's only reader
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — the component behind the row
+
+* See also
+
+- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] — the screen that reads it

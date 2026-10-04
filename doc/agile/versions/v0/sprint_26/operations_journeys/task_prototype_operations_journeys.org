@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :operations_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prototype-operations-journeys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The prototype shows the five operations journeys as clickable screens: the runni
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] |
-| Now          | Not yet started.                       |
+| Now          | The prototype is accepted; the accepted design is written back onto the journeys. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -41,9 +41,23 @@ The prototype shows the five operations journeys as clickable screens: the runni
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Branch the prototype from =main= as a throwaway: =prototype/operations-journeys=,
+   never merged, kept as the design record. This task's branch,
+   =feature/prototype-operations-journeys=, carries the documents back onto =main=.
+2. Build one page per screen behind =/prototype=, with a hand-written BFF route
+   per step, using only operations that exist today and showing the gap where a
+   journey names a missing one.
+3. Walk each journey step by step with the product owner, and settle the points
+   the journeys left open: the services roster, the wrappers on the grid, the
+   grid's ownership, and where the database row comes from.
+4. Write the accepted design back onto the five journeys: steps, entities,
+   operations and wireframes, plus a =* Prototype= section naming the branch,
+   the route and the design record.
+5. File the data-model linkages the walk found as captures in the product
+   backlog's inbox, and link the permission gap that is already captured
+   tree-wide rather than filing it again.
+6. Verify with =compass lint= and =compass site page=, close the task and the
+   story, and land the record with a pull request.
 
 * Measurements
 
@@ -60,6 +74,40 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+*The prototype moved the design.* The walk over the clickable screens settled
+the points the journeys had left open. The services screen became a roster: one
+row per expected instance under its service, kept whether the instance reports
+or not, with instance counts, the installation's own state words, and version
+skew made prominent. The compute wrappers left the services roster for the
+grid, because a wrapper runs on a node and belongs with the node. The grid
+itself became the installation's, not the tenant's. And the database
+fingerprint stopped being a read of its own: the login answer carries the row,
+so the versions panel adds no request. Each journey records its part of this in
+its =* Prototype= section.
+
+*The walk found the data-model linkages.* Five captures in the product
+backlog's inbox record what the accepted design needs from the models:
+[[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]
+would place each wrapper on its node;
+[[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]
+would feed the versions panel;
+[[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]
+would serve the expected roster and the states beyond running;
+[[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]
+records the filter that the grid's ownership removes; and
+[[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]
+would stop a node that fails everything from reading as idle. The permission
+gap that every journey records is already captured tree-wide, so it is linked
+rather than filed again:
+[[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]].
+
+*The branch is the record.* =prototype/operations-journeys= holds the clickable
+prototype and is never merged; this branch carries the documents the walk
+accepted. The decisions above were made against the prototype, so the two stay
+together: each journey names the branch, its route and this task, and the
+branch stays on the repository as the evidence. Nothing in the prototype is
+production code.
 
 * Test Scenarios
 
@@ -85,3 +133,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Accepted by the user on 2026-10-04. Snapshot: branch
+=prototype/operations-journeys=; the routes are =/prototype/services=,
+=/prototype/grid=, =/prototype/bus=, =/prototype/logs= and =/prototype/versions=,
+behind an index at =/prototype=.
+
+- *Services*: a roster, one row per expected instance under its service, kept
+  whether the instance reports or not; instance counts, the installation's own
+  state words, and prominent version skew.
+- *Grid*: one row per node, with the compute wrappers in their own panel
+  beside it, showing which wrapper reports and which is missing.
+- *Bus*: the server's vitals and one row per stream; running totals kept apart
+  from current numbers, and a time range with an inclusive start.
+- *Logs*: a filter bar that combines filters, emission time told apart from
+  receipt time, and a result count over the page.
+- *Versions*: the client, the server and the database panels; the database row
+  rides the login answer, and the panel states it as unknown until the answer
+  carries it.
+- *Frame*: Operations is an area, not tabs — one screen per journey with
+  "Back to operations" navigation, and the footer with both builds on every
+  screen.
+
+The design record is on =main=: each journey carries a =* Prototype= section
+naming the branch, the route and this task, the wireframes follow the accepted
+design, and the data-model linkages sit as captures in the product backlog's
+inbox. The prototype branch itself never merges.

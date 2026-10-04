@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: A1D7FC12-4105-41F7-8885-CCE07120034C
+:END:
+#+title: The service heartbeat carries no host
+#+description: Every service heartbeat carries the service name, the instance id and the release, and no host. The node sample carries the host id and no release or instance id, so nothing joins an instance to the machine it runs on, or a compute wrapper to its node.
+#+type: capture
+#+level: cross
+#+filetags: :telemetry:compute:data_model:defect:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every service that embeds the heartbeat publisher sends its name, its
+instance id and its release, and it never says which machine it runs on.
+The compute side is the mirror: each node sample carries the host id of the
+machine that published it, and no release and no instance id. The two
+describe the same fleet, and no key joins them:
+
+- The grid screen cannot place a compute wrapper on the node it runs on, so
+  the wrappers sit in a panel beside the node table
+  ([[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]).
+- The services screen cannot say where an instance runs
+  ([[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]]).
+
+The candidate is one field: a =host_id= on =service_heartbeat_message=, stored
+on =service_sample= beside =instance_id=. The publishing process already holds
+the id — the compute wrapper takes it at startup and stamps its node samples
+with it, and its heartbeat sender is constructed with the same id — so the
+message drops a value the sender already has. One field answers both
+questions, and each node row of the grid could then state the release it
+runs. The alternative — a release and an instance id on the node sample —
+answers the first question only.
+
+* Why
+
+The operator's questions are the join: which node runs this wrapper, and
+which host runs this instance. Both screens are read-only views over samples
+the installation already stores, and both stop at the same missing key. The
+fix is cheap while the heartbeat is one message and one table; every future
+screen that reads samples inherits either the join or the gap.
+
+* References
+
+- =projects/ores.telemetry/modeling/ores.telemetry.service_samples.org= — =service_heartbeat_message= (service name, instance id, release) and =service_sample=, the stored row
+- =projects/ores.compute/modeling/ores.compute.telemetry.org= — =node_sample_message=, which carries =host_id= and no release
+- =projects/ores.compute/wrapper/src/app/application.cpp:210= — the node sample stamped with =host_id=, and =:458= where the heartbeat sender receives the same id
+- =projects/ores.service/modeling/component_overview.org= — the shared heartbeat publisher every service embeds
+
+* See also
+
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the wrappers panel that cannot join its rows to the nodes
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the screen that cannot say where an instance is

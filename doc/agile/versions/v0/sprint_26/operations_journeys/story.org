@@ -23,9 +23,9 @@ Five journeys document the operator's view of a running installation: See the ru
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The five journeys are written and in review; the prototype is next. |
+| Now           | The prototype is accepted; the accepted design is recorded back onto the journeys. |
 | Waiting on    | Nothing.                               |
-| Next          | Prototype the five journeys on a throwaway branch. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ Five journeys document the operator's view of a running installation: See the ru
 |------+-------+-------+-----+-------------|
 | [[id:868078C5-7C9E-46A8-AF29-C048D8232A18][Scaffold story: Document the operations journeys]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:088E10D1-40E6-4D80-824D-153496B7B4AD][Write the operations journeys]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Document the operations journeys |
-| [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]] | BACKLOG | | | A clickable prototype of the operations journeys on a throwaway branch: one hand-written route per step, built from the operations the journeys name. |
+| [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]] | STARTED | 2026-10-04 | | A clickable prototype of the operations journeys on a throwaway branch: one hand-written route per step, built from the operations the journeys name. |
 
 * Decisions
 
@@ -49,7 +49,11 @@ Five journeys document the operator's view of a running installation: See the ru
 - The journeys form a new =operations= group. Services and the message bus stay as separate journeys: they answer different questions from different operations.
 - The versions journey is for any signed-in user; the other four are for a system administrator.
 - The legacy =ores.qt= telemetry and super-admin inventory lives on the =operations= group hub. Every screen read has a disposition: covered by a journey, changed, deferred or dropped.
-- The database fingerprint has no read operation today. The versions journey records the gap, and the prototype shows what the screen needs.
+- The database fingerprint has no read operation today; under the accepted design the login answer carries it. The versions journey records the gap, and the prototype settled that the row rides the login answer rather than a read of its own.
+- The services screen is a roster: one row per expected instance under its service, and a row never disappears. An instance is running, stopped or missing, in the installation's own words with the shell's existing tones; the instance count warns when a service is short; an older build is prominent, never buried.
+- The compute wrappers are the grid screen's. A wrapper runs on a node, so the grid shows it beside the nodes; the services roster shows the installation's services.
+- The grid is the installation's, not the tenant's: every tenant's work runs on the same hosts. The tenant filter under the read is a defect, filed as a capture.
+- Operations is an area, not tabs: one screen per journey with "Back to operations" navigation, sharing the shell and the footer.
 
 * Out of scope
 

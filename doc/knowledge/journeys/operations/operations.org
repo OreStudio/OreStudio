@@ -27,8 +27,8 @@ stores everything they show, with the gaps recorded below.
 #+ATTR_HTML: :class hug-leading
 | Journey | Actor | Gist |
 |---------+-------+------|
-| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | system administrator | Every service instance that reported in the last five minutes: its version and its last heartbeat |
-| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | system administrator | The host and work summary, and one row per node with its tasks, bytes and heartbeat age |
+| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | system administrator | Every service the installation expects, with its instance count, state and version; rows never disappear |
+| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | system administrator | The host and work summary, one row per node, and the compute wrappers that report for those nodes |
 | [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | system administrator | The NATS server's vitals and one row per stream: messages, bytes and consumers over time |
 | [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | system administrator | The lines behind a symptom, found by time, level, source, component, tag or session |
 | [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | any signed-in person | The client build, the server build, and the database fingerprint |
@@ -60,6 +60,7 @@ planned here; *dropped* means a web client does not need it.
 
 * Related
 
+- [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]] — the clickable prototype on a throwaway branch that proves these screens
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist that read the legacy screens and agreed this catalogue
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
 - [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] — the parent extraction this group belongs to

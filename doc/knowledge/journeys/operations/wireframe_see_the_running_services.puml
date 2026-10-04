@@ -26,22 +26,35 @@ salt
   {
     Updated 14:32:05 | [ Refresh ] | Watching: every 30 s
   }
+  --
+  (Version skew: ores.compute.service runs v0.0.24 while the rest run v0.0.25)
+  --
   {#
-    Service | Instance | Version | Last heartbeat
-    ores.compute.service | 6f2c19a1 | v0.0.25 | 4 s ago
-    ores.compute.service | c47e5508 | v0.0.24 | 21 s ago
-    ores.iam.service | 91b0f33d | v0.0.25 | 12 s ago
-    ores.telemetry.service | 2a9977f6 | v0.0.25 | 2 s ago
+    Service | Instances | Instance | Status | Version | Last heartbeat
+    ores.compute.service | (1 of 2) | 6f2c19a1 | running | v0.0.25 | 4 s ago
+    | | c47e5508 | running | v0.0.24 (older build) | 21 s ago
+    ores.iam.service | 2 of 2 | 91b0f33d | running | v0.0.25 | 12 s ago
+    | | 4d2ab8e0 | running | v0.0.25 | 9 s ago
+    ores.reporting.service | (1 of 2) | 2a9977f6 | (stopped) | v0.0.25 | 5 m ago
+    | | - | (missing) | - | -
+    ores.telemetry.service | 2 of 2 | 8e31c0f4 | running | v0.0.25 | 2 s ago
+    | | 9f42d1a7 | running | v0.0.25 | 6 s ago
   }
   --
-  Read-only. One row per instance that reported in the last five minutes.
-  Two instances of one service are two rows. The version is the release the
-  instance sends with its heartbeat.
+  Summary: (16 of 19) instances reported in the last five minutes | (1 stopped) | (2 missing)
+  --
+  Read-only. One row per instance the registry expects, whether it reports or
+  not; the rows never disappear. The state words are the installation's own;
+  running is reported in the last five minutes. The version is the release the
+  instance sends with its heartbeat, and an older build is marked where it
+  appears. The compute wrappers are the grid screen's: a wrapper runs on a
+  node, and it is shown with the node.
   --
   <b>NOTHING REPORTED IN THE LAST FIVE MINUTES</b>
   --
-  No service instance has reported. The installation may be starting,
-  or the services may have stopped.
+  Every expected instance is missing. The installation may be starting, or the
+  services may have stopped. The screen keeps every row and cannot say why;
+  the state has no read of its own yet.
 }
 
 @enduml

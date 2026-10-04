@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/trade-type-catalogue
-#+pr:
+#+pr: 2581
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2581][#2581]] | [codegen] Generate trade-type checks and routing from the catalogue |
 
 * Review
 

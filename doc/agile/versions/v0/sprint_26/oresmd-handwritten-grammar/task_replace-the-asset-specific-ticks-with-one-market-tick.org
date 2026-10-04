@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/replace-the-asset-specific-ticks-with-one-market-tick
-#+pr:
+#+pr: 2602
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2602][#2602]] | [agile] Investigate the market tick data model |
 
 * Review
 

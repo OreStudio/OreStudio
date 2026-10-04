@@ -8,7 +8,7 @@
 #+filetags: :iam:web:paging:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/move-the-tenant-reads-onto-the-contract
-#+pr:
+#+pr: 2593
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2593][#2593]] | [iam] Move the tenant roster onto the list contract |
 
 * Review
 

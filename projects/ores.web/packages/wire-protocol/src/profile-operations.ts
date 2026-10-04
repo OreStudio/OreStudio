@@ -22,7 +22,7 @@
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { Account, AccountContactInformation } from './domain.js';
-import { uuidSchema, wireTimestampSchema } from './domain.js';
+import { accountContactInformationSchema, accountSchema, uuidSchema, wireTimestampSchema } from './domain.js';
 import { OperationFailedError } from './errors.js';
 import { subjects as accountSubjects } from './generated/iam/protocol/account_operations_protocol.js';
 import { subjects as contactSubjects } from './generated/iam/protocol/account_contact_information_protocol.js';
@@ -167,6 +167,37 @@ export const contactPageSchema = z
     }));
 
 export type ContactPage = z.infer<typeof contactPageSchema>;
+
+/*
+ * The same answers as the BFF serves them, in the camelCase the browser reads.
+ *
+ * The wire replies above translate snake_case on the way in, so parsing their
+ * own output would fail; these are the shapes the browser parses instead. The
+ * BFF serialises them from the wire replies after the helpers translated them.
+ */
+
+/** The self account write's answer: the result, and the account as written. */
+export const accountWriteViewSchema = z.object({
+    result: decidedResultSchema,
+    account: accountSchema.nullable().default(null),
+});
+
+export type AccountWriteView = z.infer<typeof accountWriteViewSchema>;
+
+/** The contact write's answer: the result, and the record as written. */
+export const contactWriteViewSchema = z.object({
+    result: decidedResultSchema,
+    contact: accountContactInformationSchema.nullable().default(null),
+});
+
+export type ContactWriteView = z.infer<typeof contactWriteViewSchema>;
+
+/** The contact read's answer: the record, or nothing when the account has none. */
+export const contactViewSchema = z.object({
+    contact: accountContactInformationSchema.nullable().default(null),
+});
+
+export type ContactView = z.infer<typeof contactViewSchema>;
 
 /**
  * Writes the signed-in person's own profile fields.

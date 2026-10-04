@@ -161,6 +161,22 @@ export interface ImageUploadReply {
     readonly imageId: string;
 }
 
+/** The upload's answer as the BFF serves it, in the camelCase the browser reads. */
+export const imageUploadViewSchema = z.object({
+    result: decidedResultSchema,
+    imageId: z.string().default(''),
+});
+
+export type ImageUploadView = z.infer<typeof imageUploadViewSchema>;
+
+/** The rule as it reaches the picker, in the camelCase the browser reads. */
+export const imageUploadPolicyViewSchema = z.object({
+    formats: z.array(z.string()).default([]),
+    maxSizeBytes: z.int().nonnegative().default(0),
+    minWidth: z.int().nonnegative().default(0),
+    minHeight: z.int().nonnegative().default(0),
+});
+
 /**
  * Uploads one image and returns its id.
  *

@@ -57,6 +57,21 @@ import {
     saveRolePermissions,
     takeRoleAway,
     toWireTimestamp,
+    accountWriteViewSchema,
+    claimedContactWriteSchema,
+    contactViewSchema,
+    contactWriteSchema,
+    contactWriteViewSchema,
+    imageUploadPolicyViewSchema,
+    imageUploadViewSchema,
+    profileWriteSchema,
+    putContactInformation,
+    readContactInformation,
+    readImageUploadPolicy,
+    updateAccount,
+    updateSelfAccount,
+    updateSelfContactInformation,
+    uploadImage,
     loginResultSchema,
     loginInfoKeyRequestSchema,
     listAccountsRequestSchema,
@@ -322,7 +337,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         if (request.method === 'OPTIONS') {
             reply
-                .header('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS')
+                .header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
                 .header('Access-Control-Allow-Headers', 'Content-Type');
             await reply.status(204).send();
         }
@@ -1013,6 +1028,139 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         await setAccountLocked(session.client, { accountId, locked: false });
         return { success: true };
+    });
+
+    /*
+     * The profile: the account and the contact record a person owns, and the
+     * two writes a tenant administrator makes on somebody else's. The self
+     * writes name no account, because the session names it; the administered
+     * writes name the account the screen shows, and the server refuses a
+     * caller who does not hold the permission. A refusal a panel must draw --
+     * a field a member does not own, a record that moved under a save --
+     * travels in the answer body rather than as a failed call.
+     */
+
+    /**
+     * Writes the signed-in person's own profile fields.
+     *
+     * The three fields a member does not own -- the sign-in address, the
+     * default party, the reporting line -- are sent empty, which the protocol
+     * reads as not stated. The session names the account, so the body carries
+     * no account id and cannot name another one.
+     */
+    server.put('/api/me/profile', async (request) => {
+        const session = requireSession(request);
+        const body = profileWriteSchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('The profile fields must be text.');
+        }
+        return accountWriteViewSchema.parse(
+            await updateSelfAccount(session.client, body.data),
+        );
+    });
+
+    /**
+     * The signed-in person's own contact record.
+     *
+     * The session names the account, so the route takes no id, and an account
+     * with no record yet answers with nothing rather than with an error: the
+     * first write creates it.
+     */
+    server.get('/api/me/contact-information', async (request) => {
+        const session = requireSession(request);
+        return contactViewSchema.parse({
+            contact: await readContactInformation(session.client, session.accountId),
+        });
+    });
+
+    /**
+     * Writes the signed-in person's own contact record.
+     *
+     * It names no record; an account without one gets it on the first write.
+     */
+    server.put('/api/me/contact-information', async (request) => {
+        const session = requireSession(request);
+        const body = contactWriteSchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('The contact fields must be text.');
+        }
+        return contactWriteViewSchema.parse(
+            await updateSelfContactInformation(session.client, body.data),
+        );
+    });
+
+    /**
+     * Writes one account's profile fields, as a tenant administrator.
+     *
+     * The server's write replaces the record whole, so the route reads the
+     * account inside the request and applies the three fields to that read:
+     * the fields this screen does not set are echoed, and an empty string
+     * would clear them. The server asks for iam::accounts:update.
+     */
+    server.put('/api/accounts/:username/profile', async (request) => {
+        const session = requireSession(request);
+        const { username } = request.params as { username: string };
+        const body = profileWriteSchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('The profile fields must be text.');
+        }
+        const account = await readAccount(session.client, username);
+        if (account === null) {
+            throw notFound('No account has this username.');
+        }
+        await updateAccount(session.client, account, body.data);
+        return { success: true };
+    });
+
+    /**
+     * One account's contact record, as a tenant administrator reads it.
+     *
+     * The server's read carries no permission guard, and this mirrors the
+     * access pair: the member's own record is the route without an id, and
+     * this is the administrator's.
+     */
+    server.get('/api/accounts/:accountId/contact-information', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        if (!isUuid(accountId)) {
+            throw notFound('No account has this identifier.');
+        }
+        return contactViewSchema.parse({
+            contact: await readContactInformation(session.client, accountId),
+        });
+    });
+
+    /**
+     * Writes one account's contact record, as a tenant administrator.
+     *
+     * The browser states the claim its panel read: the version of the record
+     * it showed, or nothing at all. The id is the route's business, never the
+     * browser's: the store checks the claim against the row that id names, so
+     * the route reuses the identifier of the account's current record, and
+     * mints one only when the account has none. A claim of no record then
+     * finds the row the panel did not see and is refused, rather than
+     * inserting a second record for the account.
+     */
+    server.put('/api/accounts/:accountId/contact-information', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        const body = claimedContactWriteSchema.safeParse(request.body);
+        if (!isUuid(accountId) || !body.success) {
+            throw invalidRequest('Send the contact fields and the version the panel read.');
+        }
+        const current = await readContactInformation(session.client, accountId);
+        const { version, ...write } = body.data;
+        return contactWriteViewSchema.parse(
+            await putContactInformation(session.client, {
+                accountId,
+                recordId: current?.id ?? randomUUID(),
+                claim:
+                    version === null
+                        ? { kind: 'must_not_exist', version: null }
+                        : { kind: 'must_match_version', version },
+                write,
+            }),
+        );
     });
 
     /**
@@ -1944,6 +2092,52 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 displayOrder: reason.display_order,
             })),
         };
+    });
+
+    /**
+     * How many bytes an upload may carry.
+     *
+     * Fastify reads one megabyte of body by default, and an image arrives
+     * base64-encoded, which is about a third larger than the bytes it carries.
+     * Four megabytes hold the largest image the validator accepts with room
+     * to spare.
+     */
+    const IMAGE_UPLOAD_BODY_BYTES = 4 * 1024 * 1024;
+
+    /** What the browser sends to upload: the media type and the base64 bytes. */
+    const uploadBodySchema = z.object({
+        mimeType: z.string().min(1).max(100),
+        data: z.string().min(1),
+    });
+
+    /**
+     * Uploads one image and answers its identifier.
+     *
+     * The upload sets no photo: the id it answers rides into the write that
+     * references it, so an upload that nobody saves changes nothing. A refused
+     * image is an answer rather than a failed call, and the picker states
+     * which rule the image broke.
+     */
+    server.post('/api/images', { bodyLimit: IMAGE_UPLOAD_BODY_BYTES }, async (request) => {
+        const session = requireSession(request);
+        const body = uploadBodySchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('An upload needs a media type and the image bytes.');
+        }
+        return imageUploadViewSchema.parse(await uploadImage(session.client, body.data));
+    });
+
+    /**
+     * The rule an uploaded image must satisfy.
+     *
+     * Read from the validator that enforces it, so the picker states the rule
+     * the server applies rather than a copy of it.
+     */
+    server.get('/api/image-upload-policy', async (request) => {
+        const session = requireSession(request);
+        return imageUploadPolicyViewSchema.parse(
+            await readImageUploadPolicy(session.client),
+        );
     });
 
     /**

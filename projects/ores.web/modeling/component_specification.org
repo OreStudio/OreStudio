@@ -142,6 +142,10 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =POST /api/account/password= | Change the signed-in account's own password. The account is the session's own, so the route takes no account id. |
 | =GET /api/accounts= | The accounts the caller may see, one page at a time. The administrator's screen opens on this list and finds the colleague the support call is about. |
 | =GET /api/accounts/:username= | One account by username. A username that is not there answers with nothing, because the caller names a row it has just read: the row having gone since is an expected state and not a failed call. |
+| =PUT /api/me/profile= | Write the signed-in person's own full name, job title and picture. The session names the account, and the three fields a member does not own are sent empty. |
+| =PUT /api/me/contact-information=, =GET /api/me/contact-information= | Read and write the signed-in person's own contact record. The write names no record: an account without one gets it on the first write. |
+| =PUT /api/accounts/:username/profile= | Write one account's profile fields, as a tenant administrator. The route reads the account and sends the record whole, so the fields this screen does not set are kept. |
+| =GET /api/accounts/:accountId/contact-information=, =PUT /api/accounts/:accountId/contact-information= | Read and write one account's contact record, as a tenant administrator. The write carries the version the panel read as its claim, and the store refuses a record that moved. |
 | =GET /api/login-info= | The tenant's login records, one page at a time. The audit screen reads the failed attempts and the lock state from here. |
 | =GET /api/login-info/:accountId= | One account's login record. An account that has never signed in has none, which is an answer rather than an error. The record carries no credential column. |
 | =GET /api/seed-profiles= | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
@@ -154,6 +158,8 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =GET /api/health= | Liveness. |
 | =GET /api/change-reasons= | The audit reason list. |
 | =GET /api/images/:id= | One image of the session's own tenant, such as a flag or a picture, by its identifier. |
+| =POST /api/images= | Upload one image and answer its identifier. The upload sets no photo: the identifier rides into the write that references it. A refused image is an answer with the server's code, not a failed call. |
+| =GET /api/image-upload-policy= | The rule an uploaded image must satisfy, read from the validator that enforces it. |
 | =GET /api/tenants/:code/images/:id= | One image of a tenant read from system administration. The tenant's parties and people pages read the images they name in the same visit, so this route answers from what they kept. |
 | =DELETE /api/tenants/:code= | Remove a tenant. The body carries the tenant's code typed again, and the system tenant is refused. |
 | =GET /api/me/access= | The roles the signed-in person holds, with what each grants and who gave it, when and why. |

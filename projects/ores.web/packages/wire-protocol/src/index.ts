@@ -326,8 +326,19 @@ export type {
     WorkflowStepSummary,
 } from './operations.js';
 
-export { readImages, readImageUploadPolicy, uploadImage } from './entities/image.js';
-export type { ImageContent, ImageUploadPolicy, ImageUploadReply } from './entities/image.js';
+export {
+    imageUploadPolicyViewSchema,
+    imageUploadViewSchema,
+    readImages,
+    readImageUploadPolicy,
+    uploadImage,
+} from './entities/image.js';
+export type {
+    ImageContent,
+    ImageUploadPolicy,
+    ImageUploadReply,
+    ImageUploadView,
+} from './entities/image.js';
 
 export {
     ACCOUNT_SUBJECTS,
@@ -339,10 +350,14 @@ export {
 export type { AuthenticatedCaller, ChangeOwnPasswordRequest } from './account-operations.js';
 
 // The profile write path: the self writes and the two administered writes,
-// each over the subject the journey records, and the contact read.
+// each over the subject the journey records, and the contact read. The view
+// schemas are the same answers as the BFF serves them to the browser.
 export {
+    accountWriteViewSchema,
     claimedContactWriteSchema,
+    contactViewSchema,
     contactWriteSchema,
+    contactWriteViewSchema,
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
@@ -351,8 +366,11 @@ export {
     updateSelfContactInformation,
 } from './profile-operations.js';
 export type {
+    AccountWriteView,
     ClaimedContactWrite,
+    ContactView,
     ContactWrite,
+    ContactWriteView,
     ProfileWrite,
 } from './profile-operations.js';
 

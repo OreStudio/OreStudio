@@ -27,13 +27,14 @@
  * - An ORE name answers to one counterparty per tenant
  * - The LEI counterparty publish adds what a tenant lacks and skips the rest
  * - A published counterparty links to a parent the tenant already holds
+ * - The alias publish writes each alias once and skips a LEI the tenant lacks
  *
  * Run with: pg_prove -d <database> test/refdata_counterparty_ore_aliases_test.sql
  */
 
 begin;
 
-select plan(8);
+select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -136,6 +137,72 @@ select is(
      where c.valid_to = ores_utility_infinity_timestamp_fn()),
     pg_temp.alias_target('CPTY_A'),
     'a new counterparty links to a parent the tenant already holds');
+
+select is(pg_temp.alias_target('CP'), pg_temp.alias_target('CPTY'),
+    'CP and CPTY, which share the netting set NS, name one counterparty');
+
+select results_eq(
+    $$select action, record_count from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'ore.counterparty_aliases'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    $$values ('skipped'::text, 23::bigint)$$,
+    'a second publish of the aliases writes none of them again');
+
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'test.ore_alias_without_counterparty', 'ORE', 'Parties', 'Reference Data', 'NONE',
+        'Primary', 'Actual', 'Raw', 'GLEIF Golden Copy Extraction',
+        'Alias publish test', 'Test dataset.', 'ORE', 'Test', current_date,
+        'Open Data', 'counterparty_aliases');
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'test.ore_alias_without_counterparty'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+        version, id_scheme, lei, description)
+    values (v_dataset_id, ores_utility_system_tenant_id_fn(), 'NO_SUCH_BANK', 0, 'ORE',
+        '00000000000000000000', 'test');
+end $$;
+
+select results_eq(
+    $$select action, record_count from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'test.ore_alias_without_counterparty'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    $$values ('skipped'::text, 1::bigint)$$,
+    'an alias whose LEI the tenant holds no counterparty for is skipped');
+
+do $$
+declare
+    v_dataset_id uuid;
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'test.ore_alias_staged_twice', 'ORE', 'Parties', 'Reference Data', 'NONE',
+        'Primary', 'Actual', 'Raw', 'GLEIF Golden Copy Extraction',
+        'Alias staged twice test', 'Test dataset.', 'ORE', 'Test', current_date,
+        'Open Data', 'counterparty_aliases');
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'test.ore_alias_staged_twice'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    insert into ores_dq_counterparty_aliases_artefact_tbl (dataset_id, tenant_id, id_value,
+        version, id_scheme, lei, description)
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'STAGED_TWICE', 0, 'ORE',
+         'G5GSEF7VJP5I7OUK5573', 'test'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'STAGED_TWICE', 0, 'ORE',
+         '7LTWFZYICNSX8D621K86', 'test');
+end $$;
+
+select results_eq(
+    $$select action, record_count from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+        (select id from ores_dq_datasets_tbl where code = 'test.ore_alias_staged_twice'
+           and valid_to = ores_utility_infinity_timestamp_fn()),
+        ores_utility_system_tenant_id_fn())$$,
+    $$values ('inserted'::text, 1::bigint), ('skipped'::text, 1::bigint)$$,
+    'a name staged twice in one dataset is written once');
 
 select * from finish();
 

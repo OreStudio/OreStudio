@@ -1352,3 +1352,7 @@ tangled into the runnable script library
 * Trade States
 
 - [[id:6E6BC1D6-49C9-51CD-B678-A509660C6EEB][How do I run the trade_states commands from the shell?]]
+
+* Counterparty Aliases
+
+- [[id:F3534049-1E98-5474-B121-24A69AB6CC39][How do I run the counterparty_aliases commands from the shell?]]

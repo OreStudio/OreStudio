@@ -1,0 +1,27 @@
+      ore_alias       | short_code |                   full_name                   |         lei          
+----------------------+------------+-----------------------------------------------+----------------------
+ 001B456BCDEFGH67XY89 | BAOFAM32   | Bank of America, National Association         | B4TYDEB6GKMZO031MB27
+ A                    | BARBAN     | BARCLAYS BANK PLC                             | G5GSEF7VJP5I7OUK5573
+ ABC                  | SOCGEN     | SOCIETE GENERALE                              | O2RNE8IBXP4R0TD8PU41
+ CP                   | JPCHBA2    | JPMorgan Chase Bank, National Association     | 7H6GLXDRUGQFU57RNE97
+ CPTY                 | JPCHBA2    | JPMorgan Chase Bank, National Association     | 7H6GLXDRUGQFU57RNE97
+ CPTY_1               | SOCGEN     | SOCIETE GENERALE                              | O2RNE8IBXP4R0TD8PU41
+ CPTY_10              | HSBBAN     | HSBC BANK PLC                                 | MP6I5ZYZBEU3UXPYFY54
+ CPTY_2               | NATMAR1    | NATWEST MARKETS PLC                           | RR3QWICWWIPCS8A4S074
+ CPTY_3               | BAOFAM32   | Bank of America, National Association         | B4TYDEB6GKMZO031MB27
+ CPTY_4               | CRAGCO1    | CREDIT AGRICOLE CORPORATE AND INVESTMENT BANK | 1VUV7VQFKUOQSJ21A208
+ CPTY_5               | JPMOSE     | J.P. MORGAN SECURITIES PLC                    | K6Q0W1PS1L1O4IQL9C32
+ CPTY_6               | BARBAN     | BARCLAYS BANK PLC                             | G5GSEF7VJP5I7OUK5573
+ CPTY_7               | DEBAAK     | DEUTSCHE BANK AKTIENGESELLSCHAFT              | 7LTWFZYICNSX8D621K86
+ CPTY_8               | JPCHBA2    | JPMorgan Chase Bank, National Association     | 7H6GLXDRUGQFU57RNE97
+ CPTY_9               | BNPPAR     | BNP PARIBAS                                   | R0MUWSFPU8MPRO8K5P83
+ CPTY_A               | BARBAN     | BARCLAYS BANK PLC                             | G5GSEF7VJP5I7OUK5573
+ CPTY_B               | DEBAAK     | DEUTSCHE BANK AKTIENGESELLSCHAFT              | 7LTWFZYICNSX8D621K86
+ CPTY_C               | BNPPAR     | BNP PARIBAS                                   | R0MUWSFPU8MPRO8K5P83
+ CPTY_D               | USX        | UBS AG                                        | BFM8T61CT2L1QCEMIK50
+ DUMMY_CP             | USX        | UBS AG                                        | BFM8T61CT2L1QCEMIK50
+ DUMMY_CPTY           | USX        | UBS AG                                        | BFM8T61CT2L1QCEMIK50
+ EquityOption1        | NATMAR1    | NATWEST MARKETS PLC                           | RR3QWICWWIPCS8A4S074
+ EquityOption2        | NATMAR1    | NATWEST MARKETS PLC                           | RR3QWICWWIPCS8A4S074
+(23 rows)
+

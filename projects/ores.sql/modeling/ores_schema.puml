@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T03:44:51.424812Z
+' Generated: 2026-10-04T08:50:22.463939Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6307,6 +6307,21 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_coding_schemes_artefact_tbl
     A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
+    end note
+
+    entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id_value : text
+        * version : integer
+        * id_scheme : text
+        * lei : text
+          description : text
+    }
+
+    note right of ores_dq_counterparty_aliases_artefact_tbl
+    A name a source system uses for a counterparty, such as the CPTY_A an ORE document puts in its envelope, staged with the identifier scheme it belongs to and the LEI of the counterparty it names. A counterparty's id differs from tenant to tenant, so the alias names it by LEI; publishing resolves the LEI to the tenant's counterparty and writes the alias as a counterparty identifier. - Artefact Table
     end note
 
     entity ores_dq_countries_artefact_tbl  #F7E5FF {

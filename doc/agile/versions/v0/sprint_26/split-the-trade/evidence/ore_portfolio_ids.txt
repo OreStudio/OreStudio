@@ -1,0 +1,19 @@
+ORE PortfolioIds onto trade_portfolio: runs against a recreated database with ACME provisioned
+Branch feature/ore-portfolio-ids, 2026-10-04
+
+Inventory: 209 sample trades in 30 files state PortfolioIds; the names are PF1 (78) and PF2 (87); 44 state an empty PortfolioIds.
+
+1. Round trip of a 13-trade portfolio merging Example_63, Commodity_Forward and Legacy Example_39 and Example_39 amccg (3 trades with PortfolioIds). The import writes no envelope rows.
+      info: Saved 13 trade(s).
+✓ Exported 13 trade(s) to /tmp/claude-1000/-home-marco-Development-OreStudio-ores-dev-merry-newton/09b9c413-2810-4988-bed0-5f858f5f2322/scratchpad/rtp/output/portfolio_roundtrip.xml (3703 bytes).
+Documents: 1  Failures: 0  Skipped: 0
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 373, unexplained 0
+   envelopes as stated: 13 of 13
+   CC_SWAP_EUR_USD: ('CPTY_A', 'CPTY_A', ['PF1']) -> ('CPTY_A', 'CPTY_A', ['PF1'])
+   FXFWD_EURUSD_10Y: ('CPTY_A', 'PricerStaticDate', ['PF1']) -> ('CPTY_A', 'PricerStaticDate', ['PF1'])
+   XCCY_Swap_EUR_USD: ('CPTY_A', 'PricerStaticDate', ['PF1']) -> ('CPTY_A', 'PricerStaticDate', ['PF1'])
+
+2. Legacy Example_58 with one PortfolioId changed to NO_SUCH_PORTFOLIO:
+   info: Saved 1 trade(s).
+   warn: PortfolioId NO_SUCH_PORTFOLIO matches no portfolio of the party: give the party a portfolio with this name. [PFNEG_XCCY_Swap_EUR_USD]

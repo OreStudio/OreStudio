@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: DCAA75B9-4980-4920-B897-021AB6D475D5
+:END:
+#+title: Task: Resolve ORE portfolio ids to portfolios
+#+description: Give ORE's Envelope/PortfolioIds a home: a trade_portfolio component that resolves each id to a portfolio of the trade's party, imported and exported from it, with the ORE sample portfolios published to ACME.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-portfolio-ids
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An ORE import records each PortfolioId as a portfolio of the trade's party and rejects one that names no portfolio; the export regenerates PortfolioIds from those rows; the envelope tables are no longer written.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- trade_portfolio (trade, ordinal, portfolio) references the anchor and a portfolio of the trade's party.
+- The ORE sample portfolios PF1 and PF2 are published to Acme Corporation Plc through DQ.
+- The import resolves PortfolioIds by name and writes no envelope rows; the export regenerates them; a portfolio with PortfolioIds round trips with no in-scope loss.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+An ORE PortfolioId is a portfolio's name, and a portfolio's natural key is its
+party and name, so the import resolves each id by name among the importing
+party's portfolios and rejects a trade whose id names none, as it does a
+counterparty or netting set that resolves to none.
+
+- =trade_portfolio= (trade, ordinal, portfolio) is a trade component keyed by
+  the anchor with a database foreign key, its party pinned to the anchor and
+  to the portfolio, so a trade is reported only in its own party's portfolios.
+- The ORE sample portfolios PF1 and PF2 are the dataset =ore.sample_portfolios=
+  with its own methodology, published by the artefact type =named_portfolios=.
+  It reuses the portfolio staging table, but its publish adds top-level
+  portfolios by name to a party that already has portfolios, which the
+  portfolio tree publish refuses to do. The bundle =ore_sample_netting= becomes
+  =ore_samples= and carries it.
+- The import resolves PortfolioIds before it books, writes =trade_portfolio=
+  rows after, and writes no envelope rows at all.
+- The export reads a booked trade's PortfolioIds through
+  =ores_trading_trade_portfolio_names_fn=, which runs as the owner for the same
+  reason as the envelope names function.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Round trip with PortfolioIds, in-scope pairs | lost 0, unexplained 0; 13 of 13 envelopes as stated | =reset_and_roundtrip.sh=, in [[file:evidence/ore_portfolio_ids.txt][evidence/ore_portfolio_ids.txt]] | branch head before commit |
+| Unknown PortfolioId | the trade is rejected with one reason | the same evidence file | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| pgTAP envelope names cases | 10/10 pass | =pg_prove projects/ores.sql/test/trading_trade_envelope_names_test.sql= | branch head before commit |
+
+* Notes
+
+- Seen, not changed: the instrument step refuses Example_39's composite with
+  "Invalid modified_by: ores" from the composite leg insert, and the swaption,
+  commodity and CDS instruments on their tenor, unit and leg checks. The
+  instrument step is out of this task's scope.
+- After this task the ORE import writes nothing to the envelope tables; only
+  trades with no anchor still read them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The portfolio tree publish skips a party that already has portfolios, so it cannot add PF1 and PF2 to ACME. | refdata_publish_from_dq_create.sql | Accept | A named portfolio publish over the same staging table. |
+
+* Result
+
+ORE's Envelope/PortfolioIds now resolve to portfolios. An ORE import records
+each id as a =trade_portfolio= row pointing at a portfolio of the importing
+party, and rejects a trade whose id names none; the export regenerates the ids
+in order. The ORE sample portfolios PF1 and PF2 reach Acme Corporation Plc
+through the =ore_samples= bundle. The import no longer writes the envelope
+tables, and a portfolio with PortfolioIds round trips with no in-scope loss.

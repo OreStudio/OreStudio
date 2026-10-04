@@ -239,6 +239,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fx_barrier_option_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -251,7 +253,6 @@ its trade, so a row cannot exist without one.
 | "sold_currency" <> '' |
 | "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 | "lower_barrier" > 0 |
-| "trade_type_code" in ('FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxKIKOBarrierOption', 'FxGenericBarrierOption') |
 | "option_type" is null or "option_type" in ('Call', 'Put') |
 
 ** Indexes

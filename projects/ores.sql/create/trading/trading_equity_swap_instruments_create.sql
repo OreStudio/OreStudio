@@ -60,10 +60,10 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
     check (("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null)),
     check ("notional" > 0),
     check ("currency" <> ''),
-    check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
     check ("return_type" in ('Total', 'Price'))
 );
 

@@ -23,9 +23,9 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Identifiers, party roles and additional fields are keyed by the anchor. |
+| Now           | Trade-type checks and routing come from the catalogue. |
 | Waiting on    | Nothing.                               |
-| Next          | Catalogue-generated trade-type checks and routing. |
+| Next          | ORE import and export onto the new entities. |
 | Last touched  | 2026-10-03 |
 
 * Acceptance
@@ -49,6 +49,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 | [[id:D5F645E6-67B5-45EF-AEE7-FF929150C5A4][Add the trade booking and state components]] | DONE | 2026-10-03 | 2026-10-03 | Add trade_booking and trade_state beside the wide trade: temporal components keyed by the anchor through a database foreign key, the netting set pinned to the anchor's party and counterparty, and the virtual-book rule. |
 | [[id:CD7ED388-A0E8-4904-B678-6B657BF22A71][Book a trade in one write]] | DONE | | 2026-10-03 | Add the booking operation: write a trade's anchor, booking and state in one transaction, and report a second booking of the same trade id as a domain error. |
 | [[id:2FA3C2C8-8F53-4EFE-945A-67AA6BC8ADB1][Key identifiers, party roles and additional fields by the anchor]] | DONE | 2026-10-03 | 2026-10-04 | Reshape trade_identifier and trade_party_role around the anchor and add trade_additional_field: each keyed by the trade with a database foreign key to the anchor, ORE's Trade/@id one identifier scheme among others, and no workspace. |
+| [[id:2D7BADA0-BF4B-4A91-89C2-C3CC517AD9BF][Generate trade-type checks and routing from the catalogue]] | DONE | 2026-10-04 | 2026-10-04 | Make the trade-type catalogue a codegen input: each trade type names the instrument table that holds it, and the generator renders the catalogue's seed, every instrument table's trade_type check and the export routing from it. |
 
 * Decisions
 

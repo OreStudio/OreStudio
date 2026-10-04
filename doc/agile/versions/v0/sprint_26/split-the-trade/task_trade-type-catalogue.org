@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 2D7BADA0-BF4B-4A91-89C2-C3CC517AD9BF
+:END:
+#+title: Task: Generate trade-type checks and routing from the catalogue
+#+description: Make the trade-type catalogue a codegen input: each trade type names the instrument table that holds it, and the generator renders the catalogue's seed, every instrument table's trade_type check and the export routing from it.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trade-type-catalogue
+#+pr: 2581
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One catalogue decides where every trade type lives: the instrument tables' trade_type checks and the export handler's routing are generated from it, and no table lists codes by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The trade-type catalogue is a table in the trade type model, and its seed script is generated from it.
+- Each instrument table's trade_type check is generated from the codes the catalogue routes to it; the lists are disjoint.
+- The export handler routes a trade to its instrument table through generated code, not hand-written conditions.
+- Where routing and tables disagree today, the catalogue settles it, following where the ORE importer writes each type.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- A new model type, =ores.codegen.trade_type_catalogue=, following the
+  asset class catalogue: =ores.trading.trade_type_catalogue= holds one row per
+  trade type with its seed columns and the instrument entity that holds it.
+  Two archetypes render the trade types seed and =trade_type_routing.hpp=
+  (=instrument_table= and =instrument_table_for=).
+- An instrument model states =:routed_by:= and =:routed_column:=; the
+  generator adds the check listing the codes routed to it. The 29 instrument
+  models drop their hand-written lists; the risk participation table has no
+  trade type column, so it is routed but not checked.
+- The export handler buckets trades by =instrument_table_for= instead of
+  hand-written conditions on product type and code.
+- The wide trade's 121-code list becomes a check against the trade type
+  catalogue, as the anchor's is.
+- Where today's routing and tables disagreed, the catalogue follows where the
+  ORE importer writes each type: =EquityOutperformanceOption= joins the equity
+  option table's list; =EquityOptionPosition= is routed to the equity position
+  table; =TotalReturnSwap= and =ContractForDifference= are routed to, and
+  accepted by, the composite table; =BondFutureOption= and
+  =EuropeanOptionBarrier=, which nothing imports, are routed nowhere. The ten
+  tables that accepted all 121 codes now accept only their own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2581][#2581]] | [codegen] Generate trade-type checks and routing from the catalogue |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: TotalReturnSwap with an equity underlying is written to the equity position table under the underlying's code, so routing by the trade's own type still misses it on export | =trade_type_catalogue= | Decline here | Unchanged from before; the equity family story owns its round trip. |
+| 2 | Local review: the drift check shows =trade_service.cpp= changed only under clang-format 21 | tooling | Accept as follow-up | CI uses clang-format 18; with 18 on PATH the tree has no drift. Pinning the generator's formatter is its own change. |
+| 3 | @claude: confirm the wide trade's trade type lookup is indexed | =trading_trades_create.sql= | Accept as is | =trade_types_code_uniq_idx= on =(tenant_id, code)= for the current row serves it; the system tenant matches the anchor's check. |
+| 4 | @claude: a trigger check is skipped by loads that disable triggers | =trading_trades_create.sql= | Decline | The wide trade's party, book and status checks are already triggers, and nothing loads trades with triggers off. |
+| 5 | @claude: generate the handler's switch and buckets too | =trade_handler.hpp= | Accept as follow-up | The switch has no default, so a new table is a compiler warning; generating the bucket-to-service map belongs with the consumers task. |
+| 6 | @claude: log trades with no table, an O(n^2) duplicate count, a path-depth error, shared test helpers | various | Decline | Minor; the unrouted types are documented in the catalogue, and 121 rows make the count cost nothing. |
+
+* Result
+
+- =ores.trading.trade_type_catalogue= is the one declaration of the trade
+  types and the instrument table that holds each; the seed (identical to the
+  hand-written one, 121 rows) and =trade_type_routing.hpp= are generated from
+  it.
+- 29 instrument tables take their =trade_type= check from the catalogue
+  through =:routed_column:=; the 92 listed codes are disjoint. The wide trade
+  checks its type against the catalogue table.
+- The export handler routes through =instrument_table_for=.
+- The four disagreements are settled where the ORE importer writes each type;
+  =BondFutureOption= and =EuropeanOptionBarrier= are routed nowhere.
+- Verified: build clean (=linux-clang-debug-make=); ctest 90/90; db recreate
+  clean; pgTAP pass; codegen pytest 1128; drift none under clang-format 18
+  (CI's); sweep, paste blocks, reachability, permissions, populate references,
+  CMake, inventory, ER strict, SQL hygiene, shell scripts, lint, structure
+  notes, misspell and site page clean.

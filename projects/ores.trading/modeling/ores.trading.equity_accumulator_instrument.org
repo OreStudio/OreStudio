@@ -269,6 +269,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_accumulator_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -278,7 +280,6 @@ its trade, so a row cannot exist without one.
 | "fixing_amount" > 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| "trade_type_code" in ('EquityAccumulator', 'EquityTaRF') |
 | ("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null) |
 | "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
 | "target_type" is null or "target_type" in ('TargetFull', 'TargetExact') |

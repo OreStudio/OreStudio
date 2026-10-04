@@ -163,6 +163,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_position_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -171,7 +173,6 @@ its trade, so a row cannot exist without one.
 |---|
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| "trade_type_code" in ('EquityPosition', 'EquityOptionPosition') |
 
 ** Indexes
 

@@ -340,6 +340,18 @@ The trade this one was replaced by, on a cancel and rebook.
 
 Absent on an internal trade, which faces no counterparty.
 
+** trade_type
+:PROPERTIES:
+:table:             ores_trading_trade_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid trade_type: %. No active trade type found with this code.
+:END:
+
+The trade type catalogue is system reference data, so the check reads the
+system tenant, as the anchor's does.
+
 ** status_id
 :PROPERTIES:
 :table:         ores_dq_fsm_states_tbl
@@ -377,7 +389,6 @@ optional, and the generated guard skips the call when it is null.
 
 | expression |
 |---|
-| "trade_type" in ('CompositeTrade', 'RateDigitalOption', 'SwaptionStraddle', 'ForwardVolatilityAgreement', 'Swap', 'CrossCurrencySwap', 'ForwardRateAgreement', 'CapFloor', 'Swaption', 'FlexiSwap', 'BalanceGuaranteedSwap', 'CallableSwap', 'KnockOutSwap', 'RiskParticipationAgreement', 'InflationSwap', 'FxForwardVolatilityAgreement', 'FxForward', 'FxSwap', 'FxOption', 'FxDigitalOption', 'FxAverageForward', 'FxAsianOption', 'FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxWindowBarrierOption', 'FxGenericBarrierOption', 'FxKIKOBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption', 'FxVarianceSwap', 'FxPairwiseVarianceSwap', 'FxBasketVarianceSwap', 'FxAccumulator', 'FxTaRF', 'FxWorstOfBasketSwap', 'FxBestEntryOption', 'FxBasketOption', 'FxRainbowOption', 'FxStrikeResettableOption', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO', 'BondFutureOption', 'Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot', 'EquityAutoDeltaHedgedOption', 'EquityForwardVolatilityAgreement', 'EquityOption', 'EquityFutureOption', 'EquityAsianOption', 'EquityBarrierOption', 'EquityDoubleBarrierOption', 'EquityEuropeanBarrierOption', 'EquityWindowBarrierOption', 'EquityGenericBarrierOption', 'EquityTouchOption', 'EquityDoubleTouchOption', 'EquityDigitalOption', 'EquityForward', 'EquitySwap', 'EquityVarianceSwap', 'EquityPairwiseVarianceSwap', 'EquityBasketVarianceSwap', 'EquityCliquetOption', 'EquityAccumulator', 'EquityTaRF', 'EquityWorstOfBasketSwap', 'EquityBestEntryOption', 'EquityBasketOption', 'EquityRainbowOption', 'EquityOutperformanceOption', 'EquityStrikeResettableOption', 'TotalReturnSwap', 'ContractForDifference', 'EquityPosition', 'EquityOptionPosition', 'CommodityForwardVolatilityAgreement', 'IntradayPowerForward', 'CommodityForward', 'CommodityOption', 'CommodityDigitalOption', 'CommodityDigitalAveragePriceOption', 'CommodityAsianOption', 'CommodityAveragePriceOption', 'CommoditySpreadOption', 'CommodityOptionStrip', 'CommoditySwap', 'CommoditySwaption', 'CommodityVarianceSwap', 'CommodityPairwiseVarianceSwap', 'CommodityBasketVarianceSwap', 'CommodityAccumulator', 'CommodityTaRF', 'CommodityWorstOfBasketSwap', 'CommodityBestEntryOption', 'CommodityWindowBarrierOption', 'CommodityGenericBarrierOption', 'CommodityBasketOption', 'CommodityRainbowOption', 'CommodityStrikeResettableOption', 'CommodityPosition', 'CashPosition', 'ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'EuropeanOptionBarrier', 'PerformanceOption_01') |
 | "activity_type_code" in ('new_booking', 'new_internal_transfer', 'draft_capture', 'execution', 'amendment', 'confirmation', 'novation', 'partial_termination', 'full_termination', 'maturity', 'exercise', 'assignment', 'increase', 'decrease', 'roll', 'compression', 'clearing', 'netting', 'rate_reset', 'fx_reset', 'accrual', 'cashflow', 'correction', 'rebook', 'maturity_reversal', 'cancellation_reversal', 'transfer', 'split', 'merge', 'cancel', 'cancel_confirmed', 'void') |
 
 ** Party id from book id
@@ -657,6 +668,7 @@ and msgpack headers the storage export needs.
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
@@ -705,20 +717,22 @@ and msgpack headers the storage export needs.
 ** Handler private members
 
 =populate_instruments_for_trades= resolves a page of trades to their
-instrument payloads in two phases: bucket the instrument ids by product
-type, then read each product's table in one batch.
+instrument payloads in two phases: bucket the instrument ids by the table
+the trade-type catalogue routes each type to, then read each table in one
+batch.
 
 #+begin_src cpp :name handler_private :implements A1C3E5F7-8B2D-4A6E-9F1C-3D7B5E2A8C4D
     template <typename Ctx>
     static void populate_instruments_for_trades(const Ctx& ctx,
                                                 std::vector<trade_export_item>& items) {
-        using ores::trading::domain::product_type;
+        using ores::trading::domain::instrument_table;
+        using ores::trading::domain::instrument_table_for;
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
         using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
 
-        // Phase 1: bucket instrument IDs by (product_type, trade_type)
+        // Phase 1: bucket instrument IDs by the table that holds them
         std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
             fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids,
             infl_ids, rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids,
@@ -727,90 +741,104 @@ type, then read each product's table in one batch.
 
         for (const auto& item : items) {
             const auto& t = item.trade;
-            if (t.classification.product_type == product_type::unknown)
+            // The trade-type catalogue decides which table holds each type;
+            // a type it routes nowhere has no instrument to read.
+            const auto table = instrument_table_for(t.classification.trade_type);
+            if (!table)
                 continue;
             // The instrument is keyed by the trade it belongs to, so the
             // trade's own id is the key the product tables are read by.
             const auto id = boost::uuids::to_string(t.identity.id);
-            const auto& ttc = t.classification.trade_type;
-            switch (t.classification.product_type) {
-                case product_type::bond:
+            switch (*table) {
+                case instrument_table::balance_guaranteed_swap_instrument:
+                    bgs_ids.push_back(id);
+                    break;
+                case instrument_table::bond_instrument:
                     bond_ids.push_back(id);
                     break;
-                case product_type::credit:
-                    credit_ids.push_back(id);
+                case instrument_table::callable_swap_instrument:
+                    callable_ids.push_back(id);
                     break;
-                case product_type::commodity:
+                case instrument_table::cap_floor_instrument:
+                    capfloor_ids.push_back(id);
+                    break;
+                case instrument_table::commodity_instrument:
                     commodity_ids.push_back(id);
                     break;
-                case product_type::scripted:
-                    scripted_ids.push_back(id);
-                    break;
-                case product_type::composite:
+                case instrument_table::composite_instrument:
                     composite_ids.push_back(id);
                     break;
-                case product_type::swap:
-                    if (ttc == "ForwardRateAgreement")
-                        fra_ids.push_back(id);
-                    else if (ttc == "Swap" || ttc == "CrossCurrencySwap" || ttc == "FlexiSwap")
-                        vswap_ids.push_back(id);
-                    else if (ttc == "CapFloor")
-                        capfloor_ids.push_back(id);
-                    else if (ttc == "Swaption")
-                        swaption_ids.push_back(id);
-                    else if (ttc == "BalanceGuaranteedSwap")
-                        bgs_ids.push_back(id);
-                    else if (ttc == "CallableSwap")
-                        callable_ids.push_back(id);
-                    else if (ttc == "KnockOutSwap")
-                        koswap_ids.push_back(id);
-                    else if (ttc == "InflationSwap")
-                        infl_ids.push_back(id);
-                    else if (ttc == "RiskParticipationAgreement")
-                        rpa_ids.push_back(id);
+                case instrument_table::credit_instrument:
+                    credit_ids.push_back(id);
                     break;
-                case product_type::fx:
-                    if (ttc == "FxForward" || ttc == "FxSwap")
-                        fxfwd_ids.push_back(id);
-                    else if (ttc == "FxOption")
-                        fxopt_ids.push_back(id);
-                    else if (ttc == "FxBarrierOption" || ttc == "FxGenericBarrierOption" ||
-                             ttc == "FxDoubleBarrierOption" || ttc == "FxEuropeanBarrierOption" ||
-                             ttc == "FxKIKOBarrierOption")
-                        fxbar_ids.push_back(id);
-                    else if (ttc == "FxDigitalOption" || ttc == "FxDigitalBarrierOption" ||
-                             ttc == "FxTouchOption" || ttc == "FxDoubleTouchOption")
-                        fxdig_ids.push_back(id);
-                    else if (ttc == "FxAverageForward" || ttc == "FxTaRF")
-                        fxasn_ids.push_back(id);
-                    else if (ttc == "FxAccumulator")
-                        fxacc_ids.push_back(id);
-                    else if (ttc == "FxVarianceSwap")
-                        fxvar_ids.push_back(id);
+                case instrument_table::equity_accumulator_instrument:
+                    eq_acc_ids.push_back(id);
                     break;
-                case product_type::equity:
-                    if (ttc == "EquityOption" || ttc == "EquityCliquetOption" ||
-                        ttc == "EquityOutperformanceOption")
-                        eq_opt_ids.push_back(id);
-                    else if (ttc == "EquityForward")
-                        eq_fwd_ids.push_back(id);
-                    else if (ttc == "EquitySwap" || ttc == "EquityWorstOfBasketSwap")
-                        eq_swp_ids.push_back(id);
-                    else if (ttc == "EquityVarianceSwap")
-                        eq_var_ids.push_back(id);
-                    else if (ttc == "EquityBarrierOption" || ttc == "EquityDoubleBarrierOption" ||
-                             ttc == "EquityEuropeanBarrierOption")
-                        eq_bar_ids.push_back(id);
-                    else if (ttc == "EquityAsianOption")
-                        eq_asn_ids.push_back(id);
-                    else if (ttc == "EquityDigitalOption" || ttc == "EquityTouchOption")
-                        eq_dig_ids.push_back(id);
-                    else if (ttc == "EquityAccumulator" || ttc == "EquityTaRF")
-                        eq_acc_ids.push_back(id);
-                    else if (ttc == "EquityPosition")
-                        eq_pos_ids.push_back(id);
+                case instrument_table::equity_asian_option_instrument:
+                    eq_asn_ids.push_back(id);
                     break;
-                case product_type::unknown:
+                case instrument_table::equity_barrier_option_instrument:
+                    eq_bar_ids.push_back(id);
+                    break;
+                case instrument_table::equity_digital_option_instrument:
+                    eq_dig_ids.push_back(id);
+                    break;
+                case instrument_table::equity_forward_instrument:
+                    eq_fwd_ids.push_back(id);
+                    break;
+                case instrument_table::equity_option_instrument:
+                    eq_opt_ids.push_back(id);
+                    break;
+                case instrument_table::equity_position_instrument:
+                    eq_pos_ids.push_back(id);
+                    break;
+                case instrument_table::equity_swap_instrument:
+                    eq_swp_ids.push_back(id);
+                    break;
+                case instrument_table::equity_variance_swap_instrument:
+                    eq_var_ids.push_back(id);
+                    break;
+                case instrument_table::fra_instrument:
+                    fra_ids.push_back(id);
+                    break;
+                case instrument_table::fx_accumulator_instrument:
+                    fxacc_ids.push_back(id);
+                    break;
+                case instrument_table::fx_asian_forward_instrument:
+                    fxasn_ids.push_back(id);
+                    break;
+                case instrument_table::fx_barrier_option_instrument:
+                    fxbar_ids.push_back(id);
+                    break;
+                case instrument_table::fx_digital_option_instrument:
+                    fxdig_ids.push_back(id);
+                    break;
+                case instrument_table::fx_forward_instrument:
+                    fxfwd_ids.push_back(id);
+                    break;
+                case instrument_table::fx_vanilla_option_instrument:
+                    fxopt_ids.push_back(id);
+                    break;
+                case instrument_table::fx_variance_swap_instrument:
+                    fxvar_ids.push_back(id);
+                    break;
+                case instrument_table::inflation_swap_instrument:
+                    infl_ids.push_back(id);
+                    break;
+                case instrument_table::knock_out_swap_instrument:
+                    koswap_ids.push_back(id);
+                    break;
+                case instrument_table::rpa_instrument:
+                    rpa_ids.push_back(id);
+                    break;
+                case instrument_table::scripted_instrument:
+                    scripted_ids.push_back(id);
+                    break;
+                case instrument_table::swaption_instrument:
+                    swaption_ids.push_back(id);
+                    break;
+                case instrument_table::vanilla_swap_instrument:
+                    vswap_ids.push_back(id);
                     break;
             }
         }
@@ -1094,8 +1122,6 @@ type, then read each product's table in one batch.
         // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
         for (auto& item : items) {
             const auto& t = item.trade;
-            if (t.classification.product_type == product_type::unknown)
-                continue;
             // The instrument is keyed by the trade it belongs to, so the
             // trade's own id is the key the product tables are read by.
             const auto id = boost::uuids::to_string(t.identity.id);

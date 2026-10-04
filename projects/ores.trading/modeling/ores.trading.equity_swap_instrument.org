@@ -232,6 +232,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_swap_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -241,7 +243,6 @@ its trade, so a row cannot exist without one.
 | ("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null) |
 | "notional" > 0 |
 | "currency" <> '' |
-| "trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap') |
 | "return_type" in ('Total', 'Price') |
 
 ** Indexes

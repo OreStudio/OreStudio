@@ -214,6 +214,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fx_variance_swap_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -227,7 +229,6 @@ its trade, so a row cannot exist without one.
 | "underlying_code" <> '' |
 | "long_short" in ('Long', 'Short') |
 | "moment_type" in ('Variance', 'Volatility') |
-| "trade_type_code" = 'FxVarianceSwap' |
 
 ** Indexes
 

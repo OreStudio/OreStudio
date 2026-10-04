@@ -172,6 +172,8 @@ its trade, so a row cannot exist without one.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_scripted_instruments_tbl
+:routed_by:     ores.trading.trade_type_catalogue
+:routed_column: trade_type_code
 :END:
 
 ** Checks
@@ -179,7 +181,6 @@ its trade, so a row cannot exist without one.
 | expression |
 |---|
 | "script_name" <> '' |
-| "trade_type_code" in ('ScriptedTrade', 'Autocallable_01', 'DoubleDigitalOption', 'PerformanceOption_01') |
 
 ** Indexes
 

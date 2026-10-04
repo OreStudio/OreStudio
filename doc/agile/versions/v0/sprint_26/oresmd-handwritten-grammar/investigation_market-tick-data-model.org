@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: F7F432FA-09C2-4508-8733-7AF7EBB00818
+:END:
+#+title: Investigation: the market tick data model
+#+description: What one live market data tick should be: two asset-specific tick types today, how other systems model ticks, and the single model chosen.
+#+type: investigation
+#+level: s1
+#+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A point-in-time record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]], written on 2026-10-04 at =origin/main= =2a000020ea=, while [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] was open.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+Checklist item P02 asks that every subject marketdata owns is declared once, in
+its models. The one subject marketdata owns and does not declare is the root of
+the republished live stream, =marketdata.v1.tick=. Declaring it means modelling
+the message that travels on it, and two message types travel on it today:
+=fx_spot_tick= and =ir_curve_tick=, both hand-written. A model declares one
+subject per message, so the question became what a tick should be.
+
+The driver is the market data model, not the checklist item. The model is meant
+to extend to every asset class, so the question is which tick shape still holds
+when it does.
+
+* Methodology
+
+The code was read at =2a000020ea=:
+
+- the two tick types, =ores.marketdata.api/domain/fx_spot_tick.hpp= and
+  =ir_curve_tick.hpp=, and the subject constants in =tick_subjects.hpp=;
+- the ingest path in =ores.marketdata/service/src/app/feed_ingest_loop.cpp=,
+  from decode to stored observation and republish;
+- every reader of the republished stream, by searching for the subject, the
+  decode of each tick type and the client's subject helper;
+- =feed_binding.hpp=, the producer-to-owner mapping.
+
+How other market data systems model a tick comes from general knowledge of their
+published protocols. It was not checked against their documentation in this
+investigation.
+
+* Paths taken
+
+** What the code does today
+
+| Tick | Fields | Owner from | Key on the wire |
+|------+--------+------------+-----------------|
+| =fx_spot_tick= | =ore_key=, =datetime=, =mid= | the feed binding of its source | the whole ORE key |
+| =ir_curve_tick= | =tenant_id=, =party_id=, =series_type=, =metric=, =qualifier=, =asset_class=, =subclass=, =point_id=, =source_name=, =datetime=, =value= | the tick itself | the retired registry's split of the key |
+
+- Both are one quote per message. The IR "curve" tick is one curve point; a
+  curve is the set of points published with one =datetime=.
+- Both ingest paths end in the same step. =persist_tick_observation= rebuilds an
+  ORE key (=feed_ingest_loop.cpp:346= and =:419-422= glue the IR parts back
+  together), reads it with =ore_key_codec=, and stores one observation with a
+  value, a time, a source and an owner.
+- The IR tick's =asset_class= and =subclass= repeat what the classifier derives
+  from the datum. The file import already uses =classification_key_of= and the
+  classifier instead.
+- The ingest loop republishes the payload unchanged on
+  =marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>= (lines 314 and 391).
+  Its only reader is the client's =fx_spot_subscription=, which decodes
+  =fx_spot_tick= and has no production caller.
+- The two shapes differ only in how they spell the key and where the owner
+  comes from. Neither difference is a fact about FX or about rates.
+
+** How other systems model a tick
+
+- *FIX.* One market data message for every asset, as a snapshot or an
+  incremental refresh. The instrument is a structured identifier, and the data
+  is a list of typed entries such as bid, offer, trade and settlement.
+- *Bloomberg BLPAPI.* A subscription names a security and a field list, and each
+  update is field-value pairs on that security, whatever the asset.
+- *LSEG (Refinitiv) OMM.* Message domains split by the shape of the data: a
+  level-1 quote (MarketPrice), an order book (MarketByOrder, MarketByPrice) and
+  lists. An FX rate and a swap rate are both MarketPrice.
+- *OpenGamma Strata.* A quote is a number under an observable id, a standard id
+  and a field name. A curve is built from quotes; it is not a tick.
+- *ORE.* A market data file is date, key and value rows; the typed quote classes
+  appear only after parsing.
+
+None of them has an FX tick and a rates tick. The asset class lives in the
+identifier, and a new message type appears only when the data has a new shape.
+
+** Approaches weighed
+
+- *Keep one tick type per asset class, and model each.* Rejected. Every new
+  asset class would add a wire type that repeats what the datum schema already
+  says, and two types would share one subject root.
+- *A subjects table in codegen, declaring the root with no message.* Rejected.
+  It would meet P02 and leave the two shapes in place.
+- *Record P02 as an exception.* Rejected. The standard allows an exception only
+  where layering forbids the reference, which is not the case.
+- *One general tick keyed by the datum.* Chosen.
+
+* Conclusions
+
+A tick is one observation of one market datum. ORE Studio already has the typed
+identity of a datum: the oresmd quote URI, which maps one to one onto the
+canonical ORE key and holds the asset class, the instrument and every field. So
+the tick needs no asset-specific type. The two types today are two spellings of
+the same fact, and one of them spells the key in the retired registry's terms.
+
+Decided with the owner on 2026-10-04:
+
+1. *One approach for every feed and every asset class.* No FX path and IR path.
+2. *One source of ownership for every feed: the feed binding.* A binding maps a
+   producer's source to the tenant, workspace and party that consume it, which
+   is the routing the republished subject already carries. A tick is a market
+   fact and carries no owner. Feeds that publish without a binding today, the
+   IR curve feeds, get bindings.
+3. *The datum is named by its oresmd quote URI.*
+4. *No backwards compatibility.* =ores.synthetic= changes freely; the market
+   data model is the driver, and it extends to every asset class.
+
+The tick is:
+
+| Field | Meaning |
+|-------+---------|
+| =oresmd_uri= | the quote URI of the datum observed, under the strict contract |
+| =value= | the observed value |
+| =observation_time= | when it was observed |
+| =source= | the producer, which the feed binding resolves to an owner |
+
+A curve stays a set of ticks with one observation time. A batch message, a list
+of ticks published as one NATS message, is a later choice to be measured, not
+part of the model.
+
+* Recommendations
+
+- [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] builds it: one
+  modelled =market_tick= declaring =marketdata.v1.tick=, the ingest loop reading
+  the URI with =oresmd_uri_codec= and classifying with =classification_key_of=,
+  bindings for every feed, and the synthetic FX and IR curve feeds publishing the
+  one type. It closes P02 for marketdata.
+- The feed binding stores an =asset_class= that its =oresmd_uri= already
+  implies. The same task should derive it from the URI or drop it.
+- The tick's value type is open. Ticks carry =double= today and stored
+  observations are text. Text keeps the exact digits, as the file import does.
+- =synthetic.v1.tick= belongs to =ores.synthetic= and is declared there, under
+  that component's own P02.
+
+* See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — the quote URI the tick is keyed by.
+- [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] — the task whose P02 work led here.
+- [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — P02.

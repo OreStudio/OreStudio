@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7
+:END:
+#+title: Task: Prototype the operations journeys
+#+description: A clickable prototype of the operations journeys on a throwaway branch: one hand-written route per step, built from the operations the journeys name.
+#+type: task
+#+level: s1
+#+filetags: :operations_journeys:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The prototype shows the five operations journeys as clickable screens: the running services, the compute grid, the message bus, the logs, and the versions and database fingerprint. It runs against a hand-written BFF route per step, uses only operations that exist today, and lives on a throwaway branch kept as the design record.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The prototype runs locally and every step of the five journeys is clickable.
+- Each screen uses only operations that exist today; where the journeys name a missing operation the prototype shows the gap.
+- The branch =prototype/operations-journeys= is kept as the design record and never merged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

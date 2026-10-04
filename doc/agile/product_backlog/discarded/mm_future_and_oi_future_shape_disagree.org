@@ -87,6 +87,13 @@ neither, so the correction is not a one-line edit to one row: the shape table
 needs a decision about what a listed future's series is, then both rows
 rewritten to say it.
 
+* Resolution
+
+RESOLVED by [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. The SQL key shape table and =series_key_registry=
+are deleted. The datum schema gives =MM_FUTURE= and =OI_FUTURE= the same row:
+=ccy=, =contract_month=, =contract= and =tenor=, with the contract month the
+one coordinate.
+
 * References
 
 - =projects/ores.sql/populate/ore/ore_series_key_shapes_populate.sql= -- the two

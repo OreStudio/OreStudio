@@ -82,6 +82,13 @@ That changes the canonical URI of the 36,948 keys that project today, from
 The change is worth making before the import boundary starts storing URIs,
 because afterwards it is a data migration rather than an edit.
 
+* Resolution
+
+RESOLVED by [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. The DISCOUNT row of the datum schema holds the
+fourth segment as =curve_id=, a free-text identity field, and the fifth as
+=term=. Nothing is derived from the curve name, and the codec tests compare
+every DISCOUNT key in ORE's catalogue with ORE's own reading.
+
 * References
 
 - =projects/ores.codegen/library/templates/ores.cpp.oresmd.projections.org= --

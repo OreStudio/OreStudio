@@ -52,6 +52,18 @@ capture is about whether =market_series= (or a related lookup) should additional
 structured, indexable currency/index fields, which is a genuinely open design question the oresmd
 work doesn't resolve by itself and needs its own thinking session before implementation.
 
+* Update, 2026-10-04
+
+[[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]
+removed the free-text =qualifier= column. A series is now named only by
+=market_series.oresmd_uri=, whose query holds each schema field under its own
+name, for example
+=oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&ccy=GBP&...=. The
+currency and the index name are therefore separate, typed fields of the
+series identity, and =oresmd_uri_codec::read= returns them. The open question
+narrows to how a caller filters on them: by reading the URI, or through an
+indexed column or a query that the repository offers.
+
 * References
 
 - =projects/ores.qt/refdata/src/CurveBuilderWorkbench.cpp= — =selectedIndexQualifier()=, the

@@ -71,6 +71,15 @@ first kind. The likely answer is therefore a per-segment decision rather than a
 global one, and it wants making before the export path is built rather than
 after.
 
+* Resolution
+
+RESOLVED by [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. The typed datum keeps the case ORE wrote in every
+free-text field (ticker, reference entity, curve id, commodity), and the URI
+codec writes each value with its case kept. The ORE key codec tests read every
+distinct corpus key and write it back unchanged, apart from the three type
+aliases, and =import_stores_a_key_in_the_case_it_was_written= checks the case
+through the database.
+
 * References
 
 - =projects/ores.marketdata/core/tests/oresmd_ore_coverage_tests.cpp= -- prints

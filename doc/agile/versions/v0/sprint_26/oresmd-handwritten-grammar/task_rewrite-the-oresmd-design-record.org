@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rewrite-the-oresmd-design-record
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ a defect that the new grammar removed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -46,6 +46,15 @@ a defect that the new grammar removed.
 
 Write the record last, from the code.
 
+1. Take the facts from the headers: the counts in =ore_types.hpp= and
+   =schema.hpp=, the families in =market_index.hpp=, and each codec's own
+   description.
+2. Take every worked example from the codecs themselves: a throwaway test case
+   printed the canonical key, the quote URI and the series URI for one key per
+   instrument type, and the fixing URI for one name per index family. It ran
+   once and was removed before the commit.
+3. Close or re-point each capture the old grammar left.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -58,11 +67,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Instrument types, quote types, fields | 45, 17 (16 and =none=), 61 | =grep -n "_count = " projects/ores.marketdata/api/include/ores.marketdata.api/datum/*.hpp= | 567556c83d |
+| Worked examples written by the codecs | 31 keys, 13 index names | a throwaway test case, run once and removed | 567556c83d |
+| Captures closed | 5 | =compass capture file SLUG discarded= | 567556c83d |
 
 * Notes
 
 See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3, "The grammar story's acceptance, read against the code".
+
+** Captures the old grammar left
+
+| Capture | Decision | Why |
+|---------+----------+-----|
+| [[id:67A49A94-2588-4D17-BFCA-54813F3193B3][The forward projection uppercases free-text identifiers]] | Closed | The datum and the URI keep the case ORE wrote. |
+| [[id:2deb5dd8-4bba-4793-80c9-54001dd120d9][The DISCOUNT model invented a tenor out of the curve name]] | Closed | =curve_id= is a free-text identity field. |
+| [[id:7c47d7c8-1eca-45d1-a168-084dcbfdd01e][index_family had no F-TIIE]] | Closed | The IR index is the free-text =index_name=; no enum is left. |
+| [[id:7C05E102-91B7-4D0B-A165-3099BA2DBBF8][The shape table gives MM_FUTURE and OI_FUTURE two depths]] | Closed | The shape table is deleted; the two schema rows are the same. |
+| [[id:AD0956F8-B519-4D75-A3CB-86FE70F9E17C][Wire the capfloor, rating and bond-option families]] | Closed | All 45 instrument types are modelled. |
+| [[id:86B41936-1186-4FEC-B001-C62F59DF0013][Strongly-typed index/currency filter fields for market_series]] | Re-pointed | The qualifier column is gone; the question is now how to filter on the series URI's fields. |
+| [[id:0351618B-470B-4A5B-BE94-FFB132C9A396][The ORE key codec refuses a signed period]] | Kept | It is about the new codec. |
+| [[id:1C4685FC-4061-4E85-9408-84DB9E9A13A7][ASCII case conversion is written out in eighteen files]] | Kept | It names the new URI codec's copies. |
+| [[id:0669523D-075C-4A7E-921E-83B76E24979C][The marketdata import looks up each series with its own query]] | Kept | It is about the import, not the grammar. |
+
+** Also changed
+
+- The type diagram =market_data_urn_types.puml= showed the deleted identifier
+  and requirement variants. Nothing linked to it, so it is deleted rather than
+  redrawn.
+- The parent story's own =* Status= still named the key codec as next; it now
+  names the clean-standard record.
 
 * Test Scenarios
 
@@ -88,3 +121,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=market_data_urn.org= now describes the grammar that ships: the typed datum and
+index models with their schema tables, the two ORE codecs and what each refuses
+on purpose, the URI grammar and its strict contract, and the tests. Every
+worked example is the codecs' own output. The record states that roles,
+requirements and resolution belong to fixings and curves only, and that no code
+implements them today. Story 12DAAEC7 no longer says that no unit started.
+Capture 67A49A94 and four other captures that the new grammar resolved are
+closed, one is re-pointed, and three that still apply are kept.

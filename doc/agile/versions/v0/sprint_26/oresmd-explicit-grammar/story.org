@@ -23,10 +23,10 @@ Every oresmd URI states what it means without the reader knowing a default or a 
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The defects and the target grammar are agreed and recorded in the investigation. No implementation unit has started. |
+| Now           | Every unit landed. The generated grammar it built was later replaced by the hand-written codecs of [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Declare the coordinates in the twelve quote-type models. |
-| Last touched  | 2026-10-01                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-04                               |
 
 * Acceptance
 

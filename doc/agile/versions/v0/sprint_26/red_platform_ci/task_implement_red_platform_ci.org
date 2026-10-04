@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 65440AF6-F71E-4FB7-941D-FF1A98BFC656
+:END:
+#+title: Task: Implement Hotfix: Linux and Windows CI builds on main
+#+description: Initial task for: Hotfix: Linux and Windows CI builds on main
+#+type: task
+#+level: s1
+#+filetags: :red_platform_ci:sprint_26:v0:
+#+owner: marco
+#+branch: hotfix/red-platform-ci
+#+pr: 2618
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the Linux build job =actions: write= so the sccache entry refreshes,
+and remove the deprecated =std::getenv= calls that break the Windows clang
+builds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- =continuous-linux.yml= grants the build job =contents: read= and
+  =actions: write=.
+- =ores.platform.tests= and =ores.ore.core.tests= build and pass locally.
+
+* Plan
+
+1. Add a =permissions:= block to the Linux build job.
+2. Define =_CRT_SECURE_NO_WARNINGS= in the platform environment tests,
+   as =real_environment_provider.cpp= does; the tests compare the
+   provider against the C runtime, so they must call =std::getenv=.
+3. Read =ORES_BOOTSTRAP_GOLDENS= through =environment::get_value= in the
+   ORE coverage tests.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Root causes, from run logs on main:
+
+- Linux run 37188310273, gcc-release job: =gh: Resource not accessible by
+  integration (HTTP 403)= on the cache delete; the step ends in =|| true=,
+  so the failure was silent. =gh api repos/OreStudio/OreStudio/actions/permissions/workflow=
+  reports =default_workflow_permissions: read=.
+- Windows run 37178189604, clang jobs: ='getenv' is deprecated= at
+  =environment_environment_tests.cpp:162= and =:178=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2618][#2618]] | [ci,platform,ore] Refresh the Linux sccache and drop deprecated getenv |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: a precompiled header would load =<cstdlib>= before the define | =environment_environment_tests.cpp= | Declined | The platform tests use no precompiled header, so the define comes first. |
+| 2 | Round 1: check the build job needs no other token scopes | =continuous-linux.yml= | Declined | The job uses checkout, cache, setup, upload-artifact and =gh api= on the cache only; none needs =packages= or =id-token=. |
+| 3 | Round 1: say why the define is there | =environment_environment_tests.cpp= | Accepted | Comment added above the define. |
+| 4 | Round 1: a precompiled header would make the define too late | =environment_environment_tests.cpp= | Declined | Same as row 1. |
+| 5 | Round 1: merge once the Windows clang jobs pass | — | Declined | Windows CI runs on a schedule on main only, so it cannot gate this PR; check the first run after merge. |
+
+* Result
+
+The Linux build job now has =contents: read= and =actions: write=, so the
+sccache delete-then-save can replace the entry. The platform environment
+tests define =_CRT_SECURE_NO_WARNINGS=; the ORE coverage tests read
+=ORES_BOOTSTRAP_GOLDENS= through =environment::get_value=. Locally,
+=ores.platform.tests= and =ores.ore.core.tests= build with no warnings,
+and the =[environment]= (18 cases) and =[coverage]= (1 case) tests pass.
+The cache refresh can only be confirmed on the first Linux run after merge.

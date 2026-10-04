@@ -38,6 +38,7 @@ A user loads a run's configuration into a report definition, and reads it back, 
 - A service operation imports an ORE input directory's files against a report definition under the caller's session, and returns what was stored and what was not.
 - A shell command imports a directory and exports a definition to a directory.
 - The handler's permission is seeded.
+- The import runs as a workflow saga over the owning services: a failure in any step compensates the steps before it, so no partial run stays behind, and two imports into one report definition cannot both store a run document (raised in the review of PR #2624).
 
 * Plan
 

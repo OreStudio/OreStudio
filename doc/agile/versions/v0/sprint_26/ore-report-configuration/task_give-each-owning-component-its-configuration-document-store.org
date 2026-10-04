@@ -85,7 +85,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | get throws a bare out_of_range for an unknown parameter definition | run_document_service.cpp | Accept | Throws a message naming the analytic and the definition id. |
+| 2 | save is not atomic and two imports can race | run_document_service.cpp | Accept | Written into the import saga task's acceptance, which is where it is fixed. |
+| 3 | A parse error after the first write leaves a half-imported run | run_store.cpp | Accept | Every document is parsed and mapped before the run document is saved; a test proves a run with an unparseable document writes nothing. |
+| 4 | Convention reads scan whole tables; world conventions are never replaced | conventions_document_service.cpp | Decline | Documented and tested; Read each document's rows by its parent covers the scans. |
+| 5 | No owner-level tests for pricing engines, today's market and curves | analytics, refdata | Decline here | Written into the operations task's acceptance: each owner tests its documents through its operations. |
+| 6 | header_of copies the service | run_store.cpp | Accept | Takes the service by reference. |
+| 7 | Two conventions bindings give the same output | run_store.cpp | Decline | By design: a conventions binding means the session's conventions. |
 
 * Result
 

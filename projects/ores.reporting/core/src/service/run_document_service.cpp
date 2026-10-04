@@ -29,6 +29,7 @@
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
 #include <map>
@@ -143,10 +144,18 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
 
     for (const auto& a : analytics) {
         domain::run_analytic ra{a, {}};
-        for (const auto& p : parameters)
-            if (p.report_analytic_id == a.id)
-                ra.parameters.push_back(
-                    {definition_names.at(p.parameter_definition_id), p.value, p.position});
+        for (const auto& p : parameters) {
+            if (p.report_analytic_id != a.id)
+                continue;
+            const auto name = definition_names.find(p.parameter_definition_id);
+            if (name == definition_names.end())
+                throw std::runtime_error(std::format(
+                    "The {} analytic holds a parameter whose definition {} is not an analytic "
+                    "parameter definition.",
+                    a.analytic_type_code,
+                    boost::uuids::to_string(p.parameter_definition_id)));
+            ra.parameters.push_back({name->second, p.value, p.position});
+        }
         r.analytics.push_back(std::move(ra));
     }
 

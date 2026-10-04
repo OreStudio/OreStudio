@@ -81,40 +81,62 @@ Document parse_file(const std::string& file, const std::string& content) {
     return d;
 }
 
-// Hands one configuration document to the component that owns it. A document
-// with a header carries the configuration's id and name, which is what the
-// export finds it by.
-void store_document(const context& ctx,
-                    std::string_view code,
+/**
+ * @brief The configuration documents a run names, parsed and mapped.
+ */
+struct parsed_documents {
+    std::optional<refdata::domain::conventions_document> conventions;
+    std::optional<refdata::domain::curve_configuration_document> curves;
+    std::optional<analytics::domain::todays_market_document> market;
+    std::optional<analytics::domain::pricing_engines_document> engines;
+};
+
+void parse_document(std::string_view code,
                     const std::string& file,
                     const std::string& content,
+                    parsed_documents& d) {
+    if (code == "conventions")
+        d.conventions =
+            domain::conventions_mapper::map(parse_file<domain::conventions>(file, content));
+    else if (code == "curve_configuration")
+        d.curves = domain::curve_configuration_mapper::map(
+            parse_file<domain::curveconfiguration>(file, content));
+    else if (code == "todays_market")
+        d.market =
+            domain::todays_market_mapper::map(parse_file<domain::todaysmarket>(file, content));
+    else if (code == "pricing_engines")
+        d.engines =
+            domain::pricing_engine_mapper::map(parse_file<domain::pricingengines>(file, content));
+}
+
+// Hands one parsed document to the component that owns it. A document with a
+// header carries the configuration's id and name, which is what the export
+// finds it by.
+void store_document(const context& ctx,
+                    std::string_view code,
+                    parsed_documents& d,
                     const reporting::domain::configuration& c,
                     run_import_result& r) {
-    const auto with_header = [&](auto document) {
+    const auto with_header = [&](auto& document) {
         document.config.configuration_id = c.id;
         document.config.name = c.name;
         return document;
     };
     if (code == "pricing_engines") {
-        analytics::service::pricing_engines_document_service(ctx).save(with_header(
-            domain::pricing_engine_mapper::map(parse_file<domain::pricingengines>(file, content))));
+        analytics::service::pricing_engines_document_service(ctx).save(with_header(*d.engines));
     } else if (code == "todays_market") {
-        analytics::service::todays_market_document_service(ctx).save(with_header(
-            domain::todays_market_mapper::map(parse_file<domain::todaysmarket>(file, content))));
+        analytics::service::todays_market_document_service(ctx).save(with_header(*d.market));
     } else if (code == "curve_configuration") {
-        refdata::service::curve_configuration_document_service(ctx).save(
-            with_header(domain::curve_configuration_mapper::map(
-                parse_file<domain::curveconfiguration>(file, content))));
+        refdata::service::curve_configuration_document_service(ctx).save(with_header(*d.curves));
     } else if (code == "conventions") {
-        const auto saved = refdata::service::conventions_document_service(ctx).save(
-            domain::conventions_mapper::map(parse_file<domain::conventions>(file, content)));
+        const auto saved = refdata::service::conventions_document_service(ctx).save(*d.conventions);
         r.world_conventions_kept = saved.world_kept;
         r.fx_conventions_skipped = saved.fx_skipped;
     }
 }
 
 template <typename Service>
-boost::uuids::uuid header_of(Service service,
+boost::uuids::uuid header_of(Service& service,
                              const reporting::domain::report_configuration& binding) {
     if (const auto id = service.find_by_configuration(binding.configuration_id))
         return *id;
@@ -161,15 +183,21 @@ run_import_result import_run(const context& ctx,
     document.analytics = domain::run_document_mapper::map_analytics(run);
     document.market_bindings = domain::run_document_mapper::map_market_bindings(run);
 
-    // Everything an import can refuse is checked before its first write, since
-    // the writes are not one transaction.
+    // Everything an import can refuse, a missing file or one that does not
+    // parse, is found before its first write, since the writes are not one
+    // transaction.
+    parsed_documents parsed;
     for (const auto& kind : document_kinds) {
         const auto& file = document.setup.*kind.file;
-        if (file && !files.contains(*file))
+        if (!file)
+            continue;
+        const auto content = files.find(*file);
+        if (content == files.end())
             throw std::invalid_argument(std::format(
                 "The run document names {} as its {} file, which the input does not hold.",
                 *file,
                 kind.code));
+        parse_document(kind.code, *file, content->second, parsed);
     }
 
     reporting::service::run_document_service runs(ctx);
@@ -183,7 +211,7 @@ run_import_result import_run(const context& ctx,
             continue;
         const auto c = runs.bind(report_definition_id, std::string(kind.code), name + "/" + *file);
         try {
-            store_document(ctx, kind.code, *file, files.at(*file), c, r);
+            store_document(ctx, kind.code, parsed, c, r);
         } catch (const std::exception& e) {
             throw std::runtime_error(std::format("{}: {}", *file, e.what()));
         }

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/store/run_store.hpp"
-#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
@@ -271,4 +271,17 @@ TEST_CASE("the archive refuses a path that leaves the package", "[ore][store]") 
 
     CHECK(store::archive_layout(with_input_path("./Input//Dim/"))
               .contains("Input/Dim/curveconfig.xml"));
+}
+
+TEST_CASE("an import whose document does not parse is refused before it writes", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto parties = ores::ore::tests::make_two_parties(h);
+    const auto definition = make_definition(h, parties);
+    auto files = example_input();
+    files["curveconfig.xml"] = "<CurveConfiguration><not closed";
+    CHECK_THROWS(store::import_run(parties.a_context, definition, "Example_1", files));
+    const auto setups =
+        ores::reporting::repository::report_run_setup_repository().read_latest(parties.a_context);
+    CHECK(std::ranges::none_of(
+        setups, [&](const auto& s) { return s.report_definition_id == definition; }));
 }

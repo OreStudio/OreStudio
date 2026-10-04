@@ -37,6 +37,7 @@ A service saves, reads and deletes another component's configuration documents o
 
 - Each owner has an operation model and a handler for save, get and delete of its documents, under the caller's session and with seeded permissions.
 - Each handler is tested over NATS against a running service.
+- Every owner tests save, find by configuration and get of its own documents through its operations, so analytics and refdata no longer rely on the ORE corpus round trips for their coverage (raised in the review of PR #2624).
 
 * Plan
 

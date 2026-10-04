@@ -68,8 +68,7 @@ create table if not exists "ores_refdata_yield_curve_configs_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("currency" <> ''),
-    check ("discount_curve" <> '')
+    check ("currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

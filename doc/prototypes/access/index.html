@@ -281,9 +281,15 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     { login: 'mei', name: 'Mei Tanaka', title: 'Data steward', last: 'Never', grants: [] },
   ];
 
+  let requests = [
+    { id: 1, login: 'hannah', role: 'Trading', why: 'I quote FX to the desk and need the workspaces the traders share.', asked: '2 Oct 2026', age: '2 days', state: 'waiting', answer: '', by: '' },
+    { id: 2, login: 'daniel', role: 'Operations', why: 'I want to fix currency details myself instead of raising tickets.', asked: '28 Sep 2026', age: '6 days', state: 'refused', answer: 'Currency details stay with Operations. Ask Tomás.', by: 'priya' },
+  ];
+  let nextRequest = 3;
+  const waiting = () => requests.filter((r) => r.state === 'waiting');
   const REASONS = ['New joiner', 'Role change', 'Cover for absence', 'Leaver', 'Access review'];
   const MENUS = {
-    tenant: [{ id: 'home', label: 'Home' }, { id: 'parties', label: 'Parties', soon: true }, { id: 'people', label: 'People' }, { id: 'roles', label: 'Roles' }, { id: 'signins', label: 'Sign-ins', soon: true }],
+    tenant: [{ id: 'home', label: 'Home' }, { id: 'parties', label: 'Parties', soon: true }, { id: 'people', label: 'People' }, { id: 'requests', label: 'Requests' }, { id: 'roles', label: 'Roles' }, { id: 'signins', label: 'Sign-ins', soon: true }],
     party:  [{ id: 'home', label: 'Home' }, { id: 'refdata', label: 'Reference data', soon: true }, { id: 'trading', label: 'Trading', soon: true }],
   };
 
@@ -350,7 +356,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
   function renderHeader() {
     const me = PERSONAS[state.persona];
     $('place').textContent = me.place;
-    $('menu').innerHTML = MENUS[state.persona].map((m) => `<button data-go="${m.id}" class="${m.soon ? 'soon' : ''}" ${state.screen === m.id || (m.id === 'people' && state.screen === 'person') || (m.id === 'roles' && state.screen === 'role') ? 'aria-current="page"' : ''}>${esc(m.label)}</button>`).join('');
+    $('menu').innerHTML = MENUS[state.persona].map((m) => `<button data-go="${m.id}" class="${m.soon ? 'soon' : ''}" ${state.screen === m.id || (m.id === 'people' && state.screen === 'person') || (m.id === 'roles' && state.screen === 'role') || (m.id === 'requests' && state.screen === 'request') ? 'aria-current="page"' : ''}>${esc(m.label)}${m.id === 'requests' && waiting().length ? ' <span class="chip suspended" style="margin-left:0.25rem">' + waiting().length + '</span>' : ''}</button>`).join('');
     $('me').innerHTML = `${face(me.login, 28)}<span class="hide-sm">${esc(me.name)}</span>`;
     $('me-menu').innerHTML = `<div class="who"><div>${esc(me.name)}</div><div class="faint" style="font-size:12px">${esc(me.place)}</div></div>
       <button data-go="mine">My access</button><button data-go="soon:Profile">Profile</button><button data-go="soon:Security">Security</button><button data-go="soon:Sign out">Sign out</button>`;
@@ -376,11 +382,12 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
     return `
       <div class="head"><div><h1>My access</h1><p class="muted">What you can do in ${esc(me.place.split(' · ')[0])}, and which role lets you.</p></div></div>
       <div class="card">
-        <div class="pad" style="padding-bottom:0.5rem"><h2>Roles you hold</h2></div>
+        <div class="pad" style="padding-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem"><h2>Roles you hold</h2><button class="btn primary" id="ask-role">Ask for a role</button></div>
         <div class="list">${person.grants.length === 0 ? '<div class="row muted">You hold no role yet. Ask your tenant administrator.</div>' : person.grants.map((g) => `
           <div class="row"><div class="grow"><div><strong>${esc(label(g.role))}</strong> <span class="muted">· ${esc(roleOf(g.role).description)}</span></div>
             <div class="attr">Given by ${byLine(g.by)} on ${esc(g.on)} · ${esc(g.reason)}${g.note ? ' · ' + esc(g.note) : ''}</div></div></div>`).join('')}</div>
       </div>
+      ${myRequests(me.login)}
       <div class="card pad" style="display:grid;gap:0.75rem">
         <h2>Can I…?</h2>
         <input type="search" id="ask" placeholder="Try: currencies, delete trades, workspaces" value="${esc(state.ask)}" style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0.5rem 0.75rem">
@@ -389,6 +396,78 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       <div style="display:grid;gap:0.75rem">
         <div class="head"><div><h2>What your roles let you do</h2><p class="muted">${everything ? 'Everything in this tenant.' : countCovered(granted) + ' of ' + (CATALOGUE.length - 1) + ' permissions, by area.'}</p></div></div>
         ${everything ? `<div class="everything"><span class="mark">✓</span><div><strong>Everything</strong><div class="muted" style="font-size:13px">${esc(label(person.grants.find((g) => roleOf(g.role).codes.has('*')).role))} grants every permission, so no list is shown.</div></div></div>` : areas(granted, { readOnly: true, login: me.login, onlyGranted: true })}
+      </div>`;
+  }
+
+  /* ---------- Asking ---------- */
+  const requestChip = (s) => s === 'waiting' ? '<span class="chip suspended">Waiting</span>' : s === 'approved' ? '<span class="chip active">Given</span>' : s === 'refused' ? '<span class="chip failed">Refused</span>' : '<span class="chip view">Withdrawn</span>';
+
+  function myRequests(login) {
+    const mine = requests.filter((r) => r.login === login);
+    if (mine.length === 0) return '';
+    return `<div class="card"><div class="pad" style="padding-bottom:0.5rem"><h2>Your requests</h2></div><div class="list">
+      ${mine.map((r) => `<div class="row"><div class="grow"><div><strong>${esc(label(r.role))}</strong> ${requestChip(r.state)} <span class="faint" style="font-size:12px">asked ${esc(r.asked)}</span></div>
+        <div class="attr">You wrote: ${esc(r.why)}</div>
+        ${r.answer ? `<div class="answer" style="margin-top:0.375rem"><span class="inline-face">${face(r.by, 16)}${esc(personOf(r.by).name)}</span>: ${esc(r.answer)}</div>` : ''}</div>
+        ${r.state === 'waiting' ? `<button class="btn" data-withdraw="${r.id}">Withdraw</button>` : ''}</div>`).join('')}</div></div>`;
+  }
+
+  function askDialog() {
+    const me = PERSONAS[state.persona];
+    const p = personOf(me.login);
+    const offered = roles.filter((r) => !r.service && !r.codes.has('*') && !p.grants.some((g) => g.role === r.name));
+    const pending = new Set(waiting().filter((r) => r.login === me.login).map((r) => r.role));
+    $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Ask for a role">
+      <h2>Ask for a role</h2>
+      <p class="muted">Your tenant administrator decides. Nothing changes until they do.</p>
+      <div class="picker">${offered.map((r) => `<label class="pick ${pending.has(r.name) ? 'held-already' : ''}"><input type="radio" name="role" value="${r.name}" ${pending.has(r.name) ? 'disabled' : ''}>
+        <span><strong>${esc(label(r.name))}</strong>${pending.has(r.name) ? ' <span class="faint">· already asked</span>' : ''}<div class="muted" style="font-size:13px">${esc(r.description)}</div>
+        <div class="faint" style="font-size:12px">Lets you do ${r.codes.size} things</div></span></label>`).join('')}</div>
+      <div class="field"><label for="why-ask">Why you need it</label><textarea id="why-ask" placeholder="Your administrator reads this before deciding"></textarea></div>
+      <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="do-ask" disabled>Ask</button></div>
+    </div></div>`;
+    const ok = () => { $('do-ask').disabled = !document.querySelector('input[name=role]:checked') || $('why-ask').value.trim() === ''; };
+    document.querySelectorAll('input[name=role]').forEach((el) => el.addEventListener('change', ok));
+    $('why-ask').addEventListener('input', ok);
+    $('do-ask').onclick = () => {
+      const role = document.querySelector('input[name=role]:checked').value;
+      requests.unshift({ id: nextRequest++, login: me.login, role, why: $('why-ask').value.trim(), asked: '4 Oct 2026', age: 'just now', state: 'waiting', answer: '', by: '' });
+      closeDialog(); toast('Asked. Your tenant administrator will decide.'); render();
+    };
+    bindClose();
+  }
+
+  /* ---------- Requests ---------- */
+  function requestQueue() {
+    const open = waiting().slice().reverse();
+    const done = requests.filter((r) => r.state !== 'waiting');
+    return `
+      <div class="head"><div><h1>Requests</h1><p class="muted">Roles people in Acme Corporation have asked for, oldest first.</p></div></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Who</th><th>Asked for</th><th>Why</th><th>Waiting</th></tr></thead><tbody>
+        ${open.length ? open.map((r) => `<tr data-request="${r.id}"><td><div class="who-cell">${face(r.login, 32)}${esc(personOf(r.login).name)}</div></td><td><strong>${esc(label(r.role))}</strong></td><td class="muted">${esc(r.why)}</td><td class="muted">${esc(r.age)}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">Nothing is waiting.</td></tr>'}
+      </tbody></table></div></div>
+      ${done.length ? `<div class="card"><div class="pad" style="padding-bottom:0.5rem"><h2>Answered</h2></div><div class="list">${done.map((r) => `<div class="row">${face(r.login, 28)}<div class="grow">${esc(personOf(r.login).name)} · ${esc(label(r.role))} ${requestChip(r.state)}${r.by ? ` <span class="faint">by ${esc(personOf(r.by).name)}</span>` : ''}${r.answer ? `<div class="attr">${esc(r.answer)}</div>` : ''}</div></div>`).join('')}</div></div>` : ''}`;
+  }
+
+  function request() {
+    const r = requests.find((x) => x.id === Number(state.request));
+    const who = personOf(r.login);
+    const role = roleOf(r.role);
+    const self = r.login === PERSONAS[state.persona].login;
+    return `
+      <div class="crumbs"><button data-go="requests">Requests</button><span>/</span><span>${esc(who.name)}</span></div>
+      <div class="head"><div class="who-cell" style="display:flex">${face(r.login, 56)}<div><h1>${esc(who.name)} asks for ${esc(label(r.role))}</h1><p class="muted">Asked ${esc(r.asked)} · waiting ${esc(r.age)}</p></div></div></div>
+      <div class="card pad" style="display:grid;gap:0.75rem">
+        <div class="answer"><div class="faint" style="font-size:12px">Why they need it</div>${esc(r.why)}</div>
+        <dl><div><dt>They hold now</dt><dd>${who.grants.length ? who.grants.map((g) => esc(label(g.role))).join(', ') : 'No role'}</dd></div><div><dt>${esc(label(r.role))} is for</dt><dd>${esc(role.description)}</dd></div></dl>
+      </div>
+      <div style="display:grid;gap:0.75rem"><h2>What ${esc(label(r.role))} would let them do</h2>
+        ${areas(role.codes, { readOnly: true, login: r.login, onlyGranted: true, plain: true })}</div>
+      <div class="card pad" style="display:grid;gap:0.75rem">
+        <h2>Your answer</h2>
+        ${self ? '<p class="warnbox">You asked for this yourself, so another administrator answers it.</p>' : ''}
+        <div class="field"><label for="answer">Reason <span class="faint">(needed to refuse; ${esc(who.name.split(' ')[0])} reads it)</span></label><textarea id="answer"></textarea></div>
+        <div class="actions"><button class="btn primary" id="approve" ${self ? 'disabled' : ''}>Give ${esc(label(r.role))}</button><button class="btn danger" id="refuse" disabled>Refuse</button></div>
       </div>`;
   }
 
@@ -407,7 +486,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       const have = [...resources.entries()].reduce((n, [r, a]) => n + [...a].filter((x) => held(r, x)).length, 0);
       const cell = (r, a, acts) => {
         if (!acts.has(a)) return '<td class="act none">·</td>';
-        if (opts.readOnly) return `<td class="act">${held(r, a) ? '<span class="tick" title="' + esc(rolesGranting(opts.login, `${component}::${r}:${a}`).join(', ')) + '">✓</span>' : '<span class="none">–</span>'}</td>`;
+        if (opts.readOnly) return `<td class="act">${held(r, a) ? '<span class="tick" title="' + (opts.plain ? '' : esc(rolesGranting(opts.login, `${component}::${r}:${a}`).join(', '))) + '">✓</span>' : '<span class="none">–</span>'}</td>`;
         return `<td class="act"><input type="checkbox" class="cb" data-code="${component}::${r}:${a}" ${held(r, a) ? 'checked' : ''} ${whole ? 'disabled' : ''} aria-label="${esc(r + ' ' + a)}"></td>`;
       };
       out.push(`
@@ -584,6 +663,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       <div class="tiles"><button class="tile" data-go="mine"><span class="t">My access</span><span class="muted">The roles you hold and what they let you do.</span></button></div>`;
     return `<div class="head"><div><h1>Good morning, Priya</h1><p class="muted">Acme Corporation</p></div></div>
       <div class="tiles"><button class="tile" data-go="people"><span class="t">People</span><span class="muted">${people.length} people, and the roles each holds.</span></button>
+        <button class="tile" data-go="requests"><span class="t">Requests</span><span class="muted">${waiting().length ? waiting().length + ' waiting for an answer.' : 'Nothing waiting.'}</span></button>
         <button class="tile" data-go="roles"><span class="t">Roles</span><span class="muted">${roles.filter((r) => !r.service).length} roles, and what each lets people do.</span></button></div>`;
   }
 
@@ -592,17 +672,30 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
   function render() {
     renderHeader();
     const s = state.screen;
-    $('app').innerHTML = s === 'mine' ? mine() : s === 'people' ? peopleList() : s === 'person' ? person() : s === 'roles' ? roleList() : s === 'role' ? role() : s === 'home' ? home() : soon(s.replace('soon:', ''));
+    $('app').innerHTML = s === 'mine' ? mine() : s === 'people' ? peopleList() : s === 'person' ? person() : s === 'roles' ? roleList() : s === 'requests' ? requestQueue() : s === 'request' ? request() : s === 'role' ? role() : s === 'home' ? home() : soon(s.replace('soon:', ''));
     bind();
   }
 
   function bind() {
-    document.querySelectorAll('[data-go]').forEach((b) => { b.onclick = () => { const g = b.dataset.go; if (g === 'roles' || g === 'people') go(g); else if (['mine', 'home'].includes(g)) go(g); else go('soon:' + (b.textContent || g)); }; });
+    document.querySelectorAll('[data-go]').forEach((b) => { b.onclick = () => { const g = b.dataset.go; if (g === 'roles' || g === 'people' || g === 'requests') go(g); else if (['mine', 'home'].includes(g)) go(g); else go('soon:' + (b.textContent || g)); }; });
     document.querySelectorAll('[data-person]').forEach((tr) => { tr.onclick = () => go('person', { person: tr.dataset.person }); });
     document.querySelectorAll('[data-person-link]').forEach((b) => { b.onclick = () => go('person', { person: b.dataset.personLink }); });
     document.querySelectorAll('[data-role]').forEach((tr) => { tr.onclick = () => go('role', { role: tr.dataset.role, draft: null, filter: '', onlyTicked: false }); });
     document.querySelectorAll('[data-revoke]').forEach((b) => { b.onclick = () => revokeDialog(Number(b.dataset.revoke)); });
     if ($('grant')) $('grant').onclick = grantDialog;
+    if ($('ask-role')) $('ask-role').onclick = askDialog;
+    document.querySelectorAll('[data-withdraw]').forEach((b) => { b.onclick = () => { requests.find((r) => r.id === Number(b.dataset.withdraw)).state = 'withdrawn'; toast('Request withdrawn.'); render(); }; });
+    document.querySelectorAll('[data-request]').forEach((tr) => { tr.onclick = () => go('request', { request: tr.dataset.request }); });
+    if ($('answer')) {
+      const r = requests.find((x) => x.id === Number(state.request));
+      $('answer').oninput = () => { $('refuse').disabled = $('answer').value.trim() === ''; };
+      $('approve').onclick = () => {
+        personOf(r.login).grants.push({ role: r.role, by: PERSONAS[state.persona].login, on: '4 Oct 2026', reason: 'Asked for it', note: r.why });
+        Object.assign(r, { state: 'approved', answer: $('answer').value.trim(), by: PERSONAS[state.persona].login });
+        toast(`${label(r.role)} given to ${personOf(r.login).name}.`); go('requests');
+      };
+      $('refuse').onclick = () => { Object.assign(r, { state: 'refused', answer: $('answer').value.trim(), by: PERSONAS[state.persona].login }); toast('Refused. They will read your reason.'); go('requests'); };
+    }
     if ($('ask')) { $('ask').oninput = (e) => { state.ask = e.target.value; const pos = e.target.selectionStart; render(); $('ask').focus(); $('ask').setSelectionRange(pos, pos); }; }
     if ($('show-service')) $('show-service').onchange = (e) => { state.showService = e.target.checked; render(); };
     if ($('new-role')) $('new-role').onclick = () => newRoleDialog();
@@ -644,6 +737,9 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
       <li><strong>A change is stated honestly:</strong> it reaches the person within 30 minutes, when their sign-in renews, because refresh reads the permissions again.</li>
       <li><strong>Saving a role shows the difference first,</strong> and who holds it, because one save changes access for everyone with the role.</li>
       <li><strong>Every account shows its picture</strong>: in the header, the people list, a person's page, who gave a role, and who holds a role.</li>
+      <li><strong>Asking lives in My access.</strong> A member asks for a role and says why; the request waits, can be withdrawn, and its answer is read where it was asked. Roles that grant everything are not offered.</li>
+      <li><strong>The administrator answers from Requests,</strong> oldest first, with what the role would let the person do in view. A refusal needs a reason the person reads. Nobody answers their own request.</li>
+      <li><strong>A request is held as its own record, not a waiting workflow.</strong> The workflow engine cannot wait on a person; a request row (who, which role, why, its state, who answered and why) needs no engine change, and giving the role reuses the ordinary grant.</li>
       <li><strong>Words, not codes.</strong> "Give a role" and "Take away" rather than assign and revoke; codes stay visible, small, for people who know them.</li>
     </ul>`;
   function setWhy(open) { const w = $('why'); w.hidden = !open; w.innerHTML = open ? WHY : ''; $('why-btn').setAttribute('aria-pressed', String(open)); $('why-btn').setAttribute('aria-expanded', String(open)); if (open) $('why-close').onclick = () => setWhy(false); }
@@ -651,7 +747,7 @@ textarea { font: inherit; color: inherit; background: var(--bg); border: 1px sol
 
   /* A link can open a screen directly, for review: #persona=tenant&screen=role&role=Operations */
   const hash = new URLSearchParams(location.hash.slice(1));
-  for (const key of ['persona', 'screen', 'person', 'role']) if (hash.get(key)) state[key] = hash.get(key);
+  for (const key of ['persona', 'screen', 'person', 'role', 'request']) if (hash.get(key)) state[key] = hash.get(key);
   personaBar();
   render();
 })();

@@ -27,7 +27,8 @@ with mock people, so it is judged against the data the screens will hold.
 It is throwaway. It is not production code and it reads no service.
 
 Open the [[file:access/][access screens]]. A link can open one screen
-directly, for example =access/#persona=tenant&screen=role&role=Operations=.
+directly, for example =access/#persona=tenant&screen=role&role=Operations= or
+=access/#persona=tenant&screen=requests=.
 
 * Detail
 
@@ -58,6 +59,30 @@ page, who gave a role and who holds one. The user made this a general rule on
 
 Two small guards are drawn: a person cannot take their own administration
 away, and a role that people hold cannot be deleted.
+
+** Asking for a role
+
+Added after the first verdict, when the user asked how a member requests a
+role. It draws [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]]:
+
+- *My access* offers *Ask for a role*: a role the person does not hold, and why
+  they need it. Roles that grant everything are not offered. *Your requests*
+  lists each request with its state (waiting, given, refused, withdrawn), and
+  the administrator's answer with their picture; a waiting one can be
+  withdrawn.
+- *Requests*, for the tenant administrator, lists what is waiting, oldest
+  first, with a badge on the menu. A request shows who asks, why, what they
+  hold now and what the role would let them do. *Give* grants the role through
+  the ordinary grant; *Refuse* needs a reason the person reads. Nobody answers
+  their own request.
+
+The journey holds a request as a waiting workflow instance, and the workflow
+engine cannot wait on a person. The prototype argues for a simpler shape: a
+request is its own IAM record, holding who asked, which role, why, its state,
+and who answered, when and why. It needs no engine change, and giving the role
+reuses =iam.v1.roles.assign=, so the grant carries the same audit tail as any
+other. What it still lacks, as the journey records, is a notice to either
+person and a deadline after which an unanswered request closes.
 
 ** What is real and what is not
 

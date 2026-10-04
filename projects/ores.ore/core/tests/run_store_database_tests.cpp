@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
-#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
@@ -111,8 +112,10 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     const auto original = example_input();
 
     const auto imported = store::import_run(parties.a_context, definition, "Example_1", original);
-    CHECK(imported.stored == std::vector<std::string>{"ore.xml", "conventions.xml",
-                                                      "curveconfig.xml", "todaysmarket.xml",
+    CHECK(imported.stored == std::vector<std::string>{"ore.xml",
+                                                      "conventions.xml",
+                                                      "curveconfig.xml",
+                                                      "todaysmarket.xml",
                                                       "pricingengine.xml"});
     CHECK(std::ranges::find(imported.not_stored, "portfolio.xml") != imported.not_stored.end());
     CHECK(imported.conventions.fx_skipped == std::vector<std::string>{"EUR-GBP-FX-CONVENTIONS"});
@@ -139,7 +142,8 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
 
     // The export holds every convention the party sees, so it may hold more
     // than the document did, but never less. FX conventions are not stored yet.
-    const auto conventions = domain::conventions_mapper::map(parse<domain::conventions>(original.at("conventions.xml")));
+    const auto conventions =
+        domain::conventions_mapper::map(parse<domain::conventions>(original.at("conventions.xml")));
     const auto exported_conventions =
         domain::conventions_mapper::map(parse<domain::conventions>(exported.at("conventions.xml")));
     const auto holds_all = [](const auto& written, const auto& read) {
@@ -159,8 +163,8 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
              parties.a_context))
         if (b.report_definition_id == definition)
             slots.insert(b.configuration_type_code);
-    CHECK(slots == std::set<std::string>{"conventions", "curve_configuration", "pricing_engines",
-                                         "todays_market"});
+    CHECK(slots == std::set<std::string>{
+                       "conventions", "curve_configuration", "pricing_engines", "todays_market"});
 }
 
 TEST_CASE("another party cannot export a run it does not own", tags) {
@@ -181,13 +185,29 @@ TEST_CASE("a party imports the same run twice", tags) {
     CHECK(second.stored.size() == 5);
 }
 
-TEST_CASE("an import naming a file the input lacks is refused", tags) {
+TEST_CASE("an import naming a file the input lacks is refused before it writes", tags) {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
+    const auto definition = make_definition(h, parties);
     auto files = example_input();
     files.erase("curveconfig.xml");
     CHECK_THROWS_WITH(
-        store::import_run(parties.a_context, make_definition(h, parties), "Example_1", files),
+        store::import_run(parties.a_context, definition, "Example_1", files),
         "The run document names curveconfig.xml as its curve_configuration file, which the input "
         "does not hold.");
+    const auto setups =
+        ores::reporting::repository::report_run_setup_repository().read_latest(parties.a_context);
+    CHECK(std::ranges::none_of(
+        setups, [&](const auto& s) { return s.report_definition_id == definition; }));
+}
+
+TEST_CASE("a second import into the same report definition is refused", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto parties = ores::ore::tests::make_two_parties(h);
+    const auto definition = make_definition(h, parties);
+    const auto files = example_input();
+    store::import_run(parties.a_context, definition, "first", files);
+    CHECK_THROWS_WITH(
+        store::import_run(parties.a_context, definition, "second", files),
+        "The report definition already holds a run document; import into a new definition.");
 }

@@ -71,8 +71,11 @@ struct run_import_result {
  * @param name prefixes the name of each configuration the import creates, as
  * @c name/file, so two imports under one party stay apart.
  *
- * Throws when the run document names a configuration file the input does not
- * hold, or uses a parameter no definition describes.
+ * Throws, before writing anything, when the definition already holds a run
+ * document, when the run document names a configuration file the input does not
+ * hold, or when it uses a parameter no definition describes. The writes are not
+ * one transaction, so a failure while storing a document leaves what was
+ * written before it; the error names the file.
  */
 ORES_ORE_CORE_EXPORT run_import_result import_run(const database::context& ctx,
                                                   const boost::uuids::uuid& report_definition_id,

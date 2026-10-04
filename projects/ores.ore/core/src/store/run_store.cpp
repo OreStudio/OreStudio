@@ -19,12 +19,11 @@
  */
 
 #include "ores.ore.core/store/run_store.hpp"
-
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
 #include "ores.analytics.core/repository/todays_market_config_repository.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
+#include "ores.ore.core/store/detail/store_helpers.hpp"
 #include "ores.refdata.core/repository/curve_configuration_repository.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
@@ -46,6 +45,8 @@
 namespace ores::ore::store {
 
 using database::context;
+using detail::read_where;
+using detail::stamp_party;
 using reporting::domain::report_run_setup;
 using namespace ores::reporting::repository;
 
@@ -59,7 +60,7 @@ namespace {
 struct document_kind {
     std::string_view code;
     std::string_view owning_component;
-    std::optional<std::string> report_run_setup::*file;
+    std::optional<std::string> report_run_setup::* file;
 };
 
 // In the order an import writes them: a curve segment names its conventions,
@@ -78,26 +79,22 @@ const document_kind* find_kind(std::string_view code) {
     return nullptr;
 }
 
-template <typename Row>
-void stamp_party(const context& ctx, Row& v) {
-    if (const auto party = ctx.party_id())
-        domain::assign_party(v, *party);
-}
-
-template <typename Repository, typename Keep>
-auto read_where(const context& ctx, Repository repo, Keep keep) {
-    auto rows = repo.read_latest(ctx);
-    std::erase_if(rows, [&](const auto& r) { return !keep(r); });
-    return rows;
-}
-
 // Analytic parameter definitions are seeded once, for the system tenant.
-std::vector<reporting::domain::parameter_definition> analytic_parameter_definitions(
-    const context& ctx) {
+std::vector<reporting::domain::parameter_definition>
+analytic_parameter_definitions(const context& ctx) {
     const auto system = ctx.with_tenant(utility::uuid::tenant_id::system(), "ores.ore.store");
     return read_where(system, parameter_definition_repository(), [](const auto& d) {
         return d.scope == "analytic";
     });
+}
+
+template <typename Document>
+void parse_file(const std::string& file, const std::string& content, Document& d) {
+    try {
+        domain::load_data(content, d);
+    } catch (const std::exception& e) {
+        throw std::invalid_argument(std::format("{}: {}", file, e.what()));
+    }
 }
 
 template <typename Document, typename Mapped>
@@ -153,8 +150,9 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
         return domain::save_data(domain::todays_market_mapper::reverse(read_todays_market(
             ctx, header_of(ctx, analytics::repository::todays_market_config_repository(), b))));
     if (code == "curve_configuration")
-        return domain::save_data(domain::curve_configuration_mapper::reverse(read_curve_configuration(
-            ctx, header_of(ctx, refdata::repository::curve_configuration_repository(), b))));
+        return domain::save_data(
+            domain::curve_configuration_mapper::reverse(read_curve_configuration(
+                ctx, header_of(ctx, refdata::repository::curve_configuration_repository(), b))));
     return domain::save_data(domain::conventions_mapper::reverse(read_conventions(ctx)));
 }
 
@@ -169,10 +167,17 @@ run_import_result import_run(const context& ctx,
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    auto next_id = boost::uuids::random_generator();
-    domain::ore run;
-    domain::load_data(run_file->second, run);
+    const auto of_definition = [&](const auto& row) {
+        return row.report_definition_id == report_definition_id;
+    };
+    if (!read_where(ctx, report_run_setup_repository(), of_definition).empty())
+        throw std::invalid_argument(
+            "The report definition already holds a run document; import into a new definition.");
 
+    domain::ore run;
+    parse_file(std::string(run_document_file), run_file->second, run);
+
+    auto next_id = boost::uuids::random_generator();
     auto setup = domain::run_document_mapper::map_setup(run);
     setup.id = next_id();
     setup.report_definition_id = report_definition_id;
@@ -203,9 +208,10 @@ run_import_result import_run(const context& ctx,
         for (const auto& p : a.parameters) {
             const auto it = definition_ids.find({a.analytic.analytic_type_code, p.name});
             if (it == definition_ids.end())
-                throw std::invalid_argument(std::format(
-                    "The {} analytic sets {}, which no parameter definition describes.",
-                    a.analytic.analytic_type_code, p.name));
+                throw std::invalid_argument(
+                    std::format("The {} analytic sets {}, which no parameter definition describes.",
+                                a.analytic.analytic_type_code,
+                                p.name));
             reporting::domain::report_analytic_parameter row;
             row.id = next_id();
             row.report_analytic_id = a.analytic.id;
@@ -216,6 +222,17 @@ run_import_result import_run(const context& ctx,
         }
     }
     stamp_party(ctx, parameters);
+
+    // Everything an import can refuse is checked before its first write, since
+    // the writes are not one transaction.
+    for (const auto& kind : document_kinds) {
+        const auto& file = setup.*kind.file;
+        if (file && !files.contains(*file))
+            throw std::invalid_argument(std::format(
+                "The run document names {} as its {} file, which the input does not hold.",
+                *file,
+                kind.code));
+    }
 
     report_run_setup_repository().write(ctx, setup);
     report_analytic_repository().write(ctx, analytic_rows);
@@ -228,11 +245,7 @@ run_import_result import_run(const context& ctx,
         const auto& file = setup.*kind.file;
         if (!file)
             continue;
-        const auto content = files.find(*file);
-        if (content == files.end())
-            throw std::invalid_argument(std::format(
-                "The run document names {} as its {} file, which the input does not hold.",
-                *file, kind.code));
+        const auto& content = files.at(*file);
 
         reporting::domain::configuration c;
         c.id = next_id();
@@ -242,7 +255,12 @@ run_import_result import_run(const context& ctx,
         stamp_party(ctx, c);
         configuration_repository().write(ctx, c);
 
-        auto written = store_document(ctx, kind.code, content->second, c);
+        conventions_write_result written;
+        try {
+            written = store_document(ctx, kind.code, content, c);
+        } catch (const std::exception& e) {
+            throw std::runtime_error(std::format("{}: {}", *file, e.what()));
+        }
         if (kind.code == "conventions")
             r.conventions = std::move(written);
 
@@ -283,24 +301,26 @@ input_files export_run(const context& ctx, const boost::uuids::uuid& report_defi
     for (const auto& d : analytic_parameter_definitions(ctx))
         definition_names[d.id] = d.name;
 
-    auto parameter_rows = read_where(ctx, report_analytic_parameter_repository(), [&](const auto& p) {
-        return analytic_ids.contains(p.report_analytic_id);
-    });
-    std::ranges::sort(parameter_rows, [](const auto& l, const auto& r) {
-        return l.position < r.position;
-    });
+    auto parameter_rows =
+        read_where(ctx, report_analytic_parameter_repository(), [&](const auto& p) {
+            return analytic_ids.contains(p.report_analytic_id);
+        });
+    std::ranges::sort(parameter_rows,
+                      [](const auto& l, const auto& r) { return l.position < r.position; });
 
     std::vector<domain::mapped_run_analytic> analytics;
     for (const auto& a : analytic_rows) {
         domain::mapped_run_analytic m{a, {}};
         for (const auto& p : parameter_rows)
             if (p.report_analytic_id == a.id)
-                m.parameters.push_back({definition_names.at(p.parameter_definition_id), p.value, p.position});
+                m.parameters.push_back(
+                    {definition_names.at(p.parameter_definition_id), p.value, p.position});
         analytics.push_back(std::move(m));
     }
 
     auto bindings = read_where(ctx, report_market_binding_repository(), of_definition);
-    std::ranges::sort(bindings, [](const auto& l, const auto& r) { return l.position < r.position; });
+    std::ranges::sort(bindings,
+                      [](const auto& l, const auto& r) { return l.position < r.position; });
 
     domain::ore run;
     run.Setup = domain::run_document_mapper::reverse_setup(setup);

@@ -41,18 +41,15 @@
  */
 namespace ores::ore::store {
 
-ORES_ORE_CORE_EXPORT void write(const database::context& ctx,
-                                domain::mapped_pricing_engines v);
+ORES_ORE_CORE_EXPORT void write(const database::context& ctx, domain::mapped_pricing_engines v);
 ORES_ORE_CORE_EXPORT domain::mapped_pricing_engines
 read_pricing_engines(const database::context& ctx, const boost::uuids::uuid& config_id);
 
-ORES_ORE_CORE_EXPORT void write(const database::context& ctx,
-                                domain::mapped_todays_market v);
+ORES_ORE_CORE_EXPORT void write(const database::context& ctx, domain::mapped_todays_market v);
 ORES_ORE_CORE_EXPORT domain::mapped_todays_market
 read_todays_market(const database::context& ctx, const boost::uuids::uuid& config_id);
 
-ORES_ORE_CORE_EXPORT void write(const database::context& ctx,
-                                domain::mapped_curve_configuration v);
+ORES_ORE_CORE_EXPORT void write(const database::context& ctx, domain::mapped_curve_configuration v);
 ORES_ORE_CORE_EXPORT domain::mapped_curve_configuration
 read_curve_configuration(const database::context& ctx, const boost::uuids::uuid& config_id);
 

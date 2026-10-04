@@ -102,6 +102,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/planner/ore_instrument_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/scanner/ore_directory_scanner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/scanner/scan_result.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/store/detail/store_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/store/document_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/store/run_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/document_kind.hpp"

@@ -115,7 +115,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Import is not atomic; files are checked inside the write loop | run_store.cpp | Accept | Every refusal is checked before the first write; a test proves a refused import writes nothing. |
+| 2 | Re-importing the same definition duplicates its run setup | run_store.cpp | Accept | The unique index already refused it with a raw SQL error; the import now refuses it first, with a clear message, and a test covers it. |
+| 3 | Unstable sort of parameters by position | run_store.cpp | Decline | Positions are unique within one analytic, and the filter keeps their order. |
+| 4 | Reads load every latest row and filter in C++ | document_store.cpp | Decline | Known limit; reads move to read-by-parent when volume calls for it. |
+| 5 | stamp_party and read_where are duplicated | both | Accept | Moved to store/detail/store_helpers.hpp. |
+| 6 | .at(0) on a missing header gives no message | document_store.cpp | Accept | read_one names the document kind and id. |
+| 7 | A session with no party leaves party_id as given | document_store.cpp | Decline | Documented: the caller supplies the party when the session has none. |
+| 8 | world_kept and fx_skipped need explaining | document_store.hpp | Decline | Each field already has a doc comment. |
+| 9 | XML errors do not name the file | run_store.cpp | Accept | Parse and store errors are prefixed with the file name. |
 
 * Result
 

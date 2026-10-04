@@ -8,12 +8,12 @@
 #+filetags: :implement-profile-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/upload-a-profile-image
-#+pr:
+#+pr: 2637
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
-#+environment:
+#+updated: 2026-10-05
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Nothing uploads an image: the BFF serves /api/images/:id as a read only, so a me
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 
@@ -46,9 +46,52 @@ Nothing uploads an image: the BFF serves /api/images/:id as a read only, so a me
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The upload has one shape: the caller presents a session, the body states the
+bytes and their media type, and the server holds the rule and enforces it. The
+rule is stated once, in a validator beside the service that applies it, and the
+same statement is answered as data, so a picker reads it rather than keeping a
+copy. The upload carries no account id: the profile is set by the self write
+that references the returned image id, so nothing about the upload is
+account-scoped.
+
+1. Declare the pairs in a new operation model =
+   ores.assets.image_messages.org= (=entity_singular: image_operations=),
+   beside =ores.assets.image.org= and rendered to C++ and TypeScript from one
+   source. The singular differs from the entity's, so the entity keeps its
+   generated =image_protocol=.
+   - =assets.v1.images.upload= takes =mime_type= and =data= (the bytes,
+     base64). The reply is the shared result plus the id of the stored image.
+     The bytes are not answered back: the uploader holds them, and a reader
+     that wants them asks the image read by id.
+   - =assets.v1.images.upload-policy= answers the rule as data: the accepted
+     media types, the size bound, and the minimum width and height.
+   - Neither message states =http_route=: the picker will reach both through
+     the BFF over NATS.
+2. State the rule once, in =
+   ores.assets.core/validation/image_upload_validator.hpp=: PNG, JPEG or WebP;
+   at most 2 MB; at least 128 by 128 pixels. =policy()= answers that record
+   and =validate()= applies that record and nothing else. The validator reads
+   the format from the bytes (PNG =IHDR=, JPEG =SOF=, WebP =VP8=/=VP8L=/=VP8X=
+   headers), so bytes that are not the declared media type are refused rather
+   than stored, and the refusal message is built from the policy it enforces.
+3. Serve both subjects from a hand-written =image_operations_handler= and
+   register it in the assets registrar beside the generated per-entity
+   registrars. The handlers resolve the tenant and the actor from the bearer
+   token. The upload carries no permission code, for the reason the self
+   writes carry none: any signed-in account may upload, the image lands in the
+   caller's tenant, and the account a photo appears on is decided by the self
+   write that references it.
+4. =image_operations_service::upload_image= decodes the base64 and validates
+   through the validator, refusing with the code the picker branches on
+   (=unsupported_media_type=, =image_too_large=, =image_too_small=,
+   =invalid_image=). An accepted upload lands as an image with a minted id, a
+   code derived from that id, the stated media type and the bytes; the store
+   keeps the bytes base64-encoded in the text column, which the mapper
+   performs.
+5. Tests prove an accepted image lands with its media type and bytes, a
+   refused image is refused with its code, and the policy answers the rule the
+   validator applies. Then regenerate the CMake file lists, build, run the
+   assets suites, and run the drift gates.
 
 * Measurements
 
@@ -62,7 +105,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Assets core suite | 146 assertions in 46 test cases, all passed | ./compass build test_ores.assets.core.tests | 6bc0db1a2a |
+| Assets api suite | 38 assertions in 11 test cases, all passed | ./compass build test_ores.assets.api.tests | 6bc0db1a2a |
+| Assets service suite | 26 assertions in 10 test cases, all passed | ./compass build test_ores.assets.service.tests | 6bc0db1a2a |
+| Drift gate, whole tree | One finding, =trade_service.cpp=, outside this branch: local clang-format 21 against CI's 18. The file was restored, not committed; CI's gate is green on main at the same content. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all | 6bc0db1a2a |
+| Drift gate, sweep | Sweep clean: no file this branch touched would change. 68 files elsewhere in the catalogue would change, which belongs to those components' own clean-up. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --sweep | 6bc0db1a2a |
 
 * Notes
 
@@ -81,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2637][#2637]] | [assets] Add the image upload path and its policy read |
 
 * Review
 
@@ -90,3 +137,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The upload path exists and the rule is stated once. The operation model
+=ores.assets.image_messages.org= renders the =upload_image= and
+=get_image_upload_policy= pairs to C++ and TypeScript. =
+image_upload_validator= states the rule in =policy()= and applies it in
+=validate()=: PNG, JPEG or WebP; at most 2 MB; at least 128 by 128 pixels;
+the format is read from the bytes, so bytes that are not the stated media
+type are refused rather than stored. =image_operations_service= decodes the
+base64, validates, and stores an accepted image with a minted id and the
+stated media type. =image_operations_handler= serves both subjects and the
+assets registrar subscribes them beside the generated per-entity subjects.
+A refusal carries =unsupported_media_type=, =image_too_large=,
+=image_too_small= or =invalid_image= on the result code and on the field
+failure, so the picker branches on one code.
+
+The work is committed as =6bc0db1a2a= (=[assets] Add the image upload path
+and its policy read=). The assets suites pass. The sweep drift gate is
+clean: no file this branch touched would change. The =--all= gate reported
+one finding outside this branch, =trade_service.cpp=, caused by the local
+clang-format version (21) against CI's (18): CI's drift gate is green on
+main at the same content, so the file was restored, not committed.

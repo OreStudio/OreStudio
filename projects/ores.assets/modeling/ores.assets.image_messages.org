@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: FC165268-4BD3-4552-A3BE-B0F5BC1F1A01
+:END:
+#+title: ores.assets.image_messages
+#+description: Codegen operation model for the image protocol, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: assets
+#+subcomponent: api
+#+entity_singular: image_operations
+#+namespace: ores::assets::messaging
+#+brief: image protocol messages.
+#+filetags: :model:operation:assets:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The image protocol messages. The image entity's own protocol
+(=ores.assets.image=) carries the CRUD surface, which an administrator
+permission guards; these messages carry the two operations a member holds: an
+upload, and the read that states the rule the upload must satisfy. The rule
+itself lives in the validator that enforces it, and the read answers with that
+statement, so a picker shows the server's rule rather than its own copy.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** upload_image_request
+:PROPERTIES:
+:subject: assets.v1.images.upload
+:response: upload_image_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's upload of an image.
+ *
+ * The session scopes the write: the image lands in the caller's tenant, and
+ * any signed-in account may upload. The request carries no account id, because
+ * the upload does not set a photo: the self write that references the returned
+ * image id sets one.
+ *
+ * The stated media type must be one the image upload policy accepts, and one
+ * the bytes themselves carry: bytes that are not the stated type are refused
+ * rather than stored. A refused upload is refused with one of the codes the
+ * picker branches on -- unsupported_media_type, image_too_large,
+ * image_too_small or invalid_image -- and the refusal names the field it is
+ * about.
+ */
+#+end_src
+
+*** mime_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** data
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The image bytes, base64-encoded.
+ */
+#+end_src
+
+** upload_image_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the stored image, stated only when the outcome is ok.
+ *
+ * The bytes are not answered back: the caller holds them, and a reader that
+ * wants them asks the image read by id.
+ */
+#+end_src
+
+** get_image_upload_policy_request
+:PROPERTIES:
+:subject: assets.v1.images.upload-policy
+:response: get_image_upload_policy_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rule an uploaded image must satisfy, as the server applies it.
+ *
+ * Read from the validator that enforces it, so a screen that states the rule
+ * states the one the server applies rather than a copy of it.
+ */
+#+end_src
+
+** get_image_upload_policy_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** formats
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The media types an upload accepts, for example image/png.
+ */
+#+end_src
+
+*** max_size_bytes
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The largest image an upload accepts, in bytes.
+ */
+#+end_src
+
+*** min_width
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The smallest width an upload accepts, in pixels.
+ */
+#+end_src
+
+*** min_height
+:PROPERTIES:
+:cpp_type: int
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The smallest height an upload accepts, in pixels.
+ */
+#+end_src

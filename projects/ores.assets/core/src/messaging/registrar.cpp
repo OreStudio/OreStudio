@@ -18,6 +18,7 @@
  *
  */
 #include "ores.assets.core/messaging/registrar.hpp"
+#include "ores.assets.core/messaging/image_operations_handler.hpp"
 #include "ores.assets.core/messaging/image_registrar.hpp"
 #include "ores.assets.core/messaging/image_tag_registrar.hpp"
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
@@ -46,6 +47,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_image_handlers(nats, ctx, verifier));
     fold(register_image_tag_handlers(nats, ctx, verifier));
     fold(register_tag_handlers(nats, ctx, verifier));
+
+    // ----------------------------------------------------------------
+    // Image operations: the upload and the policy read
+    // ----------------------------------------------------------------
+    {
+        auto ioh = std::make_shared<image_operations_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            upload_image_request::nats_subject,
+            "ores.assets.service",
+            [ioh](ores::nats::message msg) { ioh->upload_image(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_image_upload_policy_request::nats_subject,
+            "ores.assets.service",
+            [ioh](ores::nats::message msg) { ioh->get_image_upload_policy(std::move(msg)); }));
+    }
 
     // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handler

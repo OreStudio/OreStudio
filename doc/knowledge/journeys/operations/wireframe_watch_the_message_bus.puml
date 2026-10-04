@@ -1,0 +1,54 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>WATCH THE MESSAGE BUS</b>
+  --
+  {
+    Range: | ^Last hour^ | [ Apply ]
+  }
+  --
+  <b>NATS SERVER</b> | newest sample 14:31:45
+  {
+    Connections 23 | Memory 84 MB | Slow consumers (0)
+    Messages in 1240512 | out 3401882
+    Bytes in 210 MB | out 1.1 GB
+  }
+  --
+  <b>STREAMS</b>
+  {#
+    Stream | Messages stored | Bytes stored | Consumers
+    ORES_TRADES | 12004 | 84 MB | 2
+    ORES_RESULTS | 3201 | 20 MB | 1
+  }
+  --
+  <b>TREND</b> | ORES_TRADES
+  {
+    [ Chart: messages and bytes over the range ]
+  }
+  --
+  Message and byte totals are running totals since the NATS server started,
+  so the screen shows the change over the range. The telemetry service takes
+  one sample every 30 seconds; an empty range points at its poller first.
+}
+
+@enduml

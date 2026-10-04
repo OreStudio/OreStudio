@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: C3D59907-9D6A-448C-9A61-9E750755BBFB
+:END:
+#+title: User Journey: Check the versions and the database
+#+description: A signed-in person reads what the browser, the deployment and the database are: the client build, the server build, and the database fingerprint.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A signed-in person reads what the browser, the deployment and the database are: the client build, the server build, and the database fingerprint.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"What am I talking to?" The person reads three builds in one place: the
+browser's own, the deployment's, and the database under it. The journey is
+done when all three are stated and compared, or when the screen says which of
+them it cannot read and why.
+
+* Actor and trigger
+
+Any signed-in person. This is the one journey in the group that is not the
+system administrator's: a member reporting a fault, an administrator checking a
+rollout, and a support engineer on a call all ask the same question, and the
+answer is not sensitive. The answer is built into every screen already — the
+footer states the client and the server — and this journey adds the screen
+that states all three together.
+
+The trigger is doubt about a build: a screen behaves like yesterday's, a
+release note asks for the deployment's version, or a support request asks
+which database the deployment stores into. The journey ends when the three
+values are read, and the person can say whether the build they are testing is
+the build they think they have.
+
+This journey writes nothing.
+
+* Steps
+
+1. *Read the footer.* Every screen carries a footer with two lines: the build
+   the browser is running and the build the deployment is running. Two
+   versions that disagree mean the browser holds a stale bundle, and the
+   refresh that fixes it is not a guess. The server's version is absent until
+   the deployment answers, and the footer says so rather than inventing one.
+2. *Open the versions screen.* When the question needs more than the two
+   lines — the platform, the commit, the database — the person opens the
+   versions screen. The system shows one screen with three panels: the client,
+   the server and the database.
+3. *Read the client panel.* The system states the build the browser runs. The
+   bundle carries it from the moment it was built and never changes
+   afterwards: the release, the short commit the bundle was cut from, and
+   whether the checkout had uncommitted changes at that moment. A person can
+   match those three against the release they meant to test.
+4. *Read the server panel.* The system states the build the deployment runs,
+   in full: the release, the platform triplet and the build information, in
+   the same composition the login answer stated — the answer that opened the
+   session names the build it was opened against. The panel adds the address
+   the browser is talking to, so a person testing two deployments keeps them
+   apart.
+5. *Read the database panel.* The system states the fingerprint of the
+   database the deployment stores into: the fingerprint of the schema it was
+   built from, the build environment, the commit and its date, and when the
+   database was created. Today the screen cannot state any of them — see
+   *What is missing*. Until the read exists, the panel says the database is
+   unknown rather than showing an empty row as though it were a fact.
+6. *Compare the three.* Together the values answer what no single one can: a
+   browser older than the deployment (a stale bundle), a deployment whose
+   build does not match the schema the database records — which every service
+   checks at its own startup, so the deployment would not be running — or a
+   database built from a checkout nobody claims. The client and the server
+   strings do not share a shape, so the screen shows them side by side for a
+   person to compare; it cannot compare them mechanically.
+7. *Leave, or go on.* The versions raise the next question: which instances of
+   each service run which build, which the services screen answers per
+   instance, and what a stale build did, which the logs answer.
+
+* Screens and wireframes
+
+Two surfaces, one answer. The footer is built and rides on every screen; the
+versions screen is the one this journey adds, with its three panels. The
+screen is read-only: it creates nothing, changes nothing and destroys nothing.
+
+#+caption: Check the versions and the database: the client, server and database panels, with the footer.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_check_the_versions_and_the_database.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =login answer= | The build the answering service runs, in full, stated when the session opens | [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] |
+| =bootstrap answer= | The same build, stated before anyone can sign in | [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]] |
+| =service_sample= | Each instance's own version, for the step that follows this journey | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
+| =ores_database_info_tbl= | The fingerprint, build environment, commit and date of the database | no model: the table is deliberately not a codegen entity |
+
+The client's build is not a model at all: the bundler stamps it into the
+browser code at build time, and it cannot change while the tab is open. That
+is the point of stating it — a client that matches the server proves the
+bundle is current, and a client that does not says the tab is stale. The
+database table is the other extreme: it is declared by hand in
+=projects/ores.sql/create/database/database_database_info_create.sql=, and it
+owes nothing to the code generators, because it records the checkout that
+built the database before any service runs.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the client version, on every screen | (no operation: the build stamps the bundle) | — | exists |
+| Read the server version, before sign-in | The bootstrap answer states the build the service runs | =iam.v1.bootstrap.status= | exists |
+| Read the server version, at sign-in | The login answer states the same build in full | =iam.v1.auth.login= | exists |
+| Read the server version, on every screen | The session carries the build it was opened against | carried by the BFF route =GET /api/session= | exists |
+| Read the database fingerprint | — | — | missing |
+| Read the per-instance versions | List the latest sample of every running instance | =telemetry.v1.services.list= | exists |
+
+The server version is composed by =ores.utility::version::full_version_string()=
+as the release, the platform triplet and the build information, and the login
+answer carries it in full. The BFF keeps it on the session record, so the
+footer states it from the first read onwards without asking the service again.
+
+The database row is written when the database is created or recreated, and
+exactly one row exists. Each service reads it at its own startup and compares
+the fingerprint with the one compiled into the code, refusing to start when
+they differ — so a person reading the fingerprint tells which checkout built
+the database, and the deployment's own startup check is the reason the values
+agree until somebody recreates the database under a running service.
+
+The versions screen needs a hand-written BFF route like the other operations
+screens on the [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves it yet; the prototype adds
+=GET /api/operations/versions=, which reads the session's version and, while
+the fingerprint read is missing, states the database as unknown.
+
+* What is missing
+
+1. *The database fingerprint has no read.* The row exists and exactly one
+   reader touches it: each service at startup, which compares it and refuses
+   to start on a mismatch. No subject serves it to a person, so the
+   deployment's own database cannot be identified from a screen. The
+   candidate is a read subject owned by =ores.database=, and the screen states
+   *unknown* until it exists.
+2. *The fingerprint read needs its audience decided.* The fingerprint names
+   the commit and build environment the database was made from — build
+   forensics, not customer data. The candidate is an explicit decision,
+   recorded with the read: any signed-in person, as with the server version,
+   or a permission of its own.
+3. *The client and the server strings cannot be compared mechanically.* The
+   client states the release and the commit; the server adds the platform and
+   the build information in a different composition. One shared shape would
+   let the screen mark a mismatch instead of leaving it to the eye.
+4. *The services screen cannot compare builds either.* Each service reports
+   its release string only, so the per-instance versions this journey points
+   to cannot tell two builds of one release apart. The gap is recorded on
+   [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]].
+
+* Related journeys
+
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the same question per instance: which build each running service reports
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — what a stale build did, in the lines it wrote
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the work the deployment was doing while the build was in question
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the sessions each build opened; every session records the version it was opened against
+
+* Related knowledge
+
+- [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]]
+- [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]]
+- [[id:7A3E9C41-2B6D-4F58-9E10-8C2A5D4B7F63][ores.iam.session]]
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]
+- [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]]
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]]

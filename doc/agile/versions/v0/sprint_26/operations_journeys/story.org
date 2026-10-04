@@ -40,7 +40,7 @@ Five journeys document the operator's view of a running installation: See the ru
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:868078C5-7C9E-46A8-AF29-C048D8232A18][Scaffold story: Document the operations journeys]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:088E10D1-40E6-4D80-824D-153496B7B4AD][Write the operations journeys]] | BACKLOG | | | Initial task for: Document the operations journeys |
+| [[id:088E10D1-40E6-4D80-824D-153496B7B4AD][Write the operations journeys]] | STARTED | 2026-10-04 | | Initial task for: Document the operations journeys |
 | [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]] | BACKLOG | | | A clickable prototype of the operations journeys on a throwaway branch: one hand-written route per step, built from the operations the journeys name. |
 
 * Decisions

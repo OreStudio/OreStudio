@@ -1,0 +1,51 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>WATCH THE COMPUTE GRID</b>
+  --
+  <b>GRID SUMMARY</b> | sampled 14:31:02 | [ Refresh ]
+  {
+    Hosts 6 | (Online 5) | (Idle 2)
+    Workunits 128 | Batches 9 | (Active 3)
+    Outcomes today: (412 success) | (3 client error) | (1 no reply)
+  }
+  --
+  <b>NODES</b>
+  {#
+    Node | Tasks done | Since last | Mean time | Fetched | Uploaded | Since heartbeat
+    grid-01.example.com | 1284 | 12 | 42 s | 1.2 GB | 220 MB | 8 s
+    grid-02.example.com | 903 | 4 | 38 s | 800 MB | 140 MB | 12 s
+    grid-05.example.com | 101 | 0 | - | 40 MB | 2 MB | (3 h 12 m)
+  }
+  --
+  Read-only. The summary covers the tenant of the session. A node whose last
+  column grows is the one to look at; the node keeps its row while it is quiet.
+  --
+  [ Open the node ] - waits for the compute journeys
+  --
+  <b>NO SAMPLE YET</b>
+  --
+  The deployment stores no grid summary yet. The node table stands alone.
+}
+
+@enduml

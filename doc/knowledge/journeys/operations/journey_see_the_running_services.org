@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: ED949529-0A80-4661-BBAC-E5DB7A6E5828
+:END:
+#+title: User Journey: See the running services
+#+description: A system administrator reads the services running in the installation: each instance, its version, and when it last reported.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the services running in the installation: each instance, its version, and when it last reported.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know what services this installation is running." The system
+administrator reads one screen and gets one row per running service instance.
+The journey is done when every row answers four questions: which service the
+instance belongs to, which instance it is, what version it runs, and when it
+last reported.
+
+* Actor and trigger
+
+The system administrator: an account that holds the =SuperAdmin= role and acts
+from the system tenant. The shell calls this context *system administration
+mode*: the session's tenant is the system tenant, so every request it sends is
+scoped to the deployment and not to a customer. A tenant administrator is
+signed in inside their own tenant, and the shell offers them no *Operations*
+area, so they cannot reach this screen.
+
+The trigger is doubt about the installation: a screen stopped answering, a
+deployment just started, or a build was rolled out and somebody asks whether
+every instance took it. The administrator opens the *Operations* area and reads
+the services screen. The journey ends when they have read what they came for.
+
+This journey writes nothing. The screen reads samples that every service
+publishes on a timer, and the read changes no state.
+
+* Steps
+
+1. *Open the services screen.* The administrator opens the services screen in
+   the *Operations* area. The system shows one screen: a summary line, a
+   read-only table with one row per running service instance, and a refresh
+   control. The administrator expects to find every service the installation
+   runs, including more than one instance of the same service.
+2. *Read the rows.* The system gives each row four columns. The service name
+   is the canonical name, for example =ores.iam.service=. The instance id
+   tells two instances of one service apart. The version is the release the
+   instance reports with its heartbeat. The last heartbeat says how long ago
+   the instance last reported, so a row that is not moving is visible at a
+   glance.
+3. *Spot a version that lags behind.* The version column exists for
+   comparison: after a rollout, instances on different builds show different
+   versions in one list. The screen states the difference; it does not judge
+   it. The heartbeat carries the release string only, so two builds of one
+   release read the same here — see *What is missing*.
+4. *An installation with none.* The service is up but no heartbeat has arrived
+   yet, which is the state right after a cold start. The screen answers an
+   empty table and says that nothing has reported, rather than showing a
+   failure. The screen reads *active* instances only: the list holds the
+   instances that reported in the last five minutes, so it can be empty while
+   the installation is up.
+5. *A service that went quiet.* This is the case the screen cannot show
+   today. A service that stops reporting leaves the list when five minutes
+   pass, and the screen cannot tell a stopped service from one that was never
+   listed. The gap and its candidates are in *What is missing*. Until it
+   closes, the screen states the rule its list follows — active instances,
+   five minutes — so no reader takes the absence of a row for proof that a
+   service never ran.
+6. *Refresh, or watch.* The list is a point-in-time read, and heartbeats keep
+   arriving while the screen is open. The administrator refreshes, or leaves
+   the screen polling, so the ages in the last column move and a service that
+   goes quiet is visible while they watch.
+7. *Leave, or go on.* The administrator leaves the screen, or follows one of
+   the related journeys: the compute grid, the message bus, the logs, or the
+   versions. A version column also raises the question the versions journey
+   answers: which build the deployment itself runs.
+
+* Screens and wireframes
+
+One screen. The summary line, the table and the refresh control are panels of
+that screen, because the administrator reads them as one answer. The screen is
+read-only: it creates nothing, changes nothing and destroys nothing.
+
+#+caption: See the running services: the summary, the instance table and the empty state.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_see_the_running_services.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =service_sample= | Service name, instance id, version and last heartbeat; one row per running instance | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
+
+The row is the instance's latest sample, not the service itself. The
+installation has no service registry to read, so the screen answers "which
+services run" from the samples the services send: a service that never reports
+does not appear. The sample also says nothing about the host the instance runs
+on, so the screen cannot say where an instance is.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Before the screen: every service reports on a timer | Publish that an instance is alive | =telemetry.v1.services.heartbeat= | exists |
+| Open the screen | List the latest sample of every running instance | =telemetry.v1.services.list= | exists |
+| Read the rows | Read the service, instance, version and sample time | carried by =telemetry.v1.services.list= | exists |
+| An installation with none | Answer an empty list | carried by =telemetry.v1.services.list= | exists |
+| A service that went quiet | Read an instance that stopped reporting | — | missing |
+| Refresh, or watch | Read the list again | =telemetry.v1.services.list= | exists |
+
+=telemetry.v1.services.heartbeat= is ingested. Every service that embeds the
+=ores.service= heartbeat publisher sends it on a timer with its name, its
+instance id and its version, and the telemetry service timestamps the receipt
+and stores it. The message is declared with auth =none=, because the heartbeat
+carries no token.
+
+=telemetry.v1.services.list= is served by the [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][service_samples model]].
+Its request carries no fields, because the reply covers every service the
+caller may see. Its reply carries =success=, =message= and one sample per
+running instance, in no particular order. The read keeps the latest sample per
+=(service_name, instance_id)= among the rows of the last five minutes, so it
+answers *active instances*, not *all instances*.
+
+The browser reads it through a hand-written BFF route, on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
+the operations screens yet; the prototype adds =GET /api/operations/services=,
+which reads the list and marks each row's age. The handler authenticates the
+caller's token and then checks no dedicated permission — see *What is missing*.
+
+* What is missing
+
+1. *A stopped service leaves the list.* The read keeps the rows of the last
+   five minutes, so an instance that stops reporting disappears instead of
+   going stale. The operator cannot see which service went quiet — only that
+   the list is shorter than memory says. The candidates are a longer window,
+   or the latest sample per instance at any age with its age stated. Until one
+   exists, the screen keeps saying *active instances, five minutes*.
+2. *The heartbeat states the release, not the build.* Each service sends its
+   =ORES_VERSION= string, so two builds cut from one release look identical
+   here, and a rebuild without a release bump is invisible. The candidate is
+   for the heartbeat to carry the full version string — the one the login
+   answer already states.
+3. *The read checks no permission.* The handler authenticates the token and
+   then serves any signed-in account. The candidate is a dedicated permission
+   the model guards, as the tenant reads guard =iam::tenants:read=.
+4. *No uptime.* Nothing says when an instance started, so the screen cannot
+   tell an instance that just restarted from one that has run for weeks; the
+   age of a heartbeat answers neither question. The candidates are a start
+   time and a restart count on the heartbeat.
+5. *The reply is unordered.* The samples come back in no particular order, so
+   the screen sorts them, and every reader must sort them the same way. A
+   stable order from the read — service name, then instance — would settle it
+   once.
+
+* Related journeys
+
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the workers the services feed; a service that is up can still be failing its nodes
+- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] — the transport under every service; a service that went quiet may be a bus that went quiet
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — a service that is up but failing: the lines say why
+- [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] — the deployment's build, next to the per-instance versions here
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] — the sessions the services were answering; the legacy telemetry window showed both halves in one place
+
+* Related knowledge
+
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]
+- [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]]
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
+- [[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]]
+- [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]] — the stored aggregates a screen of this family will want next

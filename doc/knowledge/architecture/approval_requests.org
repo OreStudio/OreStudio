@@ -54,7 +54,6 @@ record's change event; the record does not need the workflow.
 | =id= | The request's identity |
 | =tenant_id= | The tenant it belongs to; row-level security scopes every read |
 | =kind= | What is asked, from a registered list: =iam.role_grant=, =trading.operational_authorisation=, ... |
-| =subject_ref= | What the request is about, as the owning component names it: an account and a role, a trade id |
 | (detail) | The kind's own detail, in the kind's own table keyed by the request's id |
 | =requested_by=, =requested_at= | Who asked and when; a system may ask, as an automated feed does |
 | =reason= | Why they ask, in their words |
@@ -64,6 +63,83 @@ record's change event; the record does not need the workflow.
 
 The record is bitemporal like the other IAM and reference entities, so every
 change of state is a version and the history is the audit trail an auditor reads.
+
+** The schema
+
+The model follows [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]]: each fact in one column of one table, keys
+stated, and no column that holds a document. Nothing is stored as JSON.
+
+=ores_inbox_approval_kinds_tbl=, a lookup of the kinds:
+
+| Column | Key | What it holds |
+|--------+-----+---------------|
+| =code= | PK | =iam.role_grant=, =trading.operational_authorisation= |
+| =description= | | What the kind is for |
+| =decide_permission_code= | FK to =ores_iam_permissions_tbl= | The permission a decider needs |
+| =allows_hold= | | Whether =held= is a state this kind uses |
+| =comment_on_approve= | | Whether an approval needs a comment |
+| =expires_after= | | The window after which an unanswered request closes, or null |
+| =approvals_required= | | How many approvals, each by a different person, close a request as approved; one for most kinds |
+
+=ores_inbox_approval_request_states_tbl=, a lookup of the states, with which are
+final.
+
+=ores_inbox_approval_requests_tbl=, the header every kind shares:
+
+| Column | Key | What it holds |
+|--------+-----+---------------|
+| =id= | PK | The request |
+| =tenant_id= | FK to the tenant | Row-level security scopes every read |
+| =kind_code= | FK to the kinds | What is asked |
+| =state_code= | FK to the states | Where it is |
+| =requested_by= | FK to =ores_iam_accounts_tbl= | Who asked |
+| =requested_at= | | When |
+| =reason= | | Why, in their words |
+| =expires_at= | | When it closes unanswered, or null |
+| =version=, =valid_from=, =valid_to= | | The bitemporal history every IAM entity keeps |
+
+A request is decided by many decisions, not one: a kind may need two approvers,
+and a hold, a return to waiting, a refusal and a reversal are each a decision
+of their own. Each is a row:
+
+=ores_inbox_approval_decisions_tbl=:
+
+| Column | Key | What it holds |
+|--------+-----+---------------|
+| =id= | PK | The decision |
+| =request_id= | FK to the requests | What it decides |
+| =decision_code= | FK to =ores_inbox_approval_decision_types_tbl= | Approve, refuse, hold, resume, reverse |
+| =decided_by= | FK to =ores_iam_accounts_tbl= | Who decided |
+| =decided_at= | | When |
+| =comment= | | Why |
+| =hold_reason_code= | FK to the kind's hold reasons, null unless held | Why it is held |
+
+The request's =state_code= is the state the decisions have reached. A check, in
+the decision's insert trigger, refuses a decision by the person who asked, so
+four-eyes is a rule of the schema and not only of the service, and a unique key
+on (=request_id=, =decided_by=) for approvals keeps one person from counting
+twice towards =approvals_required=.
+
+Each kind adds its detail table, owned by the component that owns the kind and
+keyed by the request:
+
+| =ores_iam_role_grant_requests_tbl= | Key | What it holds |
+|------------------------------------+-----+---------------|
+| =request_id= | PK, FK to the requests | The request this is the detail of |
+| =account_id= | FK to =ores_iam_accounts_tbl= | Who would hold the roles |
+
+| =ores_iam_role_grant_request_roles_tbl= | Key | What it holds |
+|-----------------------------------------+-----+---------------|
+| =request_id= | PK part, FK to the role grant requests | The request |
+| =role_id= | PK part, FK to =ores_iam_roles_tbl= | One role asked for; a request may ask for many |
+
+The screen of the first build asks for one role at a time; the entity does not
+assume it. What a screen shows together is the journey's composition of these
+tables, not a column added to one of them.
+
+The kind's own table is also where "one open request per subject" is checked,
+because only it knows what the subject is. A hold reason, for a kind that
+allows holding, is a lookup of its own with a foreign key from the header.
 
 ** The lifecycle
 
@@ -91,7 +167,8 @@ kind:
 ** Rules the record enforces for every kind
 
 - *Four-eyes.* The person who decides is not the person who asked. A kind may
-  require more, for example a decider from another desk.
+  require more: several approvals from different people, or a decider from
+  another desk.
 - *Who may decide.* Each kind names the permission a decider needs, such as
   =iam::roles:assign= for a role request, so the queue a person sees is the kinds
   they may decide.
@@ -116,7 +193,7 @@ deferred four-eyes item, almost all of the queue is the same for every kind.
 
 | Part | Generic | What a kind adds |
 |------+---------+------------------|
-| The record and its history | Who asked, when, why, state, who decided, when and why | Its =subject_ref= and its detail table |
+| The record and its history | Who asked, when, why, state, who decided, when and why | Its detail table, which names what the request is about |
 | The lifecycle | Waiting, approved, refused, withdrawn, expired; a refusal is final; an approval is reversed with a comment | Whether =held= is allowed, and its reasons (a trade's handover markers) |
 | Four-eyes | The decider is not the asker | A stronger rule, such as another desk or a second decider |
 | Who may decide | A permission per kind | The permission's code |

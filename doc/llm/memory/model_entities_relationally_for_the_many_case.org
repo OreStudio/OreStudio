@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 0BB5F22B-7382-438B-A734-66AFA6241FE2
+:END:
+#+title: Model entities relationally, for the many case
+#+description: A data model is a clean relational schema: keyed tables, foreign keys, no JSON blobs, and each entity shaped for the general many case; the journey composes entities for its use case.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Follow data-oriented design: model every entity as keyed tables with primary and foreign keys, one fact per column, and never store a document (JSON or similar) in a column. Shape each entity for the many case (many decisions per request, many roles per request, many deliveries per recipient) rather than the one the first screen needs; the use case's own shape is composed in the journey, not added as columns to an entity.
+
+*Why:* The user said so on 2026-10-04 while the approval requests and notifications were designed: 'we follow data oriented programming principles. we need a clean schema modeling the entities, with FKs and PKs', 'do not create json blobs etc', and 'always think of the "many" case ... the journey is where the use case is taken into account'.
+
+*How to apply:* When designing or reviewing a model, check each relation for its many case, give it its own keyed table, and replace any free-form or JSON column with a typed table or a lookup with a foreign key. Read doc/knowledge/architecture/data_oriented_design.org.

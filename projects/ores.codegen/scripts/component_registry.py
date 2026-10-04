@@ -110,7 +110,9 @@ from dataclasses import dataclass
 # it out until every item passes rather than accept the eleven, so the drift and
 # protocol twin gates do not cover it until it returns. The measurement and the
 # task that removes each failure are on
-# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_correct-the-clean-standard-record.org.
+# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_correct-the-clean-standard-record.org,
+# and the task that puts marketdata back is
+# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_return-marketdata-to-the-clean-standard-registry.org.
 @dataclass(frozen=True)
 class AcceptedException:
     """One checklist item a listed component does not pass.

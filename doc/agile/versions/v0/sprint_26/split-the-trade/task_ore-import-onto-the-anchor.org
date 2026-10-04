@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 682A8966-C751-43EC-8D49-260706B88490
+:END:
+#+title: Task: Import ORE trades onto the anchor and its components
+#+description: Make the ORE import book each trade's anchor, booking and state, record ORE's Trade/@id as an identifier and the envelope's additional fields, resolve the envelope's counterparty (rejecting a name that matches none) and its netting set (creating one that does not exist), while still writing the wide trade the instruments reference.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-import-onto-the-anchor
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An imported ORE trade lives in the anchor and its components, with its envelope resolved to entities: a counterparty that does not resolve rejects the trade, and a netting set that does not exist is created for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The import books each trade's anchor, booking and state in one write, with entry channel stp.
+- ORE's Trade/@id is a trade_identifier row under the ORE scheme, and each envelope additional field is a trade_additional_field row.
+- An envelope counterparty is resolved by name; a name that matches no counterparty is an item error and nothing is written for the trade. The default counterparty applies only when the envelope names none.
+- An envelope netting set is resolved by code; one that does not exist is created under the trade's counterparty and party.
+- The wide trade and the envelope are still written, so export and the instruments keep working until their own tasks.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

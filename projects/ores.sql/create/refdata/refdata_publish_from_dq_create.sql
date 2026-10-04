@@ -2199,19 +2199,6 @@ begin
         raise exception 'LEI dataset not found for: % / %', v_entity_dataset_code, v_relationship_dataset_code;
     end if;
 
-    if exists (
-        select 1
-        from ores_refdata_counterparty_identifiers_tbl ci
-        where ci.tenant_id = p_target_tenant_id
-          and ci.id_scheme = 'LEI'
-          and ci.valid_to = ores_utility_infinity_timestamp_fn()
-        limit 1
-    ) then
-        raise notice 'Target tenant already has LEI counterparties, skipping.';
-        return query select 'skipped'::text, 0::bigint;
-        return;
-    end if;
-
     -- Explicit drop, not just ON COMMIT DROP: this function may be
     -- called more than once within a single enclosing transaction
     -- (e.g. a multi-party orchestrator), so the temp table from a
@@ -2239,6 +2226,23 @@ begin
     from ores_dq_lei_entities_artefact_tbl e
     where e.dataset_id = v_entity_dataset_id
     order by e.lei;
+
+    -- A tenant may already hold some of these counterparties, from this
+    -- dataset or another: a second dataset adds the LEIs the tenant lacks
+    -- and leaves the rest alone. Removing them here, before parents are
+    -- resolved, keeps every parent link within the rows this run writes.
+    delete from lei_counterparty_uuid_map m
+    using ores_refdata_counterparty_identifiers_tbl ci
+    where ci.tenant_id = p_target_tenant_id
+      and ci.id_scheme = 'LEI'
+      and ci.id_value = m.lei
+      and ci.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not exists (select 1 from lei_counterparty_uuid_map) then
+        raise notice 'Target tenant already has every LEI counterparty, skipping.';
+        return query select 'skipped'::text, 0::bigint;
+        return;
+    end if;
 
     update lei_counterparty_uuid_map m
     set parent_lei = r.relationship_end_node_node_id

@@ -66,7 +66,10 @@ values
      'MPID', 9, 1, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
     (ores_utility_system_tenant_id_fn(), 'INTERNAL', 0, 'Internal',
      'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).',
-     'INTERNAL', 10, null, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes')
+     'INTERNAL', 10, null, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes'),
+    (ores_utility_system_tenant_id_fn(), 'ORE', 0, 'ORE Counterparty Name',
+     'The name an ORE document uses for this counterparty, in an Envelope''s CounterParty. An ORE import resolves the name through this identifier, so a document''s placeholder names can map onto real counterparties. A counterparty may answer to several names; a name answers to one counterparty.',
+     null, 11, null, current_user, current_user, 'system.initial_load', 'Initial population of party identifier schemes')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

@@ -1,0 +1,25 @@
+# Counterparty names in external/ore/examples (*.xml), with the number of <CounterParty> elements naming each.
+# Command: grep -rhoE '<CounterParty>[^<]*</CounterParty>' external/ore/examples --include=*.xml | sed -E 's#</?CounterParty>##g' | sort | uniq -c | sort -rn
+   1960 CPTY_A
+    389 CPTY_B
+    383 CPTY
+     82 CPTY_C
+     19 CP
+      4 DUMMY_CP
+      3 EquityOption2
+      3 EquityOption1
+      2 CPTY_D
+      2 ABC
+      2 A
+      2 001B456BCDEFGH67XY89
+      1 DUMMY_CPTY
+      1 CPTY_9
+      1 CPTY_8
+      1 CPTY_7
+      1 CPTY_6
+      1 CPTY_5
+      1 CPTY_4
+      1 CPTY_3
+      1 CPTY_2
+      1 CPTY_10
+      1 CPTY_1

@@ -26,11 +26,11 @@ The prototype shows the five operations journeys as clickable screens: the runni
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] |
-| Now          | The prototype is accepted; the accepted design is written back onto the journeys. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -71,7 +71,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journey documents changed | 5 | =git diff --stat origin/main -- doc/knowledge/journeys/operations/journey_*.org= | 7d61b3ba7e |
+| Wireframes redrawn (source and render) | 3 pairs, 6 files | =git diff --stat origin/main -- doc/knowledge/journeys/operations/wireframe_*= | 7d61b3ba7e |
+| Data-model captures filed | 5 | =git diff --name-only origin/main -- doc/agile/product_backlog/inbox/= | 7d61b3ba7e |
+| Lint | passes: filetags and generator markers are valid | =./compass.sh lint= | 7d61b3ba7e |
+| Site pages | 99 pages rebuilt, 0 failures | =./compass.sh site page= | 7d61b3ba7e |
 
 * Notes
 

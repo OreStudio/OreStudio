@@ -105,6 +105,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the empty ORE id comment explained the check through the wide trade's key. | =ore_import_execute_handler.cpp= | accept | Reworded around the ORE identifier. |
+| 2 | PR review: a write after the booking can fail and leave a live booking with partial components. | =ore_import_execute_handler.cpp= | accept | The booking closes again when a later write fails; the rollback and this path share =close_bookings=. |
+| 3 | PR review: an unparsable id aborts the whole rollback. | =ore_import_execute_handler.cpp= | accept | The rollback skips and logs an unparsable id. |
+| 4 | PR review: match step 8 by uuid, not string. | =ore_import_execute_handler.cpp= | decline | Correct as is; the set holds the ids the result reports. |
+| 5 | PR review: the planner still checks the parent portfolio id it no longer reads. | =ore_import_planner.cpp= | decline | The import choice names a book and its parent together; the check keeps that pairing. |
 
 * Result
 

@@ -355,40 +355,42 @@ resolve_portfolio(Nats& nats, const std::string& name, std::string& out_error) {
 }
 
 /**
- * @brief Books an imported trade into its anchor and components.
+ * @brief Closes the live bookings of the given trades.
  *
- * The anchor, booking and state are one write. ORE's Trade/@id becomes an
- * identifier under the ORE scheme, and each envelope portfolio and additional
- * field a row of its own, in the document's order.
+ * The anchor is immutable, so this is how an import takes a trade it booked
+ * off its book again: the anchor stays, and a trade with no live booking is
+ * in no book and no export.
+ *
+ * @return An empty string on success, or the failure.
+ */
+template <typename Nats>
+std::string close_bookings(Nats& nats, const std::vector<boost::uuids::uuid>& trade_ids) {
+    ores::trading::messaging::delete_many_trade_bookings_request req{
+        .intent =
+            ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
+                                                 .commentary = "Rolling back a failed ORE import"}};
+    for (const auto& id : trade_ids)
+        req.removals.push_back({.key = {.trade_id = id}});
+    std::string error;
+    auto r = nats_call(nats, req, error);
+    if (!r || r->result.outcome != ores::utility::domain::outcome::ok)
+        return (r && !r->result.message.empty()) ? r->result.message : error;
+    return {};
+}
+
+/**
+ * @brief Writes a booked trade's ORE identifier, portfolios and additional
+ * fields, in the document's order.
  *
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string book_imported_trade(Nats& nats,
-                                const ores::ore::xml::trade_import_item& item,
-                                const resolved_envelope& resolved) {
-    using namespace ores::trading::domain;
+std::string write_imported_components(Nats& nats,
+                                      const ores::ore::xml::trade_import_item& item,
+                                      const resolved_envelope& resolved) {
     using ores::utility::domain::outcome;
 
     std::string error;
-    ores::trading::messaging::book_trade_request book_req;
-    book_req.anchor = item.anchor;
-    book_req.anchor.counterparty_id = resolved.counterparty_id;
-    book_req.anchor.counterparty_scope =
-        resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
-    book_req.anchor.booking_nature = booking_nature::actual;
-    book_req.anchor.entry_channel = entry_channel::stp;
-    book_req.booking = item.booking;
-    book_req.booking.netting_set_id = resolved.netting_set_id;
-    book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;
-    book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
-    book_req.booking.change_reason_code = "system.external_data_import";
-    book_req.activity_type_code = item.activity_type_code;
-    auto booked = nats_call(nats, book_req, error);
-    if (!booked || booked->result.outcome != outcome::ok)
-        return error.empty() ? "book_trade failed" : error;
-
-    error.clear();
     ores::trading::messaging::put_trade_identifier_request id_req;
     id_req.change.write.trade_id = item.anchor.id;
     id_req.change.write.id_type = "ORE";
@@ -424,6 +426,49 @@ std::string book_imported_trade(Nats& nats,
         }
     }
     return {};
+}
+
+/**
+ * @brief Books an imported trade into its anchor and components.
+ *
+ * The anchor, booking and state are one write. ORE's Trade/@id becomes an
+ * identifier under the ORE scheme, and each envelope portfolio and additional
+ * field a row of its own, in the document's order. When one of those later
+ * writes fails, the booking is closed again, so a half-written trade is in
+ * no book.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string book_imported_trade(Nats& nats,
+                                const ores::ore::xml::trade_import_item& item,
+                                const resolved_envelope& resolved) {
+    using namespace ores::trading::domain;
+    using ores::utility::domain::outcome;
+
+    std::string error;
+    ores::trading::messaging::book_trade_request book_req;
+    book_req.anchor = item.anchor;
+    book_req.anchor.counterparty_id = resolved.counterparty_id;
+    book_req.anchor.counterparty_scope =
+        resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
+    book_req.anchor.booking_nature = booking_nature::actual;
+    book_req.anchor.entry_channel = entry_channel::stp;
+    book_req.booking = item.booking;
+    book_req.booking.netting_set_id = resolved.netting_set_id;
+    book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;
+    book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
+    book_req.booking.change_reason_code = "system.external_data_import";
+    book_req.activity_type_code = item.activity_type_code;
+    auto booked = nats_call(nats, book_req, error);
+    if (!booked || booked->result.outcome != outcome::ok)
+        return error.empty() ? "book_trade failed" : error;
+
+    const auto written = write_imported_components(nats, item, resolved);
+    if (written.empty())
+        return {};
+    const auto closed = close_bookings(nats, {item.anchor.id});
+    return closed.empty() ? written : written + " The booking could not be closed: " + closed;
 }
 
 /**
@@ -2633,21 +2678,22 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     if (!req.saved_trade_ids.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: close bookings | corr="
                                   << req.correlation_id << " count=" << req.saved_trade_ids.size();
-        ores::trading::messaging::delete_many_trade_bookings_request del_req{
-            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
-                                                           .commentary =
-                                                               "Rolling back a failed ORE import"}};
-        for (const auto& saved_id : req.saved_trade_ids)
-            del_req.removals.push_back(
-                {.key = {.trade_id = boost::lexical_cast<boost::uuids::uuid>(saved_id)}});
-        std::string err;
-        auto r = nats_call(delegated_nats, del_req, err);
-        if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
+        std::vector<boost::uuids::uuid> trade_ids;
+        trade_ids.reserve(req.saved_trade_ids.size());
+        for (const auto& saved_id : req.saved_trade_ids) {
+            try {
+                trade_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(saved_id));
+            } catch (const boost::bad_lexical_cast&) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "ore.import.rollback skipping unparsable trade id | corr="
+                    << req.correlation_id << " id=" << saved_id;
+            }
+        }
+        const auto reason = close_bookings(delegated_nats, trade_ids);
+        if (!reason.empty())
             BOOST_LOG_SEV(lg(), error)
                 << "ore.import.rollback close_bookings failed | corr=" << req.correlation_id
                 << " error=" << reason;
-        }
     }
 
     // ── Delete books ─────────────────────────────────────────────────────────

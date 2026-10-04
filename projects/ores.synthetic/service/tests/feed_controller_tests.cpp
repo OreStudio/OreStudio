@@ -36,25 +36,9 @@ using ores::synthetic::service::should_ensure_feed_binding;
 
 }
 
-// The wire kind tokens (ores.marketdata.api) and the producer kind strings
-// (ores.synthetic.api) are declared independently; the compile-time ties
-// below keep the subject scheme and the producer vocabulary from drifting.
-static_assert(ores::synthetic::feed::fx_spot_feed_kind ==
-              ores::marketdata::domain::fx_spot_kind_token);
-static_assert(ores::synthetic::feed::ir_curve_feed_kind ==
-              ores::marketdata::domain::ir_curve_kind_token);
-
-TEST_CASE("synthetic_producer_subject: bound publishes on the fx_spot kind's tick subject", tags) {
+TEST_CASE("synthetic_producer_subject: bound publishes on the source's tick subject", tags) {
     CHECK(synthetic_producer_subject("EUR_USD_GBM", binding_mode::bound) ==
-          "synthetic.v1.tick.fx_spot.EUR_USD_GBM");
-}
-
-TEST_CASE("synthetic_tick_subject: ir_curve_feed_kind publishes on the ir_curve kind's "
-          "tick subject",
-          tags) {
-    CHECK(ores::marketdata::domain::synthetic_tick_subject(
-              ores::synthetic::feed::ir_curve_feed_kind, "usd.sofr") ==
-          "synthetic.v1.tick.ir_curve.usd.sofr");
+          "synthetic.v1.tick.EUR_USD_GBM");
 }
 
 TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject the "

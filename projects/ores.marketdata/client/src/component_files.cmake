@@ -20,15 +20,12 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
-    "fx_spot_subscription.cpp"
     "market_data_client.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/detail/subject_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/export.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/fx_spot_subscription.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/market_data_client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/ores.marketdata.client.hpp"
 )

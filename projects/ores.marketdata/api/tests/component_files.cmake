@@ -25,5 +25,6 @@ set(files
     "domain_market_fixing_tests.cpp"
     "domain_market_observation_tests.cpp"
     "domain_market_series_tests.cpp"
+    "domain_tick_subjects_tests.cpp"
     "main.cpp"
 )

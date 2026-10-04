@@ -523,6 +523,33 @@ struct export_market_data_response {
     int fixing_count = 0;
 };
 
+/**
+ * @brief One live observation of one market datum.
+ *
+ * The datum is named by its oresmd quote URI, which carries the asset class,
+ * the instrument and every field, so no asset class has a tick type of its
+ * own. A curve is the set of ticks one producer publishes with one
+ * observation time.
+ */
+struct market_tick {
+    static constexpr std::string_view nats_subject = "marketdata.v1.tick";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+    /** The quote URI of the datum observed, under the strict contract. */
+    std::string oresmd_uri;
+    /** The observed value as decimal text, so it keeps the producer's digits. */
+    std::string value;
+    /** When the value was observed. */
+    std::chrono::system_clock::time_point observation_time;
+    /** The producer, unique within a tenant; its feed bindings name the consumers. */
+    std::string source;
+};
+
 }
 
 #endif

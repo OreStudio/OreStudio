@@ -20,7 +20,7 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
@@ -190,6 +190,12 @@ fx_spot_feed::fx_spot_feed(
     if (ticks_per_hour_ <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
 
+    const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key_);
+    if (!datum)
+        throw std::invalid_argument("fx_spot_feed: '" + ore_key_ +
+                                    "' names no datum: " + datum.error());
+    oresmd_uri_ = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
+
     // The qualifier is what follows the key's type and quote, such as EUR/USD.
     const auto first = ore_key_.find('/');
     const auto second = first == std::string::npos ? first : ore_key_.find('/', first + 1);
@@ -239,10 +245,11 @@ void fx_spot_feed::start() {
         if (stop_flag_.load(std::memory_order_relaxed))
             break;
 
-        ores::marketdata::domain::fx_spot_tick tick;
-        tick.ore_key = ore_key_;
-        tick.datetime = system_clock::now();
-        tick.mid = process_->next();
+        ores::marketdata::messaging::market_tick tick;
+        tick.oresmd_uri = oresmd_uri_;
+        tick.value = std::format("{}", process_->next());
+        tick.observation_time = system_clock::now();
+        tick.source = source_name_;
 
         // A tick-loop thread has no caller to propagate an exception to -- an uncaught throw
         // here would std::terminate() the whole service process, taking down every other feed
@@ -250,14 +257,14 @@ void fx_spot_feed::start() {
         try {
             const auto& codec = ores::nats::default_wire_codec();
             BOOST_LOG_SEV(lg(), trace)
-                << "Encoding fx_spot_tick for " << nats_subject_ << ": wire_format="
+                << "Encoding market_tick for " << nats_subject_ << ": wire_format="
                 << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
             nats_.js_publish(nats_subject_, codec.encode(tick));
             const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
                     << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
-                    << "' count=" << n << " mid=" << tick.mid;
+                    << "' count=" << n << " value=" << tick.value;
             }
         } catch (const std::exception& ex) {
             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_

@@ -208,31 +208,31 @@ std::vector<domain::feed_binding> feed_binding_repository::read_latest(context c
 }
 
 std::vector<domain::feed_binding>
-feed_binding_repository::read_latest_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed binding by oresmd_uri: " << oresmd_uri;
+feed_binding_repository::read_latest_by_source_name(context ctx, const std::string& source_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest feed binding by source_name: " << source_name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "oresmd_uri"_c == oresmd_uri && "valid_to"_c == max.value());
+                             "source_name"_c == source_name && "valid_to"_c == max.value());
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
         ctx,
         query,
         [](const auto& entities) { return feed_binding_mapper::map(entities); },
         lg(),
-        "Reading latest feed binding by oresmd_uri.");
+        "Reading latest feed binding by source_name.");
 }
 
 std::vector<domain::feed_binding>
-feed_binding_repository::read_any_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any feed binding by oresmd_uri: " << oresmd_uri;
+feed_binding_repository::read_any_by_source_name(context ctx, const std::string& source_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading any feed binding by source_name: " << source_name;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<feed_binding_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "oresmd_uri"_c == oresmd_uri) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "source_name"_c == source_name) |
         order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
@@ -240,7 +240,7 @@ feed_binding_repository::read_any_by_oresmd_uri(context ctx, const std::string& 
         query,
         [](const auto& entities) { return feed_binding_mapper::map(entities); },
         lg(),
-        "Reading any feed binding by oresmd_uri.");
+        "Reading any feed binding by source_name.");
 }
 
 

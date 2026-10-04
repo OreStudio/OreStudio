@@ -20,8 +20,8 @@
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
@@ -46,37 +46,20 @@ auto& lg() {
     return instance;
 }
 
-// DEPOSIT/SWAP publish onto the yield subclass; FRA onto fra -- the two curve_role values
-// curve_instrument_pricer treats as "point instrument" and "interval instrument" respectively
-// (see ir_curve_template_entry's own doc comment).
-std::string subclass_for(const std::string& curve_role) {
-    if (curve_role == "FRA")
-        return "fra";
-    return "yield";
-}
-
 } // namespace
 
 ir_curve_feed::ir_curve_feed(
     ores::nats::service::client& nats,
-    ores::utility::uuid::tenant_id tenant_id,
-    boost::uuids::uuid party_id,
     std::string source_name,
     std::string nats_subject,
-    std::string series_type,
-    std::string metric,
     std::string qualifier,
     std::string role,
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
     double ticks_per_hour,
     std::vector<ir_curve_resolved_entry> entries)
     : nats_(nats)
-    , tenant_id_(std::move(tenant_id))
-    , party_id_(party_id)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
-    , series_type_(std::move(series_type))
-    , metric_(std::move(metric))
     , qualifier_(std::move(qualifier))
     , role_(std::move(role))
     , process_(std::move(process))
@@ -121,25 +104,17 @@ void ir_curve_feed::start() {
         // Log and skip this batch instead; the next tick tries again.
         try {
             for (const auto& e : entries_) {
-                ores::marketdata::domain::ir_curve_tick tick;
-                tick.tenant_id = tenant_id_;
-                tick.party_id = party_id_;
-                // The grid is a set of meeting-dated OIS quotes, and each tick names
-                // one pillar: the ORE key the resolver builds from the entry's own
-                // dates, so the series the ingest loop writes carries the
-                // instrument's identity rather than the pipeline's own vocabulary.
+                // Each tick names one pillar: the datum the resolver builds from
+                // the entry's own dates, so the series it lands in carries the
+                // instrument's identity rather than the pipeline's vocabulary.
                 const auto ccy = qualifier_.substr(0, qualifier_.find('/'));
                 const auto key = ores::marketdata::core::make_pillar_quote_key(
                     ccy, e.start_tenor_code, e.start_date, e.end_date);
-                tick.series_type = key.series_type;
-                tick.metric = key.metric;
-                tick.qualifier = key.qualifier;
-                tick.asset_class = std::string(ores::marketdata::domain::ir_curve_asset_class);
-                tick.subclass = subclass_for(e.curve_role);
-                tick.point_id = key.point;
-                tick.source_name = source_name_;
-                tick.datetime = now;
-                tick.value = price_ir_curve_entry(*process_, e);
+                ores::marketdata::messaging::market_tick tick;
+                tick.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
+                tick.value = std::format("{}", price_ir_curve_entry(*process_, e));
+                tick.observation_time = now;
+                tick.source = source_name_;
 
                 nats_.js_publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
             }
@@ -322,12 +297,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // than computed here.
     return std::make_shared<ir_curve_feed>(
         nats,
-        cfg.tenant_id,
-        cfg.party_id,
         cfg.source_name,
-        ores::marketdata::domain::synthetic_tick_subject(ir_curve_feed_kind, cfg.source_name),
-        "RATES",
-        "YIELD",
+        ores::marketdata::domain::synthetic_tick_subject(cfg.source_name),
         ir_curve_qualifier(cfg),
         cfg.role,
         std::move(process),

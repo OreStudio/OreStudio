@@ -1008,6 +1008,66 @@ bodies are what the round-trip test compares against the file it imported.
 :default: 0
 :END:
 
+** market_tick
+:PROPERTIES:
+:subject: marketdata.v1.tick
+:auth: none
+:END:
+
+One live observation of one market datum, whatever its asset class. A producer
+publishes it on its own feed subject, and the ingest loop stores it and
+republishes it to each consumer under this subject, extended with the
+consumer's tenant, workspace and party and the datum's canonical ORE key. The
+tick carries no owner: its =source= finds the consumers through their feed
+bindings.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One live observation of one market datum.
+ *
+ * The datum is named by its oresmd quote URI, which carries the asset class,
+ * the instrument and every field, so no asset class has a tick type of its
+ * own. A curve is the set of ticks one producer publishes with one
+ * observation time.
+ */
+#+end_src
+
+*** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The quote URI of the datum observed, under the strict contract. */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The observed value as decimal text, so it keeps the producer's digits. */
+#+end_src
+
+*** observation_time
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/** When the value was observed. */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The producer, unique within a tenant; its feed bindings name the consumers. */
+#+end_src
+
 * See also
 
 - [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] — the story that models these operations.

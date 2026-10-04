@@ -69,6 +69,11 @@ G04 are still open and stay with this task.
 A name match finds no test for 73 of 102 source files. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 3,
 "Test coverage".
 
+The review of PR 2607 found no test for =feed_ingest_loop::on_tick=. Cover these
+behaviours: a tick from an unbound source is dropped, a tick whose URI names no
+datum is dropped, a tick whose value is not a number is dropped, and a tick from
+a source with several bindings is stored and republished once for each binding.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

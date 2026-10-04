@@ -126,8 +126,7 @@ and the party is part of the key.
      * ores_utility_nil_uuid_fn() (the sentinel, not null) when derivation_kind is 'OBSERVED'.
      * Deliberately not a hard FK: the table this id resolves against depends on derivation_kind
      * (the IR curve bootstrap config for IR_CURVE_BOOTSTRAP, the CRM topology config for
-     * CRM_DERIVATION), so it is a soft, self-describing reference, the same shape ir_curve_tick
-     * already uses for its own producer/config identity.
+     * CRM_DERIVATION), so it is a soft, self-describing reference.
      */
     boost::uuids::uuid derivation_config_id = boost::uuids::nil_uuid();
 

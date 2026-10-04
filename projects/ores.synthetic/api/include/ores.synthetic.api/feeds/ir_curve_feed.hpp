@@ -74,23 +74,18 @@ public:
  *   2. Derives every template entry's rate from that one state's discount_factor()s, via
  *      curve_instrument_pricer (deposit/FRA/par-rate solve, dispatched by curve_role) — so the
  *      whole batch is, by construction, a slice of one internally consistent latent curve.
- *   3. Publishes each entry as its own ir_curve_tick, all sharing one datetime, on the unified
- *      tick subject (synthetic.v1.tick.ir_curve.<source>) — N individual NATS messages, not one
- *      aggregate payload (see the task's "what the wire format is not" analysis).
+ *   3. Publishes each entry as its own market_tick, named by its pillar's oresmd quote URI and
+ *      all sharing one observation time, on synthetic.v1.tick.<source>.
  *
- * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which subscribes to the
- * unified tick wildcard, dispatches on the kind token and writes one market_observation row per
- * tick. The synthetic service has no marketdata writes.
+ * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which stores one
+ * market_observation per tick for each consumer the source's feed bindings name. The synthetic
+ * service has no marketdata writes.
  */
 class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::IFeed {
 public:
     ir_curve_feed(ores::nats::service::client& nats,
-                  ores::utility::uuid::tenant_id tenant_id,
-                  boost::uuids::uuid party_id,
                   std::string source_name,
                   std::string nats_subject,
-                  std::string series_type,
-                  std::string metric,
                   std::string qualifier,
                   std::string role,
                   std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
@@ -134,12 +129,8 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    ores::utility::uuid::tenant_id tenant_id_;
-    boost::uuids::uuid party_id_;
     std::string source_name_;
     std::string nats_subject_;
-    std::string series_type_;
-    std::string metric_;
     std::string qualifier_;
     std::string role_;
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process_;

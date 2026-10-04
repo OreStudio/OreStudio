@@ -23,10 +23,10 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The requirements are settled, the screen prototype is built, and its verdict is recorded: one page with a save per panel, and a reporting line the person proposes and their superior or an administrator approves. No profile code has changed. |
+| Now           | The two self-service writes and the image upload have landed on main. The profile screen itself is in progress on the journey runtime. |
 | Waiting on    | Nothing.                               |
-| Next          | Schedule the implementation from the acceptance below: the two self-service subjects and the image upload first, because the screen cannot keep its promises without them, then the screen itself on the setup journeys' runtime. |
-| Last touched  | 2026-09-30                               |
+| Next          | Build the profile screen: the two writable panels with a save and a reason each, the read-only sign-in summary, the photo picker on the upload path, and the reporting-line proposal that states who approves. |
+| Last touched  | 2026-10-05                               |
 
 * Acceptance
 
@@ -70,7 +70,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]] | DONE | 2026-10-01 | 2026-10-01 | A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. The way back is the tenant list, which needs the provisioning run to name the tenant it acts on. |
 | [[id:794C3E20-2A54-46BB-AECF-BE0410E3D4E8][Add the profile self-service subjects]] | DONE | 2026-10-04 | 2026-10-04 | Add iam.v1.accounts.update-self and iam.v1.account_contact_informations.update-self, each restricted to the caller's own account and to the fields a member owns, so a member can write their own profile and contact record. |
 | [[id:621F9074-0530-4E97-AE7C-46B95615F686][Upload a profile image]] | DONE | 2026-10-04 | 2026-10-05 | Add the upload path into ores.assets that stores an image and returns its id, and state the accepted formats and size once, so the picker and the server enforce one rule. |
-| [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the profile screen]] | BACKLOG | | | Build the three Profile journeys as one screen in ores.web on the journey runtime: the two writable panels with a save and a reason each, the read-only sign-in summary, the photo picker on the upload path, and the reporting-line proposal that states who approves. |
+| [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the profile screen]] | STARTED | 2026-10-05 | | Build the three Profile journeys as one screen in ores.web on the journey runtime: the two writable panels with a save and a reason each, the read-only sign-in summary, the photo picker on the upload path, and the reporting-line proposal that states who approves. |
 
 * Decisions
 

@@ -59,7 +59,7 @@ export function SecurityPage({ session }: { readonly session: SessionView }): Re
             const [policy, loginInfo, sessions] = await Promise.all([
                 api.passwordPolicy(),
                 api.loginInfo(session.accountId),
-                api.activeSessions(),
+                api.mySessions(),
             ]);
             setState({ kind: 'ready', loaded: { policy, loginInfo, sessions } });
         } catch (error) {
@@ -141,32 +141,43 @@ function SessionsPanel({
             {sessions.length === 0 ? (
                 <p className="text-sm text-ink-muted">No sessions are recorded for your account.</p>
             ) : (
-                <ul className="divide-y divide-line-subtle">
-                    {sessions.map((row) => (
-                        <li
-                            key={row.id}
-                            className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3"
-                        >
-                            <span className="w-32 shrink-0 font-mono text-sm">
-                                {row.clientIdentifier === ''
-                                    ? 'unknown client'
-                                    : row.clientIdentifier}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                                <span className="block font-mono text-sm">
-                                    {row.clientIp === '' ? 'no address' : row.clientIp}
-                                </span>
-                                <span className="block text-xs text-ink-muted">
-                                    {row.countryCode === '' ? 'unknown country' : row.countryCode} ·
-                                    started {row.startTime}
-                                </span>
-                            </span>
-                            <span className="hidden text-right text-xs text-ink-faint sm:block">
-                                {String(row.bytesSent)} sent / {String(row.bytesReceived)} received
-                            </span>
-                        </li>
-                    ))}
-                </ul>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-line text-xs text-ink-muted">
+                                <th className="py-2 pr-4 font-medium">Started</th>
+                                <th className="py-2 pr-4 font-medium">Client</th>
+                                <th className="py-2 pr-4 font-medium">Address</th>
+                                <th className="py-2 pr-4 font-medium">Country</th>
+                                <th className="py-2 text-right font-medium">Sent / received</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sessions.map((row) => (
+                                <tr
+                                    key={row.id}
+                                    className="border-b border-line-subtle last:border-b-0"
+                                >
+                                    <td className="py-2 pr-4 whitespace-nowrap">{row.startTime}</td>
+                                    <td className="py-2 pr-4 font-mono text-xs">
+                                        {row.clientIdentifier === ''
+                                            ? 'unknown client'
+                                            : row.clientIdentifier}
+                                    </td>
+                                    <td className="py-2 pr-4 font-mono text-xs">
+                                        {row.clientIp === '' ? 'no address' : row.clientIp}
+                                    </td>
+                                    <td className="py-2 pr-4 text-ink-muted">
+                                        {row.countryCode === '' ? 'unknown' : row.countryCode}
+                                    </td>
+                                    <td className="py-2 text-right text-xs text-ink-faint whitespace-nowrap">
+                                        {String(row.bytesSent)} / {String(row.bytesReceived)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
             <p className="text-xs text-ink-faint">
                 One row per session the tenant holds for this account, in the order the server

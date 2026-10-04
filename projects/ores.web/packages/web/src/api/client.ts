@@ -345,13 +345,15 @@ export const api = {
             .parse(await request('/api/sessions', { method: 'GET' }));
     },
 
-    /**
-     * The sessions with no end time.
-     *
-     * The server answers an empty list while its own read is incomplete, and
-     * that is an answer rather than a failure: the screen states that the list
-     * may be short rather than pretending the tenant has no sessions.
-     */
+    /** The signed-in person's own open sessions. */
+    async mySessions(): Promise<readonly Session[]> {
+        const answer = z
+            .object({ sessions: z.array(sessionSchema) })
+            .parse(await request('/api/me/sessions', { method: 'GET' }));
+        return answer.sessions;
+    },
+
+    /** The tenant's open sessions, every account's: the administrator's audit. */
     async activeSessions(): Promise<readonly Session[]> {
         const answer = z
             .object({ sessions: z.array(sessionSchema) })

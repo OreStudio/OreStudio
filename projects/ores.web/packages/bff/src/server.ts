@@ -1043,15 +1043,30 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
-     * The sessions with no end time.
+     * The tenant's sessions with no end time, every account's.
      *
-     * The handler behind the subject answers with success and no rows today, so
-     * this answers an empty list rather than an error: the screen says the read
-     * is a stub, which is the truth about the server and not about the tenant.
+     * The administrator's audit of sign-ins reads this. A person's own screen
+     * reads the route below, which keeps only their sessions.
      */
     server.get('/api/sessions/active', async (request) => {
         const session = requireSession(request);
         return readActiveSessions(session.client);
+    });
+
+    /**
+     * The signed-in person's own sessions with no end time.
+     *
+     * The server answers the tenant's open sessions, the platform's own
+     * services' among them in the system tenant, so the read keeps the rows
+     * of the session's account and no other.
+     */
+    server.get('/api/me/sessions', async (request) => {
+        const session = requireSession(request);
+        const answer = await readActiveSessions(session.client);
+        return {
+            ...answer,
+            sessions: answer.sessions.filter((row) => row.accountId === session.accountId),
+        };
     });
 
     /** What the roster may ask for: a search and one page of the matches. */

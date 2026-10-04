@@ -177,6 +177,29 @@ TEST_CASE("finalisation needs no result from the phase before it", tags) {
     CHECK(cmd->report_instance_id == "instance");
 }
 
+TEST_CASE("packaging names the report definition the run belongs to", tags) {
+    const auto json = run_request("execute", "", "execute");
+    const auto steps = steps_for(json);
+    REQUIRE(steps[3].name == "prepare_ore_package");
+
+    msg::assemble_bundle_result bundle;
+    bundle.bundle_id = "bundle";
+    msg::gather_trades_result trades;
+    trades.storage_key = "trades";
+    msg::gather_market_data_result market_data;
+    market_data.storage_key = "market";
+    const std::vector<svc::workflow_step_result> prev{
+        {.name = "gather_trades", .response_json = rfl::json::write(trades)},
+        {.name = "gather_market_data", .response_json = rfl::json::write(market_data)},
+        {.name = "assemble_bundle", .response_json = rfl::json::write(bundle)}};
+
+    const auto cmd =
+        rfl::json::read<msg::prepare_ore_package_request>(steps[3].build_command(json, prev));
+    REQUIRE(cmd.has_value());
+    CHECK(cmd->definition_id == "definition");
+    CHECK(cmd->bundle_id == "bundle");
+}
+
 TEST_CASE("a configuration nobody implements builds no chain", tags) {
     CHECK_THROWS_AS(steps_for(run_request("magic", "", "execute")), std::runtime_error);
     CHECK_THROWS_AS(steps_for(run_request("execute", "", "magic")), std::runtime_error);

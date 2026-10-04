@@ -363,6 +363,13 @@ Step 3: ORE mapping and tarball packaging. Served by ores.ore.service.
 :cpp_type: std::string
 :END:
 
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The report definition whose run document and configuration the package holds.
+
 *** bundle_id
 :PROPERTIES:
 :cpp_type: std::string

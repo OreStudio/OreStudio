@@ -196,6 +196,7 @@ struct prepare_ore_package_request {
      */
     static constexpr bool requires_session = true;
     std::string report_instance_id;
+    std::string definition_id;
     std::string bundle_id;
     std::string tenant_id;
     std::string correlation_id;

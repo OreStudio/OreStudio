@@ -250,7 +250,7 @@ template <typename Command>
     using namespace ores::reporting::messaging;
     workflow_step_def s;
     s.name = "prepare_ore_package";
-    s.description = "Package trades and market data into ORE XML tarballs for compute.";
+    s.description = "Package the run document, its configuration, trades and market data for compute.";
     s.command_subject = std::string(prepare_ore_package_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
@@ -267,6 +267,7 @@ template <typename Command>
 
         return rfl::json::write(
             prepare_ore_package_request{.report_instance_id = req.report_instance_id,
+                                        .definition_id = req.definition_id,
                                         .bundle_id = bundle.bundle_id,
                                         .tenant_id = req.tenant_id,
                                         .correlation_id = req.correlation_id,

@@ -8,7 +8,7 @@
 #+filetags: :send_the_filter_with_every_list_request:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-send-the-filter-with-every-list-request
-#+pr:
+#+pr: 2590
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2590][#2590]] | [web] Send the filter with every web list request |
 
 * Review
 

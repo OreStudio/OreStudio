@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a precompiled header would load =<cstdlib>= before the define | =environment_environment_tests.cpp= | Declined | The platform tests use no precompiled header, so the define comes first. |
 
 * Result
 

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock people, no backend, no build step.
+
+  The access screens: a member's own access, a tenant administrator's grant
+  and revoke, and the role catalogue with its permission picker. The roles and
+  the permission catalogue are the deployment's real seed data; the people and
+  their grants are mock. The bar at the bottom switches who is signed in.
+-->
+<title>ORE Studio Access</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Layout: the product's own shell — a header with the areas, one working column, and a prototype bar pinned below.
+   Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css), so the prototype is judged
+   on its words and structure rather than on a new look. The product is dark only, and so is this. */
+:root {
+  color-scheme: dark;
+  --bg: #121214;
+  --raised: #1a1a1e;
+  --overlay: #26262b;
+  --line-subtle: #21262d;
+  --line: #30363d;
+  --line-strong: #4a5568;
+  --ink: #e3e3e6;
+  --ink-muted: #a1a1aa;
+  --ink-faint: #71717a;
+  --ink-inverse: #0d1117;
+  --accent: #58a6ff;
+  --accent-bright: #8ab4f8;
+  --accent-dim: #1b2a3d;
+  --up: #3fb950;
+  --up-strong: #238636;
+  --down-strong: #da3633;
+  --purple: #8957e5;
+  --down: #f85149;
+  --warn: #d29922;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 7rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-bright); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; }
+h2 { font-size: 1rem; }
+h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button:hover { background: var(--overlay); color: var(--ink); }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.menu button.soon { color: var(--ink-faint); }
+.me { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.125rem 0.625rem 0.125rem 0.125rem; cursor: pointer; }
+.me:hover { border-color: var(--line); }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+.me-menu { position: absolute; right: 1rem; top: 3.25rem; width: 16rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); }
+.me-menu .who { padding: 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.25rem; }
+.me-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0.4rem 0.5rem; border-radius: 6px; cursor: pointer; }
+.me-menu button:hover { background: var(--raised); }
+
+/* Page */
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.5rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.crumbs button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.4375rem 0.875rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+.btn.primary:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
+.btn.danger { color: var(--down); }
+.btn.danger.solid { background: #b62324; border-color: #b62324; color: #fff; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: 1.25rem; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.stat { display: grid; gap: 0.25rem; }
+.stat .big { font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .label { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.list { display: grid; }
+.row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--line-subtle); }
+.row:first-child { border-top: 0; }
+.row > .grow { flex: 1; min-width: 0; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none; }
+.dot.ok { background: var(--up); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--down); } .dot.idle { background: var(--ink-faint); }
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.0625rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip { font-weight: 600; }
+.chip.production { color: #0d1117; border-color: var(--accent); background: var(--accent); }
+.chip.evaluation { color: #fff; border-color: var(--purple); background: var(--purple); }
+.chip.automation { color: var(--ink-muted); border-color: var(--line-strong); background: var(--overlay); }
+.chip.active { color: #fff; border-color: var(--up-strong); background: var(--up-strong); }
+.chip.suspended { color: #1a1300; border-color: var(--warn); background: var(--warn); }
+.chip.setting-up { color: #0d1117; border-color: var(--accent-bright); background: var(--accent-bright); }
+.chip.failed { color: #fff; border-color: var(--down-strong); background: var(--down-strong); }
+.chip.view { color: var(--ink-muted); font-weight: 500; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+.tiles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+.tile { text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; cursor: pointer; display: grid; gap: 0.375rem; align-content: start; }
+.tile:hover { border-color: var(--line-strong); }
+.tile.soon { cursor: default; opacity: 0.7; }
+.tile.soon:hover { border-color: var(--line); }
+.tile .t { font-weight: 600; }
+
+/* Health */
+.health { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: start; }
+.verdict { display: flex; gap: 0.75rem; align-items: center; }
+.verdict .mark { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; }
+.verdict.ok .mark { background: #12361d; color: var(--up); border: 1px solid #1f5d2b; }
+.verdict.warn .mark { background: #3a2a0a; color: var(--warn); border: 1px solid #6b4e12; }
+.activity { border-left: 2px solid var(--up-strong); padding-left: 0.75rem; display: grid; gap: 0.5rem; font-size: 13px; }
+.activity .when { font-size: 12px; color: var(--ink-faint); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--ink-muted); font-size: 12px; padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #1f1f24; }
+tbody tr[aria-selected="true"] { background: var(--accent-dim); }
+td.code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--line); }
+.toolbar input[type=search], .toolbar select, .field input, .field select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.375rem 0.625rem; }
+.toolbar input[type=search] { flex: 1; min-width: 10rem; }
+.toolbar label { display: inline-flex; gap: 0.375rem; align-items: center; color: var(--ink-muted); font-size: 13px; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; font-size: 12px; color: var(--ink-muted); flex-wrap: wrap; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; width: 6rem; }
+.progress > span { display: block; height: 100%; background: var(--accent); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; margin: 0; }
+dt { font-size: 12px; color: var(--ink-faint); }
+dd { margin: 0.125rem 0 0; }
+
+/* Dialog */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: grid; place-items: center; padding: 1rem; z-index: 20; }
+.dialog { width: min(32rem, 100%); background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; display: grid; gap: 1rem; }
+.field { display: grid; gap: 0.375rem; }
+.field label { font-size: 13px; color: var(--ink-muted); }
+.field input, .field select { width: 100%; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.warnbox { border: 1px solid #7a2a28; background: #2a1414; border-radius: 6px; padding: 0.75rem; color: #ffb4ad; font-size: 13px; }
+.note { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 0.75rem; font-size: 13px; color: var(--ink-muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 6.5rem; background: var(--overlay); border: 1px solid var(--line); padding: 0.5rem 1rem; border-radius: 6px; z-index: 30; }
+
+/* Prototype bar */
+.proto { position: fixed; left: 0; right: 0; bottom: 0; background: #0b0b0d; border-top: 1px dashed var(--line-strong); padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); z-index: 10; }
+.proto-inner { max-width: 72rem; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; font-size: 12px; color: var(--ink-faint); }
+.proto strong { color: var(--warn); letter-spacing: 0.06em; }
+.proto .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.proto .seg button { background: none; border: 0; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .seg button[aria-pressed="true"] { background: var(--overlay); color: var(--ink); }
+.proto .why { margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .why[aria-pressed="true"] { background: var(--overlay); color: var(--ink); border-color: var(--line-strong); }
+.why-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.why-close { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.125rem 0.5rem; color: var(--ink-muted); cursor: pointer; }
+.why-panel { position: fixed; right: 1rem; bottom: 4.5rem; width: min(26rem, calc(100% - 2rem)); max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; z-index: 15; font-size: 13px; display: grid; gap: 0.625rem; }
+.why-panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.375rem; color: var(--ink-muted); }
+@media (prefers-reduced-motion: no-preference) { .tile, .btn, tbody tr { transition: border-color .15s, background .15s; } }
+@media (max-width: 40rem) { .place { display: none; } .hide-sm { display: none; } }
+/* Access */
+.face { border-radius: 50%; object-fit: cover; flex: none; background: var(--accent-dim); }
+.who-cell { display: flex; align-items: center; gap: 0.625rem; }
+.inline-face { display: inline-flex; align-items: center; gap: 0.375rem; vertical-align: middle; }
+.head > .actions { display: flex; }
+.chip[data-person-link] { color: var(--ink); }
+.held { display: grid; gap: 0; }
+.attr { font-size: 12px; color: var(--ink-faint); }
+.areas { display: grid; gap: 0.5rem; }
+.area { border: 1px solid var(--line); border-radius: var(--radius); background: var(--raised); }
+.area > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; }
+.area > summary::-webkit-details-marker { display: none; }
+.area > summary .caret { color: var(--ink-faint); transition: transform .15s; }
+.area[open] > summary .caret { transform: rotate(90deg); }
+.area > summary .grow { flex: 1; min-width: 0; }
+.area .grid-wrap { border-top: 1px solid var(--line); overflow-x: auto; }
+.perm-grid { table-layout: fixed; }
+.perm-grid td, .perm-grid th { padding: 0.375rem 0.75rem; overflow-wrap: anywhere; }
+.perm-grid th.oth, .perm-grid td.other { width: 16rem; }
+.perm-grid th.act, .perm-grid td.act { text-align: center; width: 5.5rem; }
+.perm-grid tbody tr { cursor: default; }
+.perm-grid td.res { font-family: var(--mono); font-size: 12px; }
+.tick { color: var(--up); font-weight: 700; }
+.none { color: var(--line-strong); }
+.other { font-size: 12px; color: var(--ink-muted); }
+.cb { width: 1rem; height: 1rem; accent-color: var(--accent); cursor: pointer; }
+.cb[disabled] { cursor: not-allowed; }
+.everything { border: 1px solid #1f5d2b; background: #12361d; border-radius: var(--radius); padding: 0.875rem 1rem; display: flex; gap: 0.75rem; align-items: center; }
+.everything .mark { width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: #0d2614; color: var(--up); font-weight: 700; flex: none; }
+.diff { display: flex; gap: 0.75rem; font-size: 13px; }
+.diff .add { color: var(--up); } .diff .rem { color: var(--down); }
+.picker { display: grid; gap: 0.375rem; max-height: 18rem; overflow: auto; }
+.pick { display: flex; gap: 0.625rem; align-items: flex-start; padding: 0.5rem 0.625rem; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.pick:hover { border-color: var(--line-strong); }
+.pick input { margin-top: 0.2rem; }
+.pick.held-already { opacity: 0.5; cursor: default; }
+.chips { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.sticky-save { position: sticky; bottom: 4.25rem; z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 0.625rem 1rem; }
+textarea { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.375rem 0.625rem; width: 100%; min-height: 4rem; }
+.answer { border-left: 2px solid var(--accent); padding-left: 0.75rem; font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</div>
+    <div class="place" id="place"></div>
+    <nav class="menu" id="menu" aria-label="Main"></nav>
+    <button class="me" id="me" aria-haspopup="true" aria-expanded="false"></button>
+  </div>
+</header>
+<div id="me-menu" class="me-menu" hidden></div>
+<main id="app"></main>
+<div id="dialog-host"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<aside id="why" class="why-panel" hidden></aside>
+
+<div class="proto">
+  <div class="proto-inner">
+    <strong>PROTOTYPE</strong><span>Real roles and permissions, mock people. Signed in as</span>
+    <span class="seg" id="persona-seg"></span>
+    <button class="why" id="why-btn" aria-expanded="false" aria-pressed="false" aria-controls="why">What this argues</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* The deployment's seeded permission catalogue and human roles, exported from the database. */
+  const CATALOGUE = [["*","Full access to all operations"],["analytics::*","Full access to all analytics operations"],["analytics::credit_simulation_configs:delete","Delete credit simulation configs"],["analytics::credit_simulation_configs:write","Create and modify credit simulation configs"],["analytics::credit_simulation_entity_configs:delete","Delete credit simulation entity configs"],["analytics::credit_simulation_entity_configs:write","Create and modify credit simulation entity configs"],["analytics::credit_simulation_matrix_configs:delete","Delete credit simulation matrix configs"],["analytics::credit_simulation_matrix_configs:write","Create and modify credit simulation matrix configs"],["analytics::credit_simulation_matrix_row_configs:delete","Delete credit simulation matrix row configs"],["analytics::credit_simulation_matrix_row_configs:write","Create and modify credit simulation matrix row configs"],["analytics::credit_simulation_netting_set_configs:delete","Delete credit simulation netting set configs"],["analytics::credit_simulation_netting_set_configs:write","Create and modify credit simulation netting set configs"],["analytics::pricing_engine_types:delete","Delete pricing engine types"],["analytics::pricing_engine_types:read","View pricing engine types"],["analytics::pricing_engine_types:write","Create and modify pricing engine types"],["analytics::pricing_model_configs:delete","Delete pricing model configurations"],["analytics::pricing_model_configs:read","View pricing model configurations"],["analytics::pricing_model_configs:write","Create and modify pricing model configurations"],["analytics::pricing_model_product_parameters:delete","Delete pricing model product parameters"],["analytics::pricing_model_product_parameters:read","View pricing model product parameters"],["analytics::pricing_model_product_parameters:write","Create and modify pricing model product parameters"],["analytics::pricing_model_products:delete","Delete pricing model products"],["analytics::pricing_model_products:read","View pricing model products"],["analytics::pricing_model_products:write","Create and modify pricing model products"],["analytics::shift_types:delete","Delete shift types"],["analytics::shift_types:read","View shift types"],["analytics::shift_types:write","Create and modify shift types"],["analytics::stress_shift_families:delete","Delete stress shift families"],["analytics::stress_shift_families:read","View stress shift families"],["analytics::stress_shift_families:write","Create and modify stress shift families"],["analytics::stress_test_libraries:delete","Delete stress test libraries"],["analytics::stress_test_libraries:read","View stress test libraries"],["analytics::stress_test_libraries:write","Create and modify stress test libraries"],["analytics::stress_test_scenarios:delete","Delete stress test scenarios"],["analytics::stress_test_scenarios:read","View stress test scenarios"],["analytics::stress_test_scenarios:write","Create and modify stress test scenarios"],["analytics::stress_test_shifts:delete","Delete stress test shifts"],["analytics::stress_test_shifts:read","View stress test shifts"],["analytics::stress_test_shifts:write","Create and modify stress test shifts"],["analytics::todays_market_collection_kinds:delete","Delete today's market collection kinds"],["analytics::todays_market_collection_kinds:read","View today's market collection kinds"],["analytics::todays_market_collection_kinds:write","Create and modify today's market collection kinds"],["analytics::todays_market_collections:delete","Delete todays market collections"],["analytics::todays_market_collections:read","View todays market collections"],["analytics::todays_market_collections:write","Create and modify todays market collections"],["analytics::todays_market_configs:delete","Delete todays market configs"],["analytics::todays_market_configs:read","View todays market configs"],["analytics::todays_market_configs:write","Create and modify todays market configs"],["analytics::todays_market_configuration_bindings:delete","Delete todays market configuration bindings"],["analytics::todays_market_configuration_bindings:read","View todays market configuration bindings"],["analytics::todays_market_configuration_bindings:write","Create and modify todays market configuration bindings"],["analytics::todays_market_configurations:delete","Delete todays market configurations"],["analytics::todays_market_configurations:read","View todays market configurations"],["analytics::todays_market_configurations:write","Create and modify todays market configurations"],["analytics::todays_market_entries:delete","Delete todays market entries"],["analytics::todays_market_entries:read","View todays market entries"],["analytics::todays_market_entries:write","Create and modify todays market entries"],["assets::*","Full access to all assets operations"],["assets::images:delete","Delete asset images"],["assets::images:read","View asset images"],["assets::images:write","Upload and modify asset images"],["assets::image_tags:delete","Remove image tag associations"],["assets::image_tags:read","View image tag associations"],["assets::image_tags:write","Attach and modify image tag associations"],["assets::tags:delete","Delete asset tags"],["assets::tags:read","View asset tags"],["assets::tags:write","Create and modify asset tags"],["compute::*","Full access to all compute operations"],["compute::apps:delete","Remove compute applications"],["compute::apps:read","View compute applications"],["compute::apps:write","Register and update compute applications"],["compute::app_version_platforms:delete","Unbind compute application versions from platforms"],["compute::app_version_platforms:write","Bind compute application versions to platforms"],["compute::app_versions:delete","Remove compute application versions"],["compute::app_versions:write","Register and update compute application versions"],["compute::batches:delete","Remove compute batch jobs"],["compute::batches:read","View compute batch jobs"],["compute::batches:write","Submit and manage compute batch jobs"],["compute::hosts:delete","Remove compute hosts"],["compute::hosts:read","View compute hosts"],["compute::hosts:write","Register and update compute hosts"],["compute::platforms:delete","Remove compute platforms"],["compute::platforms:write","Register and update compute platforms"],["compute::results:delete","Remove compute job results"],["compute::results:write","Record compute job outcomes"],["compute::workunits:delete","Remove compute workunits"],["compute::workunits:write","Create and update compute workunits"],["dq::*","Full access to all data quality operations"],["dq::artefact_types:delete","Delete artefact types"],["dq::artefact_types:read","View artefact types"],["dq::artefact_types:write","Create and modify artefact types"],["dq::badge_definitions:delete","Delete badge definitions"],["dq::badge_definitions:read","View badge definitions"],["dq::badge_definitions:write","Create and modify badge definitions"],["dq::badge_mappings:delete","Delete badge mappings"],["dq::badge_mappings:read","View badge mappings"],["dq::badge_mappings:write","Create and modify badge mappings"],["dq::badges:delete","Delete badge definitions and severities"],["dq::badge_severities:delete","Delete badge severities"],["dq::badge_severities:read","View badge severities"],["dq::badge_severities:write","Create and modify badge severities"],["dq::badges:read","View badge definitions and severities"],["dq::badges:write","Create and modify badge definitions and severities"],["dq::catalogs:delete","Delete catalogs"],["dq::catalogs:read","View catalogs"],["dq::catalogs:write","Create and modify catalogs"],["dq::change_reason_categories:delete","Delete change reason categories"],["dq::change_reason_categories:read","View change reason categories"],["dq::change_reason_categories:write","Create and modify change reason categories"],["dq::change_reasons:delete","Delete change reasons"],["dq::change_reasons:read","View change reasons"],["dq::change_reasons:write","Create and modify change reasons"],["dq::code_domains:delete","Delete code domains"],["dq::code_domains:read","View code domains"],["dq::code_domains:write","Create and modify code domains"],["dq::coding_scheme_authority_types:delete","Delete coding scheme authority types"],["dq::coding_scheme_authority_types:read","View coding scheme authority types"],["dq::coding_scheme_authority_types:write","Create and modify coding scheme authority types"],["dq::coding_schemes:delete","Delete coding schemes"],["dq::coding_schemes:read","View coding schemes"],["dq::coding_schemes:write","Create and modify coding schemes"],["dq::data_domains:delete","Delete data domains"],["dq::data_domains:read","View data domains"],["dq::data_domains:write","Create and modify data domains"],["dq::dataset_bundle_members:delete","Delete dataset bundle members"],["dq::dataset_bundle_members:read","View dataset bundle members"],["dq::dataset_bundle_members:write","Create and modify dataset bundle members"],["dq::dataset_bundles:delete","Delete dataset bundles"],["dq::dataset_bundles:read","View dataset bundles"],["dq::dataset_bundles:write","Create and modify dataset bundles"],["dq::datasets:delete","Delete datasets"],["dq::datasets:read","View datasets"],["dq::datasets:write","Create and modify datasets"],["dq::fsm_states:delete","Delete FSM states"],["dq::fsm_states:read","View FSM states"],["dq::fsm_states:write","Create and modify FSM states"],["dq::fsm_transitions:delete","Delete FSM transitions"],["dq::fsm_transitions:read","View FSM transitions"],["dq::fsm_transitions:write","Create and modify FSM transitions"],["dq::methodologies:delete","Delete methodologies"],["dq::methodologies:read","View methodologies"],["dq::methodologies:write","Create and modify methodologies"],["dq::nature_dimensions:delete","Delete nature dimensions"],["dq::nature_dimensions:read","View nature dimensions"],["dq::nature_dimensions:write","Create and modify nature dimensions"],["dq::origin_dimensions:delete","Delete origin dimensions"],["dq::origin_dimensions:read","View origin dimensions"],["dq::origin_dimensions:write","Create and modify origin dimensions"],["dq::publications:delete","Delete publications"],["dq::publications:read","View publications"],["dq::publications:write","Create and modify publications"],["dq::subject_areas:delete","Delete subject areas"],["dq::subject_areas:read","View subject areas"],["dq::subject_areas:write","Create and modify subject areas"],["dq::treatment_dimensions:delete","Delete treatment dimensions"],["dq::treatment_dimensions:read","View treatment dimensions"],["dq::treatment_dimensions:write","Create and modify treatment dimensions"],["iam::*","Full access to all IAM operations"],["iam::accounts:create","Create new user accounts"],["iam::accounts:delete","Delete user accounts"],["iam::accounts:lock","Lock user accounts"],["iam::accounts:read","View user account details"],["iam::accounts:reset_password","Force password reset on user accounts"],["iam::accounts:unlock","Unlock user accounts"],["iam::accounts:update","Modify user account settings"],["iam::login_info:read","View login history and info"],["iam::parties:provision","Provision a party of the tenant the caller works in"],["iam::permissions:delete","Delete permissions"],["iam::permissions:write","Create and modify permissions"],["iam::roles:assign","Assign roles to accounts"],["iam::roles:create","Create new roles"],["iam::roles:delete","Delete roles"],["iam::roles:read","View role details"],["iam::roles:revoke","Revoke roles from accounts"],["iam::roles:update","Modify role permissions"],["iam::roles:write","Create and modify roles"],["iam::seed_profile_parameters:delete","Delete a parameter from a seed profile"],["iam::seed_profile_parameters:write","Create and modify the parameters a seed profile declares"],["iam::seed_profiles:delete","Delete seed profiles"],["iam::seed_profile_steps:delete","Delete a step kind from a seed profile"],["iam::seed_profile_steps:write","Create and modify the step kinds a seed profile orders"],["iam::seed_profiles:write","Create and modify seed profiles"],["iam::sessions:read","View active sessions"],["iam::sessions:write","Create sessions (login / service-login)"],["iam::system:reset","Reset the entire system to pre-bootstrap state (purges all non-system tenants)"],["iam::system:reset-tenant","Bootstrap-reset a tenant so provisioning wizards re-fire on next login"],["iam::tenants:create","Create new tenants"],["iam::tenants:delete","Delete tenants"],["iam::tenants:impersonate","Access other tenants"],["iam::tenants:read","View tenant details"],["iam::tenants:suspend","Suspend tenants"],["iam::tenants:terminate","Terminate tenants"],["iam::tenants:update","Modify tenant settings"],["marketdata::*","Full access to all market data operations"],["marketdata::crm:read","Read cross rates derived from live market data"],["marketdata::curve_bootstrap:compute","Bootstrap a curve and return it without storing it"],["marketdata::curve_bootstrap:republish","Bootstrap a curve and store its output series"],["marketdata::feed_bindings:delete","Delete feed bindings"],["marketdata::feed_bindings:write","Create and modify feed bindings"],["marketdata::import:write","Import ORE market data and fixings files"],["marketdata::market_fixings:delete","Delete market data fixings"],["marketdata::market_fixings:write","Create and modify market data fixings"],["marketdata::market_observations:delete","Delete market data observations"],["marketdata::market_observations:write","Create and modify market data observations"],["marketdata::market_series:delete","Delete market data series"],["marketdata::market_series:write","Create and modify market data series"],["marketdata::observation_lineages:delete","Delete observation lineages"],["marketdata::observation_lineages:write","Create and modify observation lineages"],["marketdata::observations:read","Export every market data series, observation and fixing as ORE files"],["marketdata::series_classification_rules:delete","Delete series classification rules"],["marketdata::series_classification_rules:write","Create and modify series classification rules"],["refdata::*","Full access to all reference data operations"],["refdata::asset_class_codes:delete","Delete asset class codes"],["refdata::asset_class_codes:read","View asset class codes"],["refdata::asset_class_codes:write","Create and modify asset class codes"],["refdata::average_ois_conventions:delete","Delete averaging OIS conventions"],["refdata::average_ois_conventions:read","View averaging OIS conventions"],["refdata::average_ois_conventions:write","Create and modify averaging OIS conventions"],["refdata::base_correlation_configs:delete","Delete base correlations"],["refdata::base_correlation_configs:read","View base correlations"],["refdata::base_correlation_configs:write","Create and modify base correlations"],["refdata::bma_basis_swap_conventions:delete","Delete BMA basis swap conventions"],["refdata::bma_basis_swap_conventions:read","View BMA basis swap conventions"],["refdata::bma_basis_swap_conventions:write","Create and modify BMA basis swap conventions"],["refdata::bond_future_volatility_configs:delete","Delete bond future volatilities"],["refdata::bond_future_volatility_configs:read","View bond future volatilities"],["refdata::bond_future_volatility_configs:write","Create and modify bond future volatilities"],["refdata::bond_yield_conventions:delete","Delete bond yield conventions"],["refdata::bond_yield_conventions:read","View bond yield conventions"],["refdata::bond_yield_conventions:write","Create and modify bond yield conventions"],["refdata::book_purpose_types:delete","Delete book purpose types"],["refdata::book_purpose_types:read","View book purpose types"],["refdata::book_purpose_types:write","Create and modify book purpose types"],["refdata::books:delete","Delete books"],["refdata::books:read","View books"],["refdata::book_statuses:delete","Delete book statuses"],["refdata::book_statuses:read","View book statuses"],["refdata::book_statuses:write","Create and modify book statuses"],["refdata::books:write","Create and modify books"],["refdata::business_centres:delete","Delete business centres"],["refdata::business_centres:read","View business centres"],["refdata::business_centres:write","Create and modify business centres"],["refdata::business_day_convention_types:delete","Delete business day convention types"],["refdata::business_day_convention_types:read","View business day convention types"],["refdata::business_day_convention_types:write","Create and modify business day convention types"],["refdata::business_units:delete","Delete business units"],["refdata::business_units:read","View business units"],["refdata::business_units:write","Create and modify business units"],["refdata::business_unit_types:delete","Delete business unit types"],["refdata::business_unit_types:read","View business unit types"],["refdata::business_unit_types:write","Create and modify business unit types"],["refdata::calendar_events:delete","Delete calendar events"],["refdata::calendar_events:read","View calendar events"],["refdata::calendar_events:write","Create and modify calendar events"],["refdata::calendar_exceptions:delete","Delete calendar exceptions"],["refdata::calendar_exceptions:read","View calendar exceptions"],["refdata::calendar_exceptions:write","Create and modify calendar exceptions"],["refdata::calendar_names:delete","Delete calendar names"],["refdata::calendar_names:read","View calendar names"],["refdata::calendar_names:write","Create and modify calendar names"],["refdata::calendar_rules:delete","Delete calendar rules"],["refdata::calendar_rules:read","View calendar rules"],["refdata::calendar_rules:write","Create and modify calendar rules"],["refdata::calendars:delete","Delete calendars"],["refdata::calendars:read","View calendars"],["refdata::calendars:write","Create and modify calendars"],["refdata::calendar_types:delete","Delete calendar types"],["refdata::calendar_types:read","View calendar types"],["refdata::calendar_types:write","Create and modify calendar types"],["refdata::cap_floor_volatility_configs:delete","Delete cap floor volatilities"],["refdata::cap_floor_volatility_configs:read","View cap floor volatilities"],["refdata::cap_floor_volatility_configs:write","Create and modify cap floor volatilities"],["refdata::cds_conventions:delete","Delete cds conventions"],["refdata::cds_conventions:read","View cds conventions"],["refdata::cds_conventions:write","Create and modify cds conventions"],["refdata::cds_volatility_configs:delete","Delete CDS volatilities"],["refdata::cds_volatility_configs:read","View CDS volatilities"],["refdata::cds_volatility_configs:write","Create and modify CDS volatilities"],["refdata::cds_volatility_terms:delete","Delete CDS volatility terms"],["refdata::cds_volatility_terms:read","View CDS volatility terms"],["refdata::cds_volatility_terms:write","Create and modify CDS volatility terms"],["refdata::cms_spread_option_conventions:delete","Delete CMS spread option conventions"],["refdata::cms_spread_option_conventions:read","View CMS spread option conventions"],["refdata::cms_spread_option_conventions:write","Create and modify CMS spread option conventions"],["refdata::commodity_curve_configs:delete","Delete commodity curves"],["refdata::commodity_curve_configs:read","View commodity curves"],["refdata::commodity_curve_configs:write","Create and modify commodity curves"],["refdata::commodity_forward_conventions:delete","Delete commodity forward conventions"],["refdata::commodity_forward_conventions:read","View commodity forward conventions"],["refdata::commodity_forward_conventions:write","Create and modify commodity forward conventions"],["refdata::commodity_future_conventions:delete","Delete commodity future conventions"],["refdata::commodity_future_conventions:read","View commodity future conventions"],["refdata::commodity_future_conventions:write","Create and modify commodity future conventions"],["refdata::commodity_price_segments:delete","Delete commodity price segments"],["refdata::commodity_price_segments:read","View commodity price segments"],["refdata::commodity_price_segments:write","Create and modify commodity price segments"],["refdata::commodity_volatility_configs:delete","Delete commodity volatilities"],["refdata::commodity_volatility_configs:read","View commodity volatilities"],["refdata::commodity_volatility_configs:write","Create and modify commodity volatilities"],["refdata::contact_types:delete","Delete contact types"],["refdata::contact_types:read","View contact types"],["refdata::contact_types:write","Create and modify contact types"],["refdata::counterparties:delete","Delete counterparties"],["refdata::counterparties:read","View counterparties"],["refdata::counterparties:write","Create and modify counterparties"],["refdata::counterparty_contact_informations:delete","Delete counterparty contact information"],["refdata::counterparty_contact_informations:read","View counterparty contact information"],["refdata::counterparty_contact_informations:write","Create and modify counterparty contact information"],["refdata::counterparty_identifiers:delete","Delete counterparty identifiers"],["refdata::counterparty_identifiers:read","View counterparty identifiers"],["refdata::counterparty_identifiers:write","Create and modify counterparty identifiers"],["refdata::countries:delete","Delete countries"],["refdata::countries:read","View countries"],["refdata::countries:write","Create and modify countries"],["refdata::crm_driver_pairs:delete","Delete crm driver pairs"],["refdata::crm_driver_pairs:read","View crm driver pairs"],["refdata::crm_driver_pairs:write","Create and modify crm driver pairs"],["refdata::crm_enabled_derived_pairs:delete","Delete crm enabled derived pairs"],["refdata::crm_enabled_derived_pairs:read","View crm enabled derived pairs"],["refdata::crm_enabled_derived_pairs:write","Create and modify crm enabled derived pairs"],["refdata::crm_topology_configs:delete","Delete crm topology configs"],["refdata::crm_topology_configs:read","View crm topology configs"],["refdata::crm_topology_configs:write","Create and modify crm topology configs"],["refdata::cross_currency_basis_conventions:delete","Delete cross-currency basis conventions"],["refdata::cross_currency_basis_conventions:read","View cross-currency basis conventions"],["refdata::cross_currency_basis_conventions:write","Create and modify cross-currency basis conventions"],["refdata::cross_currency_fix_float_conventions:delete","Delete cross-currency fix-float conventions"],["refdata::cross_currency_fix_float_conventions:read","View cross-currency fix-float conventions"],["refdata::cross_currency_fix_float_conventions:write","Create and modify cross-currency fix-float conventions"],["refdata::csa_eligible_currencies:delete","Delete CSA eligible currencies"],["refdata::csa_eligible_currencies:read","View CSA eligible currencies"],["refdata::csa_eligible_currencies:write","Create and modify CSA eligible currencies"],["refdata::csas:delete","Delete CSAs"],["refdata::csas:read","View CSAs"],["refdata::csas:write","Create and modify CSAs"],["refdata::currencies:delete","Delete currencies"],["refdata::currencies:read","View currency details"],["refdata::currencies:write","Create and modify currencies"],["refdata::currency_calendars:delete","Delete currency calendars"],["refdata::currency_calendars:read","View currency calendars"],["refdata::currency_calendars:write","Create and modify currency calendars"],["refdata::currency_countries:delete","Delete currency countries"],["refdata::currency_countries:read","View currency countries"],["refdata::currency_countries:write","Create and modify currency countries"],["refdata::currency_currency_groups:delete","Delete currency currency groups"],["refdata::currency_currency_groups:read","View currency currency groups"],["refdata::currency_currency_groups:write","Create and modify currency currency groups"],["refdata::currency_groups:delete","Delete currency groups"],["refdata::currency_groups:read","View currency groups"],["refdata::currency_groups:write","Create and modify currency groups"],["refdata::currency_market_tiers:delete","Delete currency market tiers"],["refdata::currency_market_tiers:read","View currency market tiers"],["refdata::currency_market_tiers:write","Create and modify currency market tiers"],["refdata::currency_pair_classifications:delete","Delete currency pair classifications"],["refdata::currency_pair_classifications:read","View currency pair classifications"],["refdata::currency_pair_classifications:write","Create and modify currency pair classifications"],["refdata::currency_pair_convention_calendars:delete","Delete currency pair convention calendars"],["refdata::currency_pair_convention_calendars:read","View currency pair convention calendars"],["refdata::currency_pair_convention_calendars:write","Create and modify currency pair convention calendars"],["refdata::currency_pair_conventions:delete","Delete currency pair conventions"],["refdata::currency_pair_conventions:read","View currency pair conventions"],["refdata::currency_pair_conventions:write","Create and modify currency pair conventions"],["refdata::currency_pairs:delete","Delete currency pairs"],["refdata::currency_pairs:read","View currency pairs"],["refdata::currency_pairs:write","Create and modify currency pairs"],["refdata::curve_bootstrap_configs:delete","Delete curve bootstrap configs"],["refdata::curve_bootstrap_configs:read","View curve bootstrap configs"],["refdata::curve_bootstrap_configs:write","Create and modify curve bootstrap configs"],["refdata::curve_configurations:delete","Delete curve configurations"],["refdata::curve_configuration_sections:delete","Delete curve configuration sections"],["refdata::curve_configuration_sections:read","View curve configuration sections"],["refdata::curve_configuration_sections:write","Create and modify curve configuration sections"],["refdata::curve_configurations:read","View curve configurations"],["refdata::curve_configurations:write","Create and modify curve configurations"],["refdata::curve_correlation_configs:delete","Delete curve correlations"],["refdata::curve_correlation_configs:read","View curve correlations"],["refdata::curve_correlation_configs:write","Create and modify curve correlations"],["refdata::curve_definitions:delete","Delete curve definitions"],["refdata::curve_definitions:read","View curve definitions"],["refdata::curve_definitions:write","Create and modify curve definitions"],["refdata::curve_global_reports:delete","Delete curve global reports"],["refdata::curve_global_reports:read","View curve global reports"],["refdata::curve_global_reports:write","Create and modify curve global reports"],["refdata::curve_parametric_smile_parameters:delete","Delete curve parametric smile parameters"],["refdata::curve_parametric_smile_parameters:read","View curve parametric smile parameters"],["refdata::curve_parametric_smile_parameters:write","Create and modify curve parametric smile parameters"],["refdata::curve_parametric_smiles:delete","Delete curve parametric smiles"],["refdata::curve_parametric_smiles:read","View curve parametric smiles"],["refdata::curve_parametric_smiles:write","Create and modify curve parametric smiles"],["refdata::curve_quotes:delete","Delete curve quotes"],["refdata::curve_quotes:read","View curve quotes"],["refdata::curve_quotes:write","Create and modify curve quotes"],["refdata::curve_report_configurations:delete","Delete curve report configurations"],["refdata::curve_report_configurations:read","View curve report configurations"],["refdata::curve_report_configurations:write","Create and modify curve report configurations"],["refdata::curve_roles:delete","Delete curve roles"],["refdata::curve_roles:read","View curve roles"],["refdata::curve_roles:write","Create and modify curve roles"],["refdata::curve_sections:delete","Delete curve sections"],["refdata::curve_sections:read","View curve sections"],["refdata::curve_sections:write","Create and modify curve sections"],["refdata::curve_security_configs:delete","Delete curve securities"],["refdata::curve_security_configs:read","View curve securities"],["refdata::curve_security_configs:write","Create and modify curve securities"],["refdata::curve_segment_curves:delete","Delete curve segment curves"],["refdata::curve_segment_curves:read","View curve segment curves"],["refdata::curve_segment_curves:write","Create and modify curve segment curves"],["refdata::curve_segments:delete","Delete curve segments"],["refdata::curve_segments:read","View curve segments"],["refdata::curve_segments:write","Create and modify curve segments"],["refdata::curve_segment_types:delete","Delete curve segment types"],["refdata::curve_segment_types:read","View curve segment types"],["refdata::curve_segment_types:write","Create and modify curve segment types"],["refdata::curve_volatility_configs:delete","Delete curve volatility configs"],["refdata::curve_volatility_configs:read","View curve volatility configs"],["refdata::curve_volatility_configs:write","Create and modify curve volatility configs"],["refdata::day_counters:delete","Delete day counters"],["refdata::day_counters:read","View day counters"],["refdata::day_counters:write","Create and modify day counters"],["refdata::day_count_fraction_types:delete","Delete day count fraction types"],["refdata::day_count_fraction_types:read","View day count fraction types"],["refdata::day_count_fraction_types:write","Create and modify day count fraction types"],["refdata::default_curve_configs:delete","Delete default curves"],["refdata::default_curve_configs:read","View default curves"],["refdata::default_curve_configs:write","Create and modify default curves"],["refdata::default_curve_configurations:delete","Delete default curve configurations"],["refdata::default_curve_configurations:read","View default curve configurations"],["refdata::default_curve_configurations:write","Create and modify default curve configurations"],["refdata::deposit_conventions:delete","Delete deposit conventions"],["refdata::deposit_conventions:read","View deposit conventions"],["refdata::deposit_conventions:write","Create and modify deposit conventions"],["refdata::derivation_kinds:delete","Delete derivation kinds"],["refdata::derivation_kinds:read","View derivation kinds"],["refdata::derivation_kinds:write","Create and modify derivation kinds"],["refdata::diary_entry_types:delete","Delete diary entry types"],["refdata::diary_entry_types:read","View diary entry types"],["refdata::diary_entry_types:write","Create and modify diary entry types"],["refdata::equity_curve_configs:delete","Delete equity curves"],["refdata::equity_curve_configs:read","View equity curves"],["refdata::equity_curve_configs:write","Create and modify equity curves"],["refdata::equity_volatility_configs:delete","Delete equity volatilities"],["refdata::equity_volatility_configs:read","View equity volatilities"],["refdata::equity_volatility_configs:write","Create and modify equity volatilities"],["refdata::floating_index_types:delete","Delete floating index types"],["refdata::floating_index_types:read","View floating index types"],["refdata::floating_index_types:write","Create and modify floating index types"],["refdata::fra_conventions:delete","Delete fra conventions"],["refdata::fra_conventions:read","View fra conventions"],["refdata::fra_conventions:write","Create and modify fra conventions"],["refdata::future_conventions:delete","Delete future conventions"],["refdata::future_conventions:read","View future conventions"],["refdata::future_conventions:write","Create and modify future conventions"],["refdata::fx_option_conventions:delete","Delete FX option conventions"],["refdata::fx_option_conventions:read","View FX option conventions"],["refdata::fx_option_conventions:write","Create and modify FX option conventions"],["refdata::fx_volatility_configs:delete","Delete FX volatilities"],["refdata::fx_volatility_configs:read","View FX volatilities"],["refdata::fx_volatility_configs:write","Create and modify FX volatilities"],["refdata::ibor_index_conventions:delete","Delete ibor index conventions"],["refdata::ibor_index_conventions:read","View ibor index conventions"],["refdata::ibor_index_conventions:write","Create and modify ibor index conventions"],["refdata::inflation_cap_floor_volatility_configs:delete","Delete inflation cap floor volatilities"],["refdata::inflation_cap_floor_volatility_configs:read","View inflation cap floor volatilities"],["refdata::inflation_cap_floor_volatility_configs:write","Create and modify inflation cap floor volatilities"],["refdata::inflation_curve_configs:delete","Delete inflation curves"],["refdata::inflation_curve_configs:read","View inflation curves"],["refdata::inflation_curve_configs:write","Create and modify inflation curves"],["refdata::inflation_seasonality_factors:delete","Delete inflation seasonality factors"],["refdata::inflation_seasonality_factors:read","View inflation seasonality factors"],["refdata::inflation_seasonality_factors:write","Create and modify inflation seasonality factors"],["refdata::inflation_swap_conventions:delete","Delete inflation swap conventions"],["refdata::inflation_swap_conventions:read","View inflation swap conventions"],["refdata::inflation_swap_conventions:write","Create and modify inflation swap conventions"],["refdata::instrument_codes:delete","Delete instrument codes"],["refdata::instrument_codes:read","View instrument codes"],["refdata::instrument_codes:write","Create and modify instrument codes"],["refdata::intraday_power_curve_configs:delete","Delete intraday power curves"],["refdata::intraday_power_curve_configs:read","View intraday power curves"],["refdata::intraday_power_curve_configs:write","Create and modify intraday power curves"],["refdata::intraday_power_load_conventions:delete","Delete intraday power load conventions"],["refdata::intraday_power_load_conventions:read","View intraday power load conventions"],["refdata::intraday_power_load_conventions:write","Create and modify intraday power load conventions"],["refdata::ir_curve_bootstrap_configs:delete","Delete ir curve bootstrap configs"],["refdata::ir_curve_bootstrap_configs:read","View ir curve bootstrap configs"],["refdata::ir_curve_bootstrap_configs:write","Create and modify ir curve bootstrap configs"],["refdata::ir_curve_bootstrap_pillars:delete","Delete ir curve bootstrap pillars"],["refdata::ir_curve_bootstrap_pillars:read","View ir curve bootstrap pillars"],["refdata::ir_curve_bootstrap_pillars:write","Create and modify ir curve bootstrap pillars"],["refdata::ledger_feed_types:delete","Delete ledger feed types"],["refdata::ledger_feed_types:read","View ledger feed types"],["refdata::ledger_feed_types:write","Create and modify ledger feed types"],["refdata::leg_types:delete","Delete leg types"],["refdata::leg_types:read","View leg types"],["refdata::leg_types:write","Create and modify leg types"],["refdata::monetary_natures:delete","Delete monetary natures"],["refdata::monetary_natures:read","View monetary natures"],["refdata::monetary_natures:write","Create and modify monetary natures"],["refdata::netting_agreements:delete","Delete netting agreements"],["refdata::netting_agreements:read","View netting agreements"],["refdata::netting_agreements:write","Create and modify netting agreements"],["refdata::netting_set_identifiers:delete","Delete netting set identifiers"],["refdata::netting_set_identifiers:read","View netting set identifiers"],["refdata::netting_set_identifiers:write","Create and modify netting set identifiers"],["refdata::netting_sets:delete","Delete netting sets"],["refdata::netting_sets:read","View netting sets"],["refdata::netting_sets:write","Create and modify netting sets"],["refdata::ois_conventions:delete","Delete ois conventions"],["refdata::ois_conventions:read","View ois conventions"],["refdata::ois_conventions:write","Create and modify ois conventions"],["refdata::overnight_index_conventions:delete","Delete overnight index conventions"],["refdata::overnight_index_conventions:read","View overnight index conventions"],["refdata::overnight_index_conventions:write","Create and modify overnight index conventions"],["refdata::parties:delete","Delete parties"],["refdata::parties:read","View parties"],["refdata::parties:write","Create and modify parties"],["refdata::party_contact_informations:delete","Delete party contact information"],["refdata::party_contact_informations:read","View party contact information"],["refdata::party_contact_informations:write","Create and modify party contact information"],["refdata::party_counterparties:delete","Delete party counterparties"],["refdata::party_counterparties:read","View party counterparties"],["refdata::party_counterparties:write","Create and modify party counterparties"],["refdata::party_countries:delete","Delete party countries"],["refdata::party_countries:read","View party countries"],["refdata::party_countries:write","Create and modify party countries"],["refdata::party_currencies:delete","Delete party currencies"],["refdata::party_currencies:read","View party currencies"],["refdata::party_currencies:write","Create and modify party currencies"],["refdata::party_identifiers:delete","Delete party identifiers"],["refdata::party_identifiers:read","View party identifiers"],["refdata::party_identifiers:write","Create and modify party identifiers"],["refdata::party_id_schemes:delete","Delete party identifier schemes"],["refdata::party_id_schemes:read","View party identifier schemes"],["refdata::party_id_schemes:write","Create and modify party identifier schemes"],["refdata::party_statuses:delete","Delete party statuses"],["refdata::party_statuses:read","View party statuses"],["refdata::party_statuses:write","Create and modify party statuses"],["refdata::party_types:delete","Delete party types"],["refdata::party_types:read","View party types"],["refdata::party_types:write","Create and modify party types"],["refdata::payment_frequencies:delete","Delete payment frequencies"],["refdata::payment_frequencies:read","View payment frequencies"],["refdata::payment_frequencies:write","Create and modify payment frequencies"],["refdata::portfolio_rights:delete","Delete portfolio rights"],["refdata::portfolio_rights:read","View portfolio rights"],["refdata::portfolio_rights:write","Create and modify portfolio rights"],["refdata::portfolios:delete","Delete portfolios"],["refdata::portfolios:read","View portfolios"],["refdata::portfolios:write","Create and modify portfolios"],["refdata::purpose_types:delete","Delete purpose types"],["refdata::purpose_types:read","View purpose types"],["refdata::purpose_types:write","Create and modify purpose types"],["refdata::regulatory_book_types:delete","Delete regulatory book types"],["refdata::regulatory_book_types:read","View regulatory book types"],["refdata::regulatory_book_types:write","Create and modify regulatory book types"],["refdata::rounding_types:delete","Delete rounding types"],["refdata::rounding_types:read","View rounding types"],["refdata::rounding_types:write","Create and modify rounding types"],["refdata::sandboxes:delete","Delete sandboxes"],["refdata::sandboxes:read","View sandboxes"],["refdata::sandboxes:write","Create and modify sandboxes"],["refdata::sandbox_members:delete","Delete sandbox members"],["refdata::sandbox_members:read","View sandbox members"],["refdata::sandbox_members:write","Create and modify sandbox members"],["refdata::series_subclass_codes:delete","Delete series subclass codes"],["refdata::series_subclass_codes:read","View series subclass codes"],["refdata::series_subclass_codes:write","Create and modify series subclass codes"],["refdata::swap_conventions:delete","Delete swap conventions"],["refdata::swap_conventions:read","View swap conventions"],["refdata::swap_conventions:write","Create and modify swap conventions"],["refdata::swap_index_conventions:delete","Delete swap index conventions"],["refdata::swap_index_conventions:read","View swap index conventions"],["refdata::swap_index_conventions:write","Create and modify swap index conventions"],["refdata::swaption_volatility_configs:delete","Delete swaption volatilities"],["refdata::swaption_volatility_configs:read","View swaption volatilities"],["refdata::swaption_volatility_configs:write","Create and modify swaption volatilities"],["refdata::tenor_anchors:delete","Delete tenor anchors"],["refdata::tenor_anchors:read","View tenor anchors"],["refdata::tenor_anchors:write","Create and modify tenor anchors"],["refdata::tenor_basis_swap_conventions:delete","Delete tenor basis swap conventions"],["refdata::tenor_basis_swap_conventions:read","View tenor basis swap conventions"],["refdata::tenor_basis_swap_conventions:write","Create and modify tenor basis swap conventions"],["refdata::tenor_basis_two_swap_conventions:delete","Delete two-tenor basis swap conventions"],["refdata::tenor_basis_two_swap_conventions:read","View two-tenor basis swap conventions"],["refdata::tenor_basis_two_swap_conventions:write","Create and modify two-tenor basis swap conventions"],["refdata::tenor_conventions:delete","Delete tenor conventions"],["refdata::tenor_conventions:read","View tenor conventions"],["refdata::tenor_conventions:write","Create and modify tenor conventions"],["refdata::tenor_kinds:delete","Delete tenor kinds"],["refdata::tenor_kinds:read","View tenor kinds"],["refdata::tenor_kinds:write","Create and modify tenor kinds"],["refdata::tenor_resolution_algorithms:delete","Delete tenor resolution algorithms"],["refdata::tenor_resolution_algorithms:read","View tenor resolution algorithms"],["refdata::tenor_resolution_algorithms:write","Create and modify tenor resolution algorithms"],["refdata::tenor_schedules:delete","Delete tenor schedules"],["refdata::tenor_schedules:read","View tenor schedules"],["refdata::tenor_schedules:write","Create and modify tenor schedules"],["refdata::tenors:delete","Delete tenors"],["refdata::tenors:read","View tenors"],["refdata::tenors:write","Create and modify tenors"],["refdata::tenor_units:delete","Delete tenor units"],["refdata::tenor_units:read","View tenor units"],["refdata::tenor_units:write","Create and modify tenor units"],["refdata::yield_curve_configs:delete","Delete yield curves"],["refdata::yield_curve_configs:read","View yield curves"],["refdata::yield_curve_configs:write","Create and modify yield curves"],["refdata::yield_volatility_configs:delete","Delete yield volatilities"],["refdata::yield_volatility_configs:read","View yield volatilities"],["refdata::yield_volatility_configs:write","Create and modify yield volatilities"],["refdata::zero_conventions:delete","Delete zero conventions"],["refdata::zero_conventions:read","View zero conventions"],["refdata::zero_conventions:write","Create and modify zero conventions"],["refdata::zero_inflation_index_conventions:delete","Delete zero inflation index conventions"],["refdata::zero_inflation_index_conventions:read","View zero inflation index conventions"],["refdata::zero_inflation_index_conventions:write","Create and modify zero inflation index conventions"],["reporting::*","Full access to all reporting operations"],["reporting::analytic_types:delete","Delete analytic types"],["reporting::analytic_types:read","View analytic types"],["reporting::analytic_types:write","Create and modify analytic types"],["reporting::concurrency_policies:delete","Delete concurrency policies"],["reporting::concurrency_policies:read","View concurrency policies"],["reporting::concurrency_policies:write","Create and modify concurrency policies"],["reporting::configuration_parameters:delete","Delete configuration parameters"],["reporting::configuration_parameters:read","View configuration parameters"],["reporting::configuration_parameters:write","Create and modify configuration parameters"],["reporting::configurations:delete","Delete configurations"],["reporting::configurations:read","View configurations"],["reporting::configurations:write","Create and modify configurations"],["reporting::configuration_types:delete","Delete configuration types"],["reporting::configuration_types:read","View configuration types"],["reporting::configuration_types:write","Create and modify configuration types"],["reporting::parameter_definitions:delete","Delete parameter definitions"],["reporting::parameter_definitions:read","View parameter definitions"],["reporting::parameter_definitions:write","Create and modify parameter definitions"],["reporting::parameter_value_domains:delete","Delete parameter value domains"],["reporting::parameter_value_domains:read","View parameter value domains"],["reporting::parameter_value_domains:write","Create and modify parameter value domains"],["reporting::report_analytic_parameters:delete","Delete report analytic parameters"],["reporting::report_analytic_parameters:read","View report analytic parameters"],["reporting::report_analytic_parameters:write","Create and modify report analytic parameters"],["reporting::report_analytics:delete","Delete report analytics"],["reporting::report_analytics:read","View report analytics"],["reporting::report_analytics:write","Create and modify report analytics"],["reporting::report_configurations:delete","Delete report configurations"],["reporting::report_configurations:read","View report configurations"],["reporting::report_configurations:write","Create and modify report configurations"],["reporting::report_definitions:delete","Delete report definitions"],["reporting::report_definitions:read","View report definitions"],["reporting::report_definitions:write","Create and modify report definitions"],["reporting::report_instances:delete","Delete report run records"],["reporting::report_instances:read","View report run history"],["reporting::report_instances:write","Trigger report runs"],["reporting::report_market_bindings:delete","Delete report market bindings"],["reporting::report_market_bindings:read","View report market bindings"],["reporting::report_market_bindings:write","Create and modify report market bindings"],["reporting::report_run_setups:delete","Delete report run setups"],["reporting::report_run_setups:read","View report run setups"],["reporting::report_run_setups:write","Create and modify report run setups"],["reporting::report_type_configuration_types:delete","Delete the configuration types report types require"],["reporting::report_type_configuration_types:read","View the configuration types report types require"],["reporting::report_type_configuration_types:write","Create and modify the configuration types report types require"],["reporting::report_types:delete","Delete report types"],["reporting::report_types:read","View report types"],["reporting::report_types:write","Create and modify report types"],["scheduler::*","Full access to all scheduler operations"],["scheduler::job_definitions:delete","Unschedule jobs"],["scheduler::job_definitions:read","View scheduled jobs"],["scheduler::job_definitions:write","Schedule and update jobs"],["storage::*","Full access to all storage operations"],["storage::objects:delete","Delete stored objects"],["storage::objects:read","Read and list stored objects"],["storage::objects:write","Create and replace stored objects"],["synthetic::*","Full access to all synthetic data operations"],["synthetic::fx_spot_generation_configs:delete","Delete FX spot generation configs"],["synthetic::fx_spot_generation_configs:read","View FX spot generation configs"],["synthetic::fx_spot_generation_configs:write","Create and modify FX spot generation configs"],["synthetic::gmm_components:delete","Delete GMM components"],["synthetic::gmm_components:read","View GMM components"],["synthetic::gmm_components:write","Create and modify GMM components"],["synthetic::ir_curve_generation_configs:delete","Delete IR curve generation configs"],["synthetic::ir_curve_generation_configs:read","View IR curve generation configs"],["synthetic::ir_curve_generation_configs:write","Create and modify IR curve generation configs"],["synthetic::ir_curve_template_entries:delete","Delete IR curve template entries"],["synthetic::ir_curve_template_entries:read","View IR curve template entries"],["synthetic::ir_curve_template_entries:write","Create and modify IR curve template entries"],["synthetic::market_data_generation_configs:delete","Delete market data generation configs"],["synthetic::market_data_generation_configs:read","View market data generation configs"],["synthetic::market_data_generation_configs:write","Create and modify market data generation configs"],["telemetry::*","Full access to all telemetry operations"],["telemetry::logs:read","Read telemetry log entries"],["telemetry::logs:write","Write telemetry log entries"],["telemetry::samples:read","Read service/NATS health samples"],["telemetry::samples:write","Write service/NATS health samples"],["trading::*","Full access to all trading operations"],["trading::activity_categories:delete","Delete activity categories"],["trading::activity_categories:write","Create and modify activity categories"],["trading::activity_types:delete","Delete activity types"],["trading::activity_types:write","Create and modify activity types"],["trading::amortization_types:delete","Delete amortization types"],["trading::amortization_types:write","Create and modify amortization types"],["trading::ascots:delete","Delete ascots"],["trading::ascots:write","Create and modify ascots"],["trading::average_types:delete","Delete average types"],["trading::average_types:write","Create and modify average types"],["trading::balance_guaranteed_swap_instruments:delete","Delete balance guaranteed swap instruments"],["trading::balance_guaranteed_swap_instruments:write","Create and modify balance guaranteed swap instruments"],["trading::barrier_types:delete","Delete barrier types"],["trading::barrier_types:write","Create and modify barrier types"],["trading::bond_forwards:delete","Delete bond forwards"],["trading::bond_forwards:write","Create and modify bond forwards"],["trading::bond_futures:delete","Delete bond futures"],["trading::bond_futures:write","Create and modify bond futures"],["trading::bond_instruments:delete","Delete bond instruments"],["trading::bond_instruments:write","Create and modify bond instruments"],["trading::bond_issue_call_dates:delete","Delete bond issue call dates"],["trading::bond_issue_call_dates:write","Create and modify bond issue call dates"],["trading::bond_issue_conversion_targets:delete","Delete bond issue conversion targets"],["trading::bond_issue_conversion_targets:write","Create and modify bond issue conversion targets"],["trading::bond_issue_leg_amortizations:delete","Delete bond issue leg amortizations"],["trading::bond_issue_leg_amortizations:write","Create and modify bond issue leg amortizations"],["trading::bond_issue_leg_amounts:delete","Delete bond issue leg amounts"],["trading::bond_issue_leg_amounts:write","Create and modify bond issue leg amounts"],["trading::bond_issue_leg_rates:delete","Delete bond issue leg rates"],["trading::bond_issue_leg_rates:write","Create and modify bond issue leg rates"],["trading::bond_issue_leg_schedule_dates:delete","Delete bond issue leg schedule dates"],["trading::bond_issue_leg_schedule_dates:write","Create and modify bond issue leg schedule dates"],["trading::bond_issue_leg_schedules:delete","Delete bond issue leg schedules"],["trading::bond_issue_leg_schedules:write","Create and modify bond issue leg schedules"],["trading::bond_issue_legs:delete","Delete bond issue legs"],["trading::bond_issue_legs:write","Create and modify bond issue legs"],["trading::bond_issues:delete","Delete bond issues"],["trading::bond_issues:write","Create and modify bond issues"],["trading::bond_leg_amortizations:delete","Delete bond leg amortizations"],["trading::bond_leg_amortizations:write","Create and modify bond leg amortizations"],["trading::bond_leg_amounts:delete","Delete bond leg amounts"],["trading::bond_leg_amounts:write","Create and modify bond leg amounts"],["trading::bond_leg_rates:delete","Delete bond leg rates"],["trading::bond_leg_rates:write","Create and modify bond leg rates"],["trading::bond_legs:delete","Delete bond legs"],["trading::bond_legs:write","Create and modify bond legs"],["trading::bond_options:delete","Delete bond options"],["trading::bond_options:write","Create and modify bond options"],["trading::bond_repos:delete","Delete bond repos"],["trading::bond_repos:write","Create and modify bond repos"],["trading::bond_trs:delete","Delete bond trs"],["trading::bond_trs:write","Create and modify bond trs"],["trading::callable_swap_call_dates:delete","Delete callable swap call dates"],["trading::callable_swap_call_dates:write","Create and modify callable swap call dates"],["trading::callable_swap_instruments:delete","Delete callable swap instruments"],["trading::callable_swap_instruments:write","Create and modify callable swap instruments"],["trading::cap_floor_instruments:delete","Delete cap floor instruments"],["trading::cap_floor_instruments:write","Create and modify cap floor instruments"],["trading::commodity_basket_constituents:delete","Delete commodity basket constituents"],["trading::commodity_basket_constituents:write","Create and modify commodity basket constituents"],["trading::commodity_instruments:delete","Delete commodity instruments"],["trading::commodity_instruments:write","Create and modify commodity instruments"],["trading::composite_instruments:delete","Delete composite instruments"],["trading::composite_instruments:write","Create and modify composite instruments"],["trading::composite_legs:delete","Delete composite legs"],["trading::composite_legs:write","Create and modify composite legs"],["trading::credit_instruments:delete","Delete credit instruments"],["trading::credit_instruments:write","Create and modify credit instruments"],["trading::equity_accumulator_instruments:delete","Delete equity accumulator instruments"],["trading::equity_accumulator_instruments:write","Create and modify equity accumulator instruments"],["trading::equity_asian_option_instruments:delete","Delete equity asian option instruments"],["trading::equity_asian_option_instruments:write","Create and modify equity asian option instruments"],["trading::equity_barrier_option_instruments:delete","Delete equity barrier option instruments"],["trading::equity_barrier_option_instruments:write","Create and modify equity barrier option instruments"],["trading::equity_digital_option_instruments:delete","Delete equity digital option instruments"],["trading::equity_digital_option_instruments:write","Create and modify equity digital option instruments"],["trading::equity_forward_instruments:delete","Delete equity forward instruments"],["trading::equity_forward_instruments:write","Create and modify equity forward instruments"],["trading::equity_option_instruments:delete","Delete equity option instruments"],["trading::equity_option_instruments:write","Create and modify equity option instruments"],["trading::equity_position_instruments:delete","Delete equity position instruments"],["trading::equity_position_instruments:write","Create and modify equity position instruments"],["trading::equity_position_option_underlyings:delete","Delete equity position option underlyings"],["trading::equity_position_option_underlyings:write","Create and modify equity position option underlyings"],["trading::equity_swap_instruments:delete","Delete equity swap instruments"],["trading::equity_swap_instruments:write","Create and modify equity swap instruments"],["trading::equity_variance_swap_instruments:delete","Delete equity variance swap instruments"],["trading::equity_variance_swap_instruments:write","Create and modify equity variance swap instruments"],["trading::exercise_types:delete","Delete exercise types"],["trading::exercise_types:write","Create and modify exercise types"],["trading::fpml_event_types:delete","Delete fpml event types"],["trading::fpml_event_types:write","Create and modify fpml event types"],["trading::fra_instruments:delete","Delete fra instruments"],["trading::fra_instruments:write","Create and modify fra instruments"],["trading::fx_accumulator_instruments:delete","Delete fx accumulator instruments"],["trading::fx_accumulator_instruments:write","Create and modify fx accumulator instruments"],["trading::fx_asian_forward_instruments:delete","Delete fx asian forward instruments"],["trading::fx_asian_forward_instruments:write","Create and modify fx asian forward instruments"],["trading::fx_barrier_option_instruments:delete","Delete fx barrier option instruments"],["trading::fx_barrier_option_instruments:write","Create and modify fx barrier option instruments"],["trading::fx_digital_option_instruments:delete","Delete fx digital option instruments"],["trading::fx_digital_option_instruments:write","Create and modify fx digital option instruments"],["trading::fx_forward_instruments:delete","Delete fx forward instruments"],["trading::fx_forward_instruments:write","Create and modify fx forward instruments"],["trading::fx_vanilla_option_instruments:delete","Delete fx vanilla option instruments"],["trading::fx_vanilla_option_instruments:write","Create and modify fx vanilla option instruments"],["trading::fx_variance_swap_instruments:delete","Delete fx variance swap instruments"],["trading::fx_variance_swap_instruments:write","Create and modify fx variance swap instruments"],["trading::inflation_swap_instruments:delete","Delete inflation swap instruments"],["trading::inflation_swap_instruments:write","Create and modify inflation swap instruments"],["trading::instrument_option_exercise_fees:delete","Delete instrument option exercise fees"],["trading::instrument_option_exercise_fees:write","Create and modify instrument option exercise fees"],["trading::instrument_option_payment_dates:delete","Delete instrument option payment dates"],["trading::instrument_option_payment_dates:write","Create and modify instrument option payment dates"],["trading::instrument_option_premiums:delete","Delete instrument option premiums"],["trading::instrument_option_premiums:write","Create and modify instrument option premiums"],["trading::instrument_options:delete","Delete instrument options"],["trading::instrument_options:write","Create and modify instrument options"],["trading::instrument_schedule_dates:delete","Delete instrument schedule dates"],["trading::instrument_schedule_dates:write","Create and modify instrument schedule dates"],["trading::instrument_schedules:delete","Delete instrument schedules"],["trading::instrument_schedules:write","Create and modify instrument schedules"],["trading::instruments:delete","Delete trading instruments"],["trading::instruments:read","View trading instruments"],["trading::instrument_strikes:delete","Delete instrument strikes"],["trading::instrument_strikes:write","Create and modify instrument strikes"],["trading::instruments:write","Create and modify trading instruments"],["trading::knock_out_swap_instruments:delete","Delete knock out swap instruments"],["trading::knock_out_swap_instruments:write","Create and modify knock out swap instruments"],["trading::lifecycle_events:delete","Delete lifecycle events"],["trading::lifecycle_events:write","Create and modify lifecycle events"],["trading::long_short_types:delete","Delete long short types"],["trading::long_short_types:write","Create and modify long short types"],["trading::moment_types:delete","Delete moment types"],["trading::moment_types:write","Create and modify moment types"],["trading::option_types:delete","Delete option types"],["trading::option_types:write","Create and modify option types"],["trading::party_role_types:delete","Delete party role types"],["trading::party_role_types:write","Create and modify party role types"],["trading::payoff_types:delete","Delete payoff types"],["trading::payoff_types:write","Create and modify payoff types"],["trading::price_types:delete","Delete price types"],["trading::price_types:write","Create and modify price types"],["trading::return_types:delete","Delete return types"],["trading::return_types:write","Create and modify return types"],["trading::rpa_instruments:delete","Delete rpa instruments"],["trading::rpa_instruments:write","Create and modify rpa instruments"],["trading::scripted_instruments:delete","Delete scripted instruments"],["trading::scripted_instruments:write","Create and modify scripted instruments"],["trading::settlement_types:delete","Delete settlement types"],["trading::settlement_types:write","Create and modify settlement types"],["trading::swap_legs:delete","Delete swap legs"],["trading::swap_legs:write","Create and modify swap legs"],["trading::swaption_instruments:delete","Delete swaption instruments"],["trading::swaption_instruments:write","Create and modify swaption instruments"],["trading::trade_additional_fields:delete","Delete trade additional fields"],["trading::trade_additional_fields:write","Create and modify trade additional fields"],["trading::trade_bookings:delete","Delete trade bookings"],["trading::trade_bookings:write","Create and modify trade bookings"],["trading::trade_envelope_additional_fields:delete","Delete trade envelope additional fields"],["trading::trade_envelope_additional_fields:write","Create and modify trade envelope additional fields"],["trading::trade_envelope_portfolio_ids:delete","Delete trade envelope portfolio ids"],["trading::trade_envelope_portfolio_ids:write","Create and modify trade envelope portfolio ids"],["trading::trade_envelopes:delete","Delete trade envelopes"],["trading::trade_envelopes:write","Create and modify trade envelopes"],["trading::trade_identifiers:delete","Delete trade identifiers"],["trading::trade_identifiers:write","Create and modify trade identifiers"],["trading::trade_id_types:delete","Delete trade id types"],["trading::trade_id_types:write","Create and modify trade id types"],["trading::trade_party_roles:delete","Delete trade party roles"],["trading::trade_party_roles:write","Create and modify trade party roles"],["trading::trades:delete","Delete trades"],["trading::trades:read","View trades"],["trading::trade_states:delete","Delete trade states"],["trading::trade_states:write","Create and modify trade states"],["trading::trades:write","Create and modify trades"],["trading::trade_types:delete","Delete trade types"],["trading::trade_types:write","Create and modify trade types"],["trading::vanilla_swap_instruments:delete","Delete vanilla swap instruments"],["trading::vanilla_swap_instruments:write","Create and modify vanilla swap instruments"],["variability::*","Full access to all variability operations"],["variability::flags:create","Create new system settings"],["variability::flags:delete","Delete system settings"],["variability::flags:read","View system setting values"],["variability::flags:update","Modify system setting values"],["workflow::*","Full access to all workflow operations"],["workflow::workflow_instances:delete","Delete workflow instances"],["workflow::workflow_instances:write","Create and modify workflow instances"],["workflow::workflow_steps:delete","Delete workflow steps"],["workflow::workflow_steps:write","Create and modify workflow steps"],["workspace::*","Full access to all workspace operations"],["workspace::live_workspace:archive","Archive the Live workspace \u2014 highly restricted"],["workspace::workspaces:archive","Archive a workspace the caller owns"],["workspace::workspaces:archive_any","Archive any workspace regardless of ownership"],["workspace::workspaces:delete","Soft-delete a workspace the caller owns and its associated data"],["workspace::workspaces:delete_any","Soft-delete any workspace regardless of ownership"],["workspace::workspaces:read","List and view workspaces"],["workspace::workspaces:write","Create workspaces and update own workspace metadata"]];
+  const SEEDED_ROLES = {"SuperAdmin":{"description":"Platform super administrator with tenant management access","codes":["*","iam::system:reset","iam::system:reset-tenant","iam::tenants:create","iam::tenants:delete","iam::tenants:impersonate","iam::tenants:read","iam::tenants:suspend","iam::tenants:terminate","iam::tenants:update"]},"TenantAdmin":{"description":"Tenant administrator with full access within a tenant","codes":["*"]},"Trading":{"description":"Trading operations - currency read access","codes":["refdata::currencies:read","variability::flags:read","workspace::workspaces:archive","workspace::workspaces:delete","workspace::workspaces:read","workspace::workspaces:write"]},"Sales":{"description":"Sales operations - read-only currency access","codes":["refdata::currencies:read","variability::flags:read"]},"Operations":{"description":"Operations - currency management and account viewing","codes":["iam::accounts:read","refdata::currencies:delete","refdata::currencies:read","refdata::currencies:write","refdata::currency_calendars:delete","refdata::currency_calendars:read","refdata::currency_calendars:write","refdata::currency_countries:delete","refdata::currency_countries:read","refdata::currency_countries:write","refdata::currency_currency_groups:delete","refdata::currency_currency_groups:read","refdata::currency_currency_groups:write","refdata::currency_pair_convention_calendars:delete","refdata::currency_pair_convention_calendars:read","refdata::currency_pair_convention_calendars:write","variability::flags:read"]},"Support":{"description":"Support - read-only access to all resources and admin screens","codes":["iam::accounts:read","iam::login_info:read","iam::roles:read","refdata::currencies:read","variability::flags:read"]},"Viewer":{"description":"Viewer - basic read-only access to domain data","codes":["refdata::currencies:read","variability::flags:read","workspace::workspaces:read"]},"DataPublisher":{"description":"Data Publisher - can publish datasets and bundles to production","codes":["dq::catalogs:read","dq::coding_schemes:read","dq::data_domains:read","dq::dataset_bundle_members:read","dq::dataset_bundles:read","dq::dataset_bundles:write","dq::datasets:read","dq::datasets:write","dq::methodologies:read","dq::subject_areas:read"]}};
+  const SERVICE_ROLES = [["AnalyticsService","Analytics pricing engine domain service"],["AssetsService","Assets domain service"],["ComputeService","Compute Grid domain service"],["ComputeWrapperService","Compute Wrapper worker service"],["DqService","Data Quality domain service"],["HttpService","HTTP REST API server"],["IamService","IAM domain service"],["MarketdataService","Market data domain service"],["OreService","ORE Import workflow domain service"],["RefdataService","Reference Data domain service"],["ReportingService","Reporting domain service"],["SchedulerService","Scheduler domain service"],["StorageService","Object storage service"],["SyntheticService","Synthetic data generation service"],["TelemetryService","Telemetry domain service"],["TradingService","Trading domain service"],["VariabilityService","Variability domain service"],["WorkflowService","Workflow orchestration domain service"],["WorkspaceService","Workspace domain service"]];
+
+  const DESCRIPTION = new Map(CATALOGUE);
+  const ROLE_LABEL = { TenantAdmin: 'Tenant administrator', SuperAdmin: 'Super administrator', DataPublisher: 'Data publisher' };
+  const label = (name) => ROLE_LABEL[name] || name;
+
+  let roles = Object.entries(SEEDED_ROLES)
+    .filter(([name]) => name !== 'SuperAdmin')
+    .map(([name, r]) => ({ name, description: r.description, codes: new Set(r.codes || []), service: false }))
+    .concat(SERVICE_ROLES.map(([name, description]) => ({ name, description, codes: new Set(), service: true })));
+
+  const PERSONAS = {
+    tenant: { name: 'Priya Natarajan', login: 'priya', initials: 'PN', place: 'Acme Corporation', admin: true },
+    party:  { name: 'Daniel Okafor', login: 'daniel', initials: 'DO', place: 'Acme Corporation · Acme London', admin: false },
+  };
+
+  let people = [
+    { login: 'priya', name: 'Priya Natarajan', title: 'Head of platform', last: 'Today, 10:42', grants: [
+      { role: 'TenantAdmin', by: 'ores.iam.service', on: '12 Sep 2026', reason: 'Tenant set up', note: '' } ] },
+    { login: 'daniel', name: 'Daniel Okafor', title: 'FX trader', last: 'Today, 09:15', grants: [
+      { role: 'Trading', by: 'priya', on: '14 Sep 2026', reason: 'New joiner', note: '' },
+      { role: 'Viewer', by: 'priya', on: '14 Sep 2026', reason: 'New joiner', note: '' } ] },
+    { login: 'hannah', name: 'Hannah Weiss', title: 'Sales', last: 'Yesterday', grants: [
+      { role: 'Sales', by: 'priya', on: '20 Sep 2026', reason: 'New joiner', note: '' } ] },
+    { login: 'tomas', name: 'Tomás Ribeiro', title: 'Operations analyst', last: '3 days ago', grants: [
+      { role: 'Operations', by: 'priya', on: '22 Sep 2026', reason: 'Role change', note: 'Moved from the support desk' },
+      { role: 'Support', by: 'priya', on: '15 Sep 2026', reason: 'New joiner', note: '' } ] },
+    { login: 'mei', name: 'Mei Tanaka', title: 'Data steward', last: 'Never', grants: [] },
+  ];
+
+  const REASONS = ['New joiner', 'Role change', 'Cover for absence', 'Leaver', 'Access review'];
+  const MENUS = {
+    tenant: [{ id: 'home', label: 'Home' }, { id: 'parties', label: 'Parties', soon: true }, { id: 'people', label: 'People' }, { id: 'roles', label: 'Roles' }, { id: 'signins', label: 'Sign-ins', soon: true }],
+    party:  [{ id: 'home', label: 'Home' }, { id: 'refdata', label: 'Reference data', soon: true }, { id: 'trading', label: 'Trading', soon: true }],
+  };
+
+  const state = { persona: 'party', screen: 'mine', person: null, role: null, draft: null, onlyTicked: false, filter: '', showService: false, ask: '' };
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const roleOf = (name) => roles.find((r) => r.name === name);
+  const personOf = (login) => people.find((p) => p.login === login);
+  /* Wherever an account is shown, its picture is shown with it. */
+  const face = (login, size) => `<img class="face" src="photos/${login}.jpg" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  const byLine = (login) => personOf(login) ? `<span class="inline-face">${face(login, 16)}${esc(personOf(login).name)}</span>` : esc(login);
+
+  /* A code is component::resource:action; the two wildcards are '*' and 'component::*'. */
+  function parse(code) {
+    if (code === '*') return { component: '*', resource: '*', action: '*' };
+    const [component, rest] = code.split('::');
+    if (rest === '*') return { component, resource: '*', action: '*' };
+    const i = rest.lastIndexOf(':');
+    return { component, resource: rest.slice(0, i), action: rest.slice(i + 1) };
+  }
+  const MAIN = ['read', 'write', 'delete'];
+  const COMPONENT_NAMES = { refdata: 'Reference data', trading: 'Trading', dq: 'Data quality', analytics: 'Analytics', reporting: 'Reporting', iam: 'Identity and access', compute: 'Compute', marketdata: 'Market data', synthetic: 'Synthetic data', assets: 'Assets', workspace: 'Workspaces', workflow: 'Workflow', variability: 'Feature flags', telemetry: 'Telemetry', test: 'Test', scheduler: 'Scheduler', storage: 'Storage' };
+
+  /* The catalogue as component -> resource -> actions, built once. */
+  const TREE = (() => {
+    const tree = new Map();
+    for (const [code] of CATALOGUE) {
+      const p = parse(code);
+      if (p.resource === '*') continue;
+      if (!tree.has(p.component)) tree.set(p.component, new Map());
+      const res = tree.get(p.component);
+      if (!res.has(p.resource)) res.set(p.resource, new Set());
+      res.get(p.resource).add(p.action);
+    }
+    return new Map([...tree.entries()].sort((a, b) => b[1].size - a[1].size));
+  })();
+
+  /* Whether a set of granted codes covers one code, wildcards included. */
+  function covers(granted, code) {
+    if (granted.has('*') || granted.has(code)) return true;
+    const p = parse(code);
+    return granted.has(`${p.component}::*`);
+  }
+  function grantsOf(login) {
+    const set = new Set();
+    for (const g of personOf(login).grants) for (const c of roleOf(g.role).codes) set.add(c);
+    return set;
+  }
+  function rolesGranting(login, code) {
+    return personOf(login).grants.filter((g) => covers(roleOf(g.role).codes, code)).map((g) => label(g.role));
+  }
+  function countCovered(granted) {
+    if (granted.has('*')) return CATALOGUE.length - 1;
+    let n = 0;
+    for (const [code] of CATALOGUE) if (code !== '*' && !code.endsWith('::*') && covers(granted, code)) n++;
+    return n;
+  }
+  const holders = (name) => people.filter((p) => p.grants.some((g) => g.role === name));
+
+  function toast(text) { const t = $('toast'); t.textContent = text; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2600); }
+  function go(screen, extra) { Object.assign(state, { screen }, extra || {}); closeMe(); render(); window.scrollTo({ top: 0 }); }
+  function closeMe() { $('me-menu').hidden = true; $('me').setAttribute('aria-expanded', 'false'); }
+
+  function renderHeader() {
+    const me = PERSONAS[state.persona];
+    $('place').textContent = me.place;
+    $('menu').innerHTML = MENUS[state.persona].map((m) => `<button data-go="${m.id}" class="${m.soon ? 'soon' : ''}" ${state.screen === m.id || (m.id === 'people' && state.screen === 'person') || (m.id === 'roles' && state.screen === 'role') ? 'aria-current="page"' : ''}>${esc(m.label)}</button>`).join('');
+    $('me').innerHTML = `${face(me.login, 28)}<span class="hide-sm">${esc(me.name)}</span>`;
+    $('me-menu').innerHTML = `<div class="who"><div>${esc(me.name)}</div><div class="faint" style="font-size:12px">${esc(me.place)}</div></div>
+      <button data-go="mine">My access</button><button data-go="soon:Profile">Profile</button><button data-go="soon:Security">Security</button><button data-go="soon:Sign out">Sign out</button>`;
+  }
+
+  /* ---------- My access ---------- */
+  function mine() {
+    const me = PERSONAS[state.persona];
+    const person = personOf(me.login);
+    const granted = grantsOf(me.login);
+    const everything = granted.has('*');
+    const q = state.ask.trim().toLowerCase();
+    let answer = '';
+    if (q !== '') {
+      const matches = CATALOGUE.filter(([c, d]) => c !== '*' && !c.endsWith('::*') && (c.toLowerCase().includes(q) || d.toLowerCase().includes(q))).slice(0, 8);
+      answer = matches.length === 0 ? '<p class="muted">No permission matches that.</p>' :
+        matches.map(([c, d]) => {
+          const by = rolesGranting(me.login, c);
+          return `<div class="row"><span class="dot ${by.length ? 'ok' : 'idle'}"></span><div class="grow"><div>${esc(d)}</div><div class="attr"><span class="code">${esc(c)}</span></div></div>
+            <div class="${by.length ? '' : 'faint'}" style="font-size:13px">${by.length ? 'Yes, through ' + esc(by.join(' and ')) : 'No'}</div></div>`;
+        }).join('');
+    }
+    return `
+      <div class="head"><div><h1>My access</h1><p class="muted">What you can do in ${esc(me.place.split(' · ')[0])}, and which role lets you.</p></div></div>
+      <div class="card">
+        <div class="pad" style="padding-bottom:0.5rem"><h2>Roles you hold</h2></div>
+        <div class="list">${person.grants.length === 0 ? '<div class="row muted">You hold no role yet. Ask your tenant administrator.</div>' : person.grants.map((g) => `
+          <div class="row"><div class="grow"><div><strong>${esc(label(g.role))}</strong> <span class="muted">· ${esc(roleOf(g.role).description)}</span></div>
+            <div class="attr">Given by ${byLine(g.by)} on ${esc(g.on)} · ${esc(g.reason)}${g.note ? ' · ' + esc(g.note) : ''}</div></div></div>`).join('')}</div>
+      </div>
+      <div class="card pad" style="display:grid;gap:0.75rem">
+        <h2>Can I…?</h2>
+        <input type="search" id="ask" placeholder="Try: currencies, delete trades, workspaces" value="${esc(state.ask)}" style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0.5rem 0.75rem">
+        <div class="list">${answer}</div>
+      </div>
+      <div style="display:grid;gap:0.75rem">
+        <div class="head"><div><h2>What your roles let you do</h2><p class="muted">${everything ? 'Everything in this tenant.' : countCovered(granted) + ' of ' + (CATALOGUE.length - 1) + ' permissions, by area.'}</p></div></div>
+        ${everything ? `<div class="everything"><span class="mark">✓</span><div><strong>Everything</strong><div class="muted" style="font-size:13px">${esc(label(person.grants.find((g) => roleOf(g.role).codes.has('*')).role))} grants every permission, so no list is shown.</div></div></div>` : areas(granted, { readOnly: true, login: me.login, onlyGranted: true })}
+      </div>`;
+  }
+
+  /* The catalogue by area. Read-only for a member's own access; ticks for a role's bundle. */
+  function areas(set, opts) {
+    const filter = (state.filter || '').trim().toLowerCase();
+    const out = [];
+    for (const [component, resources] of TREE) {
+      const whole = set.has(`${component}::*`) || set.has('*');
+      let rows = [...resources.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      if (filter) rows = rows.filter(([r]) => r.includes(filter) || component.includes(filter) || (COMPONENT_NAMES[component] || '').toLowerCase().includes(filter));
+      const held = (r, a) => covers(set, `${component}::${r}:${a}`);
+      if (opts.onlyGranted || (opts.edit && state.onlyTicked)) rows = rows.filter(([r, acts]) => [...acts].some((a) => held(r, a)));
+      if (rows.length === 0) continue;
+      const total = [...resources.values()].reduce((n, a) => n + a.size, 0);
+      const have = [...resources.entries()].reduce((n, [r, a]) => n + [...a].filter((x) => held(r, x)).length, 0);
+      const cell = (r, a, acts) => {
+        if (!acts.has(a)) return '<td class="act none">·</td>';
+        if (opts.readOnly) return `<td class="act">${held(r, a) ? '<span class="tick" title="' + esc(rolesGranting(opts.login, `${component}::${r}:${a}`).join(', ')) + '">✓</span>' : '<span class="none">–</span>'}</td>`;
+        return `<td class="act"><input type="checkbox" class="cb" data-code="${component}::${r}:${a}" ${held(r, a) ? 'checked' : ''} ${whole ? 'disabled' : ''} aria-label="${esc(r + ' ' + a)}"></td>`;
+      };
+      out.push(`
+        <details class="area" ${filter || opts.onlyGranted || (opts.edit && state.onlyTicked) ? 'open' : ''}>
+          <summary><span class="caret">▸</span><span class="grow"><strong>${esc(COMPONENT_NAMES[component] || component)}</strong> <span class="faint code" style="font-size:12px">${esc(component)}</span></span>
+            ${opts.edit ? `<label class="other" onclick="event.stopPropagation()"><input type="checkbox" class="cb" data-code="${component}::*" ${set.has(component + '::*') ? 'checked' : ''}> All of it</label>` : ''}
+            <span class="muted num" style="font-size:12px">${whole ? 'All ' + total : have + ' of ' + total}</span></summary>
+          <div class="grid-wrap"><table class="perm-grid"><thead><tr><th>What</th>${MAIN.map((a) => `<th class="act">${a[0].toUpperCase() + a.slice(1)}</th>`).join('')}<th class="oth">Other</th></tr></thead><tbody>
+            ${rows.map(([r, acts]) => {
+              const others = [...acts].filter((a) => !MAIN.includes(a));
+              return `<tr><td class="res">${esc(r.replace(/_/g, ' '))}</td>${MAIN.map((a) => cell(r, a, acts)).join('')}
+                <td class="other">${others.map((a) => opts.readOnly ? (held(r, a) ? '✓ ' : '– ') + esc(a) : `<label><input type="checkbox" class="cb" data-code="${component}::${r}:${a}" ${held(r, a) ? 'checked' : ''} ${whole ? 'disabled' : ''}> ${esc(a)}</label>`).join(' ')}</td></tr>`;
+            }).join('')}
+          </tbody></table></div>
+        </details>`);
+    }
+    return `<div class="areas">${out.join('') || '<p class="muted">Nothing matches.</p>'}</div>`;
+  }
+
+  /* ---------- People ---------- */
+  function peopleList() {
+    return `
+      <div class="head"><div><h1>People</h1><p class="muted">Who can sign in to Acme Corporation, and the roles each one holds.</p></div></div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Roles</th><th class="hide-sm">Last signed in</th></tr></thead><tbody>
+        ${people.map((p) => `<tr data-person="${p.login}"><td><div class="who-cell">${face(p.login, 36)}<div><div>${esc(p.name)}</div><div class="faint" style="font-size:12px">${esc(p.login)} · ${esc(p.title)}</div></div></div></td>
+          <td><div class="chips">${p.grants.length ? p.grants.map((g) => `<span class="chip view">${esc(label(g.role))}</span>`).join('') : '<span class="faint">No role</span>'}</div></td><td class="hide-sm muted">${esc(p.last)}</td></tr>`).join('')}
+      </tbody></table></div></div>`;
+  }
+
+  function person() {
+    const p = personOf(state.person);
+    const self = p.login === PERSONAS[state.persona].login;
+    return `
+      <div class="crumbs"><button data-go="people">People</button><span>/</span><span>${esc(p.name)}</span></div>
+      <div class="head"><div class="who-cell" style="display:flex">${face(p.login, 56)}<div><h1>${esc(p.name)}</h1><p class="muted">${esc(p.login)} · ${esc(p.title)}</p></div></div>
+        <div class="actions"><button class="btn primary" id="grant">Give a role</button></div></div>
+      <div class="card">
+        <div class="pad" style="padding-bottom:0.5rem"><h2>Roles held</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>Role</th><th>Given by</th><th>On</th><th>Why</th><th></th></tr></thead><tbody>
+          ${p.grants.length === 0 ? '<tr><td colspan="5" class="muted">No role. They can sign in but do nothing yet.</td></tr>' : p.grants.map((g, i) => `<tr><td><strong>${esc(label(g.role))}</strong><div class="faint" style="font-size:12px">${esc(roleOf(g.role).description)}</div></td>
+            <td>${byLine(g.by)}</td><td class="muted">${esc(g.on)}</td><td>${esc(g.reason)}${g.note ? `<div class="faint" style="font-size:12px">${esc(g.note)}</div>` : ''}</td>
+            <td style="text-align:right"><button class="btn danger" data-revoke="${i}" ${self && roleOf(g.role).codes.has('*') ? 'disabled title="You cannot take your own administration away"' : ''}>Take away</button></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+      <p class="note">A change reaches ${esc(p.name.split(' ')[0])} within 30 minutes, when their sign-in next renews. Signing in again applies it at once.</p>
+      <div style="display:grid;gap:0.75rem"><h2>What these roles let them do</h2>${grantsOf(p.login).has('*') ? '<div class="everything"><span class="mark">✓</span><strong>Everything</strong></div>' : areas(grantsOf(p.login), { readOnly: true, login: p.login, onlyGranted: true })}</div>`;
+  }
+
+  function grantDialog() {
+    const p = personOf(state.person);
+    const offered = roles.filter((r) => !r.service);
+    $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Give a role">
+      <h2 class="who-cell">${face(p.login, 32)}Give ${esc(p.name)} a role</h2>
+      <div class="picker">${offered.map((r) => { const has = p.grants.some((g) => g.role === r.name); return `
+        <label class="pick ${has ? 'held-already' : ''}"><input type="radio" name="role" value="${r.name}" ${has ? 'disabled' : ''}>
+          <span><strong>${esc(label(r.name))}</strong>${has ? ' <span class="faint">· already held</span>' : ''}<div class="muted" style="font-size:13px">${esc(r.description)}</div>
+          <div class="faint" style="font-size:12px">${r.codes.has('*') ? 'Every permission' : r.codes.size + ' permissions'}</div></span></label>`; }).join('')}</div>
+      ${reasonFields()}
+      <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="do-grant" disabled>Give role</button></div>
+    </div></div>`;
+    const ok = () => { $('do-grant').disabled = !document.querySelector('input[name=role]:checked') || $('reason').value === ''; };
+    document.querySelectorAll('input[name=role]').forEach((el) => el.addEventListener('change', ok));
+    $('reason').addEventListener('change', ok);
+    $('do-grant').onclick = () => {
+      const role = document.querySelector('input[name=role]:checked').value;
+      p.grants.push({ role, by: PERSONAS[state.persona].login, on: '4 Oct 2026', reason: $('reason').value, note: $('note').value });
+      closeDialog(); toast(`${label(role)} given to ${p.name}.`); render();
+    };
+    bindClose();
+  }
+
+  function revokeDialog(i) {
+    const p = personOf(state.person);
+    const g = p.grants[i];
+    $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Take a role away">
+      <h2 class="who-cell">${face(p.login, 32)}Take ${esc(label(g.role))} away from ${esc(p.name)}?</h2>
+      <p class="muted">The grant is closed, not deleted, so who held the role and when stays on record.</p>
+      ${reasonFields()}
+      <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn danger solid" id="do-revoke" disabled>Take away</button></div>
+    </div></div>`;
+    $('reason').addEventListener('change', () => { $('do-revoke').disabled = $('reason').value === ''; });
+    $('do-revoke').onclick = () => { p.grants.splice(i, 1); closeDialog(); toast(`${label(g.role)} taken away from ${p.name}.`); render(); };
+    bindClose();
+  }
+
+  function reasonFields() {
+    return `<div class="form-grid"><div class="field"><label for="reason">Why</label><select id="reason"><option value="">Choose a reason</option>${REASONS.map((r) => `<option>${r}</option>`).join('')}</select></div>
+      <div class="field"><label for="note">Note <span class="faint">(optional)</span></label><input id="note" placeholder="For example: covering the settlement desk"></div></div>`;
+  }
+  function closeDialog() { $('dialog-host').innerHTML = ''; }
+  function bindClose() { document.querySelectorAll('[data-close]').forEach((b) => { b.onclick = closeDialog; }); document.querySelector('.scrim').onclick = (e) => { if (e.target.classList.contains('scrim')) closeDialog(); }; }
+
+  /* ---------- Roles ---------- */
+  function roleList() {
+    const shown = roles.filter((r) => state.showService || !r.service);
+    const hidden = roles.filter((r) => r.service).length;
+    return `
+      <div class="head"><div><h1>Roles</h1><p class="muted">What each role lets people do. Give a role to someone from People.</p></div>
+        <div class="actions"><button class="btn primary" id="new-role">New role</button></div></div>
+      <div class="card">
+        <div class="toolbar"><label><input type="checkbox" id="show-service" ${state.showService ? 'checked' : ''}> Show service roles</label><span class="faint">${state.showService ? '' : hidden + ' service roles hidden. They belong to the platform\'s own services, not to people.'}</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Role</th><th>Lets people</th><th class="num">People</th></tr></thead><tbody>
+          ${shown.map((r) => `<tr data-role="${r.name}"><td><strong>${esc(label(r.name))}</strong>${r.service ? ' <span class="chip view">Service</span>' : ''}<div class="faint" style="font-size:12px">${esc(r.description)}</div></td>
+            <td class="muted">${r.codes.has('*') ? 'Do everything' : r.service ? '—' : r.codes.size + ' things'}</td><td class="num">${holders(r.name).length}</td></tr>`).join('')}
+        </tbody></table></div></div>`;
+  }
+
+  function role() {
+    const r = roleOf(state.role);
+    if (state.draft === null) state.draft = new Set(r.codes);
+    const d = state.draft;
+    const added = [...d].filter((c) => !r.codes.has(c));
+    const removed = [...r.codes].filter((c) => !d.has(c));
+    const who = holders(r.name);
+    const locked = r.codes.has('*') || r.service;
+    return `
+      <div class="crumbs"><button data-go="roles">Roles</button><span>/</span><span>${esc(label(r.name))}</span></div>
+      <div class="head"><div><h1>${esc(label(r.name))}</h1><p class="muted">${esc(r.description)}</p></div>
+        <div class="actions"><button class="btn" id="edit-details">Rename or describe</button><button class="btn danger" id="delete-role" ${who.length ? 'disabled title="Take it away from everyone first"' : ''}>Delete role</button></div></div>
+      <div class="card pad" style="display:grid;gap:0.5rem"><h2>Held by</h2>
+        <div class="chips">${who.length ? who.map((p) => `<button class="chip view" data-person-link="${p.login}" style="cursor:pointer;padding-left:0.125rem">${face(p.login, 20)}${esc(p.name)}</button>`).join('') : '<span class="faint">Nobody yet.</span>'}</div></div>
+      ${locked ? `<div class="everything"><span class="mark">✓</span><div><strong>${r.service ? 'A service role' : 'Everything'}</strong><div class="muted" style="font-size:13px">${r.service ? 'It belongs to a platform service and is not changed here.' : 'This role grants every permission. Its bundle is not edited here.'}</div></div></div>` : `
+      <div style="display:grid;gap:0.75rem">
+        <div class="head"><div><h2>What it lets people do</h2><p class="muted">Tick what the role allows. "All of it" covers an area, including what is added to it later.</p></div></div>
+        <div class="toolbar card"><input type="search" id="filter" placeholder="Find: currencies, trades, portfolios" value="${esc(state.filter)}"><label><input type="checkbox" id="only-ticked" ${state.onlyTicked ? 'checked' : ''}> Only what it allows</label></div>
+        ${areas(d, { edit: true })}
+        <div class="sticky-save"><div class="diff">${added.length || removed.length ? `<span class="add">+${added.length} added</span><span class="rem">−${removed.length} removed</span>` : '<span class="muted">No changes</span>'}</div>
+          <div class="actions"><button class="btn" id="discard" ${added.length || removed.length ? '' : 'disabled'}>Discard</button><button class="btn primary" id="save-bundle" ${added.length || removed.length ? '' : 'disabled'}>Save${who.length ? ' for ' + who.length + (who.length === 1 ? ' person' : ' people') : ''}</button></div></div>
+      </div>`}`;
+  }
+
+  function saveDialog() {
+    const r = roleOf(state.role);
+    const d = state.draft;
+    const added = [...d].filter((c) => !r.codes.has(c));
+    const removed = [...r.codes].filter((c) => !d.has(c));
+    const who = holders(r.name);
+    const line = (c) => `<li><span class="code" style="font-family:var(--mono);font-size:12px">${esc(c)}</span> <span class="faint">${esc(DESCRIPTION.get(c) || '')}</span></li>`;
+    $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="Save the role">
+      <h2>Save ${esc(label(r.name))}?</h2>
+      ${who.length ? `<p class="muted">${who.map((p) => byLine(p.login)).join(', ')} ${who.length === 1 ? 'holds' : 'hold'} this role. The change reaches them within 30 minutes.</p>` : ''}
+      ${added.length ? `<div><div class="diff"><span class="add">Allows</span></div><ul style="margin:0.25rem 0 0;padding-left:1.1rem">${added.slice(0, 8).map(line).join('')}${added.length > 8 ? `<li class="faint">and ${added.length - 8} more</li>` : ''}</ul></div>` : ''}
+      ${removed.length ? `<div><div class="diff"><span class="rem">No longer allows</span></div><ul style="margin:0.25rem 0 0;padding-left:1.1rem">${removed.slice(0, 8).map(line).join('')}${removed.length > 8 ? `<li class="faint">and ${removed.length - 8} more</li>` : ''}</ul></div>` : ''}
+      ${reasonFields()}
+      <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="do-save" disabled>Save</button></div>
+    </div></div>`;
+    $('reason').addEventListener('change', () => { $('do-save').disabled = $('reason').value === ''; });
+    $('do-save').onclick = () => { r.codes = new Set(d); state.draft = null; closeDialog(); toast(`${label(r.name)} saved.`); render(); };
+    bindClose();
+  }
+
+  function newRoleDialog(existing) {
+    const r = existing ? roleOf(existing) : null;
+    $('dialog-host').innerHTML = `<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="${r ? 'Rename or describe' : 'New role'}">
+      <h2>${r ? 'Rename or describe ' + esc(label(r.name)) : 'New role'}</h2>
+      <div class="field"><label for="rname">Name</label><input id="rname" value="${r ? esc(r.name) : ''}" placeholder="For example: Settlements"></div>
+      <div class="field"><label for="rdesc">What it is for</label><textarea id="rdesc">${r ? esc(r.description) : ''}</textarea></div>
+      ${r ? '' : '<p class="muted">The role starts allowing nothing. You choose what it allows next.</p>'}
+      <div class="actions" style="justify-content:flex-end"><button class="btn" data-close>Cancel</button><button class="btn primary" id="do-role">${r ? 'Save' : 'Create role'}</button></div>
+    </div></div>`;
+    $('do-role').onclick = () => {
+      const name = $('rname').value.trim();
+      if (!name) return;
+      if (r) { r.description = $('rdesc').value; closeDialog(); render(); return; }
+      roles.unshift({ name, description: $('rdesc').value || 'No description yet', codes: new Set(), service: false });
+      closeDialog(); go('role', { role: name, draft: null, filter: '', onlyTicked: false });
+    };
+    bindClose();
+  }
+
+  function home() {
+    const me = PERSONAS[state.persona];
+    if (!me.admin) return `<div class="head"><div><h1>Good morning, Daniel</h1><p class="muted">Most areas are not in this release yet.</p></div></div>
+      <div class="tiles"><button class="tile" data-go="mine"><span class="t">My access</span><span class="muted">The roles you hold and what they let you do.</span></button></div>`;
+    return `<div class="head"><div><h1>Good morning, Priya</h1><p class="muted">Acme Corporation</p></div></div>
+      <div class="tiles"><button class="tile" data-go="people"><span class="t">People</span><span class="muted">${people.length} people, and the roles each holds.</span></button>
+        <button class="tile" data-go="roles"><span class="t">Roles</span><span class="muted">${roles.filter((r) => !r.service).length} roles, and what each lets people do.</span></button></div>`;
+  }
+
+  function soon(what) { return `<div class="head"><div><h1>${esc(what)}</h1><p class="muted">Not part of this prototype.</p></div></div>`; }
+
+  function render() {
+    renderHeader();
+    const s = state.screen;
+    $('app').innerHTML = s === 'mine' ? mine() : s === 'people' ? peopleList() : s === 'person' ? person() : s === 'roles' ? roleList() : s === 'role' ? role() : s === 'home' ? home() : soon(s.replace('soon:', ''));
+    bind();
+  }
+
+  function bind() {
+    document.querySelectorAll('[data-go]').forEach((b) => { b.onclick = () => { const g = b.dataset.go; if (g === 'roles' || g === 'people') go(g); else if (['mine', 'home'].includes(g)) go(g); else go('soon:' + (b.textContent || g)); }; });
+    document.querySelectorAll('[data-person]').forEach((tr) => { tr.onclick = () => go('person', { person: tr.dataset.person }); });
+    document.querySelectorAll('[data-person-link]').forEach((b) => { b.onclick = () => go('person', { person: b.dataset.personLink }); });
+    document.querySelectorAll('[data-role]').forEach((tr) => { tr.onclick = () => go('role', { role: tr.dataset.role, draft: null, filter: '', onlyTicked: false }); });
+    document.querySelectorAll('[data-revoke]').forEach((b) => { b.onclick = () => revokeDialog(Number(b.dataset.revoke)); });
+    if ($('grant')) $('grant').onclick = grantDialog;
+    if ($('ask')) { $('ask').oninput = (e) => { state.ask = e.target.value; const pos = e.target.selectionStart; render(); $('ask').focus(); $('ask').setSelectionRange(pos, pos); }; }
+    if ($('show-service')) $('show-service').onchange = (e) => { state.showService = e.target.checked; render(); };
+    if ($('new-role')) $('new-role').onclick = () => newRoleDialog();
+    if ($('edit-details')) $('edit-details').onclick = () => newRoleDialog(state.role);
+    if ($('delete-role')) $('delete-role').onclick = () => { roles = roles.filter((r) => r.name !== state.role); toast('Role deleted.'); go('roles'); };
+    if ($('filter')) $('filter').oninput = (e) => { state.filter = e.target.value; const pos = e.target.selectionStart; render(); $('filter').focus(); $('filter').setSelectionRange(pos, pos); };
+    if ($('only-ticked')) $('only-ticked').onchange = (e) => { state.onlyTicked = e.target.checked; render(); };
+    if ($('discard')) $('discard').onclick = () => { state.draft = null; render(); };
+    if ($('save-bundle')) $('save-bundle').onclick = saveDialog;
+    document.querySelectorAll('.cb[data-code]').forEach((cb) => {
+      cb.onchange = () => {
+        const code = cb.dataset.code;
+        if (cb.checked) {
+          state.draft.add(code);
+          if (code.endsWith('::*')) { const c = code.slice(0, -3); for (const x of [...state.draft]) if (x.startsWith(c + '::') && x !== code) state.draft.delete(x); }
+        } else state.draft.delete(code);
+        const open = [...document.querySelectorAll('details.area')].map((d) => d.open);
+        render();
+        document.querySelectorAll('details.area').forEach((d, i) => { if (open[i]) d.open = true; });
+      };
+    });
+  }
+
+  $('me').onclick = () => { const m = $('me-menu'); m.hidden = !m.hidden; $('me').setAttribute('aria-expanded', String(!m.hidden)); };
+  document.addEventListener('click', (e) => { if (!e.target.closest('#me') && !e.target.closest('#me-menu')) closeMe(); });
+
+  function personaBar() {
+    $('persona-seg').innerHTML = [['party', 'Daniel, a trader'], ['tenant', 'Priya, the tenant administrator']].map(([id, text]) => `<button aria-pressed="${state.persona === id}" data-persona="${id}">${text}</button>`).join('');
+    document.querySelectorAll('[data-persona]').forEach((b) => { b.onclick = () => { state.persona = b.dataset.persona; personaBar(); go(state.persona === 'tenant' ? 'people' : 'mine'); }; });
+  }
+
+  const WHY = `<div class="why-head"><h3>What this prototype argues</h3><button class="why-close" id="why-close">Hide</button></div>
+    <ul>
+      <li><strong>Permissions are read by area, not as a list.</strong> The catalogue holds ${CATALOGUE.length - 1} permissions in ${TREE.size} areas, and almost every one is a read, a write or a delete of one thing. So each area is a grid: what, then Read, Write, Delete. The wireframe's flat list of codes does not survive the real catalogue.</li>
+      <li><strong>"Can I…?" answers the member's real question</strong>, and names the role that allows it. A member rarely wants the whole list.</li>
+      <li><strong>Everything is said as Everything.</strong> The tenant administrator role grants every permission; listing ${CATALOGUE.length - 1} ticks would hide that.</li>
+      <li><strong>Service roles are hidden by default.</strong> ${SERVICE_ROLES.length} of the seeded roles belong to the platform's services. They are not offered to people and are not edited here.</li>
+      <li><strong>Giving and taking away carry a reason.</strong> The grant row records who, when and why; the server does not yet take the reason on assign and revoke, so that is a small server change.</li>
+      <li><strong>A change is stated honestly:</strong> it reaches the person within 30 minutes, when their sign-in renews, because refresh reads the permissions again.</li>
+      <li><strong>Saving a role shows the difference first,</strong> and who holds it, because one save changes access for everyone with the role.</li>
+      <li><strong>Every account shows its picture</strong>: in the header, the people list, a person's page, who gave a role, and who holds a role.</li>
+      <li><strong>Words, not codes.</strong> "Give a role" and "Take away" rather than assign and revoke; codes stay visible, small, for people who know them.</li>
+    </ul>`;
+  function setWhy(open) { const w = $('why'); w.hidden = !open; w.innerHTML = open ? WHY : ''; $('why-btn').setAttribute('aria-pressed', String(open)); $('why-btn').setAttribute('aria-expanded', String(open)); if (open) $('why-close').onclick = () => setWhy(false); }
+  $('why-btn').onclick = () => setWhy($('why').hidden);
+
+  /* A link can open a screen directly, for review: #persona=tenant&screen=role&role=Operations */
+  const hash = new URLSearchParams(location.hash.slice(1));
+  for (const key of ['persona', 'screen', 'person', 'role']) if (hash.get(key)) state[key] = hash.get(key);
+  personaBar();
+  render();
+})();
+</script>
+</body>
+</html>

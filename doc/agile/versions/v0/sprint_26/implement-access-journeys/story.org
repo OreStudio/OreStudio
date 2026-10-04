@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:access:v0:sprint_26:
 #+created: 2026-09-30
 #+updated: 2026-09-30
-#+environment: swift_curie
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -79,6 +79,7 @@ from the survey rather than from the documents as they stand.
 | [[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be written]] | DONE | 2026-10-01 | 2026-10-01 | Add the write the catalogue journey has never had: a role's permission list can be composed and saved, permission-gated, with the change reason every other write carries. |
 | [[id:B4F02275-33F8-4C7E-828C-5EA1649E7851][Build the access screen in ores.web]] | BACKLOG | | | The three original journeys as screens against the real server: the member's own access, the administrator's grant and revoke with its audit, and the role catalogue with its permission picker. |
 | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |
+| [[id:130C4375-6B3A-4BA6-8C85-A4873FEBF7A3][Prototype the access screens]] | DONE | 2026-10-04 | 2026-10-04 | Prototype the member's own access, the administrator's grant and revoke, and the role catalogue against the real roles and permission catalogue, before the screens are built. |
 
 * Plan
 

@@ -311,6 +311,11 @@ with the site chrome."
   ;; management for three sign-ins, with no journeys named, mock data only.
   (ores-deploy-web-app
    "./doc/prototypes/home" site-dir "doc/prototypes/home"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Access screens prototype: the same body reset. A member's own access, the
+  ;; administrator's grants and the role catalogue, on the real seed data.
+  (ores-deploy-web-app
+   "./doc/prototypes/access" site-dir "doc/prototypes/access"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

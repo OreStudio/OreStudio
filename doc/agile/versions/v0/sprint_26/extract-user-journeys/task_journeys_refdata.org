@@ -180,6 +180,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1: the code-only list count is wrong, and step 3 asks every list for a name and order | =journey_maintain_a_classification_list.org= | Accepted | The count of five was right (tenor anchors carry an order but no name); the wording now names the four code-only lists, and steps 3 and 5 and gap 3 follow the list |
+| 2 | Round 1: confirm =put_many= on the code-only lists | =journey_maintain_a_classification_list.org= | Declined | All five carry =put_many= and =delete_many=; reordering now applies only to lists with an order |
+| 3 | Round 1: state the cost of the side-by-side view under the year-filter gap | =journey_keep_a_holiday_calendar_right.org= | Accepted | Gap 2 now says it pages through both calendars |
+| 4 | Round 1: name the change reason for a revert | =journey_add_or_correct_a_currency.org= | Accepted | No revert code is seeded; candidate =common.revert=, interim =common.rectification= |
+| 5 | Round 1: split long sentences | =journey_keep_a_holiday_calendar_right.org= | Accepted in part | Step 9 split; the Goal paragraphs are the person's words in quotes and stay |
 
 * Result

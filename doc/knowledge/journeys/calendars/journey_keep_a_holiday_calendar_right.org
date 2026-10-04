@@ -78,10 +78,10 @@ A calendar has one of three shapes, and the screen follows the shape:
    says up to which year. The system regenerates the materialised dates for
    this calendar from its rules, base and exceptions.
 9. *Check the business days.* The system shows the year's holidays, one month
-   per block, with what produced each one: a rule, an exception or the
-   QuantLib base. The person can add a second calendar,
-   such as the other currency of a pair, and the system shows the union, which
-   is the business-day definition a pair settles on.
+   per block. Each holiday shows what produced it: a rule, an exception or the
+   QuantLib base. The person can add a second calendar, such as the other
+   currency of a pair. The system then shows the union of the two. The union is
+   the business-day definition a pair settles on.
 10. *Check the history.* The person opens the history of the calendar row or of
     one rule, exception or event. The system shows every version with the
     field-level difference from the one before, and the person can revert to an
@@ -163,8 +163,10 @@ and unions them on the screen; it needs no operation of its own.
    elsewhere is not visible until the dates are rebuilt.
 2. *The dates cannot be read by year.* The =calendar_dates_filter= takes only
    calendar codes, so showing one year means paging through every materialised
-   date in order. The candidate is a date range on the filter. Until then the
-   screen pages from the start of the year it needs.
+   date in order. The side-by-side view doubles that cost, because it pages
+   through every date of both calendars. The candidate is a date range on the
+   filter. Until then the screen pages from the first date it holds to the end
+   of the year it needs.
 3. *The ORE export is data, not a document.* =calendar_adjustments.export=
    returns the adjustments, and the caller is expected to write the
    =CalendarAdjustments= XML. A browser has no ORE writer. The candidate is for

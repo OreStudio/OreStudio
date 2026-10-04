@@ -42,18 +42,21 @@ lists, so the person first chooses which one.
    lists grouped by topic: currencies, calendars, parties, books and
    portfolios, products and ORE codes, tenors, and market data. The person
    picks one, or arrives with one already chosen from a picker's link.
-2. *Read the list.* The system lists the rows: the code, the name, the
-   description and the display order. Five lists carry only a code and a
-   description, and one of those carries an order too; the columns follow the
-   list.
-3. *Add a row.* The person enters a new code, its name, description and order,
-   states a change reason, and saves. The system writes it with
+2. *Read the list.* The system lists the rows. Most lists carry a code, a
+   name, a description and a display order. Four lists carry only a code and a
+   description: calendar names, day counters, floating index types and leg
+   types. Tenor anchors carry a code, a description and an order, but no name.
+   The columns follow the list.
+3. *Add a row.* The person enters a new code and the other columns the list
+   carries, states a change reason, and saves. The form follows the list, so a
+   code-only list asks for no name and no order. The system writes it with
    =must_not_exist=, so a duplicate code is refused instead of overwritten.
 4. *Correct a row.* The person changes the name, description or order. The code
    is the key and does not change. The system writes it with
    =must_match_version=.
-5. *Reorder.* The person moves rows. The system writes each moved row's new
-   order.
+5. *Reorder.* On a list that carries an order, the person moves rows. The
+   system writes each moved row's new order. A list without an order is sorted
+   by code and offers no reordering.
 6. *Remove a row.* The person removes a code the tenant no longer uses. The
    system closes the row; it stays in the history. See /What is missing/ for
    codes still in use.
@@ -149,7 +152,7 @@ its own prefix.
    Calendars mark this with =is_editable=; these lists have no such marker. The
    candidate is the same marker on the ORE vocabularies. Until then the screen
    shows these lists read-only, and says why.
-3. *Order is not unique.* =display_order= is a free integer, so two rows may
+3. *Order is not unique.* On the lists that carry it, =display_order= is a free integer, so two rows may
    share it and the list order is then undefined. The candidate is a unique
    index per list, or a stated tie-break by code.
 4. *Only a tenant administrator can run this journey.* No role below

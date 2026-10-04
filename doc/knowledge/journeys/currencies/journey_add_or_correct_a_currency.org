@@ -162,8 +162,9 @@ as it stood on a date.
    run this journey end to end.
 4. *Reverting is a client convention, not an operation.* There is no revert
    subject; the screen writes the old values with =put=. This is enough, and it
-   keeps history append-only, but the change reason list should carry a reason
-   for a revert so the history says what happened.
+   keeps history append-only. The seeded change reasons have no code for a
+   revert. The candidate is =common.revert=. Until it exists, the screen uses
+   =common.rectification= and puts the reverted version in the commentary.
 
 * Related journeys
 

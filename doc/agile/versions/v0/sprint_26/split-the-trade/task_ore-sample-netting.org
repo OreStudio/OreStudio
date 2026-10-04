@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: DB1D5C61-7E64-4BB4-BBC8-C11434DEAEC6
+:END:
+#+title: Task: Publish the ORE sample netting agreements, sets and CSAs
+#+description: Stage netting agreements, netting sets, CSAs and netting set aliases in DQ, and publish realistic synthetic data built from ORE's netting definitions to each provisioned party.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-sample-netting
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A provisioned party holds a netting set for every NettingSetId the ORE samples use, each under an ISDA agreement with the bank its counterparty maps onto, with the CSA ORE defines for it and the ORE alias the import resolves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- DQ artefact types and publish functions for netting agreements, netting sets, CSAs (with eligible currencies) and netting set aliases; the publish resolves the party from the params, counterparties by LEI and sets by code.
+- Four ORE datasets with a dedicated methodology, catalogue, subject area, synthetic nature, licence and dependencies, published by a party-scoped bundle in the party provisioning plan.
+- After provisioning ACME, all 19 ORE netting set ids resolve to netting sets of the ACME party.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+Follow the counterparty alias pattern: stage in DQ, publish through the
+generic publish-from-DQ handler, and deliver through a bundle.
+
+- Four DQ staging models, each with the artefact staging only profile:
+  =netting_agreement= (by number, counterparty by LEI), =netting_set= (by
+  code, agreement by number), =csa= (by netting set code, eligible currencies
+  as a comma separated list) and =netting_set_alias= (by name, set by code).
+- Four publish functions. Agreements and sets are party-scoped: the party is
+  the one the publish parameters name, else the tenant's root party, through a
+  shared helper. A set opened under an agreement takes the agreement's
+  counterparty, which the pinned key requires. Every publish only inserts and
+  skips what the tenant holds or cannot resolve.
+- The paperwork: the methodology =ORE Sample Netting Synthesis=, the subject
+  area =Netting and Collateral=, the ORE catalogue, origin =Derived=, nature
+  =Synthetic=, the Modified BSD License of the ORE examples, and the
+  dependency chain GLEIF counterparties, agreements, sets, then CSAs (also on
+  =iso.currencies=) and aliases.
+- The bundle =ore_sample_netting= is party-scoped. Only the =acme_demo=
+  profile's =provision_party= step names it, so production profiles get no
+  demonstration data. The system tenant gets the same data in populate.
+- The data: one agreement per bank (ISDA 2002, FBF for the French banks), one
+  set per NettingSetId the sample trades use, ORE's most common CSA terms for
+  each id ORE defines, and the NettingSetId as each set's ORE alias.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ACME root party netting after provisioning | 8 agreements, 19 sets, 7 CSAs, 19 ORE aliases | provisioning recipe, then the query in [[file:evidence/acme_ore_sample_netting.txt][evidence/acme_ore_sample_netting.txt]] | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| pgTAP sample netting cases | 10/10 pass | =pg_prove projects/ores.sql/test/refdata_ore_sample_netting_test.sql= | branch head before commit |
+
+* Notes
+
+Inventory of the ORE sample trades: NettingSetId, the CounterParty its trades
+name, and the trade count. Trades with no NettingSetId (73) are left to the
+import task.
+
+| NettingSetId            | CounterParty                    | Trades |
+|-------------------------+---------------------------------+--------|
+| CPTY_A                  | CPTY_A                          |   1826 |
+| NS                      | CPTY (316), CP (19)             |    335 |
+| CPTY_B                  | CPTY_B                          |    326 |
+| CPTY                    | CPTY                            |     51 |
+| CPTY_C                  | CPTY_C                          |     13 |
+| PricerStaticDate        | CPTY_A                          |     12 |
+| DUMMY_NS                | DUMMY_CP                        |      4 |
+| EquityOption1           | EquityOption1                   |      3 |
+| EquityOption2           | EquityOption2                   |      3 |
+| CRIF_20191230           | CPTY_A                          |      3 |
+| 1234                    | ABC                             |      2 |
+| CPTY_A_tradeTypeWrapper | CPTY_A                          |      2 |
+| CS                      | CPTY                            |      2 |
+| CPTY_D                  | CPTY_D                          |      2 |
+| CPTY_A_full             | CPTY_A                          |      2 |
+| CPTY_B_full             | CPTY_B                          |      2 |
+| ABC1234                 | 001B456BCDEFGH67XY89            |      2 |
+| Dummy1                  | CPTY_C                          |      1 |
+| Dummy4                  | CPTY_C                          |      1 |
+
+ORE defines netting sets for CPTY_A (23 variants), CPTY_B (8), CPTY_C (3),
+CPTY_D, CPTY_A_full, CPTY_B_full, CPTY, Dummy1 and Dummy4. Dummy1 and Dummy4
+carry no CSA details.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The bundle on the =provision_party= step published for every ACME party; the first listed, ACCOHK, got all the netting. | iam_seed_profiles_populate.sql | Accept | Moved onto the =load_staff= entry of Acme Corporation Plc, which names one party. |
+| 2 | The test read netting sets without visible parties, so the party policy hid them. | refdata_ore_sample_netting_test.sql | Accept | The test makes every party visible, as the trade tests do. |
+| 3 | The generator wrote no shell commands for the staging netting agreement, set and CSA, whose names refdata already uses. | ores.dq.netting_set.org | Decline | The staging tables need no shell surface; the alias staging has one, as the counterparty alias does. |
+| 4 | The publish functions ignore =p_mode=. | refdata_publish_from_dq_create.sql | Decline | The same insert-only contract as the counterparty alias publish; each function's comment says so. |
+
+* Result
+
+ACME's root party, Acme Corporation Plc, now holds a netting set for every
+NettingSetId the ORE sample trades use: 19 sets under 8 master agreements with
+the banks the sample counterparties map onto, the 7 CSAs ORE defines, and the
+NettingSetId as each set's ORE alias. Each set's counterparty is the one its
+trades name. The data is four DQ datasets with their own methodology, subject
+area, licence and dependencies, published per party by the
+=ore_sample_netting= bundle, and to the system tenant in populate.

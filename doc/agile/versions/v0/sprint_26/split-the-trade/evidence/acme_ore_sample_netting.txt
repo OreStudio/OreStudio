@@ -1,0 +1,23 @@
+         ore_id          |    netting_set     |  agreement_number   |               counterparty                | csa_active | party  
+-------------------------+--------------------+---------------------+-------------------------------------------+------------+--------
+ CPTY_C                  | NS-BNPP-CSA-01     | ACME-FBF-BNPP-2013  | BNP PARIBAS                               | false      | ACMCOR
+ Dummy1                  | NS-BNPP-UNC-01     | ACME-FBF-BNPP-2013  | BNP PARIBAS                               | no CSA     | ACMCOR
+ Dummy4                  | NS-BNPP-UNC-02     | ACME-FBF-BNPP-2013  | BNP PARIBAS                               | no CSA     | ACMCOR
+ 1234                    | NS-SOGE-01         | ACME-FBF-SOGE-2013  | SOCIETE GENERALE                          | no CSA     | ACMCOR
+ CPTY_A                  | NS-BARC-CSA-01     | ACME-ISDA-BARC-2002 | BARCLAYS BANK PLC                         | false      | ACMCOR
+ PricerStaticDate        | NS-BARC-PRICING-01 | ACME-ISDA-BARC-2002 | BARCLAYS BANK PLC                         | no CSA     | ACMCOR
+ CRIF_20191230           | NS-BARC-SIMM-01    | ACME-ISDA-BARC-2002 | BARCLAYS BANK PLC                         | no CSA     | ACMCOR
+ CPTY_A_full             | NS-BARC-VMIM-01    | ACME-ISDA-BARC-2002 | BARCLAYS BANK PLC                         | true       | ACMCOR
+ CPTY_A_tradeTypeWrapper | NS-BARC-WRAP-01    | ACME-ISDA-BARC-2002 | BARCLAYS BANK PLC                         | no CSA     | ACMCOR
+ ABC1234                 | NS-BOFA-01         | ACME-ISDA-BOFA-2002 | Bank of America, National Association     | no CSA     | ACMCOR
+ CPTY_B                  | NS-DEUT-CSA-01     | ACME-ISDA-DEUT-2002 | DEUTSCHE BANK AKTIENGESELLSCHAFT          | true       | ACMCOR
+ CPTY_B_full             | NS-DEUT-VMIM-01    | ACME-ISDA-DEUT-2002 | DEUTSCHE BANK AKTIENGESELLSCHAFT          | true       | ACMCOR
+ CS                      | NS-JPMC-CS-01      | ACME-ISDA-JPMC-2002 | JPMorgan Chase Bank, National Association | no CSA     | ACMCOR
+ CPTY                    | NS-JPMC-CSA-01     | ACME-ISDA-JPMC-2002 | JPMorgan Chase Bank, National Association | false      | ACMCOR
+ NS                      | NS-JPMC-MAIN-01    | ACME-ISDA-JPMC-2002 | JPMorgan Chase Bank, National Association | no CSA     | ACMCOR
+ EquityOption1           | NS-NWM-EQ-01       | ACME-ISDA-NWM-2002  | NATWEST MARKETS PLC                       | no CSA     | ACMCOR
+ EquityOption2           | NS-NWM-EQ-02       | ACME-ISDA-NWM-2002  | NATWEST MARKETS PLC                       | no CSA     | ACMCOR
+ CPTY_D                  | NS-UBS-CSA-01      | ACME-ISDA-UBS-2002  | UBS AG                                    | false      | ACMCOR
+ DUMMY_NS                | NS-UBS-UNC-01      | ACME-ISDA-UBS-2002  | UBS AG                                    | no CSA     | ACMCOR
+(19 rows)
+

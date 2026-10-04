@@ -135,6 +135,13 @@ lifecycle is ordered this way.
      block references against the namespaces and types the headers declare, so a
      rename fails at review with no regeneration. Run it whenever anything under
      =projects/= changed; it takes about eight seconds.
+   - *shell script drift*: =./compass.sh build --direct tangle_shell_scripts=,
+     then =git status --short projects/ores.shell/scripts/library=. Every
+     recipe under =doc/recipes/shell/= tangles into a script, and a generated
+     entity brings a recipe with it, so a new entity adds scripts as well as
+     changing them. The status must be empty: a modified script is stale, and
+     an untracked one is a script nobody committed. Run it when anything under
+     =doc/recipes/shell/= or =projects/*/modeling/*= changed.
    - *populate reference drift*:
      =python3 projects/ores.codegen/scripts/check_populate_references.py=.
      It reads the lookup contract from the upsert function bodies under

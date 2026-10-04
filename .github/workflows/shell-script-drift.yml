@@ -55,3 +55,9 @@ jobs:
       - name: Check scripts match their recipe sources
         run: |
           git diff --exit-code -- projects/ores.shell/scripts/library
+          untracked=$(git ls-files --others --exclude-standard -- projects/ores.shell/scripts/library)
+          if [ -n "$untracked" ]; then
+            echo "Scripts a recipe produces that are not committed:"
+            echo "$untracked"
+            exit 1
+          fi

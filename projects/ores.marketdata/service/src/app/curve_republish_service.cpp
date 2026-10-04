@@ -119,7 +119,7 @@ read_discount_curve(ores::database::context ctx,
         ores::analytics::quant::service::bootstrapped_point p;
         p.point_id = discount_point_of(obs);
         p.date = resolve_tenor_date(refctx, p.point_id);
-        p.discount_factor = std::stod(obs.value);
+        p.discount_factor = observation_value(obs);
         points.push_back(p);
     }
     std::sort(points.begin(), points.end(), [](const auto& a, const auto& b) {

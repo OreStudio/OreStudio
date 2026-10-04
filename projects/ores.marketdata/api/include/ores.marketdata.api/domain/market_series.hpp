@@ -42,10 +42,9 @@ namespace ores::marketdata::domain {
  * temporal reference data; changes infrequently so a regular table with GIST
  * exclusion is appropriate.
  *
- * The series is identified by oresmd_uri, the oresmd identifier its ORE key or
- * index name projects to. Every ORE market data key follows the skeleton
- * TYPE / METRIC / QUALIFIER, and those three columns carry the registry's
- * decomposition of the same key for the readers that still ask by it;
+ * The series is identified by oresmd_uri, the series URI of the datum its ORE
+ * key names, or the fixing URI of its index name. The URI holds every field of the
+ * series' identity, so the table keeps no decomposed copy of the key;
  * series_subclass carries the coarse taxonomy for filtering, and the asset
  * classes the series belongs to live in
  * market_series_asset_classes -- a set rather than a column, because a

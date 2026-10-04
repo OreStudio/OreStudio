@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 250CA101-1540-4A42-97F8-E73AA3400DA0
+:END:
+#+title: User Journey: Group currencies for the desk
+#+description: A reference data administrator keeps a desk group of currencies, such as G11 or Scandies, and its members correct.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator keeps a desk group of currencies, such as G11 or Scandies, and its members correct.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want each desk group to hold exactly the currencies the desk means by it,
+so that every report and screen that says G11 or Scandies means the same set."
+The journey is done when the groups read in the right order and each group
+lists the right members.
+
+* Actor and trigger
+
+The actor is the tenant administrator, acting inside their own tenant. The
+=Operations= role may add and remove members, but it cannot read or write the
+groups themselves. The trigger is a new desk grouping, a currency that joins or
+leaves one, or a report that grouped currencies wrongly. The journey starts at
+*Desk groups*, or at a group link on a currency, and ends when the person
+leaves the groups.
+
+* Steps
+
+1. *See the groups.* The person opens *Desk groups*. The system lists the
+   groups in display order: code, name, description and the number of members.
+2. *Add or correct a group.* The person adds a group, or changes a group's
+   name, description or order, states a change reason, and saves. The system
+   writes it with =must_not_exist= for a new group and =must_match_version= for
+   a change.
+3. *Open a group.* The person selects a group. The system shows its members:
+   each currency's code and name.
+4. *Add a member.* The person picks a currency that is not yet a member. The
+   system writes one =currency_currency_group= row.
+5. *Remove a member.* The person removes a currency from the group. The system
+   deletes that row; the currency itself is untouched.
+6. *Remove a group.* The person removes a group the desk no longer uses. The
+   system first removes its members, then closes the group. See
+   /What is missing/.
+7. *Check the history.* The person opens a group's history. The system shows
+   every version of the group with the field-level difference from the one
+   before, and the person can revert to an older version.
+8. *Leave.* The person goes back. Every screen that groups currencies reads the
+   new sets.
+
+No step waits on the server after its reply, and the journey keeps no state.
+
+* Screens and wireframes
+
+One screen in two parts: the groups on the left, and the chosen group's
+details and members on the right. The person moves between groups without
+leaving the screen.
+
+#+caption: Desk groups: the groups in order, and the chosen group's details, members and history.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/currencies/wireframe_group_currencies_for_the_desk.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =currency_group= | The groups list and the group form: code, name, description, order | [[id:C2C74B40-9998-4AA4-BED3-3C13A483D96A][ores.refdata.currency_group]] |
+| =currency_currency_group= | The members list | [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] |
+| =currency= | The member names and the currency picker | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+
+The group is versioned and has a history. The membership rows keep closed
+versions in their table, but no operation reads them, so the members list has
+no history panel.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| See the groups | List the groups | =refdata.v1.currency_groups.list= | exists |
+| See the groups | Count each group's members | =refdata.v1.currency_currency_groups.list= | partial |
+| Add or correct a group | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Add or correct a group | Write the group | =refdata.v1.currency_groups.put= | exists |
+| Open a group | List the group's members | =refdata.v1.currency_currency_groups.list= | partial |
+| Open a group | Read the member names | =refdata.v1.currencies.get_many= | exists |
+| Add a member | Fill the currency picker | =refdata.v1.currencies.list= | exists |
+| Add a member | Write a membership | =refdata.v1.currency_currency_groups.put= | partial |
+| Remove a member | Delete a membership | =refdata.v1.currency_currency_groups.delete= | exists |
+| Remove a group | Delete its memberships | =refdata.v1.currency_currency_groups.delete_many= | exists |
+| Remove a group | Close the group | =refdata.v1.currency_groups.delete= | partial |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.currency_group=) | exists |
+| Check the history | Revert by writing the old values | =refdata.v1.currency_groups.put= | exists |
+
+* What is missing
+
+1. *Members cannot be read by group.* The membership filter takes currency
+   codes only, and the only narrowed read is =list_by_currency_iso_code=.
+   Listing one group's members, or counting them, means paging through every
+   membership row in the tenant. The candidate is =list_by_currency_group_code=
+   and a group filter. Until then the screen pages through the memberships
+   once and groups them itself.
+2. *A membership is not checked against its ends.* The membership insert
+   checks the tenant only. It does not check that the currency or the group
+   exists, so a row can name a currency or a group that is not there. The
+   candidate is the same existence checks the other refdata writes make. Until
+   then the screen offers only codes it has read from the two lists.
+3. *Removing a group leaves its members behind.* Closing a group does not close
+   its membership rows. The candidate is to refuse the delete while members
+   remain, or to close them with the group. Until then the screen removes the
+   members first, as step 6 says.
+4. *=Operations= can change members but not see the groups.* It holds the
+   membership permissions and reads currencies, but holds no permission on
+   =currency_groups=.
+
+* Related journeys
+
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — each member opens its currency, and the currency screen shows its groups
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — pairs whose legs are in a group
+
+* Related knowledge
+
+- [[id:ABEC5C46-05CA-42D7-9D20-3B4DC06BBED5][Currency groups (desk groupings)]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+
+* See also
+
+- [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

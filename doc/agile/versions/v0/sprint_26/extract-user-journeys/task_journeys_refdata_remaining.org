@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extract-user-journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/journeys-refdata-remaining
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every journey in the agreed ores.refdata catalogue has a user journey document, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] |
-| Now          | Not yet started.                       |
+| Now          | Journeys 2 and 3 written.              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Journeys 5 to 9.                       |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -60,6 +60,33 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Progress
+
+| # | Journey | Group | State |
+|---+---------+-------+-------|
+| 2 | [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] | Currencies and FX | written |
+| 3 | [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] | Currencies and FX | written |
+| 5 | Onboard a counterparty | to be decided | to write |
+| 6 | Keep a party's details current | to be decided | to write |
+| 7 | Shape the book structure | to be decided | to write |
+| 8 | Define the conventions for an instrument | to be decided | to write; waits on the workspace removal |
+| 9 | Define how tenors resolve | to be decided | to write |
+
+** Gaps found in this task
+
+1. No refdata junction checks its ends. The inserts of =currency_calendar=,
+   =currency_country=, =currency_currency_group=,
+   =currency_pair_convention_calendar= and the three =party_*= junctions check
+   the tenant only, so a row can name a record that does not exist. The
+   junctions keep closed versions, but no operation reads them.
+2. Closing a desk group leaves its membership rows open.
+3. Memberships cannot be read by group; the filter takes currency codes only.
+4. A pair and its convention are written in two operations, and the pair code
+   is not checked against its legs on the server.
+5. The pair list cannot be filtered by currency or classification.
+6. The =business_day_convention= note on the currency pair convention model
+   names a trading table; the insert validates against the refdata list.
 
 - Continues [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]], which recorded the inventory, the Qt dispositions, the agreed catalogue and the recurring gaps, and wrote journeys 1, 4 and 10.
 - Journey 8 (conventions) depends on the workspace removal: the conventions still use =workspace-scoped-lookup=.

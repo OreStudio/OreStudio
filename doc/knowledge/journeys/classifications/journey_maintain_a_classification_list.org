@@ -117,7 +117,7 @@ prefix shown.
 | Market data | [[id:465F0207-EAFD-46EC-851B-6912F86DC2D0][Series Subclass Code]] | order | =series_subclass_codes= |
 
 Currency groups are not here. A group has members, so it is a journey of its
-own in the [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] group.
+own: [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]].
 
 * Operations and messages
 

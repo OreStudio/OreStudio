@@ -21,10 +21,8 @@ table.
 | Journey | Actor | Gist |
 |---------+-------+------|
 | [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] | tenant administrator | A currency with its countries, calendars and desk groups, its history, and ORE exchange |
-
-Two more journeys are agreed and not yet written: /Set up a currency pair/ (the
-pair, its convention, the convention's calendars and its classification) and
-/Group currencies for the desk/ (a desk group and its members).
+| [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] | tenant administrator | A pair with its quoting convention, settlement calendars and classification |
+| [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] | tenant administrator | Desk groups such as G11 or Scandies, in order, with their members |
 
 * Related
 

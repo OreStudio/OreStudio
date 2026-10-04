@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4A542CE0-FF7F-4611-AE1E-ADA0737B5534
+:END:
+#+title: compass task done misses the story Tasks row. _update_task_r…
+#+description: compass task done misses the story Tasks row. _update_task_row_in_story (projects/ores.compass/src/compass.py:4002) scans for the first line that holds the task id link and returns False when that line has fewer than six cells, so it never reaches the real Tasks row. Seen when BAE5860D closed on 2026-10-04: the story Status Next row links the task, is matched first, and the Tasks row stayed STARTED; the row was set by hand. The scan should skip lines that are not rows of the Tasks table.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

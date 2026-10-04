@@ -127,8 +127,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_prepare_ore_package(std::ref(out), std::ref(session), std::move(args));
         },
-        "prepare-ore-package <report_instance_id> <bundle_id> <tenant_id> <correlation_id> "
-        "<trades_storage_key> <market_data_storage_key>");
+        "prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id> "
+        "<correlation_id> <trades_storage_key> <market_data_storage_key>");
 
     menu->Insert(
         "submit-compute",
@@ -542,7 +542,7 @@ void report_operations_operations_commands::process_prepare_ore_package(
         return;
     }
 
-    constexpr std::size_t positional_count = 6;
+    constexpr std::size_t positional_count = 7;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -553,6 +553,7 @@ void report_operations_operations_commands::process_prepare_ore_package(
     std::size_t next = 0;
     try {
         req.report_instance_id = parsed->positionals[next++];
+        req.definition_id = parsed->positionals[next++];
         req.bundle_id = parsed->positionals[next++];
         req.tenant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];

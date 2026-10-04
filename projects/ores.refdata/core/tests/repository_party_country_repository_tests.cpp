@@ -152,10 +152,10 @@ TEST_CASE("read_latest_party_countries_by_party", tags) {
 
     party_repository party_repo;
     country_repository cty_repo;
-    party_country_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     h.set_party(system_party_id);
+    party_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);
@@ -186,10 +186,10 @@ TEST_CASE("read_latest_party_countries_by_country", tags) {
 
     party_repository party_repo;
     country_repository cty_repo;
-    party_country_repository repo(h.context());
 
     const auto system_party_id = find_system_party_id(party_repo, h.context(), h.tenant_id());
     h.set_party(system_party_id);
+    party_country_repository repo(h.context());
 
     auto gctx = ores::testing::make_generation_context(h);
     auto all = generate_fictional_countries(total_slots, gctx);

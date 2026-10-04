@@ -65,7 +65,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // package handler shares the service token client, so its storage calls
     // authenticate as the service.
     // ----------------------------------------------------------------
-    auto rph = std::make_shared<report_package_handler>(nats, http_base_url, outbound_nats);
+    auto rph = std::make_shared<report_package_handler>(nats, ctx, http_base_url, outbound_nats);
     auto eh = std::make_shared<ore_import_execute_handler>(
         // Not std::move: the report package handler below takes the same
         // base URL, and moving it here leaves that one empty, so every

@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_REPORT_PACKAGE_HANDLER_HPP
 #define ORES_ORE_SERVICE_MESSAGING_REPORT_PACKAGE_HANDLER_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -55,6 +56,8 @@ public:
      * @brief Constructs the handler.
      *
      * @param nats         Raw transport, for the workflow step context.
+     * @param ctx          The service's database context, from which the run's
+     *                     document and configuration are exported.
      * @param http_base_url  Base URL of the storage HTTP API.
      * @param service_nats   A service-path client, whose token every storage
      *                       call carries. The workflow step message arrives
@@ -63,6 +66,7 @@ public:
      *                       user who started the workflow.
      */
     report_package_handler(ores::nats::service::client& nats,
+                           ores::database::context ctx,
                            std::string http_base_url,
                            ores::nats::service::nats_client service_nats);
 
@@ -70,6 +74,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
+    ores::database::context ctx_;
     std::string http_base_url_;
     ores::nats::service::nats_client service_nats_;
 };

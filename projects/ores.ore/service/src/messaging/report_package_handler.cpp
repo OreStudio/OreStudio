@@ -18,10 +18,13 @@
  *
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.ore.core/store/run_store.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <filesystem>
@@ -47,9 +50,11 @@ std::string tarball_storage_key(const std::string& instance_id) {
 } // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
+                                               ores::database::context ctx,
                                                std::string http_base_url,
                                                ores::nats::service::nats_client service_nats)
     : nats_(nats)
+    , ctx_(std::move(ctx))
     , http_base_url_(std::move(http_base_url))
     , service_nats_(std::move(service_nats)) {}
 
@@ -70,6 +75,10 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                               << req.report_instance_id;
 
     try {
+        if (req.definition_id.empty()) {
+            wf->fail("prepare_ore_package: definition_id is missing");
+            return;
+        }
         if (req.trades_storage_key.empty()) {
             wf->fail("prepare_ore_package: trades_storage_key is missing");
             return;
@@ -106,6 +115,19 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         }
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
+        // The run document and the configuration it names, laid out where the
+        // engine reads them.
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
+        const auto input = ores::ore::store::archive_layout(ores::ore::store::export_run(
+            tenant_ctx, boost::uuids::string_generator()(req.definition_id)));
+        for (const auto& [path, content] : input) {
+            const auto target = stage_dir / path;
+            std::filesystem::create_directories(target.parent_path());
+            std::ofstream f(target, std::ios::binary | std::ios::trunc);
+            f << content;
+        }
+
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
         transfer.pack_and_upload(stage_dir, std::string(platform_bucket), tarball_key);
 
@@ -117,10 +139,12 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         prepare_ore_package_result result;
         result.success = true;
         result.tarball_uris = {tarball_uri};
-        result.message = std::format("Packaged {} bytes trades + {} bytes market data into {}",
-                                     trades_blob.size(),
-                                     md_blob.size(),
-                                     tarball_key);
+        result.message =
+            std::format("Packaged {} input files, {} bytes trades + {} bytes market data into {}",
+                        input.size(),
+                        trades_blob.size(),
+                        md_blob.size(),
+                        tarball_key);
 
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
                                   << req.report_instance_id << " tarball=" << tarball_key;

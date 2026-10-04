@@ -85,9 +85,20 @@ ORES_ORE_CORE_EXPORT run_import_result import_run(const database::context& ctx,
 /**
  * @brief Rebuilds a report definition's ORE input: the run document and every
  * configuration document the definition binds.
+ *
+ * A session with no party, such as a workflow step's, sees every party's rows,
+ * so the export narrows itself to the party that owns the definition.
  */
 ORES_ORE_CORE_EXPORT input_files export_run(const database::context& ctx,
                                             const boost::uuids::uuid& report_definition_id);
+
+/**
+ * @brief Where each exported file sits in the engine's working directory.
+ *
+ * The engine is started on @c Input/ore.xml, and reads every file the run
+ * document names from the run's @c inputPath, which defaults to @c Input.
+ */
+ORES_ORE_CORE_EXPORT input_files archive_layout(const input_files& files);
 
 }
 

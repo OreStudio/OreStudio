@@ -38,6 +38,7 @@ An FX convention keeps the id its document gave it, so every reference to it by 
 - Every FX convention in the corpus is stored under its own id, including the 600 or more that do not end in -FX-CONVENTIONS.
 - A currency pair can hold more than one FX convention, as FX-BOE-USD-CAD and USD-CAD-FX do in one file.
 - ores_refdata_validate_convention_id_fn resolves an FX convention by its stored id, and the conventions round trip asserts the id instead of documenting its loss.
+- The document store writes FX conventions as world data, added only when the tenant lacks them, so a run import no longer skips them; the run store test expects none skipped.
 
 * Plan
 

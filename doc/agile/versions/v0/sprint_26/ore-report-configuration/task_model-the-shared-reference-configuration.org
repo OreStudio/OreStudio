@@ -37,6 +37,7 @@ A run reaches the reference configuration it needs by foreign key, so reporting 
 
 - Each reference set the taxonomy lists has a model and an owner, and the report definition references it by key.
 - No reference configuration is duplicated into reporting.
+- The run store imports and exports the currency configuration and calendar adjustments a run document names, as world data the import adds only when the tenant lacks it, so a package holds every file its run document names.
 
 * Plan
 

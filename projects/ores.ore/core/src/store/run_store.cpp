@@ -30,11 +30,13 @@
 #include "ores.reporting.core/repository/report_analytic_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_analytic_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
+#include <filesystem>
 #include <format>
 #include <map>
 #include <optional>
@@ -280,7 +282,15 @@ run_import_result import_run(const context& ctx,
     return r;
 }
 
-input_files export_run(const context& ctx, const boost::uuids::uuid& report_definition_id) {
+input_files export_run(const context& session, const boost::uuids::uuid& report_definition_id) {
+    const auto ctx = [&] {
+        if (session.party_id())
+            return session;
+        const auto definition = detail::read_one(
+            session, report_definition_repository(), "report definition", report_definition_id);
+        return session.with_party(
+            session.tenant_id(), definition.party_id, {definition.party_id}, session.actor());
+    }();
     const auto of_definition = [&](const auto& row) {
         return row.report_definition_id == report_definition_id;
     };
@@ -345,6 +355,45 @@ input_files export_run(const context& ctx, const boost::uuids::uuid& report_defi
         files[*file] = load_document(ctx, b);
     }
     return files;
+}
+
+input_files archive_layout(const input_files& files) {
+    const auto run = files.find(std::string(run_document_file));
+    if (run == files.end())
+        throw std::invalid_argument(
+            std::format("An ORE input holds its run document as {}.", run_document_file));
+
+    domain::ore document;
+    domain::load_data(run->second, document);
+    std::string input_path = "Input";
+    for (const auto& p : document.Setup.Parameter)
+        if (std::string(p.name) == "inputPath" && !static_cast<const std::string&>(p).empty())
+            input_path = static_cast<const std::string&>(p);
+
+    // The input path and the file names come from a stored run document, which
+    // a tenant edits, and the result names where the package writes; a path
+    // that is absolute or climbs out with .. would write outside the package.
+    const auto inside = [](const std::filesystem::path& p) {
+        const auto normal = p.lexically_normal();
+        if (p.is_absolute() || p.has_root_name() || normal.empty())
+            return false;
+        return std::ranges::none_of(normal, [](const auto& part) { return part == ".."; });
+    };
+    if (!inside(input_path))
+        throw std::invalid_argument(
+            std::format("The run document's input path {} leaves the package.", input_path));
+
+    input_files layout;
+    for (const auto& [name, content] : files) {
+        const std::filesystem::path directory =
+            name == run_document_file ? std::filesystem::path("Input") : std::filesystem::path(input_path);
+        const auto path = directory / name;
+        if (!inside(std::filesystem::path(name)) || !inside(path))
+            throw std::invalid_argument(
+                std::format("The input file {} would be written outside the package.", name));
+        layout[path.lexically_normal().generic_string()] = content;
+    }
+    return layout;
 }
 
 }

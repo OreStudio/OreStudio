@@ -114,6 +114,7 @@ export interface AssembleBundleResult {
 
 export interface PrepareOrePackageRequest {
     report_instance_id: string;
+    definition_id: string;
     bundle_id: string;
     tenant_id: string;
     correlation_id: string;

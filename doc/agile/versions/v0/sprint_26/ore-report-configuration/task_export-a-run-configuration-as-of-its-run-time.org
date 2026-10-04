@@ -1,41 +1,43 @@
 :PROPERTIES:
-:ID: ABCCD68D-D07A-4DA6-AF44-61B16F56D26E
+:ID: 0110E33D-717B-4FEF-9E00-77BE30DAF027
 :END:
-#+title: Task: Scaffold story: Model the ORE report configuration as entities
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Export a run's configuration as of its run time
+#+description: An export reads the current version of every document, so a run cannot be reproduced once its configuration changes; read each document as it stood when the run started.
 #+type: task
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-09-27
-#+updated: 2026-09-27
-#+environment: bright_faraday
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A report instance can be rerun against exactly the configuration it first ran with.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-09-27                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- The export takes a point in time and reads every document as of it.
+- The package step exports as of the report instance's start.
+- A test changes a document after a run and shows the run's export unchanged.
 
 * Plan
 
@@ -58,6 +60,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Raised on 2026-10-04 from the open items left after [[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] and [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]].
 
 * Test Scenarios
 
@@ -83,7 +87,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-The story's documents, its sprint wiring and the scaffold PR shipped when the
-story started; this task was left open by mistake and is closed with nothing
-further to do.

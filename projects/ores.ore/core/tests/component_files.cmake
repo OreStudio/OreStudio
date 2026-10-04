@@ -35,6 +35,7 @@ set(files
     "ore_run_document_database_roundtrip_tests.cpp"
     "party_scope_tests.cpp"
     "planner_import_planner_tests.cpp"
+    "pooled_session_tests.cpp"
     "pricing_engine_database_roundtrip_tests.cpp"
     "run_store_database_tests.cpp"
     "scanner_directory_scanner_tests.cpp"

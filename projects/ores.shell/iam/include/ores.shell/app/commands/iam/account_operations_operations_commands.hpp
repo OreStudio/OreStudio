@@ -139,6 +139,24 @@ public:
     static void process_change_password(std::ostream& out,
                                         ores::nats::service::nats_client& session,
                                         const std::vector<std::string>& args);
+
+    /**
+     * @brief update-self-account <full_name> <job_title> <image_id> <email> <default_party_id>
+     * <reports_to_account_id> <change_reason_code> <change_commentary>
+     */
+    static void process_update_self_account(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::vector<std::string>& args);
+
+    /**
+     * @brief update-self-account-contact-information <street_line_1> <street_line_2> <city> <state>
+     * <country_code> <postal_code> <phone> <email> <web_page> <change_reason_code>
+     * <change_commentary>
+     */
+    static void
+    process_update_self_account_contact_information(std::ostream& out,
+                                                    ores::nats::service::nats_client& session,
+                                                    const std::vector<std::string>& args);
 };
 
 }

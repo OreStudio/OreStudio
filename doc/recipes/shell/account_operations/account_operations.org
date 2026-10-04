@@ -243,3 +243,45 @@ It is addressed at =iam.v1.accounts.change-password=.
 account_operations change-password __none__ __none__
 #+end_src
 
+** =update-self-account=
+:PROPERTIES:
+:ID: 1ABCB85F-A754-5D84-AE81-F1D2BD1A753C
+:END:
+
+Sends =update_self_account_request= and prints =update_self_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =full_name=, =job_title=, =image_id=, =email=, =default_party_id=, =reports_to_account_id=, =change_reason_code=, =change_commentary=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations update-self-account <full_name> <job_title> <image_id> <email> <default_party_id> <reports_to_account_id> <change_reason_code> <change_commentary>
+#+end_example
+
+It is addressed at =iam.v1.accounts.update-self=.
+
+#+name: account_operations-update-self-account
+#+begin_src ores-shell :tangle account_operations-update-self-account.ores :exports none
+account_operations update-self-account __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+
+** =update-self-account-contact-information=
+:PROPERTIES:
+:ID: 3CEE70FE-D8EA-52B2-8D92-A4348F4FE7D0
+:END:
+
+Sends =update_self_account_contact_information_request= and prints =update_self_account_contact_information_response=, so the shape is the protocol's and the meaning is the service's. It reads =street_line_1=, =street_line_2=, =city=, =state=, =country_code=, =postal_code=, =phone=, =email=, =web_page=, =change_reason_code=, =change_commentary=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations update-self-account-contact-information <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <change_reason_code> <change_commentary>
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.update-self=.
+
+#+name: account_operations-update-self-account-contact-information
+#+begin_src ores-shell :tangle account_operations-update-self-account-contact-information.ores :exports none
+account_operations update-self-account-contact-information __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
+#+end_src
+

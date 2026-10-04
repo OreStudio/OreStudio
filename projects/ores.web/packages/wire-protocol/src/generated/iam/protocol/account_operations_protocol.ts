@@ -22,6 +22,10 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { Account } from '../domain/account.js';
+import type { AccountContactInformation } from '../domain/account_contact_information.js';
+import type { Result } from '../../../utility/protocol.js';
+
 /**
  * @brief The workflow step that publishes a DQ-cleared accounts bundle.
  *
@@ -205,6 +209,98 @@ export interface ChangePasswordRequestTyped {
     new_password: string;
 }
 
+/**
+ * @brief A member's write on their own account.
+ *
+ * The session names the account: the request carries no account id, so it
+ * cannot name another account. The three fields a member owns are the whole
+ * of the profile write; the three a member does not own are declared beside
+ * them so a stated value is refused by name rather than dropped in silence.
+ */
+export interface UpdateSelfAccountRequest {
+    /**
+     * @brief The member's full (real) name. A member owns this field. Empty
+     * clears it.
+     */
+    full_name: string;
+    /**
+     * @brief Job title / functional role. A member owns this field. Empty
+     * clears it.
+     */
+    job_title: string;
+    /**
+     * @brief Profile picture, as the id of an uploaded image. A member owns
+     * this field. Empty clears it.
+     */
+    image_id: string;
+    /**
+     * @brief The sign-in address. An administrator owns this field: a request
+     * that states it non-empty is denied with field_not_self_writable, and the
+     * field is left as it is.
+     */
+    email: string;
+    /**
+     * @brief Party used for quick login. An administrator owns this field: a
+     * request that states it non-empty is denied with field_not_self_writable,
+     * and the field is left as it is.
+     */
+    default_party_id: string;
+    /**
+     * @brief The account this person reports to. An administrator owns this
+     * field: a request that states it non-empty is denied with
+     * field_not_self_writable, and the field is left as it is. The screen carries
+     * a reporting-line change as an ordinary change request, never as a write.
+     */
+    reports_to_account_id: string;
+    change_reason_code: string;
+    change_commentary: string;
+}
+
+export interface UpdateSelfAccountResponse {
+    result: Result;
+    /**
+     * @brief The account as written, so the panel can show its new version.
+     * Stated only when the outcome is ok.
+     */
+    account: Account | null;
+}
+
+/**
+ * @brief A member's write on their own contact record.
+ *
+ * The session names the account and the record is found from it, so the
+ * request carries no account id and no record id, and it cannot name another
+ * account's record. A member who has no contact record gets one on the first
+ * write.
+ */
+export interface UpdateSelfAccountContactInformationRequest {
+    street_line_1: string;
+    street_line_2: string;
+    city: string;
+    state: string;
+    country_code: string;
+    postal_code: string;
+    phone: string;
+    /**
+     * @brief The contact address colleagues use. Empty clears it. This is not
+     * the sign-in address, which is the account's email and belongs to an
+     * administrator.
+     */
+    email: string;
+    web_page: string;
+    change_reason_code: string;
+    change_commentary: string;
+}
+
+export interface UpdateSelfAccountContactInformationResponse {
+    result: Result;
+    /**
+     * @brief The contact record as written, so the panel can show its new
+     * version. Stated only when the outcome is ok.
+     */
+    account_contact_information: AccountContactInformation | null;
+}
+
 export const subjects = {
     publish_accounts_from_dq_request: 'iam.v1.accounts.publish-from-dq',
     save_account_request: 'iam.v1.accounts.save',
@@ -218,6 +314,9 @@ export const subjects = {
     select_party_request: 'iam.v1.accounts.select-party',
     switch_party_request: 'iam.v1.accounts.switch-party',
     change_password_request_typed: 'iam.v1.accounts.change-password',
+    update_self_account_request: 'iam.v1.accounts.update-self',
+    update_self_account_contact_information_request:
+        'iam.v1.account_contact_informations.update-self',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -237,4 +336,6 @@ export const requiresSession = {
     select_party_request: true,
     switch_party_request: true,
     change_password_request_typed: true,
+    update_self_account_request: true,
+    update_self_account_contact_information_request: true,
 } as const;

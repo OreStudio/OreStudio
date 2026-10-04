@@ -46,9 +46,48 @@ A member cannot write their own profile: iam.v1.accounts.update and iam.v1.accou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both writes have one shape: the session names the account, the body states the
+fields, and the server holds the list of fields a member owns. Neither message
+carries an account id, so neither can name another account.
+
+1. Declare both pairs in =ores.iam.account_messages.org=, beside the self verbs
+   already there (=iam.v1.accounts.update-email=,
+   =iam.v1.accounts.set-default-party=, =iam.v1.accounts.change-password=).
+   - =iam.v1.accounts.update-self= carries the three fields a member owns
+     (=full_name=, =job_title=, =image_id=) and the three only an administrator
+     may change (=email=, =default_party_id=, =reports_to_account_id=). The
+     unowned fields are declared so a stated value is refused by name; the
+     server never drops a field in silence. The reply is the shared result plus
+     the account as written, so the panel can show the new version.
+   - =iam.v1.account_contact_informations.update-self= carries the nine contact
+     fields. No record id: the record is found from the session, and a member
+     who has none gets one on the first write.
+   - Both requests state the change reason as the model's own flat fields
+     (=change_reason_code=, =change_commentary=), the way =update_account_request=
+     already does. The model declares the shell facet, whose commands fill
+     request fields from single tokens, so a structured intent or precondition
+     in a request is refused at generation time; nothing in the acceptance
+     asks for a version-checked write, and the reply still returns the record
+     with the version the store gave it.
+   - Neither message states =http_route=: the screen reaches the subjects
+     through the BFF over NATS, which is the same per-message decision
+     =set-default-party= already states.
+2. Regenerate =ores.cpp.protocol= and =ores.ts.protocol= for the model, one
+   address at a time, and check the generated files carry the new types.
+3. Handlers: =account_operations_handler::update_self= and
+   =account_contact_information_handler::update_self_account_contact_information=
+   both resolve the account from the bearer token — the pattern =update_email=
+   already uses. The unowned-field refusal happens here, before any service
+   call, and names each field.
+4. Services: =account_operations_service::update_self_account= reads the
+   caller's account, writes the three owned fields with the reason, and nothing
+   else. =account_contact_information_service::update_self_account_contact_information=
+   finds the record by account id, creates one when the member has none, applies
+   the intent and the precondition, and writes.
+5. Registrars: the iam core registrars subscribe the two new subjects.
+6. Tests prove the own write lands on every owned field, the refusal names each
+   unowned field and writes nothing, and the contact record is created when
+   missing. Then build, run the iam suites, and run the drift gates.
 
 * Measurements
 

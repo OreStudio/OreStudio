@@ -26,7 +26,10 @@
 #define ORES_IAM_API_MESSAGING_ACCOUNT_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -321,6 +324,117 @@ struct change_password_request_typed {
     static constexpr bool requires_session = true;
     std::string current_password;
     std::string new_password;
+};
+
+/**
+ * @brief A member's write on their own account.
+ *
+ * The session names the account: the request carries no account id, so it
+ * cannot name another account. The three fields a member owns are the whole
+ * of the profile write; the three a member does not own are declared beside
+ * them so a stated value is refused by name rather than dropped in silence.
+ */
+struct update_self_account_request {
+    using response_type = struct update_self_account_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.update-self";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The member's full (real) name. A member owns this field. Empty
+     * clears it.
+     */
+    std::string full_name;
+    /**
+     * @brief Job title / functional role. A member owns this field. Empty
+     * clears it.
+     */
+    std::string job_title;
+    /**
+     * @brief Profile picture, as the id of an uploaded image. A member owns
+     * this field. Empty clears it.
+     */
+    std::string image_id;
+    /**
+     * @brief The sign-in address. An administrator owns this field: a request
+     * that states it non-empty is denied with field_not_self_writable, and the
+     * field is left as it is.
+     */
+    std::string email;
+    /**
+     * @brief Party used for quick login. An administrator owns this field: a
+     * request that states it non-empty is denied with field_not_self_writable,
+     * and the field is left as it is.
+     */
+    std::string default_party_id;
+    /**
+     * @brief The account this person reports to. An administrator owns this
+     * field: a request that states it non-empty is denied with
+     * field_not_self_writable, and the field is left as it is. The screen carries
+     * a reporting-line change as an ordinary change request, never as a write.
+     */
+    std::string reports_to_account_id;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct update_self_account_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The account as written, so the panel can show its new version.
+     * Stated only when the outcome is ok.
+     */
+    std::optional<ores::iam::domain::account> account;
+};
+
+/**
+ * @brief A member's write on their own contact record.
+ *
+ * The session names the account and the record is found from it, so the
+ * request carries no account id and no record id, and it cannot name another
+ * account's record. A member who has no contact record gets one on the first
+ * write.
+ */
+struct update_self_account_contact_information_request {
+    using response_type = struct update_self_account_contact_information_response;
+    static constexpr std::string_view nats_subject =
+        "iam.v1.account_contact_informations.update-self";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string street_line_1;
+    std::string street_line_2;
+    std::string city;
+    std::string state;
+    std::string country_code;
+    std::string postal_code;
+    std::string phone;
+    /**
+     * @brief The contact address colleagues use. Empty clears it. This is not
+     * the sign-in address, which is the account's email and belongs to an
+     * administrator.
+     */
+    std::string email;
+    std::string web_page;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct update_self_account_contact_information_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The contact record as written, so the panel can show its new
+     * version. Stated only when the outcome is ok.
+     */
+    std::optional<ores::iam::domain::account_contact_information> account_contact_information;
 };
 
 }

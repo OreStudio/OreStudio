@@ -43,6 +43,7 @@ set(files
     "main.cpp"
     "methodology_commands_tests.cpp"
     "nature_dimension_commands_tests.cpp"
+    "netting_set_alias_commands_tests.cpp"
     "origin_dimension_commands_tests.cpp"
     "publication_commands_tests.cpp"
     "report_definition_template_operations_commands_tests.cpp"

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T09:21:37.488837Z
+' Generated: 2026-10-04T10:15:01.970820Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -6381,6 +6381,39 @@ package "dq_staging" #F3E5F5 {
         * row_kind : text
     }
 
+    entity ores_dq_csas_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * netting_set_code : text
+        * version : integer
+        * is_active : boolean
+          bilateral : text
+          csa_currency : text
+          index_name : text
+          threshold_pay : double
+          threshold_receive : double
+          minimum_transfer_amount_pay : double
+          minimum_transfer_amount_receive : double
+          independent_amount_held : double
+          independent_amount_type : text
+          call_frequency : text
+          post_frequency : text
+          margin_period_of_risk : text
+          collateral_compounding_spread_receive : double
+          collateral_compounding_spread_pay : double
+          apply_initial_margin : boolean
+          initial_margin_type : text
+          calculate_im_amount : boolean
+          calculate_vm_amount : boolean
+          non_exempt_im_regulations : text
+          eligible_currencies : text
+    }
+
+    note right of ores_dq_csas_artefact_tbl
+    The credit support annex of a netting set, with the terms ORE reads from a netting set definition. The set is named by code; publishing resolves it in the target tenant. The eligible collateral currencies are a comma separated list in posting order. - Artefact Table
+    end note
+
     entity ores_dq_currencies_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -6637,6 +6670,55 @@ package "dq_staging" #F3E5F5 {
           source_url : text
           retrieved_at : timestamptz
     }
+
+    entity ores_dq_netting_agreements_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * agreement_number : text
+        * version : integer
+        * counterparty_lei : text
+        * agreement_type : text
+          governing_law : text
+          description : text
+    }
+
+    note right of ores_dq_netting_agreements_artefact_tbl
+    A master netting agreement, such as an ISDA Master Agreement, between the party a publish targets and a counterparty. The counterparty is named by LEI, because its id differs from tenant to tenant, and the party is the one the publish names: a staged agreement belongs to no party until published. - Artefact Table
+    end note
+
+    entity ores_dq_netting_set_aliases_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id_value : text
+        * version : integer
+        * id_scheme : text
+        * netting_set_code : text
+          description : text
+    }
+
+    note right of ores_dq_netting_set_aliases_artefact_tbl
+    A name a source system uses for a netting set, such as the CPTY_A an ORE document puts in a trade's envelope, staged with the identifier scheme it belongs to and the code of the set it names. Publishing resolves the code in the target tenant and writes the alias as a netting set identifier. - Artefact Table
+    end note
+
+    entity ores_dq_netting_sets_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          agreement_number : text
+          counterparty_lei : text
+          call_type : text
+          initial_margin_type : text
+          risk_weight : double
+          description : text
+    }
+
+    note right of ores_dq_netting_sets_artefact_tbl
+    A netting set of the party a publish targets. It names its master agreement by number and its counterparty by LEI; publishing resolves both in the target tenant. A set with no agreement holds trades that do not net. - Artefact Table
+    end note
 
     entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
         --

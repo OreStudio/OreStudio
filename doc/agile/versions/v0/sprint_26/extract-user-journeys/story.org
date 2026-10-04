@@ -52,7 +52,7 @@ each operation against the generated protocol.
 | [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workspace, reading its legacy screens in ores.qt/workspace. |
 | [[id:8EE415F7-0B51-4FA6-A3E0-D5BBAF751E1F][Extract the ores.workflow user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workflow, reading its legacy screens in ores.qt/workflow. |
 | [[id:78D214D7-84E8-4578-BF92-8A667F520E79][Extract the ores.iam user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.iam, reading its legacy screens in ores.qt/iam. |
-| [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] | STARTED | 2026-10-04 | | Run the User Journey Extraction Standard for ores.refdata, reading its legacy screens in ores.qt/refdata. |
+| [[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata user journeys]] | DONE | 2026-10-04 | 2026-10-04 | Run the User Journey Extraction Standard for ores.refdata, reading its legacy screens in ores.qt/refdata. |
 | [[id:B067A8C9-A7B0-4A28-AA6A-A701318D56B4][Extract the ores.analytics user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.analytics, reading its legacy screens in ores.qt/analytics. |
 | [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.compute, reading its legacy screens in ores.qt/compute. |
 | [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Extract the ores.reporting user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.reporting, reading its legacy screens in ores.qt/reporting. |
@@ -61,6 +61,7 @@ each operation against the generated protocol.
 | [[id:1424617D-B285-401B-915A-BAEC5A0C2006][Extract the ores.dq user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.dq, reading its legacy screens in ores.qt/dq. |
 | [[id:A7F0A526-A486-4D7C-A9AC-5D2C7389E407][Extract the ores.trading user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.trading, reading its legacy screens in ores.qt/trading. |
 | [[id:C08E91B8-0731-4A0A-89ED-6F7AD82E1C63][Extract the application shell user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.qt application shell, reading its legacy screens in ores.qt/application. |
+| [[id:4C97EADD-1D0E-474E-9B00-1EC49D15DC6F][Write the remaining ores.refdata user journeys]] | BACKLOG | | | Write the nine refdata journeys the agreed catalogue still lacks: currency pair, desk groups, counterparty onboarding, party details, book structure, conventions and tenors. |
 
 * Scope
 

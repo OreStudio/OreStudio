@@ -26,11 +26,11 @@ Every journey a person had in ores.refdata is documented as a user journey, and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] |
-| Now          | Catalogue agreed; journeys 1, 4 and 10 written.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write journeys 2, 3, 5 to 9.               |
+| Next         | Nothing. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance
@@ -67,7 +67,7 @@ Work the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Stan
 | V03 | Pass | The journey runtime, the UX language and the UI design principles bind the screens |
 | J01-J07 | Pass | Catalogue of 12 journeys below, by topic and actor |
 | J08 | Pass | Catalogue agreed with the product owner on 2026-10-04 |
-| D01-D05 | Partial | Three of twelve written: currency, holiday calendar, classification list; three new groups added to the index |
+| D01-D05 | Partial | Three of twelve written: currency, holiday calendar, classification list; three new groups added to the index. The rest moved to the follow-up task |
 | X01 | Pass | Every subject in the three coverage tables found in a generated protocol header |
 | X02 | Pending | Lint and site publish run before the PR |
 | X03 | Pass | No defect found; the gaps below are design gaps |
@@ -187,3 +187,15 @@ via its "Verifies task" field.
 | 5 | Round 1: split long sentences | =journey_keep_a_holiday_calendar_right.org= | Accepted in part | Step 9 split; the Goal paragraphs are the person's words in quotes and stay |
 
 * Result
+
+The extraction standard ran over ores.refdata up to an agreed catalogue, and
+the first three journeys are written. Recorded here: the inventory, the legacy
+Qt screens with their dispositions, the catalogue of twelve journeys agreed
+with the product owner, and nine recurring gaps. Written: Add or correct a
+currency, Keep a holiday calendar right, and Maintain a classification list,
+each with a wireframe and a coverage table whose 42 subjects were checked
+against the generated protocol headers; the Currencies and FX, Calendars and
+Classifications groups joined the journeys index. Delivered in PR #2631.
+
+The other nine journeys, and the items that complete with them (Q04, D01 to
+D05, X05), moved to [[id:4C97EADD-1D0E-474E-9B00-1EC49D15DC6F][Write the remaining ores.refdata user journeys]].

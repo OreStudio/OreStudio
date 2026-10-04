@@ -35,7 +35,9 @@
 #include <sqlgen/ConnectionPool.hpp>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace ores::database {
@@ -238,71 +240,45 @@ public:
 
         BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_str;
 
-        // Set party context if available
-        if (party_id_.has_value()) {
-            const auto party_id_str = boost::uuids::to_string(*party_id_);
-            const std::string party_sql =
-                "SELECT set_config('app.current_party_id', '" + party_id_str + "', false)";
+        // A pooled connection keeps the settings of whichever context used it
+        // last, so every setting is written on every acquire. A context without
+        // a party, visible parties, actor or service writes the empty string,
+        // which the session functions read as null; skipping the write would
+        // hand this context the last user's party and visibility.
+        std::string party_str;
+        if (party_id_.has_value())
+            party_str = boost::uuids::to_string(*party_id_);
 
-            auto party_result = (*session_result)->execute(party_sql);
-            if (!party_result) {
-                return sqlgen::error("Failed to set party context: " +
-                                     std::string(party_result.error().what()));
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Set party context to: " << party_id_str;
-        }
-
-        // Set visible party IDs if available
+        std::string visible_str;
         if (!visible_party_ids_.empty()) {
-            std::string ids_str = "{";
+            visible_str = "{";
             for (std::size_t i = 0; i < visible_party_ids_.size(); ++i) {
                 if (i > 0)
-                    ids_str += ",";
-                ids_str += boost::uuids::to_string(visible_party_ids_[i]);
+                    visible_str += ",";
+                visible_str += boost::uuids::to_string(visible_party_ids_[i]);
             }
-            ids_str += "}";
-
-            const std::string vis_sql =
-                "SELECT set_config('app.visible_party_ids', '" + ids_str + "', false)";
-
-            auto vis_result = (*session_result)->execute(vis_sql);
-            if (!vis_result) {
-                return sqlgen::error("Failed to set visible party IDs: " +
-                                     std::string(vis_result.error().what()));
-            }
-
-            BOOST_LOG_SEV(lg(), debug)
-                << "Set visible party IDs (" << visible_party_ids_.size() << " parties)";
+            visible_str += "}";
         }
 
-        // Set current actor (username) if available.
-        if (!actor_.empty()) {
-            const std::string actor_sql =
-                "SELECT set_config('app.current_actor', '" + actor_ + "', false)";
-
-            auto actor_result = (*session_result)->execute(actor_sql);
-            if (!actor_result) {
-                return sqlgen::error("Failed to set actor context: " +
-                                     std::string(actor_result.error().what()));
+        const std::pair<std::string_view, const std::string*> settings[] = {
+            {"app.current_party_id", &party_str},
+            {"app.visible_party_ids", &visible_str},
+            {"app.current_actor", &actor_},
+            {"app.current_service", &service_account_},
+        };
+        for (const auto& [name, value] : settings) {
+            const std::string setting_sql = "SELECT set_config('" + std::string(name) + "', '" +
+                                            *value + "', false)";
+            auto setting_result = (*session_result)->execute(setting_sql);
+            if (!setting_result) {
+                return sqlgen::error("Failed to set " + std::string(name) + ": " +
+                                     std::string(setting_result.error().what()));
             }
-
-            BOOST_LOG_SEV(lg(), debug) << "Set actor context to: " << actor_;
         }
 
-        // Set current service (service account) if available.
-        // This is used by DB triggers to stamp performed_by.
-        if (!service_account_.empty()) {
-            const std::string svc_sql =
-                "SELECT set_config('app.current_service', '" + service_account_ + "', false)";
-            auto svc_result = (*session_result)->execute(svc_sql);
-            if (!svc_result) {
-                return sqlgen::error("Failed to set service context: " +
-                                     std::string(svc_result.error().what()));
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Set service context to: " << service_account_;
-        }
+        BOOST_LOG_SEV(lg(), debug) << "Set session context | party=" << party_str
+                                   << " visible_parties=" << visible_party_ids_.size()
+                                   << " actor=" << actor_ << " service=" << service_account_;
 
         return session_result;
     }

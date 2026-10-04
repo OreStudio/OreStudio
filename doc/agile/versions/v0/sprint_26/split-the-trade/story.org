@@ -60,6 +60,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 | [[id:DCAA75B9-4980-4920-B897-021AB6D475D5][Resolve ORE portfolio ids to portfolios]] | DONE | 2026-10-04 | 2026-10-04 | Give ORE's Envelope/PortfolioIds a home: a trade_portfolio component that resolves each id to a portfolio of the trade's party, imported and exported from it, with the ORE sample portfolios published to ACME. |
 | [[id:4E707015-12F4-4389-B311-6A20555B5C18][Reference the anchor from every instrument]] | DONE | 2026-10-04 | 2026-10-04 | Point every instrument and instrument child table's trade reference at the trade anchor instead of the wide trade. |
 | [[id:63B1C355-CE29-4D3A-ADC3-627854B45535][Remove the workspace from every trading entity]] | DONE | 2026-10-04 | 2026-10-04 | Drop the workspace column from every trading table: the trading profiles, the identity field groups, bond_issue and lifecycle_event stop declaring it, and the code that set it goes. |
+| [[id:DE7982C5-7363-4C53-AF54-6A74D0B5051D][Move the trade export onto the anchor]] | DONE | 2026-10-04 | 2026-10-04 | Move the portfolio export, the export to storage and the instrument lookup out of the wide trade's model into the trade operations, reading anchors through their bookings. |
 
 * Decisions
 

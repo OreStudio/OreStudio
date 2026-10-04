@@ -29,8 +29,12 @@ generates no service handler.
 * Includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
+#include <vector>
+#include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #+end_src
@@ -108,6 +112,265 @@ generates no service handler.
 /**
  * @brief Outcome of the operation: conflict with code already_exists when
  * the trade id is already booked.
+ */
+#+end_src
+
+** trade_export_item
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One trade with its resolved instrument and envelope, as an export
+ * writes it.
+ *
+ * The instrument is carried as a payload rather than as a trade_instrument
+ * variant: reflect-cpp cannot name the active alternative of that variant
+ * (see instrument_payload). The payload's type is empty when the trade has no
+ * instrument.
+ */
+#+end_src
+
+*** anchor
+:PROPERTIES:
+:cpp_type: ores::trading::domain::trade_anchor
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's immutable facts.
+ */
+#+end_src
+
+*** ore_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's ORE identifier, or its id when it has none.
+ */
+#+end_src
+
+*** instrument
+:PROPERTIES:
+:cpp_type: ores::trading::domain::instrument_payload
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's instrument, encoded.
+ */
+#+end_src
+
+*** envelope
+:PROPERTIES:
+:cpp_type: std::optional<ores::trading::domain::trade_envelope_data>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The names the trade's source used: counterparty, netting set, portfolios and additional fields. Absent when the trade has none.
+ */
+#+end_src
+
+** export_portfolio_request
+:PROPERTIES:
+:subject:  trading.v1.trades.portfolio.export
+:response: export_portfolio_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Exports the trades under a taxonomy node.
+ *
+ * The node is a book, a portfolio or a business unit, resolved to its books on
+ * the server; the trades are those booked in them.
+ */
+#+end_src
+
+*** node_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The book, portfolio or business unit to export.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The first trade to export, in trade id order.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  10000
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The most trades to export.
+ */
+#+end_src
+
+** export_portfolio_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The exported trades.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the export ran.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the export failed, when it did.
+ */
+#+end_src
+
+*** items
+:PROPERTIES:
+:cpp_type: std::vector<trade_export_item>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trades, in trade id order.
+ */
+#+end_src
+
+** export_trades_to_storage_request
+:PROPERTIES:
+:subject:  trading.v1.trades.export-to-storage
+:response: export_trades_to_storage_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Exports the trades booked in a set of books to object storage.
+ *
+ * The handler serialises the export items to MsgPack, compresses them with
+ * gzip and uploads them, so a report run passes a storage key rather than the
+ * trades through NATS.
+ */
+#+end_src
+
+*** book_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The books whose trades to export.
+ */
+#+end_src
+
+*** storage_bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The target bucket: the platform bucket, ores.
+ */
+#+end_src
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The target key, such as reporting/runs/{instance_id}/trades.msgpack.
+ */
+#+end_src
+
+** export_trades_to_storage_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of an export to storage.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the export ran.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the export failed, when it did.
+ */
+#+end_src
+
+*** trade_count
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many trades were written.
+ */
+#+end_src
+
+*** storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The key written, echoed from the request.
  */
 #+end_src
 

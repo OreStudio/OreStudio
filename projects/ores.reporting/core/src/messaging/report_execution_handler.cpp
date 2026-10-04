@@ -30,7 +30,7 @@
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>

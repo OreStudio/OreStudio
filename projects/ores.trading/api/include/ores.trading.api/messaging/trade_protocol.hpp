@@ -25,10 +25,7 @@
 #ifndef ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_TRADE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/trade_envelope_data.hpp"
-#include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -288,88 +285,6 @@ inline constexpr std::string_view updated = "trading.v1.trades_events.updated";
 inline constexpr std::string_view deleted = "trading.v1.trades_events.deleted";
 }
 
-/**
- * @brief One trade plus its resolved instrument data.
- *
- * The instrument is carried as a payload rather than as a trade_instrument
- * variant. reflect-cpp cannot name the active alternative of that variant:
- * untagged, the first alternative std::monostate parses from any payload and
- * wins; tagged, rfl::AddTagsToVariants exceeds the fold limits on macOS and
- * MSVC. See instrument_payload. The payload's type is empty when the trade has
- * no linked instrument or the product_type is unrecognised.
- *
- * The envelope holds the trade-level data the product tables do not: the
- * counterparty name, the netting set id, the portfolio id labels and the
- * document's additional fields. It is absent when the trade has none.
- */
-struct trade_export_item {
-    ores::trading::domain::trade trade;
-    ores::trading::domain::instrument_payload instrument;
-    std::optional<ores::trading::domain::trade_envelope_data> envelope;
-};
-
-struct get_trade_instrument_request {
-    using response_type = struct get_trade_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.instrument";
-    std::string trade_id;
-};
-
-struct get_trade_instrument_response {
-    bool success = false;
-    std::string message;
-    ores::trading::domain::trade trade;
-    ores::trading::domain::trade_instrument instrument;
-};
-
-/**
- * @brief Request to export all trades (and instruments) under a taxonomy node.
- *
- * @p node_id is resolved by the server to the book-id set just like
- * get_trades_request; typical callers supply a portfolio id (to export the
- * whole portfolio subtree) or a book id (to export a single book).
- */
-struct export_portfolio_request {
-    using response_type = struct export_portfolio_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.portfolio.export";
-    std::string node_id;
-    int offset = 0;
-    int limit = 10000;
-};
-
-struct export_portfolio_response {
-    bool success = false;
-    std::string message;
-    std::vector<trade_export_item> items;
-};
-
-/**
- * @brief Exports trades for the given book IDs to object storage.
- *
- * The handler resolves trade IDs via ores_trading_get_trade_ids_by_books_fn,
- * loads full trade_export_items, serialises to MsgPack, compresses with gzip,
- * and uploads to storage. Returns the storage key and trade count.
- *
- * Used by the report execution workflow to offload large trade data sets
- * to storage instead of passing them through NATS.
- */
-struct export_trades_to_storage_request {
-    using response_type = struct export_trades_to_storage_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
-
-    std::vector<std::string> book_ids;
-    // Target bucket: the platform bucket, "ores".
-    std::string storage_bucket;
-    // Target key, such as "reporting/runs/{instance_id}/trades.msgpack".
-    std::string storage_key;
-};
-
-struct export_trades_to_storage_response {
-    bool success = false;
-    std::string message;
-    int trade_count = 0;
-    // Echoed back from the request so the caller can confirm the target.
-    std::string storage_key;
-};
 }
 
 #endif

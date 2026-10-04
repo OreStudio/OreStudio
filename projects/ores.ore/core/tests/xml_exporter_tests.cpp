@@ -23,7 +23,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -217,7 +217,9 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.trade = src.trade;
+        item.anchor.id = src.trade.identity.id;
+        item.anchor.trade_type = src.trade.classification.trade_type;
+        item.ore_id = src.trade.identity.external_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -241,7 +243,9 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.trade = src.trade;
+        item.anchor.id = src.trade.identity.id;
+        item.anchor.trade_type = src.trade.classification.trade_type;
+        item.ore_id = src.trade.identity.external_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -264,7 +268,9 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.trade = src.trade;
+        item.anchor.id = src.trade.identity.id;
+        item.anchor.trade_type = src.trade.classification.trade_type;
+        item.ore_id = src.trade.identity.external_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -303,8 +309,8 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     REQUIRE(r.has_value());
 
     trade_export_item item;
-    item.trade.identity.external_id = "RoundtripBondFuture001";
-    item.trade.classification.trade_type = "BondFuture";
+    item.ore_id = "RoundtripBondFuture001";
+    item.anchor.trade_type = "BondFuture";
     item.instrument = ores::trading::domain::encode_instrument(*r);
 
     const auto xml = exporter::export_portfolio({item});
@@ -320,8 +326,8 @@ TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", tags) {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
-    item.trade.identity.external_id = "FlexiSwap001";
-    item.trade.classification.trade_type = "FlexiSwap";
+    item.ore_id = "FlexiSwap001";
+    item.anchor.trade_type = "FlexiSwap";
     // instrument left as monostate: no reverse mapper exists for this type
 
     ores::trading::domain::trade_envelope_data env;
@@ -345,8 +351,8 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
-    item.trade.identity.external_id = "UnmappedTrade001";
-    item.trade.classification.trade_type = "UnknownType";
+    item.ore_id = "UnmappedTrade001";
+    item.anchor.trade_type = "UnknownType";
     // instrument left as monostate
 
     const auto xml = exporter::export_portfolio({item});

@@ -51,12 +51,10 @@ using trading::domain::scripted_instrument;
 
 namespace {
 
-void fill_envelope(domain::trade& t,
-                   const trading::domain::trade& src,
-                   const std::optional<trading::domain::trade_envelope_data>& env) {
-    static_cast<std::string&>(t.id) = src.identity.external_id;
-    if (env)
-        t.Envelope = domain::trade_mapper::reverse_envelope(*env);
+void fill_envelope(domain::trade& t, const trading::messaging::trade_export_item& item) {
+    static_cast<std::string&>(t.id) = item.ore_id;
+    if (item.envelope)
+        t.Envelope = domain::trade_mapper::reverse_envelope(*item.envelope);
 }
 
 // The generated domain exports to_string for every enumeration but no
@@ -80,16 +78,14 @@ std::optional<domain::oreTradeType> parse_ore_trade_type(const std::string& text
 // envelope is keyed by the trade, not the product, so dropping the whole
 // trade would lose it. Returns false when the type is not one the schema
 // names, which leaves no valid document to write.
-bool append_unmapped_trade(domain::portfolio& p,
-                           const trading::domain::trade& tr,
-                           const std::optional<trading::domain::trade_envelope_data>& env) {
-    const auto trade_type = parse_ore_trade_type(tr.classification.trade_type);
+bool append_unmapped_trade(domain::portfolio& p, const trading::messaging::trade_export_item& item) {
+    const auto trade_type = parse_ore_trade_type(item.anchor.trade_type);
     if (!trade_type)
         return false;
 
     domain::trade xsd_t;
     xsd_t.TradeType = *trade_type;
-    fill_envelope(xsd_t, tr, env);
+    fill_envelope(xsd_t, item);
     p.Trade.push_back(std::move(xsd_t));
     return true;
 }
@@ -121,8 +117,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
 
     domain::portfolio p;
     for (const auto& item : items) {
-        const auto& tr = item.trade;
-        const auto& tt = tr.classification.trade_type;
+        const auto& tt = item.anchor.trade_type;
 
         bool rebuilt = false;
         std::visit(
@@ -132,7 +127,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
 
                 if constexpr (std::is_same_v<T, std::monostate>) {
                     BOOST_LOG_SEV(lg(), debug)
-                        << "Skipping unmapped trade: " << tr.identity.external_id;
+                        << "Skipping unmapped trade: " << item.ore_id;
                     return;
                 } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                     if (tt == "Swap" || tt == "CrossCurrencySwap")
@@ -432,20 +427,19 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                     }
                 }
 
-                fill_envelope(xsd_t, tr, item.envelope);
+                fill_envelope(xsd_t, item);
                 p.Trade.push_back(std::move(xsd_t));
                 rebuilt = true;
             },
             trading::domain::decode_instrument(item.instrument));
 
         if (!rebuilt) {
-            if (append_unmapped_trade(p, tr, item.envelope))
+            if (append_unmapped_trade(p, item))
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Wrote trade as its type and envelope: " << tr.identity.external_id;
+                    << "Wrote trade as its type and envelope: " << item.ore_id;
             else
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Dropping trade with no ORE trade type: " << tr.identity.external_id << " ("
-                    << tr.classification.trade_type << ")";
+                BOOST_LOG_SEV(lg(), warn) << "Dropping trade with no ORE trade type: "
+                                          << item.ore_id << " (" << tt << ")";
         }
     }
 

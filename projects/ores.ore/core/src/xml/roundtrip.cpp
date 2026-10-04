@@ -63,7 +63,9 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             export_items.reserve(items.size());
             for (const auto& item : items) {
                 trading::messaging::trade_export_item export_item;
-                export_item.trade = item.trade;
+                export_item.anchor.id = item.trade.identity.id;
+                export_item.anchor.trade_type = item.trade.classification.trade_type;
+                export_item.ore_id = item.trade.identity.external_id;
                 export_item.instrument = trading::domain::encode_instrument(item.instrument);
                 export_item.envelope = item.envelope;
                 if (std::holds_alternative<std::monostate>(item.instrument))

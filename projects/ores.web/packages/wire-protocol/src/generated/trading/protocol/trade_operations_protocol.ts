@@ -24,7 +24,9 @@
  */
 import type { TradeAnchor } from '../domain/trade_anchor.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
+import type { InstrumentPayload } from '../../../trading/payload.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { TradeEnvelopeData } from '../../../trading/payload.js';
 
 /**
  * @brief Books a trade: its anchor, its booking and its first state.
@@ -62,8 +64,121 @@ export interface BookTradeResponse {
     result: Result;
 }
 
+/**
+ * @brief One trade with its resolved instrument and envelope, as an export
+ * writes it.
+ *
+ * The instrument is carried as a payload rather than as a trade_instrument
+ * variant: reflect-cpp cannot name the active alternative of that variant
+ * (see instrument_payload). The payload's type is empty when the trade has no
+ * instrument.
+ */
+export interface TradeExportItem {
+    /**
+     * @brief The trade's immutable facts.
+     */
+    anchor: TradeAnchor;
+    /**
+     * @brief The trade's ORE identifier, or its id when it has none.
+     */
+    ore_id: string;
+    /**
+     * @brief The trade's instrument, encoded.
+     */
+    instrument: InstrumentPayload;
+    /**
+     * @brief The names the trade's source used: counterparty, netting set, portfolios and additional fields. Absent when the trade has none.
+     */
+    envelope: TradeEnvelopeData | null;
+}
+
+/**
+ * @brief Exports the trades under a taxonomy node.
+ *
+ * The node is a book, a portfolio or a business unit, resolved to its books on
+ * the server; the trades are those booked in them.
+ */
+export interface ExportPortfolioRequest {
+    /**
+     * @brief The book, portfolio or business unit to export.
+     */
+    node_id: string;
+    /**
+     * @brief The first trade to export, in trade id order.
+     */
+    offset: number;
+    /**
+     * @brief The most trades to export.
+     */
+    limit: number;
+}
+
+/**
+ * @brief The exported trades.
+ */
+export interface ExportPortfolioResponse {
+    /**
+     * @brief Whether the export ran.
+     */
+    success: boolean;
+    /**
+     * @brief Why the export failed, when it did.
+     */
+    message: string;
+    /**
+     * @brief The trades, in trade id order.
+     */
+    items: TradeExportItem[];
+}
+
+/**
+ * @brief Exports the trades booked in a set of books to object storage.
+ *
+ * The handler serialises the export items to MsgPack, compresses them with
+ * gzip and uploads them, so a report run passes a storage key rather than the
+ * trades through NATS.
+ */
+export interface ExportTradesToStorageRequest {
+    /**
+     * @brief The books whose trades to export.
+     */
+    book_ids: string[];
+    /**
+     * @brief The target bucket: the platform bucket, ores.
+     */
+    storage_bucket: string;
+    /**
+     * @brief The target key, such as reporting/runs/{instance_id}/trades.msgpack.
+     */
+    storage_key: string;
+}
+
+/**
+ * @brief The outcome of an export to storage.
+ */
+export interface ExportTradesToStorageResponse {
+    /**
+     * @brief Whether the export ran.
+     */
+    success: boolean;
+    /**
+     * @brief Why the export failed, when it did.
+     */
+    message: string;
+    /**
+     * @brief How many trades were written.
+     */
+    trade_count: number;
+    /**
+     * @brief The key written, echoed from the request.
+     */
+    storage_key: string;
+}
+
 export const subjects = {
     book_trade_request: 'trading.v1.trades.book',
+    export_portfolio_request: 'trading.v1.trades.portfolio.export',
+    export_trades_to_storage_request: 'trading.v1.trades.export-to-storage',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -72,4 +187,6 @@ export const subjects = {
  */
 export const requiresSession = {
     book_trade_request: true,
+    export_portfolio_request: true,
+    export_trades_to_storage_request: true,
 } as const;

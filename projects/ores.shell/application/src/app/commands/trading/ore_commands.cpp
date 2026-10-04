@@ -29,7 +29,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>

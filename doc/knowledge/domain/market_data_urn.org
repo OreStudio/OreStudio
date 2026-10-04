@@ -307,6 +307,7 @@ models, the key shape table and =series_key_registry=.
 
 * See also
 
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] — the story whose decisions this record states.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the per-type quote-key shapes ORE documents.
 - [[id:3B26D5E6-E5EB-4B98-A7EE-4D9E3A374131][Gap analysis: ORE Studio identifiers vs ORE's real addressing scheme]] — the gaps the first design set out to close.

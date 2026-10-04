@@ -8,7 +8,7 @@
 #+filetags: :web:ux:journeys:v0:sprint_26:
 #+category: feature
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-04
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -17,7 +17,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 Every journey in the [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] catalogue runs in =ores.web=, against the real
-server. The catalogue holds 22 journeys in eight topic groups. This
+server. The catalogue holds 30 journeys in nine topic groups. This
 story orders the groups. Each group has its own story, and each of
 those carries its own completion.
 
@@ -75,6 +75,7 @@ unblocks what.
 | 6 | [[id:EC3EDE29-5A12-44C0-80A5-D96ADAF2898F][Membership]] | Choose where I work, Draw the reporting line | not yet scaffolded |
 | 7 | [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory]] | See who has access, Bring someone in, Register a service account | not yet scaffolded |
 | 8 | [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy]] | Tune the tenant, Retire or reset a tenant | not yet scaffolded |
+| 9 | [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] | See the running services, Watch the compute grid, Watch the message bus, Read the telemetry logs, Check the versions and the database | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
 
 Setup is first for two reasons. It is the only group that runs on an
 empty installation, so it is the only one that can be demonstrated from
@@ -84,6 +85,11 @@ Setup story lands the shared step library that every later group reads.
 Entry is second although First run ends in a sign-in. The sign-in
 itself already works through =POST /api/session=; what the Entry story
 adds is the screen, self-registration, and the failure paths.
+
+Operations is last. It is the catalogue's newest group and the only one
+whose design arrived settled: its journeys were written and accepted
+before its story opened. It needs the runtime and nothing else, so this
+row is a matter of when its group is built, not what it waits on.
 
 * Decisions
 

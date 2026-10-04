@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: BAE5860D-49CF-4063-A63A-76DA8AFAB166
+:END:
+#+title: Task: Carry the host on the heartbeat
+#+description: Initial task for: Implement the operations journeys in ores.web
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/carry-the-host-on-the-heartbeat
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every service heartbeat carries the service name, the instance id and the
+release, and no host. The compute side is the mirror: each node sample
+carries the host id, and no instance id. Nothing joins an instance to the
+machine it runs on, or a compute wrapper to its node
+([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]).
+This task adds =host_id= to =service_heartbeat_message= and stores it on
+=service_sample= beside =instance_id=, so the grid's wrapper panel and the
+services roster can name the machine behind an instance.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- =service_heartbeat_message= carries a =host_id=, and =service_sample=
+  stores it beside =instance_id=.
+- The publishing side fills it wherever it already holds the id, the compute
+  wrapper first: the wrapper already stamps its node samples with it.
+- The capture [[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]
+  moves out of the inbox with this task's evidence.
+- The change regenerates cleanly, and the telemetry and compute tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The design is settled on
+[[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]:
+one field, not a new entity. The alternative — a release and an instance id
+on the node sample — answers the grid's join only, and leaves the services
+screen blind.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

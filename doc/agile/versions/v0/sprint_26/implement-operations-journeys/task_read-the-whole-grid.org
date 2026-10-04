@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: E3FF9B97-A7F5-494F-BECE-DBB8910244C6
+:END:
+#+title: Task: Read the whole grid
+#+description: Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/read-the-whole-grid
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The grid belongs to the installation: one set of hosts runs every tenant's
+work, and the samples describe the fleet, not a tenant's slice of it. The
+reads filter by the session's tenant anyway — =latest_node_samples= selects
+=DISTINCT ON (host_id) ... WHERE tenant_id = $1=, and the grid summary read
+follows the session — so an administrator reads a shorter table and cannot
+tell it is short
+([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]).
+This task drops the tenant filter from the grid reads and guards them with
+the permission the journey records; the stored =tenant_id= stays on the
+sample as attribution, so *the whole grid* and *who may see it* stay two
+separate decisions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- =latest_node_samples= and the grid summary read carry no tenant filter, and
+  a test proves the whole fleet comes back whatever tenant the session
+  carries.
+- The read checks the permission the journey records, so the read serves the
+  whole grid and only the people allowed to see it.
+- The shell's grid stats command reaches the same read.
+- The capture [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]
+  moves out of the inbox with this task's evidence.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 4DC1AFB6-F687-4314-A5B3-C7A786A93F57
+:END:
+#+title: Task: Keep the failure fields on the node summary
+#+description: Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/keep-the-failure-fields-on-the-node-summary
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The node sample carries the count of failed tasks and the longest task the
+node ran: =tasks_failed= and =max_task_duration_ms=. The reply's per-node
+summary, =node_stats_summary=, carries neither, so both fields are stored and
+dropped on the way out — and a node failing every task reads as a node doing
+nothing
+([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]).
+This task carries both fields into =node_stats_summary=, so the node row
+states the failures beside the completions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- =node_stats_summary= carries =tasks_failed= and =max_task_duration_ms=.
+- The grid reply and the shell's grid stats command surface both fields.
+- The capture [[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]
+  moves out of the inbox with this task's evidence.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

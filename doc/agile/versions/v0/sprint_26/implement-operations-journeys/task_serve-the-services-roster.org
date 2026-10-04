@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: D495FB06-E711-4DCB-A4C6-2E4722FF973F
+:END:
+#+title: Task: Serve the services roster
+#+description: Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/serve-the-services-roster
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The services screen shows the installation as a roster: one row per expected
+instance, kept whether it reports or not, with a state word for each. The
+screen needs two reads and neither exists
+([[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]).
+The expected services and their replica counts live in the service registry,
+a code-generation model for the deployment tooling with no operation. The
+states beyond running have no source at all: running means a sample arrived
+within five minutes, and stopped or missing are answerable by nothing. This
+task serves the roster: the expected rows with their replica counts, and the
+last report of every instance at any age, so a quiet instance keeps its row
+with the age of its last report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- A read serves the installation's expected services and their replica
+  counts, from the service registry.
+- A read serves the last report of every instance at any age, so running,
+  stopped and missing each have a source.
+- The reads carry the permission the journey records, or the task says why
+  not and links the tree-wide capture.
+- The capture [[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]
+  moves out of the inbox with this task's evidence.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The capture names the two candidates for the state source — a state read, or
+the latest sample per instance at any age — and the task settles which. The
+registry already holds the truth the expected rows need: every service, its
+=replicas= and its =enabled= flag, one read away.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

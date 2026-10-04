@@ -117,8 +117,7 @@ inline std::optional<std::string> auth_tenant_refusal(const ores::database::cont
     const auto tenants = repository::read_active_tenant_by_id(system_ctx, tenant->to_uuid());
     if (tenants.empty())
         return "The tenant is closed.";
-    const auto& status = tenants.front().status;
-    if (status != "active" && status != "bootstrapping")
+    if (!repository::admits_sign_in(tenants.front().status))
         return "The tenant is not active.";
     return std::nullopt;
 }

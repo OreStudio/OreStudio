@@ -197,7 +197,6 @@ export async function removeTenant(
 }
 
 /**
-
  * What a roster read narrows by. Every member is optional; the ones set must
  * all hold.
  */

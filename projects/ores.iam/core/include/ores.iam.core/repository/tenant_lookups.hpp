@@ -43,6 +43,17 @@ namespace ores::iam::repository {
 // run under the system-scoped base context, never under a peer tenant's.
 
 /**
+ * @brief Whether a tenant in this status lets people sign in.
+ *
+ * Sign-in and token refresh both ask, so the two refuse the same tenants: one
+ * that is suspended or terminated admits nobody, and one still being set up
+ * admits its administrator.
+ */
+inline bool admits_sign_in(const std::string& status) {
+    return status == "active" || status == "bootstrapping";
+}
+
+/**
  * @brief Reads the latest version of all non-deleted tenants, ordered by name.
  */
 ORES_IAM_CORE_EXPORT std::vector<domain::tenant>

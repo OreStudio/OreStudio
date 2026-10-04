@@ -21,11 +21,11 @@ A person sees the work they can do, in their own words. The home screen shows ar
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Done: every task is merged or in its final PR. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance
@@ -47,6 +47,21 @@ A person sees the work they can do, in their own words. The home screen shows ar
 | [[id:8EA442E6-4198-43A2-81AC-9145C69C00B8][Show the system tenant]] | DONE | 2026-10-04 | 2026-10-04 | List the system tenant on the Tenants roster and open it like any other tenant, reading its parties and people as the session's own tenant. |
 
 * Decisions
+
+- *The words come from the person, not the design.* No screen says journey,
+  and no screen asks anyone to enter or leave a tenant. A tenant opens like
+  any record.
+- *A tenant is read inside it for one read.* The BFF enters the tenant, reads
+  and leaves for each tab read; the tenant token never reaches the browser's
+  session. The session's own tenant, the system tenant for a system
+  administrator, is read as the session.
+- *Images ride the page's visit.* A page reads the pictures and flags it names
+  in the same visit and the BFF keeps them, so a page costs one entry.
+- *The system tenant is shown but never removed.* The roster lists it; the
+  web does not offer its removal and the table's check refuses it.
+- *Removal is the generic delete.* It closes the row and keeps the data; sign-in
+  and token refresh then refuse the tenant, so access ends within one access
+  lifetime.
 
 * Out of scope
 

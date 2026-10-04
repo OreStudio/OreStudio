@@ -244,7 +244,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
     const auto& tenant_status = tenants.front().status;
-    if (tenant_status != "active" && tenant_status != "bootstrapping") {
+    if (!repository::admits_sign_in(tenant_status)) {
         BOOST_LOG_SEV(lg(), warn) << "Login refused for a tenant in status '" << tenant_status
                                   << "' for username: " << username;
         throw login_error(error_code::tenant_inactive, "Tenant is not active");

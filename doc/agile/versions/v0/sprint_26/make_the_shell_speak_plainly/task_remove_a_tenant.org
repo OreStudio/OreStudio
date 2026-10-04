@@ -114,7 +114,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A doc comment lost its summary and kept a blank line | wire-protocol/src/tenants.ts | Accept | Restored |
+| 2 | A failed tenant read during refresh must not read as a closed tenant | ores.iam auth_handler.hpp | Decline | The read throws, and the handler's catch replies a failure with the error, not "closed" |
+| 3 | Sign-in and refresh compare status strings separately | auth_handler.hpp, account_operations_service.cpp | Accept | Both call =repository::admits_sign_in= |
+| 4 | The typed-code check and the order of the refusals | bff/src/server.ts | Decline | The reviewer confirmed both are correct |
+| 5 | The new =conflict= code has no client handling | wire-protocol/src/contracts.ts | Decline | The dialog shows the message, and the shared schema parses the code |
+| 6 | Check =ApiFailure= is still used in the session provider | web/src/session/SessionProvider.tsx | Decline | It is: the retry rule uses it |
+| 7 | Enter does not submit; dialog state per row | web/src/pages/RemoveTenantDialog.tsx | Decline | Intended for a destructive action; the dialog mounts per removal |
+| 8 | Run the C++ tests before merge | ores.iam core tests | Accept | Ran after the agreed recreate: 204 cases pass |
 
 * Result
 

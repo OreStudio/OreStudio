@@ -60,6 +60,16 @@ handler, and add components to the registry as their seeds complete. The HTTP
 side needs a route-level permission declaration, so the check stops depending on
 each route remembering to call a helper.
 
+** A marketdata instance, 2026-10-04
+
+=marketdata.v1.series.export-to-storage=, served by =market_series_handler.hpp=,
+checks no code, so any authenticated caller can export its tenant's whole market
+data set to object storage. =ReportingService= is its only caller. The ORE
+export, =marketdata.v1.export= in =ore_export_handler.hpp=, is a different
+handler and is gated: it checks =marketdata::observations:read=.
+[[id:0666E3FB-11E1-4595-A430-018D2FC2A1C4][Gate and seed the marketdata permissions]]
+found it while mapping the callers of marketdata handlers.
+
 * References
 
 - =projects/ores.codegen/scripts/check_handler_permissions.py:39= — =REGISTRY=, and =:44-62= for the scan

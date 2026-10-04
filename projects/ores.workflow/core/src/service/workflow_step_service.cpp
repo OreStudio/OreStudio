@@ -115,14 +115,22 @@ workflow_step_service::list_workflow_steps(const messaging::list_workflow_steps_
             "A list of workflow steps cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.steps = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_step_count(ctx_);
+    if (request.filter && request.filter->workflow_id_one_of &&
+        request.filter->workflow_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in workflow_id_one_of.";
+        return response;
+    }
+    response.steps =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_step_count(ctx_, request.filter);
     return response;
 }
 
@@ -138,10 +146,17 @@ workflow_step_service::list_by_workflow_id_workflow_steps(
             "A list of workflow steps cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->workflow_id_one_of &&
+        request.filter->workflow_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in workflow_id_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -152,8 +167,8 @@ workflow_step_service::list_by_workflow_id_workflow_steps(
     }
     const auto relation = boost::uuids::to_string(request.workflow_id);
     response.steps = repo_.read_latest_by_workflow_id(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_step_count_by_workflow_id(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_step_count_by_workflow_id(ctx_, relation, request.filter);
     return response;
 }
 

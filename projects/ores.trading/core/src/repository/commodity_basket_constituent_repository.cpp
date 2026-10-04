@@ -306,6 +306,7 @@ commodity_basket_constituent_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
+        std::nullopt,
         [](const auto& entities) { return commodity_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest commodity basket constituents with pagination.");
@@ -316,21 +317,12 @@ commodity_basket_constituent_repository::get_total_commodity_basket_constituent_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity basket constituent count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<commodity_basket_constituent_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<commodity_basket_constituent_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active commodity basket constituent count: " << count;
-    return count;
+    return execute_count_query<commodity_basket_constituent_entity>(
+        ctx, query, std::nullopt, lg(), "Counting commodity basket constituents");
 }
 
 std::vector<domain::commodity_basket_constituent>

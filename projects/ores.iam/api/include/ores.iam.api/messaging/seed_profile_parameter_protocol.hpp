@@ -69,6 +69,8 @@ struct seed_profile_parameter_lookup {
 
 struct seed_profile_parameters_filter {
     std::optional<boost::uuids::uuid> seed_profile_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> seed_profile_id_one_of;
 };
 
 struct seed_profile_parameter_event {

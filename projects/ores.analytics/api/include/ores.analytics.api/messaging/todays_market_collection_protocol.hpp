@@ -64,6 +64,8 @@ struct todays_market_collection_lookup {
 
 struct todays_market_collections_filter {
     std::optional<boost::uuids::uuid> todays_market_config_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> todays_market_config_id_one_of;
 };
 
 struct todays_market_collection_event {

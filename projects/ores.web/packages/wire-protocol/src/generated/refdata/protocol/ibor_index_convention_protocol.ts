@@ -56,6 +56,10 @@ export interface IborIndexConventionLookup {
     ibor_index_convention: IborIndexConvention | null;
 }
 
+export interface IborIndexConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface IborIndexConventionEvent {
     event_id: string;
     key: IborIndexConventionKey;
@@ -80,6 +84,7 @@ export interface ListIborIndexConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: IborIndexConventionsFilter | null;
 }
 
 export interface ListIborIndexConventionsResponse {

@@ -63,6 +63,10 @@ struct pricing_model_product_lookup {
     std::optional<ores::analytics::domain::pricing_model_product> pricing_model_product;
 };
 
+struct pricing_model_products_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct pricing_model_product_event {
     boost::uuids::uuid event_id;
     pricing_model_product_key key;
@@ -96,6 +100,7 @@ struct list_pricing_model_products_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<pricing_model_products_filter> filter;
 };
 
 struct list_pricing_model_products_response {

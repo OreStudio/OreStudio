@@ -71,6 +71,10 @@ struct fx_asian_forward_instrument_lookup {
     std::optional<ores::trading::domain::fx_asian_forward_instrument> fx_asian_forward_instrument;
 };
 
+struct fx_asian_forward_instruments_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct fx_asian_forward_instrument_event {
     boost::uuids::uuid event_id;
     fx_asian_forward_instrument_key key;
@@ -104,6 +108,7 @@ struct list_fx_asian_forward_instruments_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fx_asian_forward_instruments_filter> filter;
 };
 
 struct list_fx_asian_forward_instruments_response {

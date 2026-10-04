@@ -72,6 +72,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::workspaces_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -246,7 +264,8 @@ std::vector<domain::workspace>
 workspace_repository::read_latest(context ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
-                                  const ores::utility::domain::order& order) {
+                                  const ores::utility::domain::order& order,
+                                  const std::optional<messaging::workspaces_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workspaces with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -259,30 +278,23 @@ workspace_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return workspace_mapper::map(entities); },
         lg(),
         "Reading latest workspaces with pagination.");
 }
 
-std::uint32_t workspace_repository::get_total_workspace_count(context ctx) {
+std::uint32_t workspace_repository::get_total_workspace_count(
+    context ctx, const std::optional<messaging::workspaces_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workspace count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<workspace_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<workspace_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active workspace count: " << count;
-    return count;
+    return execute_count_query<workspace_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting workspaces");
 }
 
 std::vector<domain::workspace>

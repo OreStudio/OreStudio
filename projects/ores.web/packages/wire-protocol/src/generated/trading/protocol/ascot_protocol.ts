@@ -52,6 +52,10 @@ export interface AscotLookup {
     ascot: Ascot | null;
 }
 
+export interface AscotsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface AscotEvent {
     event_id: string;
     key: AscotKey;
@@ -76,6 +80,7 @@ export interface ListAscotsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AscotsFilter | null;
 }
 
 export interface ListAscotsResponse {

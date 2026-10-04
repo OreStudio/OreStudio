@@ -57,6 +57,10 @@ export interface EquityPositionInstrumentLookup {
     equity_position_instrument: EquityPositionInstrument | null;
 }
 
+export interface EquityPositionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityPositionInstrumentEvent {
     event_id: string;
     key: EquityPositionInstrumentKey;
@@ -81,6 +85,7 @@ export interface ListEquityPositionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityPositionInstrumentsFilter | null;
 }
 
 export interface ListEquityPositionInstrumentsResponse {

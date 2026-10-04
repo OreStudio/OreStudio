@@ -63,6 +63,10 @@ export interface ReportDefinitionLookup {
     report_definition: ReportDefinition | null;
 }
 
+export interface ReportDefinitionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ReportDefinitionEvent {
     event_id: string;
     key: ReportDefinitionKey;
@@ -87,6 +91,7 @@ export interface ListReportDefinitionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReportDefinitionsFilter | null;
 }
 
 export interface ListReportDefinitionsResponse {

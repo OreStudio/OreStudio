@@ -60,6 +60,10 @@ export interface EquityVarianceSwapInstrumentLookup {
     equity_variance_swap_instrument: EquityVarianceSwapInstrument | null;
 }
 
+export interface EquityVarianceSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityVarianceSwapInstrumentEvent {
     event_id: string;
     key: EquityVarianceSwapInstrumentKey;
@@ -84,6 +88,7 @@ export interface ListEquityVarianceSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityVarianceSwapInstrumentsFilter | null;
 }
 
 export interface ListEquityVarianceSwapInstrumentsResponse {

@@ -58,6 +58,7 @@ export interface AppVersionPlatformLookup {
 
 export interface AppVersionPlatformsFilter {
     app_version_id: string | null;
+    app_version_id_one_of: string[] | null;
 }
 
 export interface ListAppVersionPlatformsRequest {

@@ -60,6 +60,10 @@ struct origin_dimension_lookup {
     std::optional<ores::dq::domain::origin_dimension> origin_dimension;
 };
 
+struct origin_dimensions_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct origin_dimension_event {
     boost::uuids::uuid event_id;
     origin_dimension_key key;
@@ -93,6 +97,7 @@ struct list_origin_dimensions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<origin_dimensions_filter> filter;
 };
 
 struct list_origin_dimensions_response {

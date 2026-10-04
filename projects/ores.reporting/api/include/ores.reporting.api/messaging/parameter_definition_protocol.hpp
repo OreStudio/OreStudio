@@ -66,6 +66,8 @@ struct parameter_definition_lookup {
 
 struct parameter_definitions_filter {
     std::optional<std::string> parameter_value_domain_code;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> parameter_value_domain_code_one_of;
 };
 
 struct parameter_definition_event {

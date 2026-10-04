@@ -52,6 +52,10 @@ export interface PayoffTypeLookup {
     payoff_type: PayoffType | null;
 }
 
+export interface PayoffTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PayoffTypeEvent {
     event_id: string;
     key: PayoffTypeKey;
@@ -76,6 +80,7 @@ export interface ListPayoffTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PayoffTypesFilter | null;
 }
 
 export interface ListPayoffTypesResponse {

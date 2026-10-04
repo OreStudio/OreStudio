@@ -57,6 +57,10 @@ export interface CodingSchemeLookup {
     coding_scheme: CodingScheme | null;
 }
 
+export interface CodingSchemesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CodingSchemeEvent {
     event_id: string;
     key: CodingSchemeKey;
@@ -81,6 +85,7 @@ export interface ListCodingSchemesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CodingSchemesFilter | null;
 }
 
 export interface ListCodingSchemesResponse {

@@ -53,6 +53,10 @@ export interface CodingSchemeAuthorityTypeLookup {
     coding_scheme_authority_type: CodingSchemeAuthorityType | null;
 }
 
+export interface CodingSchemeAuthorityTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CodingSchemeAuthorityTypeEvent {
     event_id: string;
     key: CodingSchemeAuthorityTypeKey;
@@ -77,6 +81,7 @@ export interface ListCodingSchemeAuthorityTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CodingSchemeAuthorityTypesFilter | null;
 }
 
 export interface ListCodingSchemeAuthorityTypesResponse {

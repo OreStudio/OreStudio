@@ -66,6 +66,10 @@ export interface CurveCorrelationConfigLookup {
     curve_correlation_config: CurveCorrelationConfig | null;
 }
 
+export interface CurveCorrelationConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveCorrelationConfigEvent {
     event_id: string;
     key: CurveCorrelationConfigKey;
@@ -90,6 +94,7 @@ export interface ListCurveCorrelationConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveCorrelationConfigsFilter | null;
 }
 
 export interface ListCurveCorrelationConfigsResponse {

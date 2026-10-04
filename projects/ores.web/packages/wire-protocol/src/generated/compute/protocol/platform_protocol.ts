@@ -58,6 +58,10 @@ export interface PlatformLookup {
     platform: Platform | null;
 }
 
+export interface PlatformsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface PlatformEvent {
     event_id: string;
     key: PlatformKey;
@@ -82,6 +86,7 @@ export interface ListPlatformsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PlatformsFilter | null;
 }
 
 export interface ListPlatformsResponse {

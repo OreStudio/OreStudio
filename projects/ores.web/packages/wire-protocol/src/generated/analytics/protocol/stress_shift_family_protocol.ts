@@ -52,6 +52,10 @@ export interface StressShiftFamilyLookup {
     stress_shift_family: StressShiftFamily | null;
 }
 
+export interface StressShiftFamiliesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface StressShiftFamilyEvent {
     event_id: string;
     key: StressShiftFamilyKey;
@@ -76,6 +80,7 @@ export interface ListStressShiftFamiliesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: StressShiftFamiliesFilter | null;
 }
 
 export interface ListStressShiftFamiliesResponse {

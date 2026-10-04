@@ -54,6 +54,10 @@ export interface StressTestLibraryLookup {
     stress_test_library: StressTestLibrary | null;
 }
 
+export interface StressTestLibrariesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface StressTestLibraryEvent {
     event_id: string;
     key: StressTestLibraryKey;
@@ -78,6 +82,7 @@ export interface ListStressTestLibrariesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: StressTestLibrariesFilter | null;
 }
 
 export interface ListStressTestLibrariesResponse {

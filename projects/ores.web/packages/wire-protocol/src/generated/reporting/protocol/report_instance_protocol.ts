@@ -59,6 +59,10 @@ export interface ReportInstanceLookup {
     report_instance: ReportInstance | null;
 }
 
+export interface ReportInstancesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ReportInstanceEvent {
     event_id: string;
     key: ReportInstanceKey;
@@ -83,6 +87,7 @@ export interface ListReportInstancesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReportInstancesFilter | null;
 }
 
 export interface ListReportInstancesResponse {

@@ -54,6 +54,10 @@ export interface TenorResolutionAlgorithmLookup {
     tenor_resolution_algorithm: TenorResolutionAlgorithm | null;
 }
 
+export interface TenorResolutionAlgorithmsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorResolutionAlgorithmEvent {
     event_id: string;
     key: TenorResolutionAlgorithmKey;
@@ -78,6 +82,7 @@ export interface ListTenorResolutionAlgorithmsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorResolutionAlgorithmsFilter | null;
 }
 
 export interface ListTenorResolutionAlgorithmsResponse {

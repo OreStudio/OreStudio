@@ -56,6 +56,10 @@ export interface CrmDriverPairLookup {
     crm_driver_pair: CrmDriverPair | null;
 }
 
+export interface CrmDriverPairsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CrmDriverPairEvent {
     event_id: string;
     key: CrmDriverPairKey;
@@ -80,6 +84,7 @@ export interface ListCrmDriverPairsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CrmDriverPairsFilter | null;
 }
 
 export interface ListCrmDriverPairsResponse {

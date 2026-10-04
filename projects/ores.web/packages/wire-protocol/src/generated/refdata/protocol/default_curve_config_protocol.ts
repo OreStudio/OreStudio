@@ -53,6 +53,10 @@ export interface DefaultCurveConfigLookup {
     default_curve_config: DefaultCurveConfig | null;
 }
 
+export interface DefaultCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface DefaultCurveConfigEvent {
     event_id: string;
     key: DefaultCurveConfigKey;
@@ -77,6 +81,7 @@ export interface ListDefaultCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DefaultCurveConfigsFilter | null;
 }
 
 export interface ListDefaultCurveConfigsResponse {

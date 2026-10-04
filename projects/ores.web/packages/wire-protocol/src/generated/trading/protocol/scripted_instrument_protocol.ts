@@ -58,6 +58,10 @@ export interface ScriptedInstrumentLookup {
     scripted_instrument: ScriptedInstrument | null;
 }
 
+export interface ScriptedInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface ScriptedInstrumentEvent {
     event_id: string;
     key: ScriptedInstrumentKey;
@@ -82,6 +86,7 @@ export interface ListScriptedInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ScriptedInstrumentsFilter | null;
 }
 
 export interface ListScriptedInstrumentsResponse {

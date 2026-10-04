@@ -54,6 +54,10 @@ export interface ConcurrencyPolicyLookup {
     concurrency_policy: ConcurrencyPolicy | null;
 }
 
+export interface ConcurrencyPoliciesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ConcurrencyPolicyEvent {
     event_id: string;
     key: ConcurrencyPolicyKey;
@@ -78,6 +82,7 @@ export interface ListConcurrencyPoliciesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ConcurrencyPoliciesFilter | null;
 }
 
 export interface ListConcurrencyPoliciesResponse {

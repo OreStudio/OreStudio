@@ -61,6 +61,10 @@ struct overnight_index_convention_lookup {
     std::optional<ores::refdata::domain::overnight_index_convention> overnight_index_convention;
 };
 
+struct overnight_index_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct overnight_index_convention_event {
     boost::uuids::uuid event_id;
     overnight_index_convention_key key;
@@ -94,6 +98,7 @@ struct list_overnight_index_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<overnight_index_conventions_filter> filter;
 };
 
 struct list_overnight_index_conventions_response {

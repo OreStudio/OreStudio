@@ -61,6 +61,9 @@ export interface CalendarEventLookup {
 export interface CalendarEventsFilter {
     calendar_code: string | null;
     diary_entry_type: string | null;
+    id_one_of: string[] | null;
+    calendar_code_one_of: string[] | null;
+    diary_entry_type_one_of: string[] | null;
 }
 
 export interface CalendarEventEvent {

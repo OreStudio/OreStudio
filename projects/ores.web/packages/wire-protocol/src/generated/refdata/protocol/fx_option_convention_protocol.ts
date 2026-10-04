@@ -59,6 +59,10 @@ export interface FxOptionConventionLookup {
     fx_option_convention: FxOptionConvention | null;
 }
 
+export interface FxOptionConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FxOptionConventionEvent {
     event_id: string;
     key: FxOptionConventionKey;
@@ -83,6 +87,7 @@ export interface ListFxOptionConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxOptionConventionsFilter | null;
 }
 
 export interface ListFxOptionConventionsResponse {

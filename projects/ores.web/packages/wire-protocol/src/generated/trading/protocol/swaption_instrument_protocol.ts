@@ -59,6 +59,10 @@ export interface SwaptionInstrumentLookup {
     swaption_instrument: SwaptionInstrument | null;
 }
 
+export interface SwaptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface SwaptionInstrumentEvent {
     event_id: string;
     key: SwaptionInstrumentKey;
@@ -83,6 +87,7 @@ export interface ListSwaptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SwaptionInstrumentsFilter | null;
 }
 
 export interface ListSwaptionInstrumentsResponse {

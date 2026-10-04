@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"code"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::curve_segment_types_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("code", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -249,11 +267,12 @@ void curve_segment_type_repository::remove(context ctx, const std::string& code)
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::curve_segment_type>
-curve_segment_type_repository::read_latest(context ctx,
-                                           std::uint32_t offset,
-                                           std::uint32_t limit,
-                                           const ores::utility::domain::order& order) {
+std::vector<domain::curve_segment_type> curve_segment_type_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::curve_segment_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve segment types with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -266,30 +285,23 @@ curve_segment_type_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"code"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return curve_segment_type_mapper::map(entities); },
         lg(),
         "Reading latest curve segment types with pagination.");
 }
 
-std::uint32_t curve_segment_type_repository::get_total_segment_type_count(context ctx) {
+std::uint32_t curve_segment_type_repository::get_total_segment_type_count(
+    context ctx, const std::optional<messaging::curve_segment_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve segment type count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<curve_segment_type_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<curve_segment_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active curve segment type count: " << count;
-    return count;
+    return execute_count_query<curve_segment_type_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting curve segment types");
 }
 
 std::vector<domain::curve_segment_type>

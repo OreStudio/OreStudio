@@ -53,6 +53,10 @@ export interface AppLookup {
     app: App | null;
 }
 
+export interface AppsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface AppEvent {
     event_id: string;
     key: AppKey;
@@ -77,6 +81,7 @@ export interface ListAppsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AppsFilter | null;
 }
 
 export interface ListAppsResponse {

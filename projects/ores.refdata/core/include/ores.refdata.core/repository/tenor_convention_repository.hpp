@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/messaging/tenor_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -138,20 +139,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::tenor_convention>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::tenor_conventions_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active tenor conventions.
      * @param ctx Repository context with database connection
      * @return Total number of active tenor conventions
      */
-    std::uint32_t get_total_convention_count(context ctx);
+    std::uint32_t get_total_convention_count(
+        context ctx,
+        const std::optional<messaging::tenor_conventions_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a tenor convention by closing its temporal validity.

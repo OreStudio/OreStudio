@@ -65,6 +65,10 @@ struct report_configurations_filter {
     std::optional<boost::uuids::uuid> report_definition_id;
     std::optional<std::string> configuration_type_code;
     std::optional<boost::uuids::uuid> configuration_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> report_definition_id_one_of;
+    std::optional<std::vector<std::string>> configuration_type_code_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
 };
 
 struct report_configuration_event {

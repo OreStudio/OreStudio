@@ -59,6 +59,10 @@ export interface IrCurveBootstrapConfigLookup {
     ir_curve_bootstrap_config: IrCurveBootstrapConfig | null;
 }
 
+export interface IrCurveBootstrapConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface IrCurveBootstrapConfigEvent {
     event_id: string;
     key: IrCurveBootstrapConfigKey;
@@ -83,6 +87,7 @@ export interface ListIrCurveBootstrapConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: IrCurveBootstrapConfigsFilter | null;
 }
 
 export interface ListIrCurveBootstrapConfigsResponse {

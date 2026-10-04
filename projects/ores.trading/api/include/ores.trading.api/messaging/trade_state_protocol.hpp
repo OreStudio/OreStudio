@@ -60,6 +60,10 @@ struct trade_state_lookup {
     std::optional<ores::trading::domain::trade_state> trade_state;
 };
 
+struct trade_states_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct trade_state_event {
     boost::uuids::uuid event_id;
     trade_state_key key;
@@ -93,6 +97,7 @@ struct list_trade_states_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_states_filter> filter;
 };
 
 struct list_trade_states_response {

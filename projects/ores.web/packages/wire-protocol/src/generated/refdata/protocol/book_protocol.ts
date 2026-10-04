@@ -67,6 +67,8 @@ export interface BookLookup {
 
 export interface BooksFilter {
     parent_portfolio_id: string | null;
+    id_one_of: string[] | null;
+    parent_portfolio_id_one_of: string[] | null;
 }
 
 export interface BookEvent {

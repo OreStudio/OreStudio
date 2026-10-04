@@ -237,6 +237,7 @@ risk_report_config_repository::read_latest_by_report_definition_id(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        std::nullopt,
         [](const auto& entities) { return risk_report_config_mapper::map(entities); },
         lg(),
         "Reading latest risk report configs by report_definition_id.");
@@ -249,24 +250,14 @@ std::uint32_t risk_report_config_repository::get_total_config_count_by_report_de
         << report_definition_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<risk_report_config_entity>(sqlgen::count().as<"count">()) |
+        sqlgen::read<std::vector<risk_report_config_entity>> |
         where("tenant_id"_c == tid && "report_definition_id"_c == report_definition_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+              "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active risk report configs count by report_definition_id: "
-                               << count;
-    return count;
+    return execute_count_query<risk_report_config_entity>(
+        ctx, query, std::nullopt, lg(), "Counting risk report configs by report_definition_id");
 }
 
 
@@ -320,6 +311,7 @@ risk_report_config_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        std::nullopt,
         [](const auto& entities) { return risk_report_config_mapper::map(entities); },
         lg(),
         "Reading latest risk report configs with pagination.");
@@ -329,21 +321,12 @@ std::uint32_t risk_report_config_repository::get_total_config_count(context ctx)
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active risk report config count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<risk_report_config_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active risk report config count: " << count;
-    return count;
+    return execute_count_query<risk_report_config_entity>(
+        ctx, query, std::nullopt, lg(), "Counting risk report configs");
 }
 
 std::vector<domain::risk_report_config>

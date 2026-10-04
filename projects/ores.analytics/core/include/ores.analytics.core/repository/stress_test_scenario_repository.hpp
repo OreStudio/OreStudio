@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_CORE_REPOSITORY_STRESS_TEST_SCENARIO_REPOSITORY_HPP
 
 #include "ores.analytics.api/domain/stress_test_scenario.hpp"
+#include "ores.analytics.api/messaging/stress_test_scenario_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -138,20 +139,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::stress_test_scenario>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::stress_test_scenario> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::stress_test_scenarios_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active stress test scenarios.
      * @param ctx Repository context with database connection
      * @return Total number of active stress test scenarios
      */
-    std::uint32_t get_total_stress_test_scenario_count(context ctx);
+    std::uint32_t get_total_stress_test_scenario_count(
+        context ctx,
+        const std::optional<messaging::stress_test_scenarios_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a stress test scenario by closing its temporal validity.

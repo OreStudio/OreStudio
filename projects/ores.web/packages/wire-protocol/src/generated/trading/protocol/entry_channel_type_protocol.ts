@@ -35,6 +35,10 @@ export interface EntryChannelTypeLookup {
     entry_channel_type: EntryChannelType | null;
 }
 
+export interface EntryChannelTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface EntryChannelTypeEvent {
     event_id: string;
     key: EntryChannelTypeKey;
@@ -48,6 +52,7 @@ export interface ListEntryChannelTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EntryChannelTypesFilter | null;
 }
 
 export interface ListEntryChannelTypesResponse {

@@ -61,6 +61,8 @@ export interface NettingSetLookup {
 
 export interface NettingSetsFilter {
     netting_agreement_id: string | null | null;
+    id_one_of: string[] | null;
+    netting_agreement_id_one_of: string[] | null;
 }
 
 export interface NettingSetEvent {

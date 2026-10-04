@@ -60,6 +60,9 @@ export interface CreditSimulationEntityConfigLookup {
 export interface CreditSimulationEntityConfigsFilter {
     credit_simulation_config_id: string | null;
     transition_matrix_id: string | null;
+    id_one_of: string[] | null;
+    credit_simulation_config_id_one_of: string[] | null;
+    transition_matrix_id_one_of: string[] | null;
 }
 
 export interface CreditSimulationEntityConfigEvent {

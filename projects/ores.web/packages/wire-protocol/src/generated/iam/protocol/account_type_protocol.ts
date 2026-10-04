@@ -54,6 +54,10 @@ export interface AccountTypeLookup {
     account_type: AccountType | null;
 }
 
+export interface AccountTypesFilter {
+    type_one_of: string[] | null;
+}
+
 export interface AccountTypeEvent {
     event_id: string;
     key: AccountTypeKey;
@@ -78,6 +82,7 @@ export interface ListAccountTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AccountTypesFilter | null;
 }
 
 export interface ListAccountTypesResponse {

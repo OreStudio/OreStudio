@@ -53,6 +53,10 @@ export interface PermissionLookup {
     permission: Permission | null;
 }
 
+export interface PermissionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface PermissionEvent {
     event_id: string;
     key: PermissionKey;
@@ -66,6 +70,7 @@ export interface ListPermissionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PermissionsFilter | null;
 }
 
 export interface ListPermissionsResponse {

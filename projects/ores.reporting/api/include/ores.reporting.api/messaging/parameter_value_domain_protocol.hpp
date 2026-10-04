@@ -61,6 +61,10 @@ struct parameter_value_domain_lookup {
     std::optional<ores::reporting::domain::parameter_value_domain> parameter_value_domain;
 };
 
+struct parameter_value_domains_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct parameter_value_domain_event {
     boost::uuids::uuid event_id;
     parameter_value_domain_key key;
@@ -94,6 +98,7 @@ struct list_parameter_value_domains_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<parameter_value_domains_filter> filter;
 };
 
 struct list_parameter_value_domains_response {

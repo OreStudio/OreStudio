@@ -60,6 +60,10 @@ struct lifecycle_event_lookup {
     std::optional<ores::trading::domain::lifecycle_event> lifecycle_event;
 };
 
+struct lifecycle_events_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct lifecycle_event_event {
     boost::uuids::uuid event_id;
     lifecycle_event_key key;
@@ -93,6 +97,7 @@ struct list_lifecycle_events_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<lifecycle_events_filter> filter;
 };
 
 struct list_lifecycle_events_response {

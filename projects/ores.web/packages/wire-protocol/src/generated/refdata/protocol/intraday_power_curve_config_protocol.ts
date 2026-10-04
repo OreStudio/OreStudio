@@ -56,6 +56,10 @@ export interface IntradayPowerCurveConfigLookup {
     intraday_power_curve_config: IntradayPowerCurveConfig | null;
 }
 
+export interface IntradayPowerCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface IntradayPowerCurveConfigEvent {
     event_id: string;
     key: IntradayPowerCurveConfigKey;
@@ -80,6 +84,7 @@ export interface ListIntradayPowerCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: IntradayPowerCurveConfigsFilter | null;
 }
 
 export interface ListIntradayPowerCurveConfigsResponse {

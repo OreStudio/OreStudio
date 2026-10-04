@@ -57,6 +57,10 @@ export interface CurveSecurityConfigLookup {
     curve_security_config: CurveSecurityConfig | null;
 }
 
+export interface CurveSecurityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveSecurityConfigEvent {
     event_id: string;
     key: CurveSecurityConfigKey;
@@ -81,6 +85,7 @@ export interface ListCurveSecurityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveSecurityConfigsFilter | null;
 }
 
 export interface ListCurveSecurityConfigsResponse {

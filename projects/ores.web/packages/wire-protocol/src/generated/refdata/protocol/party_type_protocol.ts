@@ -54,6 +54,10 @@ export interface PartyTypeLookup {
     party_type: PartyType | null;
 }
 
+export interface PartyTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PartyTypeEvent {
     event_id: string;
     key: PartyTypeKey;
@@ -78,6 +82,7 @@ export interface ListPartyTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PartyTypesFilter | null;
 }
 
 export interface ListPartyTypesResponse {

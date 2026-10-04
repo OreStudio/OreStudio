@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_REPOSITORY_WORKUNIT_REPOSITORY_HPP
 
 #include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -130,17 +131,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::workunit>
-    read_latest_by_batch_id(context ctx,
-                            const std::string& batch_id,
-                            std::uint32_t offset,
-                            std::uint32_t limit,
-                            const ores::utility::domain::order& order = {});
+    std::vector<domain::workunit> read_latest_by_batch_id(
+        context ctx,
+        const std::string& batch_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::workunits_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active workunits filtered by batch_id.
      */
-    std::uint32_t get_total_workunit_count_by_batch_id(context ctx, const std::string& batch_id);
+    std::uint32_t get_total_workunit_count_by_batch_id(
+        context ctx,
+        const std::string& batch_id,
+        const std::optional<messaging::workunits_filter>& filter = std::nullopt);
 
 
     /**
@@ -156,19 +161,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::workunit> read_latest(context ctx,
-                                              std::uint32_t offset,
-                                              std::uint32_t limit,
-                                              const ores::utility::domain::order& order = {});
+    std::vector<domain::workunit>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::workunits_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active workunits.
      * @param ctx Repository context with database connection
      * @return Total number of active workunits
      */
-    std::uint32_t get_total_workunit_count(context ctx);
+    std::uint32_t get_total_workunit_count(
+        context ctx, const std::optional<messaging::workunits_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a workunit by closing its temporal validity.

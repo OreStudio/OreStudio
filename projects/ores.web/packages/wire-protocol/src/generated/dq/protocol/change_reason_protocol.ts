@@ -58,6 +58,10 @@ export interface ChangeReasonLookup {
     change_reason: ChangeReason | null;
 }
 
+export interface ChangeReasonsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ChangeReasonEvent {
     event_id: string;
     key: ChangeReasonKey;
@@ -82,6 +86,7 @@ export interface ListChangeReasonsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ChangeReasonsFilter | null;
 }
 
 export interface ListChangeReasonsResponse {

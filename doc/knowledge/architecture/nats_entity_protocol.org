@@ -392,7 +392,9 @@ hold for a row to match.
   searchable column contains the text, ignoring case. Case is folded as the
   database's =lower= folds it, so letters outside ASCII also match. The text is
   matched literally, so =%= and =_= are not wildcards. An empty string sets no
-  condition.
+  condition. The text is at most 256 characters, because each searchable
+  column is scanned whole; a longer text is =invalid= with the code
+  =filter_too_large=.
 
 =search= is not a query language. It is one typed member with one fixed
 meaning, and a caller cannot combine terms, choose columns or choose an

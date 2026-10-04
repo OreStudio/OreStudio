@@ -63,6 +63,10 @@ export interface EquityVolatilityConfigLookup {
     equity_volatility_config: EquityVolatilityConfig | null;
 }
 
+export interface EquityVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface EquityVolatilityConfigEvent {
     event_id: string;
     key: EquityVolatilityConfigKey;
@@ -87,6 +91,7 @@ export interface ListEquityVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityVolatilityConfigsFilter | null;
 }
 
 export interface ListEquityVolatilityConfigsResponse {

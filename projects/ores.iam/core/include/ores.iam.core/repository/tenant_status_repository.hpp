@@ -27,6 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
+#include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -137,19 +138,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::tenant_status> read_latest(context ctx,
-                                                   std::uint32_t offset,
-                                                   std::uint32_t limit,
-                                                   const ores::utility::domain::order& order = {});
+    std::vector<domain::tenant_status>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::tenant_statuses_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active tenant statuses.
      * @param ctx Repository context with database connection
      * @return Total number of active tenant statuses
      */
-    std::uint32_t get_total_status_count(context ctx);
+    std::uint32_t get_total_status_count(
+        context ctx, const std::optional<messaging::tenant_statuses_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a tenant status by closing its temporal validity.

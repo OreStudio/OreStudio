@@ -55,6 +55,10 @@ export interface CrmTopologyConfigLookup {
     crm_topology_config: CrmTopologyConfig | null;
 }
 
+export interface CrmTopologyConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CrmTopologyConfigEvent {
     event_id: string;
     key: CrmTopologyConfigKey;
@@ -79,6 +83,7 @@ export interface ListCrmTopologyConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CrmTopologyConfigsFilter | null;
 }
 
 export interface ListCrmTopologyConfigsResponse {

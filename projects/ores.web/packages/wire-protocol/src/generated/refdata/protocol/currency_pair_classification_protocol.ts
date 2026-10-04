@@ -54,6 +54,10 @@ export interface CurrencyPairClassificationLookup {
     currency_pair_classification: CurrencyPairClassification | null;
 }
 
+export interface CurrencyPairClassificationsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CurrencyPairClassificationEvent {
     event_id: string;
     key: CurrencyPairClassificationKey;
@@ -78,6 +82,7 @@ export interface ListCurrencyPairClassificationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrencyPairClassificationsFilter | null;
 }
 
 export interface ListCurrencyPairClassificationsResponse {

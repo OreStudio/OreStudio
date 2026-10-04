@@ -376,6 +376,7 @@ bond_issue_leg_schedule_date_repository::read_latest(context ctx,
                     "schedule_sequence_number",
                     "sequence_number"},
                    false),
+        std::nullopt,
         [](const auto& entities) { return bond_issue_leg_schedule_date_mapper::map(entities); },
         lg(),
         "Reading latest bond issue leg schedule dates with pagination.");
@@ -386,21 +387,12 @@ bond_issue_leg_schedule_date_repository::get_total_bond_issue_leg_schedule_date_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue leg schedule date count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<bond_issue_leg_schedule_date_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<bond_issue_leg_schedule_date_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active bond issue leg schedule date count: " << count;
-    return count;
+    return execute_count_query<bond_issue_leg_schedule_date_entity>(
+        ctx, query, std::nullopt, lg(), "Counting bond issue leg schedule dates");
 }
 
 std::vector<domain::bond_issue_leg_schedule_date>

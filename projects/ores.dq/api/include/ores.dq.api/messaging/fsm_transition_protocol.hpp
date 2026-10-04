@@ -63,6 +63,10 @@ struct fsm_transition_lookup {
     std::optional<ores::dq::domain::fsm_transition> fsm_transition;
 };
 
+struct fsm_transitions_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct fsm_transition_event {
     boost::uuids::uuid event_id;
     fsm_transition_key key;
@@ -96,6 +100,7 @@ struct list_fsm_transitions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fsm_transitions_filter> filter;
 };
 
 struct list_fsm_transitions_response {

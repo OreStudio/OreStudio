@@ -58,6 +58,8 @@ export interface CounterpartyIdentifierLookup {
 
 export interface CounterpartyIdentifiersFilter {
     counterparty_id: string | null;
+    id_one_of: string[] | null;
+    counterparty_id_one_of: string[] | null;
 }
 
 export interface CounterpartyIdentifierEvent {

@@ -73,6 +73,10 @@ export interface CommodityCurveConfigLookup {
     commodity_curve_config: CommodityCurveConfig | null;
 }
 
+export interface CommodityCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CommodityCurveConfigEvent {
     event_id: string;
     key: CommodityCurveConfigKey;
@@ -97,6 +101,7 @@ export interface ListCommodityCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityCurveConfigsFilter | null;
 }
 
 export interface ListCommodityCurveConfigsResponse {

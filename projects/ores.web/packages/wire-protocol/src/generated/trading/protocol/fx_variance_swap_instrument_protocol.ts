@@ -61,6 +61,10 @@ export interface FxVarianceSwapInstrumentLookup {
     fx_variance_swap_instrument: FxVarianceSwapInstrument | null;
 }
 
+export interface FxVarianceSwapInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxVarianceSwapInstrumentEvent {
     event_id: string;
     key: FxVarianceSwapInstrumentKey;
@@ -85,6 +89,7 @@ export interface ListFxVarianceSwapInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxVarianceSwapInstrumentsFilter | null;
 }
 
 export interface ListFxVarianceSwapInstrumentsResponse {

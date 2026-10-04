@@ -54,6 +54,10 @@ export interface TenorUnitLookup {
     tenor_unit: TenorUnit | null;
 }
 
+export interface TenorUnitsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorUnitEvent {
     event_id: string;
     key: TenorUnitKey;
@@ -78,6 +82,7 @@ export interface ListTenorUnitsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorUnitsFilter | null;
 }
 
 export interface ListTenorUnitsResponse {

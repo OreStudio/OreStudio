@@ -79,6 +79,10 @@ struct inflation_cap_floor_volatility_config_lookup {
         inflation_cap_floor_volatility_config;
 };
 
+struct inflation_cap_floor_volatility_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct inflation_cap_floor_volatility_config_event {
     boost::uuids::uuid event_id;
     inflation_cap_floor_volatility_config_key key;
@@ -113,6 +117,7 @@ struct list_inflation_cap_floor_volatility_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<inflation_cap_floor_volatility_configs_filter> filter;
 };
 
 struct list_inflation_cap_floor_volatility_configs_response {

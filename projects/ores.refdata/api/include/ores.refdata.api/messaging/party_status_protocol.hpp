@@ -61,6 +61,10 @@ struct party_status_lookup {
     std::optional<ores::refdata::domain::party_status> party_status;
 };
 
+struct party_statuses_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct party_status_event {
     boost::uuids::uuid event_id;
     party_status_key key;
@@ -94,6 +98,7 @@ struct list_party_statuses_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<party_statuses_filter> filter;
 };
 
 struct list_party_statuses_response {

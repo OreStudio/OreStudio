@@ -52,6 +52,10 @@ export interface BarrierTypeLookup {
     barrier_type: BarrierType | null;
 }
 
+export interface BarrierTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BarrierTypeEvent {
     event_id: string;
     key: BarrierTypeKey;
@@ -76,6 +80,7 @@ export interface ListBarrierTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BarrierTypesFilter | null;
 }
 
 export interface ListBarrierTypesResponse {

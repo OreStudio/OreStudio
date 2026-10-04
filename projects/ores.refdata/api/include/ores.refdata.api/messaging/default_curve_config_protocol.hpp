@@ -60,6 +60,10 @@ struct default_curve_config_lookup {
     std::optional<ores::refdata::domain::default_curve_config> default_curve_config;
 };
 
+struct default_curve_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct default_curve_config_event {
     boost::uuids::uuid event_id;
     default_curve_config_key key;
@@ -93,6 +97,7 @@ struct list_default_curve_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<default_curve_configs_filter> filter;
 };
 
 struct list_default_curve_configs_response {

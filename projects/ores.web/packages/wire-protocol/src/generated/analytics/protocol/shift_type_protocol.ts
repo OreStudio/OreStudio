@@ -52,6 +52,10 @@ export interface ShiftTypeLookup {
     shift_type: ShiftType | null;
 }
 
+export interface ShiftTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ShiftTypeEvent {
     event_id: string;
     key: ShiftTypeKey;
@@ -76,6 +80,7 @@ export interface ListShiftTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ShiftTypesFilter | null;
 }
 
 export interface ListShiftTypesResponse {

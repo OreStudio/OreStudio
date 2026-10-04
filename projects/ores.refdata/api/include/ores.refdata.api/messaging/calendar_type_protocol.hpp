@@ -61,6 +61,10 @@ struct calendar_type_lookup {
     std::optional<ores::refdata::domain::calendar_type> calendar_type;
 };
 
+struct calendar_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct calendar_type_event {
     boost::uuids::uuid event_id;
     calendar_type_key key;
@@ -94,6 +98,7 @@ struct list_calendar_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<calendar_types_filter> filter;
 };
 
 struct list_calendar_types_response {

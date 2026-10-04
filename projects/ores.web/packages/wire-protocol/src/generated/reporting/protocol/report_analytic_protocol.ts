@@ -58,6 +58,8 @@ export interface ReportAnalyticLookup {
 
 export interface ReportAnalyticsFilter {
     analytic_type_code: string | null;
+    id_one_of: string[] | null;
+    analytic_type_code_one_of: string[] | null;
 }
 
 export interface ReportAnalyticEvent {

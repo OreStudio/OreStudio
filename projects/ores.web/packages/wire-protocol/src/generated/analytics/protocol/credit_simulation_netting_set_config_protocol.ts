@@ -57,6 +57,8 @@ export interface CreditSimulationNettingSetConfigLookup {
 
 export interface CreditSimulationNettingSetConfigsFilter {
     credit_simulation_config_id: string | null;
+    id_one_of: string[] | null;
+    credit_simulation_config_id_one_of: string[] | null;
 }
 
 export interface CreditSimulationNettingSetConfigEvent {

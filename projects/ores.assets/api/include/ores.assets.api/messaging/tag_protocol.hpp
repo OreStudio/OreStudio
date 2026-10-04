@@ -60,6 +60,10 @@ struct tag_lookup {
     std::optional<ores::assets::domain::tag> tag;
 };
 
+struct tags_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct tag_event {
     boost::uuids::uuid event_id;
     tag_key key;
@@ -93,6 +97,7 @@ struct list_tags_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<tags_filter> filter;
 };
 
 struct list_tags_response {

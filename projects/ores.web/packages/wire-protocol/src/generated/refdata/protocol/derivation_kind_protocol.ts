@@ -54,6 +54,10 @@ export interface DerivationKindLookup {
     derivation_kind: DerivationKind | null;
 }
 
+export interface DerivationKindsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface DerivationKindEvent {
     event_id: string;
     key: DerivationKindKey;
@@ -78,6 +82,7 @@ export interface ListDerivationKindsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DerivationKindsFilter | null;
 }
 
 export interface ListDerivationKindsResponse {

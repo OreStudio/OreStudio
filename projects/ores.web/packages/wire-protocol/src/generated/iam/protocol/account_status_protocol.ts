@@ -54,6 +54,10 @@ export interface AccountStatusLookup {
     account_status: AccountStatus | null;
 }
 
+export interface AccountStatusesFilter {
+    status_one_of: string[] | null;
+}
+
 export interface AccountStatusEvent {
     event_id: string;
     key: AccountStatusKey;
@@ -78,6 +82,7 @@ export interface ListAccountStatusesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AccountStatusesFilter | null;
 }
 
 export interface ListAccountStatusesResponse {

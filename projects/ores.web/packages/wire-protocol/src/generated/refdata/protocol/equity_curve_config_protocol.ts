@@ -65,6 +65,10 @@ export interface EquityCurveConfigLookup {
     equity_curve_config: EquityCurveConfig | null;
 }
 
+export interface EquityCurveConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface EquityCurveConfigEvent {
     event_id: string;
     key: EquityCurveConfigKey;
@@ -89,6 +93,7 @@ export interface ListEquityCurveConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityCurveConfigsFilter | null;
 }
 
 export interface ListEquityCurveConfigsResponse {

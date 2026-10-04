@@ -61,6 +61,10 @@ struct tenor_unit_lookup {
     std::optional<ores::refdata::domain::tenor_unit> tenor_unit;
 };
 
+struct tenor_units_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct tenor_unit_event {
     boost::uuids::uuid event_id;
     tenor_unit_key key;
@@ -94,6 +98,7 @@ struct list_tenor_units_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<tenor_units_filter> filter;
 };
 
 struct list_tenor_units_response {

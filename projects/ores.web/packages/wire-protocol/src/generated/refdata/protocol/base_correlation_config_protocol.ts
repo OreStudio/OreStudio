@@ -68,6 +68,10 @@ export interface BaseCorrelationConfigLookup {
     base_correlation_config: BaseCorrelationConfig | null;
 }
 
+export interface BaseCorrelationConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BaseCorrelationConfigEvent {
     event_id: string;
     key: BaseCorrelationConfigKey;
@@ -92,6 +96,7 @@ export interface ListBaseCorrelationConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BaseCorrelationConfigsFilter | null;
 }
 
 export interface ListBaseCorrelationConfigsResponse {

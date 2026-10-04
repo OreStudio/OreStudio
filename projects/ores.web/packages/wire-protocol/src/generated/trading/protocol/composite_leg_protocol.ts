@@ -57,6 +57,8 @@ export interface CompositeLegLookup {
 
 export interface CompositeLegsFilter {
     trade_id: string | null;
+    id_one_of: string[] | null;
+    trade_id_one_of: string[] | null;
 }
 
 export interface CompositeLegEvent {

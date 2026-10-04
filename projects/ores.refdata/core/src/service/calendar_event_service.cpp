@@ -105,15 +105,30 @@ messaging::list_calendar_events_response calendar_event_service::list_calendar_e
             "A list of calendar events cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->calendar_code_one_of &&
+        request.filter->calendar_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in calendar_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->diary_entry_type_one_of &&
+        request.filter->diary_entry_type_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in diary_entry_type_one_of.";
         return response;
     }
     response.calendar_events =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_calendar_event_count(ctx_);
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_calendar_event_count(ctx_, request.filter);
     return response;
 }
 
@@ -129,10 +144,25 @@ calendar_event_service::list_by_calendar_code_calendar_events(
             "A list of calendar events cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->calendar_code_one_of &&
+        request.filter->calendar_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in calendar_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->diary_entry_type_one_of &&
+        request.filter->diary_entry_type_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in diary_entry_type_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -143,8 +173,9 @@ calendar_event_service::list_by_calendar_code_calendar_events(
     }
     const auto relation = request.calendar_code;
     response.calendar_events = repo_.read_latest_by_calendar_code(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_calendar_event_count_by_calendar_code(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_calendar_event_count_by_calendar_code(ctx_, relation, request.filter);
     return response;
 }
 
@@ -160,10 +191,25 @@ calendar_event_service::list_by_diary_entry_type_calendar_events(
             "A list of calendar events cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->calendar_code_one_of &&
+        request.filter->calendar_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in calendar_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->diary_entry_type_one_of &&
+        request.filter->diary_entry_type_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in diary_entry_type_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -174,8 +220,9 @@ calendar_event_service::list_by_diary_entry_type_calendar_events(
     }
     const auto relation = request.diary_entry_type;
     response.calendar_events = repo_.read_latest_by_diary_entry_type(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_calendar_event_count_by_diary_entry_type(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_calendar_event_count_by_diary_entry_type(ctx_, relation, request.filter);
     return response;
 }
 

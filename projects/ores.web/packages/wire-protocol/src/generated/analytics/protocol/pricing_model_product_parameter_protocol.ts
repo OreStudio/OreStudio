@@ -57,6 +57,10 @@ export interface PricingModelProductParameterLookup {
     pricing_model_product_parameter: PricingModelProductParameter | null;
 }
 
+export interface PricingModelProductParametersFilter {
+    id_one_of: string[] | null;
+}
+
 export interface PricingModelProductParameterEvent {
     event_id: string;
     key: PricingModelProductParameterKey;
@@ -81,6 +85,7 @@ export interface ListPricingModelProductParametersRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PricingModelProductParametersFilter | null;
 }
 
 export interface ListPricingModelProductParametersResponse {

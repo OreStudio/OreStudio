@@ -35,6 +35,10 @@ export interface CounterpartyScopeTypeLookup {
     counterparty_scope_type: CounterpartyScopeType | null;
 }
 
+export interface CounterpartyScopeTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CounterpartyScopeTypeEvent {
     event_id: string;
     key: CounterpartyScopeTypeKey;
@@ -48,6 +52,7 @@ export interface ListCounterpartyScopeTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CounterpartyScopeTypesFilter | null;
 }
 
 export interface ListCounterpartyScopeTypesResponse {

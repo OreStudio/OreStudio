@@ -62,6 +62,10 @@ struct methodology_lookup {
     std::optional<ores::dq::domain::methodology> methodology;
 };
 
+struct methodologies_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct methodology_event {
     boost::uuids::uuid event_id;
     methodology_key key;
@@ -95,6 +99,7 @@ struct list_methodologies_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<methodologies_filter> filter;
 };
 
 struct list_methodologies_response {

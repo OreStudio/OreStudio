@@ -60,6 +60,8 @@ export interface MarketObservationLookup {
 
 export interface MarketObservationsFilter {
     series_id: string | null;
+    id_one_of: string[] | null;
+    series_id_one_of: string[] | null;
 }
 
 export interface MarketObservationEvent {

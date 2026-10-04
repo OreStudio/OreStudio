@@ -59,6 +59,10 @@ struct return_type_lookup {
     std::optional<ores::trading::domain::return_type> return_type;
 };
 
+struct return_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct return_type_event {
     boost::uuids::uuid event_id;
     return_type_key key;
@@ -92,6 +96,7 @@ struct list_return_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<return_types_filter> filter;
 };
 
 struct list_return_types_response {

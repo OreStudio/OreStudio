@@ -54,6 +54,10 @@ export interface PurposeTypeLookup {
     purpose_type: PurposeType | null;
 }
 
+export interface PurposeTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PurposeTypeEvent {
     event_id: string;
     key: PurposeTypeKey;
@@ -78,6 +82,7 @@ export interface ListPurposeTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PurposeTypesFilter | null;
 }
 
 export interface ListPurposeTypesResponse {

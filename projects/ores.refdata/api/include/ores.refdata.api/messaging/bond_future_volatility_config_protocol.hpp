@@ -69,6 +69,10 @@ struct bond_future_volatility_config_lookup {
         bond_future_volatility_config;
 };
 
+struct bond_future_volatility_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct bond_future_volatility_config_event {
     boost::uuids::uuid event_id;
     bond_future_volatility_config_key key;
@@ -103,6 +107,7 @@ struct list_bond_future_volatility_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<bond_future_volatility_configs_filter> filter;
 };
 
 struct list_bond_future_volatility_configs_response {

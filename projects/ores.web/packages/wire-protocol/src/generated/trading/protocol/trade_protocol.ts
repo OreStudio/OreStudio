@@ -68,6 +68,7 @@ export interface TradeLookup {
 
 export interface TradesFilter {
     node_id: string | null;
+    id_one_of: string[] | null;
 }
 
 export interface TradeEvent {

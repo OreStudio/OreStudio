@@ -68,6 +68,10 @@ struct curve_quote_lookup {
     std::optional<ores::refdata::domain::curve_quote> curve_quote;
 };
 
+struct curve_quotes_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct curve_quote_event {
     boost::uuids::uuid event_id;
     curve_quote_key key;
@@ -101,6 +105,7 @@ struct list_curve_quotes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<curve_quotes_filter> filter;
 };
 
 struct list_curve_quotes_response {

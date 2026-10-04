@@ -65,6 +65,10 @@ struct cms_spread_option_convention_lookup {
     std::optional<ores::refdata::domain::cms_spread_option_convention> cms_spread_option_convention;
 };
 
+struct cms_spread_option_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct cms_spread_option_convention_event {
     boost::uuids::uuid event_id;
     cms_spread_option_convention_key key;
@@ -99,6 +103,7 @@ struct list_cms_spread_option_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<cms_spread_option_conventions_filter> filter;
 };
 
 struct list_cms_spread_option_conventions_response {

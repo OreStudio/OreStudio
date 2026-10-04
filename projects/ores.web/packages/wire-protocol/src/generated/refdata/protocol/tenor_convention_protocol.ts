@@ -54,6 +54,10 @@ export interface TenorConventionLookup {
     tenor_convention: TenorConvention | null;
 }
 
+export interface TenorConventionsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorConventionEvent {
     event_id: string;
     key: TenorConventionKey;
@@ -78,6 +82,7 @@ export interface ListTenorConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorConventionsFilter | null;
 }
 
 export interface ListTenorConventionsResponse {

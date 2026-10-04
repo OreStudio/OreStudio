@@ -63,6 +63,10 @@ struct todays_market_collection_kind_lookup {
         todays_market_collection_kind;
 };
 
+struct todays_market_collection_kinds_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct todays_market_collection_kind_event {
     boost::uuids::uuid event_id;
     todays_market_collection_kind_key key;
@@ -97,6 +101,7 @@ struct list_todays_market_collection_kinds_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<todays_market_collection_kinds_filter> filter;
 };
 
 struct list_todays_market_collection_kinds_response {

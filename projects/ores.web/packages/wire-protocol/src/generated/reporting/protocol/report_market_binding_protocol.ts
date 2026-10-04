@@ -55,6 +55,10 @@ export interface ReportMarketBindingLookup {
     report_market_binding: ReportMarketBinding | null;
 }
 
+export interface ReportMarketBindingsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ReportMarketBindingEvent {
     event_id: string;
     key: ReportMarketBindingKey;
@@ -79,6 +83,7 @@ export interface ListReportMarketBindingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ReportMarketBindingsFilter | null;
 }
 
 export interface ListReportMarketBindingsResponse {

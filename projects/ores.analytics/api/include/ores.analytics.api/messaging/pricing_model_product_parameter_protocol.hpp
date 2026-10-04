@@ -65,6 +65,10 @@ struct pricing_model_product_parameter_lookup {
         pricing_model_product_parameter;
 };
 
+struct pricing_model_product_parameters_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct pricing_model_product_parameter_event {
     boost::uuids::uuid event_id;
     pricing_model_product_parameter_key key;
@@ -99,6 +103,7 @@ struct list_pricing_model_product_parameters_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<pricing_model_product_parameters_filter> filter;
 };
 
 struct list_pricing_model_product_parameters_response {

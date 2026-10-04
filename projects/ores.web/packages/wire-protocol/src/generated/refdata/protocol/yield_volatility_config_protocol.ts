@@ -61,6 +61,10 @@ export interface YieldVolatilityConfigLookup {
     yield_volatility_config: YieldVolatilityConfig | null;
 }
 
+export interface YieldVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface YieldVolatilityConfigEvent {
     event_id: string;
     key: YieldVolatilityConfigKey;
@@ -85,6 +89,7 @@ export interface ListYieldVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: YieldVolatilityConfigsFilter | null;
 }
 
 export interface ListYieldVolatilityConfigsResponse {

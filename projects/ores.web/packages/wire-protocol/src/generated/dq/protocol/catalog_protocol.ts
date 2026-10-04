@@ -53,6 +53,10 @@ export interface CatalogLookup {
     catalog: Catalog | null;
 }
 
+export interface CatalogsFilter {
+    name_one_of: string[] | null;
+}
+
 export interface CatalogEvent {
     event_id: string;
     key: CatalogKey;
@@ -77,6 +81,7 @@ export interface ListCatalogsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CatalogsFilter | null;
 }
 
 export interface ListCatalogsResponse {

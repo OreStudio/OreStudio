@@ -60,6 +60,10 @@ struct swap_index_convention_lookup {
     std::optional<ores::refdata::domain::swap_index_convention> swap_index_convention;
 };
 
+struct swap_index_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct swap_index_convention_event {
     boost::uuids::uuid event_id;
     swap_index_convention_key key;
@@ -93,6 +97,7 @@ struct list_swap_index_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<swap_index_conventions_filter> filter;
 };
 
 struct list_swap_index_conventions_response {

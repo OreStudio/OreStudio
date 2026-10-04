@@ -55,6 +55,10 @@ export interface AppVersionLookup {
     app_version: AppVersion | null;
 }
 
+export interface AppVersionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface AppVersionEvent {
     event_id: string;
     key: AppVersionKey;
@@ -79,6 +83,7 @@ export interface ListAppVersionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AppVersionsFilter | null;
 }
 
 export interface ListAppVersionsResponse {

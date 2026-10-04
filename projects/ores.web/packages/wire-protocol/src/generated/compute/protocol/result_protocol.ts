@@ -61,6 +61,8 @@ export interface ResultLookup {
 
 export interface ResultsFilter {
     workunit_id: string | null;
+    id_one_of: string[] | null;
+    workunit_id_one_of: string[] | null;
 }
 
 export interface ResultEvent {

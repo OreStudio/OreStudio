@@ -58,6 +58,10 @@ export interface CmsSpreadOptionConventionLookup {
     cms_spread_option_convention: CmsSpreadOptionConvention | null;
 }
 
+export interface CmsSpreadOptionConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CmsSpreadOptionConventionEvent {
     event_id: string;
     key: CmsSpreadOptionConventionKey;
@@ -82,6 +86,7 @@ export interface ListCmsSpreadOptionConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CmsSpreadOptionConventionsFilter | null;
 }
 
 export interface ListCmsSpreadOptionConventionsResponse {

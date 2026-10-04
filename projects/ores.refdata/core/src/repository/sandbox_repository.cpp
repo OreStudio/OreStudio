@@ -70,6 +70,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::sandboxes_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->anchor_portfolio_id)
+        r.push_back(equals("anchor_portfolio_id", filter_value(*filter->anchor_portfolio_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->anchor_portfolio_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->anchor_portfolio_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("anchor_portfolio_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition sandbox_repository::replace_claim(context ctx,
@@ -239,12 +265,13 @@ sandbox_repository::read_at_version(context ctx, const std::string& id, std::uin
     return entities.front();
 }
 
-std::vector<domain::sandbox>
-sandbox_repository::read_latest_by_anchor_portfolio_id(context ctx,
-                                                       const std::string& anchor_portfolio_id,
-                                                       std::uint32_t offset,
-                                                       std::uint32_t limit,
-                                                       const ores::utility::domain::order& order) {
+std::vector<domain::sandbox> sandbox_repository::read_latest_by_anchor_portfolio_id(
+    context ctx,
+    const std::string& anchor_portfolio_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::sandboxes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandboxes. anchor_portfolio_id: "
                                << anchor_portfolio_id << " offset: " << offset
                                << " limit: " << limit;
@@ -260,34 +287,28 @@ sandbox_repository::read_latest_by_anchor_portfolio_id(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return sandbox_mapper::map(entities); },
         lg(),
         "Reading latest sandboxes by anchor_portfolio_id.");
 }
 
 std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id(
-    context ctx, const std::string& anchor_portfolio_id) {
+    context ctx,
+    const std::string& anchor_portfolio_id,
+    const std::optional<messaging::sandboxes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandboxes count. anchor_portfolio_id: "
                                << anchor_portfolio_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<sandbox_entity>(sqlgen::count().as<"count">()) |
+        sqlgen::read<std::vector<sandbox_entity>> |
         where("tenant_id"_c == tid && "anchor_portfolio_id"_c == anchor_portfolio_id &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+              "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sandboxes count by anchor_portfolio_id: " << count;
-    return count;
+    return execute_count_query<sandbox_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sandboxes by anchor_portfolio_id");
 }
 
 
@@ -329,7 +350,8 @@ std::vector<domain::sandbox>
 sandbox_repository::read_latest(context ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
-                                const ores::utility::domain::order& order) {
+                                const ores::utility::domain::order& order,
+                                const std::optional<messaging::sandboxes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandboxes with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -342,30 +364,23 @@ sandbox_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return sandbox_mapper::map(entities); },
         lg(),
         "Reading latest sandboxes with pagination.");
 }
 
-std::uint32_t sandbox_repository::get_total_sandbox_count(context ctx) {
+std::uint32_t sandbox_repository::get_total_sandbox_count(
+    context ctx, const std::optional<messaging::sandboxes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<sandbox_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<sandbox_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sandbox count: " << count;
-    return count;
+    return execute_count_query<sandbox_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting sandboxes");
 }
 
 std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx,

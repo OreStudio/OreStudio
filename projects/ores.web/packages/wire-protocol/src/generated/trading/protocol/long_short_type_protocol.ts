@@ -52,6 +52,10 @@ export interface LongShortTypeLookup {
     long_short_type: LongShortType | null;
 }
 
+export interface LongShortTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface LongShortTypeEvent {
     event_id: string;
     key: LongShortTypeKey;
@@ -76,6 +80,7 @@ export interface ListLongShortTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LongShortTypesFilter | null;
 }
 
 export interface ListLongShortTypesResponse {

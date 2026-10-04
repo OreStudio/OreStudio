@@ -65,6 +65,8 @@ export interface CounterpartyContactInformationLookup {
 
 export interface CounterpartyContactInformationsFilter {
     counterparty_id: string | null;
+    id_one_of: string[] | null;
+    counterparty_id_one_of: string[] | null;
 }
 
 export interface CounterpartyContactInformationEvent {

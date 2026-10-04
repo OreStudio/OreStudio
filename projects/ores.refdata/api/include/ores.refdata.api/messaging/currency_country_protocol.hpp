@@ -62,6 +62,7 @@ struct currency_country_lookup {
 
 struct currency_countries_filter {
     std::optional<std::string> currency_iso_code;
+    std::optional<std::vector<std::string>> currency_iso_code_one_of;
 };
 
 struct list_currency_countries_request {

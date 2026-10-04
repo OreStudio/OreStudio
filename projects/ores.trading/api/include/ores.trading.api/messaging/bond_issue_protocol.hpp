@@ -75,6 +75,10 @@ struct bond_issue_lookup {
     std::optional<ores::trading::domain::bond_issue> bond_issue;
 };
 
+struct bond_issues_filter {
+    std::optional<std::vector<boost::uuids::uuid>> issue_id_one_of;
+};
+
 struct bond_issue_event {
     boost::uuids::uuid event_id;
     bond_issue_key key;
@@ -108,6 +112,7 @@ struct list_bond_issues_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<bond_issues_filter> filter;
 };
 
 struct list_bond_issues_response {

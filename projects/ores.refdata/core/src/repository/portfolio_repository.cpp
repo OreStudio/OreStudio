@@ -70,6 +70,33 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::portfolios_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->sandbox_id)
+        r.push_back(*filter->sandbox_id ? equals("sandbox_id", filter_value(**filter->sandbox_id)) :
+                                          is_null("sandbox_id"));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->sandbox_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->sandbox_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("sandbox_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -262,12 +289,13 @@ portfolio_repository::read_at_version(context ctx, const std::string& id, std::u
 }
 
 
-std::vector<domain::portfolio>
-portfolio_repository::read_latest_by_sandbox_id(context ctx,
-                                                const std::string& sandbox_id,
-                                                std::uint32_t offset,
-                                                std::uint32_t limit,
-                                                const ores::utility::domain::order& order) {
+std::vector<domain::portfolio> portfolio_repository::read_latest_by_sandbox_id(
+    context ctx,
+    const std::string& sandbox_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolios. sandbox_id: " << sandbox_id
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -282,35 +310,28 @@ portfolio_repository::read_latest_by_sandbox_id(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return portfolio_mapper::map(entities); },
         lg(),
         "Reading latest portfolios by sandbox_id.");
 }
 
-std::uint32_t
-portfolio_repository::get_total_portfolio_count_by_sandbox_id(context ctx,
-                                                              const std::string& sandbox_id) {
+std::uint32_t portfolio_repository::get_total_portfolio_count_by_sandbox_id(
+    context ctx,
+    const std::string& sandbox_id,
+    const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolios count. sandbox_id: "
                                << sandbox_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::select_from<portfolio_entity>(sqlgen::count().as<"count">()) |
+    const auto query = sqlgen::read<std::vector<portfolio_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "sandbox_id"_c == sandbox_id && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "sandbox_id"_c == sandbox_id && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active portfolios count by sandbox_id: " << count;
-    return count;
+    return execute_count_query<portfolio_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting portfolios by sandbox_id");
 }
 
 
@@ -352,7 +373,8 @@ std::vector<domain::portfolio>
 portfolio_repository::read_latest(context ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
-                                  const ores::utility::domain::order& order) {
+                                  const ores::utility::domain::order& order,
+                                  const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolios with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -367,32 +389,25 @@ portfolio_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return portfolio_mapper::map(entities); },
         lg(),
         "Reading latest portfolios with pagination.");
 }
 
-std::uint32_t portfolio_repository::get_total_portfolio_count(context ctx) {
+std::uint32_t portfolio_repository::get_total_portfolio_count(
+    context ctx, const std::optional<messaging::portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
 
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query =
-        sqlgen::select_from<portfolio_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<portfolio_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active portfolio count: " << count;
-    return count;
+    return execute_count_query<portfolio_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting portfolios");
 }
 
 std::vector<domain::portfolio>

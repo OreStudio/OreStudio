@@ -102,15 +102,29 @@ messaging::list_sandbox_members_response sandbox_member_service::list_sandbox_me
             "A list of sandbox members cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->sandbox_id_one_of &&
+        request.filter->sandbox_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in sandbox_id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->account_id_one_of &&
+        request.filter->account_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
         return response;
     }
     response.sandbox_members =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_sandbox_member_count(ctx_);
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_sandbox_member_count(ctx_, request.filter);
     return response;
 }
 
@@ -126,10 +140,24 @@ sandbox_member_service::list_by_sandbox_id_sandbox_members(
             "A list of sandbox members cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->sandbox_id_one_of &&
+        request.filter->sandbox_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in sandbox_id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->account_id_one_of &&
+        request.filter->account_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -140,8 +168,9 @@ sandbox_member_service::list_by_sandbox_id_sandbox_members(
     }
     const auto relation = boost::uuids::to_string(request.sandbox_id);
     response.sandbox_members = repo_.read_latest_by_sandbox_id(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_sandbox_member_count_by_sandbox_id(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_sandbox_member_count_by_sandbox_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -157,10 +186,24 @@ sandbox_member_service::list_by_account_id_sandbox_members(
             "A list of sandbox members cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->sandbox_id_one_of &&
+        request.filter->sandbox_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in sandbox_id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->account_id_one_of &&
+        request.filter->account_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -171,8 +214,9 @@ sandbox_member_service::list_by_account_id_sandbox_members(
     }
     const auto relation = boost::uuids::to_string(request.account_id);
     response.sandbox_members = repo_.read_latest_by_account_id(
-        ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_sandbox_member_count_by_account_id(ctx_, relation);
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_sandbox_member_count_by_account_id(ctx_, relation, request.filter);
     return response;
 }
 

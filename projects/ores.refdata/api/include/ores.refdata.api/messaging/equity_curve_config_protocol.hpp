@@ -72,6 +72,10 @@ struct equity_curve_config_lookup {
     std::optional<ores::refdata::domain::equity_curve_config> equity_curve_config;
 };
 
+struct equity_curve_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct equity_curve_config_event {
     boost::uuids::uuid event_id;
     equity_curve_config_key key;
@@ -105,6 +109,7 @@ struct list_equity_curve_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<equity_curve_configs_filter> filter;
 };
 
 struct list_equity_curve_configs_response {

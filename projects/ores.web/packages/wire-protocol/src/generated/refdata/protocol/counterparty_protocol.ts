@@ -61,6 +61,10 @@ export interface CounterpartyLookup {
     counterparty: Counterparty | null;
 }
 
+export interface CounterpartiesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CounterpartyEvent {
     event_id: string;
     key: CounterpartyKey;
@@ -85,6 +89,7 @@ export interface ListCounterpartiesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CounterpartiesFilter | null;
 }
 
 export interface ListCounterpartiesResponse {

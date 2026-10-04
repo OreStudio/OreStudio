@@ -65,6 +65,10 @@ export interface SeedProfileLookup {
     seed_profile: SeedProfile | null;
 }
 
+export interface SeedProfilesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface SeedProfileEvent {
     event_id: string;
     key: SeedProfileKey;
@@ -89,6 +93,7 @@ export interface ListSeedProfilesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SeedProfilesFilter | null;
 }
 
 export interface ListSeedProfilesResponse {

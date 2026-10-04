@@ -64,6 +64,7 @@ struct dataset_bundle_member_lookup {
 
 struct dataset_bundle_members_filter {
     std::optional<std::string> bundle_code;
+    std::optional<std::vector<std::string>> bundle_code_one_of;
 };
 
 struct list_dataset_bundle_members_request {

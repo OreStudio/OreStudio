@@ -240,6 +240,7 @@ node_sample_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id", "sampled_at"}, false),
+        std::nullopt,
         [](const auto& entities) { return node_sample_mapper::map(entities); },
         lg(),
         "Reading latest node samples with pagination.");
@@ -248,20 +249,11 @@ node_sample_repository::read_latest(context ctx,
 std::uint32_t node_sample_repository::get_total__count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<node_sample_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<node_sample_entity>> | where("tenant_id"_c == tid);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sample count: " << count;
-    return count;
+    return execute_count_query<node_sample_entity>(
+        ctx, query, std::nullopt, lg(), "Counting node samples");
 }
 
 std::vector<domain::node_sample> node_sample_repository::read_latest(

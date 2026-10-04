@@ -76,6 +76,10 @@ export interface SwaptionVolatilityConfigLookup {
     swaption_volatility_config: SwaptionVolatilityConfig | null;
 }
 
+export interface SwaptionVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface SwaptionVolatilityConfigEvent {
     event_id: string;
     key: SwaptionVolatilityConfigKey;
@@ -100,6 +104,7 @@ export interface ListSwaptionVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SwaptionVolatilityConfigsFilter | null;
 }
 
 export interface ListSwaptionVolatilityConfigsResponse {

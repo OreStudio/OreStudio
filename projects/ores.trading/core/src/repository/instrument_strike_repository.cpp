@@ -70,6 +70,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"trade_id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::instrument_strikes_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->trade_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->trade_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("trade_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -250,11 +268,12 @@ void instrument_strike_repository::remove(context ctx, const std::string& trade_
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
-std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx,
-                                          std::uint32_t offset,
-                                          std::uint32_t limit,
-                                          const ores::utility::domain::order& order) {
+std::vector<domain::instrument_strike> instrument_strike_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::instrument_strikes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument strikes with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -267,30 +286,23 @@ instrument_strike_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return instrument_strike_mapper::map(entities); },
         lg(),
         "Reading latest instrument strikes with pagination.");
 }
 
-std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(context ctx) {
+std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(
+    context ctx, const std::optional<messaging::instrument_strikes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument strike count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::select_from<instrument_strike_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<instrument_strike_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active instrument strike count: " << count;
-    return count;
+    return execute_count_query<instrument_strike_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting instrument strikes");
 }
 
 std::vector<domain::instrument_strike>

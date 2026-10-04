@@ -39,6 +39,7 @@ export interface CalendarDateLookup {
 
 export interface CalendarDatesFilter {
     calendar_code: string | null;
+    calendar_code_one_of: string[] | null;
 }
 
 export interface ListCalendarDatesRequest {

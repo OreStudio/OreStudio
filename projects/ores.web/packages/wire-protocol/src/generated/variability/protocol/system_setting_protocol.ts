@@ -56,6 +56,10 @@ export interface SystemSettingLookup {
     system_setting: SystemSetting | null;
 }
 
+export interface SystemSettingsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface SystemSettingEvent {
     event_id: string;
     key: SystemSettingKey;
@@ -80,6 +84,7 @@ export interface ListSystemSettingsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SystemSettingsFilter | null;
 }
 
 export interface ListSystemSettingsResponse {

@@ -88,6 +88,10 @@ export interface CapFloorVolatilityConfigLookup {
     cap_floor_volatility_config: CapFloorVolatilityConfig | null;
 }
 
+export interface CapFloorVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CapFloorVolatilityConfigEvent {
     event_id: string;
     key: CapFloorVolatilityConfigKey;
@@ -112,6 +116,7 @@ export interface ListCapFloorVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CapFloorVolatilityConfigsFilter | null;
 }
 
 export interface ListCapFloorVolatilityConfigsResponse {

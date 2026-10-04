@@ -63,6 +63,10 @@ struct payment_frequency_lookup {
     std::optional<ores::refdata::domain::payment_frequency> payment_frequency;
 };
 
+struct payment_frequencies_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct payment_frequency_event {
     boost::uuids::uuid event_id;
     payment_frequency_key key;
@@ -96,6 +100,7 @@ struct list_payment_frequencies_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<payment_frequencies_filter> filter;
 };
 
 struct list_payment_frequencies_response {

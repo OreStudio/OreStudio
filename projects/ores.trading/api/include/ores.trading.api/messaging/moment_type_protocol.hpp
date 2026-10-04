@@ -59,6 +59,10 @@ struct moment_type_lookup {
     std::optional<ores::trading::domain::moment_type> moment_type;
 };
 
+struct moment_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct moment_type_event {
     boost::uuids::uuid event_id;
     moment_type_key key;
@@ -92,6 +96,7 @@ struct list_moment_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<moment_types_filter> filter;
 };
 
 struct list_moment_types_response {

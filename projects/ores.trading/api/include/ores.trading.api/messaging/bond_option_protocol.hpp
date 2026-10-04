@@ -63,6 +63,10 @@ struct bond_option_lookup {
     std::optional<ores::trading::domain::bond_option> bond_option;
 };
 
+struct bond_options_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct bond_option_event {
     boost::uuids::uuid event_id;
     bond_option_key key;
@@ -96,6 +100,7 @@ struct list_bond_options_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<bond_options_filter> filter;
 };
 
 struct list_bond_options_response {

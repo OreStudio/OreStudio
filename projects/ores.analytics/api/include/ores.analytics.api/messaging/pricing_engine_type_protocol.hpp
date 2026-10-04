@@ -60,6 +60,10 @@ struct pricing_engine_type_lookup {
     std::optional<ores::analytics::domain::pricing_engine_type> pricing_engine_type;
 };
 
+struct pricing_engine_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct pricing_engine_type_event {
     boost::uuids::uuid event_id;
     pricing_engine_type_key key;
@@ -93,6 +97,7 @@ struct list_pricing_engine_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<pricing_engine_types_filter> filter;
 };
 
 struct list_pricing_engine_types_response {

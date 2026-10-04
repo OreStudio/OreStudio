@@ -72,6 +72,10 @@ struct seed_profile_lookup {
     std::optional<ores::iam::domain::seed_profile> seed_profile;
 };
 
+struct seed_profiles_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct seed_profile_event {
     boost::uuids::uuid event_id;
     seed_profile_key key;
@@ -105,6 +109,7 @@ struct list_seed_profiles_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<seed_profiles_filter> filter;
 };
 
 struct list_seed_profiles_response {

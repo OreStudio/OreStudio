@@ -71,6 +71,8 @@ struct swap_leg_lookup {
 
 struct swap_legs_filter {
     std::optional<boost::uuids::uuid> trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
 };
 
 struct swap_leg_event {

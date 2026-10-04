@@ -64,6 +64,10 @@ struct currency_pair_convention_lookup {
     std::optional<ores::refdata::domain::currency_pair_convention> currency_pair_convention;
 };
 
+struct currency_pair_conventions_filter {
+    std::optional<std::vector<std::string>> pair_code_one_of;
+};
+
 struct currency_pair_convention_event {
     boost::uuids::uuid event_id;
     currency_pair_convention_key key;
@@ -97,6 +101,7 @@ struct list_currency_pair_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<currency_pair_conventions_filter> filter;
 };
 
 struct list_currency_pair_conventions_response {

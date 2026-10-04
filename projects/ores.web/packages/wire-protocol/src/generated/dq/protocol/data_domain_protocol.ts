@@ -52,6 +52,10 @@ export interface DataDomainLookup {
     data_domain: DataDomain | null;
 }
 
+export interface DataDomainsFilter {
+    name_one_of: string[] | null;
+}
+
 export interface DataDomainEvent {
     event_id: string;
     key: DataDomainKey;
@@ -76,6 +80,7 @@ export interface ListDataDomainsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DataDomainsFilter | null;
 }
 
 export interface ListDataDomainsResponse {

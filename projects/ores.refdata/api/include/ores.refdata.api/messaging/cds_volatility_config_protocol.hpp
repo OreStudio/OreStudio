@@ -65,6 +65,10 @@ struct cds_volatility_config_lookup {
     std::optional<ores::refdata::domain::cds_volatility_config> cds_volatility_config;
 };
 
+struct cds_volatility_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct cds_volatility_config_event {
     boost::uuids::uuid event_id;
     cds_volatility_config_key key;
@@ -98,6 +102,7 @@ struct list_cds_volatility_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<cds_volatility_configs_filter> filter;
 };
 
 struct list_cds_volatility_configs_response {

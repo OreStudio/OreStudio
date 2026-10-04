@@ -58,6 +58,10 @@ export interface BondTrsLookup {
     bond_trs: BondTrs | null;
 }
 
+export interface BondTrsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondTrsEvent {
     event_id: string;
     key: BondTrsKey;
@@ -82,6 +86,7 @@ export interface ListBondTrsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondTrsFilter | null;
 }
 
 export interface ListBondTrsResponse {

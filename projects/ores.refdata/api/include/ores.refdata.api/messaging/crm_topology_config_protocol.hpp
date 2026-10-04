@@ -62,6 +62,10 @@ struct crm_topology_config_lookup {
     std::optional<ores::refdata::domain::crm_topology_config> crm_topology_config;
 };
 
+struct crm_topology_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct crm_topology_config_event {
     boost::uuids::uuid event_id;
     crm_topology_config_key key;
@@ -95,6 +99,7 @@ struct list_crm_topology_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<crm_topology_configs_filter> filter;
 };
 
 struct list_crm_topology_configs_response {

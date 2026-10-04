@@ -53,6 +53,10 @@ export interface TreatmentDimensionLookup {
     treatment_dimension: TreatmentDimension | null;
 }
 
+export interface TreatmentDimensionsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TreatmentDimensionEvent {
     event_id: string;
     key: TreatmentDimensionKey;
@@ -77,6 +81,7 @@ export interface ListTreatmentDimensionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TreatmentDimensionsFilter | null;
 }
 
 export interface ListTreatmentDimensionsResponse {

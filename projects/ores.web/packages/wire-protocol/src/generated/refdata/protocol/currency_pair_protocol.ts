@@ -54,6 +54,10 @@ export interface CurrencyPairLookup {
     currency_pair: CurrencyPair | null;
 }
 
+export interface CurrencyPairsFilter {
+    pair_code_one_of: string[] | null;
+}
+
 export interface CurrencyPairEvent {
     event_id: string;
     key: CurrencyPairKey;
@@ -78,6 +82,7 @@ export interface ListCurrencyPairsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrencyPairsFilter | null;
 }
 
 export interface ListCurrencyPairsResponse {

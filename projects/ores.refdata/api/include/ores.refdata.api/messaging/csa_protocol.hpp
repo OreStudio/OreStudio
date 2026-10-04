@@ -81,6 +81,8 @@ struct csa_lookup {
 
 struct csas_filter {
     std::optional<boost::uuids::uuid> netting_set_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> netting_set_id_one_of;
 };
 
 struct csa_event {

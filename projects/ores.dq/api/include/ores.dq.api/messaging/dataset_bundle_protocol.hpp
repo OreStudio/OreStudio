@@ -61,6 +61,10 @@ struct dataset_bundle_lookup {
     std::optional<ores::dq::domain::dataset_bundle> dataset_bundle;
 };
 
+struct dataset_bundles_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct dataset_bundle_event {
     boost::uuids::uuid event_id;
     dataset_bundle_key key;
@@ -94,6 +98,7 @@ struct list_dataset_bundles_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<dataset_bundles_filter> filter;
 };
 
 struct list_dataset_bundles_response {

@@ -56,6 +56,10 @@ export interface CurveDefinitionLookup {
     curve_definition: CurveDefinition | null;
 }
 
+export interface CurveDefinitionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveDefinitionEvent {
     event_id: string;
     key: CurveDefinitionKey;
@@ -80,6 +84,7 @@ export interface ListCurveDefinitionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveDefinitionsFilter | null;
 }
 
 export interface ListCurveDefinitionsResponse {

@@ -61,6 +61,10 @@ struct currency_pair_lookup {
     std::optional<ores::refdata::domain::currency_pair> currency_pair;
 };
 
+struct currency_pairs_filter {
+    std::optional<std::vector<std::string>> pair_code_one_of;
+};
+
 struct currency_pair_event {
     boost::uuids::uuid event_id;
     currency_pair_key key;
@@ -94,6 +98,7 @@ struct list_currency_pairs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<currency_pairs_filter> filter;
 };
 
 struct list_currency_pairs_response {

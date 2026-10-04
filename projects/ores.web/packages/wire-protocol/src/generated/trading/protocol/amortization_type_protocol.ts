@@ -52,6 +52,10 @@ export interface AmortizationTypeLookup {
     amortization_type: AmortizationType | null;
 }
 
+export interface AmortizationTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface AmortizationTypeEvent {
     event_id: string;
     key: AmortizationTypeKey;
@@ -76,6 +80,7 @@ export interface ListAmortizationTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: AmortizationTypesFilter | null;
 }
 
 export interface ListAmortizationTypesResponse {

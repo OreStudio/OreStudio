@@ -66,6 +66,10 @@ struct report_instance_lookup {
     std::optional<ores::reporting::domain::report_instance> report_instance;
 };
 
+struct report_instances_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct report_instance_event {
     boost::uuids::uuid event_id;
     report_instance_key key;
@@ -99,6 +103,7 @@ struct list_report_instances_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<report_instances_filter> filter;
 };
 
 struct list_report_instances_response {

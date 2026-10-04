@@ -61,6 +61,10 @@ struct currency_market_tier_lookup {
     std::optional<ores::refdata::domain::currency_market_tier> currency_market_tier;
 };
 
+struct currency_market_tiers_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct currency_market_tier_event {
     boost::uuids::uuid event_id;
     currency_market_tier_key key;
@@ -94,6 +98,7 @@ struct list_currency_market_tiers_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<currency_market_tiers_filter> filter;
 };
 
 struct list_currency_market_tiers_response {

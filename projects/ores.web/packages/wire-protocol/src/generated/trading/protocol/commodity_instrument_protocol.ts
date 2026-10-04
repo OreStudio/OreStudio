@@ -78,6 +78,10 @@ export interface CommodityInstrumentLookup {
     commodity_instrument: CommodityInstrument | null;
 }
 
+export interface CommodityInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface CommodityInstrumentEvent {
     event_id: string;
     key: CommodityInstrumentKey;
@@ -102,6 +106,7 @@ export interface ListCommodityInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityInstrumentsFilter | null;
 }
 
 export interface ListCommodityInstrumentsResponse {

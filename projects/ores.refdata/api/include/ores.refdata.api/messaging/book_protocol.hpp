@@ -73,6 +73,8 @@ struct book_lookup {
 
 struct books_filter {
     std::optional<boost::uuids::uuid> parent_portfolio_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> parent_portfolio_id_one_of;
 };
 
 struct book_event {

@@ -60,6 +60,10 @@ export interface EquityForwardInstrumentLookup {
     equity_forward_instrument: EquityForwardInstrument | null;
 }
 
+export interface EquityForwardInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface EquityForwardInstrumentEvent {
     event_id: string;
     key: EquityForwardInstrumentKey;
@@ -84,6 +88,7 @@ export interface ListEquityForwardInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: EquityForwardInstrumentsFilter | null;
 }
 
 export interface ListEquityForwardInstrumentsResponse {

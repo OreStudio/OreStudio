@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -147,18 +148,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::portfolio>
-    read_latest_by_sandbox_id(context ctx,
-                              const std::string& sandbox_id,
-                              std::uint32_t offset,
-                              std::uint32_t limit,
-                              const ores::utility::domain::order& order = {});
+    std::vector<domain::portfolio> read_latest_by_sandbox_id(
+        context ctx,
+        const std::string& sandbox_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::portfolios_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active portfolios filtered by sandbox_id.
      */
-    std::uint32_t get_total_portfolio_count_by_sandbox_id(context ctx,
-                                                          const std::string& sandbox_id);
+    std::uint32_t get_total_portfolio_count_by_sandbox_id(
+        context ctx,
+        const std::string& sandbox_id,
+        const std::optional<messaging::portfolios_filter>& filter = std::nullopt);
 
 
     /**
@@ -174,19 +178,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::portfolio> read_latest(context ctx,
-                                               std::uint32_t offset,
-                                               std::uint32_t limit,
-                                               const ores::utility::domain::order& order = {});
+    std::vector<domain::portfolio>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::portfolios_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active portfolios.
      * @param ctx Repository context with database connection
      * @return Total number of active portfolios
      */
-    std::uint32_t get_total_portfolio_count(context ctx);
+    std::uint32_t get_total_portfolio_count(
+        context ctx, const std::optional<messaging::portfolios_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a portfolio by closing its temporal validity.

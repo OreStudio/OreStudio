@@ -54,6 +54,10 @@ export interface BondRepoLookup {
     bond_repo: BondRepo | null;
 }
 
+export interface BondReposFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondRepoEvent {
     event_id: string;
     key: BondRepoKey;
@@ -78,6 +82,7 @@ export interface ListBondReposRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondReposFilter | null;
 }
 
 export interface ListBondReposResponse {

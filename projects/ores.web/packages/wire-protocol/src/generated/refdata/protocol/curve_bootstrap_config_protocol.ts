@@ -62,6 +62,10 @@ export interface CurveBootstrapConfigLookup {
     curve_bootstrap_config: CurveBootstrapConfig | null;
 }
 
+export interface CurveBootstrapConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CurveBootstrapConfigEvent {
     event_id: string;
     key: CurveBootstrapConfigKey;
@@ -86,6 +90,7 @@ export interface ListCurveBootstrapConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurveBootstrapConfigsFilter | null;
 }
 
 export interface ListCurveBootstrapConfigsResponse {

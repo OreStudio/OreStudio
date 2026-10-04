@@ -47,6 +47,7 @@ struct tenor_convention_resolution_lookup {
 
 struct tenor_convention_resolutions_filter {
     std::optional<std::string> convention_code;
+    std::optional<std::vector<std::string>> convention_code_one_of;
 };
 
 struct list_tenor_convention_resolutions_request {

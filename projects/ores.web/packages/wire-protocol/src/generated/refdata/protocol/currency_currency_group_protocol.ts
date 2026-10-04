@@ -56,6 +56,7 @@ export interface CurrencyCurrencyGroupLookup {
 
 export interface CurrencyCurrencyGroupsFilter {
     currency_iso_code: string | null;
+    currency_iso_code_one_of: string[] | null;
 }
 
 export interface ListCurrencyCurrencyGroupsRequest {

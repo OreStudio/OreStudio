@@ -63,6 +63,7 @@ struct badge_mapping_lookup {
 
 struct badge_mappings_filter {
     std::optional<std::string> code_domain_code;
+    std::optional<std::vector<std::string>> code_domain_code_one_of;
 };
 
 struct list_badge_mappings_request {

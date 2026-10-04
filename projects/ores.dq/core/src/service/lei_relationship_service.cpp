@@ -74,8 +74,17 @@ messaging::list_lei_relationships_response lei_relationship_service::list_lei_re
             "A list of LEI relationships cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.relationships = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_relationship_count(ctx_);
+    if (request.filter && request.filter->relationship_start_node_node_id_one_of &&
+        request.filter->relationship_start_node_node_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message =
+            "The filter lists more than 1000 values in relationship_start_node_node_id_one_of.";
+        return response;
+    }
+    response.relationships =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_relationship_count(ctx_, request.filter);
     return response;
 }
 

@@ -54,6 +54,10 @@ export interface OvernightIndexConventionLookup {
     overnight_index_convention: OvernightIndexConvention | null;
 }
 
+export interface OvernightIndexConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface OvernightIndexConventionEvent {
     event_id: string;
     key: OvernightIndexConventionKey;
@@ -78,6 +82,7 @@ export interface ListOvernightIndexConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: OvernightIndexConventionsFilter | null;
 }
 
 export interface ListOvernightIndexConventionsResponse {

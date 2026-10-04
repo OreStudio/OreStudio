@@ -136,7 +136,12 @@ describe('GET /api/change-reasons', () => {
         expect(calls).toEqual([
             {
                 subject: 'dq.v1.change_reasons.list',
-                body: { offset: 0, limit: 200, order: { field: '', descending: false } },
+                body: {
+                    offset: 0,
+                    limit: 200,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
     });

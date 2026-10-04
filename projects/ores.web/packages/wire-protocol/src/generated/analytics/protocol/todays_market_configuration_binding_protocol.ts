@@ -58,6 +58,8 @@ export interface TodaysMarketConfigurationBindingLookup {
 
 export interface TodaysMarketConfigurationBindingsFilter {
     todays_market_configuration_id: string | null;
+    id_one_of: string[] | null;
+    todays_market_configuration_id_one_of: string[] | null;
 }
 
 export interface TodaysMarketConfigurationBindingEvent {

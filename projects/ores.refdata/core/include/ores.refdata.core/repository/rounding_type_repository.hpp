@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -137,19 +138,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::rounding_type> read_latest(context ctx,
-                                                   std::uint32_t offset,
-                                                   std::uint32_t limit,
-                                                   const ores::utility::domain::order& order = {});
+    std::vector<domain::rounding_type>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::rounding_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active rounding types.
      * @param ctx Repository context with database connection
      * @return Total number of active rounding types
      */
-    std::uint32_t get_total_type_count(context ctx);
+    std::uint32_t get_total_type_count(
+        context ctx, const std::optional<messaging::rounding_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a rounding type by closing its temporal validity.

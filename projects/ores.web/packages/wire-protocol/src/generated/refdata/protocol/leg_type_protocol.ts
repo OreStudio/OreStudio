@@ -52,6 +52,10 @@ export interface LegTypeLookup {
     leg_type: LegType | null;
 }
 
+export interface LegTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface LegTypeEvent {
     event_id: string;
     key: LegTypeKey;
@@ -76,6 +80,7 @@ export interface ListLegTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LegTypesFilter | null;
 }
 
 export interface ListLegTypesResponse {

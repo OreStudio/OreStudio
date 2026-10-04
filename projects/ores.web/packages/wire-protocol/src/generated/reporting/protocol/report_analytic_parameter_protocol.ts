@@ -59,6 +59,9 @@ export interface ReportAnalyticParameterLookup {
 export interface ReportAnalyticParametersFilter {
     report_analytic_id: string | null;
     parameter_definition_id: string | null;
+    id_one_of: string[] | null;
+    report_analytic_id_one_of: string[] | null;
+    parameter_definition_id_one_of: string[] | null;
 }
 
 export interface ReportAnalyticParameterEvent {

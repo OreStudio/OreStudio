@@ -62,6 +62,8 @@ export interface SandboxLookup {
 
 export interface SandboxesFilter {
     anchor_portfolio_id: string | null;
+    id_one_of: string[] | null;
+    anchor_portfolio_id_one_of: string[] | null;
 }
 
 export interface SandboxEvent {

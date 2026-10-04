@@ -56,6 +56,10 @@ export interface PartyIdSchemeLookup {
     party_id_scheme: PartyIdScheme | null;
 }
 
+export interface PartyIdSchemesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PartyIdSchemeEvent {
     event_id: string;
     key: PartyIdSchemeKey;
@@ -80,6 +84,7 @@ export interface ListPartyIdSchemesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PartyIdSchemesFilter | null;
 }
 
 export interface ListPartyIdSchemesResponse {

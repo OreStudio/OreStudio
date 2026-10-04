@@ -61,6 +61,10 @@ struct series_subclass_code_lookup {
     std::optional<ores::refdata::domain::series_subclass_code> series_subclass_code;
 };
 
+struct series_subclass_codes_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct series_subclass_code_event {
     boost::uuids::uuid event_id;
     series_subclass_code_key key;
@@ -94,6 +98,7 @@ struct list_series_subclass_codes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<series_subclass_codes_filter> filter;
 };
 
 struct list_series_subclass_codes_response {

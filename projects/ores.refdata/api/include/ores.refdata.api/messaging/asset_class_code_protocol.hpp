@@ -61,6 +61,10 @@ struct asset_class_code_lookup {
     std::optional<ores::refdata::domain::asset_class_code> asset_class_code;
 };
 
+struct asset_class_codes_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct asset_class_code_event {
     boost::uuids::uuid event_id;
     asset_class_code_key key;
@@ -94,6 +98,7 @@ struct list_asset_class_codes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<asset_class_codes_filter> filter;
 };
 
 struct list_asset_class_codes_response {

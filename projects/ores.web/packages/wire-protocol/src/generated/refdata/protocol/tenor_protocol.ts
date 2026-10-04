@@ -57,6 +57,10 @@ export interface TenorLookup {
     tenor: Tenor | null;
 }
 
+export interface TenorsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorEvent {
     event_id: string;
     key: TenorKey;
@@ -81,6 +85,7 @@ export interface ListTenorsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorsFilter | null;
 }
 
 export interface ListTenorsResponse {

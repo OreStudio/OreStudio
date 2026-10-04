@@ -35,6 +35,10 @@ export interface TradeAnchorLookup {
     trade_anchor: TradeAnchor | null;
 }
 
+export interface TradeAnchorsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface TradeAnchorEvent {
     event_id: string;
     key: TradeAnchorKey;
@@ -48,6 +52,7 @@ export interface ListTradeAnchorsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeAnchorsFilter | null;
 }
 
 export interface ListTradeAnchorsResponse {

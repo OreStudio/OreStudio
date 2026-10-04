@@ -39,6 +39,7 @@ export interface TenorConventionResolutionLookup {
 
 export interface TenorConventionResolutionsFilter {
     convention_code: string | null;
+    convention_code_one_of: string[] | null;
 }
 
 export interface ListTenorConventionResolutionsRequest {

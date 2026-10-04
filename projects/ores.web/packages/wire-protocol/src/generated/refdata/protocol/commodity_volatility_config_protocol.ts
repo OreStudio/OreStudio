@@ -65,6 +65,10 @@ export interface CommodityVolatilityConfigLookup {
     commodity_volatility_config: CommodityVolatilityConfig | null;
 }
 
+export interface CommodityVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CommodityVolatilityConfigEvent {
     event_id: string;
     key: CommodityVolatilityConfigKey;
@@ -89,6 +93,7 @@ export interface ListCommodityVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityVolatilityConfigsFilter | null;
 }
 
 export interface ListCommodityVolatilityConfigsResponse {

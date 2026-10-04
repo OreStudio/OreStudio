@@ -3192,21 +3192,79 @@ def _relation_columns(entity: dict[str, Any]) -> list[str]:
     return names
 
 
+# The query parameters a list's HTTP projection carries beside its filter
+# members, so a member with one of these names would give a parameter two
+# meanings.
+RESERVED_FILTER_NAMES = frozenset(
+    {"offset", "limit", "order", "descending", "search", "scope", "as_of", "keys"})
+
+
+def _strip_optional(cpp_type: str) -> str:
+    prefix = "std::optional<"
+    if cpp_type.startswith(prefix) and cpp_type.endswith(">"):
+        return cpp_type[len(prefix):-1]
+    return cpp_type
+
+
+def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
+    """The members of an entity's filter record, and the columns each reads.
+
+    The record the messages carry and the condition the repository builds are
+    two readings of this one list, so they cannot disagree about a member.
+
+    - An equals member for each column the model already reads by: the list
+      filter column and every relation a scoped read is declared for. It
+      carries the column's own type, so a nullable column's member can ask for
+      null.
+    - A one-of member for a single-column primary key and every relation,
+      carrying a list of the column's value type.
+    - The searchable columns, read by the one ``search`` member.
+
+    Raises:
+        ValueError: if a member's name is a reserved query parameter.
+    """
+    relations = _relation_columns(entity)
+    equals = list(dict.fromkeys(
+        ([entity["list_filter_column"]] if entity.get("list_filter_column") else [])
+        + relations))
+    primary_key = entity.get("primary_key") or {}
+    key_columns = [_column_name(c) for c in primary_key.get("columns") or []]
+    one_of = list(dict.fromkeys(
+        (key_columns if len(key_columns) == 1 else []) + relations))
+    members = []
+    for name in equals:
+        cpp_type = _column_cpp_type(entity, name)
+        members.append({
+            "member": name, "column": name, "is_equals": True,
+            "cpp_type": cpp_type,
+            "is_nullable": cpp_type != _strip_optional(cpp_type)})
+    for name in one_of:
+        members.append({
+            "member": f"{name}_one_of", "column": name, "is_one_of": True,
+            "cpp_type": f"std::vector<{_strip_optional(_column_cpp_type(entity, name))}>"})
+    searchable = [_column_name(c) for c in write_record_columns(entity)
+                  if c.get("searchable") is True]
+    for member in members:
+        if member["member"] in RESERVED_FILTER_NAMES:
+            raise ValueError(
+                f"{entity.get('entity_singular', '?')}: the filter member "
+                f"'{member['member']}' is a reserved query parameter")
+    return {"members": members, "searchable": searchable}
+
+
 def filter_record_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
-    """An entity's filter record: one optional member per filterable column.
+    """An entity's filter record: one optional member per way a list narrows.
 
     The specification makes filtering a record rather than a query language, so
-    every member is optional and carries the field's own type. Which fields are
-    filterable is the model's own statement: a column is filterable when the
-    model already reads by it, which is the list filter column and every foreign
-    key a scoped read is declared for. An empty result means the resource
+    every member is optional and typed. An empty result means the resource
     supports no filtering, and then it has no filter record at all.
     """
-    names = ([entity["list_filter_column"]]
-             if entity.get("list_filter_column") else []) + _relation_columns(entity)
-    return [_ts_field(name,
-                      f"std::optional<{_column_cpp_type(entity, name)}>")
-            for name in dict.fromkeys(names)]
+    described = filter_members(entity)
+    fields = [_ts_field(m["member"], f"std::optional<{m['cpp_type']}>")
+              for m in described["members"]]
+    if described["searchable"]:
+        fields.append(_ts_field("search", "std::optional<std::string>"))
+    return fields
 
 
 def versions_filter_fields() -> list[dict[str, Any]]:

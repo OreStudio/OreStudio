@@ -61,6 +61,10 @@ struct concurrency_policy_lookup {
     std::optional<ores::reporting::domain::concurrency_policy> concurrency_policy;
 };
 
+struct concurrency_policies_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct concurrency_policy_event {
     boost::uuids::uuid event_id;
     concurrency_policy_key key;
@@ -94,6 +98,7 @@ struct list_concurrency_policies_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<concurrency_policies_filter> filter;
 };
 
 struct list_concurrency_policies_response {

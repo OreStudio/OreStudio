@@ -54,6 +54,10 @@ export interface CompositeInstrumentLookup {
     composite_instrument: CompositeInstrument | null;
 }
 
+export interface CompositeInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface CompositeInstrumentEvent {
     event_id: string;
     key: CompositeInstrumentKey;
@@ -78,6 +82,7 @@ export interface ListCompositeInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CompositeInstrumentsFilter | null;
 }
 
 export interface ListCompositeInstrumentsResponse {

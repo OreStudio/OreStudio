@@ -64,6 +64,9 @@ struct portfolio_right_lookup {
 struct portfolio_rights_filter {
     std::optional<boost::uuids::uuid> account_id;
     std::optional<boost::uuids::uuid> portfolio_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> portfolio_id_one_of;
 };
 
 struct portfolio_right_event {

@@ -57,6 +57,10 @@ export interface InstrumentCodeLookup {
     instrument_code: InstrumentCode | null;
 }
 
+export interface InstrumentCodesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface InstrumentCodeEvent {
     event_id: string;
     key: InstrumentCodeKey;
@@ -81,6 +85,7 @@ export interface ListInstrumentCodesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InstrumentCodesFilter | null;
 }
 
 export interface ListInstrumentCodesResponse {

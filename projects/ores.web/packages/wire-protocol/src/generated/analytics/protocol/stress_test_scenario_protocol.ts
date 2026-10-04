@@ -55,6 +55,10 @@ export interface StressTestScenarioLookup {
     stress_test_scenario: StressTestScenario | null;
 }
 
+export interface StressTestScenariosFilter {
+    id_one_of: string[] | null;
+}
+
 export interface StressTestScenarioEvent {
     event_id: string;
     key: StressTestScenarioKey;
@@ -79,6 +83,7 @@ export interface ListStressTestScenariosRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: StressTestScenariosFilter | null;
 }
 
 export interface ListStressTestScenariosResponse {

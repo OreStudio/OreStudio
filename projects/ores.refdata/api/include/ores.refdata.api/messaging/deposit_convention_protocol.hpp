@@ -65,6 +65,10 @@ struct deposit_convention_lookup {
     std::optional<ores::refdata::domain::deposit_convention> deposit_convention;
 };
 
+struct deposit_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct deposit_convention_event {
     boost::uuids::uuid event_id;
     deposit_convention_key key;
@@ -98,6 +102,7 @@ struct list_deposit_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<deposit_conventions_filter> filter;
 };
 
 struct list_deposit_conventions_response {

@@ -59,6 +59,10 @@ struct activity_category_lookup {
     std::optional<ores::trading::domain::activity_category> activity_category;
 };
 
+struct activity_categories_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct activity_category_event {
     boost::uuids::uuid event_id;
     activity_category_key key;
@@ -92,6 +96,7 @@ struct list_activity_categories_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<activity_categories_filter> filter;
 };
 
 struct list_activity_categories_response {

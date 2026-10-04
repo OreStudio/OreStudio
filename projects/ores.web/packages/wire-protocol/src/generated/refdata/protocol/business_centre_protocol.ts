@@ -56,6 +56,10 @@ export interface BusinessCentreLookup {
     business_centre: BusinessCentre | null;
 }
 
+export interface BusinessCentresFilter {
+    code_one_of: string[] | null;
+}
+
 export interface BusinessCentreEvent {
     event_id: string;
     key: BusinessCentreKey;
@@ -80,6 +84,7 @@ export interface ListBusinessCentresRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BusinessCentresFilter | null;
 }
 
 export interface ListBusinessCentresResponse {

@@ -52,6 +52,10 @@ export interface PriceTypeLookup {
     price_type: PriceType | null;
 }
 
+export interface PriceTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PriceTypeEvent {
     event_id: string;
     key: PriceTypeKey;
@@ -76,6 +80,7 @@ export interface ListPriceTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PriceTypesFilter | null;
 }
 
 export interface ListPriceTypesResponse {

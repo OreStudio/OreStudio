@@ -56,6 +56,7 @@ export interface CurrencyPairConventionCalendarLookup {
 
 export interface CurrencyPairConventionCalendarsFilter {
     pair_code: string | null;
+    pair_code_one_of: string[] | null;
 }
 
 export interface ListCurrencyPairConventionCalendarsRequest {

@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_REPOSITORY_RESULT_REPOSITORY_HPP
 
 #include "ores.compute.api/domain/result.hpp"
+#include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -130,18 +131,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::result>
-    read_latest_by_workunit_id(context ctx,
-                               const std::string& workunit_id,
-                               std::uint32_t offset,
-                               std::uint32_t limit,
-                               const ores::utility::domain::order& order = {});
+    std::vector<domain::result> read_latest_by_workunit_id(
+        context ctx,
+        const std::string& workunit_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::results_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active compute results filtered by workunit_id.
      */
-    std::uint32_t get_total_result_count_by_workunit_id(context ctx,
-                                                        const std::string& workunit_id);
+    std::uint32_t get_total_result_count_by_workunit_id(
+        context ctx,
+        const std::string& workunit_id,
+        const std::optional<messaging::results_filter>& filter = std::nullopt);
 
 
     /**
@@ -157,19 +161,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::result> read_latest(context ctx,
-                                            std::uint32_t offset,
-                                            std::uint32_t limit,
-                                            const ores::utility::domain::order& order = {});
+    std::vector<domain::result>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::results_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active compute results.
      * @param ctx Repository context with database connection
      * @return Total number of active compute results
      */
-    std::uint32_t get_total_result_count(context ctx);
+    std::uint32_t
+    get_total_result_count(context ctx,
+                           const std::optional<messaging::results_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a compute result by closing its temporal validity.

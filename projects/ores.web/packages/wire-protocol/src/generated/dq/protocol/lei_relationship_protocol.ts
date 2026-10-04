@@ -35,6 +35,10 @@ export interface LeiRelationshipLookup {
     lei_relationship: LeiRelationship | null;
 }
 
+export interface LeiRelationshipsFilter {
+    relationship_start_node_node_id_one_of: string[] | null;
+}
+
 export interface LeiRelationshipEvent {
     event_id: string;
     key: LeiRelationshipKey;
@@ -48,6 +52,7 @@ export interface ListLeiRelationshipsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: LeiRelationshipsFilter | null;
 }
 
 export interface ListLeiRelationshipsResponse {

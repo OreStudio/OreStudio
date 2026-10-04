@@ -62,6 +62,10 @@ export interface BmaBasisSwapConventionLookup {
     bma_basis_swap_convention: BmaBasisSwapConvention | null;
 }
 
+export interface BmaBasisSwapConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BmaBasisSwapConventionEvent {
     event_id: string;
     key: BmaBasisSwapConventionKey;
@@ -86,6 +90,7 @@ export interface ListBmaBasisSwapConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BmaBasisSwapConventionsFilter | null;
 }
 
 export interface ListBmaBasisSwapConventionsResponse {

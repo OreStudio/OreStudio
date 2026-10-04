@@ -66,6 +66,10 @@ struct fx_option_convention_lookup {
     std::optional<ores::refdata::domain::fx_option_convention> fx_option_convention;
 };
 
+struct fx_option_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct fx_option_convention_event {
     boost::uuids::uuid event_id;
     fx_option_convention_key key;
@@ -99,6 +103,7 @@ struct list_fx_option_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fx_option_conventions_filter> filter;
 };
 
 struct list_fx_option_conventions_response {

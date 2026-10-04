@@ -54,6 +54,10 @@ export interface BondInstrumentLookup {
     bond_instrument: BondInstrument | null;
 }
 
+export interface BondInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface BondInstrumentEvent {
     event_id: string;
     key: BondInstrumentKey;
@@ -78,6 +82,7 @@ export interface ListBondInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondInstrumentsFilter | null;
 }
 
 export interface ListBondInstrumentsResponse {

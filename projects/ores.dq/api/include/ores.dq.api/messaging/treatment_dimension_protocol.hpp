@@ -60,6 +60,10 @@ struct treatment_dimension_lookup {
     std::optional<ores::dq::domain::treatment_dimension> treatment_dimension;
 };
 
+struct treatment_dimensions_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct treatment_dimension_event {
     boost::uuids::uuid event_id;
     treatment_dimension_key key;
@@ -93,6 +97,7 @@ struct list_treatment_dimensions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<treatment_dimensions_filter> filter;
 };
 
 struct list_treatment_dimensions_response {

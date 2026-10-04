@@ -69,7 +69,7 @@ uses a one-of member in place of a single read capped at 1000.
 |------+-------+-------+-----+-------------|
 | [[id:A24A43C8-804F-43DA-9334-4225C57D9854][Amend the list contract specification]] | DONE | 2026-10-03 | 2026-10-03 | State the searchable and one-of filter members in the NATS entity protocol specification, and how a model declares sortable columns and a default order. |
 | [[id:A8A5C4E4-67EB-4CD5-8786-1C4F790EA18B][Generate a stated order]] | DONE | 2026-10-03 | 2026-10-03 | Sortable columns and a default order in the model; the generated repository orders by an allow-list with the key as tie-break, and the service refuses an undeclared field. |
-| [[id:28598EF6-342E-434A-A329-71324C973B49][Generate the filter record, search and one-of members]] | BACKLOG | | | The generated repository applies each set filter member, a searchable text member, and list-typed one-of members for keys and relations. |
+| [[id:28598EF6-342E-434A-A329-71324C973B49][Generate the filter record, search and one-of members]] | DONE | 2026-10-04 | 2026-10-04 | The generated repository applies each set filter member, a searchable text member, and list-typed one-of members for keys and relations. |
 | [[id:C6D29D53-2E3E-4557-A469-6FD755ABF151][Move the tenant reads onto the contract]] | BACKLOG | | | The roster reads iam.v1.tenants.list with a filter and the search function goes; the roster's run read and the parties page's parent names use one-of members with no fixed cap. |
 
 * Decisions

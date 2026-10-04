@@ -57,6 +57,10 @@ export interface CurrencyPairConventionLookup {
     currency_pair_convention: CurrencyPairConvention | null;
 }
 
+export interface CurrencyPairConventionsFilter {
+    pair_code_one_of: string[] | null;
+}
+
 export interface CurrencyPairConventionEvent {
     event_id: string;
     key: CurrencyPairConventionKey;
@@ -81,6 +85,7 @@ export interface ListCurrencyPairConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrencyPairConventionsFilter | null;
 }
 
 export interface ListCurrencyPairConventionsResponse {

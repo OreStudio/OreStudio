@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_CORE_REPOSITORY_APP_VERSION_REPOSITORY_HPP
 
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -154,19 +155,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::app_version> read_latest(context ctx,
-                                                 std::uint32_t offset,
-                                                 std::uint32_t limit,
-                                                 const ores::utility::domain::order& order = {});
+    std::vector<domain::app_version>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active app versions.
      * @param ctx Repository context with database connection
      * @return Total number of active app versions
      */
-    std::uint32_t get_total_app_version_count(context ctx);
+    std::uint32_t get_total_app_version_count(
+        context ctx, const std::optional<messaging::app_versions_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a app version by closing its temporal validity.

@@ -57,6 +57,10 @@ export interface ZeroInflationIndexConventionLookup {
     zero_inflation_index_convention: ZeroInflationIndexConvention | null;
 }
 
+export interface ZeroInflationIndexConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ZeroInflationIndexConventionEvent {
     event_id: string;
     key: ZeroInflationIndexConventionKey;
@@ -81,6 +85,7 @@ export interface ListZeroInflationIndexConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ZeroInflationIndexConventionsFilter | null;
 }
 
 export interface ListZeroInflationIndexConventionsResponse {

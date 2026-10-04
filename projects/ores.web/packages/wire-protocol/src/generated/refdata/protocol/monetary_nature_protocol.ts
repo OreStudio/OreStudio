@@ -54,6 +54,10 @@ export interface MonetaryNatureLookup {
     monetary_nature: MonetaryNature | null;
 }
 
+export interface MonetaryNaturesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface MonetaryNatureEvent {
     event_id: string;
     key: MonetaryNatureKey;
@@ -78,6 +82,7 @@ export interface ListMonetaryNaturesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: MonetaryNaturesFilter | null;
 }
 
 export interface ListMonetaryNaturesResponse {

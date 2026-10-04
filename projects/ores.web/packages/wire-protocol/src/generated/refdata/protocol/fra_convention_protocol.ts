@@ -52,6 +52,10 @@ export interface FraConventionLookup {
     fra_convention: FraConvention | null;
 }
 
+export interface FraConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface FraConventionEvent {
     event_id: string;
     key: FraConventionKey;
@@ -76,6 +80,7 @@ export interface ListFraConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FraConventionsFilter | null;
 }
 
 export interface ListFraConventionsResponse {

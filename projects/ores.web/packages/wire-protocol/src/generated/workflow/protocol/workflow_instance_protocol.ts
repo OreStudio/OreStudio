@@ -65,6 +65,10 @@ export interface WorkflowInstanceLookup {
     workflow_instance: WorkflowInstance | null;
 }
 
+export interface WorkflowInstancesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface WorkflowInstanceEvent {
     event_id: string;
     key: WorkflowInstanceKey;
@@ -89,6 +93,7 @@ export interface ListWorkflowInstancesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: WorkflowInstancesFilter | null;
 }
 
 export interface ListWorkflowInstancesResponse {

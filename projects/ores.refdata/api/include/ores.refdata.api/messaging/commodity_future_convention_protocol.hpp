@@ -108,6 +108,10 @@ struct commodity_future_convention_lookup {
     std::optional<ores::refdata::domain::commodity_future_convention> commodity_future_convention;
 };
 
+struct commodity_future_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct commodity_future_convention_event {
     boost::uuids::uuid event_id;
     commodity_future_convention_key key;
@@ -141,6 +145,7 @@ struct list_commodity_future_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<commodity_future_conventions_filter> filter;
 };
 
 struct list_commodity_future_conventions_response {

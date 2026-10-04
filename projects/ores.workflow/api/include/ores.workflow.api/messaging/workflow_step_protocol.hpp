@@ -76,6 +76,8 @@ struct workflow_step_lookup {
 
 struct workflow_steps_filter {
     std::optional<boost::uuids::uuid> workflow_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> workflow_id_one_of;
 };
 
 struct workflow_step_event {

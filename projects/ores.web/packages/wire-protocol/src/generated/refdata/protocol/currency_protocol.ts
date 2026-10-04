@@ -66,6 +66,10 @@ export interface CurrencyLookup {
     currency: Currency | null;
 }
 
+export interface CurrenciesFilter {
+    iso_code_one_of: string[] | null;
+}
+
 export interface CurrencyEvent {
     event_id: string;
     key: CurrencyKey;
@@ -90,6 +94,7 @@ export interface ListCurrenciesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrenciesFilter | null;
     as_of: string | null;
 }
 

@@ -71,6 +71,40 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::calendar_events_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->calendar_code)
+        r.push_back(equals("calendar_code", filter_value(*filter->calendar_code)));
+    if (filter->diary_entry_type)
+        r.push_back(equals("diary_entry_type", filter_value(*filter->diary_entry_type)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->calendar_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->calendar_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("calendar_code", std::move(values)));
+    }
+    if (filter->diary_entry_type_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->diary_entry_type_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("diary_entry_type", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -213,12 +247,13 @@ std::optional<domain::calendar_event> calendar_event_repository::read_at_version
     return entities.front();
 }
 
-std::vector<domain::calendar_event>
-calendar_event_repository::read_latest_by_calendar_code(context ctx,
-                                                        const std::string& calendar_code,
-                                                        std::uint32_t offset,
-                                                        std::uint32_t limit,
-                                                        const ores::utility::domain::order& order) {
+std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_calendar_code(
+    context ctx,
+    const std::string& calendar_code,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events. calendar_code: " << calendar_code
                                << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -232,33 +267,27 @@ calendar_event_repository::read_latest_by_calendar_code(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events by calendar_code.");
 }
 
 std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_calendar_code(
-    context ctx, const std::string& calendar_code) {
+    context ctx,
+    const std::string& calendar_code,
+    const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar events count. calendar_code: "
                                << calendar_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<calendar_event_entity>(sqlgen::count().as<"count">()) |
+    const auto query = sqlgen::read<std::vector<calendar_event_entity>> |
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar events count by calendar_code: " << count;
-    return count;
+    return execute_count_query<calendar_event_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting calendar events by calendar_code");
 }
 
 
@@ -293,7 +322,8 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_di
     const std::string& diary_entry_type,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events. diary_entry_type: "
                                << diary_entry_type << " offset: " << offset << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -307,34 +337,27 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_di
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events by diary_entry_type.");
 }
 
 std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_diary_entry_type(
-    context ctx, const std::string& diary_entry_type) {
+    context ctx,
+    const std::string& diary_entry_type,
+    const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active calendar events count. diary_entry_type: " << diary_entry_type;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<calendar_event_entity>(sqlgen::count().as<"count">()) |
+    const auto query = sqlgen::read<std::vector<calendar_event_entity>> |
                        where("tenant_id"_c == tid && "diary_entry_type"_c == diary_entry_type &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar events count by diary_entry_type: "
-                               << count;
-    return count;
+    return execute_count_query<calendar_event_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting calendar events by diary_entry_type");
 }
 
 
@@ -397,11 +420,12 @@ void calendar_event_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::calendar_event>
-calendar_event_repository::read_latest(context ctx,
-                                       std::uint32_t offset,
-                                       std::uint32_t limit,
-                                       const ores::utility::domain::order& order) {
+std::vector<domain::calendar_event> calendar_event_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar events with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -414,30 +438,23 @@ calendar_event_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events with pagination.");
 }
 
-std::uint32_t calendar_event_repository::get_total_calendar_event_count(context ctx) {
+std::uint32_t calendar_event_repository::get_total_calendar_event_count(
+    context ctx, const std::optional<messaging::calendar_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar event count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<calendar_event_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<calendar_event_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active calendar event count: " << count;
-    return count;
+    return execute_count_query<calendar_event_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting calendar events");
 }
 
 std::vector<domain::calendar_event>

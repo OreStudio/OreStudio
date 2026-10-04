@@ -52,6 +52,10 @@ export interface OptionTypeLookup {
     option_type: OptionType | null;
 }
 
+export interface OptionTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface OptionTypeEvent {
     event_id: string;
     key: OptionTypeKey;
@@ -76,6 +80,7 @@ export interface ListOptionTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: OptionTypesFilter | null;
 }
 
 export interface ListOptionTypesResponse {

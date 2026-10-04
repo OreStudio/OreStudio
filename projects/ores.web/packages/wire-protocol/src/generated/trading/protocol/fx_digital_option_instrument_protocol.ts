@@ -64,6 +64,10 @@ export interface FxDigitalOptionInstrumentLookup {
     fx_digital_option_instrument: FxDigitalOptionInstrument | null;
 }
 
+export interface FxDigitalOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxDigitalOptionInstrumentEvent {
     event_id: string;
     key: FxDigitalOptionInstrumentKey;
@@ -88,6 +92,7 @@ export interface ListFxDigitalOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxDigitalOptionInstrumentsFilter | null;
 }
 
 export interface ListFxDigitalOptionInstrumentsResponse {

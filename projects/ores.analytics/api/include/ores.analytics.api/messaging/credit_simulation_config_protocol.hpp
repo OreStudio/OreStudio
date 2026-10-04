@@ -71,6 +71,8 @@ struct credit_simulation_config_lookup {
 
 struct credit_simulation_configs_filter {
     std::optional<boost::uuids::uuid> configuration_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> configuration_id_one_of;
 };
 
 struct credit_simulation_config_event {

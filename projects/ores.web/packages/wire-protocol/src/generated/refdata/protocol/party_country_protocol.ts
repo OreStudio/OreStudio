@@ -56,6 +56,7 @@ export interface PartyCountryLookup {
 
 export interface PartyCountriesFilter {
     party_id: string | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface ListPartyCountriesRequest {

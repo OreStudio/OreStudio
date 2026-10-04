@@ -58,6 +58,10 @@ export interface DepositConventionLookup {
     deposit_convention: DepositConvention | null;
 }
 
+export interface DepositConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface DepositConventionEvent {
     event_id: string;
     key: DepositConventionKey;
@@ -82,6 +86,7 @@ export interface ListDepositConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DepositConventionsFilter | null;
 }
 
 export interface ListDepositConventionsResponse {

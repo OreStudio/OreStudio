@@ -101,6 +101,10 @@ export interface CommodityFutureConventionLookup {
     commodity_future_convention: CommodityFutureConvention | null;
 }
 
+export interface CommodityFutureConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CommodityFutureConventionEvent {
     event_id: string;
     key: CommodityFutureConventionKey;
@@ -125,6 +129,7 @@ export interface ListCommodityFutureConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityFutureConventionsFilter | null;
 }
 
 export interface ListCommodityFutureConventionsResponse {

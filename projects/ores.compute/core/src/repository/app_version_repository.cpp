@@ -71,6 +71,24 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::app_versions_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -293,7 +311,8 @@ std::vector<domain::app_version>
 app_version_repository::read_latest(context ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
-                                    const ores::utility::domain::order& order) {
+                                    const ores::utility::domain::order& order,
+                                    const std::optional<messaging::app_versions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest app versions with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -308,32 +327,25 @@ app_version_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(),
         "Reading latest app versions with pagination.");
 }
 
-std::uint32_t app_version_repository::get_total_app_version_count(context ctx) {
+std::uint32_t app_version_repository::get_total_app_version_count(
+    context ctx, const std::optional<messaging::app_versions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
-        sqlgen::select_from<app_version_entity>(sqlgen::count().as<"count">()) |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+        sqlgen::read<std::vector<app_version_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active app version count: " << count;
-    return count;
+    return execute_count_query<app_version_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting app versions");
 }
 
 std::vector<domain::app_version>

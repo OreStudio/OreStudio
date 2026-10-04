@@ -70,6 +70,33 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::configurations_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->configuration_type_code)
+        r.push_back(
+            equals("configuration_type_code", filter_value(*filter->configuration_type_code)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->configuration_type_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->configuration_type_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("configuration_type_code", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -248,7 +275,8 @@ std::vector<domain::configuration> configuration_repository::read_latest_by_conf
     const std::string& configuration_type_code,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::configurations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configurations. configuration_type_code: "
                                << configuration_type_code << " offset: " << offset
                                << " limit: " << limit;
@@ -264,36 +292,33 @@ std::vector<domain::configuration> configuration_repository::read_latest_by_conf
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return configuration_mapper::map(entities); },
         lg(),
         "Reading latest configurations by configuration_type_code.");
 }
 
 std::uint32_t configuration_repository::get_total_configuration_count_by_configuration_type_code(
-    context ctx, const std::string& configuration_type_code) {
+    context ctx,
+    const std::string& configuration_type_code,
+    const std::optional<messaging::configurations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active configurations count. configuration_type_code: "
         << configuration_type_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<configuration_entity>(sqlgen::count().as<"count">()) |
+        sqlgen::read<std::vector<configuration_entity>> |
         where("tenant_id"_c == tid && "configuration_type_code"_c == configuration_type_code &&
-              "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+              "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active configurations count by configuration_type_code: "
-                               << count;
-    return count;
+    return execute_count_query<configuration_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting configurations by configuration_type_code");
 }
 
 
@@ -330,11 +355,12 @@ void configuration_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::configuration>
-configuration_repository::read_latest(context ctx,
-                                      std::uint32_t offset,
-                                      std::uint32_t limit,
-                                      const ores::utility::domain::order& order) {
+std::vector<domain::configuration> configuration_repository::read_latest(
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::configurations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configurations with offset: " << offset
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -347,30 +373,23 @@ configuration_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return configuration_mapper::map(entities); },
         lg(),
         "Reading latest configurations with pagination.");
 }
 
-std::uint32_t configuration_repository::get_total_configuration_count(context ctx) {
+std::uint32_t configuration_repository::get_total_configuration_count(
+    context ctx, const std::optional<messaging::configurations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active configuration count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<configuration_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<configuration_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active configuration count: " << count;
-    return count;
+    return execute_count_query<configuration_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting configurations");
 }
 
 std::vector<domain::configuration>

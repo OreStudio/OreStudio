@@ -44,6 +44,10 @@ struct login_info_lookup {
     std::optional<ores::iam::domain::login_info> login_info;
 };
 
+struct login_info_filter {
+    std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+};
+
 struct login_info_event {
     boost::uuids::uuid event_id;
     login_info_key key;
@@ -66,6 +70,7 @@ struct list_login_info_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<login_info_filter> filter;
 };
 
 struct list_login_info_response {

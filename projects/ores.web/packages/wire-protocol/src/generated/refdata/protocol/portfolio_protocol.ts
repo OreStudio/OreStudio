@@ -64,6 +64,8 @@ export interface PortfolioLookup {
 
 export interface PortfoliosFilter {
     sandbox_id: string | null | null;
+    id_one_of: string[] | null;
+    sandbox_id_one_of: string[] | null;
 }
 
 export interface PortfolioEvent {

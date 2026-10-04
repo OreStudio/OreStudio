@@ -54,6 +54,10 @@ export interface CurrencyGroupLookup {
     currency_group: CurrencyGroup | null;
 }
 
+export interface CurrencyGroupsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CurrencyGroupEvent {
     event_id: string;
     key: CurrencyGroupKey;
@@ -78,6 +82,7 @@ export interface ListCurrencyGroupsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CurrencyGroupsFilter | null;
 }
 
 export interface ListCurrencyGroupsResponse {

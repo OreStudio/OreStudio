@@ -61,6 +61,10 @@ struct currency_pair_classification_lookup {
     std::optional<ores::refdata::domain::currency_pair_classification> currency_pair_classification;
 };
 
+struct currency_pair_classifications_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct currency_pair_classification_event {
     boost::uuids::uuid event_id;
     currency_pair_classification_key key;
@@ -95,6 +99,7 @@ struct list_currency_pair_classifications_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<currency_pair_classifications_filter> filter;
 };
 
 struct list_currency_pair_classifications_response {

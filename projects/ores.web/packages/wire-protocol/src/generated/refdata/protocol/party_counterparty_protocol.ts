@@ -56,6 +56,7 @@ export interface PartyCounterpartyLookup {
 
 export interface PartyCounterpartiesFilter {
     party_id: string | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface ListPartyCounterpartiesRequest {

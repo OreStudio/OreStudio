@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_CORE_REPOSITORY_CREDIT_SIMULATION_MATRIX_ROW_CONFIG_REPOSITORY_HPP
 
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
+#include "ores.analytics.api/messaging/credit_simulation_matrix_row_config_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -152,19 +153,23 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::credit_simulation_matrix_row_config>
-    read_latest_by_transition_matrix_id(context ctx,
-                                        const std::string& transition_matrix_id,
-                                        std::uint32_t offset,
-                                        std::uint32_t limit,
-                                        const ores::utility::domain::order& order = {});
+    std::vector<domain::credit_simulation_matrix_row_config> read_latest_by_transition_matrix_id(
+        context ctx,
+        const std::string& transition_matrix_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
+            std::nullopt);
 
     /**
      * @brief Gets the total count of active matrix rows filtered by transition_matrix_id.
      */
-    std::uint32_t
-    get_total_row_count_by_transition_matrix_id(context ctx,
-                                                const std::string& transition_matrix_id);
+    std::uint32_t get_total_row_count_by_transition_matrix_id(
+        context ctx,
+        const std::string& transition_matrix_id,
+        const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
+            std::nullopt);
 
 
     /**
@@ -180,20 +185,26 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::credit_simulation_matrix_row_config>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::credit_simulation_matrix_row_config> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
+            std::nullopt);
 
     /**
      * @brief Gets the total count of active matrix rows.
      * @param ctx Repository context with database connection
      * @return Total number of active matrix rows
      */
-    std::uint32_t get_total_row_count(context ctx);
+    std::uint32_t get_total_row_count(
+        context ctx,
+        const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
+            std::nullopt);
 
     /**
      * @brief Deletes a matrix row by closing its temporal validity.

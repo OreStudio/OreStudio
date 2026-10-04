@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -127,18 +128,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::market_observation>
-    read_latest_by_series_id(context ctx,
-                             const std::string& series_id,
-                             std::uint32_t offset,
-                             std::uint32_t limit,
-                             const ores::utility::domain::order& order = {});
+    std::vector<domain::market_observation> read_latest_by_series_id(
+        context ctx,
+        const std::string& series_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::market_observations_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active market observations filtered by series_id.
      */
-    std::uint32_t get_total_market_observation_count_by_series_id(context ctx,
-                                                                  const std::string& series_id);
+    std::uint32_t get_total_market_observation_count_by_series_id(
+        context ctx,
+        const std::string& series_id,
+        const std::optional<messaging::market_observations_filter>& filter = std::nullopt);
 
 
     /**
@@ -154,20 +158,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::market_observation>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::market_observations_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active market observations.
      * @param ctx Repository context with database connection
      * @return Total number of active market observations
      */
-    std::uint32_t get_total_market_observation_count(context ctx);
+    std::uint32_t get_total_market_observation_count(
+        context ctx,
+        const std::optional<messaging::market_observations_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a market observation by closing its temporal validity.

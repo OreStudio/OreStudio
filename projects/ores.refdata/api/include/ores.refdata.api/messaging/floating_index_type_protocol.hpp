@@ -59,6 +59,10 @@ struct floating_index_type_lookup {
     std::optional<ores::refdata::domain::floating_index_type> floating_index_type;
 };
 
+struct floating_index_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct floating_index_type_event {
     boost::uuids::uuid event_id;
     floating_index_type_key key;
@@ -92,6 +96,7 @@ struct list_floating_index_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<floating_index_types_filter> filter;
 };
 
 struct list_floating_index_types_response {

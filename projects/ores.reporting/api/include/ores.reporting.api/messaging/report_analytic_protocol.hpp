@@ -64,6 +64,8 @@ struct report_analytic_lookup {
 
 struct report_analytics_filter {
     std::optional<std::string> analytic_type_code;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> analytic_type_code_one_of;
 };
 
 struct report_analytic_event {

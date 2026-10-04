@@ -63,6 +63,8 @@ export interface SeedProfileParameterLookup {
 
 export interface SeedProfileParametersFilter {
     seed_profile_id: string | null;
+    id_one_of: string[] | null;
+    seed_profile_id_one_of: string[] | null;
 }
 
 export interface SeedProfileParameterEvent {

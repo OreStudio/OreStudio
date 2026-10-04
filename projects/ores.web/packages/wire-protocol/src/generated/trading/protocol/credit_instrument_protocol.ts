@@ -73,6 +73,10 @@ export interface CreditInstrumentLookup {
     credit_instrument: CreditInstrument | null;
 }
 
+export interface CreditInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface CreditInstrumentEvent {
     event_id: string;
     key: CreditInstrumentKey;
@@ -97,6 +101,7 @@ export interface ListCreditInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CreditInstrumentsFilter | null;
 }
 
 export interface ListCreditInstrumentsResponse {

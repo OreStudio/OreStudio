@@ -128,16 +128,29 @@ messaging::{{response}}
     }
 {{/has_order}}
 {{#has_filter}}
-    if (request.filter) {
+{{#domain_entity.filter_members}}
+{{#is_one_of}}
+    if (request.filter && request.filter->{{member}} &&
+        request.filter->{{member}}->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in {{member}}.";
         return response;
     }
+{{/is_one_of}}
+{{/domain_entity.filter_members}}
+{{#domain_entity.has_search}}
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The search text is longer than 256 characters.";
+        return response;
+    }
+{{/domain_entity.has_search}}
 {{/has_filter}}
     response.{{entity_plural_short}} = repo_.read_latest(
-        ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}});
-    response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_);
+        ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}}{{#has_filter}}{{^has_order}}, {}{{/has_order}}, request.filter{{/has_filter}});
+    response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_{{#has_filter}}, request.filter{{/has_filter}});
     return response;
 }
 
@@ -157,12 +170,25 @@ messaging::{{response}}
     }
 {{/has_order}}
 {{#has_filter}}
-    if (request.filter) {
+{{#domain_entity.filter_members}}
+{{#is_one_of}}
+    if (request.filter && request.filter->{{member}} &&
+        request.filter->{{member}}->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in {{member}}.";
         return response;
     }
+{{/is_one_of}}
+{{/domain_entity.filter_members}}
+{{#domain_entity.has_search}}
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The search text is longer than 256 characters.";
+        return response;
+    }
+{{/domain_entity.has_search}}
 {{/has_filter}}
     if (request.scope == ores::utility::domain::scope::subtree) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
@@ -196,8 +222,9 @@ messaging::{{response}}
 {{/leading_is_uuid}}
 {{/leading_is_optional}}
     response.{{entity_plural_short}} = repo_.read_latest_by_{{leading}}(
-        ctx_, relation, request.offset, request.limit{{#has_order}}, request.order{{/has_order}});
-    response.total = repo_.get_total_{{entity_singular_short}}_count_by_{{leading}}(ctx_, relation);
+        ctx_, relation, request.offset, request.limit{{#has_order}}, request.order{{/has_order}}{{#has_filter}}{{^has_order}}, {}{{/has_order}}, request.filter{{/has_filter}});
+    response.total = repo_.get_total_{{entity_singular_short}}_count_by_{{leading}}(
+        ctx_, relation{{#has_filter}}, request.filter{{/has_filter}});
     return response;
 }
 

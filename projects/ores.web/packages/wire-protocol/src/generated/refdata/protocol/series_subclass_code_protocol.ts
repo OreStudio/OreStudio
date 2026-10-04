@@ -54,6 +54,10 @@ export interface SeriesSubclassCodeLookup {
     series_subclass_code: SeriesSubclassCode | null;
 }
 
+export interface SeriesSubclassCodesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface SeriesSubclassCodeEvent {
     event_id: string;
     key: SeriesSubclassCodeKey;
@@ -78,6 +82,7 @@ export interface ListSeriesSubclassCodesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SeriesSubclassCodesFilter | null;
 }
 
 export interface ListSeriesSubclassCodesResponse {

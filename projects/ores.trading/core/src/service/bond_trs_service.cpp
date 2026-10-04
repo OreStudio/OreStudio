@@ -106,8 +106,16 @@ bond_trs_service::list_bond_trs(const messaging::list_bond_trs_request& request)
             "A list of bond trs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    response.trs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_trs_count(ctx_);
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in trade_id_one_of.";
+        return response;
+    }
+    response.trs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_trs_count(ctx_, request.filter);
     return response;
 }
 

@@ -61,6 +61,10 @@ export interface BondFutureVolatilityConfigLookup {
     bond_future_volatility_config: BondFutureVolatilityConfig | null;
 }
 
+export interface BondFutureVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface BondFutureVolatilityConfigEvent {
     event_id: string;
     key: BondFutureVolatilityConfigKey;
@@ -85,6 +89,7 @@ export interface ListBondFutureVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: BondFutureVolatilityConfigsFilter | null;
 }
 
 export interface ListBondFutureVolatilityConfigsResponse {

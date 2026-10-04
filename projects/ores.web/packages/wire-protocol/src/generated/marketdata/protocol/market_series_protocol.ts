@@ -57,6 +57,10 @@ export interface MarketSeriesLookup {
     market_series: MarketSeries | null;
 }
 
+export interface MarketSeriesFilter {
+    id_one_of: string[] | null;
+}
+
 export interface MarketSeriesEvent {
     event_id: string;
     key: MarketSeriesKey;
@@ -81,6 +85,7 @@ export interface ListMarketSeriesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: MarketSeriesFilter | null;
 }
 
 export interface ListMarketSeriesResponse {

@@ -22,9 +22,12 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <initializer_list>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <utility>
@@ -58,7 +61,8 @@ inline sqlgen::dynamic::OrderBy make_order(std::initializer_list<std::string> or
  * A sqlgen query fixes its order when it is compiled, and a stated order is
  * only known when the request arrives. The query is turned into the statement
  * it stands for, the statement takes the order, and the session runs it, so
- * the conditions, the page and the mapping stay the query's own.
+ * the conditions, the page and the mapping stay the query's own. A filter, when
+ * there is one, narrows the query's own conditions.
  *
  * This reads sqlgen's transpilation layer and the members of its read query,
  * which are not its documented interface. Every generated paged read goes
@@ -76,6 +80,7 @@ std::vector<DomainType> execute_ordered_read_query(
     context ctx,
     const sqlgen::Read<Type, WhereType, OrderByType, LimitType, OffsetType>& query,
     sqlgen::dynamic::OrderBy order,
+    std::optional<sqlgen::dynamic::Condition> filter,
     MapperFunc&& mapper,
     logging::logger_t& lg,
     const std::string& operation_desc) {
@@ -88,6 +93,7 @@ std::vector<DomainType> execute_ordered_read_query(
         read_to_select_from<EntityType, WhereType, OrderByType, LimitType, OffsetType>(
             query.where_, query.limit_, query.offset_);
     select.order_by = std::move(order);
+    select.where = narrowed(std::move(select.where), std::move(filter));
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then([&](const auto& s) {
         return s->template read<Type>(select);
@@ -98,6 +104,54 @@ std::vector<DomainType> execute_ordered_read_query(
     return std::forward<MapperFunc>(mapper)(*r);
 }
 
+/**
+ * @brief Counts the rows a read query matches, narrowed by a filter.
+ *
+ * The count is the read's own statement with its fields replaced by a count
+ * and its page removed, so a page and its total cannot disagree about which
+ * rows match.
+ */
+template <typename EntityType,
+          typename Type,
+          typename WhereType,
+          typename OrderByType,
+          typename LimitType,
+          typename OffsetType>
+std::uint32_t
+execute_count_query(context ctx,
+                    const sqlgen::Read<Type, WhereType, OrderByType, LimitType, OffsetType>& query,
+                    std::optional<sqlgen::dynamic::Condition> filter,
+                    logging::logger_t& lg,
+                    const std::string& operation_desc) {
+
+    using namespace ores::logging;
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+
+    struct count_result {
+        long long count;
+    };
+    auto select = sqlgen::transpilation::
+        read_to_select_from<EntityType, WhereType, OrderByType, LimitType, OffsetType>(
+            query.where_, query.limit_, query.offset_);
+    select.fields = {{.val = {.val =
+                                  sqlgen::dynamic::Operation::Aggregation{
+                                      .val = sqlgen::dynamic::Operation::Aggregation::Count{}}},
+                      .as = "count"}};
+    select.order_by = std::nullopt;
+    select.limit = std::nullopt;
+    select.offset = std::nullopt;
+    select.where = narrowed(std::move(select.where), std::move(filter));
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then([&](const auto& s) {
+        return s->template read<std::vector<count_result>>(select);
+    });
+    ensure_success(r, lg);
+
+    const auto count = r->empty() ? 0u : static_cast<std::uint32_t>(r->front().count);
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << count;
+    return count;
+}
 }
 
 #endif

@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_REPOSITORY_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -157,20 +158,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::pricing_model_product>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::pricing_model_product> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active pricing model products.
      * @param ctx Repository context with database connection
      * @return Total number of active pricing model products
      */
-    std::uint32_t get_total_product_count(context ctx);
+    std::uint32_t get_total_product_count(
+        context ctx,
+        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a pricing model product by closing its temporal validity.

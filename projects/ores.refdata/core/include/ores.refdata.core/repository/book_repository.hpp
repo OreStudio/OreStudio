@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -146,19 +147,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::book>
-    read_latest_by_parent_portfolio_id(context ctx,
-                                       const std::string& parent_portfolio_id,
-                                       std::uint32_t offset,
-                                       std::uint32_t limit,
-                                       const ores::utility::domain::order& order = {});
+    std::vector<domain::book> read_latest_by_parent_portfolio_id(
+        context ctx,
+        const std::string& parent_portfolio_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::books_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active books filtered by parent_portfolio_id.
      */
-    std::uint32_t
-    get_total_book_count_by_parent_portfolio_id(context ctx,
-                                                const std::string& parent_portfolio_id);
+    std::uint32_t get_total_book_count_by_parent_portfolio_id(
+        context ctx,
+        const std::string& parent_portfolio_id,
+        const std::optional<messaging::books_filter>& filter = std::nullopt);
 
 
     /**
@@ -192,19 +195,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::book> read_latest(context ctx,
-                                          std::uint32_t offset,
-                                          std::uint32_t limit,
-                                          const ores::utility::domain::order& order = {});
+    std::vector<domain::book>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::books_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active books.
      * @param ctx Repository context with database connection
      * @return Total number of active books
      */
-    std::uint32_t get_total_book_count(context ctx);
+    std::uint32_t
+    get_total_book_count(context ctx,
+                         const std::optional<messaging::books_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a book by closing its temporal validity.

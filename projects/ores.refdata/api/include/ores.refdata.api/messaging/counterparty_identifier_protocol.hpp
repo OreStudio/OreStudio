@@ -64,6 +64,8 @@ struct counterparty_identifier_lookup {
 
 struct counterparty_identifiers_filter {
     std::optional<boost::uuids::uuid> counterparty_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
 };
 
 struct counterparty_identifier_event {

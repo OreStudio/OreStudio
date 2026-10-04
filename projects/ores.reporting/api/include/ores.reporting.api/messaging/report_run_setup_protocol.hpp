@@ -102,6 +102,10 @@ struct report_run_setup_lookup {
     std::optional<ores::reporting::domain::report_run_setup> report_run_setup;
 };
 
+struct report_run_setups_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct report_run_setup_event {
     boost::uuids::uuid event_id;
     report_run_setup_key key;
@@ -135,6 +139,7 @@ struct list_report_run_setups_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<report_run_setups_filter> filter;
 };
 
 struct list_report_run_setups_response {

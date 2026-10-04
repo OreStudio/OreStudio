@@ -64,6 +64,8 @@ export interface CalendarRuleLookup {
 
 export interface CalendarRulesFilter {
     calendar_code: string | null;
+    id_one_of: string[] | null;
+    calendar_code_one_of: string[] | null;
 }
 
 export interface CalendarRuleEvent {

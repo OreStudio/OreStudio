@@ -63,6 +63,10 @@ struct system_setting_lookup {
     std::optional<ores::variability::domain::system_setting> system_setting;
 };
 
+struct system_settings_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct system_setting_event {
     boost::uuids::uuid event_id;
     system_setting_key key;
@@ -96,6 +100,7 @@ struct list_system_settings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<system_settings_filter> filter;
 };
 
 struct list_system_settings_response {

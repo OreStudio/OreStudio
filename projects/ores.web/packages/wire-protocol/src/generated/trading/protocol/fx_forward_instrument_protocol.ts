@@ -59,6 +59,10 @@ export interface FxForwardInstrumentLookup {
     fx_forward_instrument: FxForwardInstrument | null;
 }
 
+export interface FxForwardInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxForwardInstrumentEvent {
     event_id: string;
     key: FxForwardInstrumentKey;
@@ -83,6 +87,7 @@ export interface ListFxForwardInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxForwardInstrumentsFilter | null;
 }
 
 export interface ListFxForwardInstrumentsResponse {

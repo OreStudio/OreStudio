@@ -61,6 +61,9 @@ export interface TenorScheduleLookup {
 export interface TenorSchedulesFilter {
     calendar_code: string | null | null;
     diary_entry_type: string | null | null;
+    code_one_of: string[] | null;
+    calendar_code_one_of: string[] | null;
+    diary_entry_type_one_of: string[] | null;
 }
 
 export interface TenorScheduleEvent {

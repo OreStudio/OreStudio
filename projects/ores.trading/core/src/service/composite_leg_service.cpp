@@ -102,14 +102,22 @@ composite_leg_service::list_composite_legs(const messaging::list_composite_legs_
             "A list of composite legs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.composite_legs = repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_composite_leg_count(ctx_);
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in trade_id_one_of.";
+        return response;
+    }
+    response.composite_legs =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_composite_leg_count(ctx_, request.filter);
     return response;
 }
 
@@ -125,10 +133,17 @@ composite_leg_service::list_by_trade_id_composite_legs(
             "A list of composite legs cannot be ordered by " + request.order.field + ".";
         return response;
     }
-    if (request.filter) {
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->trade_id_one_of &&
+        request.filter->trade_id_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in trade_id_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
@@ -138,9 +153,10 @@ composite_leg_service::list_by_trade_id_composite_legs(
         return response;
     }
     const auto relation = boost::uuids::to_string(request.trade_id);
-    response.composite_legs =
-        repo_.read_latest_by_trade_id(ctx_, relation, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_composite_leg_count_by_trade_id(ctx_, relation);
+    response.composite_legs = repo_.read_latest_by_trade_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_composite_leg_count_by_trade_id(ctx_, relation, request.filter);
     return response;
 }
 

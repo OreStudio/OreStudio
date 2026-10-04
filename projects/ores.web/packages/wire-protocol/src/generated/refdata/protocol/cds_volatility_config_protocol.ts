@@ -58,6 +58,10 @@ export interface CdsVolatilityConfigLookup {
     cds_volatility_config: CdsVolatilityConfig | null;
 }
 
+export interface CdsVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CdsVolatilityConfigEvent {
     event_id: string;
     key: CdsVolatilityConfigKey;
@@ -82,6 +86,7 @@ export interface ListCdsVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CdsVolatilityConfigsFilter | null;
 }
 
 export interface ListCdsVolatilityConfigsResponse {

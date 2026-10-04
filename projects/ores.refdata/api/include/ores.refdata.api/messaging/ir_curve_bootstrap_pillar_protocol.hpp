@@ -64,6 +64,10 @@ struct ir_curve_bootstrap_pillar_lookup {
     std::optional<ores::refdata::domain::ir_curve_bootstrap_pillar> ir_curve_bootstrap_pillar;
 };
 
+struct ir_curve_bootstrap_pillars_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct ir_curve_bootstrap_pillar_event {
     boost::uuids::uuid event_id;
     ir_curve_bootstrap_pillar_key key;
@@ -97,6 +101,7 @@ struct list_ir_curve_bootstrap_pillars_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ir_curve_bootstrap_pillars_filter> filter;
 };
 
 struct list_ir_curve_bootstrap_pillars_response {

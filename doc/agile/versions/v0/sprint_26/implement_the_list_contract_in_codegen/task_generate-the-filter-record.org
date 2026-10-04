@@ -7,41 +7,67 @@
 #+level: s1
 #+filetags: :codegen:protocol:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-the-filter-record
+#+pr: 2588
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
 #+updated: 2026-10-03
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A generated list applies its filter record. Each set member narrows the page
+and the total: an equals member, a one-of member for the primary key and the
+relation columns, and a search member over the model's searchable columns.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B476DBDD-F7AE-4337-A2F2-17295CE5A971][Implement order and filter in the generated list contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
 
--
+- The filter record carries =<column>_one_of= members for a single-column
+  primary key and every relation column, and a =search= member when a column
+  declares =:searchable: true=.
+- The generator refuses a filter member whose name is a reserved query
+  parameter.
+- The generated =list= and =list_by_<relation>= reads apply every set member,
+  and the total counts the rows the filter matches.
+- An empty one-of list matches no row; a list longer than 1000 values is
+  =invalid= with =filter_too_large=.
+- Search folds case in the database and matches the text literally.
+- Tests prove each rule.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- *One description of the members.* =filter_members= in =org_loader.py=
+  lists each member with its column, kind and type; the record the messages
+  carry and the condition the repository builds both read it.
+- *Conditions at run time.* =ores.database/repository/list_filter.hpp= builds
+  sqlgen =dynamic::Condition= values: equals, is null (an equals member on a
+  nullable column set to null), one of (an empty list is a false condition,
+  because =IN ()= is not SQL), and contains. The read and the count take the
+  condition and =AND= it with the query's own.
+- *Search without a pattern.* sqlgen's =LIKE= takes its pattern as a value,
+  so the text could only be lowered in C++, which knows ASCII alone. Search
+  is =length(replace(lower(col), lower(text), '')) < length(lower(col))=
+  instead: the database folds both sides, and nothing in the text is a
+  wildcard.
+- *The count.* The total is the read's own statement with its fields
+  replaced by =count(*)=, so the page and the total cannot disagree about
+  which rows match.
+- *The service* checks the one-of bound and passes the filter on.
 
 * Measurements
 
@@ -74,12 +100,53 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2588][#2588]] | [codegen] Apply the filter record in every generated list |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | has_filter and has_filter_record could disagree | core.py, templates | Decline | They differ only when the protocol is off, and the service includes the protocol header, so no model has a service without the record. |
+| 2 | _protocol_enabled parses the model again | core.py | Decline | One parse per entity per run; threading the document through the enrichment costs more than it saves. |
+| 3 | Search has no length bound | service template | Accept | At most 256 characters, refused with filter_too_large; spec and a tenant test. |
+| 4 | Folding depends on the database locale | list_filter.hpp | Accept | Comment says a C ctype folds ASCII alone. |
+| 5 | A one-of list cannot ask for null | task | Accept | Recorded as a decision; an equals member asks for null. |
+| 6 | Two places use sqlgen internals | stated_order.hpp | Decline | Every generated paged read and count compiles through them, so an upgrade that breaks them fails the build. |
+| 7 | Namespace closing comments | list_filter.hpp | Decline | The repository closes namespaces with a bare brace. |
+| 8 | Inline call-argument fragments in the template | service template | Decline | Matches the conditional arguments the template already uses for the order. |
 
 * Result
+
+A generated list now applies its filter record.
+
+- *Members.* =filter_members= describes the record once: equals members for
+  the list filter column and the relations, =<column>_one_of= for a
+  single-column primary key and every relation, and =search= when a column is
+  =:searchable:=. A member named like a query parameter is refused.
+- *Repository.* The paged =list= and =list_by_<relation>= reads and their
+  counts take the filter. The count is the read's statement with
+  =count(*)=, so a page and its total agree.
+- *Service.* A one-of list over 1000 values is =invalid= with
+  =filter_too_large=; otherwise the filter is passed on.
+- *Search* renders
+  =length(replace(lower(col), lower(text), '')) < length(lower(col))=: the
+  database folds both sides, and nothing in the text is a wildcard.
+- *Gate.* A model whose protocol facet is off (an internal table such as
+  =workflow_batch_link=) has no record, so its repository takes none.
+- *Tenant model.* =code=, =name= and =hostname= are searchable.
+- *Web.* The change reasons request sends =filter: null=, as the generated
+  type requires.
+- *Tests:* 7 generator cases, 4 existing ones moved to the new contract
+  (1124 pass); 9 SQL rendering cases in =ores.database.tests=; 9 tenant cases
+  against rows (case folding with =É=, literal =%=, =_= and quote, one-of,
+  members combined, totals, the service and its bound).
+- *Verified:* full build with no errors or warnings; ctest 90 of 90 after the
+  database was recreated for main's schema.
+- *A one-of list holds values, not null.* Its element type is the column's
+  value type, so it cannot ask for "this value or null"; an equals member set
+  to null asks for null.
+- *Search is bounded.* At most 256 characters, refused with
+  =filter_too_large=, because each searchable column is scanned whole.
+- *Left for the next task:* the roster's type and status filters are not
+  relations, so they have no equals member; moving the roster decides how it
+  narrows by them.

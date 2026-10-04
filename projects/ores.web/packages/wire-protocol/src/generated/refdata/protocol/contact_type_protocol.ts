@@ -54,6 +54,10 @@ export interface ContactTypeLookup {
     contact_type: ContactType | null;
 }
 
+export interface ContactTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ContactTypeEvent {
     event_id: string;
     key: ContactTypeKey;
@@ -78,6 +82,7 @@ export interface ListContactTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ContactTypesFilter | null;
 }
 
 export interface ListContactTypesResponse {

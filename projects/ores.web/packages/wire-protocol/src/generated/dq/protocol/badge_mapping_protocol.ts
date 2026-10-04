@@ -57,6 +57,7 @@ export interface BadgeMappingLookup {
 
 export interface BadgeMappingsFilter {
     code_domain_code: string | null;
+    code_domain_code_one_of: string[] | null;
 }
 
 export interface ListBadgeMappingsRequest {

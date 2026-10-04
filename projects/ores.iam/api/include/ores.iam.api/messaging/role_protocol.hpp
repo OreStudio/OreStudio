@@ -61,6 +61,10 @@ struct role_lookup {
     std::optional<ores::iam::domain::role> role;
 };
 
+struct roles_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct role_event {
     boost::uuids::uuid event_id;
     role_key key;
@@ -94,6 +98,7 @@ struct list_roles_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<roles_filter> filter;
 };
 
 struct list_roles_response {

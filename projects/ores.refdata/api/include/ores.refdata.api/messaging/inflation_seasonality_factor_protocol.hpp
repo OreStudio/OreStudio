@@ -61,6 +61,10 @@ struct inflation_seasonality_factor_lookup {
     std::optional<ores::refdata::domain::inflation_seasonality_factor> inflation_seasonality_factor;
 };
 
+struct inflation_seasonality_factors_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct inflation_seasonality_factor_event {
     boost::uuids::uuid event_id;
     inflation_seasonality_factor_key key;
@@ -95,6 +99,7 @@ struct list_inflation_seasonality_factors_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<inflation_seasonality_factors_filter> filter;
 };
 
 struct list_inflation_seasonality_factors_response {

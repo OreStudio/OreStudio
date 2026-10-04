@@ -240,6 +240,7 @@ grid_sample_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"id", "sampled_at"}, false),
+        std::nullopt,
         [](const auto& entities) { return grid_sample_mapper::map(entities); },
         lg(),
         "Reading latest grid samples with pagination.");
@@ -264,20 +265,11 @@ std::optional<domain::grid_sample> grid_sample_repository::read_newest(context c
 std::uint32_t grid_sample_repository::get_total__count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<grid_sample_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid) | sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | where("tenant_id"_c == tid);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active sample count: " << count;
-    return count;
+    return execute_count_query<grid_sample_entity>(
+        ctx, query, std::nullopt, lg(), "Counting grid samples");
 }
 
 std::vector<domain::grid_sample> grid_sample_repository::read_latest(

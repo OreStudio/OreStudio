@@ -281,6 +281,7 @@ trade_identifier_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"trade_id", "id_type"}, false),
+        std::nullopt,
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
         lg(),
         "Reading latest trade identifiers with pagination.");
@@ -290,21 +291,12 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count(context ct
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<trade_identifier_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active trade identifier count: " << count;
-    return count;
+    return execute_count_query<trade_identifier_entity>(
+        ctx, query, std::nullopt, lg(), "Counting trade identifiers");
 }
 
 std::vector<domain::trade_identifier>

@@ -63,6 +63,10 @@ export interface OisConventionLookup {
     ois_convention: OisConvention | null;
 }
 
+export interface OisConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface OisConventionEvent {
     event_id: string;
     key: OisConventionKey;
@@ -87,6 +91,7 @@ export interface ListOisConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: OisConventionsFilter | null;
 }
 
 export interface ListOisConventionsResponse {

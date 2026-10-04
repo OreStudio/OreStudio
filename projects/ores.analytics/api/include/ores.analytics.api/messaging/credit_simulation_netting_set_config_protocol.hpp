@@ -64,6 +64,8 @@ struct credit_simulation_netting_set_config_lookup {
 
 struct credit_simulation_netting_set_configs_filter {
     std::optional<boost::uuids::uuid> credit_simulation_config_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> credit_simulation_config_id_one_of;
 };
 
 struct credit_simulation_netting_set_config_event {

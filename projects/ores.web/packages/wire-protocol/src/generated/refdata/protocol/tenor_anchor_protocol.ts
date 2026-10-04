@@ -53,6 +53,10 @@ export interface TenorAnchorLookup {
     tenor_anchor: TenorAnchor | null;
 }
 
+export interface TenorAnchorsFilter {
+    code_one_of: string[] | null;
+}
+
 export interface TenorAnchorEvent {
     event_id: string;
     key: TenorAnchorKey;
@@ -77,6 +81,7 @@ export interface ListTenorAnchorsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenorAnchorsFilter | null;
 }
 
 export interface ListTenorAnchorsResponse {

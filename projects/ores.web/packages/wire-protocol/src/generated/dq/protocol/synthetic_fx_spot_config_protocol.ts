@@ -35,6 +35,10 @@ export interface SyntheticFxSpotConfigLookup {
     synthetic_fx_spot_config: SyntheticFxSpotConfig | null;
 }
 
+export interface SyntheticFxSpotConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface SyntheticFxSpotConfigEvent {
     event_id: string;
     key: SyntheticFxSpotConfigKey;
@@ -48,6 +52,7 @@ export interface ListSyntheticFxSpotConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SyntheticFxSpotConfigsFilter | null;
 }
 
 export interface ListSyntheticFxSpotConfigsResponse {

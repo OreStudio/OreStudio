@@ -64,6 +64,7 @@ struct image_tag_lookup {
 
 struct image_tags_filter {
     std::optional<boost::uuids::uuid> image_id;
+    std::optional<std::vector<boost::uuids::uuid>> image_id_one_of;
 };
 
 struct list_image_tags_request {

@@ -61,6 +61,10 @@ struct day_count_fraction_type_lookup {
     std::optional<ores::refdata::domain::day_count_fraction_type> day_count_fraction_type;
 };
 
+struct day_count_fraction_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct day_count_fraction_type_event {
     boost::uuids::uuid event_id;
     day_count_fraction_type_key key;
@@ -94,6 +98,7 @@ struct list_day_count_fraction_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<day_count_fraction_types_filter> filter;
 };
 
 struct list_day_count_fraction_types_response {

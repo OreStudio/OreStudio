@@ -64,6 +64,10 @@ export interface FxBarrierOptionInstrumentLookup {
     fx_barrier_option_instrument: FxBarrierOptionInstrument | null;
 }
 
+export interface FxBarrierOptionInstrumentsFilter {
+    trade_id_one_of: string[] | null;
+}
+
 export interface FxBarrierOptionInstrumentEvent {
     event_id: string;
     key: FxBarrierOptionInstrumentKey;
@@ -88,6 +92,7 @@ export interface ListFxBarrierOptionInstrumentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: FxBarrierOptionInstrumentsFilter | null;
 }
 
 export interface ListFxBarrierOptionInstrumentsResponse {

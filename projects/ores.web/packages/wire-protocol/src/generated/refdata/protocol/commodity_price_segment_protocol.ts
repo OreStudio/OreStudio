@@ -60,6 +60,10 @@ export interface CommodityPriceSegmentLookup {
     commodity_price_segment: CommodityPriceSegment | null;
 }
 
+export interface CommodityPriceSegmentsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface CommodityPriceSegmentEvent {
     event_id: string;
     key: CommodityPriceSegmentKey;
@@ -84,6 +88,7 @@ export interface ListCommodityPriceSegmentsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CommodityPriceSegmentsFilter | null;
 }
 
 export interface ListCommodityPriceSegmentsResponse {

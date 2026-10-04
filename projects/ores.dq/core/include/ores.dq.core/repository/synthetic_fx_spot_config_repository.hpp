@@ -27,6 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/synthetic_fx_spot_config.hpp"
+#include "ores.dq.api/messaging/synthetic_fx_spot_config_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -135,20 +136,24 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::synthetic_fx_spot_config>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+    std::vector<domain::synthetic_fx_spot_config> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::synthetic_fx_spot_configs_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active synthetic FX spot configs.
      * @param ctx Repository context with database connection
      * @return Total number of active synthetic FX spot configs
      */
-    std::uint32_t get_total_config_count(context ctx);
+    std::uint32_t get_total_config_count(
+        context ctx,
+        const std::optional<messaging::synthetic_fx_spot_configs_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a synthetic FX spot config permanently.

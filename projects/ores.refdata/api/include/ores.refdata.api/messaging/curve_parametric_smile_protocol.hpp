@@ -63,6 +63,10 @@ struct curve_parametric_smile_lookup {
     std::optional<ores::refdata::domain::curve_parametric_smile> curve_parametric_smile;
 };
 
+struct curve_parametric_smiles_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct curve_parametric_smile_event {
     boost::uuids::uuid event_id;
     curve_parametric_smile_key key;
@@ -96,6 +100,7 @@ struct list_curve_parametric_smiles_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<curve_parametric_smiles_filter> filter;
 };
 
 struct list_curve_parametric_smiles_response {

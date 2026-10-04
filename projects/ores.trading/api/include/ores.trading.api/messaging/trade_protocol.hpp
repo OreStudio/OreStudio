@@ -78,6 +78,7 @@ struct trade_lookup {
 
 struct trades_filter {
     std::optional<std::string> node_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
 };
 
 struct trade_event {

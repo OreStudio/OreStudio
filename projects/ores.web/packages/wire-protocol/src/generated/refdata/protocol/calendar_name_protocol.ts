@@ -52,6 +52,10 @@ export interface CalendarNameLookup {
     calendar_name: CalendarName | null;
 }
 
+export interface CalendarNamesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface CalendarNameEvent {
     event_id: string;
     key: CalendarNameKey;
@@ -76,6 +80,7 @@ export interface ListCalendarNamesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: CalendarNamesFilter | null;
 }
 
 export interface ListCalendarNamesResponse {

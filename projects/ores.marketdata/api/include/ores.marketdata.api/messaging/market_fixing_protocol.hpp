@@ -63,6 +63,10 @@ struct market_fixing_lookup {
     std::optional<ores::marketdata::domain::market_fixing> market_fixing;
 };
 
+struct market_fixings_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct market_fixing_event {
     boost::uuids::uuid event_id;
     market_fixing_key key;
@@ -85,6 +89,7 @@ struct list_market_fixings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<market_fixings_filter> filter;
 };
 
 struct list_market_fixings_response {

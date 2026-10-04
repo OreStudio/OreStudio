@@ -52,6 +52,10 @@ export interface ActivityCategoryLookup {
     activity_category: ActivityCategory | null;
 }
 
+export interface ActivityCategoriesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface ActivityCategoryEvent {
     event_id: string;
     key: ActivityCategoryKey;
@@ -76,6 +80,7 @@ export interface ListActivityCategoriesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ActivityCategoriesFilter | null;
 }
 
 export interface ListActivityCategoriesResponse {

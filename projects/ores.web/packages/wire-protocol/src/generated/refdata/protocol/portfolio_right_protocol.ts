@@ -58,6 +58,9 @@ export interface PortfolioRightLookup {
 export interface PortfolioRightsFilter {
     account_id: string | null;
     portfolio_id: string | null;
+    id_one_of: string[] | null;
+    account_id_one_of: string[] | null;
+    portfolio_id_one_of: string[] | null;
 }
 
 export interface PortfolioRightEvent {

@@ -54,6 +54,10 @@ export interface RegulatoryBookTypeLookup {
     regulatory_book_type: RegulatoryBookType | null;
 }
 
+export interface RegulatoryBookTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface RegulatoryBookTypeEvent {
     event_id: string;
     key: RegulatoryBookTypeKey;
@@ -78,6 +82,7 @@ export interface ListRegulatoryBookTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: RegulatoryBookTypesFilter | null;
     as_of: string | null;
 }
 

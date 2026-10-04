@@ -60,6 +60,10 @@ struct curve_configuration_section_lookup {
     std::optional<ores::refdata::domain::curve_configuration_section> curve_configuration_section;
 };
 
+struct curve_configuration_sections_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct curve_configuration_section_event {
     boost::uuids::uuid event_id;
     curve_configuration_section_key key;
@@ -93,6 +97,7 @@ struct list_curve_configuration_sections_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<curve_configuration_sections_filter> filter;
 };
 
 struct list_curve_configuration_sections_response {

@@ -61,6 +61,10 @@ struct ledger_feed_type_lookup {
     std::optional<ores::refdata::domain::ledger_feed_type> ledger_feed_type;
 };
 
+struct ledger_feed_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct ledger_feed_type_event {
     boost::uuids::uuid event_id;
     ledger_feed_type_key key;
@@ -94,6 +98,7 @@ struct list_ledger_feed_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ledger_feed_types_filter> filter;
 };
 
 struct list_ledger_feed_types_response {

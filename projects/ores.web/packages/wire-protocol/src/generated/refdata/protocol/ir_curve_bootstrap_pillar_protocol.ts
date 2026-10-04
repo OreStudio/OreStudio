@@ -57,6 +57,10 @@ export interface IrCurveBootstrapPillarLookup {
     ir_curve_bootstrap_pillar: IrCurveBootstrapPillar | null;
 }
 
+export interface IrCurveBootstrapPillarsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface IrCurveBootstrapPillarEvent {
     event_id: string;
     key: IrCurveBootstrapPillarKey;
@@ -81,6 +85,7 @@ export interface ListIrCurveBootstrapPillarsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: IrCurveBootstrapPillarsFilter | null;
 }
 
 export interface ListIrCurveBootstrapPillarsResponse {

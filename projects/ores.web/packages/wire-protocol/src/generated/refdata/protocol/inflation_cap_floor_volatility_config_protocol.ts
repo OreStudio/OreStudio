@@ -71,6 +71,10 @@ export interface InflationCapFloorVolatilityConfigLookup {
     inflation_cap_floor_volatility_config: InflationCapFloorVolatilityConfig | null;
 }
 
+export interface InflationCapFloorVolatilityConfigsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface InflationCapFloorVolatilityConfigEvent {
     event_id: string;
     key: InflationCapFloorVolatilityConfigKey;
@@ -95,6 +99,7 @@ export interface ListInflationCapFloorVolatilityConfigsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: InflationCapFloorVolatilityConfigsFilter | null;
 }
 
 export interface ListInflationCapFloorVolatilityConfigsResponse {

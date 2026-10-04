@@ -59,6 +59,10 @@ struct day_counter_lookup {
     std::optional<ores::refdata::domain::day_counter> day_counter;
 };
 
+struct day_counters_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct day_counter_event {
     boost::uuids::uuid event_id;
     day_counter_key key;
@@ -92,6 +96,7 @@ struct list_day_counters_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<day_counters_filter> filter;
 };
 
 struct list_day_counters_response {

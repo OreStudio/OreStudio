@@ -63,6 +63,8 @@ struct csa_eligible_currency_lookup {
 
 struct csa_eligible_currencies_filter {
     std::optional<boost::uuids::uuid> csa_id;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> csa_id_one_of;
 };
 
 struct csa_eligible_currency_event {

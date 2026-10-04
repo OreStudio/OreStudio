@@ -64,6 +64,8 @@ struct calendar_exception_lookup {
 
 struct calendar_exceptions_filter {
     std::optional<std::string> calendar_code;
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> calendar_code_one_of;
 };
 
 struct calendar_exception_event {

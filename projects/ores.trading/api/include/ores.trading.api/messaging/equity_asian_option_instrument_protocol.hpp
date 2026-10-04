@@ -72,6 +72,10 @@ struct equity_asian_option_instrument_lookup {
         equity_asian_option_instrument;
 };
 
+struct equity_asian_option_instruments_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct equity_asian_option_instrument_event {
     boost::uuids::uuid event_id;
     equity_asian_option_instrument_key key;
@@ -106,6 +110,7 @@ struct list_equity_asian_option_instruments_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<equity_asian_option_instruments_filter> filter;
 };
 
 struct list_equity_asian_option_instruments_response {

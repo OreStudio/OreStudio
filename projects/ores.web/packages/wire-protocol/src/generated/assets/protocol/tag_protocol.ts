@@ -53,6 +53,10 @@ export interface TagLookup {
     tag: Tag | null;
 }
 
+export interface TagsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface TagEvent {
     event_id: string;
     key: TagKey;
@@ -77,6 +81,7 @@ export interface ListTagsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TagsFilter | null;
 }
 
 export interface ListTagsResponse {

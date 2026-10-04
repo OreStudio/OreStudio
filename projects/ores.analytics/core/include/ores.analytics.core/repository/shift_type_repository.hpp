@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_CORE_REPOSITORY_SHIFT_TYPE_REPOSITORY_HPP
 
 #include "ores.analytics.api/domain/shift_type.hpp"
+#include "ores.analytics.api/messaging/shift_type_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -136,19 +137,23 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::shift_type> read_latest(context ctx,
-                                                std::uint32_t offset,
-                                                std::uint32_t limit,
-                                                const ores::utility::domain::order& order = {});
+    std::vector<domain::shift_type>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::shift_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active shift types.
      * @param ctx Repository context with database connection
      * @return Total number of active shift types
      */
-    std::uint32_t get_total_shift_type_count(context ctx);
+    std::uint32_t get_total_shift_type_count(
+        context ctx, const std::optional<messaging::shift_types_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a shift type by closing its temporal validity.

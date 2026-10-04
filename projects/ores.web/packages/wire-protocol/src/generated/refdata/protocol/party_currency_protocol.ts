@@ -56,6 +56,7 @@ export interface PartyCurrencyLookup {
 
 export interface PartyCurrenciesFilter {
     party_id: string | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface ListPartyCurrenciesRequest {

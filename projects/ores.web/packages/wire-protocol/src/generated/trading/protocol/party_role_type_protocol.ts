@@ -52,6 +52,10 @@ export interface PartyRoleTypeLookup {
     party_role_type: PartyRoleType | null;
 }
 
+export interface PartyRoleTypesFilter {
+    code_one_of: string[] | null;
+}
+
 export interface PartyRoleTypeEvent {
     event_id: string;
     key: PartyRoleTypeKey;
@@ -76,6 +80,7 @@ export interface ListPartyRoleTypesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: PartyRoleTypesFilter | null;
 }
 
 export interface ListPartyRoleTypesResponse {

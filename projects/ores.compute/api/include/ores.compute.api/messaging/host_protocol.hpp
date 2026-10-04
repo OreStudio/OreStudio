@@ -66,6 +66,10 @@ struct host_lookup {
     std::optional<ores::compute::domain::host> host;
 };
 
+struct hosts_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct host_event {
     boost::uuids::uuid event_id;
     host_key key;
@@ -99,6 +103,7 @@ struct list_hosts_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<hosts_filter> filter;
 };
 
 struct list_hosts_response {

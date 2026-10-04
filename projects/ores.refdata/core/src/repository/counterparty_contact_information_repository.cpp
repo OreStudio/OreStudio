@@ -72,6 +72,32 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     return make_order({order.field}, order.descending, {"id"});
 }
 
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->counterparty_id)
+        r.push_back(equals("counterparty_id", filter_value(*filter->counterparty_id)));
+    if (filter->id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->counterparty_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->counterparty_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("counterparty_id", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition counterparty_contact_information_repository::replace_claim(
@@ -296,7 +322,8 @@ counterparty_contact_information_repository::read_latest_by_counterparty_id(
     const std::string& counterparty_id,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest counterparty contact informations. counterparty_id: " << counterparty_id
         << " offset: " << offset << " limit: " << limit;
@@ -312,6 +339,7 @@ counterparty_contact_information_repository::read_latest_by_counterparty_id(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest counterparty contact informations by counterparty_id.");
@@ -319,30 +347,25 @@ counterparty_contact_information_repository::read_latest_by_counterparty_id(
 
 std::uint32_t counterparty_contact_information_repository::
     get_total_counterparty_contact_information_count_by_counterparty_id(
-        context ctx, const std::string& counterparty_id) {
+        context ctx,
+        const std::string& counterparty_id,
+        const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty contact informations count. counterparty_id: "
         << counterparty_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<counterparty_contact_information_entity>(
-                           sqlgen::count().as<"count">()) |
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
                        where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Total active counterparty contact informations count by counterparty_id: " << count;
-    return count;
+    return execute_count_query<counterparty_contact_information_entity>(
+        ctx,
+        query,
+        filter_condition(filter),
+        lg(),
+        "Counting counterparty contact informations by counterparty_id");
 }
 
 
@@ -416,7 +439,8 @@ counterparty_contact_information_repository::read_latest(
     context ctx,
     std::uint32_t offset,
     std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact informations with offset: "
                                << offset << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
@@ -430,6 +454,7 @@ counterparty_contact_information_repository::read_latest(
         ctx,
         query,
         list_order(order, {"id"}, false),
+        filter_condition(filter),
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest counterparty contact informations with pagination.");
@@ -437,26 +462,16 @@ counterparty_contact_information_repository::read_latest(
 
 std::uint32_t
 counterparty_contact_information_repository::get_total_counterparty_contact_information_count(
-    context ctx) {
+    context ctx, const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty contact information count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<counterparty_contact_information_entity>(
-                           sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active counterparty contact information count: " << count;
-    return count;
+    return execute_count_query<counterparty_contact_information_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting counterparty contact informations");
 }
 
 std::vector<domain::counterparty_contact_information>

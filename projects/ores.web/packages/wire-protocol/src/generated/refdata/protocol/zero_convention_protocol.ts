@@ -60,6 +60,10 @@ export interface ZeroConventionLookup {
     zero_convention: ZeroConvention | null;
 }
 
+export interface ZeroConventionsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface ZeroConventionEvent {
     event_id: string;
     key: ZeroConventionKey;
@@ -84,6 +88,7 @@ export interface ListZeroConventionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: ZeroConventionsFilter | null;
 }
 
 export interface ListZeroConventionsResponse {

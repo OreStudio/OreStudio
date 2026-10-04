@@ -63,6 +63,10 @@ struct feed_binding_lookup {
     std::optional<ores::marketdata::domain::feed_binding> feed_binding;
 };
 
+struct feed_bindings_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct feed_binding_event {
     boost::uuids::uuid event_id;
     feed_binding_key key;
@@ -96,6 +100,7 @@ struct list_feed_bindings_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<feed_bindings_filter> filter;
 };
 
 struct list_feed_bindings_response {

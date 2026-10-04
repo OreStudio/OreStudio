@@ -65,6 +65,10 @@ struct badge_definition_lookup {
     std::optional<ores::dq::domain::badge_definition> badge_definition;
 };
 
+struct badge_definitions_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct badge_definition_event {
     boost::uuids::uuid event_id;
     badge_definition_key key;
@@ -98,6 +102,7 @@ struct list_badge_definitions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<badge_definitions_filter> filter;
 };
 
 struct list_badge_definitions_response {

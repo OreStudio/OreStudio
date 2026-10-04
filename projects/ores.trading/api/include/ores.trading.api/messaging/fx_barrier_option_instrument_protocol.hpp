@@ -71,6 +71,10 @@ struct fx_barrier_option_instrument_lookup {
     std::optional<ores::trading::domain::fx_barrier_option_instrument> fx_barrier_option_instrument;
 };
 
+struct fx_barrier_option_instruments_filter {
+    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
+};
+
 struct fx_barrier_option_instrument_event {
     boost::uuids::uuid event_id;
     fx_barrier_option_instrument_key key;
@@ -105,6 +109,7 @@ struct list_fx_barrier_option_instruments_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fx_barrier_option_instruments_filter> filter;
 };
 
 struct list_fx_barrier_option_instruments_response {

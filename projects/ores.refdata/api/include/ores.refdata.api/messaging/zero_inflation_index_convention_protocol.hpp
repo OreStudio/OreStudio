@@ -65,6 +65,10 @@ struct zero_inflation_index_convention_lookup {
         zero_inflation_index_convention;
 };
 
+struct zero_inflation_index_conventions_filter {
+    std::optional<std::vector<std::string>> id_one_of;
+};
+
 struct zero_inflation_index_convention_event {
     boost::uuids::uuid event_id;
     zero_inflation_index_convention_key key;
@@ -99,6 +103,7 @@ struct list_zero_inflation_index_conventions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<zero_inflation_index_conventions_filter> filter;
 };
 
 struct list_zero_inflation_index_conventions_response {

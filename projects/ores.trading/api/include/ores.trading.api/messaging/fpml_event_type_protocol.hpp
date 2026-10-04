@@ -59,6 +59,10 @@ struct fpml_event_type_lookup {
     std::optional<ores::trading::domain::fpml_event_type> fpml_event_type;
 };
 
+struct fpml_event_types_filter {
+    std::optional<std::vector<std::string>> code_one_of;
+};
+
 struct fpml_event_type_event {
     boost::uuids::uuid event_id;
     fpml_event_type_key key;
@@ -92,6 +96,7 @@ struct list_fpml_event_types_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<fpml_event_types_filter> filter;
 };
 
 struct list_fpml_event_types_response {

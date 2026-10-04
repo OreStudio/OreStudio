@@ -55,6 +55,10 @@ export interface TenantStatusLookup {
     tenant_status: TenantStatus | null;
 }
 
+export interface TenantStatusesFilter {
+    status_one_of: string[] | null;
+}
+
 export interface TenantStatusEvent {
     event_id: string;
     key: TenantStatusKey;
@@ -79,6 +83,7 @@ export interface ListTenantStatusesRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TenantStatusesFilter | null;
 }
 
 export interface ListTenantStatusesResponse {

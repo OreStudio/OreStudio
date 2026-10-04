@@ -70,6 +70,10 @@ export interface DatasetLookup {
     dataset: Dataset | null;
 }
 
+export interface DatasetsFilter {
+    id_one_of: string[] | null;
+}
+
 export interface DatasetEvent {
     event_id: string;
     key: DatasetKey;
@@ -94,6 +98,7 @@ export interface ListDatasetsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: DatasetsFilter | null;
 }
 
 export interface ListDatasetsResponse {

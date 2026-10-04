@@ -8,7 +8,7 @@
 #+filetags: :red_platform_ci:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/red-platform-ci
-#+pr:
+#+pr: 2618
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2618][#2618]] | [ci,platform,ore] Refresh the Linux sccache and drop deprecated getenv |
 
 * Review
 

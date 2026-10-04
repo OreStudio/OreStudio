@@ -156,6 +156,24 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         },
         "change-password <current_password> <new_password>");
 
+    menu->Insert(
+        "update-self-account",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_update_self_account(std::ref(out), std::ref(session), std::move(args));
+        },
+        "update-self-account <full_name> <job_title> <image_id> <email> <default_party_id> "
+        "<reports_to_account_id> <change_reason_code> <change_commentary>");
+
+    menu->Insert(
+        "update-self-account-contact-information",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_update_self_account_contact_information(
+                std::ref(out), std::ref(session), std::move(args));
+        },
+        "update-self-account-contact-information <street_line_1> <street_line_2> <city> <state> "
+        "<country_code> <postal_code> <phone> <email> <web_page> <change_reason_code> "
+        "<change_commentary>");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -737,6 +755,129 @@ void account_operations_operations_commands::process_change_password(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::change_password_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_update_self_account(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating update-self-account request.";
+
+    using request_type = ores::iam::messaging::update_self_account_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run update-self-account." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 8;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.full_name = parsed->positionals[next++];
+        req.job_title = parsed->positionals[next++];
+        req.image_id = parsed->positionals[next++];
+        req.email = parsed->positionals[next++];
+        req.default_party_id = parsed->positionals[next++];
+        req.reports_to_account_id = parsed->positionals[next++];
+        req.change_reason_code = parsed->positionals[next++];
+        req.change_commentary = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::update_self_account_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::update_self_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::update_self_account_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_update_self_account_contact_information(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating update-self-account-contact-information request.";
+
+    using request_type = ores::iam::messaging::update_self_account_contact_information_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run update-self-account-contact-information."
+                      << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 11;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.street_line_1 = parsed->positionals[next++];
+        req.street_line_2 = parsed->positionals[next++];
+        req.city = parsed->positionals[next++];
+        req.state = parsed->positionals[next++];
+        req.country_code = parsed->positionals[next++];
+        req.postal_code = parsed->positionals[next++];
+        req.phone = parsed->positionals[next++];
+        req.email = parsed->positionals[next++];
+        req.web_page = parsed->positionals[next++];
+        req.change_reason_code = parsed->positionals[next++];
+        req.change_commentary = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::update_self_account_contact_information_response> result;
+    if constexpr (request_type::requires_session) {
+        result =
+            do_auth_request<ores::iam::messaging::update_self_account_contact_information_response>(
+                out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::update_self_account_contact_information_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

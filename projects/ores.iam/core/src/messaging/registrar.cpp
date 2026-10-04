@@ -237,6 +237,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         set_my_default_party_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->set_default_party(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        update_self_account_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->update_self(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        update_self_account_contact_information_request::nats_subject,
+        qg,
+        [acth](ores::nats::message msg) {
+            acth->update_self_account_contact_information(std::move(msg));
+        }));
 
     // --- Account parties ---
     // The associations are stored in a junction the codegen owns, but their

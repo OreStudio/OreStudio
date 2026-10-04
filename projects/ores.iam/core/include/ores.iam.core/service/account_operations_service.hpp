@@ -23,7 +23,9 @@
 
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_contact_information_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -383,8 +385,44 @@ public:
     std::string set_my_default_party(const boost::uuids::uuid& account_id,
                                      const boost::uuids::uuid& party_id);
 
+    /**
+     * @brief Writes the fields a member owns on their own account.
+     *
+     * The account is the caller's own, named by the session rather than by
+     * the request. The three fields a member owns are written as the request
+     * states them. A request that states any of the three fields only an
+     * administrator owns is denied, and the result names each refused field
+     * with the code field_not_self_writable.
+     *
+     * @param request The profile write
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the account as written, when the write
+     * landed
+     */
+    messaging::update_self_account_response
+    update_self_account(const messaging::update_self_account_request& request,
+                        const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Writes the contact record of the caller's own account.
+     *
+     * The record is found from the account id, which the session states, not
+     * from anything in the request, so a caller cannot name another account's
+     * record. A member who has no contact record gets one.
+     *
+     * @param request The contact write
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the record as written, when the write
+     * landed
+     */
+    messaging::update_self_account_contact_information_response
+    update_self_account_contact_information(
+        const messaging::update_self_account_contact_information_request& request,
+        const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
+    repository::account_contact_information_repository contact_repo_;
     repository::login_info_repository login_info_repo_;
     database::context ctx_;
     utility::uuid::uuid_v7_generator uuid_generator_;

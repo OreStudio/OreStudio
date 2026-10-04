@@ -21,7 +21,10 @@ The account protocol messages.
 
 #+begin_src cpp :name includes
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 #+end_src
@@ -512,4 +515,234 @@ from here is what the registrar subscribes with.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+** update_self_account_request
+:PROPERTIES:
+:subject: iam.v1.accounts.update-self
+:response: update_self_account_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's write on their own account.
+ *
+ * The session names the account: the request carries no account id, so it
+ * cannot name another account. The three fields a member owns are the whole
+ * of the profile write; the three a member does not own are declared beside
+ * them so a stated value is refused by name rather than dropped in silence.
+ *
+ * The write states the owned fields whole: an empty string replaces the
+ * field with nothing. The same empty string on an unowned field means the
+ * field is not stated, and the write leaves it as it is.
+ */
+#+end_src
+
+*** full_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The member's full (real) name. A member owns this field. Empty
+ * clears it.
+ */
+#+end_src
+
+*** job_title
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Job title / functional role. A member owns this field. Empty
+ * clears it.
+ */
+#+end_src
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Profile picture, as the id of an uploaded image. A member owns
+ * this field. Empty clears it.
+ */
+#+end_src
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The sign-in address. An administrator owns this field: a request
+ * that states it non-empty is denied with field_not_self_writable, and the
+ * field is left as it is.
+ */
+#+end_src
+
+*** default_party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Party used for quick login. An administrator owns this field: a
+ * request that states it non-empty is denied with field_not_self_writable,
+ * and the field is left as it is.
+ */
+#+end_src
+
+*** reports_to_account_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account this person reports to. An administrator owns this
+ * field: a request that states it non-empty is denied with
+ * field_not_self_writable, and the field is left as it is. The screen carries
+ * a reporting-line change as an ordinary change request, never as a write.
+ */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_self_account_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** account
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::account>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The account as written, so the panel can show its new version.
+ * Stated only when the outcome is ok.
+ */
+#+end_src
+
+** update_self_account_contact_information_request
+:PROPERTIES:
+:subject: iam.v1.account_contact_informations.update-self
+:response: update_self_account_contact_information_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's write on their own contact record.
+ *
+ * The session names the account and the record is found from it, so the
+ * request carries no account id and no record id, and it cannot name another
+ * account's record. A member who has no contact record gets one on the first
+ * write.
+ *
+ * The write states the nine fields whole: an empty string replaces the field
+ * with nothing. A stated email must be a valid address, and a stated country
+ * code must be an ISO 3166-1 alpha-2 code, or the write is refused with the
+ * field named.
+ */
+#+end_src
+
+*** street_line_1
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** street_line_2
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** city
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** country_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** postal_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** phone
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** email
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The contact address colleagues use. Empty clears it. This is not
+ * the sign-in address, which is the account's email and belongs to an
+ * administrator.
+ */
+#+end_src
+
+*** web_page
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** update_self_account_contact_information_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** account_contact_information
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::account_contact_information>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The contact record as written, so the panel can show its new
+ * version. Stated only when the outcome is ok.
+ */
+#+end_src
 

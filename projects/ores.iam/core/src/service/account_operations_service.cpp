@@ -23,6 +23,7 @@
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -30,6 +31,7 @@
 namespace ores::iam::service {
 
 using namespace ores::logging;
+using ores::service::messaging::stamp;
 namespace reason = ores::dq::domain::change_reason_constants;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
@@ -441,6 +443,137 @@ bool account_operations_service::update_account(
                               << ", new version: " << account.version;
 
     return true;
+}
+
+messaging::update_self_account_response
+account_operations_service::update_self_account(
+    const messaging::update_self_account_request& request,
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating own account: " << boost::uuids::to_string(account_id);
+    messaging::update_self_account_response response;
+
+    // The three fields only an administrator owns are declared on the request
+    // so a stated value is refused by name, never dropped in silence. An empty
+    // string is not a stated value: it means the field is not stated.
+    const auto refuse_unowned = [&response](std::string_view field, const std::string& value) {
+        if (value.empty())
+            return;
+        response.result.fields.push_back({std::string(field),
+                                          "field_not_self_writable",
+                                          "Only an administrator can change this field."});
+    };
+    refuse_unowned("email", request.email);
+    refuse_unowned("default_party_id", request.default_party_id);
+    refuse_unowned("reports_to_account_id", request.reports_to_account_id);
+    if (!response.result.fields.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::denied;
+        response.result.code = "field_not_self_writable";
+        response.result.message = "A member cannot change every field the request states.";
+        return response;
+    }
+
+    auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
+    if (accounts.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        response.result.message = "Account does not exist.";
+        return response;
+    }
+
+    std::optional<boost::uuids::uuid> image_id;
+    if (!request.image_id.empty()) {
+        try {
+            boost::uuids::string_generator sg;
+            image_id = sg(request.image_id);
+        } catch (const std::exception&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "invalid_image_id";
+            response.result.fields.push_back(
+                {"image_id", "invalid_image_id", "image_id is not a UUID."});
+            return response;
+        }
+    }
+
+    auto account = accounts[0];
+    account.full_name = request.full_name;
+    account.job_title = request.job_title;
+    account.image_id = image_id;
+    account.change_reason_code = request.change_reason_code;
+    account.change_commentary = request.change_commentary;
+    stamp(account, ctx_, ores::service::messaging::change_reasons::update);
+    account_repo_.write(ctx_, account);
+
+    auto written = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
+    if (!written.empty())
+        response.account = written.front();
+
+    BOOST_LOG_SEV(lg(), info) << "Updated own account: " << boost::uuids::to_string(account_id);
+    return response;
+}
+
+messaging::update_self_account_contact_information_response
+account_operations_service::update_self_account_contact_information(
+    const messaging::update_self_account_contact_information_request& request,
+    const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating own account contact information: "
+                               << boost::uuids::to_string(account_id);
+    messaging::update_self_account_contact_information_response response;
+
+    // A stated value must be one the record can hold: a contact email that is a
+    // real address, and a country that is an ISO 3166-1 alpha-2 code. A stated
+    // value that fails leaves the record as it is.
+    const auto refuse_invalid =
+        [&response](std::string_view field, bool valid, std::string_view message) {
+            if (!valid)
+                response.result.fields.push_back(
+                    {std::string(field), "invalid_field_value", std::string(message)});
+        };
+    if (!request.email.empty())
+        refuse_invalid("email",
+                       validation::email_validator::validate(request.email).is_valid,
+                       "The email is not a valid address.");
+    if (!request.country_code.empty())
+        refuse_invalid("country_code",
+                       request.country_code.size() == 2,
+                       "The country code must be an ISO 3166-1 alpha-2 code.");
+    if (!response.result.fields.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "invalid_field_value";
+        response.result.message = "The request states a value the record cannot hold.";
+        return response;
+    }
+
+    const auto account_id_text = boost::uuids::to_string(account_id);
+    auto existing = contact_repo_.read_latest_by_account_id(ctx_, account_id_text, 0, 1);
+    domain::account_contact_information record;
+    if (existing.empty()) {
+        // One contact record per account, so a member who has none gets one
+        // here rather than being told to ask an administrator to create it.
+        record.id = uuid_generator_();
+        record.account_id = account_id;
+    } else {
+        record = existing.front();
+    }
+    record.street_line_1 = request.street_line_1;
+    record.street_line_2 = request.street_line_2;
+    record.city = request.city;
+    record.state = request.state;
+    record.country_code = request.country_code;
+    record.postal_code = request.postal_code;
+    record.phone = request.phone;
+    record.email = request.email;
+    record.web_page = request.web_page;
+    record.change_reason_code = request.change_reason_code;
+    record.change_commentary = request.change_commentary;
+    stamp(record, ctx_, ores::service::messaging::change_reasons::update);
+    contact_repo_.write(ctx_, record);
+
+    auto written = contact_repo_.read_latest_by_account_id(ctx_, account_id_text, 0, 1);
+    if (!written.empty())
+        response.account_contact_information = written.front();
+
+    BOOST_LOG_SEV(lg(), info) << "Updated own account contact information: " << account_id_text;
+    return response;
 }
 
 std::optional<domain::account>

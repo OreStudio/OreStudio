@@ -57,7 +57,7 @@ from the accepted design.
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | The scaffold lands the story and its six tasks; the tasks stay BACKLOG until their work begins. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]]. |
+| Next          | The five data-model linkages, in any order; [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] is one of them. |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance

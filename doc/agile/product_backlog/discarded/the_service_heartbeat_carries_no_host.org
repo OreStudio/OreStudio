@@ -42,6 +42,24 @@ the installation already stores, and both stop at the same missing key. The
 fix is cheap while the heartbeat is one message and one table; every future
 screen that reads samples inherits either the join or the gap.
 
+* Resolution
+
+Done in task [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the
+heartbeat]], under story [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement
+the operations journeys in ores.web]]. The candidate became the field:
+=host_id= sits on =service_heartbeat_message= and =service_sample=, and the
+join exists.
+
+The publishing process fills it where it already holds it. The compute wrapper
+passes =cfg.host_id=, the same value it stamps on its node samples; every other
+service sends the empty string. The telemetry service copies each beat's host
+beside its instance, so a wrapper's row can name its node, and an instance's
+row its host.
+
+Verification lives on the task: a repository test writes a sample with a host
+id and reads it back, the telemetry and compute suites pass, and the recreated
+database stores the column.
+
 * References
 
 - =projects/ores.telemetry/modeling/ores.telemetry.service_samples.org= — =service_heartbeat_message= (service name, instance id, release) and =service_sample=, the stored row

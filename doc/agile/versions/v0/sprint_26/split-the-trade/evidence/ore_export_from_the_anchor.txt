@@ -1,0 +1,29 @@
+ORE export from the anchor: round trip against a recreated database with ACME provisioned
+Branch feature/ore-export-from-the-anchor, 2026-10-04
+
+Source: one portfolio merging Legacy/Example_63, Products/Example_Trades/Commodity_Forward, Cash_ConvertibleBond and IR_DurAdjusted_CMS (16 trades).
+The import no longer writes the envelope's counterparty, netting set or additional fields to the envelope tables, so the export can only have them from the anchor's booking and the trade's additional fields.
+
+      info: Saved 16 trade(s).
+✓ Exported 16 trade(s) to /tmp/claude-1000/-home-marco-Development-OreStudio-ores-dev-merry-newton/09b9c413-2810-4988-bed0-5f858f5f2322/scratchpad/rtx/output/portfolio_roundtrip.xml (5254 bytes).
+Documents: 1  Failures: 0  Skipped: 0
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 314, unexplained 3
+
+Envelope per trade, source -> export (CounterParty, NettingSetId, AdditionalFields count):
+  CDS: ('CP', 'NS', 0) -> ('CP', 'NS', 0)
+  CMS_Cap: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  CMS_Capped: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  CMS_Swap_DurAdjusted: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  Cap: ('CPTY_A', 'CPTY_A', 0) -> ('CPTY_A', 'CPTY_A', 0)
+  CommodityForward: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  ConvertibleBond#2: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Cap_Adj_1: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Cap_Dur_10: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Cap_Dur_10_As_Cap: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Capped_Adj_1: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Capped_Dur_10: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Swap_Adj_1: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  DurAdjCMS_Swap_Dur_10: ('CPTY', 'NS', 2) -> ('CPTY', 'NS', 2)
+  EUR6MSwap: ('CPTY_A', 'CPTY_A', 0) -> ('CPTY_A', 'CPTY_A', 0)
+  XccySwap: ('A', None, 0) -> ('A', None, 0)

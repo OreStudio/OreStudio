@@ -89,6 +89,21 @@ struct trade_booking final {
     std::optional<boost::uuids::uuid> netting_set_id;
 
     /**
+     * @brief The identifier the trade's source named its counterparty by.
+     *
+     * An ORE document names a counterparty by an alias, and two aliases may name one counterparty,
+     * as CP and CPTY do in the ORE samples. The import keeps the identifier it resolved, so an
+     * export writes back the name the document used.
+     */
+    std::optional<boost::uuids::uuid> counterparty_identifier_id;
+
+    /**
+     * @brief The identifier the trade's source named its netting set by, kept for the same reason
+     * as the counterparty's.
+     */
+    std::optional<boost::uuids::uuid> netting_set_identifier_id;
+
+    /**
      * @brief The date the trade was agreed. Absent when the source does not state it, as an ORE
      * document does not.
      */

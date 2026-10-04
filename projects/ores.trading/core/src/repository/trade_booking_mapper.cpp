@@ -52,6 +52,14 @@ domain::trade_booking trade_booking_mapper::map(const trade_booking_entity& v) {
         v.netting_set_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_set_id)) :
             std::nullopt;
+    r.counterparty_identifier_id =
+        v.counterparty_identifier_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_identifier_id)) :
+            std::nullopt;
+    r.netting_set_identifier_id =
+        v.netting_set_identifier_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_set_identifier_id)) :
+            std::nullopt;
     r.trade_date =
         v.trade_date.has_value() ?
             std::optional(ores::platform::time::datetime::from_iso8601_date(*v.trade_date)) :
@@ -84,6 +92,14 @@ trade_booking_entity trade_booking_mapper::map(const domain::trade_booking& v) {
     r.netting_set_id = v.netting_set_id.has_value() ?
                            std::optional(boost::uuids::to_string(*v.netting_set_id)) :
                            std::nullopt;
+    r.counterparty_identifier_id =
+        v.counterparty_identifier_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.counterparty_identifier_id)) :
+            std::nullopt;
+    r.netting_set_identifier_id =
+        v.netting_set_identifier_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.netting_set_identifier_id)) :
+            std::nullopt;
     r.trade_date =
         v.trade_date.has_value() ?
             std::optional(ores::platform::time::datetime::to_iso8601_date(*v.trade_date)) :

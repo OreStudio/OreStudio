@@ -152,6 +152,8 @@ create or replace function ores_trading_book_trade_fn(
     p_entry_channel       text,
     p_book_id             uuid,
     p_netting_set_id      uuid,
+    p_counterparty_identifier_id uuid,
+    p_netting_set_identifier_id  uuid,
     p_trade_date          date,
     p_execution_timestamp timestamptz,
     p_activity_type_code  text,
@@ -174,10 +176,12 @@ begin
     end if;
 
     insert into ores_trading_trade_bookings_tbl (trade_id, tenant_id, version, party_id,
-        counterparty_id, book_id, netting_set_id, trade_date, execution_timestamp,
+        counterparty_id, book_id, netting_set_id, counterparty_identifier_id,
+        netting_set_identifier_id, trade_date, execution_timestamp,
         modified_by, performed_by, change_reason_code, change_commentary)
     values (p_id, v_tenant_id, 0, p_party_id, p_counterparty_id, p_book_id,
-        p_netting_set_id, p_trade_date, p_execution_timestamp, p_modified_by,
+        p_netting_set_id, p_counterparty_identifier_id, p_netting_set_identifier_id,
+        p_trade_date, p_execution_timestamp, p_modified_by,
         p_modified_by, p_change_reason_code, p_change_commentary);
 
     insert into ores_trading_trade_states_tbl (trade_id, tenant_id, version, party_id,
@@ -190,3 +194,63 @@ begin
     return true;
 end;
 $$ language plpgsql set search_path = public, pg_temp;
+
+-- =============================================================================
+-- Envelope names
+-- =============================================================================
+
+-- The names an ORE envelope gives a booked trade's counterparty and netting
+-- set. Each is the identifier the trade's source named it by, else the
+-- entity's ORE alias, else its own code; a trade with no counterparty or no
+-- netting set gets no name for it. An identifier deleted since the booking
+-- falls back the same way, deliberately: the trade keeps a name its entity
+-- still answers to. Runs as the owner, because the names live
+-- in refdata tables the trading service does not read; every row is held to
+-- the caller's tenant, and the caller passes only trades it has read.
+create or replace function ores_trading_trade_envelope_names_fn(p_trade_ids uuid[])
+returns table (trade_id uuid, counter_party text, netting_set_id text) as $$
+#variable_conflict use_column
+begin
+    return query
+    select a.id,
+        case when a.counterparty_id is not null then coalesce(
+            (select ci.id_value from ores_refdata_counterparty_identifiers_tbl ci
+             where ci.tenant_id = a.tenant_id
+               and ci.id = b.counterparty_identifier_id
+               and ci.valid_to = ores_utility_infinity_timestamp_fn()),
+            (select ci.id_value from ores_refdata_counterparty_identifiers_tbl ci
+             where ci.tenant_id = a.tenant_id
+               and ci.counterparty_id = a.counterparty_id
+               and ci.id_scheme = 'ORE'
+               and ci.valid_to = ores_utility_infinity_timestamp_fn()
+             order by ci.id_value
+             limit 1),
+            (select cp.short_code from ores_refdata_counterparties_tbl cp
+             where cp.tenant_id = a.tenant_id
+               and cp.id = a.counterparty_id
+               and cp.valid_to = ores_utility_infinity_timestamp_fn())) end,
+        case when b.netting_set_id is not null then coalesce(
+            (select nsi.id_value from ores_refdata_netting_set_identifiers_tbl nsi
+             where nsi.tenant_id = a.tenant_id
+               and nsi.id = b.netting_set_identifier_id
+               and nsi.valid_to = ores_utility_infinity_timestamp_fn()),
+            (select nsi.id_value from ores_refdata_netting_set_identifiers_tbl nsi
+             where nsi.tenant_id = a.tenant_id
+               and nsi.netting_set_id = b.netting_set_id
+               and nsi.id_scheme = 'ORE'
+               and nsi.valid_to = ores_utility_infinity_timestamp_fn()
+             order by nsi.id_value
+             limit 1),
+            (select ns.code from ores_refdata_netting_sets_tbl ns
+             where ns.tenant_id = a.tenant_id
+               and ns.id = b.netting_set_id
+               and ns.valid_to = ores_utility_infinity_timestamp_fn())) end
+    from ores_trading_trade_anchors_tbl a
+    join ores_trading_trade_bookings_tbl b
+      on b.tenant_id = a.tenant_id
+     and b.trade_id = a.id
+     and b.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.tenant_id = ores_iam_current_tenant_id_fn()
+      and a.id = any(p_trade_ids);
+end;
+$$ language plpgsql stable security definer set search_path = public, pg_temp;

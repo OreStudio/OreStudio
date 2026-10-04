@@ -106,6 +106,38 @@ The netting set the trade is filed in.
 std::nullopt
 #+end_src
 
+** counterparty_identifier_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The identifier the trade's source named its counterparty by.
+
+An ORE document names a counterparty by an alias, and two aliases may name
+one counterparty, as =CP= and =CPTY= do in the ORE samples. The import keeps
+the identifier it resolved, so an export writes back the name the document
+used.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** netting_set_identifier_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The identifier the trade's source named its netting set by, kept for the same
+reason as the counterparty's.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** trade_date
 :PROPERTIES:
 :type:     date
@@ -148,6 +180,8 @@ std::nullopt
 | anchor_counterparty | trade_id, counterparty_id                 | ores_trading_trade_anchors_tbl | id, counterparty_id           | Invalid trade_id: %. The booking's counterparty must be the trade's.             |
 | book_party          | book_id, party_id                         | ores_refdata_books_tbl         | id, party_id                  | Invalid book_id: %. The book must belong to the trade's party.                   |
 | netting_set         | netting_set_id, counterparty_id, party_id | ores_refdata_netting_sets_tbl  | id, counterparty_id, party_id | Invalid netting_set_id: %. The set must be the trade's counterparty's and party's. |
+| counterparty_name   | counterparty_identifier_id, counterparty_id | ores_refdata_counterparty_identifiers_tbl | id, counterparty_id | Invalid counterparty_identifier_id: %. The identifier must be the trade's counterparty's. |
+| netting_set_name    | netting_set_identifier_id, netting_set_id   | ores_refdata_netting_set_identifiers_tbl  | id, netting_set_id  | Invalid netting_set_identifier_id: %. The identifier must be the netting set's.          |
 
 ** Virtual books
 
@@ -251,6 +285,24 @@ session party, which the book pin requires.
 :END:
 
 The netting set. Temporal, so a trigger check.
+
+** counterparty_identifier_id
+:PROPERTIES:
+:table:         ores_refdata_counterparty_identifiers_tbl
+:nullable:      true
+:error_message: Invalid counterparty_identifier_id: %. No active counterparty identifier found with this id.
+:END:
+
+The counterparty identifier. Temporal, so a trigger check.
+
+** netting_set_identifier_id
+:PROPERTIES:
+:table:         ores_refdata_netting_set_identifiers_tbl
+:nullable:      true
+:error_message: Invalid netting_set_identifier_id: %. No active netting set identifier found with this id.
+:END:
+
+The netting set identifier. Temporal, so a trigger check.
 
 * C++
 

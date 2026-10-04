@@ -56,6 +56,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 | [[id:CA346C25-DD78-4D71-8BD3-9567C0623795][Give netting sets ORE aliases]] | DONE | 2026-10-04 | 2026-10-04 | Add a netting set identifier entity, so a netting set answers to the names ORE documents use, as counterparties already do. |
 | [[id:DB1D5C61-7E64-4BB4-BBC8-C11434DEAEC6][Publish the ORE sample netting agreements, sets and CSAs]] | DONE | 2026-10-04 | 2026-10-04 | Stage netting agreements, netting sets, CSAs and netting set aliases in DQ, and publish realistic synthetic data built from ORE's netting definitions to each provisioned party. |
 | [[id:FCA0C098-9BEA-4EA3-9B07-44510FD0EF18][Catch untangled shell scripts before review]] | DONE | 2026-10-04 | 2026-10-04 | Make the shell script drift check fail on scripts a recipe produces that are not committed, and add the tangle to the local check list. |
+| [[id:1335BFE4-9204-4ECB-B560-708C81C15E68][Export ORE trades from the anchor and its components]] | DONE | 2026-10-04 | 2026-10-04 | Regenerate an ORE trade's envelope from the anchor and its components: the counterparty and netting set names the document used, the ORE trade identifier and the additional fields. |
 
 * Decisions
 

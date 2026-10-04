@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 1335BFE4-9204-4ECB-B560-708C81C15E68
+:END:
+#+title: Task: Export ORE trades from the anchor and its components
+#+description: Regenerate an ORE trade's envelope from the anchor and its components: the counterparty and netting set names the document used, the ORE trade identifier and the additional fields.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/ore-export-from-the-anchor
+#+pr: 2609
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An ORE export writes each trade's CounterParty, NettingSetId and AdditionalFields from the resolved entities, and the round trip of the ORE samples stays lossless.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The booking records the counterparty and netting set identifiers the import resolved, pinned to the trade's counterparty and netting set.
+- The export envelope's CounterParty and NettingSetId come from those identifiers, falling back to the entity's ORE alias, and AdditionalFields from trade_additional_field in order.
+- Example_63, whose CP and CPTY name one bank, round trips with no in-scope loss.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+A lossless export needs the names the document used, not only the entities
+they resolved to: =CP= and =CPTY= both resolve to JPMorgan Chase, and a trade
+imported as =CP= must come back as =CP=.
+
+- The booking gains =counterparty_identifier_id= and
+  =netting_set_identifier_id=: the identifier rows the import resolved, pinned
+  to the trade's counterparty and the booking's netting set. The names stay
+  resolved entities, not document text.
+- =ores_trading_trade_envelope_names_fn= derives each booked trade's
+  CounterParty and NettingSetId: the recorded identifier, else the entity's
+  first ORE alias, else its code. It runs as the owner, because the names live
+  in refdata tables the trading service does not read, and holds every row to
+  the caller's tenant.
+- The envelope reader builds a booked trade's envelope from that function and
+  =trade_additional_field=; a trade with no anchor keeps the envelope tables'
+  envelope, and every trade still takes its PortfolioIds from them.
+- The import stops writing the counterparty, netting set and additional fields
+  to the envelope tables, so the round trip proves the new path.
+- An empty =<AdditionalFields/>= or =<NettingSetId/>= needs no flag: the round
+  trip classifier treats an empty element as absent, as ORE does.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Merged portfolio round trip, in-scope pairs | lost 0, unexplained 0 (16 trades) | =reset_and_roundtrip.sh= then the classifier, in [[file:evidence/ore_export_from_the_anchor.txt][evidence/ore_export_from_the_anchor.txt]] | branch head before commit |
+| Envelopes regenerated as the source stated them | 16 of 16; CP and CPTY distinct on NS | the same evidence file | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| pgTAP envelope names cases | 7/7 pass | =pg_prove projects/ores.sql/test/trading_trade_envelope_names_test.sql= | branch head before commit |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2609][#2609]] | [trading] Export ORE envelopes from the anchor and its components |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The names function was =language sql=, which checks its body when created, before the bookings table exists. | trading_trade_components_functions_create.sql | Accept | plpgsql, as the rest of the file. |
+| 2 | The trading service may not read the refdata identifier tables. | trading_trade_components_functions_create.sql | Accept | The function runs as the owner and holds rows to the caller's tenant. |
+| 3 | PR 2609 review 1: a recorded identifier deleted later falls back silently. | trading_trade_components_functions_create.sql | Accept | The comment says the fallback is deliberate; pgTAP case 7 pins it. |
+| 4 | PR 2609 review 2: a malformed trade id fails the whole batch's uuid cast. | trade_envelope_reader.cpp | Decline | Callers pass ids they have just read. |
+| 5 | PR 2609 review 3: a booked trade with no envelope row has no portfolio ids. | trade_envelope_reader.cpp | Decline | The import still writes the envelope row; the PortfolioIds task replaces it. |
+| 6 | PR 2609 review 5: other callers of the trade booking shell commands. | trade_booking_commands.cpp | Decline | Only the generated recipe and its scripts call them, both updated. |
+| 7 | PR 2609 review tests: a pin to another counterparty's identifier. | trading_trade_envelope_names_test.sql | Decline | Case 5 already covers it. |
+
+* Result
+
+An ORE export now regenerates a booked trade's CounterParty, NettingSetId and
+AdditionalFields from the anchor's booking and the trade's additional fields.
+The booking records which identifier the document used, so two aliases of one
+counterparty each come back as the trade named them. A 16-trade portfolio
+mixing CP and CPTY on NS round trips with no in-scope loss, with the envelope
+tables no longer holding those fields. PortfolioIds still come from the
+envelope tables until their own task.

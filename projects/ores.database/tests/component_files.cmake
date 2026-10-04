@@ -22,6 +22,7 @@
 set(files
     "context_factory_tests.cpp"
     "database_options_tests.cpp"
+    "list_filter_tests.cpp"
     "main.cpp"
     "postgres_listener_service_tests.cpp"
     "stated_order_tests.cpp"

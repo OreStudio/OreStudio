@@ -1334,6 +1334,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             offset: query['offset'] === undefined ? 0 : Number(query['offset']),
             limit: query['limit'] === undefined ? 200 : Number(query['limit']),
             order: { field: '', descending: false },
+            filter: null,
         };
         const response = await session.client.callAuthenticated(
             SUBJECTS.listChangeReasons,

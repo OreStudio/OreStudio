@@ -74,6 +74,45 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
             "A list of {{entity_plural_words}} cannot be ordered by " + order.field + ".");
     return make_order({order.field}, order.descending, {{{domain_entity.order_key_columns}}});
 }
+{{#domain_entity.has_filter_record}}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<{{domain_entity.filter_type}}>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+{{#domain_entity.filter_members}}
+{{#is_equals}}
+{{#is_nullable}}
+    if (filter->{{member}})
+        r.push_back(*filter->{{member}} ? equals("{{column}}", filter_value(**filter->{{member}}))
+                                        : is_null("{{column}}"));
+{{/is_nullable}}
+{{^is_nullable}}
+    if (filter->{{member}})
+        r.push_back(equals("{{column}}", filter_value(*filter->{{member}})));
+{{/is_nullable}}
+{{/is_equals}}
+{{#is_one_of}}
+    if (filter->{{member}}) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->{{member}})
+            values.push_back(filter_value(v));
+        r.push_back(one_of("{{column}}", std::move(values)));
+    }
+{{/is_one_of}}
+{{/domain_entity.filter_members}}
+{{#domain_entity.has_search}}
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({{{domain_entity.search_columns}}}, *filter->search));
+{{/domain_entity.has_search}}
+    return all_of(std::move(r));
+}
+{{/domain_entity.has_filter_record}}
 
 }
 
@@ -514,7 +553,8 @@ std::optional<domain::{{entity_singular}}>
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest_by_{{column}}(context ctx, const std::string& {{column}},
                                                           std::uint32_t offset, std::uint32_t limit,
-                                                          const ores::utility::domain::order& order) {
+                                                          const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}}. {{column}}: " << {{column}}
                                << " offset: " << offset << " limit: " << limit;
 {{^current_state}}
@@ -556,58 +596,50 @@ std::vector<domain::{{entity_singular}}>
     return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         list_order(order, {{{list_by_default_columns}}}, {{list_by_default_desc}}),
+        {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} by {{column}}.");
 }
 
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count_by_{{column}}(
-    context ctx, const std::string& {{column}}) {
+    context ctx, const std::string& {{column}}{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_plural_words}} count. {{column}}: " << {{column}};
 {{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{/current_state}}
 
-    struct count_result { long long count; };
-
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}} && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where("workspace_id"_c == wid && "{{column}}"_c == {{column}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
 {{^current_state}}
-                       where("{{column}}"_c == {{column}} && "valid_to"_c == max.value()) |
+                       where("{{column}}"_c == {{column}} && "valid_to"_c == max.value());
 {{/current_state}}
 {{#current_state}}
-                       where("{{column}}"_c == {{column}}) |
+                       where("{{column}}"_c == {{column}});
 {{/current_state}}
-                       sqlgen::to<count_result>;
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active {{entity_plural_words}} count by {{column}}: " << count;
-    return count;
+    return execute_count_query<{{entity_singular}}_entity>(
+        ctx, query, {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}} by {{column}}");
 }
 {{/list_by}}
 
@@ -714,7 +746,8 @@ void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
-    const ores::utility::domain::order& order) {
+    const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
                                << " and limit: " << limit;
 {{^current_state}}
@@ -753,6 +786,7 @@ std::vector<domain::{{entity_singular}}>
     return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
+        {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} with pagination.");
 }
@@ -781,50 +815,44 @@ std::optional<domain::{{entity_singular}}>
 }
 {{/domain_entity.has_newest_read}}
 
-std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx) {
+std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
 {{^current_state}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{/current_state}}
 
-    struct count_result { long long count; };
-
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where({{{tenant_where}}}{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
-                       sqlgen::to<count_result>;
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
-    const auto query = sqlgen::select_from<{{entity_singular}}_entity>(sqlgen::count().as<"count">()) |
 {{^domain_entity.current_state}}
-                       where("valid_to"_c == max.value()) |
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+                       where("valid_to"_c == max.value());
 {{/domain_entity.current_state}}
-                       sqlgen::to<count_result>;
+{{#domain_entity.current_state}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+{{/domain_entity.current_state}}
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active {{entity_singular_words}} count: " << count;
-    return count;
+    return execute_count_query<{{entity_singular}}_entity>(
+        ctx, query, {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}}");
 }
 
 std::vector<domain::{{entity_singular}}>

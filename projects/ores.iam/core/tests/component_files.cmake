@@ -36,6 +36,7 @@ set(files
     "repository_role_permission_repository_tests.cpp"
     "repository_role_repository_tests.cpp"
     "repository_session_repository_tests.cpp"
+    "repository_tenant_filter_tests.cpp"
     "repository_tenant_repository_tests.cpp"
     "repository_tenant_search_tests.cpp"
     "repository_tenant_stated_order_tests.cpp"

@@ -103,7 +103,7 @@ def test_the_canonical_set_is_derived_in_the_specification_order():
     assert [m["name"] for m in messages] == [
         "tenant_type_key", "tenant_type_write", "tenant_type_change",
         "tenant_type_removal", "tenant_type_lookup",
-        "tenant_type_event",
+        "tenant_types_filter", "tenant_type_event",
         "tenant_type_version_key", "tenant_type_versions_filter",
         "list_tenant_types_request", "list_tenant_types_response",
         "get_tenant_type_request", "get_tenant_type_response",
@@ -201,14 +201,19 @@ def test_the_filter_record_holds_one_optional_member_per_filterable_column():
                               "nats_suffix": "list_by_account_id"}])))
     assert [(f["name"], f["ts_type"])
             for f in messages["tenant_types_filter"]["fields"]] == [
-        ("name", "string | null"), ("account_id", "string | null")]
+        ("name", "string | null"), ("account_id", "string | null"),
+        ("type_one_of", "string[] | null"), ("account_id_one_of", "string[] | null")]
     list_request = {f["name"]: f
                     for f in messages["list_tenant_types_request"]["fields"]}
     assert list_request["filter"]["ts_type"] == "TenantTypesFilter | null"
 
 
 def test_a_resource_that_filters_on_nothing_has_no_filter_record():
-    messages = _by_name(entity_protocol_messages(_entity()))
+    """A compound key has no one-of member, and nothing else filters here."""
+    messages = _by_name(entity_protocol_messages(_entity(primary_key={
+        "column": "type",
+        "columns": [{"column": "type", "is_uuid": False},
+                    {"column": "code", "is_uuid": False}]})))
     assert "tenant_types_filter" not in messages
     assert "filter" not in {f["name"] for f in
                             messages["list_tenant_types_request"]["fields"]}

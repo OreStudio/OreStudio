@@ -39,6 +39,9 @@ The full template source. Edit here and re-tangle with
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#domain_entity.has_filter_record}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{/domain_entity.has_filter_record}}
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.{{component_core}}/export.hpp"
 {{#has_parent_id}}
@@ -196,13 +199,15 @@ public:
     std::vector<domain::{{entity_singular}}>
     read_latest_by_{{column}}(context ctx, const std::string& {{column}},
                              std::uint32_t offset, std::uint32_t limit,
-                             const ores::utility::domain::order& order = {});
+                             const ores::utility::domain::order& order = {}{{#domain_entity.has_filter_record}},
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
 
     /**
      * @brief Gets the total count of active {{entity_plural_words}} filtered by {{column}}.
      */
     std::uint32_t get_total_{{entity_singular_short}}_count_by_{{column}}(context ctx,
-                                                                         const std::string& {{column}});
+                                                                         const std::string& {{column}}{{#domain_entity.has_filter_record}},
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
 {{/list_by}}
 
 
@@ -238,11 +243,13 @@ public:
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {}{{#domain_entity.has_filter_record}},
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
 {{#domain_entity.has_newest_read}}
 
     /**
@@ -261,7 +268,8 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active {{entity_plural_words}}
      */
-    std::uint32_t get_total_{{entity_singular_short}}_count(context ctx);
+    std::uint32_t get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
 
     /**
 {{#current_state}}

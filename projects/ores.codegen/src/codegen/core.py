@@ -1438,6 +1438,19 @@ def validate_cached_by(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cached_by requires has_tenant_id")
 
 
+def _protocol_enabled(model_path):
+    """Whether a model generates its protocol header, after its own overrides."""
+    if not model_path:
+        return True
+    from .org_loader import parse_org, read_physical_space_overrides
+    from .physical_space import _enabled_overrides, is_enabled
+    doc = parse_org(Path(model_path).read_text(encoding="utf-8"))
+    properties = dict(doc.file_properties)
+    properties.update(read_physical_space_overrides(doc))
+    return is_enabled("ores.cpp.protocol", "ores.cpp.protocol", "ores.cpp",
+                      _enabled_overrides(properties), True)
+
+
 def _cpp_string_list(names):
     return '{' + ', '.join(f'"{n}"' for n in names) + '}'
 
@@ -4998,6 +5011,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_event_prefix,
             entity_events,
             entity_protocol_messages,
+            filter_members,
             key_finders,
             key_resolvers,
             declared_key_field,
@@ -5065,6 +5079,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # derived names.
         domain_entity['messages'] = entity_protocol_messages(
             domain_entity, sibling_entity_singulars(model_path))
+        # The filter record the list request carries, read by the repository
+        # so the condition it builds names the members the record declares.
+        _filter = filter_members(domain_entity)
+        domain_entity['filter_members'] = _filter['members']
+        domain_entity['search_columns'] = _cpp_string_list(_filter['searchable'])
+        domain_entity['has_search'] = bool(_filter['searchable'])
+        # A model can turn its protocol off, and then the record does not
+        # exist for the repository to take.
+        domain_entity['has_filter_record'] = bool(
+            (_filter['members'] or _filter['searchable'])
+            and _protocol_enabled(model_path))
+        domain_entity['filter_type'] = (
+            f"messaging::{domain_entity.get('entity_plural', '')}_filter")
         # The member the service body assigns the payload to. The protocol
         # header names it, so the service reads it from the same place rather
         # than assuming the entity's own name, which the envelope's result

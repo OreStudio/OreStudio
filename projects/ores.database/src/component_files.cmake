@@ -45,6 +45,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/bitemporal_operations.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/db_types.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/helpers.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/list_filter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/mapper_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/ores.database.repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/repository_exception.hpp"

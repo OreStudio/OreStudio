@@ -73,6 +73,7 @@ The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffff
 :natural_key:         true
 :no_generator_suffix: true
 :sortable:            true
+:searchable:          true
 :END:
 
 Unique code for stable referencing. Its shape is the deployment's and not a
@@ -102,6 +103,7 @@ Examples: 'system', 'acme', 'demo'.
 :cpp_type: std::string
 :nullable: false
 :sortable: true
+:searchable: true
 :END:
 
 Human-readable display name for the tenant.
@@ -146,6 +148,7 @@ std::string(faker::lorem::sentence())
 :cpp_type: std::string
 :nullable: false
 :unique:   true
+:searchable: true
 :END:
 
 Unique hostname for tenant routing.

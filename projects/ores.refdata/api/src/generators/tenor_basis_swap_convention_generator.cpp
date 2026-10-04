@@ -48,6 +48,7 @@ generate_synthetic_tenor_basis_swap_convention(utility::generation::generation_c
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-3M-6M-BASIS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.pay_index = std::nullopt;
     r.pay_frequency = std::nullopt;
     r.receive_index = std::nullopt;

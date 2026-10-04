@@ -48,6 +48,7 @@ generate_synthetic_swap_convention(utility::generation::generation_context& ctx)
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-6M-SWAP-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.fixed_calendar = std::string("TARGET");
     r.fixed_frequency = std::string("Annual");
     r.fixed_convention = std::string("ModifiedFollowing");

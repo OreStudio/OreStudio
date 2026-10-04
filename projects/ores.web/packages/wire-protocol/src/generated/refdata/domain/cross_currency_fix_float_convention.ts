@@ -35,6 +35,7 @@ export interface CrossCurrencyFixFloatConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     settlement_days: number;
     settlement_calendar: string;
     settlement_convention: string;

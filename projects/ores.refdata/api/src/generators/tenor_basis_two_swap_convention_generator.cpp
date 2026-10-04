@@ -48,6 +48,7 @@ generate_synthetic_tenor_basis_two_swap_convention(utility::generation::generati
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-3M-6M-TENOR-BASIS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.calendar = std::string("TARGET");
     r.long_fixed_frequency = std::string("Semiannual");
     r.long_fixed_convention = std::string("ModifiedFollowing");

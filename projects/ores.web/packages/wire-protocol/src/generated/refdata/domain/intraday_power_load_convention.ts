@@ -35,6 +35,7 @@ export interface IntradayPowerLoadConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     explicit_load_profile: string | null;
     business_day_load_rules: string | null;
     modified_by: string;

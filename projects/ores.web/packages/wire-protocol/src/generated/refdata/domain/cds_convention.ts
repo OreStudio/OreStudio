@@ -35,6 +35,7 @@ export interface CdsConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     settlement_days: number;
     calendar: string;
     frequency: string;

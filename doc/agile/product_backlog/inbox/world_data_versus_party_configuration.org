@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: A77947D9-FB2E-4518-A26B-21680DB0E1E1
+:END:
+#+title: World data versus party configuration
+#+description: Split the data into world data, which every party sees the same, and party configuration, which each party owns; synthetic data writes only world data.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:party:refdata:conventions:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The database holds two kinds of data, and each kind has its own scope.
+
+- *World data* describes the world as it is. Examples are currencies,
+  calendars, index conventions (IBOR and overnight), currency pair
+  conventions and market quotes. A real feed (for example Bloomberg) or the
+  synthetic generator supplies it. Every party that runs against the same world
+  must see the same facts. World data has no =party_id=.
+- *Party configuration* records how a party models and prices that world.
+  Examples are the run document, pricing engines, curve configurations, today's
+  market, stress tests and instrument conventions (deposit, swap, OIS, FRA, CDS
+  and the rest). Two parties can make different choices. Party configuration
+  has =party_id= and a restrictive party RLS policy.
+
+The rules:
+
+1. A world table never has =party_id=.
+2. Synthetic data generation writes world data only. It never writes party
+   configuration.
+3. The engine input for a run is the world data plus the configuration of the
+   party that runs it. For example, a party's =conventions.xml= is the world
+   conventions plus the instrument conventions of that party.
+4. World data is per tenant for now. The scope of world data is an open
+   question (see below). Party configuration does not depend on the answer.
+
+Open questions for the synthetic data rewrite:
+
+- *One world for all tenants.* Ideally every tenant sees one consistent world.
+  This needs a scope above the tenant, for example a system world that tenants
+  read.
+- *A sandbox world.* A user who experiments in a [[id:64BBDDFE-A118-4B46-BAF1-9532BED64C76][sandbox]] may need synthetic
+  data with a smaller scope, which does not change the official world. The
+  sandbox is a candidate owner of such a world.
+- *A party override of a world fact.* ORE lets a party define its own
+  convention with the id of a world convention (for example its own
+  =EUR-EURIBOR-6M=). If we need this, the export takes the row of the party
+  first and the world row otherwise, and the conventions check looks in both
+  places. We do not build this now.
+
+* Why
+
+Synthetic data generation stayed at tenant level because its correct scope was
+not clear. It replaces real feeds, which suggests a system property. But the
+system party must not hold configuration, and all parties must see a
+consistent world. At the same time, [[id:271BEEF0-59C2-4F4D-BAEF-A80BE873257D][Scope the configuration documents to a
+party]] made every configuration document per party. Without a rule, the two
+pieces of work clash. The conventions show the clash: ORE's =conventions.xml=
+mixes world facts (index and currency pair conventions, which the seed takes
+from QuantLib and which synthetic feeds need) with modelling choices (the
+instrument conventions that build curves).
+
+The distinction removes the clash. The open questions about scope concern
+world data only, so the synthetic rewrite can answer them without changes to
+any party table.
+
+* References
+
+- [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Story: Model the ORE report configuration as entities]] — where the
+  configuration documents became per party.
+- [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Story: Add sandboxes and virtual books]] — the sandbox entity.
+- =projects/ores.sql/populate/refdata/refdata_ibor_index_conventions_populate.sql=
+  and =refdata_overnight_index_conventions_populate.sql= — world conventions
+  seeded per tenant.
+- =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql= —
+  publishes the currency pair conventions.
+
+* See also
+
+- [[id:271BEEF0-59C2-4F4D-BAEF-A80BE873257D][Task: Scope the configuration documents to a party]]

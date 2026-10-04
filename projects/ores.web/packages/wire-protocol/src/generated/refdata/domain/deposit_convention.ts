@@ -35,6 +35,7 @@ export interface DepositConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     index_based: boolean;
     index: string | null;
     calendar: string | null;

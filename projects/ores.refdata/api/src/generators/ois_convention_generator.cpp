@@ -48,6 +48,7 @@ generate_synthetic_ois_convention(utility::generation::generation_context& ctx) 
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-OIS-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.spot_lag = 2;
     r.index = std::string("EUR-EONIA");
     r.fixed_day_count_fraction = std::string("ACT/360");

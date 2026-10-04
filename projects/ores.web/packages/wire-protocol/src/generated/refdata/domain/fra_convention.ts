@@ -35,6 +35,7 @@ export interface FraConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     index: string;
     modified_by: string;
     performed_by: string;

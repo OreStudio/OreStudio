@@ -35,6 +35,7 @@ export interface CmsSpreadOptionConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     forward_start: string;
     spot_days: string;
     swap_tenor: string;

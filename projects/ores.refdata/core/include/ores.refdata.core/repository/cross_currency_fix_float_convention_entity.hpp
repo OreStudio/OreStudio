@@ -47,6 +47,7 @@ struct cross_currency_fix_float_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     int settlement_days = 0;
     std::string settlement_calendar;
     std::string settlement_convention;

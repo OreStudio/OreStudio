@@ -46,6 +46,7 @@ struct bma_basis_swap_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     std::string index;
     std::string bma_index;
     std::optional<std::string> bma_payment_calendar;

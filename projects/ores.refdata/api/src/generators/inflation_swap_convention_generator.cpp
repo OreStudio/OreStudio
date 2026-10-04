@@ -48,6 +48,7 @@ generate_synthetic_inflation_swap_convention(utility::generation::generation_con
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("UKRPI_INFLATIONSWAP") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.fix_calendar = std::string("TARGET");
     r.fix_convention = std::string("ModifiedFollowing");
     r.day_count_fraction = std::string("30/360");

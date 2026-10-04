@@ -46,6 +46,7 @@ struct cross_currency_basis_convention_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string party_id;
     int settlement_days = 0;
     std::optional<std::string> settlement_calendar;
     std::string roll_convention;

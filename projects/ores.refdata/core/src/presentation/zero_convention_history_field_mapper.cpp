@@ -25,6 +25,7 @@
 #include "ores.refdata.core/presentation/zero_convention_history_field_mapper.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::presentation {
 
@@ -34,6 +35,7 @@ render_zero_convention_fields(const domain::zero_convention& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = v.id});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Tenor Based", .value = v.tenor_based ? "true" : "false"});
     fields.push_back({.name = "Day Count Fraction", .value = v.day_count_fraction});
     fields.push_back({.name = "Compounding", .value = v.compounding.value_or(std::string{})});

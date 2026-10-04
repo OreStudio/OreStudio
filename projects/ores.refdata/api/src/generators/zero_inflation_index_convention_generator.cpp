@@ -48,6 +48,7 @@ generate_synthetic_zero_inflation_index_convention(utility::generation::generati
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("UKRPI") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.region_name = std::string("UK");
     r.region_code = std::string("UK");
     r.revised = false;

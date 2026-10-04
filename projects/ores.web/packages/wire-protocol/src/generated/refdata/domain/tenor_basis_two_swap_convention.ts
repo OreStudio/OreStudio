@@ -35,6 +35,7 @@ export interface TenorBasisTwoSwapConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     calendar: string;
     long_fixed_frequency: string;
     long_fixed_convention: string;

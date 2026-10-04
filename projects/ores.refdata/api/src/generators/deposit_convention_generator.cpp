@@ -48,6 +48,7 @@ generate_synthetic_deposit_convention(utility::generation::generation_context& c
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("USD-LIBOR-CONVENTIONS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.index_based = true;
     r.index = std::string("USD-LIBOR");
     r.calendar = std::nullopt;

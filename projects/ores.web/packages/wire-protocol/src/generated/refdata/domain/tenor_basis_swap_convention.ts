@@ -35,6 +35,7 @@ export interface TenorBasisSwapConvention {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     pay_index: string | null;
     pay_frequency: string | null;
     receive_index: string | null;

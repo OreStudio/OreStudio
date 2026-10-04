@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/scope-the-curve-configuration-to-a-party
-#+pr: 2584
+#+branch: feature/scope-the-conventions-to-a-party
+#+pr: 2586
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -26,11 +26,11 @@ A party sees and writes only its own configuration documents, as it already does
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-03                               |
 
 * Acceptance
@@ -39,6 +39,8 @@ A party sees and writes only its own configuration documents, as it already does
 - A test per document group proves a party cannot read another party's rows.
 - Two parties can each import the same corpus document.
 - Currencies, currency pairs and calendar adjustments stay per tenant.
+- World conventions (IBOR index, overnight index, currency pair) stay per
+  tenant; the instrument conventions are per party.
 
 * Plan
 
@@ -127,6 +129,16 @@ same columns, and the party comes from the JWT, so the column is marked to join
 the SQL primary key, unique indexes and exclusion constraint while staying out
 of the repository and protocol key parameters.
 
+Step 4b, which conventions, decided with the operator on 2026-10-04: the data
+splits into world data, which every party sees the same, and party
+configuration, which each party owns ([[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]]).
+The IBOR index, overnight index and currency pair conventions are world data:
+the seed takes them from QuantLib, synthetic feeds need them, and the
+publisher writes them. They stay per tenant with no =party_id=, and move with
+the synthetic data rewrite. The other 22 conventions are instrument and
+curve-building choices, so they are per party. Tenor conventions were never in
+scope; they are a reference lookup.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -142,6 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2586][#2586]] | [refdata] Scope the instrument conventions to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2584][#2584]] | [refdata] Scope the curve configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2580][#2580]] | [analytics] Scope the analytics configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2579][#2579]] | [reporting] Scope the run document and reporting registry to a party |
@@ -153,3 +166,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every configuration document is per tenant and per party. A party reads and
+writes only its own rows, and the party comes from the session, set by =stamp=
+from the JWT.
+
+- Reporting: the run document and reporting registry, seven tables (#2579).
+- Analytics: pricing engines, today's market, stress test and credit
+  simulation, sixteen tables; the pricing model tables moved from hand-written
+  policies to flags (#2580).
+- RLS generation: the session functions run before any table, so every
+  component takes the generated policies; 161 hand-written policy blocks became
+  model flags, and a catalogue diff proved the policies the same.
+- Curve configuration: 34 tables (#2584).
+- Conventions: the 22 instrument conventions. =party_id= joins the SQL key
+  through the new =:sql_key:= column property, so two parties can each hold
+  the same convention ids; the repository and protocol keep the id alone.
+- The IBOR index, overnight index and currency pair conventions stay per
+  tenant as world data, with currencies, currency pairs and calendar
+  adjustments ([[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]]).
+
+Each group has a test that one party cannot see another's rows, and
+=conventions_party_database_tests.cpp= imports the Example_62 deposits under
+two parties.

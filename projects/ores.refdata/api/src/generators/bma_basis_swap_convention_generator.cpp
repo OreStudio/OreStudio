@@ -48,6 +48,7 @@ generate_synthetic_bma_basis_swap_convention(utility::generation::generation_con
     r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("USD-LIBOR-SIFMA-3M-BASIS") + "-" + std::to_string(idx);
+    r.party_id = ctx.generate_uuid();
     r.index = std::string("USD-LIBOR-3M");
     r.bma_index = std::string("USD-SIFMA");
     r.bma_payment_calendar = std::nullopt;

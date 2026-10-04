@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/correct-the-clean-standard-record
+#+pr: 2585
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -48,21 +48,85 @@ Re-measure each item at one commit and record it in =* Measurements=.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+Every item of the standard, at =ec37b05f77= (=origin/main=, 2026-10-04).
+"Carried" means the row restates the clean task's record because nothing in
+this story touched what the item measures; "Re-measured" means the evidence was
+taken at this commit or in this story's PRs.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| Item | State | Evidence | Measured |
+|------+-------+----------+----------|
+| B01–B05 | Pass | Baseline items: they record the state before the clean pass edited anything, and the clean task holds them. | Carried |
+| B06 | Pass | The review's partial was the test-only resolver and requirement types; the grammar retirement deleted them. | Re-measured |
+| M01–M05, M07–M10 | Pass | No marketdata model changed in this story except prose in =market_series= and =operations=; regeneration is byte-identical (G01). | Carried |
+| M06 | Pass | All seven headers in =ores.marketdata.api/messaging= carry the generated marker from =cpp_protocol.hpp.mustache=; =operations_protocol.hpp= comes from =ores.marketdata.operations=. | Re-measured |
+| P01 | *Fail* | No list request carries =as_of=. Backlog story =F15A8480= scopes it across components. | Re-measured |
+| P02 | *Fail* | The tick subject prefix is a hand-written constant in =tick_subjects.hpp=, not a model. The client's copy of the literal now uses that constant. | Re-measured |
+| P03 | Pass | No change to the served surfaces in this story. | Carried |
+| P04 | Pass | Same evidence as M06: the non-entity operations are the =ores.marketdata.operations= model. | Re-measured |
+| P05 | Pass | Every consumer moved with each codec change in the same PR, and the whole tree built (PR 2577). | Re-measured |
+| P06 | Not applicable | The component has no event cache. | Re-measured |
+| G01 | Pass | =check_component_drift.py --component marketdata --dry-run= reports no drift, twice. | Re-measured |
+| G02 | *Fail* | =market_observation_repository= and =market_observations_repository=, and =market_fixing_repository= and =market_fixings_repository=, each describe one table twice. | Re-measured |
+| G03 | Pass | 182 of 295 C++ files carry the marker; every named template exists, and G01 shows regeneration reproduces them. | Re-measured |
+| G04 | *Not done* | No review record of the generated marketdata code exists. | Re-measured |
+| G05 | Pass | The one generator defect the clean pass found was fixed at its source with a test. | Carried |
+| G06 | Pass | =regenerate_cmake_component_files.py --all --check= is clean. | Re-measured |
+| G07 | Pass | No marketdata artefact was regenerated while its template had a known defect; the regenerations in this story were the asset class header and the operations and market series models. | Re-measured |
+| G08 | Pass | =api=, =client= and =core= gained their namespace headers here; =service= had one. | Re-measured |
+| W01 | Pass | No registrar change in this story. | Carried |
+| W02 | *Fail* | =check_handler_permissions.py= passes only because =marketdata= is not in its =REGISTRY=. | Re-measured |
+| W03 | Pass | =check_populate_references.py= exits 0. | Re-measured |
+| W04 | Pass | =compass db recreate -y -k= ran clean from the tree on 2026-10-04. | Re-measured |
+| S01 | *Partial* | Shell units exist for =market_series=, =observation_lineage= and =series_classification_rule=; none for =feed_binding=, =market_observation=, =market_fixing= or the asset-class junction. | Re-measured |
+| S02 | *Partial* | Recipe folders exist for the same three entities only. | Re-measured |
+| H01 | *Partial* | =modeling/ores.marketdata.puml= has no two-pass sentinel. | Re-measured |
+| H02 | Pass | No legacy fragment; the dead oresmd layer is deleted (PR 2577). G02 is the remaining duplicate. | Re-measured |
+| H03 | *Not done* | No comment-rules pass over marketdata is on record. | Re-measured |
+| H04 | Pass | The one platform conditional, in =ore_key_codec.cpp=, raises MSVC warning C4062 to an error; it is not a shim. | Re-measured |
+| H05 | Pass | Every part has a real =component_overview.org=. | Carried |
+| V01 | Pass | The whole tree built with no warnings at =457bad10a8= (PR 2577). | Re-measured |
+| V02 | Pass | 90 of 90 suites passed on a recreated database (PR 2577); the codegen suite passes, 1,117 tests here. | Re-measured |
+| V03 | Pass | The database recreated and 24 units started on 2026-10-04. | Re-measured |
+| V04 | *Not done* | No recipe run log against the live fleet. | Re-measured |
+| V05 | Pass | The drift, cmake, populate, paste-block, reachability and sweep gates ran clean in this story. | Re-measured |
+| V06 | Not met | marketdata is no longer in =COMPONENTS_UNDER_TEST=; see the notes. | Re-measured |
+| V07 | Pass | No vacuous test found; the vacuous client suite was deleted in the clean pass. | Carried |
+| V08 | *Not done* | No per-file survey of =src/= exists. The old Pass row measured the corpus walk, which is a different question. | Re-measured |
+| Corpus market payloads | 99 files | The =is_market_payload= rule of =corpus_files.hpp= over =external/ore/examples=. | Re-measured |
+| ORE corpus fixture | 108,057 distinct keys, all accepted by ORE | =external/ore/catalogue/corpus.jsonl.gz= | Re-measured |
 
 * Notes
 
 See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 4.
+
+** Eleven items fail, so marketdata leaves the registry
+
+W02, P01, P02, G02, G04, H01, H03, S01, S02, V04 and V08 do not pass at
+=ec37b05f77=. The standard allows two answers: an accepted exception per item,
+or the component leaves =COMPONENTS_UNDER_TEST= until it passes. The owner chose
+removal on 2026-10-04. Until marketdata returns, =check_component_drift.py --all=
+and =check_protocol_twin_coverage.py= do not cover it; the catalogue sweep still
+does.
+
+[[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]]
+fixes P01 and H01, which no other task owns, and puts marketdata back once the
+owning tasks close:
+
+| Item | Owner |
+|------+-------|
+| W02 | [[id:0666E3FB-11E1-4595-A430-018D2FC2A1C4][Gate and seed the marketdata permissions]] |
+| P02, G02, H03 | [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] |
+| S01, S02, V04 | [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]] |
+| G04, V08 | [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] |
+| P01, H01 | [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] |
+
+** Done here rather than in the owning task
+
+- G08: the three namespace headers were cheap enough to add while measuring.
+- P02, in part: =subject_helpers.hpp= used its own copy of the tick prefix; it
+  now uses the api constant. Declaring the subject in a model stays with the
+  code-cleaning task.
+- G07 and H04 are recorded above, which the coverage task also asked for.
 
 * Test Scenarios
 
@@ -79,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2585][#2585]] | [marketdata] Correct the clean-standard record and leave the registry |
 
 * Review
 
@@ -88,3 +152,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The marketdata record now says what the tree does. All 49 items are measured at
+=ec37b05f77=, and the clean task's wrong rows carry their corrections: M06 and
+P04 pass, V06 and V08 were not met, the oresmd coverage row was overstated, and
+the corpus holds 99 market payload files, not 118. Capture =386360B3= is closed.
+Eleven items fail, and the owner chose to take marketdata out of
+=COMPONENTS_UNDER_TEST= rather than accept them; each failure names the task
+that removes it, and a new task returns marketdata to the registry. G08 passes
+on the way, with the three namespace headers added here.

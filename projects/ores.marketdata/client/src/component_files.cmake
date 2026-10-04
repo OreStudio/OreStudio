@@ -30,4 +30,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/fx_spot_subscription.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/market_data_client.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.client/ores.marketdata.client.hpp"
 )

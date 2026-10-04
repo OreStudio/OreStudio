@@ -89,9 +89,10 @@ struct trade_booking final {
     std::optional<boost::uuids::uuid> netting_set_id;
 
     /**
-     * @brief The date the trade was agreed.
+     * @brief The date the trade was agreed. Absent when the source does not state it, as an ORE
+     * document does not.
      */
-    std::chrono::year_month_day trade_date;
+    std::optional<std::chrono::year_month_day> trade_date;
 
     /**
      * @brief The time the trade was executed.

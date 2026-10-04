@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/netting_set_aliases/netting_set_alias.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+netting_set_aliases list --limit 1

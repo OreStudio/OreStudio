@@ -44,7 +44,9 @@ render_trade_booking_fields(const domain::trade_booking& v) {
         {.name = "Netting Set ID",
          .value = v.netting_set_id ? boost::uuids::to_string(*v.netting_set_id) : std::string{}});
     fields.push_back({.name = "Trade Date",
-                      .value = ores::platform::time::datetime::to_iso8601_date(v.trade_date)});
+                      .value = v.trade_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.trade_date) :
+                                   std::string{}});
     fields.push_back(
         {.name = "Execution Timestamp",
          .value = v.execution_timestamp ?

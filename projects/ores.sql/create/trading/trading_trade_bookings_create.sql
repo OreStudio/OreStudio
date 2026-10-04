@@ -49,7 +49,7 @@ create table if not exists "ores_trading_trade_bookings_tbl" (
     "counterparty_id" uuid null,
     "book_id" uuid not null,
     "netting_set_id" uuid null,
-    "trade_date" date not null,
+    "trade_date" date null,
     "execution_timestamp" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,

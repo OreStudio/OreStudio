@@ -1,0 +1,25 @@
+ORE import onto the anchor: live runs against a recreated database with ACME provisioned
+Branch feature/ore-import-onto-the-anchor, 2026-10-04
+
+1. external/ore/examples/Legacy/Example_63/Input/portfolio.xml (4 trades)
+   import: Saved 4 trade(s); CDS instrument save failed on the credit tenor check (instrument step, unchanged by this branch)
+   round trip classifier: in scope (bond products and the trade envelope) lost 0, unexplained 0; exit 0
+
+2. The same document with NEG2_ ids, one CounterParty set to NO_SUCH_CPTY and one NettingSetId set to NO_SUCH_NS
+   import: Saved 2 trade(s)
+   warn: Counterparty NO_SUCH_CPTY matches no counterparty: give one an ORE identifier with this name. [NEG2_XccySwap]
+   warn: NettingSetId NO_SUCH_NS matches no netting set: give one an ORE identifier with this name. [NEG2_CDS]
+
+Anchors, bookings and identifiers in the ACME tenant after both runs:
+  ore_trade_id  |    trade_type     | counterparty_scope | entry_channel |  cpty   |   netting_set   | wide 
+----------------+-------------------+--------------------+---------------+---------+-----------------+------
+ Cap            | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ CDS            | CreditDefaultSwap | external           | stp           | JPCHBA2 | NS-JPMC-MAIN-01 |    1
+ EUR6MSwap      | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ NEG2_Cap       | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ NEG2_EUR6MSwap | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ NEG_Cap        | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ NEG_EUR6MSwap  | Swap              | external           | stp           | BARBAN  | NS-BARC-CSA-01  |    1
+ XccySwap       | Swap              | external           | stp           | BARBAN  |                 |    1
+(8 rows)
+

@@ -57,7 +57,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     const auto booked = execute_parameterized_string_query(
         ctx_,
         "SELECT ores_trading_book_trade_fn($1::uuid, $2::uuid, nullif($3, '')::uuid, $4, $5, "
-        "$6, $7, $8::uuid, nullif($9, '')::uuid, $10::date, nullif($11, '')::timestamptz, "
+        "$6, $7, $8::uuid, nullif($9, '')::uuid, nullif($10, '')::date, nullif($11, "
+        "'')::timestamptz, "
         "$12, $13, $14, $15)::text",
         {boost::uuids::to_string(anchor.id),
          boost::uuids::to_string(anchor.party_id),
@@ -68,7 +69,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
          std::string(domain::to_string(anchor.entry_channel)),
          boost::uuids::to_string(booking.book_id),
          optional_uuid(booking.netting_set_id),
-         datetime::to_iso8601_date(booking.trade_date),
+         booking.trade_date ? datetime::to_iso8601_date(*booking.trade_date) : std::string(),
          booking.execution_timestamp ? datetime::to_iso8601_utc(*booking.execution_timestamp) :
                                        std::string(),
          request.activity_type_code,

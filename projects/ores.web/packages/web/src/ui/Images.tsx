@@ -53,10 +53,15 @@ function initialsOf(name: string): string {
 export function Avatar({
     name,
     src,
+    size = 'md',
 }: {
     readonly name: string;
     readonly src: string | null;
+    readonly size?: 'sm' | 'md' | 'lg';
 }): ReactNode {
+    const box = { sm: 'h-5 w-5 text-[9px]', md: 'h-8 w-8 text-[11px]', lg: 'h-14 w-14 text-base' }[
+        size
+    ];
     const [failedSrc, setFailedSrc] = useState<string | null>(null);
     if (src !== null && src !== failedSrc) {
         return (
@@ -65,14 +70,14 @@ export function Avatar({
                 alt=""
                 loading="lazy"
                 onError={() => setFailedSrc(src)}
-                className="h-8 w-8 shrink-0 rounded-full object-cover"
+                className={`${box} shrink-0 rounded-full object-cover`}
             />
         );
     }
     return (
         <span
             aria-hidden="true"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-[11px] font-medium text-ink-muted"
+            className={`${box} flex shrink-0 items-center justify-center rounded-full bg-surface-overlay font-medium text-ink-muted`}
         >
             {initialsOf(name)}
         </span>
@@ -106,5 +111,30 @@ export function CentreFlag({
             )}
             <span className="font-mono text-xs">{code}</span>
         </span>
+    );
+}
+
+/**
+ * The picture of an account of the session's own tenant, named by username,
+ * or its initials.
+ *
+ * Wherever a screen names an account it shows its picture, and most places
+ * know a username rather than an image: the signed-in person, who gave a role.
+ */
+export function AccountPicture({
+    username,
+    name,
+    size = 'md',
+}: {
+    readonly username: string;
+    readonly name: string;
+    readonly size?: 'sm' | 'md' | 'lg';
+}): ReactNode {
+    return (
+        <Avatar
+            name={name}
+            size={size}
+            src={`/api/accounts/${encodeURIComponent(username)}/picture`}
+        />
     );
 }

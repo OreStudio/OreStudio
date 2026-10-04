@@ -21,6 +21,12 @@
 
 import { z } from 'zod';
 import {
+    accountAccessSchema,
+    permissionEntrySchema,
+    roleSummarySchema,
+    type AccountAccess,
+    type PermissionEntry,
+    type RoleSummary,
     accountSchema,
     bootstrapStatusSchema,
     initialAdministratorSchema,
@@ -170,6 +176,123 @@ export const api = {
         return z
             .object({ accounts: z.array(accountSchema), totalCount: z.int().nonnegative() })
             .parse(await request('/api/accounts', { method: 'GET' }));
+    },
+
+    /** The reasons a role may be given for: the access category, in display order. */
+    async accessReasons(): Promise<
+        readonly { readonly code: string; readonly description: string }[]
+    > {
+        const answer = z
+            .object({
+                reasons: z.array(
+                    z.object({
+                        code: z.string(),
+                        description: z.string(),
+                        categoryCode: z.string(),
+                        appliesToNew: z.boolean(),
+                        displayOrder: z.number(),
+                    }),
+                ),
+            })
+            .parse(await request('/api/change-reasons', { method: 'GET' }));
+        return answer.reasons
+            .filter((reason) => reason.categoryCode === 'access' && reason.appliesToNew)
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(({ code, description }) => ({ code, description }));
+    },
+
+    /** The roles the signed-in person holds, with who gave each one and why. */
+    async myAccess(): Promise<AccountAccess> {
+        return accountAccessSchema.parse(await request('/api/me/access', { method: 'GET' }));
+    },
+
+    /** The roles one account holds. */
+    async accountAccess(accountId: string): Promise<AccountAccess> {
+        return accountAccessSchema.parse(
+            await request(`/api/accounts/${encodeURIComponent(accountId)}/access`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** Gives a role to an account, for a reason from the access category. */
+    async giveRole(
+        accountId: string,
+        input: { readonly roleId: string; readonly reasonCode: string; readonly note: string },
+    ): Promise<void> {
+        await request(`/api/accounts/${encodeURIComponent(accountId)}/roles`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Takes a role away from an account. */
+    async takeRoleAway(accountId: string, roleId: string): Promise<void> {
+        await request(
+            `/api/accounts/${encodeURIComponent(accountId)}/roles/${encodeURIComponent(roleId)}`,
+            { method: 'DELETE' },
+        );
+    },
+
+    /** The tenant's roles, each with the permissions it grants. */
+    async roles(): Promise<readonly RoleSummary[]> {
+        return z
+            .object({ roles: z.array(roleSummarySchema) })
+            .parse(await request('/api/roles', { method: 'GET' })).roles;
+    },
+
+    /** Every permission the platform defines. */
+    async permissions(): Promise<readonly PermissionEntry[]> {
+        return z
+            .object({ permissions: z.array(permissionEntrySchema) })
+            .parse(await request('/api/permissions', { method: 'GET' })).permissions;
+    },
+
+    /** Creates a role that grants nothing yet, and answers its identifier. */
+    async createRole(input: {
+        readonly name: string;
+        readonly description: string;
+    }): Promise<string> {
+        return z.object({ id: z.string() }).parse(
+            await request('/api/roles', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).id;
+    },
+
+    /** Renames or redescribes a role, against the version the screen read. */
+    async updateRole(
+        roleId: string,
+        input: { readonly name: string; readonly description: string; readonly version: number },
+    ): Promise<void> {
+        await request(`/api/roles/${encodeURIComponent(roleId)}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Replaces what a role grants, and answers the codes as stored. */
+    async saveRolePermissions(
+        roleId: string,
+        codes: readonly string[],
+        note: string,
+    ): Promise<readonly string[]> {
+        return z.object({ codes: z.array(z.string()) }).parse(
+            await request(`/api/roles/${encodeURIComponent(roleId)}/permissions`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ codes, note }),
+            }),
+        ).codes;
+    },
+
+    /** Deletes a role by its name. */
+    async deleteRole(name: string): Promise<void> {
+        await request(`/api/roles/${encodeURIComponent(name)}`, { method: 'DELETE' });
     },
 
     /**

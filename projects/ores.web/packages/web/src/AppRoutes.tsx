@@ -36,6 +36,11 @@ import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
+import { MyAccessPage } from './access/MyAccessPage.js';
+import { PeoplePage } from './access/PeoplePage.js';
+import { PersonPage } from './access/PersonPage.js';
+import { RolePage } from './access/RolePage.js';
+import { RolesPage } from './access/RolesPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -257,6 +262,64 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PartiesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            {/*
+             * Access: a person's own roles, and the administrator's people and
+             * role catalogue. The lists are tables, so they take the width.
+             */}
+            <Route
+                path="/access"
+                element={signedIn(gate.version, session, shell, (view) => (
+                    <MyAccessPage tenantName={view.tenantName} />
+                ))}
+            />
+            <Route
+                path="/people"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PeoplePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/people/:username"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => (
+                        <PersonPage me={view.username} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/roles"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RolesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/roles/:roleId"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RolePage />
                     ),
                     'workspace',
                 )}

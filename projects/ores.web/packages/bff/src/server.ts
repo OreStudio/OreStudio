@@ -43,6 +43,18 @@ import {
     searchLeiEntitiesResponseSchema,
     readImages,
     removeTenant,
+    accountAccessSchema,
+    deleteRole,
+    giveRole,
+    permissionEntrySchema,
+    readAccountAccess,
+    readMyAccess,
+    readPermissionCatalogue,
+    readRoles,
+    roleSummarySchema,
+    saveRole,
+    saveRolePermissions,
+    takeRoleAway,
     toWireTimestamp,
     loginResultSchema,
     loginInfoKeyRequestSchema,
@@ -743,6 +755,177 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             throw invalidRequest('The page offset and limit must be whole numbers.');
         }
         return readAccountsPage(session.client, page.data);
+    });
+
+    /*
+     * Access: the roles a person holds, the tenant's role catalogue, and the
+     * writes that change either. The server checks every permission; the BFF
+     * parses the browser's input and turns a refusal into words.
+     */
+
+    /**
+     * The picture of one account of the session's own tenant, by username.
+     *
+     * Wherever a screen names an account it shows its picture, and most of
+     * those places know a username rather than an image: the signed-in person,
+     * who gave a role. An account with no picture answers 404, and the screen
+     * shows initials. Cached briefly, because a person may change their picture.
+     */
+    server.get('/api/accounts/:username/picture', async (request, reply) => {
+        const session = requireSession(request);
+        const { username } = request.params as { username: string };
+        const account = await readAccount(session.client, username);
+        const [image] =
+            account === null || account.imageId === null
+                ? []
+                : await readImages(session.client, [account.imageId]);
+        if (image === undefined) {
+            throw notFound('This account has no picture.');
+        }
+        return reply
+            .header('content-type', image.mimeType)
+            .header('cache-control', 'private, max-age=300')
+            .send(image.bytes);
+    });
+
+    /** The roles the signed-in person holds, with who gave each one and why. */
+    server.get('/api/me/access', async (request) => {
+        const session = requireSession(request);
+        return accountAccessSchema.parse(await readMyAccess(session.client));
+    });
+
+    /** The roles one account holds. The server allows it to a holder of iam::roles:read. */
+    server.get('/api/accounts/:accountId/access', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        if (!isUuid(accountId)) {
+            throw notFound('No account has this identifier.');
+        }
+        return accountAccessSchema.parse(await readAccountAccess(session.client, accountId));
+    });
+
+    /** What the browser sends to give a role: the role, the reason and a note. */
+    const giveRoleBodySchema = z.object({
+        roleId: z.string().refine(isUuid, 'A role is an identifier.'),
+        reasonCode: z.string().min(1).max(100),
+        note: z.string().max(2000).default(''),
+    });
+
+    /** Gives a role to an account, for a reason. A refusal is the server's words. */
+    server.post('/api/accounts/:accountId/roles', async (request, reply) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        const body = giveRoleBodySchema.safeParse(request.body);
+        if (!isUuid(accountId) || !body.success) {
+            throw invalidRequest('Choose a role and a reason.');
+        }
+        const outcome = await giveRole(session.client, { accountId, ...body.data });
+        if (!outcome.done) {
+            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+        }
+        return reply.code(204).send();
+    });
+
+    /** Takes a role away from an account. The server refuses one's own account. */
+    server.delete('/api/accounts/:accountId/roles/:roleId', async (request, reply) => {
+        const session = requireSession(request);
+        const { accountId, roleId } = request.params as { accountId: string; roleId: string };
+        if (!isUuid(accountId) || !isUuid(roleId)) {
+            throw notFound('No such role on this account.');
+        }
+        const outcome = await takeRoleAway(session.client, { accountId, roleId });
+        if (!outcome.done) {
+            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+        }
+        return reply.code(204).send();
+    });
+
+    /** The tenant's roles, each with the permissions it grants. */
+    server.get('/api/roles', async (request) => {
+        const session = requireSession(request);
+        return { roles: z.array(roleSummarySchema).parse(await readRoles(session.client)) };
+    });
+
+    /** Every permission the platform defines. */
+    server.get('/api/permissions', async (request) => {
+        const session = requireSession(request);
+        return {
+            permissions: z
+                .array(permissionEntrySchema)
+                .parse(await readPermissionCatalogue(session.client)),
+        };
+    });
+
+    /** What the browser sends for a role's name and description. */
+    const roleBodySchema = z.object({
+        name: z.string().trim().min(1).max(100),
+        description: z.string().max(1000).default(''),
+        version: z.int().nonnegative().nullable().default(null),
+    });
+
+    /** Creates a role. It starts granting nothing. */
+    server.post('/api/roles', async (request) => {
+        const session = requireSession(request);
+        const body = roleBodySchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('A role needs a name.');
+        }
+        const id = randomUUID();
+        const outcome = await saveRole(session.client, { ...body.data, id, version: null });
+        if (!outcome.done) {
+            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+        }
+        return { id };
+    });
+
+    /** Renames or redescribes a role, against the version the screen read. */
+    server.put('/api/roles/:roleId', async (request, reply) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const body = roleBodySchema.safeParse(request.body);
+        if (!isUuid(roleId) || !body.success || body.data.version === null) {
+            throw invalidRequest('A role needs a name and the version it was read at.');
+        }
+        const outcome = await saveRole(session.client, { ...body.data, id: roleId });
+        if (!outcome.done) {
+            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+        }
+        return reply.code(204).send();
+    });
+
+    /** What the browser sends to save what a role grants: the whole set, and a note. */
+    const bundleBodySchema = z.object({
+        codes: z.array(z.string().min(1).max(200)).max(2000),
+        note: z.string().max(2000).default(''),
+    });
+
+    /** Replaces what a role grants with exactly the set sent, and answers what was stored. */
+    server.put('/api/roles/:roleId/permissions', async (request) => {
+        const session = requireSession(request);
+        const { roleId } = request.params as { roleId: string };
+        const body = bundleBodySchema.safeParse(request.body);
+        if (!isUuid(roleId) || !body.success) {
+            throw invalidRequest('Send the permissions the role grants.');
+        }
+        return {
+            codes: await saveRolePermissions(
+                session.client,
+                roleId,
+                body.data.codes,
+                body.data.note,
+            ),
+        };
+    });
+
+    /** Deletes a role by its name. */
+    server.delete('/api/roles/:name', async (request, reply) => {
+        const session = requireSession(request);
+        const { name } = request.params as { name: string };
+        const outcome = await deleteRole(session.client, name);
+        if (!outcome.done) {
+            throw new HttpFailure(409, { code: 'conflict', message: outcome.message });
+        }
+        return reply.code(204).send();
     });
 
     /**

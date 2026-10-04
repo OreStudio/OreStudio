@@ -24,6 +24,7 @@ import { Link, NavLink } from 'react-router';
 import type { SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
+import { AccountPicture } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
 import { menuFor, modeKey } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
@@ -121,7 +122,14 @@ export function AppShell({
                         ))}
                     </nav>
                     <div className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
-                        <span>{session}</span>
+                        <Link
+                            to="/access"
+                            className="flex items-center gap-2 hover:text-ink"
+                            title={t('shell.menu.access')}
+                        >
+                            <AccountPicture username={username} name={username} size="sm" />
+                            <span>{session}</span>
+                        </Link>
                         <Button variant="ghost" size="sm" onClick={onSignOut}>
                             {t('nav.signOut')}
                         </Button>

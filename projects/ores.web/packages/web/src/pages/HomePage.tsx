@@ -382,6 +382,8 @@ function TenantHome({
     const { t } = useTranslation();
     const tiles: Tile[] = [
         { title: t('home.tenant.parties'), body: t('home.tenant.partiesBody'), to: '/parties' },
+        { title: t('home.tenant.people'), body: t('home.tenant.peopleBody'), to: '/people' },
+        { title: t('home.tenant.roles'), body: t('home.tenant.rolesBody'), to: '/roles' },
         {
             title: t('home.tenant.newParty'),
             body: t('home.tenant.newPartyBody'),
@@ -427,6 +429,11 @@ function PartyHome({
                         title: t('home.party.security'),
                         body: t('home.party.securityBody'),
                         to: '/security',
+                    },
+                    {
+                        title: t('home.tenant.access'),
+                        body: t('home.tenant.accessBody'),
+                        to: '/access',
                     },
                 ]}
             />

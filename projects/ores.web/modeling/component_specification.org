@@ -156,6 +156,13 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =GET /api/images/:id= | One image of the session's own tenant, such as a flag or a picture, by its identifier. |
 | =GET /api/tenants/:code/images/:id= | One image of a tenant read from system administration. The tenant's parties and people pages read the images they name in the same visit, so this route answers from what they kept. |
 | =DELETE /api/tenants/:code= | Remove a tenant. The body carries the tenant's code typed again, and the system tenant is refused. |
+| =GET /api/me/access= | The roles the signed-in person holds, with what each grants and who gave it, when and why. |
+| =GET /api/accounts/:accountId/access= | The roles one account holds. The server allows it to a holder of =iam::roles:read=. |
+| =POST /api/accounts/:accountId/roles=, =DELETE /api/accounts/:accountId/roles/:roleId= | Give a role for a reason, and take one away. |
+| =GET /api/accounts/:username/picture= | The picture of an account of the session's own tenant, for any screen that names an account. |
+| =GET /api/roles=, =POST /api/roles=, =PUT /api/roles/:roleId=, =DELETE /api/roles/:name= | The role catalogue, each role with what it grants; create, rename and delete. |
+| =PUT /api/roles/:roleId/permissions= | Replace what a role grants with the whole set sent. |
+| =GET /api/permissions= | Every permission the platform defines. |
 | =GET /api/events=, =POST /api/events/watch= | Change notifications. See =change_notification.org=. |
 
 The BFF also serves the built browser bundle from =packages/web/dist=.

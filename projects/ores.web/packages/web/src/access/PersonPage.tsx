@@ -1,0 +1,382 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Link, useParams } from 'react-router';
+import type { Account, HeldRole } from '@ores/wire-protocol/browser';
+import { useTranslation } from '../i18n/Provider.js';
+import { api } from '../api/client.js';
+import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
+import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
+import { PermissionAreas } from './PermissionAreas.js';
+import { roleLabel } from './words.js';
+
+/**
+ * One person's access: the roles they hold, who gave each one and why, and
+ * what those roles let them do.
+ *
+ * Giving a role asks for a reason, which the grant records. Taking one away
+ * closes the grant, so who held it and when stays on record; the server keeps
+ * no reason for that, so none is asked. Nobody takes a role away from
+ * themselves, and the screen says so before the server would.
+ */
+export function PersonPage({ me }: { readonly me: string }): ReactNode {
+    const { t } = useTranslation();
+    const { username = '' } = useParams();
+    const account = useQuery({
+        queryKey: ['account', username],
+        queryFn: () => api.account(username),
+    });
+
+    if (account.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (account.isError) {
+        return <Notice tone="error">{account.error.message}</Notice>;
+    }
+    if (account.data === null) {
+        return <Notice tone="warn">{t('access.person.notFound')}</Notice>;
+    }
+    return <Person account={account.data} self={account.data.username === me} />;
+}
+
+function Person({
+    account,
+    self,
+}: {
+    readonly account: Account;
+    readonly self: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    const queries = useQueryClient();
+    const [giving, setGiving] = useState(false);
+    const [taking, setTaking] = useState<HeldRole | null>(null);
+    const access = useQuery({
+        queryKey: ['account-access', account.id],
+        queryFn: () => api.accountAccess(account.id),
+    });
+    const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
+    const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
+    const name = account.fullName === '' ? account.username : account.fullName;
+    const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
+
+    const roles = access.data?.roles ?? [];
+    const everything = roles.find((role) => role.permissionCodes.includes('*'));
+
+    return (
+        <div className="space-y-6">
+            <p className="text-xs text-ink-faint">
+                <Link to="/people" className="text-accent-bright hover:underline">
+                    {t('access.people.title')}
+                </Link>{' '}
+                / {name}
+            </p>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <Avatar
+                        name={name}
+                        size="lg"
+                        src={account.imageId === null ? null : imageUrl(account.imageId)}
+                    />
+                    <PageHeader
+                        title={name}
+                        description={[account.username, account.jobTitle]
+                            .filter((part) => part !== '')
+                            .join(' · ')}
+                    />
+                </div>
+                <Button variant="primary" onClick={() => setGiving(true)}>
+                    {t('access.person.give')}
+                </Button>
+            </div>
+
+            {access.isError && <Notice tone="error">{access.error.message}</Notice>}
+            <section className="overflow-x-auto rounded-md border border-line">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="px-4 py-2 font-medium">{t('access.person.role')}</th>
+                            <th className="px-4 py-2 font-medium">{t('access.givenBy')}</th>
+                            <th className="px-4 py-2 font-medium">{t('access.person.on')}</th>
+                            <th className="px-4 py-2 font-medium">{t('access.person.why')}</th>
+                            <th className="px-4 py-2" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {roles.length === 0 && (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-3 text-ink-muted">
+                                    {access.isPending
+                                        ? t('common.loading')
+                                        : t('access.person.noRole')}
+                                </td>
+                            </tr>
+                        )}
+                        {roles.map((role) => (
+                            <tr
+                                key={role.roleId}
+                                className="border-b border-line-subtle last:border-b-0"
+                            >
+                                <td className="px-4 py-2">
+                                    <span className="block font-medium">
+                                        {roleLabel(t, role.name)}
+                                    </span>
+                                    <span className="block text-xs text-ink-faint">
+                                        {role.description}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-2">
+                                    <span className="flex items-center gap-2">
+                                        <AccountPicture
+                                            username={role.givenBy}
+                                            name={role.givenBy}
+                                            size="sm"
+                                        />
+                                        {role.givenBy}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-2 text-ink-muted">
+                                    {role.givenAt.slice(0, 10)}
+                                </td>
+                                <td className="px-4 py-2">
+                                    <span className="block">{role.reasonCode}</span>
+                                    {role.commentary !== '' && (
+                                        <span className="block text-xs text-ink-faint">
+                                            {role.commentary}
+                                        </span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-2 text-right">
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        disabled={self}
+                                        title={self ? t('access.person.notYourself') : undefined}
+                                        onClick={() => setTaking(role)}
+                                    >
+                                        {t('access.person.takeAway')}
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </section>
+            <Notice tone="info">{t('access.person.whenItApplies', { name })}</Notice>
+
+            <section className="space-y-3">
+                <h2 className="text-sm font-semibold">{t('access.person.whatTheyAllow')}</h2>
+                {everything !== undefined ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('access.everythingBy', { role: roleLabel(t, everything.name) })}
+                    </p>
+                ) : (
+                    <PermissionAreas
+                        areas={areas}
+                        granted={grantedBy(roles)}
+                        onlyGranted
+                        explain={(code) =>
+                            rolesGranting(roles, code)
+                                .map((roleName) => roleLabel(t, roleName))
+                                .join(', ')
+                        }
+                    />
+                )}
+            </section>
+
+            {giving && (
+                <GiveRoleDialog
+                    account={account}
+                    name={name}
+                    held={roles}
+                    onClose={() => setGiving(false)}
+                    onDone={() => {
+                        setGiving(false);
+                        void refresh();
+                    }}
+                />
+            )}
+            {taking !== null && (
+                <TakeAwayDialog
+                    account={account}
+                    name={name}
+                    role={taking}
+                    onClose={() => setTaking(null)}
+                    onDone={() => {
+                        setTaking(null);
+                        void refresh();
+                    }}
+                />
+            )}
+        </div>
+    );
+}
+
+function GiveRoleDialog({
+    account,
+    name,
+    held,
+    onClose,
+    onDone,
+}: {
+    readonly account: Account;
+    readonly name: string;
+    readonly held: readonly HeldRole[];
+    readonly onClose: () => void;
+    readonly onDone: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
+    const reasons = useQuery({ queryKey: ['access-reasons'], queryFn: api.accessReasons });
+    const [roleId, setRoleId] = useState('');
+    const [reasonCode, setReasonCode] = useState('');
+    const [note, setNote] = useState('');
+    const give = useMutation({
+        mutationFn: () => api.giveRole(account.id, { roleId, reasonCode, note }),
+        onSuccess: onDone,
+    });
+    const offered = (roles.data ?? []).filter((role) => !role.service);
+    const holds = new Set(held.map((role) => role.roleId));
+
+    return (
+        <Dialog
+            title={t('access.person.giveTitle', { name })}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" onClick={onClose}>
+                        {t('entity.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        disabled={roleId === '' || reasonCode === '' || give.isPending}
+                        onClick={() => give.mutate()}
+                    >
+                        {t('access.person.give')}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                <div className="max-h-72 space-y-2 overflow-y-auto">
+                    {offered.map((role) => (
+                        <label
+                            key={role.id}
+                            className={`flex cursor-pointer gap-3 rounded-md border border-line p-2.5 text-sm ${holds.has(role.id) ? 'opacity-50' : 'hover:border-line-strong'}`}
+                        >
+                            <input
+                                type="radio"
+                                name="role"
+                                value={role.id}
+                                disabled={holds.has(role.id)}
+                                checked={roleId === role.id}
+                                onChange={() => setRoleId(role.id)}
+                            />
+                            <span>
+                                <span className="block font-medium">
+                                    {roleLabel(t, role.name)}
+                                    {holds.has(role.id) && (
+                                        <span className="font-normal text-ink-faint">
+                                            {' '}
+                                            · {t('access.person.alreadyHeld')}
+                                        </span>
+                                    )}
+                                </span>
+                                <span className="block text-ink-muted">{role.description}</span>
+                                <span className="block text-xs text-ink-faint">
+                                    {role.permissionCodes.includes('*')
+                                        ? t('access.lets.everything')
+                                        : t('access.lets.count', {
+                                              count: String(role.permissionCodes.length),
+                                          })}
+                                </span>
+                            </span>
+                        </label>
+                    ))}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label={t('access.person.why')}>
+                        <Select
+                            value={reasonCode}
+                            onChange={(event) => setReasonCode(event.target.value)}
+                        >
+                            <option value="">{t('access.person.chooseReason')}</option>
+                            {(reasons.data ?? []).map((reason) => (
+                                <option key={reason.code} value={reason.code}>
+                                    {reason.description}
+                                </option>
+                            ))}
+                        </Select>
+                    </Field>
+                    <Field label={t('access.person.note')}>
+                        <Input value={note} onChange={(event) => setNote(event.target.value)} />
+                    </Field>
+                </div>
+                {give.isError && <Notice tone="error">{give.error.message}</Notice>}
+            </div>
+        </Dialog>
+    );
+}
+
+function TakeAwayDialog({
+    account,
+    name,
+    role,
+    onClose,
+    onDone,
+}: {
+    readonly account: Account;
+    readonly name: string;
+    readonly role: HeldRole;
+    readonly onClose: () => void;
+    readonly onDone: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const take = useMutation({
+        mutationFn: () => api.takeRoleAway(account.id, role.roleId),
+        onSuccess: onDone,
+    });
+    return (
+        <Dialog
+            title={t('access.person.takeTitle', { role: roleLabel(t, role.name), name })}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" onClick={onClose}>
+                        {t('entity.cancel')}
+                    </Button>
+                    <Button
+                        variant="danger"
+                        disabled={take.isPending}
+                        onClick={() => take.mutate()}
+                    >
+                        {t('access.person.takeAway')}
+                    </Button>
+                </>
+            }
+        >
+            <p className="text-sm text-ink-muted">{t('access.person.takeKept')}</p>
+            {take.isError && <Notice tone="error">{take.error.message}</Notice>}
+        </Dialog>
+    );
+}

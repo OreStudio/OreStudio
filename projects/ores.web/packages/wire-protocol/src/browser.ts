@@ -44,12 +44,16 @@ export type { Uuid, WireTimestamp } from './primitives.js';
 
 export {
     ACCOUNT_TYPES,
+    accountAccessSchema,
     accountPageSchema,
     accountSchema,
     activePartySchema,
     badgePresentationSchema,
     deploymentOverviewSchema,
+    heldRoleSchema,
     partySummarySchema,
+    permissionEntrySchema,
+    roleSummarySchema,
     tenantDetailResponseSchema,
     tenantDetailSchema,
     tenantPageSchema,
@@ -62,12 +66,16 @@ export {
 } from './domain.js';
 export type {
     Account,
+    AccountAccess,
     AccountPage,
     AccountType,
     ActiveParty,
     BadgePresentation,
     DeploymentOverview,
+    HeldRole,
     PartySummary,
+    PermissionEntry,
+    RoleSummary,
     SetupActivity,
     TenantDetail,
     TenantDetailResponse,

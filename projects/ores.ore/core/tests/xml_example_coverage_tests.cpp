@@ -19,11 +19,11 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <filesystem>
 #include <vector>
 
@@ -49,11 +49,12 @@ const std::string_view test_suite("ores.ore.example.coverage.tests");
 const std::string tags("[ore][xml][roundtrip][golden][coverage]");
 
 using ores::ore::domain::portfolio;
+using ores::platform::environment::environment;
 using ores::platform::filesystem::file;
 using namespace ores::logging;
 
 bool bootstrapping() {
-    return std::getenv("ORES_BOOTSTRAP_GOLDENS") != nullptr;
+    return environment::get_value("ORES_BOOTSTRAP_GOLDENS").has_value();
 }
 
 std::vector<std::filesystem::path> example_files() {

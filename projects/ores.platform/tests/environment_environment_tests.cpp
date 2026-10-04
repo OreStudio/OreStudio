@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/environment/fake_environment_provider.hpp"
 #include "ores.platform/environment/real_environment_provider.hpp"

@@ -82,6 +82,11 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-24.04
     environment: CI
+    # The repository's default token is read-only; deleting the sccache entry
+    # before saving its replacement needs actions: write.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:

@@ -112,6 +112,10 @@ diagram (=market_data_urn_types.puml=) following this repo's standard
 diagram convention (source file + generated PNG + regeneration
 instructions, not an inline babel block).
 
+Superseded in sprint 26: the hand-written grammar replaced these types, and
+[[id:40BC9458-38CE-4A54-9385-C1BAC3D7FBEB][Rewrite the oresmd design record]]
+deleted =market_data_urn_types.puml= and its image.
+
 * Notes
 
 * Test Scenarios

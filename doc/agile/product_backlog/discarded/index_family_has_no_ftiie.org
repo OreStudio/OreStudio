@@ -92,6 +92,14 @@ marker rather than a benchmark. Those want the index slot to accept an arbitrary
 name, which is a larger change than either of the two above and is not sized
 here.
 
+* Resolution
+
+RESOLVED by [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. The generated =index_family= enum is gone. The
+IR rows of the datum schema hold the index as =index_name=, the free-text name
+ORE reads, so =IR_SWAP/RATE/MXN/FTIIE/1D/1D/130M= and =MM/RATE/MXN/FTIIE/0D/1D=
+read like any other key. The corpus fixture holds the 11 distinct F-TIIE keys,
+and the codec tests match each with ORE's reading.
+
 * References
 
 - =projects/ores.marketdata/modeling/oresmd/ir_quote_type.org= — the Index

@@ -54,6 +54,14 @@ What the catalogue does not settle is narrower, and is captured separately: the
 futures' qualifier depth, which is a contradiction in our own shape table rather
 than a missing grammar.
 
+* Resolution
+
+RESOLVED by [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. The typed datum models all 45 ORE instrument
+types, =CAPFLOOR=, =RATING= and =BOND_OPTION= among them, and the ORE key codec
+reads every form of each that ORE's catalogue holds. The corpus fixture holds
+4,545 distinct keys of the three types, and the codec tests match each with
+ORE's reading.
+
 * References
 
 - =doc/knowledge/domain/ore_market_data_catalogue.org= -- the quote-type tables,

@@ -26,11 +26,11 @@ A member cannot write their own profile: iam.v1.accounts.update and iam.v1.accou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] |
-| Now          | PR #2632 open; the review is settled in 7b1649c2ca and the branch is pushed. |
-| Waiting on   | The CI run on the review settlement.   |
-| Next         | Merge when CI is green.                |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -155,3 +155,24 @@ via its "Verifies task" field.
 Verdict: ready to merge. No blocking bugs; the one point with no code change (6) is settled by the schema.
 
 * Result
+
+The two self write subjects are live, with the review's seven points settled
+in 7b1649c2ca:
+
+- =iam.v1.accounts.update-self= writes =full_name=, =job_title= and
+  =image_id= on the caller's own account. A value on the three fields an
+  administrator owns is refused by name with =field_not_self_writable=, and
+  the write states the owned fields whole: an empty string clears the field.
+- =iam.v1.account_contact_informations.update-self= writes the nine contact
+  fields and creates the record on the member's first write. It finds the
+  record from the session alone, refuses a bad email or country code with the
+  field named, and the store keeps one live record per account.
+
+Both take the account from the validated token and act on no other account,
+and both carry the shared change-reason flow. They are served from the
+hand-written handler and subscribed in the hand-written registrar; the model
+regenerated into the C++ and TypeScript protocols and the shell commands.
+
+Tests: seven service tests over the two writes (53 assertions), the iam
+suites 3 of 3, the branch-local drift sweep clean, and all 16 CI checks green
+on 77c5826318.

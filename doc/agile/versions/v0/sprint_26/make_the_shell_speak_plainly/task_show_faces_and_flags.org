@@ -8,7 +8,7 @@
 #+filetags: :web:tenancy:images:make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
 #+branch: feature/show-faces-and-flags
-#+pr:
+#+pr: 2601
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2601][#2601]] | [web] Show faces and flags in a tenant |
 
 * Review
 

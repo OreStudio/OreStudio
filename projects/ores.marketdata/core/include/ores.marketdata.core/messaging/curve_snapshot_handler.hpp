@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +57,7 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for curve snapshot / curve-evolution queries -- read-only, thin
- * wrappers around market_observations_repository::read_as_of()/read_as_of_buckets(), with
+ * wrappers around market_observation_repository::read_as_of()/read_as_of_buckets(), with
  * series_id resolved server-side from the series' oresmd identity, so callers don't need
  * to know internal series ids.
  */
@@ -84,7 +84,7 @@ public:
                 repository::market_series_repository series_repo;
                 auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
                 if (!series.empty()) {
-                    repository::market_observations_repository obs_repo;
+                    repository::market_observation_repository obs_repo;
                     resp.observations = obs_repo.read_as_of(
                         req_ctx, series.front().id, std::chrono::system_clock::now());
                 }
@@ -127,7 +127,7 @@ public:
                 repository::market_series_repository series_repo;
                 auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
                 if (!series.empty()) {
-                    repository::market_observations_repository obs_repo;
+                    repository::market_observation_repository obs_repo;
                     resp.buckets =
                         obs_repo.read_as_of_buckets(req_ctx,
                                                     series.front().id,

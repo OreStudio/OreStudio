@@ -19,7 +19,7 @@
  */
 #include "../src/curve_pillar_reader.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -37,7 +37,7 @@ const std::string tags("[curve_pillar_reader]");
 
 using ores::marketdata::domain::market_observation;
 using ores::marketdata::domain::market_series;
-using ores::marketdata::repository::market_observations_repository;
+using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::service::curve_republish_refdata_context;
 using ores::marketdata::service::read_pillar_rates;
@@ -164,8 +164,8 @@ struct fixture {
         o.oresmd_uri = ores::marketdata::core::pillar_datum_uri(key);
         o.value = value;
         o.source = "curve_pillar_reader test";
-        market_observations_repository repo;
-        repo.write(h.context(), o);
+        market_observation_repository repo;
+        repo.insert(h.context(), o);
     }
 };
 

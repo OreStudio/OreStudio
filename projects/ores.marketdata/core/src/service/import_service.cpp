@@ -27,8 +27,8 @@
 #include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_fixing_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
@@ -192,8 +192,8 @@ import_service::import(const messaging::import_market_data_request& req) {
     boost::uuids::random_generator gen;
     repository::market_series_repository series_repo;
     repository::market_series_asset_class_repository series_asset_class_repo(ctx_);
-    repository::market_observations_repository obs_repo;
-    repository::market_fixings_repository fixings_repo;
+    repository::market_observation_repository obs_repo;
+    repository::market_fixing_repository fixings_repo;
 
     // Cache: the series' oresmd identity → series id.
     std::map<std::string, boost::uuids::uuid> series_cache;
@@ -331,7 +331,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 observations.push_back(std::move(obs));
             }
 
-            obs_repo.write(ctx_, observations);
+            obs_repo.insert(ctx_, observations);
             resp.observation_count = static_cast<int>(observations.size());
         }
     }
@@ -378,7 +378,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 fixings.push_back(std::move(fix));
             }
 
-            fixings_repo.write(ctx_, fixings);
+            fixings_repo.insert(ctx_, fixings);
             resp.fixing_count = static_cast<int>(fixings.size());
         }
     }

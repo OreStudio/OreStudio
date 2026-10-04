@@ -22,6 +22,7 @@
 
 #include "curve_republish_resolver.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
@@ -62,6 +63,14 @@ struct ORES_MARKETDATA_SERVICE_EXPORT pillar_read final {
  * @p refctx, or if the key it builds is one the oresmd grammar has no series for.
  * Both are configuration errors and are deliberately not caught here.
  */
+/**
+ * @brief The observation's value as a number.
+ *
+ * @throws std::runtime_error naming the observation when its value is not a
+ *         number.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT double observation_value(const domain::market_observation& obs);
+
 ORES_MARKETDATA_SERVICE_EXPORT pillar_read
 read_pillar_rates(ores::database::context ctx,
                   const ores::refdata::domain::ir_curve_bootstrap_config& config,

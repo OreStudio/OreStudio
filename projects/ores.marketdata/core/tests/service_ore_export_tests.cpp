@@ -20,7 +20,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
@@ -242,7 +242,7 @@ namespace {
 // the export must take each key from the datum URI the row stores.
 void write_fx_row(export_tenant& t, const std::string& series_uri, const std::string& datum_uri) {
     ores::marketdata::repository::market_series_repository series_repo;
-    ores::marketdata::repository::market_observations_repository obs_repo;
+    ores::marketdata::repository::market_observation_repository obs_repo;
     boost::uuids::random_generator gen;
 
     ores::marketdata::domain::market_series s;
@@ -267,7 +267,7 @@ void write_fx_row(export_tenant& t, const std::string& series_uri, const std::st
         std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
     o.oresmd_uri = datum_uri;
     o.value = "1.132337";
-    obs_repo.write(t.ctx, o);
+    obs_repo.insert(t.ctx, o);
 }
 
 }

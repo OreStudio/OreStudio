@@ -21,8 +21,8 @@
 #include "ores.marketdata.core/datum/ore_index_codec.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_fixing_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -83,8 +83,8 @@ ore_export_service::ore_export_service(context ctx)
 
 ore_export_result ore_export_service::write_all() const {
     repository::market_series_repository series_repo;
-    repository::market_observations_repository obs_repo;
-    repository::market_fixings_repository fixings_repo;
+    repository::market_observation_repository obs_repo;
+    repository::market_fixing_repository fixings_repo;
 
     const auto series = series_repo.read_latest(ctx_);
     std::vector<ores::ore::market::market_datum> data;
@@ -101,11 +101,11 @@ ore_export_result ore_export_service::write_all() const {
                     s.oresmd_uri + "', which is no quote series (" + quote_series.error() +
                     ") and no fixing series (" + index.error() + ")");
             const auto index_name = datum::ore_index_codec::write(*index);
-            for (const auto& f : fixings_repo.read_latest(ctx_, s.id))
+            for (const auto& f : fixings_repo.read_latest_for_series(ctx_, s.id))
                 fixings.push_back(to_fixing(index_name, f));
             continue;
         }
-        for (const auto& o : obs_repo.read_latest(ctx_, s.id))
+        for (const auto& o : obs_repo.read_latest_for_series(ctx_, s.id))
             data.push_back(to_datum(o));
     }
 

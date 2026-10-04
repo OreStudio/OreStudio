@@ -30,10 +30,12 @@
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
 #include "ores.marketdata.core/repository/market_fixing_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <initializer_list>
 #include <sqlgen/postgres.hpp>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace ores::marketdata::repository {
@@ -118,6 +120,18 @@ domain::market_fixing market_fixing_repository::apply_claim(
 
 void market_fixing_repository::write(context ctx, const domain::market_fixing& v) {
     write(ctx, v, replace_claim(ctx, v));
+}
+
+void market_fixing_repository::insert(context ctx, const domain::market_fixing& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
+    execute_write_query(
+        ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixing into database.");
+}
+
+void market_fixing_repository::insert(context ctx, const std::vector<domain::market_fixing>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
+    execute_write_query(
+        ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings into database.");
 }
 
 void market_fixing_repository::write(context ctx, const std::vector<domain::market_fixing>& v) {
@@ -292,5 +306,24 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
     execute_delete_query(ctx, query, lg(), "Batch removing market fixings.");
 }
 
+
+std::vector<domain::market_fixing>
+market_fixing_repository::read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query =
+        sqlgen::read<std::vector<market_fixing_entity>> |
+        where("tenant_id"_c == tid && "series_id"_c == sid && "valid_to"_c == max.value()) |
+        order_by("fixing_date"_c);
+
+    return execute_read_query<market_fixing_entity, domain::market_fixing>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_fixing_mapper::map(entities); },
+        lg(),
+        "Reading latest market fixings.");
+}
 
 }

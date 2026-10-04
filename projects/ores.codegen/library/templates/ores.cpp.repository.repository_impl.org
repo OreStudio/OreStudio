@@ -202,6 +202,21 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
 void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
+{{#append_insert}}
+
+void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_singular}}& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Inserting {{entity_singular_words}} into database.");
+}
+
+void {{entity_singular}}_repository::insert(
+    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_plural_words}}. Count: " << v.size();
+    execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
+        lg(), "Inserting {{entity_plural_words}} into database.");
+}
+{{/append_insert}}
 
 void {{entity_singular}}_repository::write(
     context ctx, const std::vector<domain::{{entity_singular}}>& v) {

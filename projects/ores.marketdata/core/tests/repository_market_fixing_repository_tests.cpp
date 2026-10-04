@@ -22,7 +22,7 @@
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/generators/market_fixing_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
-#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
+#include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -42,9 +42,9 @@ using namespace ores::marketdata::generators;
 
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
-using ores::marketdata::repository::market_fixings_repository;
+using ores::marketdata::repository::market_fixing_repository;
 
-TEST_CASE("write_single_market_fixing", tags) {
+TEST_CASE("insert_single_market_fixing", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -54,14 +54,18 @@ TEST_CASE("write_single_market_fixing", tags) {
     auto s = generate_synthetic_market_series(ctx);
     series_repo.write(h.context(), s);
 
-    market_fixings_repository fixings_repo;
+    market_fixing_repository fixings_repo;
     auto f = generate_synthetic_market_fixing(ctx);
     f.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Fixing: " << f;
-    CHECK_NOTHROW(fixings_repo.write(h.context(), f));
+    fixings_repo.insert(h.context(), f);
+
+    const auto read = fixings_repo.read_latest_for_series(h.context(), s.id);
+    REQUIRE(read.size() == 1);
+    CHECK(read.front().id == f.id);
 }
 
-TEST_CASE("write_multiple_market_fixings", tags) {
+TEST_CASE("insert_multiple_market_fixings", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -71,12 +75,12 @@ TEST_CASE("write_multiple_market_fixings", tags) {
     auto s = generate_synthetic_market_series(ctx);
     series_repo.write(h.context(), s);
 
-    market_fixings_repository fixings_repo;
+    market_fixing_repository fixings_repo;
     auto fixings = generate_synthetic_market_fixings(5, ctx);
     for (auto& f : fixings)
         f.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Fixings: " << fixings;
-    CHECK_NOTHROW(fixings_repo.write(h.context(), fixings));
+    CHECK_NOTHROW(fixings_repo.insert(h.context(), fixings));
 }
 
 TEST_CASE("read_latest_market_fixings_by_series", tags) {
@@ -89,42 +93,16 @@ TEST_CASE("read_latest_market_fixings_by_series", tags) {
     auto s = generate_synthetic_market_series(ctx);
     series_repo.write(h.context(), s);
 
-    market_fixings_repository fixings_repo;
+    market_fixing_repository fixings_repo;
     auto written = generate_synthetic_market_fixings(3, ctx);
     for (auto& f : written)
         f.series_id = s.id;
-    fixings_repo.write(h.context(), written);
+    fixings_repo.insert(h.context(), written);
 
-    auto read = fixings_repo.read_latest(h.context(), s.id);
+    auto read = fixings_repo.read_latest_for_series(h.context(), s.id);
     BOOST_LOG_SEV(lg, debug) << "Read fixings: " << read;
 
     CHECK(read.size() == written.size());
     for (const auto& r : read)
         CHECK(r.series_id == s.id);
-}
-
-TEST_CASE("remove_market_fixings", tags) {
-    auto lg(make_logger(test_suite));
-
-    database_helper h;
-    auto ctx = ores::testing::make_generation_context(h);
-
-    market_series_repository series_repo;
-    auto s = generate_synthetic_market_series(ctx);
-    series_repo.write(h.context(), s);
-
-    market_fixings_repository fixings_repo;
-    auto fixings = generate_synthetic_market_fixings(3, ctx);
-    for (auto& f : fixings)
-        f.series_id = s.id;
-    fixings_repo.write(h.context(), fixings);
-
-    auto before = fixings_repo.read_latest(h.context(), s.id);
-    REQUIRE(!before.empty());
-
-    CHECK_NOTHROW(fixings_repo.remove(h.context(), s.id));
-
-    auto after = fixings_repo.read_latest(h.context(), s.id);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
-    CHECK(after.empty());
 }

@@ -8,7 +8,7 @@
 #+filetags: :extract-user-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/journeys-refdata
-#+pr:
+#+pr: 2631
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-23
@@ -174,7 +174,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2631][#2631]] | [doc] Extract the first refdata user journeys |
 
 * Review
 

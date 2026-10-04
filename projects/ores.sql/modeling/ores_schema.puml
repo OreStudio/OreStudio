@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T17:52:25.108955Z
+' Generated: 2026-10-04T18:48:50.529117Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -4342,8 +4342,7 @@ package "refdata" #FFF3E0 {
     ores.marketdata's market_series table -- the official curve series
     this config publishes into -- deliberately not a hard FK constraint,
     matching the same soft-reference principle already used for
-    market_series.derivation_config_id and ir_curve_tick's own
-    producer/config identity: the referenced table lives in a different
+    market_series.derivation_config_id: the referenced table lives in a different
     component/schema. The column is minted (the market_series catalog row
     created) at config-creation time by the owning service, never left
     null/deferred -- there is no "not yet published" state to guard against.
@@ -5372,8 +5371,8 @@ package "refdata" #FFF3E0 {
     where the series is written.
     This table is the single source of truth for the taxonomy. Code carries
     no parallel enumeration, because the list is runtime-managed and no
-    compiled list can be exhaustive over it. market_series and
-    ir_curve_tick FK-validate against this table. Managed by the system
+    compiled list can be exhaustive over it. market_series
+    FK-validates against this table. Managed by the system
     tenant, like other shared code tables.
     end note
 
@@ -12642,9 +12641,7 @@ package "marketdata" #E3F2FD {
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * oresmd_uri : text
         * source_name : text
-        * asset_class : text
         * enabled : boolean
         * workspace_id : uuid <<FK>>
         * modified_by : text
@@ -12660,14 +12657,14 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Feed Binding Table
-    A feed binding records which raw producer channel feeds an official market
-    series, in which workspace. The marketdata service reads all enabled bindings
-    at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per
-    (tenant, party, workspace), persists each arriving tick as a
-    market_observation under the binding's party, and republishes on the
-    per-party realtime stream
-    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, whose key the
-    binding's identity projects back to.
+    A feed binding records that a party consumes one producer source, in one
+    workspace. It is the one place a live tick finds its owners, for every feed and
+    every asset class: a tick names its own datum by its oresmd quote URI and its
+    producer by source, and the ingest loop stores it once for each enabled
+    binding of that source, under the binding's tenant and party, and republishes
+    it on the per-party realtime stream
+    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
+    key is the datum's canonical ORE key.
     workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
     which resolves in every tenant. It is the seam where the future workspaces
     feature binds scenario data: a binding reads "party P consumes source S in

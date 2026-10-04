@@ -202,7 +202,9 @@ $$ language plpgsql set search_path = public, pg_temp;
 -- The names an ORE envelope gives a booked trade's counterparty and netting
 -- set. Each is the identifier the trade's source named it by, else the
 -- entity's ORE alias, else its own code; a trade with no counterparty or no
--- netting set gets no name for it. Runs as the owner, because the names live
+-- netting set gets no name for it. An identifier deleted since the booking
+-- falls back the same way, deliberately: the trade keeps a name its entity
+-- still answers to. Runs as the owner, because the names live
 -- in refdata tables the trading service does not read; every row is held to
 -- the caller's tenant, and the caller passes only trades it has read.
 create or replace function ores_trading_trade_envelope_names_fn(p_trade_ids uuid[])

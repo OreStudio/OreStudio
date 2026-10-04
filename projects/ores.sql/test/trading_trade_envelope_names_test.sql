@@ -26,6 +26,7 @@
  * - Two aliases of one counterparty each come back as the trade named them
  * - Without a recorded identifier, the entity's first ORE alias names it
  * - A trade with no netting set gets no netting set name
+ * - A deleted identifier falls back to the entity's remaining ORE alias
  * - The booking refuses an identifier of another counterparty or netting set
  *
  * Run with: pg_prove -d <database> test/trading_trade_envelope_names_test.sql
@@ -33,7 +34,7 @@
 
 begin;
 
-select plan(6);
+select plan(7);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -154,6 +155,16 @@ select throws_like(
         null, null, 'new_booking', (select owner_name from t_ctx), 'system.new_record', 'test')$$,
     '%The identifier must be the netting set''s%',
     'the booking refuses an identifier of another netting set');
+
+delete from ores_refdata_counterparty_identifiers_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and id_scheme = 'ORE' and id_value = 'CP';
+
+select results_eq(
+    $$select counter_party from ores_trading_trade_envelope_names_fn(
+        array['00000000-0000-0000-0000-00000000e101'::uuid])$$,
+    $$values ('CPTY'::text)$$,
+    'a deleted identifier falls back to the entity''s remaining ORE alias');
 
 select * from finish();
 

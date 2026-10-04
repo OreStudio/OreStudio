@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/import-a-run-configuration-from-an-ore-input-directory
-#+pr:
+#+pr: 2591
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2591][#2591]] | [ore] Import and export a run's configuration through the database |
 
 * Review
 

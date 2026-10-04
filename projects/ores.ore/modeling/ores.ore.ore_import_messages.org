@@ -240,15 +240,15 @@ the trading protocol's portfolio export.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_trade_external_ids
+*** saved_trade_ids
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
 
 #+begin_src cpp :name comment
 /**
- * The external identifier of each saved trade, which is the key the
- * trade model declares. The rollback addresses a trade by this key.
+ * The id of each booked trade. The rollback closes these trades' bookings,
+ * because a trade's anchor is immutable.
  */
 #+end_src
 
@@ -296,13 +296,13 @@ the trading protocol's portfolio export.
 :cpp_type: std::vector<std::string>
 :END:
 
-*** saved_trade_external_ids
+*** saved_trade_ids
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
 :END:
 
 #+begin_src cpp :name comment
-/** The external identifier of each saved trade, which the rollback deletes by. */
+/** The id of each booked trade, whose booking the rollback closes. */
 #+end_src
 
 * See also

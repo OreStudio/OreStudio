@@ -25,7 +25,6 @@ set(files
     "credit_simulation_database_roundtrip_tests.cpp"
     "curve_configuration_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"
-    "domain_trade_mapper_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
     "log_ore_log_parser_tests.cpp"
     "main.cpp"

@@ -217,9 +217,8 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.anchor.id = src.trade.identity.id;
-        item.anchor.trade_type = src.trade.classification.trade_type;
-        item.ore_id = src.trade.identity.external_id;
+        item.anchor = src.anchor;
+        item.ore_id = src.ore_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -230,7 +229,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     CHECK(!xml.empty());
     CHECK(xml.contains("<Portfolio>"));
     CHECK(xml.contains("<SwapData>"));
-    CHECK(xml.contains(imported.front().trade.identity.external_id));
+    CHECK(xml.contains(imported.front().ore_id));
 }
 
 TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
@@ -243,9 +242,8 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.anchor.id = src.trade.identity.id;
-        item.anchor.trade_type = src.trade.classification.trade_type;
-        item.ore_id = src.trade.identity.external_id;
+        item.anchor = src.anchor;
+        item.ore_id = src.ore_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -255,7 +253,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<FxForwardData>"));
-    CHECK(xml.contains(imported.front().trade.identity.external_id));
+    CHECK(xml.contains(imported.front().ore_id));
 }
 
 TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
@@ -268,9 +266,8 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     std::vector<trade_export_item> items;
     for (const auto& src : imported) {
         trade_export_item item;
-        item.anchor.id = src.trade.identity.id;
-        item.anchor.trade_type = src.trade.classification.trade_type;
-        item.ore_id = src.trade.identity.external_id;
+        item.anchor = src.anchor;
+        item.ore_id = src.ore_id;
         item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
@@ -280,7 +277,7 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<AscotData>"));
-    CHECK(xml.contains(imported.front().trade.identity.external_id));
+    CHECK(xml.contains(imported.front().ore_id));
 }
 
 TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {

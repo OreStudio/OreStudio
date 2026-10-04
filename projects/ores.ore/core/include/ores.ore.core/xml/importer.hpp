@@ -26,32 +26,38 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
-#include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <filesystem>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace ores::ore::xml {
 
 /**
- * @brief A trade with its ORE source context for import mapping.
+ * @brief A trade read from an ORE document, ready to book.
  *
- * Pairs a partially-mapped ORES trading domain trade with the trade
- * envelope from the document and the path of the file it came from. The
- * counterparty_id in the trade is left nil; callers resolve it from the
- * envelope's CounterParty.
+ * Carries what the import books: the trade's anchor and booking, the
+ * activity that books it, and its ORE id, which the import writes as the
+ * trade's ORE identifier. The importer fills the ORE id and the trade type;
+ * the planner mints the trade id and fills the party, the book and the
+ * dates. The counterparty and the netting set are resolved from the
+ * envelope when the trade is booked.
  *
- * The source_file field enables callers (e.g. batch directory import) to
- * report per-trade provenance without having to keep a separate index.
+ * The source file lets a batch import report each trade's provenance
+ * without keeping a separate index.
  */
 struct trade_import_item {
-    trading::domain::trade trade;
-    std::optional<trading::domain::trade_envelope_data>
-        envelope;                                 ///< absent when the document states no Envelope
-    std::filesystem::path source_file;            ///< ORE XML file this trade was read from
-    trading::domain::trade_instrument instrument; ///< monostate if trade type not yet mapped
+    std::string ore_id;
+    trading::domain::trade_anchor anchor;
+    trading::domain::trade_booking booking;
+    std::string activity_type_code = "new_booking";
+    std::optional<trading::domain::trade_envelope_data> envelope;
+    std::filesystem::path source_file;
+    trading::domain::trade_instrument instrument;
 };
 
 /**
@@ -119,19 +125,6 @@ public:
      */
     static ores::refdata::domain::conventions_document
     import_conventions(const std::filesystem::path& path);
-
-    /**
-     * @brief Validates a trade against minimum import requirements.
-     *
-     * Checks that the trade has at least the fields that can be directly
-     * mapped from ORE XML: external_id and trade_type. Fields that require
-     * external mapping (book_id, counterparty_id, etc.) are not validated
-     * here.
-     *
-     * @param trade Trade to validate
-     * @return Empty string if valid, otherwise error message describing issues
-     */
-    static std::string validate_trade(const trading::domain::trade& trade);
 
     /**
      * @brief Imports trades from an ORE portfolio XML file with mapping context.

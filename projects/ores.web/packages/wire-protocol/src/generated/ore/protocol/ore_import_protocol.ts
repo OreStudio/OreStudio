@@ -96,10 +96,10 @@ export interface OreImportExecuteResult {
     saved_portfolio_names: string[];
     saved_book_names: string[];
     /**
-     * The external identifier of each saved trade, which is the key the
-     * trade model declares. The rollback addresses a trade by this key.
+     * The id of each booked trade. The rollback closes these trades' bookings,
+     * because a trade's anchor is immutable.
      */
-    saved_trade_external_ids: string[];
+    saved_trade_ids: string[];
 }
 
 /**
@@ -116,8 +116,8 @@ export interface OreImportRollbackRequest {
     saved_currency_iso_codes: string[];
     saved_portfolio_names: string[];
     saved_book_names: string[];
-    /** The external identifier of each saved trade, which the rollback deletes by. */
-    saved_trade_external_ids: string[];
+    /** The id of each booked trade, whose booking the rollback closes. */
+    saved_trade_ids: string[];
 }
 
 export const subjects = {

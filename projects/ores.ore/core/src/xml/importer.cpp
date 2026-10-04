@@ -25,13 +25,12 @@
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/nil_generator.hpp>
 #include <sstream>
-#include <type_traits>
 
 namespace ores::ore::xml {
 
 using refdata::domain::currency;
-using trading::domain::trade;
 using namespace ores::logging;
 
 std::string importer::validate_currency(const currency& c) {
@@ -102,19 +101,6 @@ importer::import_calendar_adjustments(const std::filesystem::path& path) {
     return r;
 }
 
-std::string importer::validate_trade(const trade& t) {
-    std::ostringstream errors;
-
-    if (t.identity.external_id.empty())
-        errors << "External ID is required\n";
-
-    if (t.classification.trade_type.empty())
-        errors << "Trade type is required\n";
-
-    return errors.str();
-}
-
-
 std::vector<trade_import_item>
 importer::import_portfolio_with_context(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started portfolio import with context: "
@@ -131,45 +117,20 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     r.reserve(p.Trade.size());
 
     for (const auto& t : p.Trade) {
+        const auto nil = boost::uuids::nil_uuid();
         trade_import_item item;
-        item.trade = domain::trade_mapper::map(t);
+        item.ore_id = std::string(t.id);
+        item.anchor.id = nil;
+        item.anchor.party_id = nil;
+        item.anchor.trade_type = to_string(t.TradeType);
+        item.booking.trade_id = nil;
+        item.booking.party_id = nil;
+        item.booking.book_id = nil;
         item.envelope = domain::trade_mapper::map_envelope(t);
         item.source_file = path;
 
         try {
             item.instrument = domain::trade_mapper::map_instrument(t);
-
-            // Record the routing discriminator; UUIDs are minted by the caller.
-            std::visit(
-                [&](const auto& result) {
-                    using T = std::decay_t<decltype(result)>;
-                    using ores::trading::domain::product_type;
-                    using ores::trading::domain::swap_instrument_data;
-                    using ores::trading::domain::fx_instrument_variant;
-                    using ores::trading::domain::bond_instrument_data;
-                    using ores::trading::domain::credit_instrument;
-                    using ores::trading::domain::equity_instrument_data;
-                    using ores::trading::domain::commodity_instrument_data;
-                    using ores::trading::domain::composite_instrument_data;
-                    using ores::trading::domain::scripted_instrument;
-                    if constexpr (std::is_same_v<T, swap_instrument_data>)
-                        item.trade.classification.product_type = product_type::swap;
-                    else if constexpr (std::is_same_v<T, fx_instrument_variant>)
-                        item.trade.classification.product_type = product_type::fx;
-                    else if constexpr (std::is_same_v<T, bond_instrument_data>)
-                        item.trade.classification.product_type = product_type::bond;
-                    else if constexpr (std::is_same_v<T, credit_instrument>)
-                        item.trade.classification.product_type = product_type::credit;
-                    else if constexpr (std::is_same_v<T, equity_instrument_data>)
-                        item.trade.classification.product_type = product_type::equity;
-                    else if constexpr (std::is_same_v<T, commodity_instrument_data>)
-                        item.trade.classification.product_type = product_type::commodity;
-                    else if constexpr (std::is_same_v<T, composite_instrument_data>)
-                        item.trade.classification.product_type = product_type::composite;
-                    else if constexpr (std::is_same_v<T, scripted_instrument>)
-                        item.trade.classification.product_type = product_type::scripted;
-                },
-                item.instrument);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to map instrument for trade " << std::string(t.id) << ": " << e.what();

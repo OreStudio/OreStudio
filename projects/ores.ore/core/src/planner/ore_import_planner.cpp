@@ -37,6 +37,35 @@ namespace reason = ores::dq::domain::change_reason_constants;
 namespace book_status_constants = ores::refdata::domain::book_status_constants;
 namespace regulatory_book_type_constants = ores::refdata::domain::regulatory_book_type_constants;
 
+namespace {
+
+/**
+ * Gives an imported trade its id and places it: the party, the book, and the
+ * import's defaults. The instrument takes the trade's id as well.
+ */
+void place_trade(xml::trade_import_item& item,
+                 const boost::uuids::uuid& trade_id,
+                 const boost::uuids::uuid& party_id,
+                 const boost::uuids::uuid& book_id,
+                 const trade_defaults& defs) {
+    item.anchor.id = trade_id;
+    item.anchor.party_id = party_id;
+    item.booking.trade_id = trade_id;
+    item.booking.party_id = party_id;
+    item.booking.book_id = book_id;
+    if (!std::holds_alternative<std::monostate>(item.instrument))
+        trading::domain::stamp_ids(item.instrument, trade_id);
+    if (!defs.trade_date.empty())
+        item.booking.trade_date =
+            ores::platform::time::datetime::from_iso8601_date(defs.trade_date);
+    if (!defs.activity_type_code.empty())
+        item.activity_type_code = defs.activity_type_code;
+    if (defs.default_counterparty_id)
+        item.anchor.counterparty_id = defs.default_counterparty_id;
+}
+
+}
+
 ore_import_planner::ore_import_planner(scanner::scan_result scan_result,
                                        std::set<std::string> existing_iso_codes,
                                        import_choices choices)
@@ -89,7 +118,6 @@ ore_import_plan ore_import_planner::plan() {
     // trades into that book directly — no new portfolios or books are created.
     if (choices_.existing_target_book_id && choices_.existing_parent_portfolio_id) {
         const auto target_book_id = *choices_.existing_target_book_id;
-        const auto target_portfolio_id = *choices_.existing_parent_portfolio_id;
         const auto& defs = choices_.defaults;
 
         for (const auto& node : nodes) {
@@ -98,26 +126,7 @@ ore_import_plan ore_import_planner::plan() {
             for (const auto& source_file : node.source_files) {
                 auto items = xml::importer::import_portfolio_with_context(source_file);
                 for (auto& item : items) {
-                    item.trade.identity.id = uuid_gen();
-                    if (!std::holds_alternative<std::monostate>(item.instrument))
-                        trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
-                    item.trade.parties.book_id = target_book_id;
-                    item.trade.parties.portfolio_id = target_portfolio_id;
-                    item.trade.identity.party_id = choices_.party_id;
-                    if (!defs.trade_date.empty())
-                        item.trade.lifecycle.trade_date =
-                            ores::platform::time::datetime::from_iso8601_date(defs.trade_date);
-                    if (!defs.effective_date.empty())
-                        item.trade.lifecycle.effective_date =
-                            ores::platform::time::datetime::from_iso8601_date(defs.effective_date);
-                    if (!defs.termination_date.empty())
-                        item.trade.lifecycle.termination_date =
-                            ores::platform::time::datetime::from_iso8601_date(
-                                defs.termination_date);
-                    if (!defs.activity_type_code.empty())
-                        item.trade.classification.activity_type_code = defs.activity_type_code;
-                    if (defs.default_counterparty_id)
-                        item.trade.parties.counterparty_id = defs.default_counterparty_id;
+                    place_trade(item, uuid_gen(), choices_.party_id, target_book_id, defs);
                     result.trades.push_back(std::move(item));
                 }
             }
@@ -227,27 +236,7 @@ ore_import_plan ore_import_planner::plan() {
             auto items = xml::importer::import_portfolio_with_context(source_file);
 
             for (auto& item : items) {
-                item.trade.identity.id = uuid_gen();
-                if (!std::holds_alternative<std::monostate>(item.instrument))
-                    trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
-                item.trade.parties.book_id = b.id;
-                item.trade.parties.portfolio_id = book_parent_id;
-                item.trade.identity.party_id = choices_.party_id;
-
-                if (!defs.trade_date.empty())
-                    item.trade.lifecycle.trade_date =
-                        ores::platform::time::datetime::from_iso8601_date(defs.trade_date);
-                if (!defs.effective_date.empty())
-                    item.trade.lifecycle.effective_date =
-                        ores::platform::time::datetime::from_iso8601_date(defs.effective_date);
-                if (!defs.termination_date.empty())
-                    item.trade.lifecycle.termination_date =
-                        ores::platform::time::datetime::from_iso8601_date(defs.termination_date);
-                if (!defs.activity_type_code.empty())
-                    item.trade.classification.activity_type_code = defs.activity_type_code;
-                if (defs.default_counterparty_id)
-                    item.trade.parties.counterparty_id = defs.default_counterparty_id;
-
+                place_trade(item, uuid_gen(), choices_.party_id, b.id, defs);
                 result.trades.push_back(std::move(item));
             }
         }

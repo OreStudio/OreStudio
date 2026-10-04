@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -51,63 +52,7 @@ using ores::trading::domain::swap_instrument_data;
 using ores::trading::domain::fx_instrument_variant;
 using ores::trading::domain::fx_forward_instrument;
 using ores::trading::domain::bond_instrument_data;
-using ores::trading::domain::trade;
 using namespace ores::logging;
-
-// =============================================================================
-// validate_trade tests
-// =============================================================================
-
-TEST_CASE("validate_trade_with_all_required_fields", tags) {
-    auto lg(make_logger(test_suite));
-
-    trade t;
-    t.identity.external_id = "Swap_1";
-    t.classification.trade_type = "Swap";
-
-    const auto errors = importer::validate_trade(t);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
-
-    CHECK(errors.empty());
-}
-
-TEST_CASE("validate_trade_with_missing_external_id", tags) {
-    auto lg(make_logger(test_suite));
-
-    trade t;
-    t.classification.trade_type = "Swap";
-
-    const auto errors = importer::validate_trade(t);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
-
-    CHECK(!errors.empty());
-    CHECK(errors.contains("External ID is required"));
-}
-
-TEST_CASE("validate_trade_with_missing_trade_type", tags) {
-    auto lg(make_logger(test_suite));
-
-    trade t;
-    t.identity.external_id = "Swap_1";
-
-    const auto errors = importer::validate_trade(t);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
-
-    CHECK(!errors.empty());
-    CHECK(errors.contains("Trade type is required"));
-}
-
-TEST_CASE("validate_trade_with_multiple_errors", tags) {
-    auto lg(make_logger(test_suite));
-
-    trade t{};
-    const auto errors = importer::validate_trade(t);
-    BOOST_LOG_SEV(lg, debug) << "Validation errors: '" << errors << "'";
-
-    CHECK(!errors.empty());
-    CHECK(errors.contains("External ID is required"));
-    CHECK(errors.contains("Trade type is required"));
-}
 
 // =============================================================================
 // import_portfolio tests
@@ -124,13 +69,28 @@ TEST_CASE("import_portfolio_from_minimal_swap", tags) {
 
     REQUIRE(items.size() == 1);
 
-    const auto& t = items.front().trade;
-    CHECK(t.identity.external_id == "Swap_20y");
-    CHECK(t.classification.trade_type == "Swap");
-    CHECK(t.classification.netting_set_id == "CPTY_A");
-    CHECK(t.classification.activity_type_code == "new_booking");
-    CHECK(t.audit.modified_by == "ores");
-    CHECK(t.audit.change_reason_code == "system.external_data_import");
+    const auto& item = items.front();
+    CHECK(item.ore_id == "Swap_20y");
+    CHECK(item.anchor.trade_type == "Swap");
+    REQUIRE(item.envelope.has_value());
+    CHECK(item.envelope->netting_set_id == "CPTY_A");
+    CHECK(item.activity_type_code == "new_booking");
+}
+
+TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto items = importer::import_portfolio_with_context(
+        ore_path("examples/MinimalSetup/Input/portfolio_swap.xml"));
+    REQUIRE(items.size() == 1);
+
+    const auto nil = boost::uuids::nil_uuid();
+    const auto& item = items.front();
+    CHECK(item.anchor.id == nil);
+    CHECK(item.anchor.party_id == nil);
+    CHECK_FALSE(item.anchor.counterparty_id.has_value());
+    CHECK(item.booking.trade_id == nil);
+    CHECK(item.booking.book_id == nil);
 }
 
 TEST_CASE("import_portfolio_from_example_1", tags) {
@@ -145,14 +105,14 @@ TEST_CASE("import_portfolio_from_example_1", tags) {
     REQUIRE(items.size() == 12);
 
     // First trade should be a Swap.
-    const auto& first = items.front().trade;
-    CHECK(first.identity.external_id == "Swap_20");
-    CHECK(first.classification.trade_type == "Swap");
-    CHECK(first.classification.netting_set_id == "CPTY_A");
+    const auto& first = items.front();
+    CHECK(first.ore_id == "Swap_20");
+    CHECK(first.anchor.trade_type == "Swap");
 
     // Verify all trades have the same counterparty netting set.
     for (const auto& item : items) {
-        CHECK(item.trade.classification.netting_set_id == "CPTY_A");
+        REQUIRE(item.envelope.has_value());
+        CHECK(item.envelope->netting_set_id == "CPTY_A");
     }
 }
 
@@ -169,11 +129,11 @@ TEST_CASE("import_portfolio_from_minimal_swaptions", tags) {
 
     // All trades should be Swaptions.
     for (const auto& item : items) {
-        CHECK(item.trade.classification.trade_type == "Swaption");
+        CHECK(item.anchor.trade_type == "Swaption");
     }
 }
 
-TEST_CASE("import_portfolio_all_trades_pass_validation", tags) {
+TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", tags) {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
@@ -181,9 +141,9 @@ TEST_CASE("import_portfolio_all_trades_pass_validation", tags) {
     REQUIRE(!items.empty());
 
     for (const auto& item : items) {
-        const auto errors = importer::validate_trade(item.trade);
-        INFO("Trade " << item.trade.identity.external_id << " failed validation: " << errors);
-        CHECK(errors.empty());
+        INFO("Trade " << item.ore_id);
+        CHECK_FALSE(item.ore_id.empty());
+        CHECK_FALSE(item.anchor.trade_type.empty());
     }
 
     BOOST_LOG_SEV(lg, debug) << "All " << items.size() << " imported trades pass validation";
@@ -238,9 +198,9 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
                                 << "ms";
 
         for (const auto& item : items) {
-            const auto errors = importer::validate_trade(item.trade);
-            INFO("File: " << file.filename() << "  Trade: " << item.trade.identity.external_id);
-            CHECK(errors.empty());
+            INFO("File: " << file.filename() << "  Trade: " << item.ore_id);
+            CHECK_FALSE(item.ore_id.empty());
+            CHECK_FALSE(item.anchor.trade_type.empty());
         }
     }
 
@@ -260,20 +220,19 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     REQUIRE(items.size() == 1);
 
     auto& item = items.front();
-    INFO("Trade type: " << item.trade.classification.trade_type);
+    INFO("Trade type: " << item.anchor.trade_type);
     REQUIRE(std::holds_alternative<swap_instrument_data>(item.instrument));
 
     // Mint the id as the planner would; the trade id is the instrument's key,
     // and the test verifies the wiring.
     boost::uuids::random_generator gen;
-    item.trade.identity.id = gen();
-    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
+    item.anchor.id = gen();
+    ores::trading::domain::stamp_ids(item.instrument, item.anchor.id);
 
     const auto& r = std::get<swap_instrument_data>(item.instrument);
     const auto instr_id =
         std::visit([](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
-    CHECK(instr_id == item.trade.identity.id);
-    CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::swap);
+    CHECK(instr_id == item.anchor.id);
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)
         CHECK(leg.identity.trade_id == instr_id);
@@ -289,19 +248,18 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     REQUIRE(items.size() == 1);
 
     auto& item = items.front();
-    INFO("Trade type: " << item.trade.classification.trade_type);
+    INFO("Trade type: " << item.anchor.trade_type);
     REQUIRE(std::holds_alternative<fx_instrument_variant>(item.instrument));
 
     // Mint the id as the planner would; the trade id is the instrument's key,
     // and the test verifies the wiring.
     boost::uuids::random_generator gen;
-    item.trade.identity.id = gen();
-    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
+    item.anchor.id = gen();
+    ores::trading::domain::stamp_ids(item.instrument, item.anchor.id);
 
     const auto& r = std::get<fx_instrument_variant>(item.instrument);
     const auto& instr = std::get<fx_forward_instrument>(r);
-    CHECK(instr.identity.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::fx);
+    CHECK(instr.identity.trade_id == item.anchor.id);
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
 
@@ -318,18 +276,17 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
 
     // First trade in the portfolio must be a bond.
     auto& item = items.front();
-    INFO("Trade type: " << item.trade.classification.trade_type);
+    INFO("Trade type: " << item.anchor.trade_type);
     REQUIRE(std::holds_alternative<bond_instrument_data>(item.instrument));
 
     // Mint the id as the planner would; the trade id is the instrument's key,
     // and the test verifies the wiring.
     boost::uuids::random_generator gen;
-    item.trade.identity.id = gen();
-    ores::trading::domain::stamp_ids(item.instrument, item.trade.identity.id);
+    item.anchor.id = gen();
+    ores::trading::domain::stamp_ids(item.instrument, item.anchor.id);
 
     const auto& r = std::get<bond_instrument_data>(item.instrument);
-    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::bond);
+    CHECK(r.instrument.identity.trade_id == item.anchor.id);
     CHECK(r.instrument.issue_id == r.issue.issue_id);
     CHECK(!r.issue.issuer.empty());
 

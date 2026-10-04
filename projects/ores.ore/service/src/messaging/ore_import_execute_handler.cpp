@@ -92,10 +92,10 @@
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
+#include "ores.trading.api/messaging/trade_booking_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_portfolio_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/vanilla_swap_instrument_protocol.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
@@ -171,14 +171,6 @@ std::optional<std::chrono::year_month_day> parse_date(const std::string& text) {
 std::optional<std::chrono::year_month_day>
 parse_optional_date(const std::optional<std::string>& text) {
     return text ? parse_date(*text) : std::nullopt;
-}
-
-std::string iso_or_empty(const std::optional<std::chrono::year_month_day>& d) {
-    return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
-}
-
-std::string iso_or_empty(const std::optional<std::chrono::system_clock::time_point>& t) {
-    return t ? ores::platform::time::datetime::to_iso8601_utc(*t) : std::string{};
 }
 
 // The canonical write record carries what the caller owns. The imported
@@ -372,41 +364,35 @@ resolve_portfolio(Nats& nats, const std::string& name, std::string& out_error) {
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string
-book_imported_trade(Nats& nats,
-                    const ores::trading::domain::trade& trade,
-                    const resolved_envelope& resolved,
-                    const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
+std::string book_imported_trade(Nats& nats,
+                                const ores::ore::xml::trade_import_item& item,
+                                const resolved_envelope& resolved) {
     using namespace ores::trading::domain;
     using ores::utility::domain::outcome;
 
     std::string error;
     ores::trading::messaging::book_trade_request book_req;
-    book_req.anchor.id = trade.identity.id;
+    book_req.anchor = item.anchor;
     book_req.anchor.counterparty_id = resolved.counterparty_id;
-    book_req.anchor.trade_type = trade.classification.trade_type;
-    book_req.anchor.counterparty_scope = resolved.counterparty_id ?
-                                             counterparty_scope::external :
-                                             counterparty_scope::intra_entity;
+    book_req.anchor.counterparty_scope =
+        resolved.counterparty_id ? counterparty_scope::external : counterparty_scope::intra_entity;
     book_req.anchor.booking_nature = booking_nature::actual;
     book_req.anchor.entry_channel = entry_channel::stp;
-    book_req.booking.book_id = trade.parties.book_id;
+    book_req.booking = item.booking;
     book_req.booking.netting_set_id = resolved.netting_set_id;
     book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;
     book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
-    book_req.booking.trade_date = trade.lifecycle.trade_date;
-    book_req.booking.execution_timestamp = trade.lifecycle.execution_timestamp;
     book_req.booking.change_reason_code = "system.external_data_import";
-    book_req.activity_type_code = "new_booking";
+    book_req.activity_type_code = item.activity_type_code;
     auto booked = nats_call(nats, book_req, error);
     if (!booked || booked->result.outcome != outcome::ok)
         return error.empty() ? "book_trade failed" : error;
 
     error.clear();
     ores::trading::messaging::put_trade_identifier_request id_req;
-    id_req.change.write.trade_id = trade.identity.id;
+    id_req.change.write.trade_id = item.anchor.id;
     id_req.change.write.id_type = "ORE";
-    id_req.change.write.id_value = trade.identity.external_id;
+    id_req.change.write.id_value = item.ore_id;
     auto identified = nats_call(nats, id_req, error);
     if (!identified || identified->result.outcome != outcome::ok)
         return error.empty() ? "save_trade_identifier failed" : error;
@@ -415,7 +401,7 @@ book_imported_trade(Nats& nats,
     for (const auto& portfolio_id : resolved.portfolio_ids) {
         error.clear();
         ores::trading::messaging::put_trade_portfolio_request portfolio_req;
-        portfolio_req.change.write.trade_id = trade.identity.id;
+        portfolio_req.change.write.trade_id = item.anchor.id;
         portfolio_req.change.write.sequence_number = ++portfolio_sequence;
         portfolio_req.change.write.portfolio_id = portfolio_id;
         auto saved = nats_call(nats, portfolio_req, error);
@@ -423,12 +409,12 @@ book_imported_trade(Nats& nats,
             return error.empty() ? "save_trade_portfolio failed" : error;
     }
 
-    if (envelope && envelope->additional_fields) {
+    if (item.envelope && item.envelope->additional_fields) {
         int sequence_number = 0;
-        for (const auto& field : *envelope->additional_fields) {
+        for (const auto& field : *item.envelope->additional_fields) {
             error.clear();
             ores::trading::messaging::put_trade_additional_field_request field_req;
-            field_req.change.write.trade_id = trade.identity.id;
+            field_req.change.write.trade_id = item.anchor.id;
             field_req.change.write.sequence_number = ++sequence_number;
             field_req.change.write.name = field.name;
             field_req.change.write.value = field.value;
@@ -1812,14 +1798,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
     for (auto& item : plan.trades) {
-        const auto trade_id = item.trade.identity.id;
-        const auto tid = boost::uuids::to_string(trade_id);
+        const auto tid = boost::uuids::to_string(item.anchor.id);
         const auto src = item.source_file.string();
-        const auto ext_id = item.trade.identity.external_id;
+        const auto& ext_id = item.ore_id;
 
-        // The trade's declared key is required, so an ORE trade with no id
-        // cannot be written. Report it as an item error rather than saving a
-        // row no read by key can find.
+        // The ORE trade id becomes the trade's ORE identifier, the name the
+        // export writes back. A trade without one is reported as an item
+        // error rather than booked under no name.
         if (ext_id.empty()) {
             const auto failure = std::string("Trade has no external id: the ORE trade id is "
                                              "required.");
@@ -1834,7 +1819,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         // name that resolves to no counterparty rejects the trade before
         // anything is written; the import's default applies only when the
         // envelope names none.
-        resolved_envelope resolved{.counterparty_id = item.trade.parties.counterparty_id};
+        resolved_envelope resolved{.counterparty_id = item.anchor.counterparty_id};
         const auto& envelope = item.envelope;
         if (envelope && envelope->counter_party && !envelope->counter_party->empty()) {
             std::string resolve_error;
@@ -1909,8 +1894,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         // The booking is written first: it checks the trade's book, counterparty
         // and netting set against one another, so a trade it refuses leaves
         // nothing behind.
-        const auto booking_error =
-            book_imported_trade(delegated_nats, item.trade, resolved, item.envelope);
+        const auto booking_error = book_imported_trade(delegated_nats, item, resolved);
         if (!booking_error.empty()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "ore.import.execute trade booking failed | corr=" << req.correlation_id
@@ -1919,47 +1903,11 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 {.source_file = src, .item_id = ext_id, .message = booking_error});
             continue;
         }
-
-        ores::trading::messaging::put_many_trades_request save_req;
-        {
-            ores::trading::messaging::trade_change change;
-            const auto& trade = item.trade;
-            change.write.id = trade.identity.id;
-            change.write.external_id = trade.identity.external_id;
-            change.write.book_id = trade.parties.book_id;
-            change.write.portfolio_id = trade.parties.portfolio_id;
-            change.write.successor_trade_id = trade.parties.successor_trade_id;
-            change.write.trade_type = trade.classification.trade_type;
-            change.write.counterparty_id = resolved.counterparty_id;
-            change.write.product_type =
-                ores::trading::domain::to_string(trade.classification.product_type);
-            change.write.asset_class = trade.classification.asset_class;
-            change.write.netting_set_id = trade.classification.netting_set_id;
-            change.write.activity_type_code = trade.classification.activity_type_code;
-            change.write.status_id = trade.classification.status_id;
-            change.write.trade_date = iso_or_empty(trade.lifecycle.trade_date);
-            change.write.execution_timestamp = iso_or_empty(trade.lifecycle.execution_timestamp);
-            change.write.effective_date = iso_or_empty(trade.lifecycle.effective_date);
-            change.write.termination_date = iso_or_empty(trade.lifecycle.termination_date);
-            save_req.changes.push_back(std::move(change));
-        }
-
-        std::string trade_error;
-        auto resp = nats_call(delegated_nats, save_req, trade_error);
-        if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
-            const auto trade_msg = resp ? resp->result.message : trade_error;
-            BOOST_LOG_SEV(lg(), warn)
-                << "ore.import.execute trade save failed | corr=" << req.correlation_id
-                << " trade_id=" << tid << " source=" << src << " error=" << trade_msg;
-            result.item_errors.push_back(
-                {.source_file = src, .item_id = ext_id, .message = trade_msg});
-        } else {
-            result.saved_trade_external_ids.push_back(ext_id);
-        }
+        result.saved_trade_ids.push_back(tid);
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
-                              << " saved=" << result.saved_trade_external_ids.size()
+                              << " saved=" << result.saved_trade_ids.size()
                               << " failed=" << result.item_errors.size();
 
     // -------------------------------------------------------------------------
@@ -1968,10 +1916,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     int instruments_saved = 0;
     std::unordered_map<std::string, std::string> issue_ids_by_security;
     bool bond_issues_loaded = false;
-    const std::unordered_set<std::string> saved_trades(result.saved_trade_external_ids.begin(),
-                                                       result.saved_trade_external_ids.end());
+    const std::unordered_set<std::string> saved_trades(result.saved_trade_ids.begin(),
+                                                       result.saved_trade_ids.end());
     for (const auto& item : plan.trades) {
-        if (!saved_trades.contains(item.trade.identity.external_id))
+        if (!saved_trades.contains(boost::uuids::to_string(item.anchor.id)))
             continue;
         using namespace ores::trading::messaging;
         using ores::trading::domain::swap_instrument_data;
@@ -2577,9 +2525,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "ore.import.execute instrument save failed | corr=" << req.correlation_id
-                << " trade=" << item.trade.identity.external_id << " error=" << instr_error;
+                << " trade=" << item.ore_id << " error=" << instr_error;
             result.item_errors.push_back({.source_file = item.source_file.string(),
-                                          .item_id = item.trade.identity.external_id,
+                                          .item_id = item.ore_id,
                                           .message = "Instrument save failed: " + instr_error});
         }
     }
@@ -2592,9 +2540,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     // Total failure: all planned trades failed to save (and at least one was attempted).
     // Adjust this constant to change the threshold for saga compensation.
-    const bool all_trades_failed = !plan.trades.empty() &&
-                                   result.saved_trade_external_ids.empty() &&
-                                   !result.item_errors.empty();
+    const bool all_trades_failed =
+        !plan.trades.empty() && result.saved_trade_ids.empty() && !result.item_errors.empty();
 
     using wf_outcome = ores::workflow::messaging::step_outcome;
     using wf_log_level = ores::workflow::messaging::step_log_level;
@@ -2610,10 +2557,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     }
 
     std::vector<wf_log_entry> step_log;
-    if (!result.saved_trade_external_ids.empty()) {
+    if (!result.saved_trade_ids.empty()) {
         step_log.push_back(
             {.level = wf_log_level::info,
-             .message = std::format("Saved {} trade(s).", result.saved_trade_external_ids.size()),
+             .message = std::format("Saved {} trade(s).", result.saved_trade_ids.size()),
              .context = {}});
     }
     for (const auto& ie : result.item_errors) {
@@ -2633,7 +2580,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                               << " currencies=" << result.saved_currency_iso_codes.size()
                               << " portfolios=" << result.saved_portfolio_names.size()
                               << " books=" << result.saved_book_names.size()
-                              << " trades=" << result.saved_trade_external_ids.size()
+                              << " trades=" << result.saved_trade_ids.size()
                               << " item_errors=" << result.item_errors.size()
                               << " outcome=" << ores::workflow::messaging::to_string(outcome);
 
@@ -2680,23 +2627,25 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     auto delegated_nats =
         outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
 
-    // ── Delete trades ────────────────────────────────────────────────────────
-    if (!req.saved_trade_external_ids.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete trades | corr="
-                                  << req.correlation_id
-                                  << " count=" << req.saved_trade_external_ids.size();
-        ores::trading::messaging::delete_many_trades_request del_req;
-        for (const auto& saved_id : req.saved_trade_external_ids) {
-            ores::trading::messaging::trade_removal removal;
-            removal.key.external_id = saved_id;
-            del_req.removals.push_back(std::move(removal));
-        }
+    // ── Close the trades' bookings ──────────────────────────────────────────
+    // The anchor is immutable, so a rolled-back trade keeps its anchor and
+    // loses its live booking, which takes it off its book.
+    if (!req.saved_trade_ids.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: close bookings | corr="
+                                  << req.correlation_id << " count=" << req.saved_trade_ids.size();
+        ores::trading::messaging::delete_many_trade_bookings_request del_req{
+            .intent = ores::utility::domain::change_intent{.reason_code = "ore_import_rollback",
+                                                           .commentary =
+                                                               "Rolling back a failed ORE import"}};
+        for (const auto& saved_id : req.saved_trade_ids)
+            del_req.removals.push_back(
+                {.key = {.trade_id = boost::lexical_cast<boost::uuids::uuid>(saved_id)}});
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || r->result.outcome != ores::utility::domain::outcome::ok) {
             const auto reason = (r && !r->result.message.empty()) ? r->result.message : err;
             BOOST_LOG_SEV(lg(), error)
-                << "ore.import.rollback delete_trades failed | corr=" << req.correlation_id
+                << "ore.import.rollback close_bookings failed | corr=" << req.correlation_id
                 << " error=" << reason;
         }
     }

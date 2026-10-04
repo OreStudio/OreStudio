@@ -189,7 +189,12 @@ describe('GET /api/sessions', () => {
         expect(calls).toEqual([
             {
                 subject: 'iam.v1.sessions.list',
-                body: { offset: 0, limit: 100, order: { field: '', descending: false } },
+                body: {
+                    offset: 0,
+                    limit: 100,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
             },
         ]);
 

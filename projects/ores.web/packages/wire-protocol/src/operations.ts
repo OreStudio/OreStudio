@@ -19,6 +19,10 @@
  *
  */
 
+import type { ListSeedProfilesRequest as GeneratedListSeedProfilesRequest } from './generated/iam/protocol/seed_profile_protocol.js';
+import type { ListSessionsRequest as GeneratedListSessionsRequest } from './generated/iam/protocol/session_protocol.js';
+import type { ListLoginInfoRequest as GeneratedListLoginInfoRequest } from './generated/iam/protocol/login_info_protocol.js';
+import type { ListAccountsRequest as GeneratedListAccountsRequest } from './generated/iam/protocol/account_protocol.js';
 import { z } from 'zod';
 import {
     accountSchema,
@@ -349,14 +353,16 @@ export const listAccountsRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListAccountsRequest>;
 
 /** `list_login_info_request`, sent on `iam.v1.login_info.list`. */
 export const listLoginInfoRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListLoginInfoRequest>;
 export type ListAccountsRequest = z.infer<typeof listAccountsRequestSchema>;
 
 const wireAccountSchema = z.object({
@@ -562,7 +568,8 @@ export const listSessionsRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListSessionsRequest>;
 
 /**
  * `get_account_request`, and `get_login_info_request` beside it.
@@ -728,7 +735,8 @@ export const listSeedProfilesRequestSchema = z.object({
             descending: z.boolean().default(false),
         })
         .default({ field: '', descending: false }),
-});
+    filter: z.null().default(null),
+}) satisfies z.ZodType<GeneratedListSeedProfilesRequest>;
 
 /**
  * One profile's steps, or its parameters.

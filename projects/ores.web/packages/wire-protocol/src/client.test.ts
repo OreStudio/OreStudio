@@ -254,6 +254,7 @@ describe('OresClient authenticated calls', () => {
             offset: 0,
             limit: 100,
             order: { field: '', descending: false },
+            filter: null,
         });
     });
 

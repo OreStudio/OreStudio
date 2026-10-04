@@ -132,6 +132,7 @@ describe('OresClient list parties', () => {
             offset: 0,
             limit: 500,
             order: { field: '', descending: false },
+            filter: null,
         });
     });
 

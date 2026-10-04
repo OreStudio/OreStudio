@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/instruments-on-the-anchor
-#+pr:
+#+pr: 2613
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2613][#2613]] | [trading] Reference the anchor from every instrument |
 
 * Review
 

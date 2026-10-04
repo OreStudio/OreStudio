@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/export-from-the-anchor
-#+pr:
+#+pr: 2628
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2628][#2628]] | [trading] Move the trade export onto the anchor |
 
 * Review
 

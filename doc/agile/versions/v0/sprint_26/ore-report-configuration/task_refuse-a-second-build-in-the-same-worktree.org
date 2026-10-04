@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 8EB87FC5-302A-4027-8F05-338B27E89F2F
+:END:
+#+title: Task: Refuse a second build in the same worktree
+#+description: The build lock caps builds per host, not per worktree, so two compass builds of one worktree took both slots and raced in one build tree for over an hour; compass now refuses a build or test run while another holds the worktree.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/refuse-a-second-build-in-the-same-worktree
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A worktree runs at most one compass build or test run at a time, and a second one says which is running instead of racing it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- compass build and compass test run take a per-worktree lock before waiting for a host slot, and refuse with a warning naming the holder when another process of the same worktree holds it.
+- Builds in different worktrees still share the host slots as before.
+- The compass test suite covers both the refusal and the release.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found on 2026-10-04 while building this story's configuration document
+operations: a second =compass build= started while the first, whose make had
+hit a link error but kept running other jobs, still held slot a; the second
+took slot b, and both linked the same library in one build tree. The operator
+asked compass to check and warn. It lives under this story because that is
+where it surfaced; it concerns compass alone.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass build= and =compass test run= now take a per-worktree lock,
+=build/output/compass-build.lock=, before they wait for a host slot. When
+another process of the same worktree holds it, compass prints the holder's pid,
+command and start time and exits 1, so a second build is refused at once
+instead of taking the other host slot and racing the first in one build tree.
+flock releases the lock when the holding process exits, however it exits, and a
+repeat call in the same process keeps its lock. Builds in different worktrees
+share the host slots as before.
+
+Tests cover taking the lock, refusing a second holder and naming it, freeing
+it when the first ends, and keeping it across calls in one process; a live run
+of =compass build= against a held lock refused at once.
+

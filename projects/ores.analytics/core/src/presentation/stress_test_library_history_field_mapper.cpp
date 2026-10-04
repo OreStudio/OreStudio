@@ -35,6 +35,7 @@ render_stress_test_library_fields(const domain::stress_test_library& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back(
         {.name = "Configuration ID", .value = boost::uuids::to_string(v.configuration_id)});

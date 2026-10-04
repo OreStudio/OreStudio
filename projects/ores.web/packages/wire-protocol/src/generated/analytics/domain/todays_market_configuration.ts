@@ -34,6 +34,7 @@ export interface TodaysMarketConfiguration {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     todays_market_config_id: string;
     configuration_id: string;
     position: number;

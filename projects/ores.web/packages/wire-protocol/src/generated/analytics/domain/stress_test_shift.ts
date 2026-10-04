@@ -34,6 +34,7 @@ export interface StressTestShift {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     stress_test_scenario_id: string;
     family: string;
     object_key: string;

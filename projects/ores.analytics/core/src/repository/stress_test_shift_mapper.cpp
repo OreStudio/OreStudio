@@ -40,6 +40,7 @@ domain::stress_test_shift stress_test_shift_mapper::map(const stress_test_shift_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.stress_test_scenario_id = boost::lexical_cast<boost::uuids::uuid>(v.stress_test_scenario_id);
     r.family = v.family;
     r.object_key = v.object_key;
@@ -66,6 +67,7 @@ stress_test_shift_entity stress_test_shift_mapper::map(const domain::stress_test
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.stress_test_scenario_id = boost::uuids::to_string(v.stress_test_scenario_id);
     r.family = v.family;
     r.object_key = v.object_key;

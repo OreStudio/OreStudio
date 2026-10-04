@@ -35,6 +35,7 @@ export interface TodaysMarketConfigKey {
 
 export interface TodaysMarketConfigWrite {
     id: string;
+    party_id: string;
     name: string;
     description: string;
     config_variant: string;

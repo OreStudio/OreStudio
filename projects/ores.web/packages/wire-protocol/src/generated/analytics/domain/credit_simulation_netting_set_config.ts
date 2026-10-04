@@ -35,6 +35,7 @@ export interface CreditSimulationNettingSetConfig {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     credit_simulation_config_id: string;
     netting_set_id: string;
     position: number;

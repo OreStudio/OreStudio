@@ -41,6 +41,7 @@ pricing_model_product_mapper::map(const pricing_model_product_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.pricing_model_config_id = boost::lexical_cast<boost::uuids::uuid>(v.pricing_model_config_id);
     r.pricing_engine_type_code = v.pricing_engine_type_code;
     r.model = v.model;
@@ -64,6 +65,7 @@ pricing_model_product_mapper::map(const domain::pricing_model_product& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.pricing_model_config_id = boost::uuids::to_string(v.pricing_model_config_id);
     r.pricing_engine_type_code = v.pricing_engine_type_code;
     r.model = v.model;

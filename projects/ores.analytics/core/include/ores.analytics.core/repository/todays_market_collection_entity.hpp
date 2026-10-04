@@ -45,6 +45,7 @@ struct todays_market_collection_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string todays_market_config_id;
     std::string collection;
     std::optional<std::string> collection_id;

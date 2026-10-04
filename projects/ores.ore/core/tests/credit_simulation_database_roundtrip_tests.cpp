@@ -24,12 +24,15 @@
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_mapper.hpp"
+#include "ores.ore.core/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include "party_fixture.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <filesystem>
@@ -76,7 +79,8 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     creditsimulation original;
     ores::ore::domain::load_data(content, original);
 
-    const mapped_credit_simulation mapped = credit_simulation_mapper::map(original);
+    mapped_credit_simulation mapped = credit_simulation_mapper::map(original);
+    ores::ore::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.rows.size() == credit_rating_scale.size());
 
     credit_simulation_config_repository config_repo;
@@ -141,4 +145,25 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     ores::ore::domain::load_data(exported_xml, exported);
     REQUIRE(exported.TransitionMatrices.TransitionMatrix.size() == 1);
     CHECK(exported.Entities.Entity.size() == original.Entities.Entity.size());
+}
+
+TEST_CASE("a party sees only its own credit simulation configuration", tags) {
+    scoped_database_helper h;
+    auto parties = ores::ore::tests::make_two_parties(h);
+    creditsimulation original;
+    ores::ore::domain::load_data(
+        ores::platform::filesystem::file::read_content(
+            ore_path("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")),
+        original);
+    auto mapped = credit_simulation_mapper::map(original);
+    ores::ore::domain::assign_party(mapped, parties.a);
+
+    ores::analytics::repository::credit_simulation_config_repository repo;
+    repo.write(parties.a_context, mapped.config);
+
+    const auto owns = [&](const auto& rows) {
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.id == mapped.config.id; });
+    };
+    CHECK(owns(repo.read_latest(parties.a_context)));
+    CHECK_FALSE(owns(repo.read_latest(parties.b_context)));
 }

@@ -45,6 +45,7 @@ generate_synthetic_pricing_model_product(utility::generation::generation_context
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.pricing_model_config_id = ctx.generate_uuid();
     r.pricing_engine_type_code = std::string("Swap");
     r.model = std::string("DiscountedCashflows");

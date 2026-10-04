@@ -39,6 +39,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 // Soft-FK parent seeding (ores_analytics_credit_simulation_configs_tbl): the parent may live in
 // another component, so its own component names the headers.
 #include "ores.analytics.api/generators/credit_simulation_config_generator.hpp"
@@ -66,6 +68,25 @@ namespace {
 const std::string_view test_suite("analytics.tests");
 const std::string tags("[eventing][integration]");
 
+// Credit Simulation Entity Config writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
 
 }
 
@@ -80,7 +101,7 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto& party_ctx = h.context();
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -122,12 +143,17 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_credit_simulation_entity_config(ctx);
     v.change_reason_code = "system.test";
+    v.party_id = *party_ctx.party_id();
     // Seed the active credit_simulation_config row ores_analytics_credit_simulation_configs_tbl
     // references: the insert trigger's existence check rejects a synthetic key that matches no
     // active row, so the parent must be written first.
     auto credit_simulation_config_id_parent =
         ores::analytics::generators::generate_synthetic_credit_simulation_config(ctx);
     credit_simulation_config_id_parent.change_reason_code = "system.test";
+    // The credit_simulation_config is party-isolated, so it carries the
+    // session party: under any other party the child's insert trigger could
+    // not see it, and the existence check would reject the child.
+    credit_simulation_config_id_parent.party_id = *party_ctx.party_id();
     ores::analytics::repository::credit_simulation_config_repository
         credit_simulation_config_id_repo;
     credit_simulation_config_id_repo.write(party_ctx, credit_simulation_config_id_parent);
@@ -139,6 +165,10 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
     auto transition_matrix_id_parent =
         ores::analytics::generators::generate_synthetic_credit_simulation_matrix_config(ctx);
     transition_matrix_id_parent.change_reason_code = "system.test";
+    // The credit_simulation_matrix_config is party-isolated, so it carries the
+    // session party: under any other party the child's insert trigger could
+    // not see it, and the existence check would reject the child.
+    transition_matrix_id_parent.party_id = *party_ctx.party_id();
     ores::analytics::repository::credit_simulation_matrix_config_repository
         transition_matrix_id_repo;
     transition_matrix_id_repo.write(party_ctx, transition_matrix_id_parent);
@@ -205,6 +235,8 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
     // (the notify re-drive above may have written more than once), so
     // only growth is asserted, not an exact count.
     {
+        // party_ctx already carries the visible-party set: v's own
+        // party is the session party the RLS policies filter by.
         const auto& crud_ctx = party_ctx;
         ores::analytics::service::credit_simulation_entity_config_service svc(crud_ctx);
         v.change_commentary = "updated-by-crud-round-trip";

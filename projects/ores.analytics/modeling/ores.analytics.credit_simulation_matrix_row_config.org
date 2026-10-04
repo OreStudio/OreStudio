@@ -42,6 +42,21 @@ rows, and a row reads the way the matrix is written in the document.
 
 Surrogate key for the row.
 
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The party that owns the document this row belongs to. Set from the session
+that writes the document, and enforced by row level security, so a party
+sees only its own configuration.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** transition_matrix_id
 :PROPERTIES:
 :type:     uuid
@@ -147,6 +162,7 @@ The probability of moving from the row's rating to default.
 :PROPERTIES:
 :tablename: ores_analytics_credit_simulation_matrix_rows_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 * Foreign keys

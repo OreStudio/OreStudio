@@ -41,6 +41,7 @@ todays_market_configuration_mapper::map(const todays_market_configuration_entity
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
     r.configuration_id = v.configuration_id;
     r.position = v.position;
@@ -62,6 +63,7 @@ todays_market_configuration_mapper::map(const domain::todays_market_configuratio
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
     r.configuration_id = v.configuration_id;
     r.position = v.position;

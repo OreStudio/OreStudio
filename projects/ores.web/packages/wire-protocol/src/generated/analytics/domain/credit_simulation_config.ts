@@ -34,6 +34,7 @@ export interface CreditSimulationConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     name: string;
     configuration_id: string;
     market: string;

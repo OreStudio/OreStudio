@@ -35,6 +35,7 @@ std::vector<ores::diff::domain::field_value> render_credit_simulation_netting_se
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Credit Simulation Config ID",
                       .value = boost::uuids::to_string(v.credit_simulation_config_id)});
     fields.push_back({.name = "Netting Set ID", .value = v.netting_set_id});

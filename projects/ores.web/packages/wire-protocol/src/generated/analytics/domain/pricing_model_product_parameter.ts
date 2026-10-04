@@ -34,6 +34,7 @@ export interface PricingModelProductParameter {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     pricing_model_config_id: string;
     pricing_model_product_id: string | null;
     parameter_scope: string;

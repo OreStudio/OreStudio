@@ -98,8 +98,20 @@ const fr: SourceCatalogue = {
         open: 'Ouvrir',
         resumeSetup: 'Reprendre la mise en place',
         add: 'Ajouter un locataire',
-        notBuilt: 'Pas dans cette version',
-        retireOrReset: 'Retirer ou réinitialiser',
+        removeAction: 'Supprimer le locataire',
+        remove: {
+            title: 'Supprimer {name} ?',
+            noSignIn: 'Personne ne peut plus s’y connecter.',
+            signedIn: 'Les personnes déjà connectées perdent l’accès d’ici {minutes} minutes.',
+            signedInSoon:
+                'Les personnes déjà connectées perdent l’accès au prochain renouvellement de leur connexion.',
+            dataKept: 'Ses données sont conservées, et il quitte la liste des locataires.',
+            noUndo: 'Il ne peut pas être rétabli depuis cet écran.',
+            typeCode: 'Saisissez {code} pour confirmer',
+            confirm: 'Supprimer le locataire',
+            systemTenant:
+                'Le locataire système porte le déploiement lui-même et ne peut pas être supprimé.',
+        },
         code: 'Code',
         name: 'Nom',
         hostname: 'Nom d’hôte',

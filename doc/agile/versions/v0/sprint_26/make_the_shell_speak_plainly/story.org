@@ -21,11 +21,11 @@ A person sees the work they can do, in their own words. The home screen shows ar
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Done: every task is merged or in its final PR. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
 
 * Acceptance
@@ -42,11 +42,26 @@ A person sees the work they can do, in their own words. The home screen shows ar
 | [[id:EBC5EE0F-6D71-43E6-B6D4-1C8CA3FDE51A][Prototype the home screen]] | DONE | | 2026-10-04 | Prototype the home screen and tenant management in a person's own words, and record the accepted design. |
 | [[id:4FF72D46-37B4-478D-8F7A-7964BC609342][Speak plainly on home and in the shell]] | DONE | 2026-10-04 | 2026-10-04 | No screen says journey. The system administrator's home shows system health, what needs attention, recent setup activity and a short tenant list; status badges carry colour; the tenant administrator's and party user's homes follow the prototype. |
 | [[id:CB77A11C-63D2-4D64-B615-5E3CF69054FC][Manage tenants as a list and open one in place]] | DONE | 2026-10-04 | 2026-10-04 | Tenants is one list with add and remove buttons. Opening a tenant shows its overview, parties and people, with the tenant session started and ended by the screen; nothing offers entering or leaving a tenant. |
-| [[id:D825FA3C-D4DE-47A4-8E31-2420C0457CE2][Remove a tenant]] | BACKLOG | | | A system administrator removes a tenant from the list or its screen, confirming with its code. The operation terminates the tenant over the bus, and the confirmation says exactly what removal does to sign-in and to sessions already open. |
+| [[id:D825FA3C-D4DE-47A4-8E31-2420C0457CE2][Remove a tenant]] | DONE | 2026-10-04 | 2026-10-04 | A system administrator removes a tenant from the list or its screen, confirming with its code. The operation terminates the tenant over the bus, and the confirmation says exactly what removal does to sign-in and to sessions already open. |
 | [[id:EAF108C1-2AE5-4415-B8C7-1F69911EE3BC][Show faces and flags in a tenant]] | DONE | 2026-10-04 | 2026-10-04 | Show each person's picture on a tenant's People tab and each party's business centre flag on its Parties tab. |
 | [[id:8EA442E6-4198-43A2-81AC-9145C69C00B8][Show the system tenant]] | DONE | 2026-10-04 | 2026-10-04 | List the system tenant on the Tenants roster and open it like any other tenant, reading its parties and people as the session's own tenant. |
 
 * Decisions
+
+- *The words come from the person, not the design.* No screen says journey,
+  and no screen asks anyone to enter or leave a tenant. A tenant opens like
+  any record.
+- *A tenant is read inside it for one read.* The BFF enters the tenant, reads
+  and leaves for each tab read; the tenant token never reaches the browser's
+  session. The session's own tenant, the system tenant for a system
+  administrator, is read as the session.
+- *Images ride the page's visit.* A page reads the pictures and flags it names
+  in the same visit and the BFF keeps them, so a page costs one entry.
+- *The system tenant is shown but never removed.* The roster lists it; the
+  web does not offer its removal and the table's check refuses it.
+- *Removal is the generic delete.* It closes the row and keeps the data; sign-in
+  and token refresh then refuse the tenant, so access ends within one access
+  lifetime.
 
 * Out of scope
 

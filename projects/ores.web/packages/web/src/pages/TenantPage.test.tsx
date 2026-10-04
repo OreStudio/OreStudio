@@ -137,6 +137,13 @@ describe('TenantPage', () => {
 
         expect(html).toContain('>People</button>');
         expect(html).not.toContain('View only');
+        expect(html).not.toContain('Remove tenant');
+    });
+
+    it('offers to remove the tenant from its own screen', () => {
+        const html = renderLoaded(loaded);
+
+        expect(html.match(/>Remove tenant</g)).toHaveLength(1);
     });
 
     it("lists the tenant's parties on the parties tab, each with the party it belongs to", () => {

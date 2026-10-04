@@ -155,6 +155,7 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =GET /api/change-reasons= | The audit reason list. |
 | =GET /api/images/:id= | One image of the session's own tenant, such as a flag or a picture, by its identifier. |
 | =GET /api/tenants/:code/images/:id= | One image of a tenant read from system administration. The tenant's parties and people pages read the images they name in the same visit, so this route answers from what they kept. |
+| =DELETE /api/tenants/:code= | Remove a tenant. The body carries the tenant's code typed again, and the system tenant is refused. |
 | =GET /api/events=, =POST /api/events/watch= | Change notifications. See =change_notification.org=. |
 
 The BFF also serves the built browser bundle from =packages/web/dist=.

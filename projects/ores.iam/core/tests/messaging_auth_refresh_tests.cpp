@@ -17,8 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/generators/tenant_generator.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -27,6 +33,7 @@ const std::string tags("[refresh]");
 
 using ores::iam::messaging::auth_refresh_refusal;
 using ores::iam::messaging::auth_refreshed_permissions;
+using ores::iam::messaging::auth_tenant_refusal;
 using ores::security::jwt::jwt_claims;
 
 jwt_claims person() {
@@ -77,4 +84,52 @@ TEST_CASE("refresh_refuses_to_read_permissions_for_a_token_it_cannot_place", tag
     auto no_account = person();
     no_account.subject = "not-an-account";
     CHECK_THROWS(auth_refreshed_permissions(h.context(), no_account));
+}
+
+/*
+ * Refresh admits the same tenants sign-in does, so a person signed in to a
+ * tenant that has since closed cannot renew their access.
+ */
+
+TEST_CASE("refresh_admits_a_token_of_an_active_tenant", tags) {
+    ores::testing::scoped_database_helper h;
+    CHECK_FALSE(auth_tenant_refusal(h.context(), person()).has_value());
+}
+
+TEST_CASE("refresh_refuses_a_token_of_a_tenant_that_is_not_active", tags) {
+    ores::testing::scoped_database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    auto suspended = ores::iam::generators::generate_synthetic_tenant(gen_ctx);
+    suspended.status = "suspended";
+    ores::iam::repository::tenant_repository().write(
+        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), ""), suspended);
+
+    auto claims = person();
+    claims.tenant_id = boost::uuids::to_string(suspended.id);
+    CHECK(auth_tenant_refusal(h.context(), claims) == "The tenant is not active.");
+}
+
+TEST_CASE("refresh_refuses_a_token_of_a_removed_tenant", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto system_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    auto tenant = ores::iam::generators::generate_synthetic_tenant(gen_ctx);
+    tenant.status = "active";
+    ores::iam::repository::tenant_repository repo;
+    repo.write(system_ctx, tenant);
+
+    auto claims = person();
+    claims.tenant_id = boost::uuids::to_string(tenant.id);
+    REQUIRE_FALSE(auth_tenant_refusal(h.context(), claims).has_value());
+
+    repo.remove(system_ctx, boost::uuids::to_string(tenant.id));
+    CHECK(auth_tenant_refusal(h.context(), claims) == "The tenant is closed.");
+
+    auto unknown = person();
+    unknown.tenant_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    CHECK(auth_tenant_refusal(h.context(), unknown) == "The tenant is closed.");
+
+    auto nameless = person();
+    nameless.tenant_id.reset();
+    CHECK(auth_tenant_refusal(h.context(), nameless) == "The token names no tenant.");
 }

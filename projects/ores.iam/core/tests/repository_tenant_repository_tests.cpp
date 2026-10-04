@@ -224,3 +224,21 @@ TEST_CASE("read_nonexistent_tenant", tags) {
 
     CHECK(read_tenants.size() == 0);
 }
+
+/*
+ * The system tenant holds the shared reference data and the platform
+ * administration. A removal marks the row terminated, and the table's check
+ * keeps the system tenant active, so the removal is refused and the row stays.
+ */
+TEST_CASE("removing_the_system_tenant_is_refused", tags) {
+    database_helper h;
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
+    const auto system_id = ores::utility::uuid::tenant_id::system().to_uuid();
+
+    tenant_repository repo;
+    CHECK_THROWS(repo.remove(sys_ctx, boost::uuids::to_string(system_id)));
+
+    auto still = read_active_tenant_by_id(sys_ctx, system_id);
+    REQUIRE(still.size() == 1);
+    CHECK(still[0].status == "active");
+}

@@ -102,11 +102,17 @@ export {
     listTenantsPage,
     readTenant,
     readProvisioningRuns,
+    removeTenant,
     readTenantSetups,
     wireTenantPageSchema,
     wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type { ProvisioningRun, TenantListQuery, WireTenantPage } from './tenants.js';
+export type {
+    ProvisioningRun,
+    TenantListQuery,
+    TenantRemovalOutcome,
+    WireTenantPage,
+} from './tenants.js';
 export { readPartiesPage } from './party-page.js';
 export type { PartyPageQuery } from './party-page.js';
 

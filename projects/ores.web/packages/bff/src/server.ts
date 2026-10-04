@@ -1302,10 +1302,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         const { session, tenantId } = await tenantToRead(request);
         let image = tenantImages.get(tenantId, id);
         if (image === undefined) {
-            await readInsideKnownTenant(request, session, tenantId, (caller) =>
+            [image] = await readInsideKnownTenant(request, session, tenantId, (caller) =>
                 keepImages(caller, tenantId, [id]),
             );
-            image = tenantImages.get(tenantId, id);
         }
         if (image === undefined) {
             throw notFound('No image has this identifier.');
@@ -1332,19 +1331,24 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     }
 
-    /** Reads the images named that the cache does not hold yet, and keeps them. */
+    /**
+     * Reads the images named that the cache does not hold yet, keeps them, and
+     * answers what it read, so an image too large to keep is still served.
+     */
     async function keepImages(
         caller: AuthenticatedCaller,
         tenantId: string,
         imageIds: readonly (string | null)[],
-    ): Promise<void> {
+    ): Promise<ImageContent[]> {
         const missing = tenantImages.missing(
             tenantId,
             imageIds.filter((id): id is string => id !== null),
         );
-        for (const image of await readImages(caller, missing)) {
+        const images = await readImages(caller, missing);
+        for (const image of images) {
             tenantImages.put(tenantId, image);
         }
+        return images;
     }
 
     /**

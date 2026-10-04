@@ -182,11 +182,15 @@ export async function readPartiesPage(
             names.set(parent.id, parent.full_name);
         }
     }
+    /*
+     * A flag is decoration: a page whose flags cannot be read is still the
+     * page, so its rows go out without them rather than the page failing.
+     */
     const flags = await readCentreFlags(caller, [
         ...new Set(
             reply.parties.map((party) => party.business_center_code).filter((code) => code !== ''),
         ),
-    ]);
+    ]).catch(() => new Map<string, string>());
     const parties = reply.parties.map((party): TenantParty => ({
         id: party.id,
         code: party.short_code,

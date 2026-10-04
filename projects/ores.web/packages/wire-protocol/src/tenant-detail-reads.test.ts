@@ -272,6 +272,28 @@ describe('the party page', () => {
         ]);
     });
 
+    it('answers the page without flags when the centres cannot be read', async () => {
+        const page = await readPartiesPage(
+            callerAnsweringInTurn([
+                reply(
+                    [
+                        {
+                            ...party(ACME, 'acme', 'Acme', 'Operational', null),
+                            business_center_code: 'GBLO',
+                        },
+                    ],
+                    1,
+                ),
+                { result: { outcome: 'denied', message: 'Refused.' }, centres: [] },
+            ]),
+            { offset: 0, limit: 1 },
+        );
+
+        expect(page.parties.map((p) => [p.name, p.businessCentreCode, p.flagImageId])).toEqual([
+            ['Acme', 'GBLO', null],
+        ]);
+    });
+
     it('fails with the server words when the read is refused', async () => {
         await expect(
             readPartiesPage(

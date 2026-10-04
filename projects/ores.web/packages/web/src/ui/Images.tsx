@@ -47,7 +47,8 @@ function initialsOf(name: string): string {
  * A person's picture, or their initials when they have none.
  *
  * A picture that fails to load falls back to the initials too, so a row never
- * shows a broken image.
+ * shows a broken image. The failure is remembered for that picture only, so a
+ * row that is reused for another person tries the new one.
  */
 export function Avatar({
     name,
@@ -56,14 +57,14 @@ export function Avatar({
     readonly name: string;
     readonly src: string | null;
 }): ReactNode {
-    const [failed, setFailed] = useState(false);
-    if (src !== null && !failed) {
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
+    if (src !== null && src !== failedSrc) {
         return (
             <img
                 src={src}
                 alt=""
                 loading="lazy"
-                onError={() => setFailed(true)}
+                onError={() => setFailedSrc(src)}
                 className="h-8 w-8 shrink-0 rounded-full object-cover"
             />
         );
@@ -91,15 +92,15 @@ export function CentreFlag({
     readonly code: string;
     readonly src: string | null;
 }): ReactNode {
-    const [failed, setFailed] = useState(false);
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
     return (
         <span className="inline-flex items-center gap-2">
-            {src !== null && !failed && (
+            {src !== null && src !== failedSrc && (
                 <img
                     src={src}
                     alt=""
                     loading="lazy"
-                    onError={() => setFailed(true)}
+                    onError={() => setFailedSrc(src)}
                     className="h-3.5 w-5 rounded-[2px] object-cover ring-1 ring-line"
                 />
             )}

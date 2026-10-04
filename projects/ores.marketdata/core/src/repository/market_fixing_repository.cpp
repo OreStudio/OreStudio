@@ -122,6 +122,18 @@ void market_fixing_repository::write(context ctx, const domain::market_fixing& v
     write(ctx, v, replace_claim(ctx, v));
 }
 
+void market_fixing_repository::insert(context ctx, const domain::market_fixing& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
+    execute_write_query(
+        ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixing into database.");
+}
+
+void market_fixing_repository::insert(context ctx, const std::vector<domain::market_fixing>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
+    execute_write_query(
+        ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings into database.");
+}
+
 void market_fixing_repository::write(context ctx, const std::vector<domain::market_fixing>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -294,11 +306,6 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
     execute_delete_query(ctx, query, lg(), "Batch removing market fixings.");
 }
 
-
-void market_fixing_repository::insert(context ctx, const std::vector<domain::market_fixing>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
-    execute_write_query(ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings.");
-}
 
 std::vector<domain::market_fixing>
 market_fixing_repository::read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) {

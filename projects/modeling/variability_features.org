@@ -33,6 +33,7 @@ Variability Model's own bundle tables.
 - [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]]
 - [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]]
 - [[id:54EC48CE-B2B1-4A86-BFA1-7B2EB32BBDC3][current_state]]
+- [[id:22B17BA5-C6FE-438B-A878-F76022832A3B][append_insert]]
 - [[id:3E6A84D4-50B5-420E-909F-D3763823A89B][extra_checks]]
 - [[id:CBA5E1E2-AFD9-4968-8878-9C6825839890][extra_delete_sets]]
 - [[id:311F35DA-C2A0-425B-B226-7FDEF492A989][fk_copy_validations]]

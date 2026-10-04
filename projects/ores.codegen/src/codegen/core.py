@@ -4050,6 +4050,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             sql_section.get('current_state', False))
         current_state = domain_entity['current_state']
         domain_entity['immutable'] = bool(sql_section.get('immutable', False))
+        # Append-only series: a repository insert that writes rows without the
+        # per-row claim write() makes. A current-state table replaces its rows,
+        # so it is not append-only.
+        domain_entity['append_insert'] = bool(sql_section.get('append_insert', False))
+        if domain_entity['append_insert'] and current_state:
+            raise ValueError(
+                f"{model_path}: :append_insert: and :current_state: cannot both be "
+                "true; a current-state table replaces its rows rather than "
+                "appending them.")
         if domain_entity['immutable'] and not (
                 current_state and domain_entity.get('read_only')):
             raise ValueError(

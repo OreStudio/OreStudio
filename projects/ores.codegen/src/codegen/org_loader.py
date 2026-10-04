@@ -57,6 +57,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "nullable_tenant_id": "sql",
     "no_audit_columns": "sql",
     "current_state": "sql",
+    "append_insert": "sql",
     "extra_checks": "sql",
     "extra_delete_sets": "sql",
     "fk_copy_validations": "sql",

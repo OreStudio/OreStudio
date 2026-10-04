@@ -79,7 +79,11 @@ task and name that file in the Command column.
 The generated =market_observation_repository= and =market_fixing_repository=
 survive. Their =write= makes a version claim per row, one query each, which an
 import of about 100,000 observations cannot afford, so the append the
-hand-written classes did is the custom method =insert=. The reads production
+hand-written classes did is =insert=. It is a codegen feature, not pasted code:
+the =:append_insert:= flag in a model's SQL Flags drawer gives the repository
+=insert(ctx, v)= and =insert(ctx, vector)=, so any append-only entity can use it.
+Codegen refuses the flag together with =:current_state:=, and
+=test_append_insert.py= covers it. The reads production
 used, =read_latest_for_series=, =read_as_of= and =read_as_of_buckets=, moved as
 custom methods too, declared in the models. The date-range read and
 remove-by-series had only test callers, so they went with the hand-written

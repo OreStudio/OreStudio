@@ -133,6 +133,23 @@ void market_observation_repository::write(context ctx, const domain::market_obse
     write(ctx, v, replace_claim(ctx, v));
 }
 
+void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
+    execute_write_query(ctx,
+                        market_observation_mapper::map(v),
+                        lg(),
+                        "Inserting market observation into database.");
+}
+
+void market_observation_repository::insert(context ctx,
+                                           const std::vector<domain::market_observation>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
+    execute_write_query(ctx,
+                        market_observation_mapper::map(v),
+                        lg(),
+                        "Inserting market observations into database.");
+}
+
 void market_observation_repository::write(context ctx,
                                           const std::vector<domain::market_observation>& v) {
     std::vector<ores::utility::domain::precondition> claims;
@@ -352,19 +369,6 @@ void market_observation_repository::remove(context ctx, const std::vector<std::s
     execute_delete_query(ctx, query, lg(), "Batch removing market observations.");
 }
 
-
-void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observation for series: " << v.series_id;
-    execute_write_query(
-        ctx, market_observation_mapper::map(v), lg(), "Inserting market observation.");
-}
-
-void market_observation_repository::insert(context ctx,
-                                           const std::vector<domain::market_observation>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
-    execute_write_query(
-        ctx, market_observation_mapper::map(v), lg(), "Inserting market observations.");
-}
 
 std::vector<domain::market_observation>
 market_observation_repository::read_latest_for_series(context ctx,

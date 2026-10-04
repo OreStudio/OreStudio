@@ -127,6 +127,7 @@ Source tag identifying the producer channel that published this observation
 ** Flags
 :PROPERTIES:
 :tablename:              ores_marketdata_market_observations_tbl
+:append_insert:          true
 :hypertable:             true
 :hypertable_partition_column: observation_datetime
 :hypertable_chunk_interval: 30 days
@@ -200,42 +201,6 @@ index below exists specifically to serve this ordering.
 :entity_plural_words:   market observations
 :END:
 
-*** insert
-:PROPERTIES:
-:ID: CD9B926C-4DE3-4C75-822C-E83D1A13D8DF
-:END:
-
-Appends observations without the version claim =write= makes for each row. An
-observation is a point in a time series that is never edited in place, and an
-import writes about 100,000 of them, so one claim query per row would turn a bulk
-insert into that many round trips.
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-void insert(context ctx, const domain::market_observation& v);
-void insert(context ctx, const std::vector<domain::market_observation>& v);
-#+end_src
-
-#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
-#include "ores.platform/time/datetime.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <string>
-#+end_src
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observation for series: " << v.series_id;
-    execute_write_query(
-        ctx, market_observation_mapper::map(v), lg(), "Inserting market observation.");
-}
-
-void market_observation_repository::insert(context ctx,
-                                           const std::vector<domain::market_observation>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
-    execute_write_query(
-        ctx, market_observation_mapper::map(v), lg(), "Inserting market observations.");
-}
-#+end_src
-
 *** read_latest_for_series
 :PROPERTIES:
 :ID: D4C21722-DF3A-44A9-A96A-99F7D407DD47
@@ -247,6 +212,12 @@ ORE export walks a tenant's series and writes each one's observations.
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::market_observation> read_latest_for_series(context ctx,
                                                                const boost::uuids::uuid& series_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <string>
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E

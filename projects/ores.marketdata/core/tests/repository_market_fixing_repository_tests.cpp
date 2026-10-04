@@ -58,7 +58,7 @@ TEST_CASE("insert_single_market_fixing", tags) {
     auto f = generate_synthetic_market_fixing(ctx);
     f.series_id = s.id;
     BOOST_LOG_SEV(lg, debug) << "Fixing: " << f;
-    fixings_repo.insert(h.context(), {f});
+    fixings_repo.insert(h.context(), f);
 
     const auto read = fixings_repo.read_latest_for_series(h.context(), s.id);
     REQUIRE(read.size() == 1);

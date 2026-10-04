@@ -87,6 +87,20 @@ public:
      */
     void write(context ctx, const std::vector<domain::{{entity_singular}}>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
+{{#append_insert}}
+
+    /**
+     * @brief Appends {{entity_plural_words}} without the claim a write makes.
+     *
+     * The table is an append-only series: a row is never edited in place, so
+     * an insert reads no current row first. A bulk load is one statement, not
+     * one claim query per row.
+     */
+    /**@{*/
+    void insert(context ctx, const domain::{{entity_singular}}& v);
+    void insert(context ctx, const std::vector<domain::{{entity_singular}}>& v);
+    /**@}*/
+{{/append_insert}}
 
     /**
      * @brief Reads latest {{entity_plural_words}}, possibly filtered by primary key.

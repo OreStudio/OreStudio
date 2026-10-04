@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 63B1C355-CE29-4D3A-ADC3-627854B45535
+:END:
+#+title: Task: Remove the workspace from every trading entity
+#+description: Drop the workspace column from every trading table: the trading profiles, the identity field groups, bond_issue and lifecycle_event stop declaring it, and the code that set it goes.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/trading-without-workspaces
+#+pr: 2620
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No trading entity carries a workspace, as the trade shape design decided when sandboxes replaced workspaces.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- No trading model, field group or profile it binds declares has_workspace_id or a workspace_id column; no trading table has the column.
+- The ORE import, export and round trip behave as before.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+Section 13 of the trade shape design removed workspaces from trading, and
+sandboxes and virtual books replaced them. The workspace column comes from
+the generator, so the change is to the models and profiles.
+
+- The =trading-instrument= and =trading-record= profiles, which only trading
+  binds, set =has_workspace_id= false.
+- =lifecycle_event= moves from =workspace-scoped-lookup=, which refdata
+  shares, to =simple-lookup=, its twin without a workspace.
+- =bond_issue= drops its own flag, and the four identity field groups drop
+  their =workspace_id= column.
+- =drop_trading_workspace_prose.py= rewrites the model prose that described
+  the workspace and drops the workspace filter from the pasted queries of the
+  wide trade and the swap leg.
+- The rest of the system keeps its workspaces until
+  [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Trading tables with a workspace_id column | 0 (35 before) | =select table_name from information_schema.columns where column_name = 'workspace_id' and table_name like 'ores_trading_%'= | branch head before commit |
+| Merged portfolio round trip, in-scope pairs | lost 0, unexplained 0; out of scope unchanged | =reset_and_roundtrip.sh= | branch head before commit |
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| Codegen tests | 1134 pass | =pytest projects/ores.codegen/tests= | branch head before commit |
+
+* Notes
+
+- The hand-maintained class diagrams of =ores.trading.api= and
+  =ores.trading.core= still show =workspace_id= members; they were already
+  behind the models before this task (=trade_portfolio= and the netting
+  identifiers are missing too). Refreshing them is its own piece of work.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2620][#2620]] | [trading] Remove the workspace from every trading entity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The wide trade's pasted helpers still took a workspace parameter. | ores.trading.trade.org | Accept | Parameter and arguments removed. |
+| 2 | PR 2620 review 1-2: uneven line wrapping in rewritten prose. | trading models, profiles | Decline | Cosmetic; the generated headers carry the model prose as written. |
+| 3 | PR 2620 review 3: the class diagrams still show workspace_id. | ores.trading.*.puml | Decline | Recorded in the notes; the diagrams were already behind the models. |
+| 4 | PR 2620 review 4: a persistent database would need a migration. | trading tables | Decline | Every environment recreates its database. |
+
+* Result
+
+No trading table carries a workspace. The trading profiles, the identity
+field groups, =bond_issue= and =lifecycle_event= no longer declare one, and
+the regenerated tables, repositories, generators and protocols drop it. The
+ORE import, export and round trip read as before.

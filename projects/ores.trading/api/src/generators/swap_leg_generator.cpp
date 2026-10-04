@@ -44,7 +44,6 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.identity.version = 0;
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_id = ctx.generate_uuid();

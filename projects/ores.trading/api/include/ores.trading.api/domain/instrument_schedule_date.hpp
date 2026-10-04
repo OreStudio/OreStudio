@@ -68,8 +68,7 @@ struct instrument_schedule_date final {
     /**
      * @brief The trade whose owner states the owning schedule.
      *
-     * The trade row carries the workspace and the party. The date rows are family-owned and ride
-     * the trade's scope, so no workspace column rides them.
+     * The trade row carries the party. The date rows are family-owned and ride the trade's scope.
      */
     boost::uuids::uuid trade_id;
 

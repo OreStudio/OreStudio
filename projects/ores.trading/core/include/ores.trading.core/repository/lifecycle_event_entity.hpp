@@ -44,7 +44,6 @@ struct lifecycle_event_entity {
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
     std::optional<std::string> description;
     std::optional<std::string> fsm_state_id;

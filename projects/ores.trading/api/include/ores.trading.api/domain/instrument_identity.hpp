@@ -51,11 +51,6 @@ struct instrument_identity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to; defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
      * @brief ORE product type code (soft FK to ores_trading_trade_types_tbl).
      */
     std::string trade_type_code;

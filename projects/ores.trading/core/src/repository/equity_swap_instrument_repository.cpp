@@ -173,24 +173,9 @@ std::vector<domain::equity_swap_instrument>
 equity_swap_instrument_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("trade_id"_c);
-        return execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
-            ctx,
-            query,
-            [](const auto& entities) { return equity_swap_instrument_mapper::map(entities); },
-            lg(),
-            "Reading latest equity swap instruments (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
+    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c);
 
     return execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
         ctx,
@@ -206,10 +191,9 @@ equity_swap_instrument_repository::read_latest(context ctx, const std::string& t
                                << "trade_id: " << trade_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
         ctx,
@@ -225,11 +209,9 @@ equity_swap_instrument_repository::read_all(context ctx, const std::string& trad
     BOOST_LOG_SEV(lg(), debug) << "Reading all equity swap instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id) |
-        order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
         ctx,
@@ -244,11 +226,10 @@ std::optional<domain::equity_swap_instrument> equity_swap_instrument_repository:
     BOOST_LOG_SEV(lg(), debug) << "Reading equity swap instrument at version. "
                                << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c == trade_id && "version"_c == version) |
-                       sqlgen::limit(1);
+    const auto query =
+        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "version"_c == version) |
+        sqlgen::limit(1);
 
     const auto entities =
         execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
@@ -280,11 +261,9 @@ equity_swap_instrument_repository::remove_status equity_swap_instrument_reposito
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::delete_from<equity_swap_instrument_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "trade_id"_c == trade_id &&
-              "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query = sqlgen::delete_from<equity_swap_instrument_entity> |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing equity swap instrument from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -309,11 +288,9 @@ std::vector<domain::equity_swap_instrument> equity_swap_instrument_repository::r
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<equity_swap_instrument_entity,
                                       domain::equity_swap_instrument>(
@@ -332,10 +309,8 @@ std::uint32_t equity_swap_instrument_repository::get_total_equity_swap_instrumen
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
     return execute_count_query<equity_swap_instrument_entity>(
         ctx, query, filter_condition(filter), lg(), "Counting equity swap instruments");
@@ -348,10 +323,9 @@ equity_swap_instrument_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<equity_swap_instrument_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<equity_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<equity_swap_instrument_entity, domain::equity_swap_instrument>(
         ctx,
         query,
@@ -373,10 +347,9 @@ void equity_swap_instrument_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::delete_from<equity_swap_instrument_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<equity_swap_instrument_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing equity swap instruments.");
 }
 

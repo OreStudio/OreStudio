@@ -76,8 +76,7 @@ struct bond_future final {
     /**
      * @brief The trade the bond future fact row belongs to.
      *
-     * The trade row carries the workspace and the party; the fact row only carries the future
-     * terms. Per the ER, no workspace column rides the fact tables.
+     * The trade row carries the party; the fact row only carries the future terms.
      */
     boost::uuids::uuid trade_id;
 

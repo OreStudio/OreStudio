@@ -25,9 +25,9 @@ no nested sub-struct, because the script definition is embedded text and
 not a set of typed columns.
 
 The table is a flat instrument sub-type, so it binds
-=:profile: trading-instrument=. Three table features justify that binding:
+=:profile: trading-instrument=. Two table features justify that binding:
 the table is tenant-scoped through =tenant_id= and the tenant isolation
-policy, it is workspace-scoped through =workspace_id=, and its insert
+policy, its insert
 trigger stamps =party_id= from the session variable =app.current_party_id=
 rather than taking it from the client. The profile also fixes the identity
 and audit field groups, the batch read and the generator facet, and leaves
@@ -206,7 +206,7 @@ its trade, so a row cannot exist without one.
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
 pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
-columns (version, tenant_id, workspace_id, the primary key) and the
+columns (version, tenant_id, the primary key) and the
 columns marked =:group: identity= above fold into an
 =instrument_identity identity;= member (see the
 ores.trading.instrument_identity field-group model), the implicit audit

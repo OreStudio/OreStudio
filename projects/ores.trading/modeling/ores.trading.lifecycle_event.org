@@ -22,7 +22,7 @@ Examples: 'New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination
 :schema:           public
 :product:          ores
 :component:        trading
-:profile:          workspace-scoped-lookup
+:profile:          simple-lookup
 :END:
 
 * Columns

@@ -33,7 +33,6 @@
 export interface BondIssue {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     issue_id: string;
     security_id: string;
     issuer: string;

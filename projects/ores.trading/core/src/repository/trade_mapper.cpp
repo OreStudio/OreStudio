@@ -41,7 +41,6 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     domain::trade r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.external_id = v.external_id;
@@ -96,7 +95,6 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     trade_entity r;
     r.id = boost::uuids::to_string(v.identity.id);
     r.tenant_id = v.identity.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.external_id = v.identity.external_id;

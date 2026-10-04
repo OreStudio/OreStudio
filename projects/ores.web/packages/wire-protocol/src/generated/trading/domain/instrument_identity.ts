@@ -31,7 +31,6 @@
 export interface InstrumentIdentity {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     trade_type_code: string;
     party_id: string;
     trade_id: string;

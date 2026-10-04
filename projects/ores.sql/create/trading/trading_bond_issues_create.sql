@@ -72,7 +72,6 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "price_type" text null,
     "payer" text null,
     "credit_risk" text null,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -108,10 +107,6 @@ create unique index if not exists bond_issues_security_idx
 on "ores_trading_bond_issues_tbl" (tenant_id, security_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists bond_issues_workspace_idx
-on "ores_trading_bond_issues_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_trading_bond_issues_insert_fn()
 returns trigger as $$
 declare
@@ -119,9 +114,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

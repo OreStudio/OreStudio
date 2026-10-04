@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/produce-the-engine-input-from-the-entities
-#+pr:
+#+pr: 2608
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2608][#2608]] | [ore] Package the run's document and configuration for compute |
 
 * Review
 

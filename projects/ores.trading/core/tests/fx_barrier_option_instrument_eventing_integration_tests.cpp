@@ -23,10 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-// A seeded parent is system-tenant reference data (its soft FK carries
-// :use_system_tenant:), so its row is forced to the system tenant and
-// written under a system-scoped context, and the tenant_id helpers are
-// needed.
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -45,50 +41,14 @@
 #include "ores.trading.api/messaging/fx_barrier_option_instrument_protocol.hpp"
 #include "ores.trading.core/repository/fx_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
-// mandatory party_id FK): the party generator and repository are used
-// regardless of the child's generator facet, hence the fully-qualified
-// refdata paths.
-#include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
-// Soft-FK parent seeding (ores_trading_trades_tbl): the parent may live in another
-// component, so its own component names the headers.
-#include "ores.trading.api/generators/trade_generator.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
-// Grand-parent seeding (ores_refdata_currencies_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.core/repository/currency_repository.hpp"
-// Grand-parent seeding (ores_refdata_portfolios_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.refdata.api/generators/portfolio_generator.hpp"
-#include "ores.refdata.core/repository/portfolio_repository.hpp"
-// Grand-parent seeding (ores_refdata_books_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.refdata.api/generators/book_generator.hpp"
-#include "ores.refdata.core/repository/book_repository.hpp"
-// Grand-parent seeding (ores_refdata_portfolios_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.refdata.api/generators/portfolio_generator.hpp"
-#include "ores.refdata.core/repository/portfolio_repository.hpp"
-// Grand-parent seeding (ores_trading_trade_types_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.trading.api/generators/trade_type_generator.hpp"
-#include "ores.trading.core/repository/trade_type_repository.hpp"
-// Grand-parent seeding (ores_dq_fsm_states_tbl): the parent's own mandatory soft FKs
-// reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
-#include "ores.dq.api/generators/fsm_state_generator.hpp"
-#include "ores.dq.core/repository/fsm_state_repository.hpp"
+// Parent-seed snippet includes (ores_trading_trade_anchors_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -181,133 +141,12 @@ TEST_CASE("write_fx_barrier_option_instrument_publishes_an_event", tags) {
     auto v = generate_synthetic_fx_barrier_option_instrument(ctx);
     v.audit.change_reason_code = "system.test";
     v.identity.party_id = *party_ctx.party_id();
-    // Seed the active trade row ores_trading_trades_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto trade_id_parent = ores::trading::generators::generate_synthetic_trade(ctx);
-    trade_id_parent.audit.change_reason_code = "system.test";
-    auto trade_id_parent_book_parent_currency_parent =
-        ores::refdata::generators::generate_synthetic_currency(ctx);
-    trade_id_parent_book_parent_currency_parent.change_reason_code = "system.test";
-    auto trade_id_parent_book_parent_portfolio_parent =
-        ores::refdata::generators::generate_synthetic_portfolio(ctx);
-    trade_id_parent_book_parent_portfolio_parent.change_reason_code = "system.test";
-    auto trade_id_parent_book_parent = ores::refdata::generators::generate_synthetic_book(ctx);
-    trade_id_parent_book_parent.change_reason_code = "system.test";
-    auto trade_id_parent_portfolio_parent =
-        ores::refdata::generators::generate_synthetic_portfolio(ctx);
-    trade_id_parent_portfolio_parent.change_reason_code = "system.test";
-    // Seed the active currency row ores_refdata_currencies_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::currency_repository trade_id_parent_book_parent_currency_parent_repo;
-    trade_id_parent_book_parent_currency_parent_repo.write(
-        party_ctx, trade_id_parent_book_parent_currency_parent);
-    trade_id_parent_book_parent.functional_currency =
-        trade_id_parent_book_parent_currency_parent.iso_code;
-    // portfolio carries a mandatory party_id FK of its own
-    // (session-set in production), so seed a party for it before its write,
-    // exactly as the direct-parent branch does.
-    auto trade_id_parent_book_parent_portfolio_parent_party =
-        ores::refdata::generators::generate_synthetic_party(ctx);
-    trade_id_parent_book_parent_portfolio_parent_party.change_reason_code = "system.test";
-    auto trade_id_parent_book_parent_portfolio_parent_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : trade_id_parent_book_parent_portfolio_parent_party_existing) {
-        if (e.tenant_id == trade_id_parent_book_parent_portfolio_parent_party.tenant_id) {
-            trade_id_parent_book_parent_portfolio_parent_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository
-        trade_id_parent_book_parent_portfolio_parent_party_repo;
-    trade_id_parent_book_parent_portfolio_parent_party_repo.write(
-        party_ctx, trade_id_parent_book_parent_portfolio_parent_party);
-    trade_id_parent_book_parent_portfolio_parent.party_id =
-        trade_id_parent_book_parent_portfolio_parent_party.id;
-    // Seed the active portfolio row ores_refdata_portfolios_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::portfolio_repository
-        trade_id_parent_book_parent_portfolio_parent_repo;
-    trade_id_parent_book_parent_portfolio_parent_repo.write(
-        party_ctx, trade_id_parent_book_parent_portfolio_parent);
-    trade_id_parent_book_parent.parent_portfolio_id =
-        trade_id_parent_book_parent_portfolio_parent.id;
-    // book carries a mandatory party_id FK of its own
-    // (session-set in production), so seed a party for it before its write,
-    // exactly as the direct-parent branch does.
-    auto trade_id_parent_book_parent_party =
-        ores::refdata::generators::generate_synthetic_party(ctx);
-    trade_id_parent_book_parent_party.change_reason_code = "system.test";
-    auto trade_id_parent_book_parent_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : trade_id_parent_book_parent_party_existing) {
-        if (e.tenant_id == trade_id_parent_book_parent_party.tenant_id) {
-            trade_id_parent_book_parent_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository trade_id_parent_book_parent_party_repo;
-    trade_id_parent_book_parent_party_repo.write(party_ctx, trade_id_parent_book_parent_party);
-    trade_id_parent_book_parent.party_id = trade_id_parent_book_parent_party.id;
-    // Seed the active book row ores_refdata_books_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::book_repository trade_id_parent_book_parent_repo;
-    trade_id_parent_book_parent_repo.write(party_ctx, trade_id_parent_book_parent);
-    trade_id_parent.parties.book_id = trade_id_parent_book_parent.id;
-    // portfolio carries a mandatory party_id FK of its own
-    // (session-set in production), so seed a party for it before its write,
-    // exactly as the direct-parent branch does.
-    auto trade_id_parent_portfolio_parent_party =
-        ores::refdata::generators::generate_synthetic_party(ctx);
-    trade_id_parent_portfolio_parent_party.change_reason_code = "system.test";
-    auto trade_id_parent_portfolio_parent_party_existing =
-        ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : trade_id_parent_portfolio_parent_party_existing) {
-        if (e.tenant_id == trade_id_parent_portfolio_parent_party.tenant_id) {
-            trade_id_parent_portfolio_parent_party.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository trade_id_parent_portfolio_parent_party_repo;
-    trade_id_parent_portfolio_parent_party_repo.write(party_ctx,
-                                                      trade_id_parent_portfolio_parent_party);
-    trade_id_parent_portfolio_parent.party_id = trade_id_parent_portfolio_parent_party.id;
-    // Seed the active portfolio row ores_refdata_portfolios_tbl references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
-    ores::refdata::repository::portfolio_repository trade_id_parent_portfolio_parent_repo;
-    trade_id_parent_portfolio_parent_repo.write(party_ctx, trade_id_parent_portfolio_parent);
-    trade_id_parent.parties.portfolio_id = trade_id_parent_portfolio_parent.id;
-    // trade_type is system-tenant reference data: reference a
-    // seeded catalogue row instead of creating one, as the direct-parent
-    // system-tenant branch does.
     {
-        ores::trading::repository::trade_type_repository trade_id_parent_trade_type_parent_repo;
-        const auto trade_id_parent_trade_type_parent_catalogue =
-            trade_id_parent_trade_type_parent_repo.read_latest(
-                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(trade_id_parent_trade_type_parent_catalogue.empty());
-        trade_id_parent.classification.trade_type =
-            trade_id_parent_trade_type_parent_catalogue.front().code;
+        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
     }
-    // fsm_state is system-tenant reference data: reference a
-    // seeded catalogue row instead of creating one, as the direct-parent
-    // system-tenant branch does.
-    {
-        ores::dq::repository::fsm_state_repository trade_id_parent_fsm_state_parent_repo;
-        const auto trade_id_parent_fsm_state_parent_catalogue =
-            trade_id_parent_fsm_state_parent_repo.read_latest(
-                party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-        REQUIRE_FALSE(trade_id_parent_fsm_state_parent_catalogue.empty());
-        trade_id_parent.classification.status_id =
-            trade_id_parent_fsm_state_parent_catalogue.front().id;
-    }
-    ores::trading::repository::trade_repository trade_id_repo;
-    trade_id_repo.write(party_ctx, trade_id_parent);
-    v.identity.trade_id = trade_id_parent.identity.id;
     const auto id_str = boost::uuids::to_string(v.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "FX Barrier Option Instrument: " << v;
 

@@ -100,12 +100,11 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    -- Validate trade_id (soft FK to ores_trading_trade_anchors_tbl)
     if not exists (
-        select 1 from ores_trading_trades_tbl
+        select 1 from ores_trading_trade_anchors_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
             using errcode = '23503';

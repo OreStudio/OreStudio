@@ -115,7 +115,7 @@ std::string(faker::word::noun())
 
 ** trade_id
 :PROPERTIES:
-:table:         ores_trading_trades_tbl
+:table:         ores_trading_trade_anchors_tbl
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
@@ -125,6 +125,20 @@ std::string(faker::word::noun())
 The target is the trades table and the target column is its own =id=: the
 composite instrument's key is the trade it belongs to, so the leg names the
 trade and the insert trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
+    }
+#+end_src
 
 * SQL
 

@@ -242,7 +242,7 @@ std::string("USD")
 
 ** trade_id
 :PROPERTIES:
-:table:         ores_trading_trades_tbl
+:table:         ores_trading_trade_anchors_tbl
 :target_column: id
 :nullable:      false
 :list_by:       true
@@ -254,6 +254,20 @@ the identity collapse the parent column had no single instrument table to
 point at; now every instrument is its trade, so the trade is the one target
 all nine share and the insert trigger checks the leg against it. =list_by=
 generates the trade-scoped read the trade read path uses.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        v.identity.trade_id = anchor.id;
+    }
+#+end_src
 
 * SQL
 

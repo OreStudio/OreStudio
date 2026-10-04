@@ -463,7 +463,9 @@ begin
         where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
           and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
           and {{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
+{{^target_immutable}}
           and valid_to = ores_utility_infinity_timestamp_fn()
+{{/target_immutable}}
     ) then
         raise exception '{{error_message}}', NEW.{{column}}
             using errcode = '23503';
@@ -478,7 +480,9 @@ begin
             where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
               and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
               and {{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
+{{^target_immutable}}
               and valid_to = ores_utility_infinity_timestamp_fn()
+{{/target_immutable}}
         ) then
             raise exception '{{error_message}}', NEW.{{column}}
                 using errcode = '23503';

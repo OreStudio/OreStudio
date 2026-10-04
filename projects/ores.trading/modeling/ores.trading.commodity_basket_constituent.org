@@ -96,7 +96,7 @@ element back.
 
 ** trade_id
 :PROPERTIES:
-:table:         ores_trading_trades_tbl
+:table:         ores_trading_trade_anchors_tbl
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
@@ -105,6 +105,20 @@ element back.
 The trade this row belongs to. An instrument is keyed by its trade, so a
 fact or child row names the trade its document states and the insert
 trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
 
 * SQL
 

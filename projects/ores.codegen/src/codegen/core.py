@@ -3864,10 +3864,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # only name a table whose rows never change; a temporal table holds
             # closed versions a constraint would accept as current.
             for fk in fks:
-                if not fk.get('enforce'):
-                    continue
                 parent = _parent_entity_info(
                     (org_by_table.get(fk.get('table')) or {}).get('org'))
+                # An immutable target keeps no history, so a trigger check
+                # finds its row without a current-version filter.
+                fk['target_immutable'] = bool(parent and parent['immutable'])
+                if not fk.get('enforce'):
+                    continue
                 if not parent:
                     raise ValueError(
                         f"{model_path}: foreign key {fk.get('column')} has "

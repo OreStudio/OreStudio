@@ -22,6 +22,7 @@
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
+#include "ores.refdata.api/generators/netting_set_identifier_generator.hpp"
 #include "ores.refdata.api/generators/party_contact_information_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
@@ -328,6 +329,41 @@ TEST_CASE("counterparty_identifier_generator_produces_multiple_instances", tags)
         CHECK(!item.id.is_nil());
         CHECK(!item.id_value.empty());
     }
+    CHECK(ids.size() == count);
+}
+
+// --- netting_set_identifier ---
+
+TEST_CASE("netting_set_identifier_generator_produces_valid_instance", tags) {
+    auto lg(make_logger(test_suite));
+    generation_context ctx;
+    auto sut = generate_synthetic_netting_set_identifier(ctx);
+
+    CHECK(sut.version == 0);
+    CHECK(sut.tenant_id == ores::utility::uuid::tenant_id::system());
+    CHECK(!sut.id.is_nil());
+    CHECK(!sut.netting_set_id.is_nil());
+    CHECK((sut.id_scheme == "ORE" || sut.id_scheme == "INTERNAL"));
+    CHECK(sut.id_value.size() >= 20);
+    CHECK(sut.description == "Test identifier");
+    CHECK(sut.change_reason_code == "system.test");
+}
+
+TEST_CASE("netting_set_identifier_generator_uses_only_netting_set_schemes", tags) {
+    auto lg(make_logger(test_suite));
+    generation_context ctx;
+    const std::size_t count = 6;
+    auto items = generate_synthetic_netting_set_identifiers(count, ctx);
+
+    CHECK(items.size() == count);
+
+    std::set<std::string> schemes;
+    std::set<boost::uuids::uuid> ids;
+    for (const auto& item : items) {
+        schemes.insert(item.id_scheme);
+        ids.insert(item.id);
+    }
+    CHECK(schemes == std::set<std::string>{"INTERNAL", "ORE"});
     CHECK(ids.size() == count);
 }
 

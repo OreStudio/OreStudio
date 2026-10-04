@@ -371,6 +371,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_sets:read',                    'View netting sets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_sets:write',                   'Create and modify netting sets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_sets:delete',                  'Delete netting sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_set_identifiers:read',         'View netting set identifiers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_set_identifiers:write',        'Create and modify netting set identifiers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::netting_set_identifiers:delete',       'Delete netting set identifiers');
 
     -- CSAs permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::csas:read',                            'View CSAs');

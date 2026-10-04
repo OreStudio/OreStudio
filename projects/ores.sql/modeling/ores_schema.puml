@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T08:50:22.463939Z
+' Generated: 2026-10-04T09:21:37.488837Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -4565,6 +4565,35 @@ package "refdata" #FFF3E0 {
     true. Closing an agreement does not close its sets, as for every soft
     foreign key in the schema; a set's agreement is checked when the set is
     written.
+    end note
+
+    entity ores_refdata_netting_set_identifiers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * netting_set_id : uuid <<FK>>
+        * id_scheme : text
+        * id_value : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_netting_set_identifiers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Netting Set Identifier Table
+    Names a netting set answers to outside ORE Studio. An ORE document names a
+    trade's netting set by its NettingSetId, such as CPTY_A, and an import
+    resolves that id through the set's ORE identifier, as it resolves the
+    document's CounterParty through a counterparty identifier. A set's own code
+    stays the name the tenant gives it. A set may answer to several ORE ids.
     end note
 
     entity ores_refdata_netting_sets_tbl <<temporal>> #C6F0D8 {

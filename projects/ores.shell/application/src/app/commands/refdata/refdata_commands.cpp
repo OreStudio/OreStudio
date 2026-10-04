@@ -53,6 +53,7 @@
 #include "ores.shell/app/commands/refdata/monetary_nature_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_agreement_commands.hpp"
 #include "ores.shell/app/commands/refdata/netting_set_commands.hpp"
+#include "ores.shell/app/commands/refdata/netting_set_identifier_commands.hpp"
 #include "ores.shell/app/commands/refdata/ois_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/overnight_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_commands.hpp"
@@ -142,6 +143,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     monetary_nature_commands::register_commands(root_menu, session);
     netting_agreement_commands::register_commands(root_menu, session);
     netting_set_commands::register_commands(root_menu, session);
+    netting_set_identifier_commands::register_commands(root_menu, session);
     ois_convention_commands::register_commands(root_menu, session);
     overnight_index_convention_commands::register_commands(root_menu, session);
     party_commands::register_commands(root_menu, session);

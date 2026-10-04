@@ -180,6 +180,8 @@
 \ir ./refdata_netting_agreements_notify_trigger_create.sql
 \ir ./refdata_netting_sets_create.sql
 \ir ./refdata_netting_sets_notify_trigger_create.sql
+\ir ./refdata_netting_set_identifiers_create.sql
+\ir ./refdata_netting_set_identifiers_notify_trigger_create.sql
 
 -- Credit support annexes on netting sets, and their eligible collateral
 \ir ./refdata_csas_create.sql

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: CA346C25-DD78-4D71-8BD3-9567C0623795
+:END:
+#+title: Task: Give netting sets ORE aliases
+#+description: Add a netting set identifier entity, so a netting set answers to the names ORE documents use, as counterparties already do.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/netting-set-aliases
+#+pr: 2595
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An ORE import can resolve the NettingSetId of an envelope to one netting set of the tenant through an ORE alias, as it resolves the CounterParty.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- A netting_set_identifier entity holds identifiers of a netting set under a party id scheme, generated across SQL, C++, protocol and shell.
+- Within a tenant an ORE name is the alias of one netting set only.
+- Build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+Follow the counterparty pattern exactly. A netting set keeps its own code, the
+name the tenant gives it, and answers to ORE ids through identifiers.
+
+- Add =ores.refdata.netting_set_identifier=, copied from
+  =ores.refdata.counterparty_identifier=: (netting_set_id, id_scheme,
+  id_value, description), schemes from =party_id_schemes=, and the partial
+  unique index =ore_alias= on (tenant_id, id_scheme, id_value) where the
+  scheme is ORE.
+- Leave out the composite versioning flags the counterparty identifier
+  carries. A netting set is not a composite entity: its CSA does not bump its
+  version either, and the netting set table has no touch function.
+- The generator picks ORE or INTERNAL, the two schemes with no cardinality
+  limit that name things inside one system.
+- Wire the SQL create and drop lists, the permissions, the core registrar, the
+  history provider and the shell commands.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ctest suites | 90/90 pass | =compass test run --preset linux-clang-debug-make= | branch head before commit |
+| pgTAP netting set identifier cases | 8/8 pass | =pg_prove projects/ores.sql/test/refdata_netting_set_identifiers_test.sql= | branch head before commit |
+
+* Notes
+
+- The service compiles the event registrars of netting agreements, netting
+  sets and now netting set identifiers, but =event_registrar.cpp= calls none of
+  them, so no change event of the three reaches NATS. The identifier follows
+  its parent here. Wiring all three is a follow-up.
+- An ORE id is unique per tenant, not per party. Two parties of one tenant
+  cannot both import a set named =CPTY_A=. The counterparty aliases have the
+  same scope.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2595][#2595]] | [refdata] Give netting sets ORE aliases |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The copied model bumped the netting set's version, but the netting set has no touch function, so the schema failed to load. | ores.refdata.netting_set_identifier.org | Accept | Dropped the composite flags; a netting set is not composite. |
+| 2 | The generator block's comments became end-of-line comments in the C++. | ores.refdata.netting_set_identifier.org | Accept | Removed the comments from the block. |
+| 3 | PR 2595 review 1: assert the ORE scheme's cardinality. | refdata_netting_set_identifiers_test.sql | Decline | Case 1 fails if the scheme gets a limit of 1. |
+| 4 | PR 2595 review 2: a lower-case scheme may bypass the index. | refdata_netting_set_identifiers_create.sql | Decline | The scheme validation matches the code exactly, so =ore= is rejected. |
+| 5 | PR 2595 review 3: prove that a deleted alias frees its id. | refdata_netting_set_identifiers_test.sql | Accept | Added case 6. |
+| 6 | PR 2595 review 4: give the event registrar follow-up an owner. | task notes | Decline | Recorded in the task notes for the story's remaining work. |
+
+* Result
+
+A netting set now answers to ORE ids through =netting_set_identifier=, as a
+counterparty does through =counterparty_identifier=. Within a tenant an ORE id
+names one netting set, and a set may hold several ids. The entity is
+generated across SQL, C++, protocol, shell and the web wire protocol, with
+seeded permissions. pgTAP covers the alias rule, the shared values of other
+schemes, a new version of an alias, and the rejected set and scheme.

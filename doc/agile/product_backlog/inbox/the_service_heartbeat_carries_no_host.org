@@ -46,7 +46,7 @@ screen that reads samples inherits either the join or the gap.
 
 - =projects/ores.telemetry/modeling/ores.telemetry.service_samples.org= — =service_heartbeat_message= (service name, instance id, release) and =service_sample=, the stored row
 - =projects/ores.compute/modeling/ores.compute.telemetry.org= — =node_sample_message=, which carries =host_id= and no release
-- =projects/ores.compute/wrapper/src/app/application.cpp:210= — the node sample stamped with =host_id=, and =:458= where the heartbeat sender receives the same id
+- =projects/ores.compute/wrapper/src/app/application.cpp= — the node sample message is stamped with =host_id=, and the heartbeat sender receives the same id
 - =projects/ores.service/modeling/component_overview.org= — the shared heartbeat publisher every service embeds
 
 * See also

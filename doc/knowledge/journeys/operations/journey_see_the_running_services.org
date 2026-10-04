@@ -58,8 +58,8 @@ publishes on a timer, and the read changes no state.
    absence of a row is never the answer.
 3. *Spot a version that lags behind.* The version column exists for
    comparison: after a rollout, instances on different builds show different
-   versions in one list, and the screen marks the older ones. A lag that
-   touches a service earns a line of its own above the table, because a
+   versions in one list. An older build is marked on its own row, and a lag
+   that touches a service earns a notice of its own above the table, because a
    release only some instances took is the event this screen exists to catch.
    The heartbeat carries the release string only, so two builds of one release
    read the same here — see *What is missing*.
@@ -100,7 +100,7 @@ Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
 is not merged; the branch is kept as the record. The built screen keeps its
 shape: one row per expected instance, grouped under its service.
 
-- Branch :: =prototype/operations-journeys=
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
 - Route :: =/prototype/services=
 - Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]

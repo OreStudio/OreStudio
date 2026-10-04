@@ -42,7 +42,7 @@ reaches exactly the people the server build already reaches.
 
 - =projects/ores.iam/modeling/ores.iam.login_messages.org= — =login_response=, which states =version= today
 - =projects/ores.sql/create/database/database_database_info_create.sql= — the table, written at database create
-- =projects/ores.database/src/service/context_factory.cpp:49= — the startup read, the row's only reader
+- =projects/ores.database/src/service/context_factory.cpp= — the startup read of =ores_database_info_tbl=, the row's only reader
 - [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — the component behind the row
 
 * See also

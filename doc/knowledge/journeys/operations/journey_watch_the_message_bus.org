@@ -88,7 +88,7 @@ and destroys nothing.
 Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
 is not merged; the branch is kept as the record.
 
-- Branch :: =prototype/operations-journeys=
+- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
 - Route :: =/prototype/bus=
 - Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]

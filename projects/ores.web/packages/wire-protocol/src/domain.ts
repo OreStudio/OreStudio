@@ -101,6 +101,38 @@ export const accountSchema = z.object({
 
 export type Account = z.infer<typeof accountSchema>;
 
+/**
+ * A person's contact record, as the browser reads it.
+ *
+ * The record is keyed by its contact email, and it holds the address
+ * colleagues use. That address is not the account's sign-in address: the two
+ * are separate fields on separate records, and a screen shows both labelled
+ * apart.
+ */
+export const accountContactInformationSchema = z.object({
+    /** Optimistic-locking version. A write may claim the version it read. */
+    version: z.int().nonnegative(),
+    id: uuidSchema,
+    accountId: uuidSchema,
+    streetLine1: z.string(),
+    streetLine2: z.string(),
+    city: z.string(),
+    state: z.string(),
+    countryCode: z.string(),
+    postalCode: z.string(),
+    phone: z.string(),
+    /** The address colleagues use. */
+    email: z.string(),
+    webPage: z.string(),
+    modifiedBy: z.string(),
+    changeReasonCode: z.string(),
+    changeCommentary: z.string(),
+    performedBy: z.string(),
+    recordedAt: wireTimestampSchema,
+});
+
+export type AccountContactInformation = z.infer<typeof accountContactInformationSchema>;
+
 /** One selectable party offered at login, or switchable mid-session. */
 export const partySummarySchema = z.object({
     id: uuidSchema,

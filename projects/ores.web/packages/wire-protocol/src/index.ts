@@ -44,6 +44,7 @@ export type { Uuid, WireTimestamp } from './primitives.js';
 export {
     ACCOUNT_TYPES,
     accountAccessSchema,
+    accountContactInformationSchema,
     accountPageSchema,
     accountSignInsSchema,
     accountSchema,
@@ -71,6 +72,7 @@ export {
 export type {
     Account,
     AccountAccess,
+    AccountContactInformation,
     AccountPage,
     AccountSignIns,
     AccountType,
@@ -217,9 +219,11 @@ export {
     accountPageSchema as wireAccountPageSchema,
     accountReplySchema,
     accountUsernameRequestSchema,
+    accountWriteReplySchema,
     activeSessionsReplySchema,
     changePasswordRequestSchema,
     changePasswordResultSchema,
+    decidedResultSchema,
     emptyRequestSchema,
     httpInfoResponseSchema,
     listAccountsRequestSchema,
@@ -241,8 +245,10 @@ export {
 export type {
     AccountIdsRequest,
     AccountOperationResult,
+    AccountWriteReply,
     ChangePasswordRequest,
     ChangePasswordResult,
+    DecidedResult,
     HttpInfoResponse,
     ListAccountsRequest,
     LoginRequest,
@@ -320,8 +326,8 @@ export type {
     WorkflowStepSummary,
 } from './operations.js';
 
-export { readImages } from './entities/image.js';
-export type { ImageContent } from './entities/image.js';
+export { readImages, readImageUploadPolicy, uploadImage } from './entities/image.js';
+export type { ImageContent, ImageUploadPolicy, ImageUploadReply } from './entities/image.js';
 
 export {
     ACCOUNT_SUBJECTS,
@@ -331,6 +337,24 @@ export {
     setAccountsLocked,
 } from './account-operations.js';
 export type { AuthenticatedCaller, ChangeOwnPasswordRequest } from './account-operations.js';
+
+// The profile write path: the self writes and the two administered writes,
+// each over the subject the journey records, and the contact read.
+export {
+    claimedContactWriteSchema,
+    contactWriteSchema,
+    profileWriteSchema,
+    putContactInformation,
+    readContactInformation,
+    updateAccount,
+    updateSelfAccount,
+    updateSelfContactInformation,
+} from './profile-operations.js';
+export type {
+    ClaimedContactWrite,
+    ContactWrite,
+    ProfileWrite,
+} from './profile-operations.js';
 
 export {
     CREDENTIAL_SUBJECTS,

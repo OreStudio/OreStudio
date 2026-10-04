@@ -630,6 +630,17 @@ export const changeReasonPageSchema = z.object({
     message: z.string().default(''),
 });
 
+/** The seven outcomes a request can end in. */
+export const outcomeSchema = z.enum([
+    'ok',
+    'invalid',
+    'denied',
+    'missing',
+    'conflict',
+    'unavailable',
+    'failed',
+]);
+
 /**
  * The result every generated entity response carries.
  *
@@ -638,10 +649,54 @@ export const changeReasonPageSchema = z.object({
  * not what reads these.
  */
 export const resultEnvelopeSchema = z.object({
-    outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
+    outcome: outcomeSchema,
     code: z.string().default(''),
     message: z.string().default(''),
 });
+
+/** One field a request got wrong, named so the caller can act on it. */
+export const fieldFailureSchema = z.object({
+    field: z.string().default(''),
+    code: z.string().default(''),
+    message: z.string().default(''),
+});
+
+/**
+ * The result as a form reads it, field failures whole.
+ *
+ * A form branches on the field and the code, as the profile screen does with
+ * `field_not_self_writable`, so the failures the envelope above drops are
+ * kept here.
+ */
+export const decidedResultSchema = z.object({
+    outcome: outcomeSchema,
+    code: z.string().default(''),
+    message: z.string().default(''),
+    fields: z.array(fieldFailureSchema).default([]),
+});
+
+export type DecidedResult = z.infer<typeof decidedResultSchema>;
+
+/**
+ * `update_self_account_response`: what the write decided, and the account as
+ * written.
+ *
+ * The account is stated only when the outcome is ok. The result keeps its
+ * field failures because the profile panel branches on them. It sits here
+ * rather than beside `accountReplySchema` because it reads the result block
+ * above, and a schema that named one declared below it would fail at load.
+ */
+export const accountWriteReplySchema = z
+    .object({
+        result: decidedResultSchema,
+        account: wireAccountSchema.nullable().default(null),
+    })
+    .transform((row) => ({
+        result: row.result,
+        account: row.account === null ? null : mapAccount(row.account),
+    }));
+
+export type AccountWriteReply = z.infer<typeof accountWriteReplySchema>;
 
 /**
  * One step kind a starting point orders.

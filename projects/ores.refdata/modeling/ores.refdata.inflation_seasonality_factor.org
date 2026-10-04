@@ -95,6 +95,7 @@ The factor's place in the list, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_inflation_seasonality_factors_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

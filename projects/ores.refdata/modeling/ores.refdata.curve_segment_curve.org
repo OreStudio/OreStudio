@@ -138,6 +138,7 @@ The curve's place in its list, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_segment_curves_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

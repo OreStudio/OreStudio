@@ -185,3 +185,20 @@ on delete to "ores_refdata_csas_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for CSA
+-- =============================================================================
+alter table ores_refdata_csas_tbl enable row level security;
+
+drop policy if exists csas_tbl_tenant_isolation_policy
+    on ores_refdata_csas_tbl;
+
+create policy csas_tbl_tenant_isolation_policy
+on ores_refdata_csas_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

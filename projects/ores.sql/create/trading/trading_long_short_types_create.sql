@@ -141,3 +141,20 @@ on delete to "ores_trading_long_short_types_tbl" do instead (
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Long Short Type
+-- =============================================================================
+alter table ores_trading_long_short_types_tbl enable row level security;
+
+drop policy if exists long_short_types_tbl_tenant_isolation_policy
+    on ores_trading_long_short_types_tbl;
+
+create policy long_short_types_tbl_tenant_isolation_policy
+on ores_trading_long_short_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

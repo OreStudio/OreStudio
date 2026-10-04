@@ -152,3 +152,20 @@ on delete to "ores_trading_instrument_option_payment_dates_tbl" do instead (
       and trade_id = OLD.trade_id and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Instrument Option Payment Date
+-- =============================================================================
+alter table ores_trading_instrument_option_payment_dates_tbl enable row level security;
+
+drop policy if exists instrument_option_payment_dates_tbl_tenant_isolation_policy
+    on ores_trading_instrument_option_payment_dates_tbl;
+
+create policy instrument_option_payment_dates_tbl_tenant_isolation_policy
+on ores_trading_instrument_option_payment_dates_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

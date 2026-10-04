@@ -60,6 +60,7 @@ std::string("EUR-EURIBOR-6M")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_fra_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

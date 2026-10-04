@@ -75,6 +75,7 @@ std::chrono::year_month_day{std::chrono::year{2029}/1/15}
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_issue_call_dates_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

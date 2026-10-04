@@ -84,6 +84,7 @@ std::string("EUR")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_default_curve_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

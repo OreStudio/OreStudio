@@ -121,6 +121,7 @@ The parameter's place in the list, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_parametric_smile_parameters_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

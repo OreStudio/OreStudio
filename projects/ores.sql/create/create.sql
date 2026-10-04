@@ -29,6 +29,12 @@
 \ir ./database/database_create.sql
 
 -- =============================================================================
+-- 2b. Session Context Functions (read the session settings; row level security
+--     policies in every component call them, so they come before any table)
+-- =============================================================================
+\ir ./iam/iam_session_functions_create.sql
+
+-- =============================================================================
 -- 3. Data Governance Tables (must be created before operational tables - no external deps)
 -- =============================================================================
 \ir ./dq/dq_create.sql

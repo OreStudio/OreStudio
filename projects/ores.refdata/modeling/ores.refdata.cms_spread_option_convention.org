@@ -145,6 +145,7 @@ std::string("ModifiedFollowing")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_cms_spread_option_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

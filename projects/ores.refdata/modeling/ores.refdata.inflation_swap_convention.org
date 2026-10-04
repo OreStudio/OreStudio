@@ -266,6 +266,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_inflation_swap_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

@@ -237,6 +237,7 @@ std::string("https://example.com")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_counterparty_contact_informations_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

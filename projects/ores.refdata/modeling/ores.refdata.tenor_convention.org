@@ -114,6 +114,7 @@ std::string("ANCHOR_OFFSET")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_tenor_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Insert trigger

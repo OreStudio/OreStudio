@@ -80,6 +80,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_intraday_power_load_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

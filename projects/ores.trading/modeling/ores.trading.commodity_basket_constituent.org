@@ -111,6 +111,7 @@ trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_commodity_basket_constituents_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

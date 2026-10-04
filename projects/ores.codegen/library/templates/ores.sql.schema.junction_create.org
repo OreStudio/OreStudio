@@ -18,11 +18,13 @@ See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 variables and their semantics.
 See [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] for the official object-name patterns all SQL templates follow.
 
-Row level security is opt-in and tenant-scoped only. A junction turns
-it on with =:rls_tenant_isolation:= in its =* SQL / ** Flags= drawer,
-and =:rls_system_tenant_visible:= widens the policy to the system
-tenant. =:rls_party_isolation:= belongs to the domain entity archetype
-and is not read here, so setting it on a junction changes nothing.
+Row level security is opt-in. A junction turns it on with
+=:rls_tenant_isolation:= in its =* SQL / ** Flags= drawer, and
+=:rls_system_tenant_visible:= widens the policy to the system tenant.
+=:rls_party_isolation:= adds the restrictive party policy over the
+junction's =party_id= column, the same policy the domain entity
+archetype emits, so a junction of party-scoped rows is filtered by the
+session's visible parties too.
 
 The policy is dropped before it is created, so the script is idempotent:
 re-running =setup_schema.sql= against an already-populated database must
@@ -241,6 +243,25 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
 );
+{{#junction.sql.rls_party_isolation}}
+
+-- Party isolation (restrictive, ANDed with the tenant policy). A session with
+-- no party context (visible_party_ids is NULL) passes through.
+drop policy if exists {{junction.name}}_tbl_party_isolation_policy
+    on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl";
+
+create policy {{junction.name}}_tbl_party_isolation_policy
+on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+{{/junction.sql.rls_party_isolation}}
 {{/junction.sql.rls_tenant_isolation}}
 #+end_src
 

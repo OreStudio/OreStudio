@@ -179,6 +179,7 @@ std::string("0")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_average_ois_conventions_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

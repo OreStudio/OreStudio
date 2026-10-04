@@ -199,3 +199,20 @@ on delete to "ores_trading_instrument_options_tbl" do instead (
       and trade_id = OLD.trade_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Instrument Option
+-- =============================================================================
+alter table ores_trading_instrument_options_tbl enable row level security;
+
+drop policy if exists instrument_options_tbl_tenant_isolation_policy
+    on ores_trading_instrument_options_tbl;
+
+create policy instrument_options_tbl_tenant_isolation_policy
+on ores_trading_instrument_options_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

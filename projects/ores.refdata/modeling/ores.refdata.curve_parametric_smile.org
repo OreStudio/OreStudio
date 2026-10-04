@@ -124,6 +124,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_curve_parametric_smiles_tbl
+:rls_tenant_isolation: true
 :END:
 
 * C++

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists average_types_tbl_tenant_isolation_policy on "ores_trading_average_types_tbl";
 drop rule if exists ores_trading_average_types_delete_rule on "ores_trading_average_types_tbl";
 drop trigger if exists ores_trading_average_types_insert_trg on "ores_trading_average_types_tbl";
 drop function if exists ores_trading_average_types_insert_fn;

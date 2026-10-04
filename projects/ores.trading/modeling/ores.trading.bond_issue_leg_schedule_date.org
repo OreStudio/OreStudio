@@ -132,6 +132,7 @@ document states and the insert trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_issue_leg_schedule_dates_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

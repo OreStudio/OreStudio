@@ -202,6 +202,7 @@ std::string("5Y")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_yield_volatility_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

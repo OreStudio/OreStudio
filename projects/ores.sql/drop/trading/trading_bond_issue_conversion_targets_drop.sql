@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists bond_issue_conversion_targets_tbl_tenant_isolation_policy on "ores_trading_bond_issue_conversion_targets_tbl";
 drop rule if exists ores_trading_bond_issue_conversion_targets_delete_rule on "ores_trading_bond_issue_conversion_targets_tbl";
 drop trigger if exists ores_trading_bond_issue_conversion_targets_insert_trg on "ores_trading_bond_issue_conversion_targets_tbl";
 drop function if exists ores_trading_bond_issue_conversion_targets_insert_fn;

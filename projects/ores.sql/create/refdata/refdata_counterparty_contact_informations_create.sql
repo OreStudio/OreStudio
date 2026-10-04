@@ -206,3 +206,20 @@ on delete to "ores_refdata_counterparty_contact_informations_tbl" do instead (
         'counterparty_contact_information'
     );
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Counterparty Contact Information
+-- =============================================================================
+alter table ores_refdata_counterparty_contact_informations_tbl enable row level security;
+
+drop policy if exists counterparty_contact_informations_tbl_tenant_isolation_policy
+    on ores_refdata_counterparty_contact_informations_tbl;
+
+create policy counterparty_contact_informations_tbl_tenant_isolation_policy
+on ores_refdata_counterparty_contact_informations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

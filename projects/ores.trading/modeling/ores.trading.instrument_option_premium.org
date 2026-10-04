@@ -160,6 +160,7 @@ trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_instrument_option_premiums_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

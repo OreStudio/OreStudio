@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists commodity_basket_constituents_tbl_tenant_isolation_policy on "ores_trading_commodity_basket_constituents_tbl";
 drop rule if exists ores_trading_commodity_basket_constituents_delete_rule on "ores_trading_commodity_basket_constituents_tbl";
 drop trigger if exists ores_trading_commodity_basket_constituents_insert_trg on "ores_trading_commodity_basket_constituents_tbl";
 drop function if exists ores_trading_commodity_basket_constituents_insert_fn;

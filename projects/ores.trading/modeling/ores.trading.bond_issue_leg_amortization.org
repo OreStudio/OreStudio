@@ -142,6 +142,7 @@ the insert trigger checks it there.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_issue_leg_amortizations_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

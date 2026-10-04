@@ -137,3 +137,37 @@ do instead
   and party_id = old.party_id
   and counterparty_id = old.counterparty_id
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Party Counterparty
+-- =============================================================================
+alter table "ores_refdata_party_counterparties_tbl" enable row level security;
+
+drop policy if exists party_counterparties_tbl_tenant_isolation_policy
+    on "ores_refdata_party_counterparties_tbl";
+
+create policy party_counterparties_tbl_tenant_isolation_policy
+on "ores_refdata_party_counterparties_tbl"
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (restrictive, ANDed with the tenant policy). A session with
+-- no party context (visible_party_ids is NULL) passes through.
+drop policy if exists party_counterparties_tbl_party_isolation_policy
+    on "ores_refdata_party_counterparties_tbl";
+
+create policy party_counterparties_tbl_party_isolation_policy
+on "ores_refdata_party_counterparties_tbl"
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

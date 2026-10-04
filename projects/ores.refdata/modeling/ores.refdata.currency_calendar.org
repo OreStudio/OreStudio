@@ -74,6 +74,7 @@ std::string("TARGET")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_currency_calendars_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Repository

@@ -136,6 +136,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_activity_types_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Extra drops

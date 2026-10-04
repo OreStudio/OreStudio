@@ -315,6 +315,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_inflation_curve_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

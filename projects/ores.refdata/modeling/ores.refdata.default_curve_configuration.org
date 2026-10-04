@@ -414,6 +414,7 @@ The configuration's place in its list, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_default_curve_configurations_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

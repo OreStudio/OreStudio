@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists inflation_cap_floor_volatility_conf_tbl_tenant_isolation_policy on "ores_refdata_inflation_cap_floor_volatility_configs_tbl";
 drop rule if exists ores_refdata_inflation_cap_floor_volatility_configs_delete_rule on "ores_refdata_inflation_cap_floor_volatility_configs_tbl";
 drop trigger if exists ores_refdata_inflation_cap_floor_volatility_configs_insert_trg on "ores_refdata_inflation_cap_floor_volatility_configs_tbl";
 drop function if exists ores_refdata_inflation_cap_floor_volatility_configs_insert_fn;

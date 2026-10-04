@@ -122,6 +122,7 @@ The term's place in the list, which the export restores.
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_cds_volatility_terms_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

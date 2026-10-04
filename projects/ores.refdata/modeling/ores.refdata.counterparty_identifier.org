@@ -115,6 +115,7 @@ std::string("Test identifier")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_counterparty_identifiers_tbl
+:rls_tenant_isolation: true
 :END:
 
 * Foreign keys

@@ -207,6 +207,7 @@ false
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_bond_future_volatility_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

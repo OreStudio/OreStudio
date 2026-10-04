@@ -146,3 +146,20 @@ do instead
   and calendar_code = old.calendar_code
   and date = old.date
   and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Calendar Date
+-- =============================================================================
+alter table "ores_refdata_calendar_dates_tbl" enable row level security;
+
+drop policy if exists calendar_dates_tbl_tenant_isolation_policy
+    on "ores_refdata_calendar_dates_tbl";
+
+create policy calendar_dates_tbl_tenant_isolation_policy
+on "ores_refdata_calendar_dates_tbl"
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

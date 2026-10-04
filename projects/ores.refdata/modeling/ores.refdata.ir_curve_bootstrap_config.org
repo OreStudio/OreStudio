@@ -256,6 +256,8 @@ std::string("1Y")
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_ir_curve_bootstrap_configs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Checks

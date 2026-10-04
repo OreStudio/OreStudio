@@ -297,6 +297,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_base_correlation_configs_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

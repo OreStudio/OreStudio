@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists calendar_names_tbl_tenant_isolation_policy on "ores_refdata_calendar_names_tbl";
 drop rule if exists ores_refdata_calendar_names_delete_rule on "ores_refdata_calendar_names_tbl";
 drop trigger if exists ores_refdata_calendar_names_insert_trg on "ores_refdata_calendar_names_tbl";
 drop function if exists ores_refdata_calendar_names_insert_fn;

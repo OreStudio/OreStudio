@@ -260,6 +260,7 @@ states no such element.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_bond_issues_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

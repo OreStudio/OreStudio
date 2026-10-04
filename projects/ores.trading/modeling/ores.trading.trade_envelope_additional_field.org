@@ -87,6 +87,7 @@ std::string("MyValue")
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_envelope_additional_fields_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

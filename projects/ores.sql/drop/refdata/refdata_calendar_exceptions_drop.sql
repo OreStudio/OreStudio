@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists calendar_exceptions_tbl_tenant_isolation_policy on "ores_refdata_calendar_exceptions_tbl";
 drop rule if exists ores_refdata_calendar_exceptions_delete_rule on "ores_refdata_calendar_exceptions_tbl";
 drop trigger if exists ores_refdata_calendar_exceptions_insert_trg on "ores_refdata_calendar_exceptions_tbl";
 drop function if exists ores_refdata_calendar_exceptions_insert_fn;

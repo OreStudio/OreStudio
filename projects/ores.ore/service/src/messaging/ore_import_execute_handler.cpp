@@ -314,6 +314,10 @@ resolve_counterparty(Nats& nats, const std::string& name, std::string& out_error
         out_error = error;
         return std::nullopt;
     }
+    if (alias->result.outcome != outcome::ok && alias->result.outcome != outcome::missing) {
+        out_error = alias->result.message;
+        return std::nullopt;
+    }
     if (alias->result.outcome == outcome::ok && alias->counterparty_identifier &&
         alias->counterparty_identifier->id_scheme == "ORE")
         return alias->counterparty_identifier->counterparty_id;
@@ -324,6 +328,11 @@ resolve_counterparty(Nats& nats, const std::string& name, std::string& out_error
     auto counterparty = nats_call(nats, code_req, error);
     if (!counterparty) {
         out_error = error;
+        return std::nullopt;
+    }
+    if (counterparty->result.outcome != outcome::ok &&
+        counterparty->result.outcome != outcome::missing) {
+        out_error = counterparty->result.message;
         return std::nullopt;
     }
     if (counterparty->result.outcome == outcome::ok && counterparty->counterparty)
@@ -351,6 +360,10 @@ resolve_netting_set(Nats& nats, const std::string& netting_set_id, std::string& 
     auto alias = nats_call(nats, alias_req, error);
     if (!alias) {
         out_error = error;
+        return std::nullopt;
+    }
+    if (alias->result.outcome != outcome::ok && alias->result.outcome != outcome::missing) {
+        out_error = alias->result.message;
         return std::nullopt;
     }
     if (alias->result.outcome == outcome::ok && alias->netting_set_identifier &&

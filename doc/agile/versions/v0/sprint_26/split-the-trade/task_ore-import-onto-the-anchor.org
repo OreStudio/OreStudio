@@ -119,6 +119,12 @@ via its "Verifies task" field.
 | 1 | The WIP wrote the wide trade before the booking, so a refused booking left a wide trade behind. | ore_import_execute_handler.cpp | Accept | The booking is written first. |
 | 2 | The instrument step saved instruments for trades the trade step rejected, adding a second, misleading error. | ore_import_execute_handler.cpp | Accept | It skips trades the trade step did not save. |
 | 3 | The WIP created a netting set the tenant lacked. | ore_import_execute_handler.cpp | Accept | Owner's choice: resolve through the ORE alias and reject an unresolved id. |
+| 4 | PR 2603 review 1: a failed wide-trade write after the booking leaves an orphan anchor; is a re-import safe? | ore_import_execute_handler.cpp | Decline | The planner gives every trade a fresh id each run, so a re-import never meets the earlier anchor; the wide trade is removed later in this story. Recorded in the notes. |
+| 5 | PR 2603 review 2: a partial set of additional fields after a failure, and stale sequence rows on re-import. | ore_import_execute_handler.cpp | Decline | Fresh trade ids per run, as above. |
+| 6 | PR 2603 review 3: a lookup error reads as "matches no counterparty". | ore_import_execute_handler.cpp | Accept | An outcome other than ok or missing is reported as the error it is. |
+| 7 | PR 2603 review 4: a trade with no counterparty becomes intra_entity. | ore_import_execute_handler.cpp | Decline | The anchor's check requires a counterparty for an external trade. |
+| 8 | PR 2603 review 6: unit test the resolvers with a fake transport. | ore_import_execute_handler.cpp | Decline | They are file-local to the service handler; the handler test harness is the recorded follow-up. |
+| 9 | CI shell-script drift: the trade booking scripts and the scripts of three earlier recipes were not tangled. | projects/ores.shell/scripts/library | Accept | Tangled and committed. The local check list lacks the tangle check; fixed in the skill separately. |
 
 * Result
 

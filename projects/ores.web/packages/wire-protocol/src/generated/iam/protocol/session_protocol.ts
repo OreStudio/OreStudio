@@ -62,6 +62,11 @@ export interface SessionLookup {
     session: Session | null;
 }
 
+export interface SessionsFilter {
+    account_id: string | null;
+    account_id_one_of: string[] | null;
+}
+
 export interface SessionEvent {
     event_id: string;
     key: SessionKey;
@@ -75,6 +80,7 @@ export interface ListSessionsRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: SessionsFilter | null;
 }
 
 export interface ListSessionsResponse {

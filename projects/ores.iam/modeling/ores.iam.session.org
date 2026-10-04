@@ -86,19 +86,23 @@ Unique identifier for the session.
 :cpp_type:    std::chrono::system_clock::time_point
 :primary_key: true
 :nullable:    false
+:sortable:    true
 :END:
 
 Timestamp when the session started (login time). It is the hypertable's
-partition column, so it is part of the primary key.
+partition column, so it is part of the primary key. A list may be ordered by
+it, so an account's sessions read newest first.
 
 ** account_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
+:type:       uuid
+:cpp_type:   boost::uuids::uuid
+:nullable:   false
+:filterable: true
 :END:
 
-Foreign key referencing the associated account.
+Foreign key referencing the associated account. A list may be filtered by it,
+so an account's page reads that account's sessions and no other.
 
 ** end_time
 :PROPERTIES:

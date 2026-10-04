@@ -27,6 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -144,17 +145,21 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::session> read_latest(context ctx,
-                                             std::uint32_t offset,
-                                             std::uint32_t limit,
-                                             const ores::utility::domain::order& order = {});
+    std::vector<domain::session>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::sessions_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active sessions.
      * @param ctx Repository context with database connection
      * @return Total number of active sessions
      */
-    std::uint32_t get_total_session_count(context ctx);
+    std::uint32_t
+    get_total_session_count(context ctx,
+                            const std::optional<messaging::sessions_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a session permanently.

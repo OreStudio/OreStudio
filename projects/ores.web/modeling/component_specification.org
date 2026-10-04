@@ -163,6 +163,9 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =GET /api/roles=, =POST /api/roles=, =PUT /api/roles/:roleId=, =DELETE /api/roles/:name= | The role catalogue, each role with what it grants; create, rename and delete. |
 | =PUT /api/roles/:roleId/permissions= | Replace what a role grants with the whole set sent. |
 | =GET /api/permissions= | Every permission the platform defines. |
+| =GET /api/accounts/:username/sign-ins= | One account of the session's own tenant: its sign-in state and a page of its sessions, newest first. |
+| =GET /api/tenants/:code/accounts/:username/sign-ins= | The same for an account of a tenant, read from system administration inside the tenant, or as the session for the system tenant. |
+| =GET /api/me/sessions= | The signed-in person's own open sessions. |
 | =GET /api/events=, =POST /api/events/watch= | Change notifications. See =change_notification.org=. |
 
 The BFF also serves the built browser bundle from =packages/web/dist=.

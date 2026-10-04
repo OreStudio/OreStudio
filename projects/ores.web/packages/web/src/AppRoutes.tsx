@@ -41,6 +41,7 @@ import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
+import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -247,6 +248,18 @@ export function AppRoutes({
                 element={signedIn(gate.version, session, shell, () => (
                     <TenantRunPage />
                 ))}
+            />
+            <Route
+                path="/tenants/:code/people/:username"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <TenantAccountPage />
+                    ),
+                    'workspace',
+                )}
             />
             <Route
                 path="/tenants/:code"

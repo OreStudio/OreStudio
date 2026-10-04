@@ -29,6 +29,7 @@ import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
+import { SignInsPanel } from './SignIns.js';
 import { roleLabel } from './words.js';
 
 /**
@@ -183,6 +184,11 @@ function Person({
                 </table>
             </section>
             <Notice tone="info">{t('access.person.whenItApplies', { name })}</Notice>
+
+            <SignInsPanel
+                queryKey={['account-sign-ins', account.username]}
+                read={(page) => api.accountSignIns(account.username, page)}
+            />
 
             <section className="space-y-3">
                 <h2 className="text-sm font-semibold">{t('access.person.whatTheyAllow')}</h2>

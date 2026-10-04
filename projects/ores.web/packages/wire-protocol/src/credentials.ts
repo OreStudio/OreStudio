@@ -22,9 +22,12 @@
 import type { AuthenticatedCaller } from './account-operations.js';
 import { ACCOUNT_SUBJECTS, setAccountsLocked } from './account-operations.js';
 import { OperationFailedError } from './errors.js';
-import type { Account, LoginInfo } from './domain.js';
+import type { Account, AccountSignIns, LoginInfo } from './domain.js';
 import { subjects as loginInfoSubjects } from './generated/iam/protocol/login_info_protocol.js';
-import { subjects as sessionSubjects } from './generated/iam/protocol/session_protocol.js';
+import {
+    subjects as sessionSubjects,
+    type ListSessionsRequest as GeneratedListSessionsRequest,
+} from './generated/iam/protocol/session_protocol.js';
 import { subjects as sessionOperationSubjects } from './generated/iam/protocol/session_operations_protocol.js';
 import {
     SUBJECTS,
@@ -117,6 +120,35 @@ export async function readLoginInfo(
         loginInfoKeyRequestSchema.parse({ key: { account_id: accountId } }),
         loginInfoReplySchema,
     );
+}
+
+/**
+ * One account's sign-ins: the account, its sign-in state and one page of its
+ * sessions, newest first. Null when no account has the username.
+ *
+ * The session list is filtered by the account on the server and ordered by
+ * start time, so the page holds that account's sessions and no other.
+ */
+export async function readAccountSignIns(
+    caller: AuthenticatedCaller,
+    username: string,
+    page: { readonly offset: number; readonly limit: number },
+): Promise<AccountSignIns | null> {
+    const account = await readAccount(caller, username);
+    if (account === null) {
+        return null;
+    }
+    const request: GeneratedListSessionsRequest = {
+        offset: page.offset,
+        limit: page.limit,
+        order: { field: 'start_time', descending: true },
+        filter: { account_id: account.id, account_id_one_of: null },
+    };
+    const [loginInfo, sessions] = await Promise.all([
+        readLoginInfo(caller, account.id),
+        caller.callAuthenticated(CREDENTIAL_SUBJECTS.listSessions, request, sessionPageSchema),
+    ]);
+    return { account, loginInfo, sessions: sessions.sessions, totalCount: sessions.totalCount };
 }
 
 /** The page of sessions the caller may see, open and closed alike. */

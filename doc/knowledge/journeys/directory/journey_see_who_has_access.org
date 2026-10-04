@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-04
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator reads the account roster and each account's state.
@@ -31,6 +31,14 @@ role, signed in inside their own tenant. The trigger is a question about access:
 a joiner, a leaver, a lock-out, or a periodic review. It starts when the
 administrator opens *Directory*, and ends when the roster reads correctly.
 
+The system administrator is the second actor, over the system tenant. The
+platform's own services sign in there, each with an account of type =service=,
+so the system tenant's roster is where a service that stopped signing in, or
+signs in too often, is found. The system administrator reaches it from
+*Tenants*: the system tenant's *People* tab is this roster, read as the
+session's own tenant. The same tab on any other tenant is the roster read inside
+that tenant.
+
 This journey writes nothing. It is the read half of the directory topic; the
 write half is [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]].
 
@@ -49,9 +57,16 @@ write half is [[id:2FB693D1-ACC7-4112-924F-56732FF9DE0B][Bring someone in]].
 5. *Attach the roles.* The system reads the roles assigned to the account. The
    row lists the role names.
 6. *Filter.* The administrator narrows the list, for example to locked accounts,
-   or to accounts that must change their password. The filter runs on the rows
-   already loaded.
-7. *Leave.* The administrator goes back. Nothing was written, so the journey
+   to accounts that must change their password, or to service accounts. The
+   filter runs on the rows already loaded.
+7. *Open an account.* The administrator opens one row. The account's page shows
+   what kind of account it is (a person or a service), its sign-in state (locked
+   or not, the last sign-in, the failed attempts since, and whether a password
+   change is due) and its sessions, newest first: when each started and ended,
+   or that it is still open, the client, the address, the country and the bytes
+   it moved. A service that signs in every few seconds, or a person signed in
+   from somewhere unexpected, is read here.
+8. *Leave.* The administrator goes back. Nothing was written, so the journey
    carries no state.
 
 * Screens and wireframes
@@ -75,6 +90,7 @@ the state, =account_party= holds the scope and =role= holds the access.
 | =account_party= | The parties the account may act for | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] |
 | =party= | The name behind each party link | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
 | =role= | The role names assigned to the account | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
+| =session= | One account's sessions: start and end, client, address, country, bytes | ores.iam.session |
 
 The screen shows no field from =password_hash=, =password_salt= or =totp_secret=.
 Those columns are secret.
@@ -91,6 +107,8 @@ Those columns are secret.
 | Attach the parties | Resolve the party ids to names | =refdata.v1.parties.get_many= | exists |
 | Attach the roles | List one account's roles | =iam.v1.roles.by-account= | exists |
 | Read a row in full | Read one account by key | =iam.v1.accounts.get= | exists |
+| Open an account | Read one account's login record | =iam.v1.login_info.get= | exists |
+| Open an account | List one account's sessions, newest first | =iam.v1.sessions.list= with an account filter | missing |
 
 The server has no joined read. =iam.v1.accounts.list= returns accounts only, and
 its request carries =offset=, =limit= and =order= and nothing else. The screen
@@ -127,11 +145,18 @@ roster, because the roster needs the login state and the assignments as well.
    =iam::login_info:read= exist in the permission list, but no handler checks
    them. Any signed-in account can list every account and every sign-in record
    in the tenant. The candidate is to enforce both on the read handlers.
-6. *The account read carries secrets.* The generated =Account= type carries
-   =password_hash=, =password_salt= and =totp_secret=, so =accounts.list= and
-   =accounts.get= deliver them to the browser. The candidate is to drop them
-   from the wire type, because a screen cannot be trusted to ignore a secret it
-   is handed.
+6. *Closed: the account read carries no secrets.* =password_hash=,
+   =password_salt=, =service_password_hash= and =totp_secret= are =:no_wire:=
+   on the account, so no read delivers them.
+7. *No read of one account's sessions.* =iam.v1.sessions.list= takes an offset,
+   a limit and an order and nothing else, so an account's sessions can only be
+   found by reading the tenant's. The candidate is an account filter on the
+   list, and a stated order on the start time, so the newest come first; the
+   list contract generates both from the model
+   ([[id:B43E22C1-DBFA-4A7A-BB71-D613F588DD41][See an account's sign-ins]]).
+8. *A session's end is not recorded.* Signing out writes no end time, so a
+   session closed long ago reads as open. The account page states it rather
+   than guessing which sessions are live.
 
 * Related journeys
 

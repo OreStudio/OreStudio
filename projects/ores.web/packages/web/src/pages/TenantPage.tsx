@@ -310,6 +310,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
 /** One page of the people who can sign in to the tenant. */
 function TenantPeople({ code }: { readonly code: string }): ReactNode {
     const { t, plural } = useTranslation();
+    const navigate = useNavigate();
     const [offset, setOffset] = useState(0);
     const read = useQuery({
         queryKey: ['tenant-people', code, offset],
@@ -339,11 +340,20 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
                                 {t('tenants.detail.username')}
                             </th>
                             <th className="py-2 pr-4 font-medium">{t('tenants.detail.email')}</th>
+                            <th className="py-2 pr-4 font-medium">{t('signIns.kind')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {accounts.map((account) => (
-                            <tr key={account.id} className="border-b border-line-subtle">
+                            <tr
+                                key={account.id}
+                                className="cursor-pointer border-b border-line-subtle hover:bg-surface-hover"
+                                onClick={() =>
+                                    void navigate(
+                                        `/tenants/${encodeURIComponent(code)}/people/${encodeURIComponent(account.username)}`,
+                                    )
+                                }
+                            >
                                 <td className="py-2 pr-4 text-ink">
                                     <span className="flex items-center gap-3">
                                         <Avatar
@@ -367,6 +377,15 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
                                     {account.username}
                                 </td>
                                 <td className="py-2 pr-4 text-ink-muted">{account.email}</td>
+                                <td className="py-2 pr-4">
+                                    {account.accountType === 'user' ? (
+                                        <span className="text-ink-muted">
+                                            {t('signIns.person')}
+                                        </span>
+                                    ) : (
+                                        <Tag tone="accent">{t('signIns.service')}</Tag>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

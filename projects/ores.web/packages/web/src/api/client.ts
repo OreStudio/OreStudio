@@ -22,6 +22,8 @@
 import { z } from 'zod';
 import {
     accountAccessSchema,
+    accountSignInsSchema,
+    type AccountSignIns,
     permissionEntrySchema,
     roleSummarySchema,
     type AccountAccess,
@@ -91,6 +93,14 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 export interface Credentials {
     readonly username: string;
     readonly password: string;
+}
+
+/** A page's offset and limit as a query string. */
+function pageQuery(page: { readonly offset: number; readonly limit: number }): string {
+    return new URLSearchParams({
+        offset: String(page.offset),
+        limit: String(page.limit),
+    }).toString();
 }
 
 export const api = {
@@ -199,6 +209,33 @@ export const api = {
             .filter((reason) => reason.categoryCode === 'access' && reason.appliesToNew)
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(({ code, description }) => ({ code, description }));
+    },
+
+    /** One account of the session's own tenant and a page of its sign-ins. */
+    async accountSignIns(
+        username: string,
+        page: { readonly offset: number; readonly limit: number },
+    ): Promise<AccountSignIns> {
+        return accountSignInsSchema.parse(
+            await request(
+                `/api/accounts/${encodeURIComponent(username)}/sign-ins?${pageQuery(page)}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /** One account of a tenant read from system administration, and a page of its sign-ins. */
+    async tenantAccountSignIns(
+        code: string,
+        username: string,
+        page: { readonly offset: number; readonly limit: number },
+    ): Promise<AccountSignIns> {
+        return accountSignInsSchema.parse(
+            await request(
+                `/api/tenants/${encodeURIComponent(code)}/accounts/${encodeURIComponent(username)}/sign-ins?${pageQuery(page)}`,
+                { method: 'GET' },
+            ),
+        );
     },
 
     /** The roles the signed-in person holds, with who gave each one and why. */

@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 84D5E596-DEF1-4B16-9D64-951F582B3DE4
+:END:
+#+title: Task: Extend the journeys for an account's sign-ins
+#+description: Initial task for: See an account's sign-ins
+#+type: task
+#+level: s1
+#+filetags: :see_an_accounts_sign_ins:sprint_26:v0:
+#+owner: marco
+#+branch: feature/see-an-accounts-sign-ins
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B43E22C1-DBFA-4A7A-BB71-D613F588DD41][See an account's sign-ins]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An administrator who opens an account reads what kind of account it is, whether it can sign in, and the sessions it has had, newest first. The system administrator does the same for the system tenant, where the platform's own services sign in.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B43E22C1-DBFA-4A7A-BB71-D613F588DD41][See an account's sign-ins]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The See who has access and Audit sign-ins journeys name the system administrator over the system tenant and describe an account's sign-ins.
+- The server lists the sessions of one account, newest first.
+- A person's page and a tenant's People tab open an account showing its type, sign-in state and sessions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The journeys describe an account's sign-ins and name the system administrator.
+
+- [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] names the
+  system administrator as a second actor over the system tenant, reached from
+  the system tenant's *People* tab, and adds a step: opening an account shows
+  its type, its sign-in state and its sessions, newest first. It records the
+  missing read (an account filter and a start-time order on
+  =iam.v1.sessions.list=) and that a session's end is not recorded, and closes
+  the gap about secrets on the account read.
+- [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] names the same
+  second actor and points the per-account question at the account page.

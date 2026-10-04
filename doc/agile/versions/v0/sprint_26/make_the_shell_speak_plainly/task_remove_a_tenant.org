@@ -20,7 +20,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A system administrator removes a tenant from the tenant list or the tenant's
+own screen, and the confirmation says exactly what removal does.
+
+*Depends on server work that does not exist yet.* The prototype's *Remove
+tenant* has no server behind it:
+
+- =ores_iam_terminate_tenant_fn= marks a tenant terminated and keeps its data,
+  but only the test database manager calls it. No bus operation and no web
+  route reach it.
+- Whether sign-in refuses a terminated tenant, and whether token refresh does,
+  is not yet known. Until it is, the prototype's wording (everyone signed out,
+  no more sign-ins) is an assumption.
+
+So this task starts with the server: a bus operation over the terminate
+function, held to =iam::tenants:delete= or the code the permission seeds name,
+and a check of what sign-in and refresh do for a terminated tenant.
 
 * Status
 
@@ -35,7 +50,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A bus operation terminates a tenant, refuses the system tenant, and needs a
+  permission only the system administrator holds.
+- Sign-in to a terminated tenant is refused, and the behaviour of a session
+  already open in it is known and stated.
+- The tenant list and the tenant's screen offer *Remove tenant*; the dialog
+  asks for the tenant's code and says what removal does, in words that match
+  the server's behaviour.
+- Tests prove the refusal of the system tenant, the permission and the
+  refused sign-in, and the dialog is read against the running deployment.
 
 * Plan
 

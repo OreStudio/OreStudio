@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 7E8079A3-5F9E-410D-A354-21A1034BB992
+:END:
+#+title: A generated eventing test's re-drive cannot succeed
+#+description: When a notification is late, the generated eventing test re-drives its write with the row it already wrote at version zero, which the store refuses as an existing row, so the retry meant to absorb a lost notification fails the test instead.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:eventing:tests:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The generated eventing integration test writes a row, then waits for its
+notification. If none arrives within about 2.5 seconds, it re-drives the write
+up to three times, so that a notification lost to a listener or NATS hiccup
+still arrives. The re-drive passes the same value it wrote first, still at
+version zero. The store reads version zero as "create", finds the live row, and
+refuses it, here as an exclusion constraint violation:
+
+#+begin_example
+conflicting key value violates exclusion constraint
+"ores_reporting_report_definitions_t_tenant_id_id_tstzrange_excl"
+#+end_example
+
+So the retry that exists to absorb a lost notification turns a slow
+notification into a test failure. Seen on 2026-10-04 in
+=write_report_definition_publishes_an_event= (=ores.reporting.core.tests=),
+during a full suite run that started just after a two-hour rebuild.
+
+The fix belongs in the eventing test template: re-drive with the version the
+first write produced, or read the row back and write it as an update.
+
+* Why
+
+The test passes when the machine is quiet and fails when it is loaded, which
+makes a full suite red for a reason unrelated to the change under test. Every
+generated eventing test shares the template, so every entity has the same
+latent failure.
+
+* References
+
+- =projects/ores.reporting/core/tests/report_definition_eventing_integration_tests.cpp=
+  — the re-drive loop after step 4.
+- The eventing integration test template in =projects/ores.codegen/library/templates/=.
+
+* See also
+
+- [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Task: Produce the engine's input from the entities]] — where it was seen.

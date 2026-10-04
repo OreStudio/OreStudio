@@ -243,8 +243,31 @@ TEST_CASE("the archive puts the run document in Input and the rest in the run's 
     auto& run = files.at("ore.xml");
     const std::string from = "<Parameter name=\"inputPath\">Input</Parameter>";
     REQUIRE(run.find(from) != std::string::npos);
-    run.replace(run.find(from), from.size(), "<Parameter name=\"inputPath\">./Input/Dim</Parameter>");
+    run.replace(
+        run.find(from), from.size(), "<Parameter name=\"inputPath\">./Input/Dim</Parameter>");
     layout = store::archive_layout(files);
     CHECK(layout.contains("Input/ore.xml"));
     CHECK(layout.contains("Input/Dim/curveconfig.xml"));
+}
+
+TEST_CASE("the archive refuses a path that leaves the package", "[ore][store]") {
+    const auto with_input_path = [](const std::string& input_path) {
+        auto files = example_input();
+        auto& run = files.at("ore.xml");
+        const std::string from = "<Parameter name=\"inputPath\">Input</Parameter>";
+        run.replace(run.find(from),
+                    from.size(),
+                    "<Parameter name=\"inputPath\">" + input_path + "</Parameter>");
+        return files;
+    };
+    CHECK_THROWS_AS(store::archive_layout(with_input_path("../../etc")), std::invalid_argument);
+    CHECK_THROWS_AS(store::archive_layout(with_input_path("/tmp/x")), std::invalid_argument);
+    CHECK_THROWS_AS(store::archive_layout(with_input_path("Input/../..")), std::invalid_argument);
+
+    auto files = example_input();
+    files["../evil.xml"] = "x";
+    CHECK_THROWS_AS(store::archive_layout(files), std::invalid_argument);
+
+    CHECK(store::archive_layout(with_input_path("./Input//Dim/"))
+              .contains("Input/Dim/curveconfig.xml"));
 }

@@ -111,8 +111,20 @@ void set_pg_config(PGconn* conn,
                    const std::string& key,
                    const std::string& value,
                    logging::logger_t& lg) {
-    const std::string sql = "SELECT set_config('" + key + "', '" + value + "', false)";
-    pg_result_guard r(PQexec(conn, sql.c_str()));
+    // The value is bound, not spliced, so an actor or service holding a quote
+    // reaches the session unchanged.
+    const std::string sql = "SELECT set_config('" + key + "', $1, false)";
+    std::array<const char*, 1> param_values = {value.c_str()};
+    std::array<int, 1> param_lengths = {static_cast<int>(value.length())};
+    std::array<int, 1> param_formats = {0};
+    pg_result_guard r(PQexecParams(conn,
+                                   sql.c_str(),
+                                   1,
+                                   nullptr,
+                                   param_values.data(),
+                                   param_lengths.data(),
+                                   param_formats.data(),
+                                   0));
     if (PQresultStatus(r.result) != PGRES_TUPLES_OK) {
         const std::string err = PQerrorMessage(conn);
         BOOST_LOG_SEV(lg, error) << "Failed to set " << key << ": " << err;

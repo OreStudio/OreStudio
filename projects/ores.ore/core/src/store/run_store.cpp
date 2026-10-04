@@ -36,6 +36,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
+#include <filesystem>
 #include <format>
 #include <map>
 #include <optional>
@@ -368,13 +369,29 @@ input_files archive_layout(const input_files& files) {
     for (const auto& p : document.Setup.Parameter)
         if (std::string(p.name) == "inputPath" && !static_cast<const std::string&>(p).empty())
             input_path = static_cast<const std::string&>(p);
-    if (input_path.starts_with("./"))
-        input_path.erase(0, 2);
+
+    // The input path and the file names come from a stored run document, which
+    // a tenant edits, and the result names where the package writes; a path
+    // that is absolute or climbs out with .. would write outside the package.
+    const auto inside = [](const std::filesystem::path& p) {
+        const auto normal = p.lexically_normal();
+        if (p.is_absolute() || p.has_root_name() || normal.empty())
+            return false;
+        return std::ranges::none_of(normal, [](const auto& part) { return part == ".."; });
+    };
+    if (!inside(input_path))
+        throw std::invalid_argument(
+            std::format("The run document's input path {} leaves the package.", input_path));
 
     input_files layout;
     for (const auto& [name, content] : files) {
-        const auto directory = name == run_document_file ? std::string("Input") : input_path;
-        layout[directory + "/" + name] = content;
+        const std::filesystem::path directory =
+            name == run_document_file ? std::filesystem::path("Input") : std::filesystem::path(input_path);
+        const auto path = directory / name;
+        if (!inside(std::filesystem::path(name)) || !inside(path))
+            throw std::invalid_argument(
+                std::format("The input file {} would be written outside the package.", name));
+        layout[path.lexically_normal().generic_string()] = content;
     }
     return layout;
 }

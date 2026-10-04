@@ -121,7 +121,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Path traversal: an absolute or .. inputPath or file name writes outside the stage directory | run_store.cpp | Accept | archive_layout refuses an absolute path, a root name or a .. component, for the input path and each file; tests cover ../, an absolute path and a file name. |
+| 2 | Actor and service go into set_config unescaped, now on every acquire | tenant_aware_pool.hpp | Accept | The pool doubles quotes; the raw query helpers, which had the same defect, bind the value. A pooled write and a raw read each carry an actor holding an apostrophe. |
+| 3 | inputPath is not normalised | run_store.cpp | Accept | Layout keys are lexically normal; a test covers ./Input//Dim/. |
+| 4 | CI drift: the generated shell script lacked the new field | report_operations-prepare-ore-package.ores | Accept | Regenerated with tangle_shell_scripts. |
+| 5 | Self-found: the first pool test ran through the raw query helpers, which open a fresh connection each call, so it never exercised the pool | session_settings_tests.cpp | Fix | Replaced by pooled_session_tests.cpp, which alternates party B and a tenant-only session over fifty repository reads and requires the tenant-only session to see party A's row. |
 
 * Result
 
@@ -137,8 +141,8 @@ configuration file it names into the archive, under the run's =inputPath=.
   context without a party, visible parties, actor or service skipped those
   settings, so a reused connection kept the previous context's. A tenant-level
   context could see another party's rows and stamp another actor. The pool now
-  writes every setting on every acquire, a database test proves it over fifty
-  reused connections, and four refdata tests that passed only through the leak
+  writes every setting on every acquire, a test proves it over fifty pooled
+  repository reads, and four refdata tests that passed only through the leak
   now build their repository after setting the party.
 
 The engine cannot run the archive yet: the portfolio and market data are still

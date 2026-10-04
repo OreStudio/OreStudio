@@ -267,8 +267,14 @@ public:
             {"app.current_service", &service_account_},
         };
         for (const auto& [name, value] : settings) {
-            const std::string setting_sql = "SELECT set_config('" + std::string(name) + "', '" +
-                                            *value + "', false)";
+            std::string quoted;
+            for (const char c : *value) {
+                if (c == '\'')
+                    quoted += '\'';
+                quoted += c;
+            }
+            const std::string setting_sql =
+                "SELECT set_config('" + std::string(name) + "', '" + quoted + "', false)";
             auto setting_result = (*session_result)->execute(setting_sql);
             if (!setting_result) {
                 return sqlgen::error("Failed to set " + std::string(name) + ": " +

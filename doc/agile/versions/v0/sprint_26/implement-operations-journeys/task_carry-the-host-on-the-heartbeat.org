@@ -35,9 +35,9 @@ services roster can name the machine behind an instance.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | The model edit begins; the layers under it follow. |
+| Now          | The field is in at every layer, the capture is filed, and the PR follows. |
 | Waiting on   | Nothing.                               |
-| Next         | Regenerate the protocol, then fill the field at each layer. |
+| Next         | Open the PR and settle the review.     |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -92,7 +92,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Telemetry suites | 3/3 pass: core 0.90 s, database 1.84 s, service 0.81 s | =compass test run -- -R 'ores\.telemetry\.'= | =fd05c11807= |
+| Compute suites | 3/3 pass: api 0.20 s, core 3.63 s, service 0.74 s | =compass test run -- -R 'ores\.compute\.'= | =fd05c11807= |
+| Database recreate | fingerprint =348f2fc9f8d6d570=, 0 errors, 0 m 42 s | =compass db recreate -y -k= | =fd05c11807= |
+| Drift sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =fd05c11807= |
+| ER diagram check | 430 tables, 0 warnings, puml up to date | =plantuml_er_generate.sh --check= | =fd05c11807= |
+| TypeScript typecheck | no errors | =npm run typecheck= (wire-protocol) | =fd05c11807= |
 
 * Notes
 
@@ -126,3 +131,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=service_heartbeat_message= and =service_sample= carry =host_id=, and the one
+field answers both joins the capture named: a wrapper's row can name its node,
+and an instance's row its host.
+
+The field travels the whole path. The model carries it on both messages, the
+regenerated C++ and TypeScript protocols carry it, and =heartbeat_publisher=
+takes it as a trailing defaulted argument and stamps every beat. The compute
+wrapper passes =cfg.host_id=, the value it already stamps on its node samples;
+every other service sends the empty string. =telemetry_handler= copies it onto
+the sample, and the entity, the mapper and the =host_id text not null default
+''= column store it.
+
+Verification. The repository test =create_and_list_service_sample= writes a
+sample with a host id and reads it back through =list_service_samples=. The
+telemetry suites (3/3) and the compute suites (3/3) pass against a recreated
+database. See the measurements above.

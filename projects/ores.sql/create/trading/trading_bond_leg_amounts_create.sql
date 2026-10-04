@@ -95,12 +95,11 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    -- Validate trade_id (soft FK to ores_trading_trade_anchors_tbl)
     if not exists (
-        select 1 from ores_trading_trades_tbl
+        select 1 from ores_trading_trade_anchors_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
             using errcode = '23503';

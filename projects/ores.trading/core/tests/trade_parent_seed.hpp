@@ -20,32 +20,22 @@
 #ifndef ORES_TRADING_TESTS_TRADE_PARENT_SEED_HPP
 #define ORES_TRADING_TESTS_TRADE_PARENT_SEED_HPP
 
-#include "ores.dq.core/repository/fsm_state_repository.hpp"
-#include "ores.refdata.api/generators/book_generator.hpp"
-#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.api/generators/portfolio_generator.hpp"
-#include "ores.refdata.core/repository/book_repository.hpp"
-#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
-#include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
-#include "ores.trading.api/generators/trade_generator.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.core/repository/trade_anchor_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::trading::tests {
 
 /**
- * @brief Writes one trade, with the reference data its insert trigger reads.
+ * @brief Writes one trade anchor, with the party it belongs to.
  *
  * An instrument's key is the trade it belongs to, so a test that writes an
- * instrument row has to state a trade that exists. The trade's insert trigger
- * validates its book and derives the party and the portfolio from it, so the
- * party, a currency, the portfolio and the book are written first, in that
- * order.
+ * instrument row has to state a trade whose anchor exists. The anchor needs
+ * only its party, which is written first.
  *
  * @return The id of the trade that was written.
  */
@@ -65,43 +55,10 @@ inline boost::uuids::uuid write_parent_trade(ores::testing::database_helper& h) 
     party_repo.write(h.context(), party);
     auto ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 
-    auto currency = refdata::generators::generate_synthetic_currency(gen);
-    currency.change_reason_code = "system.test";
-    refdata::repository::currency_repository currency_repo;
-    currency_repo.write(ctx, currency);
-
-    auto portfolio = refdata::generators::generate_synthetic_portfolio(gen);
-    portfolio.change_reason_code = "system.test";
-    portfolio.party_id = party.id;
-    // The generator emits the X-0 sentinel, which the insert trigger refuses
-    // unless the sentinel is seeded; the currency above serves instead.
-    portfolio.aggregation_ccy = currency.iso_code;
-    refdata::repository::portfolio_repository portfolio_repo;
-    portfolio_repo.write(ctx, portfolio);
-
-    auto book = refdata::generators::generate_synthetic_book(gen);
-    book.change_reason_code = "system.test";
-    book.party_id = party.id;
-    book.functional_currency = currency.iso_code;
-    book.parent_portfolio_id = portfolio.id;
-    refdata::repository::book_repository book_repo;
-    book_repo.write(ctx, book);
-
-    auto tr = generators::generate_synthetic_trade(gen);
-    tr.audit.change_reason_code = "system.test";
-    tr.identity.party_id = party.id;
-    tr.parties.book_id = book.id;
-    // The status is system-tenant reference data, so the row references the
-    // seeded catalogue rather than adding a state of its own.
-    ores::dq::repository::fsm_state_repository status_repo;
-    const auto statuses = status_repo.read_latest(
-        ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
-    if (!statuses.empty())
-        tr.classification.status_id = statuses.front().id;
-
-    repository::trade_repository trade_repo;
-    trade_repo.write(ctx, tr);
-    return tr.identity.id;
+    auto anchor = generators::generate_synthetic_trade_anchor(gen);
+    anchor.party_id = party.id;
+    repository::trade_anchor_repository().write(ctx, anchor);
+    return anchor.id;
 }
 
 }

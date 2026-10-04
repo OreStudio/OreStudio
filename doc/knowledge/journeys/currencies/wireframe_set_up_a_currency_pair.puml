@@ -1,0 +1,58 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+@startuml
+
+salt
+{
+  <b>CURRENCY PAIR: EUR/USD</b> | [ Back to currency pairs ]
+  --
+  {#
+    Pair | Value
+    Base currency | ^EUR^
+    Quote currency | ^USD^
+    Pair code | EUR/USD (built from the legs)
+    Classification | ^major^
+    <b>Convention</b> | .
+    Pip factor | "0.0001"
+    Tick size (pips) | "0.1"
+    Decimal places | "4"
+    Sample rate | 1.0842
+    Business day convention | ^ModifiedFollowing^
+    Forward dates from spot | [X]
+    End of month | [ ]
+    Change reason | ^Correction^
+  }
+  [ Save pair ]
+  --
+  {#
+    Settlement calendars | Name
+    TARGET | TARGET (Euro area)
+    US | United States
+  }
+  [ Add calendar ] | [ Remove calendar ] | [ Show side by side ]
+  --
+  {#
+    History | Record | Version | Changed by | What changed
+    . | convention | 2 | alice | Decimal places 5 -> 4
+    . | pair | 1 | system | Created
+  }
+  [ Revert to this version ]
+}
+
+@enduml

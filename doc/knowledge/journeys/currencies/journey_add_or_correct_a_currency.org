@@ -53,7 +53,7 @@ person leaves the currency.
    refused instead of lost.
 4. *Set the countries.* The person adds or removes the countries that issue the
    currency. The system writes or deletes one =currency_country= row each time.
-   The rows keep no history, so the panel is a plain list.
+   No operation reads the rows' history, so the panel is a plain list.
 5. *Set the calendars.* The person adds or removes the holiday calendars used
    for the currency's spot and settlement dates. The system writes or deletes
    one =currency_calendar= row each time. A calendar name links to
@@ -102,9 +102,11 @@ to. The history is a panel on the same screen, not a separate dialog.
 | =currency_group= | The names in the desk groups panel and its picker | [[id:C2C74B40-9998-4AA4-BED3-3C13A483D96A][ores.refdata.currency_group]] |
 | =currency_currency_group= | The desk groups panel rows | [[id:579032D2-3637-4188-859E-6C17C1D144F7][ores.refdata.currency_currency_group_junction]] |
 
-The three junctions are current-state tables with no versions. That is why the
-countries, calendars and groups are plain lists in their panels, and why only
-the currency itself has a history.
+The three junctions keep closed versions in their tables, but no operation
+reads them. That is why the countries, calendars and groups are plain lists in
+their panels, and why only the currency itself has a history panel. The
+junction inserts also check neither end of the link; see the
+[[id:250CA101-1540-4A42-97F8-E73AA3400DA0][desk group journey]].
 
 * Operations and messages
 
@@ -170,6 +172,8 @@ as it stood on a date.
 
 - [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] — each calendar in the calendars panel opens there
 - [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — correct the rounding types, monetary natures or market tiers the pickers offer
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — the pairs this currency is a leg of
+- [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] — each group in the desk groups panel opens there
 - [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the tenant whose reference data this is
 
 * Related knowledge

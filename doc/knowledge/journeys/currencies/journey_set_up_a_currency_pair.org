@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: FA1D8A3C-70C6-4E35-BEA2-F617851C6B55
+:END:
+#+title: User Journey: Set up a currency pair
+#+description: A reference data administrator sets up a currency pair with its quoting convention, settlement calendars and classification on one screen.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator sets up a currency pair with its quoting convention, settlement calendars and classification on one screen.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this pair to quote, display and settle the way the desk trades it."
+The journey is done when the pair, its convention and its settlement calendars
+read correctly on one screen.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. The =Operations= role holds only the
+convention calendar permissions, so it cannot run this journey. The trigger is
+a pair the desk starts to trade, a market that changes its quoting precision, or
+a settlement date that came out wrong. The journey starts at the pair list, or
+at a link from a currency, and ends when the person leaves the pair.
+
+* Steps
+
+1. *Find the pair.* The person opens *Currency pairs*. The system lists the
+   pairs: the pair code, the base and quote currencies, and the
+   classification. The person filters, or chooses *Add pair*.
+2. *Name the pair.* For a new pair, the person picks the base and the quote
+   currency. The system builds the pair code as =BASE/QUOTE=. If the quote
+   currency has the higher base precedence, the system offers to swap the
+   legs. Base-precedence order is the stored convention, and this screen
+   enforces it; the server does not (see /What is missing/). The person
+   picks the classification: major, minor or exotic.
+3. *Set the convention.* The person sets the quoting convention on the same
+   screen: the pip factor, the tick size in pips, the decimal places for
+   display, the business day convention, whether forward dates count from
+   spot, and whether the end-of-month rule applies. The system shows a sample
+   rate at the chosen precision, so the person sees what the desk will see.
+4. *Save the pair.* The person states a change reason and saves. The system
+   writes the pair first and then its convention, because the convention
+   refers to the pair. A new pair is written with =must_not_exist=; a change is
+   written with =must_match_version=.
+5. *Set the settlement calendars.* The person adds or removes the calendars
+   that advance the pair's spot and maturity dates, usually one per leg. The
+   system writes or deletes one =currency_pair_convention_calendar= row each
+   time. A calendar name links to
+   [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], which can show the
+   two calendars side by side.
+6. *Check the history.* The person opens the history of the pair or of its
+   convention. The system shows every version with the field-level difference
+   from the one before. The person can revert to an older version, which the
+   system writes as a new version.
+7. *Leave.* The person goes back to the list.
+
+No step waits on the server after its reply, and the journey keeps no state.
+Step 4 makes two writes; see /What is missing/.
+
+* Screens and wireframes
+
+One screen. The pair and its convention are one record to the person, so they
+share one form with one *Save*. The settlement calendars sit below as a plain
+list, because no operation reads their history.
+
+#+caption: Currency pair: the pair and its convention in one form, the settlement calendars, and the history.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/currencies/wireframe_set_up_a_currency_pair.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =currency_pair= | The pair code, the two legs and the classification | [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] |
+| =currency_pair_convention= | The quoting and date convention, one per pair | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+| =currency_pair_convention_calendar= | The settlement calendars panel rows | [[id:F7B4DEEB-CDA5-4E7E-AC75-52EC8DA8F394][ores.refdata.currency_pair_convention_calendar]] |
+| =currency= | The base and quote pickers, and the base precedence | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+| =currency_pair_classification= | The classification picker | [[id:5D216C96-35D1-47DA-A348-EF639461E57B][ores.refdata.currency_pair_classification]] |
+| =business_day_convention_type= | The business day convention picker | [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][ores.refdata.business_day_convention_type]] |
+| =calendar= | The names in the calendars panel and its picker | [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the pair | List the pairs | =refdata.v1.currency_pairs.list= | partial |
+| Find the pair | Read one pair | =refdata.v1.currency_pairs.get= | exists |
+| Find the pair | Read its convention | =refdata.v1.currency_pair_conventions.get= | exists |
+| Name the pair | Fill the currency pickers | =refdata.v1.currencies.list= | exists |
+| Name the pair | Fill the classification picker | =refdata.v1.currency_pair_classifications.list= | exists |
+| Set the convention | Fill the business day convention picker | =refdata.v1.business_day_convention_types.list= | exists |
+| Save the pair | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Save the pair | Write the pair | =refdata.v1.currency_pairs.put= | partial |
+| Save the pair | Write the convention | =refdata.v1.currency_pair_conventions.put= | partial |
+| Set the settlement calendars | List the pair's calendars | =refdata.v1.currency_pair_convention_calendars.list_by_pair_code= | exists |
+| Set the settlement calendars | Fill the calendar picker | =refdata.v1.calendars.list= | exists |
+| Set the settlement calendars | Add or remove a calendar | =refdata.v1.currency_pair_convention_calendars.put=, =.delete= | exists |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= | exists |
+| Check the history | Revert by writing the old values | the entity's =put= | exists |
+
+The history request is the generic one, with =entity_type=
+=ores.refdata.currency_pair= or =ores.refdata.currency_pair_convention=; both
+register a history provider.
+
+* What is missing
+
+1. *The pair and its convention are not written together.* They are two writes,
+   and the convention refers to the pair. If the second write fails, the pair
+   exists without the convention it is meant to have one of. The candidate is
+   one operation that writes both in one transaction. Until then the screen
+   writes the pair, then the convention, and if the second write fails it says
+   so and keeps the convention form open for a retry. A pair found later
+   without a convention opens with an empty convention form and a notice that
+   the convention is missing, so the half-written pair can be completed from
+   *Find the pair*.
+2. *The pair code is not checked against its legs.* The insert validates that
+   the base, the quote and the classification exist, but not that the pair code
+   is =BASE/QUOTE=, that the legs differ, or that they are in base-precedence
+   order. The candidate is to derive the pair code on the server, or to check
+   it there. Until then the screen derives it and never lets the person type it.
+3. *The pair list cannot be filtered by currency or classification.* The filter
+   takes pair codes only. Showing "the pairs of this currency" means paging
+   through every pair. The candidate is a filter on the base and quote
+   currencies and on the classification.
+4. *The convention model names the wrong table.* The =business_day_convention=
+   note on the convention model says it refers to a trading table; the insert
+   validates against the refdata =business_day_convention_type= list. The model
+   text is out of date; the behaviour is right.
+5. *Only a tenant administrator can run this journey.* =Operations= holds the
+   convention calendar permissions but not the pair or convention ones, and no
+   read on the lists the pickers need.
+
+* Related journeys
+
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — each leg opens its currency
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] — each settlement calendar opens there
+- [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] — the desk groups the legs belong to
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — correct the pair classifications or business day conventions the pickers offer
+
+* Related knowledge
+
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]]
+- [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]]
+- [[id:4F93228E-C638-429C-993A-360EE88BD86A][Currency pair classification: major, minor, exotic]]
+- [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]]
+- [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]]
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]]
+
+* See also
+
+- [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

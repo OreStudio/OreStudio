@@ -61,7 +61,8 @@ each operation against the generated protocol.
 | [[id:1424617D-B285-401B-915A-BAEC5A0C2006][Extract the ores.dq user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.dq, reading its legacy screens in ores.qt/dq. |
 | [[id:A7F0A526-A486-4D7C-A9AC-5D2C7389E407][Extract the ores.trading user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.trading, reading its legacy screens in ores.qt/trading. |
 | [[id:C08E91B8-0731-4A0A-89ED-6F7AD82E1C63][Extract the application shell user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.qt application shell, reading its legacy screens in ores.qt/application. |
-| [[id:4C97EADD-1D0E-474E-9B00-1EC49D15DC6F][Write the remaining ores.refdata user journeys]] | BACKLOG | | | Write the nine refdata journeys the agreed catalogue still lacks: currency pair, desk groups, counterparty onboarding, party details, book structure, conventions and tenors. |
+| [[id:4C97EADD-1D0E-474E-9B00-1EC49D15DC6F][Write the remaining ores.refdata user journeys]] | DONE | 2026-10-04 | 2026-10-04 | Write the nine refdata journeys the agreed catalogue still lacks: currency pair, desk groups, counterparty onboarding, party details, book structure, conventions and tenors. |
+| [[id:31E01B66-3F71-40D8-B839-708F9D71B781][Write the refdata party, book, convention and tenor journeys]] | BACKLOG | | | Write journeys 5 to 9 of the agreed ores.refdata catalogue: counterparty onboarding, party details, book structure, instrument conventions and tenor resolution. |
 
 * Scope
 

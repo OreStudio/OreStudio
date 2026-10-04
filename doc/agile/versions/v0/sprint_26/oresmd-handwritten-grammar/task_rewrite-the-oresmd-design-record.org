@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/rewrite-the-oresmd-design-record
-#+pr:
+#+pr: 2582
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2582][#2582]] | [doc] Rewrite the oresmd design record for the grammar that ships |
 
 * Review
 

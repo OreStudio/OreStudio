@@ -151,7 +151,7 @@ export function TenantsPage(): ReactNode {
                 description={t('tenants.description')}
                 actions={
                     <LinkButton to="/tenants/new" variant="primary">
-                        {t('shell.journey.newTenant')}
+                        {t('tenants.add')}
                     </LinkButton>
                 }
             />
@@ -376,13 +376,13 @@ function RowActions({ tenant }: { readonly tenant: TenantSummary }): ReactNode {
     );
 }
 
-/** A menu entry for a journey the tree has not built: named, and marked so. */
+/** A menu entry for an action this release does not have: named, and marked so. */
 function NotBuiltAction({ label }: { readonly label: string }): ReactNode {
     const { t } = useTranslation();
     return (
         <li className="flex items-center justify-between gap-2 px-3 py-1.5 text-ink-faint">
             <span>{label}</span>
-            <span className="text-[11px]">{t('shell.notBuilt')}</span>
+            <span className="text-[11px]">{t('tenants.notBuilt')}</span>
         </li>
     );
 }

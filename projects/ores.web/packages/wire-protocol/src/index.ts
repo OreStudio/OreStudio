@@ -47,6 +47,7 @@ export {
     accountSchema,
     activePartySchema,
     badgePresentationSchema,
+    deploymentOverviewSchema,
     partySummarySchema,
     tenantDetailResponseSchema,
     tenantDetailSchema,
@@ -64,7 +65,9 @@ export type {
     AccountType,
     ActiveParty,
     BadgePresentation,
+    DeploymentOverview,
     PartySummary,
+    SetupActivity,
     TenantDetail,
     TenantDetailResponse,
     TenantPage,
@@ -98,11 +101,12 @@ export {
     TENANT_SETUP_READ_LIMIT,
     listTenantsPage,
     readTenant,
+    readProvisioningRuns,
     readTenantSetups,
     wireTenantPageSchema,
     wireWorkflowInstancesSchema,
 } from './tenants.js';
-export type { TenantListQuery, WireTenantPage } from './tenants.js';
+export type { ProvisioningRun, TenantListQuery, WireTenantPage } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
 export type { PartyPageQuery } from './party-page.js';
 

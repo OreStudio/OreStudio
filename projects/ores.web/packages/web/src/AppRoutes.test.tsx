@@ -173,17 +173,16 @@ describe('the route table once the flag is clear', () => {
     it('does not render the application to a visitor', () => {
         const html = render('/', ready, anonymous);
 
-        expect(html).not.toContain('Signed in');
+        expect(html).not.toContain('Welcome, admin');
         expect(html).not.toContain('Sign out');
     });
 
     it('renders the application, with the session in it, to a signed-in person', () => {
         const html = render('/', ready, authenticated);
 
-        expect(html).toContain('Signed in');
+        expect(html).toContain('Welcome, admin');
         expect(html).toContain('Acme Corporation');
-        expect(html).toContain('Acme Operations');
-        expect(html).toContain('admin@acme.test');
+        expect(html).toContain('Working for Acme Operations');
         expect(html).toContain('Sign out');
     });
 
@@ -218,16 +217,15 @@ describe('the route table once the flag is clear', () => {
     });
 
     /*
-     * The home screen of a session outside system administration offers the
-     * party journey. A tenant is created from the Tenants area, which only
-     * system administration has, so this screen does not offer one.
+     * A party user's home offers their own screens. A tenant is created from
+     * Tenants, which only system administration has, so this home does not
+     * offer one.
      */
-    it('offers the party journey from the home screen, and not the tenant one', () => {
+    it("offers a party user's own screens from home, and no new tenant", () => {
         const html = render('/', ready, authenticated);
 
         expect(html).not.toContain('/tenants/new');
-        expect(html).toContain('New party');
-        expect(html).toContain('/parties/new');
+        expect(html).toContain('href="/security"');
     });
 });
 
@@ -266,7 +264,7 @@ describe('an installation that has no tenant of its own', () => {
         const html = render('/', ready, authenticated);
 
         expect(html).not.toContain('First run journey');
-        expect(html).toContain('Signed in');
+        expect(html).toContain('Welcome, admin');
     });
 });
 

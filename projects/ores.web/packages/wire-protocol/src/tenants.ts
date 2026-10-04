@@ -171,6 +171,8 @@ export interface TenantListQuery {
     readonly status?: string;
     /** The types a row may have; a row of any other type is left out. */
     readonly types?: readonly string[];
+    /** The tenants asked for by id; any other tenant is left out. */
+    readonly ids?: readonly string[];
     readonly offset?: number;
     readonly limit?: number;
 }
@@ -215,7 +217,7 @@ export async function listTenantsPage(
         filter: {
             type: input.type === undefined || input.type === '' ? null : input.type,
             status: input.status === undefined || input.status === '' ? null : input.status,
-            id_one_of: null,
+            id_one_of: input.ids === undefined ? null : [...input.ids],
             type_one_of: input.types === undefined ? null : [...input.types],
             status_one_of: null,
             search: input.search === undefined || input.search === '' ? null : input.search,
@@ -342,4 +344,57 @@ export async function readTenantSetups(
         });
     }
     return { setups, complete: answer.instances.length < TENANT_SETUP_READ_LIMIT };
+}
+
+/** One provisioning run, as a screen that reports activity reads it. */
+export interface ProvisioningRun {
+    readonly instanceId: string;
+    readonly tenantId: string;
+    readonly status: string;
+    readonly currentStepIndex: number;
+    readonly stepCount: number;
+    readonly error: string;
+    /** When the run finished, or started when it has not. */
+    readonly at: string;
+}
+
+/**
+ * The newest provisioning runs, the one that changed last first.
+ *
+ * `status` narrows them to one engine state, such as `failed`. The read is one
+ * page of the engine's answer, so `limit` is the most it returns.
+ */
+export async function readProvisioningRuns(
+    caller: AuthenticatedCaller,
+    input: { readonly status?: string; readonly limit: number },
+): Promise<readonly ProvisioningRun[]> {
+    const request: ListWorkflowInstanceSummariesRequest = {
+        limit: input.limit,
+        status_filter: input.status ?? '',
+        type_filter: PROVISION_TENANT_WORKFLOW_TYPE,
+        target_kind_filter: PROVISION_TENANT_TARGET_KIND,
+        target_id_filter: '',
+        target_ids_filter: [],
+    };
+    const answer = await caller.callAuthenticated(
+        workflowSubjects.list_workflow_instance_summaries_request,
+        request,
+        wireWorkflowInstancesSchema,
+    );
+    if (!answer.success) {
+        throw new Error(
+            answer.message === '' ? 'The provisioning runs were not read.' : answer.message,
+        );
+    }
+    return answer.instances
+        .filter((run) => run.target_id !== '')
+        .map((run) => ({
+            instanceId: run.id,
+            tenantId: run.target_id,
+            status: run.status,
+            currentStepIndex: run.current_step_index,
+            stepCount: run.step_count,
+            error: run.error,
+            at: run.completed_at ?? run.created_at,
+        }));
 }

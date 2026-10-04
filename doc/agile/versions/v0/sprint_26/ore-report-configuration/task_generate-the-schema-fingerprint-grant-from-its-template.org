@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: E3E2C583-E982-4185-9D36-7F76D76B7780
+:END:
+#+title: Task: Generate the schema fingerprint grant from its template
+#+description: The grant that lets every service read the schema fingerprint was added to the generated grants file by hand, so the next regeneration deletes it and every service refuses to start; move it into the template.
+#+type: task
+#+level: s1
+#+filetags: :ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch: feature/generate-the-schema-fingerprint-grant-from-its-template
+#+pr: 2621
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerating the service grants keeps every service able to read the schema fingerprint.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- The db grants template emits the fingerprint grant for every service in the registry.
+- Regenerating the grants from the registry changes nothing in the checked-in file.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2621][#2621]] | [codegen] Generate the schema fingerprint grant from its template |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The db grants template now emits the schema fingerprint grant for every
+service in the registry. [[https://github.com/OreStudio/OreStudio/pull/2574][#2574]] had added it to the generated
+=iam_service_db_grants_create.sql= by hand, so regenerating the grants from the
+service registry, as any new service or grant change does, deleted it, and
+every service would then have refused to start for want of SELECT on
+=ores_database_info_tbl=. Regenerating the grants after this change leaves the
+checked-in file byte-for-byte as it was.
+

@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_CLIENT_DETAIL_SUBJECT_HELPERS_HPP
 #define ORES_MARKETDATA_CLIENT_DETAIL_SUBJECT_HELPERS_HPP
 
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include <algorithm>
 #include <string>
 
@@ -42,7 +43,8 @@ inline std::string ore_key_to_subject(std::string ore_key,
         return static_cast<char>(std::tolower(c));
     });
     std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    return "marketdata.v1.tick." + tenant_id + "." + workspace_id + "." + party_id + "." + ore_key;
+    return std::string(domain::marketdata_tick_subject_prefix) + tenant_id + "." + workspace_id +
+           "." + party_id + "." + ore_key;
 }
 
 }

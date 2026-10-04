@@ -8,7 +8,7 @@
 #+filetags: :codegen:protocol:implement_the_list_contract_in_codegen:sprint_26:v0:
 #+owner: marco
 #+branch: feature/generate-the-filter-record
-#+pr:
+#+pr: 2588
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2588][#2588]] | [codegen] Apply the filter record in every generated list |
 
 * Review
 

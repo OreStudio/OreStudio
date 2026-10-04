@@ -54,16 +54,25 @@ investigation.
 - Both are one quote per message. The IR "curve" tick is one curve point; a
   curve is the set of points published with one =datetime=.
 - Both ingest paths end in the same step. =persist_tick_observation= rebuilds an
-  ORE key (=feed_ingest_loop.cpp:346= and =:419-422= glue the IR parts back
-  together), reads it with =ore_key_codec=, and stores one observation with a
-  value, a time, a source and an owner.
+  ORE key (in =feed_ingest_loop.cpp=, =ingest_ir_curve= glues the IR parts
+  back together and =persist_tick_observation= reads them with
+  =ore_key_codec=), and stores one observation with a value, a time, a source
+  and an owner.
 - The IR tick's =asset_class= and =subclass= repeat what the classifier derives
   from the datum. The file import already uses =classification_key_of= and the
   classifier instead.
-- The ingest loop republishes the payload unchanged on
-  =marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>= (lines 314 and 391).
+- The ingest loop republishes the payload unchanged, with the two =js_publish=
+  calls in =feed_ingest_loop.cpp=, on
+  =marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>=, where =<key>= is the
+  ORE key lower-cased with its slashes turned to dots
+  (=ore_key_to_publish_subject=).
   Its only reader is the client's =fx_spot_subscription=, which decodes
   =fx_spot_tick= and has no production caller.
+- The FX path finds its owners by source name: one source fans out to every
+  binding of that source, each with its tenant, workspace and party, and a tick
+  from a source with no enabled binding is dropped with one warning per source.
+- Bindings are created during tenant provisioning, by
+  =create_theme_feed_bindings=, from the FX spot generation configs only.
 - The two shapes differ only in how they spell the key and where the owner
   comes from. Neither difference is a fact about FX or about rates.
 
@@ -121,9 +130,23 @@ The tick is:
 | Field | Meaning |
 |-------+---------|
 | =oresmd_uri= | the quote URI of the datum observed, under the strict contract |
-| =value= | the observed value |
+| =value= | the observed value, as decimal text |
 | =observation_time= | when it was observed |
 | =source= | the producer, which the feed binding resolves to an owner |
+
+The value is text, as stored observations and the file import are: a decimal
+written as text keeps the exact digits, and the wire is generated from the
+model, so the type is settled before the model is written.
+
+The republished subject keeps its shape. Its suffix is the datum's canonical
+ORE key, written by =ore_key_codec= from the datum the URI names, lower-cased
+with its slashes turned to dots, so a subscriber still addresses a stream by
+the ORE key it knows.
+
+A tick finds its owners as FX ticks do today, for every feed: by its =source=,
+which names a producer uniquely within a tenant. Each enabled binding of that
+source is one consumer. A tick from a source with no enabled binding is dropped
+with one warning per source.
 
 A curve stays a set of ticks with one observation time. A batch message, a list
 of ticks published as one NATS message, is a later choice to be measured, not
@@ -138,8 +161,8 @@ part of the model.
   one type. It closes P02 for marketdata.
 - The feed binding stores an =asset_class= that its =oresmd_uri= already
   implies. The same task should derive it from the URI or drop it.
-- The tick's value type is open. Ticks carry =double= today and stored
-  observations are text. Text keeps the exact digits, as the file import does.
+- Tenant provisioning creates bindings for the IR curve generation configs as
+  it does for the FX spot ones.
 - =synthetic.v1.tick= belongs to =ores.synthetic= and is declared there, under
   that component's own P02.
 

@@ -34,6 +34,7 @@ export interface CreditSimulationMatrixConfig {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     name: string;
     t0: number;
     t1: number;

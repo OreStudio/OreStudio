@@ -47,6 +47,7 @@ generate_synthetic_pricing_model_config(utility::generation::generation_context&
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.party_id = ctx.generate_uuid();
     r.name = std::string("config") + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.config_variant = std::string("standard");

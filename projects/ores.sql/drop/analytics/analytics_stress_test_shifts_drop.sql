@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists stress_test_shifts_tbl_party_isolation_policy on "ores_analytics_stress_test_shifts_tbl";
 drop policy if exists stress_test_shifts_tbl_tenant_isolation_policy on "ores_analytics_stress_test_shifts_tbl";
 drop rule if exists ores_analytics_stress_test_shifts_delete_rule on "ores_analytics_stress_test_shifts_tbl";
 drop trigger if exists ores_analytics_stress_test_shifts_insert_trg on "ores_analytics_stress_test_shifts_tbl";

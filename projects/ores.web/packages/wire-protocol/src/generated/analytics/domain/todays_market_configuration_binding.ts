@@ -34,6 +34,7 @@ export interface TodaysMarketConfigurationBinding {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     todays_market_configuration_id: string;
     collection: string;
     reference: string;

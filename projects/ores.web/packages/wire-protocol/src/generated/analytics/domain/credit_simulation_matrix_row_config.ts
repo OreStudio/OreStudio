@@ -35,6 +35,7 @@ export interface CreditSimulationMatrixRowConfig {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     transition_matrix_id: string;
     from_rating: string;
     p_aaa: number;

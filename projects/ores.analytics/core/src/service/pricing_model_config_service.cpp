@@ -85,6 +85,7 @@ messaging::pricing_model_config_key key_from(const domain::pricing_model_config&
 domain::pricing_model_config to_domain(const messaging::pricing_model_config_write& write) {
     domain::pricing_model_config v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.name = write.name;
     v.description = write.description;
     v.config_variant = write.config_variant;

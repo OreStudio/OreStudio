@@ -35,6 +35,7 @@ render_todays_market_entry_fields(const domain::todays_market_entry& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Todays Market Config ID",
                       .value = boost::uuids::to_string(v.todays_market_config_id)});
     fields.push_back({.name = "Todays Market Collection ID",

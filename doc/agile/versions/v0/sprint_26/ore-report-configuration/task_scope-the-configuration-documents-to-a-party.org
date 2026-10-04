@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/scope-the-run-document-to-a-party
-#+pr: 2579
+#+branch: feature/scope-the-analytics-documents-to-a-party
+#+pr: 2580
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -90,6 +90,23 @@ Step 1, decided while building it:
 - =tests/party_fixture.hpp= makes two operational parties of the test tenant,
   with a context that sees only each, for the per-group isolation tests.
 
+Step 2, decided while building it:
+
+- Sixteen analytics tables: pricing engines (three), today's market (five),
+  stress test (three) and credit simulation (five). The collection kind lookup
+  is system-tenant reference data and stays as it is.
+- The pricing model tables had hand-written tenant policies with no reason
+  behind them, since analytics is created after iam. They now set
+  =:rls_tenant_isolation:= and =:rls_party_isolation:=, and the hand-written
+  blocks are deleted.
+- =pricing_model_config= and =todays_market_config= were unique by name per
+  tenant; =party_id= joins their natural key, so the name is unique per party.
+- The eventing test template also seeds ancestors two or more steps up through
+  =_plan_required_seeds=; a party-isolated ancestor there now carries the
+  session party too.
+- The analytics core tests link =ores.refdata.core=, which the generated tests
+  need to create their party, as the reporting tests already did.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -105,6 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2580][#2580]] | [analytics] Scope the analytics configuration documents to a party |
 | [[https://github.com/OreStudio/OreStudio/pull/2579][#2579]] | [reporting] Scope the run document and reporting registry to a party |
 
 * Review

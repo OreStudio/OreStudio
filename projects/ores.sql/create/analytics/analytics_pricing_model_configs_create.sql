@@ -33,6 +33,7 @@ create table if not exists "ores_analytics_pricing_model_configs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "party_id" uuid not null,
     "name" text not null,
     "description" text null,
     "config_variant" text null,
@@ -53,9 +54,9 @@ create table if not exists "ores_analytics_pricing_model_configs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Unique name for active records
-create unique index if not exists pricing_model_configs_name_uniq_idx
-on "ores_analytics_pricing_model_configs_tbl" (tenant_id, name)
+-- Composite natural key: unique combination for active records
+create unique index if not exists pricing_model_configs_party_id_name_uniq_idx
+on "ores_analytics_pricing_model_configs_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -155,4 +156,41 @@ on delete to "ores_analytics_pricing_model_configs_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Pricing Model Configuration
+-- =============================================================================
+alter table ores_analytics_pricing_model_configs_tbl enable row level security;
+
+drop policy if exists pricing_model_configs_tbl_tenant_isolation_policy
+    on ores_analytics_pricing_model_configs_tbl;
+
+create policy pricing_model_configs_tbl_tenant_isolation_policy
+on ores_analytics_pricing_model_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists pricing_model_configs_tbl_party_isolation_policy
+    on ores_analytics_pricing_model_configs_tbl;
+
+create policy pricing_model_configs_tbl_party_isolation_policy
+on ores_analytics_pricing_model_configs_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

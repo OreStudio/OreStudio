@@ -61,6 +61,12 @@ struct stress_test_library final {
     boost::uuids::uuid id;
 
     /**
+     * @brief The party that owns the document this row belongs to. Set from the session that writes
+     * the document, and enforced by row level security, so a party sees only its own configuration.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief Name of the library, which is the name of the document it came from.
      */
     std::string name;

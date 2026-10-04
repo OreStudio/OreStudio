@@ -46,6 +46,7 @@ generate_synthetic_credit_simulation_entity_config(utility::generation::generati
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.credit_simulation_config_id = ctx.generate_uuid();
     r.name = std::string(faker::word::noun());
     r.transition_matrix_id = ctx.generate_uuid();

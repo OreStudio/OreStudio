@@ -85,6 +85,7 @@ messaging::todays_market_config_key key_from(const domain::todays_market_config&
 domain::todays_market_config to_domain(const messaging::todays_market_config_write& write) {
     domain::todays_market_config v;
     v.id = write.id;
+    v.party_id = write.party_id;
     v.name = write.name;
     v.description = write.description;
     v.config_variant = write.config_variant;

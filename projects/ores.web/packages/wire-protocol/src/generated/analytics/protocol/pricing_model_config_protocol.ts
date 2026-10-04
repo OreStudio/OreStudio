@@ -35,6 +35,7 @@ export interface PricingModelConfigKey {
 
 export interface PricingModelConfigWrite {
     id: string;
+    party_id: string;
     name: string;
     description: string;
     config_variant: string;

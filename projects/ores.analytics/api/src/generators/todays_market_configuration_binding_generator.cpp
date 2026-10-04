@@ -45,6 +45,7 @@ domain::todays_market_configuration_binding generate_synthetic_todays_market_con
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.todays_market_configuration_id = ctx.generate_uuid();
     r.collection = std::string("DiscountingCurves");
     r.reference = std::string("default");

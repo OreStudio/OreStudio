@@ -40,6 +40,7 @@ domain::todays_market_entry todays_market_entry_mapper::map(const todays_market_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.todays_market_config_id = boost::lexical_cast<boost::uuids::uuid>(v.todays_market_config_id);
     r.todays_market_collection_id =
         boost::lexical_cast<boost::uuids::uuid>(v.todays_market_collection_id);
@@ -65,6 +66,7 @@ todays_market_entry_entity todays_market_entry_mapper::map(const domain::todays_
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.todays_market_config_id = boost::uuids::to_string(v.todays_market_config_id);
     r.todays_market_collection_id = boost::uuids::to_string(v.todays_market_collection_id);
     r.key_value = v.key_value;

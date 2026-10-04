@@ -45,6 +45,7 @@ generate_synthetic_pricing_model_product_parameter(utility::generation::generati
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.pricing_model_config_id = ctx.generate_uuid();
     r.pricing_model_product_id = std::nullopt;
     r.parameter_scope = std::string("model");

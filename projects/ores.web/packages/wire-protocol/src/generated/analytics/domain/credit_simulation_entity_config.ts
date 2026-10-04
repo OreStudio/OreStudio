@@ -35,6 +35,7 @@ export interface CreditSimulationEntityConfig {
     tenant_id: string;
     workspace_id: string;
     id: string;
+    party_id: string;
     credit_simulation_config_id: string;
     name: string;
     transition_matrix_id: string;

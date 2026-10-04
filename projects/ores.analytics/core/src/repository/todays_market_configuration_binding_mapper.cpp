@@ -41,6 +41,7 @@ domain::todays_market_configuration_binding todays_market_configuration_binding_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.todays_market_configuration_id =
         boost::lexical_cast<boost::uuids::uuid>(v.todays_market_configuration_id);
     r.collection = v.collection;
@@ -64,6 +65,7 @@ todays_market_configuration_binding_entity todays_market_configuration_binding_m
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.todays_market_configuration_id = boost::uuids::to_string(v.todays_market_configuration_id);
     r.collection = v.collection;
     r.reference = v.reference;

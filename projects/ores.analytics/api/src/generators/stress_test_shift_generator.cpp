@@ -45,6 +45,7 @@ generate_synthetic_stress_test_shift(utility::generation::generation_context& ct
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.stress_test_scenario_id = ctx.generate_uuid();
     r.family = std::string("DiscountCurves");
     r.object_key = std::string("EUR");

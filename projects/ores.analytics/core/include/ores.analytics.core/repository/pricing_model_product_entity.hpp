@@ -45,6 +45,7 @@ struct pricing_model_product_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string party_id;
     std::string pricing_model_config_id;
     std::string pricing_engine_type_code;
     std::string model;

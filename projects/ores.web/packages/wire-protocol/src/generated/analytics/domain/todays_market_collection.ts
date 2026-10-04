@@ -34,6 +34,7 @@ export interface TodaysMarketCollection {
     version: number;
     tenant_id: string;
     id: string;
+    party_id: string;
     todays_market_config_id: string;
     collection: string;
     collection_id: string | null;

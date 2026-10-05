@@ -37,64 +37,89 @@ const SEARCH_PAUSE_MS = 300;
 
 /**
  * One column of a list. `sort` names the server field the column orders by,
- * and is honoured only when the resource declares that field sortable.
+ * and is honoured only when the source declares that field sortable.
  * A `hidden` column starts hidden and is offered in the column menu.
  */
-export interface ListColumn {
+export interface ListColumn<Row = RecordRow> {
     readonly id: string;
     readonly header: string;
-    readonly cell: (row: RecordRow) => ReactNode;
+    readonly cell: (row: Row) => ReactNode;
     readonly mono?: boolean;
     readonly numeric?: boolean;
     readonly sort?: string;
     readonly hidden?: boolean;
-    /** The column holds a code of this source in this field, drawn with its flag. */
-    readonly flag?: { readonly source: FlagSource; readonly field: string };
+    /** The column holds a code of this source, drawn with its flag. */
+    readonly flag?: { readonly source: FlagSource; readonly code: (row: Row) => string };
+}
+
+/**
+ * Where a list's rows come from: one page at a time from the server, with the
+ * search and the orders the server supports. `key` names the list, for its
+ * cache and for the columns a person chose. Every record list, refdata or not,
+ * draws through =RecordList= from a source.
+ */
+export interface ListSource<Row> {
+    readonly key: string;
+    readonly read: (page: PageRequest) => Promise<{
+        readonly rows: readonly Row[];
+        readonly total: number;
+    }>;
+    readonly search: boolean;
+    readonly sortable: readonly string[];
+    readonly mayAdd: boolean;
+    /** Reads a row's audit field by its server name; a source without one shows no audit columns. */
+    readonly audit?: (row: Row, field: string) => unknown;
+}
+
+/** How a list asks the server for one page. */
+export interface PageRequest {
+    readonly offset: number;
+    readonly limit: number;
+    readonly search: string;
+    readonly sort: string;
+    readonly descending: boolean;
+}
+
+/** The source of a refdata record kind: the registry says what it searches and sorts. */
+export function useRecordSource(resource: string): ListSource<RecordRow> {
+    const registry = useRegistry();
+    const may = useRecordPermissions(resource);
+    const entry = registry.data?.find((candidate) => candidate.key === resource);
+    return {
+        key: resource,
+        read: (page) => api.recordPage(resource, page),
+        search: entry?.search === true,
+        sortable: entry?.sortable ?? [],
+        mayAdd: may.write,
+        audit: (row, field) => (field === 'version' ? row.version : row[field]),
+    };
 }
 
 /** The audit columns every versioned list offers, hidden by default. */
-export function auditColumns(t: (key: string) => string): readonly ListColumn[] {
+export function auditColumns<Row>(
+    t: (key: string) => string,
+    field: (row: Row, name: string) => unknown,
+): readonly ListColumn<Row>[] {
+    const text = (name: string, hidden = true, mono = false): ListColumn<Row> => ({
+        id: name,
+        header: t(`refdata.fields.${name}`),
+        cell: (row) => show(field(row, name)),
+        mono,
+        hidden,
+    });
     return [
-        {
-            id: 'version',
-            header: t('refdata.fields.version'),
-            cell: (row) => show(row.version),
-            mono: true,
-            numeric: true,
-            hidden: true,
-        },
-        {
-            id: 'modified_by',
-            header: t('refdata.fields.modified_by'),
-            cell: (row) => show(row['modified_by']),
-            hidden: true,
-        },
-        {
-            id: 'performed_by',
-            header: t('refdata.fields.performed_by'),
-            cell: (row) => show(row['performed_by']),
-            hidden: true,
-        },
+        { ...text('version', true, true), numeric: true },
+        text('modified_by'),
+        text('performed_by'),
         {
             id: 'recorded_at',
             header: t('refdata.fields.recorded_at'),
-            cell: (row) => <RelativeTime at={show(row['recorded_at'])} />,
+            cell: (row) => <RelativeTime at={show(field(row, 'recorded_at'))} />,
             mono: true,
             hidden: true,
         },
-        {
-            id: 'change_reason_code',
-            header: t('refdata.fields.change_reason_code'),
-            cell: (row) => show(row['change_reason_code']),
-            mono: true,
-            hidden: true,
-        },
-        {
-            id: 'change_commentary',
-            header: t('refdata.fields.change_commentary'),
-            cell: (row) => show(row['change_commentary']),
-            hidden: true,
-        },
+        text('change_reason_code', true, true),
+        text('change_commentary'),
     ];
 }
 
@@ -141,15 +166,15 @@ export function useListState(): {
 }
 
 /** Which columns a person hid or showed, remembered in this browser per list. */
-function useColumnChoice(
-    resource: string,
-    columns: readonly ListColumn[],
+function useColumnChoice<Row>(
+    list: string,
+    columns: readonly ListColumn<Row>[],
 ): {
-    readonly visible: readonly ListColumn[];
-    readonly isShown: (column: ListColumn) => boolean;
-    readonly toggle: (column: ListColumn) => void;
+    readonly visible: readonly ListColumn<Row>[];
+    readonly isShown: (column: ListColumn<Row>) => boolean;
+    readonly toggle: (column: ListColumn<Row>) => void;
 } {
-    const key = `ores.columns.v1.${resource}`;
+    const key = `ores.columns.v1.${list}`;
     const [choice, setChoice] = useState<Readonly<Record<string, boolean>>>(() => {
         try {
             return JSON.parse(window.localStorage.getItem(key) ?? '{}') as Record<string, boolean>;
@@ -157,8 +182,9 @@ function useColumnChoice(
             return {};
         }
     });
-    const isShown = (column: ListColumn): boolean => choice[column.id] ?? column.hidden !== true;
-    const toggle = (column: ListColumn): void => {
+    const isShown = (column: ListColumn<Row>): boolean =>
+        choice[column.id] ?? column.hidden !== true;
+    const toggle = (column: ListColumn<Row>): void => {
         const next = { ...choice, [column.id]: !isShown(column) };
         setChoice(next);
         try {
@@ -176,8 +202,8 @@ function useColumnChoice(
  * sorting and a column menu, the states, and the pager. Every record list is
  * this component; a screen supplies its columns and the address of a row.
  */
-export function RecordList({
-    resource,
+export function RecordList<Row>({
+    source,
     title,
     lead,
     crumbs,
@@ -186,25 +212,23 @@ export function RecordList({
     addLabel,
     onAdd,
 }: {
-    readonly resource: string;
+    readonly source: ListSource<Row>;
     readonly title: string;
     readonly lead: string;
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
-    readonly columns: readonly ListColumn[];
-    readonly pathOf: (row: RecordRow) => string;
-    readonly addLabel: string;
-    readonly onAdd: () => void;
+    readonly columns: readonly ListColumn<Row>[];
+    readonly pathOf: (row: Row) => string;
+    readonly addLabel?: string;
+    readonly onAdd?: () => void;
 }): ReactNode {
     const { t, language } = useTranslation();
     const navigate = useNavigate();
     const state = useListState();
-    const registry = useRegistry();
-    const may = useRecordPermissions(resource);
-    const entry = registry.data?.find((candidate) => candidate.key === resource);
-    const sortable = new Set(entry?.sortable ?? []);
+    const sortable = new Set(source.sortable);
+    const mayAdd = source.mayAdd && onAdd !== undefined && addLabel !== undefined;
     const plural = title.toLocaleLowerCase(language);
-    const all = [...columns, ...auditColumns(t)];
-    const { visible, isShown, toggle } = useColumnChoice(resource, all);
+    const all = [...columns, ...(source.audit === undefined ? [] : auditColumns(t, source.audit))];
+    const { visible, isShown, toggle } = useColumnChoice(source.key, all);
     const [typed, setTyped] = useState(state.search);
     const page = {
         offset: state.offset,
@@ -214,8 +238,8 @@ export function RecordList({
         descending: state.descending,
     };
     const rows = useQuery({
-        queryKey: ['records', resource, 'page', page],
-        queryFn: () => api.recordPage(resource, page),
+        queryKey: ['records', source.key, 'page', page],
+        queryFn: () => source.read(page),
         placeholderData: keepPreviousData,
     });
 
@@ -235,7 +259,7 @@ export function RecordList({
     };
     const sortBy = (field: string): void =>
         state.order(field, state.sort === field ? !state.descending : false);
-    const open = (row: RecordRow): void => void navigate(pathOf(row));
+    const open = (row: Row): void => void navigate(pathOf(row));
     const data = rows.data;
     const bounds = pageBounds(state.offset, data?.rows.length ?? 0);
 
@@ -251,7 +275,7 @@ export function RecordList({
                             <Button icon="refresh" onClick={refresh} pending={rows.isFetching}>
                                 {t('refdata.records.refresh')}
                             </Button>
-                            {may.write && (
+                            {mayAdd && (
                                 <Button variant="primary" icon="add" onClick={onAdd}>
                                     {addLabel}
                                 </Button>
@@ -262,7 +286,7 @@ export function RecordList({
             </div>
             <section className="overflow-hidden rounded-md border border-line">
                 <div className="flex flex-wrap items-center gap-3 border-b border-line p-3">
-                    {entry?.search === true && (
+                    {source.search && (
                         <label className="relative min-w-60 flex-1">
                             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-faint">
                                 <Icon name="search" size={16} />
@@ -365,7 +389,7 @@ export function RecordList({
                                         {state.search === '' ? (
                                             <span className="flex items-center gap-3">
                                                 {t('refdata.records.noRecords', { plural })}
-                                                {may.write && (
+                                                {mayAdd && (
                                                     <Button size="sm" icon="add" onClick={onAdd}>
                                                         {addLabel}
                                                     </Button>
@@ -420,7 +444,7 @@ export function RecordList({
                                                 <span className="inline-flex items-center gap-2">
                                                     <FlagOf
                                                         source={column.flag.source}
-                                                        code={show(row[column.flag.field])}
+                                                        code={column.flag.code(row)}
                                                     />
                                                     {column.cell(row)}
                                                 </span>

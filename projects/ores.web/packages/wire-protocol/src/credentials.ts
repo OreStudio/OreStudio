@@ -72,11 +72,23 @@ export const CREDENTIAL_SUBJECTS = {
 /** The page of accounts the caller may see. */
 export async function readAccountsPage(
     caller: AuthenticatedCaller,
-    input: { readonly offset?: number; readonly limit?: number } = {},
+    input: {
+        readonly offset?: number;
+        readonly limit?: number;
+        readonly search?: string;
+        readonly sort?: string;
+        readonly descending?: boolean;
+    } = {},
 ): Promise<WireAccountPage> {
+    const search = input.search ?? '';
     return caller.callAuthenticated(
         SUBJECTS.listAccounts,
-        listAccountsRequestSchema.parse(input),
+        listAccountsRequestSchema.parse({
+            offset: input.offset,
+            limit: input.limit,
+            order: { field: input.sort ?? '', descending: input.descending ?? false },
+            filter: search === '' ? null : { id_one_of: null, search },
+        }),
         accountPageSchema,
     );
 }

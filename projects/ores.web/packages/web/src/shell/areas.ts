@@ -25,6 +25,8 @@ import type { SessionMode } from '@ores/wire-protocol/browser';
 export interface MenuItem {
     readonly nameKey: string;
     readonly to: string;
+    /** Shown only to a person who holds this permission. */
+    readonly permission?: string;
 }
 
 /**
@@ -52,6 +54,7 @@ export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
     ],
     application: [
         { nameKey: 'shell.menu.home', to: '/' },
+        { nameKey: 'shell.menu.people', to: '/people', permission: 'iam::accounts:read' },
         { nameKey: 'shell.menu.refdata', to: '/refdata' },
         { nameKey: 'shell.menu.access', to: '/access' },
     ],

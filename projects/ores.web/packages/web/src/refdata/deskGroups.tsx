@@ -26,7 +26,7 @@ import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
-import { RecordList } from './RecordList.js';
+import { RecordList, useRecordSource } from './RecordList.js';
 import {
     LinkPanel,
     RecordDetails,
@@ -63,10 +63,11 @@ export function DeskGroupsPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
+    const source = useRecordSource(RESOURCE);
     return (
         <>
             <RecordList
-                resource={RESOURCE}
+                source={source}
                 title={t('refdata.deskGroups.title')}
                 lead={t('refdata.deskGroups.lead')}
                 crumbs={[

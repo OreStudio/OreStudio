@@ -26,6 +26,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
+import { useHolds } from '../access/holds.js';
 import { menuFor, modeKey } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
@@ -88,7 +89,10 @@ export function AppShell({
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
-    const menu = menuFor(mode);
+    const holds = useHolds();
+    const menu = menuFor(mode).filter(
+        (item) => item.permission === undefined || holds(item.permission),
+    );
 
     return (
         <div className="flex min-h-full flex-col bg-bg-primary">

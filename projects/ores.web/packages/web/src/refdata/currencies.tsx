@@ -26,7 +26,7 @@ import type { RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Notice } from '../ui/Primitives.js';
 import { HistoryPanel } from './HistoryPanel.js';
-import { RecordList } from './RecordList.js';
+import { RecordList, useRecordSource } from './RecordList.js';
 import {
     ClassifiedValue,
     LinkPanel,
@@ -99,10 +99,11 @@ export function CurrenciesPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
+    const source = useRecordSource(RESOURCE);
     return (
         <>
             <RecordList
-                resource={RESOURCE}
+                source={source}
                 title={t('refdata.currencies.title')}
                 lead={t('refdata.currencies.lead')}
                 crumbs={[
@@ -119,7 +120,7 @@ export function CurrenciesPage(): ReactNode {
                         cell: (row) => show(row['iso_code']),
                         mono: true,
                         sort: 'iso_code',
-                        flag: { source: 'currency', field: 'iso_code' },
+                        flag: { source: 'currency', code: (row) => show(row['iso_code']) },
                     },
                     {
                         id: 'name',

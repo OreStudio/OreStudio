@@ -19,6 +19,7 @@
  *
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -35,13 +36,15 @@ import { PublicShell } from './PublicShell.js';
 describe('the public shell', () => {
     it('shows the application name and the screen', () => {
         const html = renderToStaticMarkup(
-            <TranslationProvider>
-                <MemoryRouter>
-                    <PublicShell>
-                        <p>the screen</p>
-                    </PublicShell>
-                </MemoryRouter>
-            </TranslationProvider>,
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell>
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
         );
 
         expect(html).toContain('ORE Studio');
@@ -50,13 +53,15 @@ describe('the public shell', () => {
 
     it('states what the browser runs and what the deployment runs', () => {
         const html = renderToStaticMarkup(
-            <TranslationProvider>
-                <MemoryRouter>
-                    <PublicShell serverVersion="v0.0.25 [x64-linux] (local abc1234-dirty)">
-                        <p>the screen</p>
-                    </PublicShell>
-                </MemoryRouter>
-            </TranslationProvider>,
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell serverVersion="v0.0.25 [x64-linux] (local abc1234-dirty)">
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
         );
 
         // The client's own build is stamped into the bundle, so the test knows
@@ -67,13 +72,15 @@ describe('the public shell', () => {
 
     it('says the deployment has not said which build it runs', () => {
         const html = renderToStaticMarkup(
-            <TranslationProvider>
-                <MemoryRouter>
-                    <PublicShell>
-                        <p>the screen</p>
-                    </PublicShell>
-                </MemoryRouter>
-            </TranslationProvider>,
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell>
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
         );
 
         expect(html).toContain('server version unknown');
@@ -89,22 +96,40 @@ describe('the application shell', () => {
         partyName: string,
         mode: 'system-administration' | 'tenant-administration' | 'application' = 'application',
         width?: 'column' | 'workspace',
+        permissionCodes: readonly string[] = [],
     ): string {
+        const client = new QueryClient();
+        client.setQueryData(['my-access'], {
+            roles: [
+                {
+                    roleId: '77777777-7777-7777-7777-777777777777',
+                    name: 'Viewer',
+                    description: '',
+                    permissionCodes: [...permissionCodes],
+                    givenBy: 'system',
+                    givenAt: '2026-10-05 09:30:00Z',
+                    reasonCode: 'access.initial',
+                    commentary: '',
+                },
+            ],
+        });
         return renderToStaticMarkup(
-            <TranslationProvider>
-                <MemoryRouter>
-                    <AppShell
-                        username="admin"
-                        tenantName="Acme Corporation"
-                        partyName={partyName}
-                        mode={mode}
-                        {...(width !== undefined && { width })}
-                        onSignOut={() => undefined}
-                    >
-                        <p>the screen</p>
-                    </AppShell>
-                </MemoryRouter>
-            </TranslationProvider>,
+            <QueryClientProvider client={client}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <AppShell
+                            username="admin"
+                            tenantName="Acme Corporation"
+                            partyName={partyName}
+                            mode={mode}
+                            {...(width !== undefined && { width })}
+                            onSignOut={() => undefined}
+                        >
+                            <p>the screen</p>
+                        </AppShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
         );
     }
 
@@ -179,5 +204,12 @@ describe('the application shell', () => {
 
         const application = renderAppShell('Acme Operations', 'application');
         expect(application).not.toContain('Tenants');
+    });
+
+    it('offers People only to a person who may read the accounts', () => {
+        expect(renderAppShell('Acme', 'application')).not.toContain('href="/people"');
+        expect(renderAppShell('Acme', 'application', undefined, ['iam::accounts:read'])).toContain(
+            'href="/people"',
+        );
     });
 });

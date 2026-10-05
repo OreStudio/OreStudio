@@ -357,7 +357,10 @@ export const listAccountsRequestSchema = z.object({
     offset: z.int().nonnegative().default(0),
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
-    filter: z.null().default(null),
+    filter: z
+        .object({ id_one_of: z.array(z.string()).nullable(), search: z.string().nullable() })
+        .nullable()
+        .default(null),
 }) satisfies z.ZodType<GeneratedListAccountsRequest>;
 
 /** `list_login_info_request`, sent on `iam.v1.login_info.list`. */

@@ -631,6 +631,13 @@ begin
 {{/domain_entity.has_tenant_id}}
 {{/domain_entity.change_reason_code_declared}}
 {{/domain_entity.has_audit_columns}}
+{{#domain_entity.has_audit_columns}}
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
+{{/domain_entity.has_audit_columns}}
 {{#domain_entity.foreign_keys}}
 {{#bump_parent_version}}
     -- Bump {{table}}'s version alongside this write (composite entity
@@ -725,7 +732,6 @@ begin
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.current_state}}
 {{#domain_entity.has_audit_columns}}
-    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 {{/domain_entity.has_audit_columns}}
 

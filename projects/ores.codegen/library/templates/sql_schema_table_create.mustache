@@ -163,6 +163,11 @@ begin
     new.{{column}} := {{validation_function}}({{#entity.has_tenant_id}}new.tenant_id, {{/entity.has_tenant_id}}new.{{column}});
 
 {{/entity.validations}}
+    -- The actor is validated before the version management below: the
+    -- validator accepts a username only while a current account row holds
+    -- it, and a self write retires that row.
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+
     select version into current_version
     from "{{entity.product}}_{{entity.component}}_{{entity.entity_plural}}_tbl"
     where {{#entity.has_tenant_id}}tenant_id = new.tenant_id
@@ -196,7 +201,6 @@ begin
 
     new.valid_from = current_timestamp;
     new.valid_to = ores_utility_infinity_timestamp_fn();
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return new;

@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_27:sprint_27:v0:
 #+owner: marco
 #+branch: feature/sprint-27-planning
-#+pr:
+#+pr: 2661
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2661][#2661]] | [agile] Sprint 27 planning — promote 16 stories from backlog |
 
 * Review
 

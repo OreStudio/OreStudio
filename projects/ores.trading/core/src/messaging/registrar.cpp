@@ -87,9 +87,6 @@
 #include "ores.trading.core/messaging/settlement_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_additional_field_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_additional_field_registrar.hpp"
-#include "ores.trading.core/messaging/trade_portfolio_history_provider_registrar.hpp"
-#include "ores.trading.core/messaging/trade_portfolio_registrar.hpp"
-#include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_history_provider_registrar.hpp"
@@ -99,6 +96,9 @@
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
+#include "ores.trading.core/messaging/trade_portfolio_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_portfolio_registrar.hpp"
+#include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
@@ -176,11 +176,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             export_portfolio_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->export_portfolio(std::move(msg));
             }));
-        subs.push_back(nats.queue_subscribe(export_trades_to_storage_request::nats_subject,
-                                            queue_group,
-                                            [toh](ores::nats::message msg) {
-                                                toh->export_trades_to_storage(std::move(msg));
-                                            }));
+        subs.push_back(nats.queue_subscribe(
+            export_trades_to_storage_request::nats_subject,
+            queue_group,
+            [toh](ores::nats::message msg) { toh->export_trades_to_storage(std::move(msg)); }));
     }
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));

@@ -214,8 +214,8 @@ struct section_access {
 
 template <typename Section, typename Entry>
 section_access make_section(std::string_view code,
-                            xsd::optional<Section> curveconfiguration::* member,
-                            xsd::vector<Entry> Section::* list) {
+                            xsd::optional<Section> curveconfiguration::*member,
+                            xsd::vector<Entry> Section::*list) {
     return {code,
             [member](const curveconfiguration& d) { return static_cast<bool>(d.*member); },
             [member, list](const curveconfiguration& d) -> std::size_t {

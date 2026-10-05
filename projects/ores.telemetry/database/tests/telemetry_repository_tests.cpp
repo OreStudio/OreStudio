@@ -21,9 +21,9 @@
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 

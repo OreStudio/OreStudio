@@ -1461,7 +1461,8 @@ private:
         }
         if (sources.empty())
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "create_theme_feed_bindings: no enabled feed sources for dataset " << dataset_code;
+                << "create_theme_feed_bindings: no enabled feed sources for dataset "
+                << dataset_code;
         return all_saved;
     }
 

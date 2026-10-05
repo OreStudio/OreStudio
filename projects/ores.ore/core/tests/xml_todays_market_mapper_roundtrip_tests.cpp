@@ -81,7 +81,7 @@ std::set<std::string> schema_collection_kinds() {
 
 template <typename Wrapper, typename Entry>
 void add(xsd::vector<Wrapper>& collections,
-         xsd::vector<Entry> Wrapper::* entries,
+         xsd::vector<Entry> Wrapper::*entries,
          const char* id,
          std::vector<Entry> values) {
     Wrapper w;

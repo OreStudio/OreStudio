@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/rename-the-anchor-to-trade
-#+pr:
+#+pr: 2645
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2645][#2645]] | [trading] Rename the trade anchor to trade |
 
 * Review
 

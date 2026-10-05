@@ -53,3 +53,34 @@ def test_removes_the_tasks_row_and_keeps_a_status_reference(tmp_path):
         "the Status Next cell was removed")
     assert "| BACKLOG |" not in text, "the Tasks row was left behind"
     assert OTHER in text, "the sibling row was removed"
+
+
+def test_restores_the_placeholder_when_the_last_row_is_removed(tmp_path):
+    story = tmp_path / "story.org"
+    lone = STORY.replace(
+        f"| [[id:{OTHER}][Other]] | DONE | | | Other. |\n", "")
+    assert OTHER not in lone, "the sibling row was not dropped from the fixture"
+    story.write_text(lone, encoding="utf-8")
+
+    row = compass._remove_task_row_from_story(story, TASK)
+
+    assert row is not None, "the Tasks row was not found"
+    text = story.read_text(encoding="utf-8")
+    assert f"| Next         | [[id:{TASK}][Do a thing]]" in text, (
+        "the Status Next cell was removed")
+    assert text.count("[[id:") == 1, "the task row was left behind"
+    assert "|   |   |   |   |   |" in text, (
+        "no empty placeholder row was restored")
+
+
+def test_a_lookalike_heading_is_not_the_tasks_table(tmp_path):
+    story = tmp_path / "story.org"
+    lookalike = STORY.replace("* Tasks\n", "* Tasks: notes so far\n", 1)
+    assert lookalike != STORY, "the fixture heading was not replaced"
+    story.write_text(lookalike, encoding="utf-8")
+
+    row = compass._remove_task_row_from_story(story, TASK)
+
+    assert row is None, f"a row was extracted outside a Tasks table: {row}"
+    assert story.read_text(encoding="utf-8") == lookalike, (
+        "the story was modified")

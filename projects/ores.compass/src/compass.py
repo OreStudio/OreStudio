@@ -2017,8 +2017,12 @@ def _sc_get_merged_prs(start, end):
     except subprocess.CalledProcessError as e:
         print(f"Warning: gh pr list failed: {e}", file=sys.stderr)
         return []
+    raw = json.loads(output)
+    if len(raw) >= 1000:
+        print("Warning: the PR list hit the 1000 limit — cycle time data is "
+              "truncated; raise the limit.", file=sys.stderr)
     prs = []
-    for pr in json.loads(output):
+    for pr in raw:
         merged_str = pr.get("mergedAt", "")
         if not merged_str:
             continue
@@ -3934,7 +3938,7 @@ def _table_bounds(lines, heading):
     """Return (first, last) line indexes of the table under HEADING."""
     try:
         h = next(i for i, l in enumerate(lines)
-                 if l.strip().startswith(heading))
+                 if l.strip() == heading or l.strip().startswith(heading + " "))
     except StopIteration:
         return None, None
     first = None

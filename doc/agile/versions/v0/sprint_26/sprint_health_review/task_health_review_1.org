@@ -106,9 +106,15 @@ via its "Verifies task" field.
 
 * Review
 
+PR #2654, comment 5993658629 (the on-demand =@claude= review).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =_table_bounds= finds the heading with =startswith("* Tasks")=, which also matches =* Tasks and notes= | =projects/ores.compass/src/compass.py= | Accept | The match is now the exact heading or the heading plus a space, so a lookalike such as =* Tasks: notes= no longer matches. =test_a_lookalike_heading_is_not_the_tasks_table= covers it. The reviewer's own note that a missing table now returns =None= is the intended, safer behaviour. |
+| 2 | A hard-coded cap in =_sc_get_merged_prs= will truncate silently again; warn when the result length equals the limit | =projects/ores.compass/src/compass.py= | Accept | A warning now names the truncated data when the list reaches 1000. The same class of defect had already truncated the release-notes collector at 500 against 519 merged PRs; its cap is raised to 1000 with the same warning. |
+| 3 | The regression test does not cover the placeholder-row restore path when the last row is removed | =projects/ores.compass/tests/test_task_move_row_scope.py= | Accept | =test_restores_the_placeholder_when_the_last_row_is_removed= added; the file now runs three tests, all passing. |
+| 4 | =#+environment= differs per new story (=bright_faraday=, =eager_maxwell=, =solid_dirac=) against the PR's =brave_hopper= | the successor stories | Decline | Intentional: the field records the worktree that minted the document, and the three successors were minted in other worktrees during earlier sessions. |
+| 5 | Confirm the three other regenerated charts are committed, since only =line_churn.png= appeared in the file list | =doc/agile/versions/v0/sprint_26/*.png= | Accept | Verified: =git diff --name-status= shows all four added by this PR — =line_churn.png=, =pr_cycle.png=, =prs_commits.png= and =stories_done.png=. |
 
 * Result
 

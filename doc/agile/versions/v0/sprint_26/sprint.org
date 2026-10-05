@@ -145,6 +145,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] | ABANDONED |  | 2026-10-05 | The fourth access journey: the member asks for a role beyond the one registration gave them, and the tenant administrator answers. Split from Implement the access journeys in ores.web at sprint 26 close. |
 | [[id:8C88DD48-2C49-4DD6-87FB-882FE9E1BCA0][Default the shell facet on at the profile level]] | ABANDONED |  | 2026-10-05 | The last lever of the shell surface story: make ores.cpp.shell-command default on at the profile level once no component would gain an unintended unit. Split from Generate the shell surface of the clean components at sprint 26 close. |
 | [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Close out sprint 26: resolve every story at the sprint close, rework and split the eleven stories that delivered part of their scope, carry the nineteen unfinished stories to the product backlog inbox, and write the release notes, the charts and the retrospective. |
+| [[id:253405EA-39FA-439E-AC7E-6E33275D2C23][Sprint health review — System 2 analysis]] | DONE | 2026-10-05 | 2026-10-05 | The System 2 health review of sprint 26 at its close: the six dimensions measured and challenged, the bookkeeping repaired, and one overall RED verdict with the evidence behind it. |
 
 ** Hotfixes
 

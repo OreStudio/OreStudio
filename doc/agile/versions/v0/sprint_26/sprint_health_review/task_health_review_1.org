@@ -319,9 +319,10 @@ same branch. What the close changed, read against the review above:
   move, identifiers intact. The sprint table marks each of their rows
   ABANDONED with the close date, and the fourteen STARTED stories it names
   are no longer open fronts: none of them starts sprint 27 in flight.
-- The sprint table's 126 rows now read 106 DONE and 20 ABANDONED, and the
-  sprint carries its achievements, its retrospective and its release
-  notes.
+- The sprint table's 127 rows now read 107 DONE and 20 ABANDONED — the
+  last DONE row is this review's own story, which the table did not
+  carry — and the sprint carries its achievements, its retrospective and
+  its release notes.
 - The 51 closed documents this review recorded as carrying prose in =Now=
   were repaired: the prose moved to =* Result= and =Now= set to exactly
   =Nothing.=. =compass sprint audit= reports no findings.

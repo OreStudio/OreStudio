@@ -194,6 +194,11 @@ export function Crumbs({
     );
 }
 
+/** The name of one classification list's rows in the shared list's cache and column choice. */
+export function listSourceKey(list: ClassificationList): string {
+    return `classification:${list.key}`;
+}
+
 /** The address of the classification index, a list, or a row of it. */
 export function classificationsPath(list?: string, code?: string): string {
     const base = '/refdata/classifications';

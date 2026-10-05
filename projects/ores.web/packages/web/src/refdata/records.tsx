@@ -881,6 +881,12 @@ export function LinkPanel({
     );
 }
 
+/** What a write carries to say why it was made. */
+export interface WriteIntent {
+    readonly reasonCode: string;
+    readonly commentary: string;
+}
+
 /**
  * Writes an older version's values back as a new version, against the
  * record's current version, so a change made since is refused rather than
@@ -901,23 +907,57 @@ export function RevertDialog({
     readonly keep?: readonly string[];
     readonly onClose: () => void;
 }): ReactNode {
+    const queries = useQueryClient();
+    return (
+        <RevertVersionDialog
+            current={row.version}
+            version={version}
+            onClose={onClose}
+            write={async (intent) => {
+                await api.saveRecord(resource, {
+                    write: {
+                        ...kept(keep, row),
+                        ...writeOf(specs, valuesFromHistory(specs, version)),
+                    },
+                    version: row.version,
+                    ...intent,
+                });
+                await queries.invalidateQueries({ queryKey: ['records'] });
+                await queries.invalidateQueries({ queryKey: ['image-map'] });
+            }}
+        />
+    );
+}
+
+/**
+ * The revert dialog for any record kind: the person picks the reason, and
+ * `write` writes the older version's values with it. The commentary names the
+ * version reverted to.
+ */
+export function RevertVersionDialog({
+    current,
+    version,
+    write,
+    onClose,
+}: {
+    readonly current: number;
+    readonly version: HistoryVersion;
+    readonly write: (intent: WriteIntent) => Promise<void>;
+    readonly onClose: () => void;
+}): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const reason = useReason('amend');
+    const reason = useReason('amend', true);
     const revert = useMutation({
         mutationFn: () =>
-            api.saveRecord(resource, {
-                write: { ...kept(keep, row), ...writeOf(specs, valuesFromHistory(specs, version)) },
-                version: row.version,
+            write({
                 reasonCode: reason.code,
                 commentary: t('refdata.classifications.revertCommentary', {
                     version: String(version.version),
                 }),
             }),
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
-            await queries.invalidateQueries({ queryKey: ['image-map'] });
             onClose();
         },
     });
@@ -945,7 +985,7 @@ export function RevertDialog({
             <div className="space-y-3">
                 <p className="text-sm">
                     {t('refdata.records.revertBody', {
-                        from: String(row.version),
+                        from: String(current),
                         to: String(version.version),
                     })}
                 </p>
@@ -985,23 +1025,48 @@ export function RemoveRecordDialog({
     readonly version: number;
     readonly onClose: () => void;
     readonly onRemoved: () => void;
-    readonly before?: (intent: { reasonCode: string; commentary: string }) => Promise<void>;
+    readonly before?: (intent: WriteIntent) => Promise<void>;
+}): ReactNode {
+    const queries = useQueryClient();
+    return (
+        <DeleteDialog
+            title={title}
+            warning={warning}
+            onClose={onClose}
+            onRemoved={onRemoved}
+            remove={async (intent) => {
+                await before?.(intent);
+                await api.removeRecord(resource, { key: recordKey, version, ...intent });
+                await queries.invalidateQueries({ queryKey: ['records'] });
+            }}
+        />
+    );
+}
+
+/**
+ * The delete dialog for any record kind: it says what is lost, the person
+ * picks the reason, and `remove` deletes the record with it.
+ */
+export function DeleteDialog({
+    title,
+    warning,
+    remove: write,
+    onClose,
+    onRemoved,
+}: {
+    readonly title: string;
+    readonly warning: string;
+    readonly remove: (intent: WriteIntent) => Promise<void>;
+    readonly onClose: () => void;
+    readonly onRemoved: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const queries = useQueryClient();
     const reason = useReason('delete');
     const [commentary, setCommentary] = useState('');
     const missing = reason.needsCommentary && commentary.trim() === '';
     const remove = useMutation({
-        mutationFn: async () => {
-            const intent = { reasonCode: reason.code, commentary: commentary.trim() };
-            await before?.(intent);
-            await api.removeRecord(resource, { key: recordKey, version, ...intent });
-        },
-        onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['records'] });
-            onRemoved();
-        },
+        mutationFn: () => write({ reasonCode: reason.code, commentary: commentary.trim() }),
+        onSuccess: onRemoved,
     });
     return (
         <Dialog

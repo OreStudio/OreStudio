@@ -85,7 +85,7 @@ export interface ListPage<Row> {
     readonly notes?: readonly ListNote[];
 }
 
-/** A sentence the server's answer adds above the table, such as how many rows a filter hides. */
+/** A sentence above the table, such as how many rows a filter hides, or why the list is read only. */
 export interface ListNote {
     readonly tone: 'info' | 'warn';
     readonly text: string;
@@ -277,6 +277,7 @@ export function RecordList<Row>({
     columns,
     pathOf,
     keyOf,
+    notes,
     actions,
     addLabel,
     onAdd,
@@ -288,6 +289,8 @@ export function RecordList<Row>({
     readonly columns: readonly ListColumn<Row>[];
     readonly pathOf?: (row: Row) => string;
     readonly keyOf?: (row: Row) => string;
+    /** What the screen says above the table before any read, such as why the list is read only. */
+    readonly notes?: readonly ListNote[];
     readonly actions?: ReactNode;
     readonly addLabel?: string;
     readonly onAdd?: () => void;
@@ -334,6 +337,7 @@ export function RecordList<Row>({
                 columns={columns}
                 {...(pathOf === undefined ? {} : { pathOf })}
                 {...(keyOf === undefined ? {} : { keyOf })}
+                {...(notes === undefined ? {} : { notes })}
                 {...(add === undefined ? {} : { add })}
             />
         </div>
@@ -352,6 +356,7 @@ export function RecordTable<Row>({
     columns,
     pathOf,
     keyOf,
+    notes = [],
     add,
 }: {
     readonly source: ListSource<Row>;
@@ -360,6 +365,7 @@ export function RecordTable<Row>({
     readonly columns: readonly ListColumn<Row>[];
     readonly pathOf?: (row: Row) => string;
     readonly keyOf?: (row: Row) => string;
+    readonly notes?: readonly ListNote[];
     readonly add?: { readonly label: string; readonly onAdd: () => void };
 }): ReactNode {
     const { t, language } = useTranslation();
@@ -477,7 +483,7 @@ export function RecordTable<Row>({
                     </div>
                 </details>
             </div>
-            {(data?.notes ?? []).map((note) => (
+            {[...notes, ...(data?.notes ?? [])].map((note) => (
                 <div key={note.text} className="border-b border-line p-3">
                     <Notice tone={note.tone}>{note.text}</Notice>
                 </div>

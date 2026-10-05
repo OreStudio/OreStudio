@@ -21,7 +21,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useNavigate, useParams } from 'react-router';
 import type {
     ClassificationList,
     ClassificationRow,
@@ -29,31 +29,35 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice } from '../ui/Primitives.js';
 import { HistoryPanel, fieldValue } from './HistoryPanel.js';
 import {
-    Crumbs,
+    DeleteDialog,
+    LeavingFooter,
+    RecordDetails,
+    RecordHeader,
+    RevertVersionDialog,
+    useCloseGuard,
+    useRecordTabs,
+} from './records.js';
+import {
     LabelPicker,
+    ReasonFields,
     RowLabel,
     UNMAPPED,
     classificationsPath,
     isLabelled,
+    listSourceKey,
     useLabelCatalogue,
     usePermissions,
-    ReasonFields,
     useReason,
 } from './shared.js';
 
-/** The tabs of a row's page, in the order they are drawn. */
-const TABS = ['details', 'history'] as const;
-type Tab = (typeof TABS)[number];
-
 /**
- * One row of a classification list, on its own page.
- *
- * The address names the list, the row and the tab, so a link opens the same
- * row at the same place again. Editing and removing are dialogs; the history
- * is a tab.
+ * One row of a classification list, on its own page: the shared header, the
+ * details and the history as tabs held in the address, and the shared
+ * dialogs. A classification list is short and reordered as a whole, so the
+ * row is found in the list read once.
  */
 export function ClassificationRowPage(): ReactNode {
     const { t } = useTranslation();
@@ -93,80 +97,44 @@ function RowBody({
     readonly row: ClassificationRow;
 }): ReactNode {
     const { t } = useTranslation();
-    const [search, setSearch] = useSearchParams();
+    const navigate = useNavigate();
+    const queries = useQueryClient();
     const may = usePermissions(list);
-    const { byCode, domains } = useLabelCatalogue();
+    const { domains } = useLabelCatalogue();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
-    const requested = search.get('tab');
-    const tab: Tab = TABS.find((candidate) => candidate === requested) ?? 'details';
+    const { tab, bar } = useRecordTabs({ label: row.code, tabs: ['details', 'history'] });
     const title = t(`refdata.classifications.lists.${list.key}`);
     const labelled = isLabelled(list, domains);
     const canEdit = may.write || (labelled && may.label);
 
     return (
         <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.classifications.title'), to: classificationsPath() },
-                        { label: title, to: classificationsPath(list.key) },
-                        { label: row.code },
-                    ]}
-                />
-                <PageHeader
-                    title={row.name === '' ? row.code : row.name}
-                    description={t('refdata.classifications.rowLead', {
-                        list: title,
-                        code: row.code,
-                        version: String(row.version),
-                    })}
-                    actions={
-                        canEdit || may.remove ? (
-                            <div className="flex gap-2">
-                                {canEdit && (
-                                    <Button onClick={() => setEditing(true)}>
-                                        {t('refdata.classifications.edit')}
-                                    </Button>
-                                )}
-                                {may.remove && (
-                                    <Button variant="danger" onClick={() => setRemoving(true)}>
-                                        {t('refdata.classifications.remove')}
-                                    </Button>
-                                )}
-                            </div>
-                        ) : undefined
-                    }
-                />
-                {labelled && (
-                    <div className="mt-2">
-                        <RowLabel labelCode={row.labelCode} byCode={byCode} />
-                    </div>
-                )}
-            </div>
-            <div role="tablist" aria-label={row.code} className="flex gap-1 border-b border-line">
-                {TABS.map((candidate) => (
-                    <button
-                        key={candidate}
-                        type="button"
-                        role="tab"
-                        aria-selected={tab === candidate}
-                        className={
-                            tab === candidate
-                                ? 'border-b-2 border-accent px-3 py-2 text-sm text-ink'
-                                : 'border-b-2 border-transparent px-3 py-2 text-sm text-ink-muted hover:text-ink'
-                        }
-                        onClick={() => setSearch(candidate === 'details' ? {} : { tab: candidate })}
-                    >
-                        {t(`refdata.classifications.tabs.${candidate}`)}
-                    </button>
-                ))}
-            </div>
-            {tab === 'details' ? (
-                <Details list={list} row={row} labelled={labelled} />
-            ) : (
+            <RecordHeader
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.classifications.title'), to: classificationsPath() },
+                    { label: title, to: classificationsPath(list.key) },
+                    { label: row.code },
+                ]}
+                title={row.name === '' ? row.code : row.name}
+                recordKey={row.code}
+                version={row.version}
+                access={canEdit}
+                onEdit={canEdit ? () => setEditing(true) : undefined}
+                onDelete={may.remove ? () => setRemoving(true) : undefined}
+            />
+            {bar}
+            {tab === 'details' && (
+                <div className="space-y-4">
+                    {!list.editable && (
+                        <Notice tone="info">{t('refdata.classifications.readOnly')}</Notice>
+                    )}
+                    <Details list={list} row={row} labelled={labelled} />
+                </div>
+            )}
+            {tab === 'history' && (
                 <HistoryPanel
                     entityType={list.entityType}
                     entityId={row.code}
@@ -184,13 +152,43 @@ function RowBody({
                     onClose={() => setEditing(false)}
                 />
             )}
-            {removing && <RemoveDialog list={list} row={row} onClose={() => setRemoving(false)} />}
+            {removing && (
+                <DeleteDialog
+                    title={t('refdata.records.deleteTitle', { code: row.code })}
+                    warning={t('refdata.classifications.removeWarning')}
+                    onClose={() => setRemoving(false)}
+                    onRemoved={() => void navigate(classificationsPath(list.key))}
+                    remove={async (intent) => {
+                        await api.removeClassificationRow(list.key, row.code, intent);
+                        await queries.invalidateQueries({ queryKey: ['classifications'] });
+                        await queries.invalidateQueries({
+                            queryKey: ['records', listSourceKey(list)],
+                        });
+                    }}
+                />
+            )}
             {reverting !== null && (
-                <RevertDialog
-                    list={list}
-                    row={row}
+                <RevertVersionDialog
+                    current={row.version}
                     version={reverting}
                     onClose={() => setReverting(null)}
+                    write={async (intent) => {
+                        const order = Number.parseInt(fieldValue(reverting, 'Display Order'), 10);
+                        await api.correctClassificationRow(list.key, row.code, {
+                            name: fieldValue(reverting, 'Name'),
+                            description: fieldValue(reverting, 'Description'),
+                            displayOrder:
+                                list.shape === 'plain' || Number.isNaN(order) ? null : order,
+                            version: row.version,
+                            ...intent,
+                        });
+                        await queries.invalidateQueries({
+                            queryKey: ['classifications', list.key],
+                        });
+                        await queries.invalidateQueries({
+                            queryKey: ['records', listSourceKey(list)],
+                        });
+                    }}
                 />
             )}
         </div>
@@ -208,13 +206,17 @@ function Details({
 }): ReactNode {
     const { t } = useTranslation();
     const { byCode } = useLabelCatalogue();
-    const entries: [string, ReactNode][] = [[t('refdata.classifications.code'), row.code]];
+    const text = (value: string): ReactNode =>
+        value === '' ? <span className="text-ink-faint">—</span> : value;
+    const entries: [string, ReactNode][] = [
+        [t('refdata.classifications.code'), <span className="font-mono text-xs">{row.code}</span>],
+    ];
     if (list.shape === 'named') {
-        entries.push([t('refdata.classifications.name'), row.name || '—']);
+        entries.push([t('refdata.classifications.name'), text(row.name)]);
     }
-    entries.push([t('refdata.classifications.description'), row.description || '—']);
+    entries.push([t('refdata.classifications.description'), text(row.description)]);
     if (list.shape !== 'plain') {
-        entries.push([t('refdata.classifications.order'), String(row.displayOrder ?? '—')]);
+        entries.push([t('refdata.classifications.order'), text(String(row.displayOrder ?? ''))]);
     }
     if (labelled) {
         entries.push([
@@ -222,28 +224,18 @@ function Details({
             <RowLabel labelCode={row.labelCode} byCode={byCode} />,
         ]);
     }
-    entries.push([
-        t('refdata.classifications.lastChanged'),
-        t('refdata.classifications.lastChangedValue', {
-            when: row.recordedAt,
-            who: row.modifiedBy,
-        }),
-    ]);
-    entries.push([
-        t('refdata.classifications.why'),
-        row.commentary === '' ? row.reasonCode : `${row.reasonCode} — ${row.commentary}`,
-    ]);
     return (
-        <section className="rounded-md border border-line bg-surface-raised p-4">
-            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {entries.map(([label, value]) => (
-                    <div key={label}>
-                        <dt className="text-xs text-ink-faint">{label}</dt>
-                        <dd className="mt-0.5 text-sm">{value}</dd>
-                    </div>
-                ))}
-            </dl>
-        </section>
+        <RecordDetails
+            specs={[]}
+            extra={entries}
+            row={{
+                version: row.version,
+                modified_by: row.modifiedBy,
+                recorded_at: row.recordedAt,
+                change_reason_code: row.reasonCode,
+                change_commentary: row.commentary,
+            }}
+        />
     );
 }
 
@@ -268,13 +260,14 @@ function EditDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const reason = useReason('amend');
     const [name, setName] = useState(row.name);
     const [description, setDescription] = useState(row.description);
     const [label, setLabel] = useState(row.labelCode ?? UNMAPPED);
     const [commentary, setCommentary] = useState('');
     const rowChanged = name.trim() !== row.name || description.trim() !== row.description;
     const labelChanged = label !== (row.labelCode ?? UNMAPPED);
+    const reason = useReason('amend', rowChanged || labelChanged);
+    const guard = useCloseGuard(rowChanged || labelChanged || commentary.trim() !== '', onClose);
     const missing = reason.needsCommentary && commentary.trim() === '';
     const save = useMutation({
         mutationFn: async () => {
@@ -297,6 +290,7 @@ function EditDialog({
         },
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['classifications', list.key] });
+            await queries.invalidateQueries({ queryKey: ['records', listSourceKey(list)] });
             await queries.invalidateQueries({ queryKey: ['history', list.entityType, row.code] });
             await queries.invalidateQueries({ queryKey: ['labels'] });
             onClose();
@@ -305,22 +299,29 @@ function EditDialog({
 
     return (
         <Dialog
-            title={t('refdata.classifications.editTitle', { code: row.code })}
-            onClose={onClose}
+            title={t('refdata.records.editTitle', { code: row.code })}
+            onClose={guard.close}
             footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('refdata.classifications.cancel')}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        pending={save.isPending}
-                        disabled={(!rowChanged && !labelChanged) || reason.code === '' || missing}
-                        onClick={() => save.mutate()}
-                    >
-                        {t('refdata.classifications.save')}
-                    </Button>
-                </>
+                guard.leaving ? (
+                    <LeavingFooter onStay={guard.stay} onLeave={onClose} />
+                ) : (
+                    <>
+                        <Button variant="ghost" icon="cancel" onClick={guard.close}>
+                            {t('refdata.records.cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            icon="save"
+                            pending={save.isPending}
+                            disabled={
+                                (!rowChanged && !labelChanged) || reason.code === '' || missing
+                            }
+                            onClick={() => save.mutate()}
+                        >
+                            {t('refdata.records.save')}
+                        </Button>
+                    </>
+                )
             }
         >
             <div className="space-y-3">
@@ -350,162 +351,7 @@ function EditDialog({
                     missing={missing}
                 />
                 {save.isError && <Notice tone="error">{save.error.message}</Notice>}
-            </div>
-        </Dialog>
-    );
-}
-
-/**
- * Removes a row after a warning: nothing checks whether records still use the
- * code, and a record that does fails its next save.
- */
-function RemoveDialog({
-    list,
-    row,
-    onClose,
-}: {
-    readonly list: ClassificationList;
-    readonly row: ClassificationRow;
-    readonly onClose: () => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
-    const queries = useQueryClient();
-    const reason = useReason('delete');
-    const [commentary, setCommentary] = useState('');
-    const missing = reason.needsCommentary && commentary.trim() === '';
-    const remove = useMutation({
-        mutationFn: () =>
-            api.removeClassificationRow(list.key, row.code, {
-                reasonCode: reason.code,
-                commentary: commentary.trim(),
-            }),
-        onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['classifications'] });
-            void navigate(classificationsPath(list.key));
-        },
-    });
-
-    return (
-        <Dialog
-            title={t('refdata.classifications.removeTitle', { code: row.code })}
-            onClose={onClose}
-            footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('refdata.classifications.cancel')}
-                    </Button>
-                    <Button
-                        variant="danger"
-                        pending={remove.isPending}
-                        disabled={reason.code === '' || missing}
-                        onClick={() => remove.mutate()}
-                    >
-                        {t('refdata.classifications.remove')}
-                    </Button>
-                </>
-            }
-        >
-            <div className="space-y-3">
-                <Notice tone="warn">{t('refdata.classifications.removeWarning')}</Notice>
-                <ReasonFields
-                    reason={reason}
-                    commentary={commentary}
-                    onCommentary={setCommentary}
-                    missing={missing}
-                />
-                {remove.isError && <Notice tone="error">{remove.error.message}</Notice>}
-            </div>
-        </Dialog>
-    );
-}
-
-/**
- * Writes an older version's values back as a new version.
- *
- * The values are read from the version's fields by the names the server's
- * history mapper gives them, and written against the row's current version, so
- * a change made since the screen was read is refused rather than lost.
- */
-function RevertDialog({
-    list,
-    row,
-    version,
-    onClose,
-}: {
-    readonly list: ClassificationList;
-    readonly row: ClassificationRow;
-    readonly version: HistoryVersion;
-    readonly onClose: () => void;
-}): ReactNode {
-    const { t } = useTranslation();
-    const queries = useQueryClient();
-    const reason = useReason('amend');
-    const revert = useMutation({
-        mutationFn: () => {
-            const order = Number.parseInt(fieldValue(version, 'Display Order'), 10);
-            return api.correctClassificationRow(list.key, row.code, {
-                name: fieldValue(version, 'Name'),
-                description: fieldValue(version, 'Description'),
-                displayOrder: list.shape === 'plain' || Number.isNaN(order) ? null : order,
-                version: row.version,
-                reasonCode: reason.code,
-                commentary: t('refdata.classifications.revertCommentary', {
-                    version: String(version.version),
-                }),
-            });
-        },
-        onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['classifications', list.key] });
-            await queries.invalidateQueries({ queryKey: ['history', list.entityType, row.code] });
-            onClose();
-        },
-    });
-
-    return (
-        <Dialog
-            title={t('refdata.classifications.revertTitle', {
-                code: row.code,
-                version: String(version.version),
-            })}
-            onClose={onClose}
-            footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('refdata.classifications.cancel')}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        pending={revert.isPending}
-                        disabled={reason.code === ''}
-                        onClick={() => revert.mutate()}
-                    >
-                        {t('history.revert')}
-                    </Button>
-                </>
-            }
-        >
-            <div className="space-y-3">
-                <p className="text-sm">
-                    {t('history.revertBody', {
-                        name: row.code,
-                        from: String(row.version),
-                        to: String(version.version),
-                    })}
-                </p>
-                <Field label={t('refdata.classifications.reason')}>
-                    <Select
-                        value={reason.code}
-                        onChange={(event) => reason.setCode(event.target.value)}
-                    >
-                        {reason.reasons.map((choice) => (
-                            <option key={choice.code} value={choice.code}>
-                                {choice.description}
-                            </option>
-                        ))}
-                    </Select>
-                </Field>
-                {revert.isError && <Notice tone="error">{revert.error.message}</Notice>}
+                {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
             </div>
         </Dialog>
     );

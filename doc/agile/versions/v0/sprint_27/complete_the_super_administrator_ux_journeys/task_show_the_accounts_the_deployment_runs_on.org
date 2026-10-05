@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-accounts-the-deployment-runs-on
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Signed in as the super administrator, the system administration area reads the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/curve_quote_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.refdata.api/messaging/curve_quote_protocol.hpp"
 #include "ores.refdata.core/messaging/curve_quote_handler.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::refdata::messaging {
 

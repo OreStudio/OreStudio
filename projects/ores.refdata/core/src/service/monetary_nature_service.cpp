@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/monetary_nature_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/monetary_nature.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata.core/repository/monetary_nature_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

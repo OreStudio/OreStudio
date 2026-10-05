@@ -18,7 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/conventions_document_service.hpp"
-#include "ores.database/repository/document_operations.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/bma_basis_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/bond_yield_convention_repository.hpp"
@@ -47,7 +48,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <map>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace ores::refdata::service {
 

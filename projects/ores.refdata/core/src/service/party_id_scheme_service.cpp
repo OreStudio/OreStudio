@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/party_id_scheme_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

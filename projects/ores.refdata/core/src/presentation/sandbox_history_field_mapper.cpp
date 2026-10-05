@@ -23,9 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/presentation/sandbox_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/sandbox.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::refdata::presentation {
 

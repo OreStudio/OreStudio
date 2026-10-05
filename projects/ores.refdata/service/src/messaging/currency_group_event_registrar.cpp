@@ -24,9 +24,10 @@
  */
 #include "ores.refdata.service/messaging/currency_group_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
-#include "ores.refdata.api/eventing/currency_group_event.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/currency_group_protocol.hpp"
 
 namespace ores::refdata::service::messaging {

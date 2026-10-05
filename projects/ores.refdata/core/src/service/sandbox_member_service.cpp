@@ -23,10 +23,17 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/sandbox_member_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/sandbox_member.hpp"
+#include "ores.refdata.api/messaging/sandbox_member_protocol.hpp"
+#include "ores.refdata.core/repository/sandbox_member_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

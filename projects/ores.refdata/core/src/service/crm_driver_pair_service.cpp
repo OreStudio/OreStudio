@@ -23,9 +23,17 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/crm_driver_pair_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/crm_driver_pair.hpp"
+#include "ores.refdata.api/messaging/crm_driver_pair_protocol.hpp"
+#include "ores.refdata.core/repository/crm_driver_pair_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

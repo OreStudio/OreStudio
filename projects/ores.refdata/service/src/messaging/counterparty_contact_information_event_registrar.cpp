@@ -24,9 +24,10 @@
  */
 #include "ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
-#include "ores.refdata.api/eventing/counterparty_contact_information_event.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
 
 namespace ores::refdata::service::messaging {

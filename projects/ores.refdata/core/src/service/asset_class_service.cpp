@@ -18,6 +18,12 @@
  *
  */
 #include "ores.refdata.core/service/asset_class_service.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 

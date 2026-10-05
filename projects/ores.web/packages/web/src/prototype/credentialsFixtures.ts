@@ -20,7 +20,8 @@
  */
 
 /*
- * PROTOTYPE. Throwaway. Delete with the branch.
+ * PROTOTYPE. Kept on main as the design record; nothing outside the prototype
+ * routes imports it.
  *
  * Fixture rows for the credentials prototypes. The browser has no read path
  * for any of this data today: the BFF serves the caller's own session and the

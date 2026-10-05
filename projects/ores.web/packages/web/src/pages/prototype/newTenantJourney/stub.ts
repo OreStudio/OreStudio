@@ -20,7 +20,20 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import type { PasswordPolicy } from '@ores/wire-protocol/browser';
 import acmeLogo from './acme-logo.png';
+
+/** The server's rules, in the shape GET /api/password-policy returns. */
+export const PASSWORD_POLICY: PasswordPolicy = {
+    success: true,
+    message: '',
+    minLength: 12,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireDigit: true,
+    requireSpecial: true,
+    specialChars: '!@#$%^&*-_=+',
+};
 
 /**
  * PROTOTYPE ONLY. In-memory stand-ins for the seed profile contract: the
@@ -29,134 +42,147 @@ import acmeLogo from './acme-logo.png';
  */
 
 export interface ProfileParam {
-  readonly name: string;
-  readonly label: string;
-  readonly type: 'text' | 'choice';
-  readonly choices?: readonly string[];
-  readonly default: string;
-  readonly required: boolean;
-  readonly hint?: string;
+    readonly name: string;
+    readonly label: string;
+    readonly type: 'text' | 'choice';
+    readonly choices?: readonly string[];
+    readonly default: string;
+    readonly required: boolean;
+    readonly hint?: string;
 }
 
 export interface SeedProfile {
-  readonly code: string;
-  readonly name: string;
-  readonly summary: string;
-  readonly bullets: readonly string[];
-  readonly audience: string;
-  readonly params: readonly ProfileParam[];
-  readonly steps: readonly string[];
-  /** Tenant details the profile fills in; the person can still change them. */
-  readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
-  readonly logo?: string;
-  /** The tenant admin reuses the creating super admin's password (the server copies the hash). */
-  readonly inheritsAdminPassword?: boolean;
-  /** The tenant admin must change the password at first sign-in. */
-  readonly forcePasswordChange: boolean;
-  /** The parties the tenant ends up with, for the first sign-in's default party. */
-  readonly parties: readonly string[];
+    readonly code: string;
+    readonly name: string;
+    readonly summary: string;
+    readonly bullets: readonly string[];
+    readonly audience: string;
+    readonly params: readonly ProfileParam[];
+    readonly steps: readonly string[];
+    /** Tenant details the profile fills in; the person can still change them. */
+    readonly defaults?: Partial<Omit<TenantDetails, 'params'>>;
+    readonly logo?: string;
+    /** The tenant admin reuses the creating super admin's password (the server copies the hash). */
+    readonly inheritsAdminPassword?: boolean;
+    /** The tenant admin must change the password at first sign-in. */
+    readonly forcePasswordChange: boolean;
+    /** The parties the tenant ends up with, for the first sign-in's default party. */
+    readonly parties: readonly string[];
 }
 
 export const PROFILES: readonly SeedProfile[] = [
-  {
-    code: 'empty_operational',
-    name: 'Operational',
-    summary: 'Production-ready setup',
-    bullets: ['Standard reference data and counterparties', 'Your legal entities, from their LEI', 'No test data'],
-    audience: 'For real use',
-    parties: ['The legal entity of the root LEI'],
-    forcePasswordChange: true,
-    params: [
-      {
-        name: 'root_lei',
-        label: 'Root LEI',
-        type: 'text',
-        default: '',
-        required: true,
-        hint: 'The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant\'s parties.',
-      },
-      {
-        name: 'counterparty_size',
-        label: 'Counterparty set',
-        type: 'choice',
-        choices: ['small', 'large'],
-        default: 'small',
-        required: true,
-        hint: 'small is about 13k GLEIF counterparties; large is about 500k.',
-      },
-    ],
-    steps: [
-      'Create tenant and admin',
-      'Publish base reference data',
-      'Import counterparties',
-      'Import parties from root LEI',
-      'Provision parties (activate, onboard, essentials)',
-      'Complete provisioning',
-    ],
-  },
-  {
-    code: 'acme_demo',
-    name: 'ACME demo',
-    summary: 'Pre-configured sandbox',
-    bullets: ['4 legal entities, books and desks', '45 staff to sign in as', 'Live synthetic market data'],
-    audience: 'For demos and testing',
-    logo: acmeLogo,
-    inheritsAdminPassword: true,
-    forcePasswordChange: false,
-    parties: ['Acme Corporation Plc', 'ACME Corporation UK plc', 'ACME Corporation US Inc', 'ACME Corporation HK Ltd'],
-    defaults: {
-      code: 'acme_corporation',
-      name: 'Acme Corporation',
-      hostname: 'acme_corporation.localhost',
-      adminUsername: 'tenant_admin',
-      adminEmail: 'tenant_admin@acme.example.com',
+    {
+        code: 'empty_operational',
+        name: 'Operational',
+        summary: 'Production-ready setup',
+        bullets: [
+            'Standard reference data and counterparties',
+            'Your legal entities, from their LEI',
+            'No test data',
+        ],
+        audience: 'For real use',
+        parties: ['The legal entity of the root LEI'],
+        forcePasswordChange: true,
+        params: [
+            {
+                name: 'root_lei',
+                label: 'Root LEI',
+                type: 'text',
+                default: '',
+                required: true,
+                hint: "The LEI of the top legal entity. Its GLEIF hierarchy becomes the tenant's parties.",
+            },
+            {
+                name: 'counterparty_size',
+                label: 'Counterparty set',
+                type: 'choice',
+                choices: ['small', 'large'],
+                default: 'small',
+                required: true,
+                hint: 'small is about 13k GLEIF counterparties; large is about 500k.',
+            },
+        ],
+        steps: [
+            'Create tenant and admin',
+            'Publish base reference data',
+            'Import counterparties',
+            'Import parties from root LEI',
+            'Provision parties (activate, onboard, essentials)',
+            'Complete provisioning',
+        ],
     },
-    params: [],
-    steps: [
-      'Create tenant and admin',
-      'Publish base reference data',
-      'Import counterparties',
-      'Import Acme LEI hierarchy',
-      'Provision Acme Corporation Plc',
-      'Provision ACME UK, US and HK',
-      'Load staff and photos',
-      'Start market data feeds',
-      'Complete provisioning',
-    ],
-  },
+    {
+        code: 'acme_demo',
+        name: 'ACME demo',
+        summary: 'Pre-configured sandbox',
+        bullets: [
+            '4 legal entities, books and desks',
+            '45 staff to sign in as',
+            'Live synthetic market data',
+        ],
+        audience: 'For demos and testing',
+        logo: acmeLogo,
+        inheritsAdminPassword: true,
+        forcePasswordChange: false,
+        parties: [
+            'Acme Corporation Plc',
+            'ACME Corporation UK plc',
+            'ACME Corporation US Inc',
+            'ACME Corporation HK Ltd',
+        ],
+        defaults: {
+            code: 'acme_corporation',
+            name: 'Acme Corporation',
+            hostname: 'acme_corporation.localhost',
+            adminUsername: 'tenant_admin',
+            adminEmail: 'tenant_admin@acme.example.com',
+        },
+        params: [],
+        steps: [
+            'Create tenant and admin',
+            'Publish base reference data',
+            'Import counterparties',
+            'Import Acme LEI hierarchy',
+            'Provision Acme Corporation Plc',
+            'Provision ACME UK, US and HK',
+            'Load staff and photos',
+            'Start market data feeds',
+            'Complete provisioning',
+        ],
+    },
 ];
 
 export interface TenantDetails {
-  code: string;
-  name: string;
-  hostname: string;
-  adminUsername: string;
-  adminEmail: string;
-  adminPassword: string;
-  /** Reuse the creating super admin's password instead of adminPassword. */
-  useMyPassword: boolean;
-  params: Record<string, string>;
+    code: string;
+    name: string;
+    hostname: string;
+    adminUsername: string;
+    adminEmail: string;
+    adminPassword: string;
+    /** Reuse the creating super admin's password instead of adminPassword. */
+    useMyPassword: boolean;
+    params: Record<string, string>;
 }
 
 export function emptyDetails(profile: SeedProfile): TenantDetails {
-  return {
-    code: '',
-    name: '',
-    hostname: '',
-    adminUsername: 'tenant_admin',
-    adminEmail: '',
-    adminPassword: '',
-    useMyPassword: profile.inheritsAdminPassword === true,
-    ...profile.defaults,
-    params: Object.fromEntries(profile.params.map((p) => [p.name, p.default])),
-  };
+    return {
+        code: '',
+        name: '',
+        hostname: '',
+        adminUsername: 'tenant_admin',
+        adminEmail: '',
+        adminPassword: '',
+        useMyPassword: profile.inheritsAdminPassword === true,
+        ...profile.defaults,
+        params: Object.fromEntries(profile.params.map((p) => [p.name, p.default])),
+    };
 }
 
 export type StepState = 'pending' | 'running' | 'done' | 'failed';
 
 export interface RunState {
-  readonly steps: readonly { readonly label: string; readonly state: StepState }[];
-  readonly status: 'running' | 'failed' | 'done';
+    readonly steps: readonly { readonly label: string; readonly state: StepState }[];
+    readonly status: 'running' | 'failed' | 'done';
 }
 
 /**
@@ -165,43 +191,51 @@ export interface RunState {
  * semantics the contract chose over compensation.
  */
 export function useSimulatedRun(
-  profile: Pick<SeedProfile, 'code' | 'steps'> | undefined,
-  started: boolean,
-  failAt: number | undefined,
+    profile: Pick<SeedProfile, 'code' | 'steps'> | undefined,
+    started: boolean,
+    failAt: number | undefined,
 ): RunState & { readonly retry: () => void } {
-  const [cursor, setCursor] = useState(0);
-  const [failed, setFailed] = useState(false);
-  const failedOnce = useRef(false);
+    const [cursor, setCursor] = useState(0);
+    const [failed, setFailed] = useState(false);
+    const failedOnce = useRef(false);
 
-  useEffect(() => {
-    setCursor(0);
-    setFailed(false);
-    failedOnce.current = false;
-  }, [profile?.code, started]);
+    useEffect(() => {
+        setCursor(0);
+        setFailed(false);
+        failedOnce.current = false;
+    }, [profile?.code, started]);
 
-  const total = profile?.steps.length ?? 0;
+    const total = profile?.steps.length ?? 0;
 
-  useEffect(() => {
-    if (!started || failed || cursor >= total) return;
-    const timer = setTimeout(() => {
-      if (failAt === cursor && !failedOnce.current) {
-        failedOnce.current = true;
-        setFailed(true);
-        return;
-      }
-      setCursor((c) => c + 1);
-    }, 900);
-    return () => clearTimeout(timer);
-  }, [started, failed, cursor, total, failAt]);
+    useEffect(() => {
+        if (!started || failed || cursor >= total) return;
+        const timer = setTimeout(() => {
+            if (failAt === cursor && !failedOnce.current) {
+                failedOnce.current = true;
+                setFailed(true);
+                return;
+            }
+            setCursor((c) => c + 1);
+        }, 900);
+        return () => clearTimeout(timer);
+    }, [started, failed, cursor, total, failAt]);
 
-  const steps = (profile?.steps ?? []).map((label, i) => ({
-    label,
-    state: (i < cursor ? 'done' : i === cursor ? (failed ? 'failed' : started ? 'running' : 'pending') : 'pending') as StepState,
-  }));
+    const steps = (profile?.steps ?? []).map((label, i) => ({
+        label,
+        state: (i < cursor
+            ? 'done'
+            : i === cursor
+              ? failed
+                  ? 'failed'
+                  : started
+                    ? 'running'
+                    : 'pending'
+              : 'pending') as StepState,
+    }));
 
-  return {
-    steps,
-    status: failed ? 'failed' : cursor >= total && started ? 'done' : 'running',
-    retry: () => setFailed(false),
-  };
+    return {
+        steps,
+        status: failed ? 'failed' : cursor >= total && started ? 'done' : 'running',
+        retry: () => setFailed(false),
+    };
 }

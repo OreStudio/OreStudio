@@ -20,7 +20,8 @@
  */
 
 /*
- * PROTOTYPE. Throwaway. Delete with the branch.
+ * PROTOTYPE. Kept on main as the design record; nothing outside the prototype
+ * routes imports it.
  *
  * Three answers to one question: how does a tenant administrator read who is
  * signed in, what they are doing, and who is failing to get in? The journey is
@@ -35,11 +36,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Detail, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { VariantBar, useVariant, type PrototypeVariant } from './VariantBar.js';
-import {
-    account,
-    sessions,
-    type PrototypeSession,
-} from './fixtures.js';
+import { account, sessions, type PrototypeSession } from './credentialsFixtures.js';
 
 const VARIANTS = [
     {
@@ -74,7 +71,9 @@ const FAILURES: readonly ProtectionRow[] = [
 
 export function AuditSignInsPrototype(): ReactNode {
     const { active, choose } = useVariant(VARIANTS, 'a');
-    const [selectedTab, setSelectedTab] = useState<'sessions' | 'activity' | 'failures'>('sessions');
+    const [selectedTab, setSelectedTab] = useState<'sessions' | 'activity' | 'failures'>(
+        'sessions',
+    );
     const [refreshedAt, setRefreshedAt] = useState('2026-09-30 12:04 UTC');
     const [period, setPeriod] = useState('last 24 hours');
     const [event, setEvent] = useState('any event');
@@ -108,7 +107,9 @@ export function AuditSignInsPrototype(): ReactNode {
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
                 Account
                 <Select disabled value="all" onChange={() => undefined}>
-                    <option value="all">Every account (the server cannot filter by account yet)</option>
+                    <option value="all">
+                        Every account (the server cannot filter by account yet)
+                    </option>
                 </Select>
             </label>
             <label className="flex flex-col gap-1 text-xs text-ink-muted">
@@ -130,14 +131,16 @@ export function AuditSignInsPrototype(): ReactNode {
                 </Select>
             </label>
             <p className="flex-1 text-xs text-ink-faint">
-                No version, diff or revert control appears on this screen: it is an event log, not
-                a versioned entity.
+                No version, diff or revert control appears on this screen: it is an event log, not a
+                versioned entity.
             </p>
         </section>
     );
 
     const sessionsPanel = <SessionsPanel rows={sessions} />;
-    const activityPanel = <ActivityPanel row={sessions.find((row) => row.id === openSession) ?? sessions[0]} />;
+    const activityPanel = (
+        <ActivityPanel row={sessions.find((row) => row.id === openSession) ?? sessions[0]} />
+    );
     const failuresPanel = <FailuresPanel />;
     const gapsPanel = <GapsPanel />;
 
@@ -230,8 +233,8 @@ export function AuditSignInsPrototype(): ReactNode {
                             </span>
                         </div>
                         <p className="text-ink-faint">
-                            Signed in as <span className="font-mono">{account.username}</span>, tenant
-                            administrator, tenant Acme Corporation.
+                            Signed in as <span className="font-mono">{account.username}</span>,
+                            tenant administrator, tenant Acme Corporation.
                         </p>
                         {log.length === 0 ? (
                             <p className="text-ink-faint">No action yet.</p>
@@ -309,9 +312,9 @@ function ActivityPanel({ row }: { readonly row: PrototypeSession | undefined }):
                         <Detail label="Started" value={row.startedAt} />
                     </div>
                     <Notice tone="warn">
-                        Not available. Nothing serves the samples: iam.v1.sessions.samples replies with
-                        success and no rows, and no route serves them in the browser either. The totals
-                        above are the session row's own counters.
+                        Not available. Nothing serves the samples: iam.v1.sessions.samples replies
+                        with success and no rows, and no route serves them in the browser either.
+                        The totals above are the session row's own counters.
                     </Notice>
                 </>
             )}
@@ -388,7 +391,9 @@ function SessionTimeline({
                                     {row.country} · {row.startedAt} · {row.duration}
                                 </span>
                             </span>
-                            <span className="text-xs text-ink-faint">{expanded ? 'Hide' : 'Activity'}</span>
+                            <span className="text-xs text-ink-faint">
+                                {expanded ? 'Hide' : 'Activity'}
+                            </span>
                         </button>
                         {expanded && (
                             <div className="mt-3 rounded-[var(--radius-card)] border border-line-subtle p-3 text-xs text-ink-muted">
@@ -417,8 +422,9 @@ function GapsPanel(): ReactNode {
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>
-                        The authentication events — <span className="font-mono">ores_iam_auth_events_tbl</span>{' '}
-                        holds them; candidate <span className="font-mono">iam.v1.auth_events.list</span>
+                        The authentication events —{' '}
+                        <span className="font-mono">ores_iam_auth_events_tbl</span> holds them;
+                        candidate <span className="font-mono">iam.v1.auth_events.list</span>
                     </span>
                 </li>
                 <li className="flex gap-2">

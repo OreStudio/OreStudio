@@ -20,7 +20,8 @@
  */
 
 /*
- * PROTOTYPE. Throwaway. Delete with the branch.
+ * PROTOTYPE. Kept on main as the design record; nothing outside the prototype
+ * routes imports it.
  *
  * Three answers to one question: what should the member's Security screen look
  * like? The journey is doc/knowledge/journeys/credentials/journey_protect_my_account.org.
@@ -40,7 +41,7 @@ import {
     sessions,
     type PrototypeLoginState,
     type PrototypeSession,
-} from './fixtures.js';
+} from './credentialsFixtures.js';
 
 const VARIANTS = [
     {
@@ -69,7 +70,9 @@ export function ProtectMyAccountPrototype(): ReactNode {
 
     const record = (entry: string): void => setLog((entries) => [...entries, entry]);
     const changePassword = (): void => {
-        record(`change password · current ${currentPassword.length} chars · new ${newPassword.length} chars`);
+        record(
+            `change password · current ${currentPassword.length} chars · new ${newPassword.length} chars`,
+        );
         setCurrentPassword('');
         setNewPassword('');
         setAcceptable(false);
@@ -148,11 +151,15 @@ export function ProtectMyAccountPrototype(): ReactNode {
                             </span>
                             <span>
                                 current password:{' '}
-                                <span className="font-mono text-ink">{currentPassword.length} chars</span>
+                                <span className="font-mono text-ink">
+                                    {currentPassword.length} chars
+                                </span>
                             </span>
                             <span>
                                 new password:{' '}
-                                <span className="font-mono text-ink">{newPassword.length} chars</span>
+                                <span className="font-mono text-ink">
+                                    {newPassword.length} chars
+                                </span>
                             </span>
                             <span>
                                 meets the policy:{' '}
@@ -250,10 +257,16 @@ function SignInStatePanel({ state }: { readonly state: PrototypeLoginState }): R
                 </p>
             </header>
             <div className="flex flex-wrap gap-2">
-                <Tag tone={state.locked ? 'warn' : 'neutral'}>{state.locked ? 'Locked' : 'Not locked'}</Tag>
-                <Tag tone={state.online ? 'accent' : 'muted'}>{state.online ? 'Signed in' : 'Signed out'}</Tag>
+                <Tag tone={state.locked ? 'warn' : 'neutral'}>
+                    {state.locked ? 'Locked' : 'Not locked'}
+                </Tag>
+                <Tag tone={state.online ? 'accent' : 'muted'}>
+                    {state.online ? 'Signed in' : 'Signed out'}
+                </Tag>
                 <Tag tone={state.passwordResetRequired ? 'warn' : 'muted'}>
-                    {state.passwordResetRequired ? 'Password change required' : 'No change required'}
+                    {state.passwordResetRequired
+                        ? 'Password change required'
+                        : 'No change required'}
                 </Tag>
             </div>
             <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
@@ -266,22 +279,24 @@ function SignInStatePanel({ state }: { readonly state: PrototypeLoginState }): R
     );
 }
 
-function SessionsPanel({ sessions: rows }: { readonly sessions: readonly PrototypeSession[] }): ReactNode {
+function SessionsPanel({
+    sessions: rows,
+}: {
+    readonly sessions: readonly PrototypeSession[];
+}): ReactNode {
     const others = rows.filter((row) => !row.thisDevice);
     return (
         <section className="card space-y-4 p-6">
             <header className="space-y-1">
                 <h2 className="text-lg font-medium">Where you are signed in</h2>
-                <p className="text-sm text-ink-muted">
-                    One row for each session with no end time.
-                </p>
+                <p className="text-sm text-ink-muted">One row for each session with no end time.</p>
             </header>
 
             {others.length > 0 && (
                 <Notice tone="info">
                     {others.length} other sign-in{others.length === 1 ? '' : 's'}. If you do not
-                    recognise one, change your password. This screen cannot end that session:
-                    no server operation ends one other session today.
+                    recognise one, change your password. This screen cannot end that session: no
+                    server operation ends one other session today.
                 </Notice>
             )}
 
@@ -334,26 +349,29 @@ function GapsPanel(): ReactNode {
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>
-                        End one other session — candidate <span className="font-mono">iam.v1.sessions.end</span>
+                        End one other session — candidate{' '}
+                        <span className="font-mono">iam.v1.sessions.end</span>
                     </span>
                 </li>
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>
-                        Two-factor enrolment — candidate <span className="font-mono">iam.v1.accounts.enrol-totp</span>
+                        Two-factor enrolment — candidate{' '}
+                        <span className="font-mono">iam.v1.accounts.enrol-totp</span>
                     </span>
                 </li>
                 <li className="flex gap-2">
                     <Tag tone="warn">partial</Tag>
                     <span>
-                        Active sessions — <span className="font-mono">iam.v1.sessions.active</span> replies with
-                        success and no rows, and no route serves it in the browser
+                        Active sessions — <span className="font-mono">iam.v1.sessions.active</span>{' '}
+                        replies with success and no rows, and no route serves it in the browser
                     </span>
                 </li>
                 <li className="flex gap-2">
                     <Tag tone="warn">missing</Tag>
                     <span>
-                        Session statistics — candidate <span className="font-mono">iam.v1.sessions.statistics</span>
+                        Session statistics — candidate{' '}
+                        <span className="font-mono">iam.v1.sessions.statistics</span>
                     </span>
                 </li>
             </ul>

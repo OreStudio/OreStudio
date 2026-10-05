@@ -20,7 +20,8 @@
  */
 
 /*
- * PROTOTYPE. Throwaway. Delete with the branch.
+ * PROTOTYPE. Kept on main as the design record; nothing outside the prototype
+ * routes imports it.
  *
  * The variant switcher every credentials prototype shares: a floating bar at
  * the foot of the page, a URL search parameter so a variant can be linked, and

@@ -20,7 +20,8 @@
  */
 
 /*
- * PROTOTYPE. Throwaway. Delete with the branch.
+ * PROTOTYPE. Kept on main as the design record; nothing outside the prototype
+ * routes imports it.
  *
  * Three answers to one question: how does a tenant administrator get one
  * colleague back into the system, or shut the account down, on one screen? The
@@ -39,7 +40,7 @@ import {
     rescuedAccount,
     rescuedLoginState,
     type PrototypeLoginState,
-} from './fixtures.js';
+} from './credentialsFixtures.js';
 
 const VARIANTS = [
     {
@@ -87,7 +88,8 @@ export function RescueAccessPrototype(): ReactNode {
                 <div className="space-y-1">
                     <h2 className="text-lg font-medium">{rescuedAccount.fullName}</h2>
                     <p className="font-mono text-sm text-ink-muted">
-                        {rescuedAccount.username} · {rescuedAccount.email} · {rescuedAccount.accountType}
+                        {rescuedAccount.username} · {rescuedAccount.email} ·{' '}
+                        {rescuedAccount.accountType}
                     </p>
                 </div>
                 <Tag tone="warn">Locked</Tag>
@@ -95,7 +97,11 @@ export function RescueAccessPrototype(): ReactNode {
             <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
                 <Detail label="Last sign-in" value={rescuedLoginState.lastSignInAt} />
                 <Detail label="From" value={rescuedLoginState.lastSignInFrom} />
-                <Detail label="Failed attempts" value={String(rescuedLoginState.failedAttempts)} mono />
+                <Detail
+                    label="Failed attempts"
+                    value={String(rescuedLoginState.failedAttempts)}
+                    mono
+                />
             </div>
         </section>
     );
@@ -115,8 +121,8 @@ export function RescueAccessPrototype(): ReactNode {
             </Field>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-ink-faint">
-                    Nothing sends mail in this tree, no subject requests a reset, and no table holds a
-                    token. This screen sends nothing.
+                    Nothing sends mail in this tree, no subject requests a reset, and no table holds
+                    a token. This screen sends nothing.
                 </span>
                 <Button
                     variant="primary"
@@ -138,8 +144,8 @@ export function RescueAccessPrototype(): ReactNode {
                     Set a password here instead (fallback)
                 </summary>
                 <p className="mt-2 text-xs text-ink-faint">
-                    Kept for an account whose mailbox cannot receive. The administrator then knows the
-                    password, so the record has to say so.{' '}
+                    Kept for an account whose mailbox cannot receive. The administrator then knows
+                    the password, so the record has to say so.{' '}
                     <span className="font-mono">iam.v1.accounts.reset-password</span> exists and no
                     route reaches it. Whether this fallback survives is the open question this
                     prototype raises.
@@ -164,7 +170,9 @@ export function RescueAccessPrototype(): ReactNode {
                             type="button"
                             className={cx(
                                 'px-4 py-1.5 text-sm capitalize',
-                                nextState === option ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
+                                nextState === option
+                                    ? 'bg-accent text-ink-inverse'
+                                    : 'text-ink-muted',
                             )}
                             onClick={() => {
                                 setNextState(option);
@@ -208,8 +216,8 @@ export function RescueAccessPrototype(): ReactNode {
                     <span>
                         Self-service recovery — the same machinery, started by the member who cannot
                         sign in. Candidates{' '}
-                        <span className="font-mono">iam.v1.accounts.request-password-reset</span> and{' '}
-                        <span className="font-mono">complete-password-reset</span>
+                        <span className="font-mono">iam.v1.accounts.request-password-reset</span>{' '}
+                        and <span className="font-mono">complete-password-reset</span>
                     </span>
                 </li>
                 <li className="flex gap-2">
@@ -287,7 +295,8 @@ export function RescueAccessPrototype(): ReactNode {
                                 variant: <span className="font-mono text-ink">{active.id}</span>
                             </span>
                             <span>
-                                selected account: <span className="font-mono text-ink">{selected}</span>
+                                selected account:{' '}
+                                <span className="font-mono text-ink">{selected}</span>
                             </span>
                             <span>
                                 recovery link sent:{' '}
@@ -299,8 +308,8 @@ export function RescueAccessPrototype(): ReactNode {
                             </span>
                         </div>
                         <p className="text-ink-faint">
-                            Signed in as <span className="font-mono">{account.username}</span>, tenant
-                            administrator, tenant Acme Corporation.
+                            Signed in as <span className="font-mono">{account.username}</span>,
+                            tenant administrator, tenant Acme Corporation.
                         </p>
                         {log.length === 0 ? (
                             <p className="text-ink-faint">No action yet.</p>
@@ -339,7 +348,9 @@ function Recommendation({ state }: { readonly state: PrototypeLoginState }): Rea
             <div className="flex flex-wrap gap-2 pt-1">
                 <Tag tone="warn">{state.failedAttempts} failed attempts</Tag>
                 <Tag tone="neutral">{state.locked ? 'Locked' : 'Not locked'}</Tag>
-                <Tag tone={state.online ? 'accent' : 'muted'}>{state.online ? 'Session open' : 'No session'}</Tag>
+                <Tag tone={state.online ? 'accent' : 'muted'}>
+                    {state.online ? 'Session open' : 'No session'}
+                </Tag>
             </div>
         </section>
     );
@@ -362,7 +373,9 @@ function Roster({
                             type="button"
                             className={cx(
                                 'w-full rounded-[var(--radius-card)] px-2 py-2 text-left text-sm',
-                                row.username === selected ? 'bg-surface-hover' : 'hover:bg-surface-hover',
+                                row.username === selected
+                                    ? 'bg-surface-hover'
+                                    : 'hover:bg-surface-hover',
                             )}
                             onClick={() => onSelect(row.username)}
                         >

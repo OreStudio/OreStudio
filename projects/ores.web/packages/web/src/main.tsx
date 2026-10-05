@@ -55,7 +55,7 @@ createRoot(container).render(
                         client, because asking is a query. */}
                     <BootstrapProvider>
                         <BrowserRouter>
-                            {/* PROTOTYPE. Throwaway. Delete with the branch.
+                            {/* PROTOTYPE. Kept as the journeys' design record.
                                 A prototype path is answered in place of the
                                 application, so a reviewer opens one URL. The
                                 providers above it still mount; nothing on a

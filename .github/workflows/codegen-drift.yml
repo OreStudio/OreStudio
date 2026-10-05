@@ -27,6 +27,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
+      - "doc/knowledge/security/authorised-reads.org"
       - ".prettierrc.yaml"
 
   pull_request:
@@ -40,6 +41,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.sql/populate/**"
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
+      - "doc/knowledge/security/authorised-reads.org"
       - ".prettierrc.yaml"
 
   workflow_dispatch:
@@ -184,6 +186,13 @@ jobs:
       - name: Check every handler permission is seeded
         run: |
           python3 projects/ores.codegen/scripts/check_handler_permissions.py
+      # A read checks its resource's read code unless Authorised reads
+      # allow-lists its subject. This holds the generated handlers and
+      # history registrars to that rule, so a read cannot become open by
+      # accident.
+      - name: Check every open read is allow-listed
+        run: |
+          python3 projects/ores.codegen/scripts/check_open_reads.py
 
   # Shell menu ownership: the shell's root refuses a second claim on a name at
   # startup, because cli::Menu answers a name by first match and two units that

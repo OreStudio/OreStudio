@@ -49,7 +49,12 @@ std::string currency_repository::sql() {
 }
 
 bool currency_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "iso_code",
+        "name",
+        "monetary_nature",
+        "market_tier",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -86,6 +91,8 @@ filter_condition(const std::optional<messaging::currencies_filter>& filter) {
             values.push_back(filter_value(v));
         r.push_back(one_of("iso_code", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"iso_code", "name"}, *filter->search));
     return all_of(std::move(r));
 }
 

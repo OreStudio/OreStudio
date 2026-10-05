@@ -36,6 +36,8 @@ rounding, and display formatting across the system.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:sortable: true
+:searchable: true
 :END:
 
 ISO 4217 alpha-3 code (e.g., "USD", "EUR", "GBP").
@@ -56,6 +58,8 @@ std::string("X")
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Human-readable currency name (e.g., "US Dollar", "Euro").
@@ -167,6 +171,7 @@ std::string("%3% %1$.2f")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Nature classification; soft FK to =ores_refdata_monetary_natures_tbl= (e.g., "fiat", "commodity").
@@ -180,6 +185,7 @@ std::string("fiat")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Market tier classification; soft FK to =ores_refdata_currency_market_tiers_tbl= (e.g., "g10", "emerging").

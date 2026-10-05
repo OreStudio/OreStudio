@@ -48,7 +48,12 @@ std::string currency_pair_repository::sql() {
 }
 
 bool currency_pair_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "pair_code",
+        "base_currency",
+        "quote_currency",
+        "classification",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -85,6 +90,9 @@ filter_condition(const std::optional<messaging::currency_pairs_filter>& filter) 
             values.push_back(filter_value(v));
         r.push_back(one_of("pair_code", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(
+            contains_any({"pair_code", "base_currency", "quote_currency"}, *filter->search));
     return all_of(std::move(r));
 }
 

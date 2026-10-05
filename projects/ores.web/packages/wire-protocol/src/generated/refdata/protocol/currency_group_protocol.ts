@@ -56,6 +56,7 @@ export interface CurrencyGroupLookup {
 
 export interface CurrencyGroupsFilter {
     code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface CurrencyGroupEvent {

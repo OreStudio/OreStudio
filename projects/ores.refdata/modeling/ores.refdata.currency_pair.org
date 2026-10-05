@@ -40,6 +40,8 @@ rationale.
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Canonical base/quote pair code, e.g. "EUR/USD", always stored in
@@ -54,6 +56,8 @@ std::string(faker::finance::currencyCode()) + "/" + std::string(faker::finance::
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
+:searchable: true
 :END:
 
 Base (first) leg of the pair. Soft FK to =currency.iso_code=.
@@ -67,6 +71,8 @@ std::string("EUR")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
+:searchable: true
 :END:
 
 Quote (second) leg of the pair. Soft FK to =currency.iso_code=.
@@ -80,6 +86,7 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Liquidity classification; soft FK to

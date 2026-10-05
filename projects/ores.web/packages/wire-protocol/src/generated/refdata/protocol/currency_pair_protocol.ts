@@ -56,6 +56,7 @@ export interface CurrencyPairLookup {
 
 export interface CurrencyPairsFilter {
     pair_code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface CurrencyPairEvent {

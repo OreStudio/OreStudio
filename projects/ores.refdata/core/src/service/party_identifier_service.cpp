@@ -91,7 +91,7 @@ domain::party_identifier to_domain(const messaging::party_identifier_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_identifiers_response party_identifier_service::list_party_identifiers(
     const messaging::list_party_identifiers_request& request) {

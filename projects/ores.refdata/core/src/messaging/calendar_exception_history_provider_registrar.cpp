@@ -41,4 +41,4 @@ void register_calendar_exception_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

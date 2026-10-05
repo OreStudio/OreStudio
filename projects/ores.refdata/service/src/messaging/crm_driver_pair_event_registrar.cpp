@@ -55,4 +55,4 @@ register_crm_driver_pair_event_mapping(ev::service::postgres_event_source& event
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

@@ -41,4 +41,4 @@ void register_csa_eligible_currency_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

@@ -94,7 +94,7 @@ domain::swaption_instrument to_domain(const messaging::swaption_instrument_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_swaption_instruments_response
 swaption_instrument_service::list_swaption_instruments(

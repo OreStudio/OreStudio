@@ -41,4 +41,4 @@ void register_monetary_nature_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

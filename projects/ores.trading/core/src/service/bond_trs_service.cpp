@@ -93,7 +93,7 @@ domain::bond_trs to_domain(const messaging::bond_trs_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_trs_response
 bond_trs_service::list_bond_trs(const messaging::list_bond_trs_request& request) {

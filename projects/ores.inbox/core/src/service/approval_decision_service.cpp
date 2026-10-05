@@ -91,7 +91,7 @@ domain::approval_decision to_domain(const messaging::approval_decision_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_approval_decisions_response approval_decision_service::list_approval_decisions(
     const messaging::list_approval_decisions_request& request) {

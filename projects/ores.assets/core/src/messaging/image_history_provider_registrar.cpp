@@ -40,4 +40,4 @@ void register_image_history_provider(ores::history::service::dispatch_registry& 
         });
 }
 
-} // namespace ores::assets::messaging
+}

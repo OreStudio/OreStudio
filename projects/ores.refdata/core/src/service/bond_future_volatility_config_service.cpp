@@ -99,7 +99,7 @@ to_domain(const messaging::bond_future_volatility_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_future_volatility_configs_response
 bond_future_volatility_config_service::list_bond_future_volatility_configs(

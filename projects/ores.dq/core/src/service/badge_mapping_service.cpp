@@ -85,7 +85,7 @@ domain::badge_mapping to_domain(const messaging::badge_mapping_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_badge_mappings_response
 badge_mapping_service::list_badge_mappings(const messaging::list_badge_mappings_request& request) {

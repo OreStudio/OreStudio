@@ -44,7 +44,7 @@ inline auto& report_type_configuration_type_handler_lg() {
         "ores.reporting.messaging.report_type_configuration_type_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -405,6 +405,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::reporting::messaging
+}
 
 #endif

@@ -45,7 +45,7 @@ inline auto& yield_curve_process_parameter_definition_handler_lg() {
         "ores.synthetic.messaging.yield_curve_process_parameter_definition_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -518,6 +518,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

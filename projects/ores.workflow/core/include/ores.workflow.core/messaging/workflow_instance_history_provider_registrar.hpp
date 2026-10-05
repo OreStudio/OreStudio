@@ -32,6 +32,6 @@ namespace ores::workflow::messaging {
 void register_workflow_instance_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::workflow::messaging
+}
 
 #endif

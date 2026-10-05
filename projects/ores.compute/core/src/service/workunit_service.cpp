@@ -93,7 +93,7 @@ domain::workunit to_domain(const messaging::workunit_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_workunits_response
 workunit_service::list_workunits(const messaging::list_workunits_request& request) {

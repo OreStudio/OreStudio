@@ -36,6 +36,6 @@ register_image_event_mapping(ores::eventing::service::postgres_event_source& eve
                              ores::eventing::service::event_bus& event_bus,
                              ores::nats::service::client& nats);
 
-} // namespace ores::assets::service::messaging
+}
 
 #endif

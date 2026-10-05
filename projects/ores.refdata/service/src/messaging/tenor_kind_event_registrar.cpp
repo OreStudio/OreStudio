@@ -53,4 +53,4 @@ register_tenor_kind_event_mapping(ev::service::postgres_event_source& event_sour
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

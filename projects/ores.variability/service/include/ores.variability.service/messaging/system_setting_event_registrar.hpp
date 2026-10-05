@@ -36,6 +36,6 @@ register_system_setting_event_mapping(ores::eventing::service::postgres_event_so
                                       ores::eventing::service::event_bus& event_bus,
                                       ores::nats::service::client& nats);
 
-} // namespace ores::variability::service::messaging
+}
 
 #endif

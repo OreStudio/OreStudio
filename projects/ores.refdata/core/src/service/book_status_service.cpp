@@ -89,7 +89,7 @@ domain::book_status to_domain(const messaging::book_status_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_book_statuses_response
 book_status_service::list_book_statuses(const messaging::list_book_statuses_request& request) {

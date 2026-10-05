@@ -94,7 +94,7 @@ domain::approval_kind to_domain(const messaging::approval_kind_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_approval_kinds_response
 approval_kind_service::list_approval_kinds(const messaging::list_approval_kinds_request& request) {

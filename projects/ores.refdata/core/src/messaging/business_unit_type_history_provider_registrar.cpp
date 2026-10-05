@@ -41,4 +41,4 @@ void register_business_unit_type_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

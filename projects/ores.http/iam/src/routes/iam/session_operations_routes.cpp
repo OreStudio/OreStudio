@@ -98,7 +98,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
     }
 }
 
-} // namespace
+}
 
 boost::asio::awaitable<http_response>
 session_operations_routes::handle_get_active_sessions(const http_request& req,

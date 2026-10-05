@@ -31,7 +31,7 @@ namespace ores::workflow::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.workflow.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_workflow_instance_handlers(
     ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ std::vector<ores::nats::service::subscription> register_workflow_instance_handle
     return subs;
 }
 
-} // namespace ores::workflow::messaging
+}

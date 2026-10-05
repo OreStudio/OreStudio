@@ -103,7 +103,7 @@ domain::bond_leg_amortization to_domain(const messaging::bond_leg_amortization_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_leg_amortizations_response
 bond_leg_amortization_service::list_bond_leg_amortizations(

@@ -87,7 +87,7 @@ domain::moment_type to_domain(const messaging::moment_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_moment_types_response
 moment_type_service::list_moment_types(const messaging::list_moment_types_request& request) {

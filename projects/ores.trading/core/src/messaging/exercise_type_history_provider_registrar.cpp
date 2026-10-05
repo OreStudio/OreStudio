@@ -40,4 +40,4 @@ void register_exercise_type_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::trading::messaging
+}

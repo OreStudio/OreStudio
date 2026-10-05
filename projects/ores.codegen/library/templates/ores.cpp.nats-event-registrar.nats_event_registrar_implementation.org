@@ -69,7 +69,7 @@ register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& e
         });
 }
 
-} // namespace ores::{{component}}::service::messaging
+}
 {{/domain_entity}}
 #+end_src
 

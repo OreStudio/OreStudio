@@ -88,7 +88,7 @@ domain::catalog to_domain(const messaging::catalog_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_catalogs_response
 catalog_service::list_catalogs(const messaging::list_catalogs_request& request) {

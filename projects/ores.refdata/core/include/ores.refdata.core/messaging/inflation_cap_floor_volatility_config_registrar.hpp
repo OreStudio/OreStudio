@@ -40,6 +40,6 @@ register_inflation_cap_floor_volatility_config_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

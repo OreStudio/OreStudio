@@ -89,7 +89,7 @@ domain::currency_pair to_domain(const messaging::currency_pair_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_pairs_response
 currency_pair_service::list_currency_pairs(const messaging::list_currency_pairs_request& request) {

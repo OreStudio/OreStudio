@@ -56,4 +56,4 @@ register_bond_leg_amortization_event_mapping(ev::service::postgres_event_source&
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

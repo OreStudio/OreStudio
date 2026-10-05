@@ -56,4 +56,4 @@ register_average_ois_convention_event_mapping(ev::service::postgres_event_source
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

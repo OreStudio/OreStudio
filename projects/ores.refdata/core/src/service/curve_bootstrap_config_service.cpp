@@ -98,7 +98,7 @@ domain::curve_bootstrap_config to_domain(const messaging::curve_bootstrap_config
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_bootstrap_configs_response
 curve_bootstrap_config_service::list_curve_bootstrap_configs(

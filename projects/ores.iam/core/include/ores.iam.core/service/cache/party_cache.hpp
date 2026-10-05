@@ -53,7 +53,7 @@ inline auto& party_cache_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.service.cache.party_cache");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief In-process per-tenant cache of refdata parties data.
@@ -212,6 +212,6 @@ private:
     cache_t cache_;
 };
 
-} // namespace ores::iam::service::cache
+}
 
 #endif

@@ -88,7 +88,7 @@ domain::notification_recipient to_domain(const messaging::notification_recipient
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notification_recipients_response
 notification_recipient_service::list_notification_recipients(

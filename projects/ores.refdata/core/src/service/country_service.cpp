@@ -95,7 +95,7 @@ domain::country to_domain(const messaging::country_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_countries_response
 country_service::list_countries(const messaging::list_countries_request& request) {

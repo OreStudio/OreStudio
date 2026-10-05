@@ -56,4 +56,4 @@ register_observation_lineage_event_mapping(ev::service::postgres_event_source& e
         });
 }
 
-} // namespace ores::marketdata::service::messaging
+}

@@ -40,4 +40,4 @@ void register_market_series_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::marketdata::messaging
+}

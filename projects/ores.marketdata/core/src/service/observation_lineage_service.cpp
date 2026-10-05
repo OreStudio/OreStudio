@@ -94,7 +94,7 @@ domain::observation_lineage to_domain(const messaging::observation_lineage_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_observation_lineages_response
 observation_lineage_service::list_observation_lineages(

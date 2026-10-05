@@ -91,7 +91,7 @@ domain::business_unit_type to_domain(const messaging::business_unit_type_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_business_unit_types_response business_unit_type_service::list_business_unit_types(
     const messaging::list_business_unit_types_request& request) {

@@ -45,7 +45,7 @@ register_{{entity_singular}}_event_mapping(ores::eventing::service::postgres_eve
                                            ores::eventing::service::event_bus& event_bus,
                                            ores::nats::service::client& nats);
 
-} // namespace ores::{{component}}::service::messaging
+}
 
 #endif
 {{/domain_entity}}

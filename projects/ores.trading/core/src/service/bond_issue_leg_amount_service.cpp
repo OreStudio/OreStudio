@@ -99,7 +99,7 @@ domain::bond_issue_leg_amount to_domain(const messaging::bond_issue_leg_amount_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_leg_amounts_response
 bond_issue_leg_amount_service::list_bond_issue_leg_amounts(

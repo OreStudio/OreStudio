@@ -41,4 +41,4 @@ void register_pricing_engine_type_history_provider(
         });
 }
 
-} // namespace ores::analytics::messaging
+}

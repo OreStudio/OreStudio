@@ -103,7 +103,7 @@ to_domain(const messaging::equity_accumulator_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_accumulator_instruments_response
 equity_accumulator_instrument_service::list_equity_accumulator_instruments(

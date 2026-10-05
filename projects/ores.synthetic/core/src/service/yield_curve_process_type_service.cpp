@@ -90,7 +90,7 @@ domain::yield_curve_process_type to_domain(const messaging::yield_curve_process_
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_yield_curve_process_types_response
 yield_curve_process_type_service::list_yield_curve_process_types(

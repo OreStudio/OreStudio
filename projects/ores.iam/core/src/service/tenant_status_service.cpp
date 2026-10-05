@@ -90,7 +90,7 @@ domain::tenant_status to_domain(const messaging::tenant_status_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenant_statuses_response tenant_status_service::list_tenant_statuses(
     const messaging::list_tenant_statuses_request& request) {

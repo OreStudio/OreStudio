@@ -41,4 +41,4 @@ void register_yield_curve_process_type_history_provider(
         });
 }
 
-} // namespace ores::synthetic::messaging
+}

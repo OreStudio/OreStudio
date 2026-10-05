@@ -87,7 +87,7 @@ domain::payoff_type to_domain(const messaging::payoff_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_payoff_types_response
 payoff_type_service::list_payoff_types(const messaging::list_payoff_types_request& request) {

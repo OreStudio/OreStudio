@@ -57,4 +57,4 @@ register_intraday_power_curve_config_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

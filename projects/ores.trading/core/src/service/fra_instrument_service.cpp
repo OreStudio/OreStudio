@@ -95,7 +95,7 @@ domain::fra_instrument to_domain(const messaging::fra_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fra_instruments_response fra_instrument_service::list_fra_instruments(
     const messaging::list_fra_instruments_request& request) {

@@ -94,7 +94,7 @@ to_domain(const messaging::balance_guaranteed_swap_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_balance_guaranteed_swap_instruments_response
 balance_guaranteed_swap_instrument_service::list_balance_guaranteed_swap_instruments(

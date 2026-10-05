@@ -91,7 +91,7 @@ domain::bond_future to_domain(const messaging::bond_future_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_futures_response
 bond_future_service::list_bond_futures(const messaging::list_bond_futures_request& request) {

@@ -41,4 +41,4 @@ void register_average_ois_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

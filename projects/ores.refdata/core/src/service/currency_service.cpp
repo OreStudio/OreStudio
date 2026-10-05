@@ -104,7 +104,7 @@ domain::currency to_domain(const messaging::currency_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currencies_response
 currency_service::list_currencies(const messaging::list_currencies_request& request) {

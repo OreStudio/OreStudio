@@ -41,4 +41,4 @@ void register_day_count_fraction_type_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

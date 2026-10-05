@@ -56,4 +56,4 @@ register_bond_yield_convention_event_mapping(ev::service::postgres_event_source&
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

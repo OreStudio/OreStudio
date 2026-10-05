@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_app_version_platform_han
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::compute::messaging
+}
 
 #endif

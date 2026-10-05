@@ -94,7 +94,7 @@ to_domain(const messaging::bond_issue_conversion_target_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_conversion_targets_response
 bond_issue_conversion_target_service::list_bond_issue_conversion_targets(

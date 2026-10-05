@@ -91,7 +91,7 @@ domain::approval_decision_type to_domain(const messaging::approval_decision_type
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_approval_decision_types_response
 approval_decision_type_service::list_approval_decision_types(

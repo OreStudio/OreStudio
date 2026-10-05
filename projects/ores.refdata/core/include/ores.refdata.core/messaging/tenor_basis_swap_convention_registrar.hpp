@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_tenor_basis_swap_convent
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

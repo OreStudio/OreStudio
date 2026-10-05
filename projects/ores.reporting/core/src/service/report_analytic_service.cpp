@@ -90,7 +90,7 @@ domain::report_analytic to_domain(const messaging::report_analytic_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_analytics_response report_analytic_service::list_report_analytics(
     const messaging::list_report_analytics_request& request) {

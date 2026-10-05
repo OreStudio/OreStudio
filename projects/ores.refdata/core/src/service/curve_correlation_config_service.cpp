@@ -102,7 +102,7 @@ domain::curve_correlation_config to_domain(const messaging::curve_correlation_co
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_correlation_configs_response
 curve_correlation_config_service::list_curve_correlation_configs(

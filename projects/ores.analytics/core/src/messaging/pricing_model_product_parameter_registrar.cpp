@@ -31,7 +31,7 @@ namespace ores::analytics::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.analytics.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_pricing_model_product_parameter_handlers(
     ores::nats::service::client& nats,
@@ -93,4 +93,4 @@ std::vector<ores::nats::service::subscription> register_pricing_model_product_pa
     return subs;
 }
 
-} // namespace ores::analytics::messaging
+}

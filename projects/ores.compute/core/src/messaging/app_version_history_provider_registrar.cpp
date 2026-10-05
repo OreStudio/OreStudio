@@ -40,4 +40,4 @@ void register_app_version_history_provider(ores::history::service::dispatch_regi
         });
 }
 
-} // namespace ores::compute::messaging
+}

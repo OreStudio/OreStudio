@@ -92,7 +92,7 @@ to_domain(const messaging::todays_market_configuration_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_todays_market_configurations_response
 todays_market_configuration_service::list_todays_market_configurations(

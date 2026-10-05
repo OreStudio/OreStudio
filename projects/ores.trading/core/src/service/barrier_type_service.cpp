@@ -87,7 +87,7 @@ domain::barrier_type to_domain(const messaging::barrier_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_barrier_types_response
 barrier_type_service::list_barrier_types(const messaging::list_barrier_types_request& request) {

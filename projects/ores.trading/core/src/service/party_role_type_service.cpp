@@ -87,7 +87,7 @@ domain::party_role_type to_domain(const messaging::party_role_type_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_role_types_response party_role_type_service::list_party_role_types(
     const messaging::list_party_role_types_request& request) {

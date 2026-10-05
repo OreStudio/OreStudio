@@ -53,4 +53,4 @@ register_fsm_state_event_mapping(ev::service::postgres_event_source& event_sourc
         });
 }
 
-} // namespace ores::dq::service::messaging
+}

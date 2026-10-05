@@ -93,7 +93,7 @@ domain::trade_booking to_domain(const messaging::trade_booking_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_bookings_response
 trade_booking_service::list_trade_bookings(const messaging::list_trade_bookings_request& request) {

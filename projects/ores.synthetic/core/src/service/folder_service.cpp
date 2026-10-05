@@ -91,7 +91,7 @@ domain::folder to_domain(const messaging::folder_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_folders_response
 folder_service::list_folders(const messaging::list_folders_request& request) {

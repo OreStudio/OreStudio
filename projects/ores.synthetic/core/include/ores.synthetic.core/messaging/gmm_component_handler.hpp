@@ -44,7 +44,7 @@ inline auto& gmm_component_handler_lg() {
         ores::logging::make_logger("ores.synthetic.messaging.gmm_component_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -464,6 +464,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

@@ -87,7 +87,7 @@ domain::price_type to_domain(const messaging::price_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_price_types_response
 price_type_service::list_price_types(const messaging::list_price_types_request& request) {

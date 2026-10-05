@@ -32,6 +32,6 @@ namespace ores::dq::messaging {
 void register_change_reason_category_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::dq::messaging
+}
 
 #endif

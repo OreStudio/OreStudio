@@ -99,7 +99,7 @@ to_domain(const messaging::tenor_basis_two_swap_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenor_basis_two_swap_conventions_response
 tenor_basis_two_swap_convention_service::list_tenor_basis_two_swap_conventions(

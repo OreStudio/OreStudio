@@ -41,4 +41,4 @@ void register_asset_class_code_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

@@ -31,7 +31,7 @@ namespace ores::refdata::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_inflation_cap_floor_volatility_config_handlers(
@@ -98,4 +98,4 @@ register_inflation_cap_floor_volatility_config_handlers(
     return subs;
 }
 
-} // namespace ores::refdata::messaging
+}

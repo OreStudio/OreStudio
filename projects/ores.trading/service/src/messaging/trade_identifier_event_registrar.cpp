@@ -55,4 +55,4 @@ register_trade_identifier_event_mapping(ev::service::postgres_event_source& even
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

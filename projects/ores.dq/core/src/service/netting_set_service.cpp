@@ -61,7 +61,7 @@ std::vector<domain::netting_set> read_one(repository::netting_set_repository& re
     return repo.read_latest(ctx, key.code);
 }
 
-} // namespace
+}
 
 messaging::list_netting_sets_response
 netting_set_service::list_netting_sets(const messaging::list_netting_sets_request& request) {

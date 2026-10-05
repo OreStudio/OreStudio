@@ -89,7 +89,7 @@ domain::contact_type to_domain(const messaging::contact_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_contact_types_response
 contact_type_service::list_contact_types(const messaging::list_contact_types_request& request) {

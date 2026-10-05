@@ -31,7 +31,7 @@ namespace ores::workspace::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.workspace.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_workspace_handlers(ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ register_workspace_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::workspace::messaging
+}

@@ -91,7 +91,7 @@ domain::notification_kind to_domain(const messaging::notification_kind_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notification_kinds_response notification_kind_service::list_notification_kinds(
     const messaging::list_notification_kinds_request& request) {

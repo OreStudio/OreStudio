@@ -93,7 +93,7 @@ domain::curve_security_config to_domain(const messaging::curve_security_config_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_security_configs_response
 curve_security_config_service::list_curve_security_configs(

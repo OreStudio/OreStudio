@@ -32,6 +32,6 @@ namespace ores::inbox::messaging {
 void register_approval_decision_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::inbox::messaging
+}
 
 #endif

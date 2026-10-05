@@ -87,7 +87,7 @@ domain::average_type to_domain(const messaging::average_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_average_types_response
 average_type_service::list_average_types(const messaging::list_average_types_request& request) {

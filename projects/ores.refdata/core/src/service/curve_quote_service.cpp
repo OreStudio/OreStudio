@@ -96,7 +96,7 @@ domain::curve_quote to_domain(const messaging::curve_quote_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_quotes_response
 curve_quote_service::list_curve_quotes(const messaging::list_curve_quotes_request& request) {

@@ -61,7 +61,7 @@ std::vector<domain::login_info> read_one(repository::login_info_repository& repo
     return repo.read_latest(ctx, boost::uuids::to_string(key.account_id));
 }
 
-} // namespace
+}
 
 messaging::list_login_info_response
 login_info_service::list_login_info(const messaging::list_login_info_request& request) {

@@ -40,4 +40,4 @@ void register_calendar_rule_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::refdata::messaging
+}

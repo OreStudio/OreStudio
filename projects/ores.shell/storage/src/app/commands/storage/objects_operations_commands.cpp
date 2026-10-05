@@ -63,7 +63,7 @@ bool parse_flag(const std::string& value, bool& out) {
     return false;
 }
 
-} // namespace
+}
 
 void objects_operations_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("objects");

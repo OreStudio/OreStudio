@@ -43,7 +43,7 @@ inline auto& result_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.compute.messaging.result_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -495,6 +495,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::compute::messaging
+}
 
 #endif

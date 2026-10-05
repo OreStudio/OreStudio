@@ -49,7 +49,7 @@ inline auto& currency_pair_convention_cache_lg() {
         ores::logging::make_logger("ores.refdata.service.cache.currency_pair_convention_cache");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief In-process per-tenant cache of refdata currency_pair_conventions data.
@@ -176,6 +176,6 @@ private:
     cache_t cache_;
 };
 
-} // namespace ores::refdata::service::cache
+}
 
 #endif

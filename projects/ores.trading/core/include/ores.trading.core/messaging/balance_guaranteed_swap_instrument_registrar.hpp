@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_balance_guaranteed_swap_
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::trading::messaging
+}
 
 #endif

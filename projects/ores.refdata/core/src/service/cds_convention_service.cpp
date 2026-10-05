@@ -96,7 +96,7 @@ domain::cds_convention to_domain(const messaging::cds_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cds_conventions_response cds_convention_service::list_cds_conventions(
     const messaging::list_cds_conventions_request& request) {

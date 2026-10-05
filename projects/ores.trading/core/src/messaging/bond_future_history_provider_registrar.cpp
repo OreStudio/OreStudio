@@ -40,4 +40,4 @@ void register_bond_future_history_provider(ores::history::service::dispatch_regi
         });
 }
 
-} // namespace ores::trading::messaging
+}

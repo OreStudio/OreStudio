@@ -40,6 +40,6 @@ register_ir_curve_generation_config_process_parameter_value_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

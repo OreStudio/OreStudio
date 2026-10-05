@@ -101,7 +101,7 @@ to_domain(const messaging::yield_curve_process_parameter_definition_write& write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_yield_curve_process_parameter_definitions_response
 yield_curve_process_parameter_definition_service::list_yield_curve_process_parameter_definitions(

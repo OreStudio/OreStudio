@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_market_data_generation_c
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

@@ -40,4 +40,4 @@ void register_tenant_status_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::iam::messaging
+}

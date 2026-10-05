@@ -101,7 +101,7 @@ to_domain(const messaging::curve_report_configuration_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_report_configurations_response
 curve_report_configuration_service::list_curve_report_configurations(

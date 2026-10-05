@@ -61,7 +61,7 @@ std::vector<domain::netting_set_alias> read_one(repository::netting_set_alias_re
     return repo.read_latest(ctx, key.id_value);
 }
 
-} // namespace
+}
 
 messaging::list_netting_set_aliases_response netting_set_alias_service::list_netting_set_aliases(
     const messaging::list_netting_set_aliases_request& request) {

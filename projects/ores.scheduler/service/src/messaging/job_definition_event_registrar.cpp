@@ -55,4 +55,4 @@ register_job_definition_event_mapping(ev::service::postgres_event_source& event_
         });
 }
 
-} // namespace ores::scheduler::service::messaging
+}

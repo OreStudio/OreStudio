@@ -57,4 +57,4 @@ register_fx_spot_generation_config_event_mapping(ev::service::postgres_event_sou
         });
 }
 
-} // namespace ores::synthetic::service::messaging
+}

@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_equity_curve_config_hand
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

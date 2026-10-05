@@ -55,4 +55,4 @@ register_currency_market_tier_event_mapping(ev::service::postgres_event_source& 
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

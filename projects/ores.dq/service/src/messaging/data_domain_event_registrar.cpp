@@ -53,4 +53,4 @@ register_data_domain_event_mapping(ev::service::postgres_event_source& event_sou
         });
 }
 
-} // namespace ores::dq::service::messaging
+}

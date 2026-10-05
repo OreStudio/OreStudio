@@ -35,4 +35,4 @@ void register_bond_issue_call_date_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

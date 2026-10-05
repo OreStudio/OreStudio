@@ -40,4 +40,4 @@ void register_portfolio_history_provider(ores::history::service::dispatch_regist
         });
 }
 
-} // namespace ores::refdata::messaging
+}

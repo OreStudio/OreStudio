@@ -102,7 +102,7 @@ domain::curve_global_report to_domain(const messaging::curve_global_report_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_global_reports_response
 curve_global_report_service::list_curve_global_reports(

@@ -62,7 +62,7 @@ read_one(repository::synthetic_fx_spot_config_repository& repo,
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
-} // namespace
+}
 
 messaging::list_synthetic_fx_spot_configs_response
 synthetic_fx_spot_config_service::list_synthetic_fx_spot_configs(

@@ -31,7 +31,7 @@ namespace ores::scheduler::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.scheduler.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_job_definition_handlers(ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ register_job_definition_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::scheduler::messaging
+}

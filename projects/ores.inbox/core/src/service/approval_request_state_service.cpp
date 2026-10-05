@@ -91,7 +91,7 @@ domain::approval_request_state to_domain(const messaging::approval_request_state
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_approval_request_states_response
 approval_request_state_service::list_approval_request_states(

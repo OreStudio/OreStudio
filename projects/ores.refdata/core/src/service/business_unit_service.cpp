@@ -94,7 +94,7 @@ domain::business_unit to_domain(const messaging::business_unit_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_business_units_response
 business_unit_service::list_business_units(const messaging::list_business_units_request& request) {

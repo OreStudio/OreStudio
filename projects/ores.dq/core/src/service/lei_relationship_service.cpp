@@ -61,7 +61,7 @@ std::vector<domain::lei_relationship> read_one(repository::lei_relationship_repo
     return repo.read_latest(ctx, key.relationship_start_node_node_id);
 }
 
-} // namespace
+}
 
 messaging::list_lei_relationships_response lei_relationship_service::list_lei_relationships(
     const messaging::list_lei_relationships_request& request) {

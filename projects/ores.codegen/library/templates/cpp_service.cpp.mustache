@@ -111,7 +111,7 @@ domain::{{entity_singular}} to_domain(const messaging::{{entity_singular}}_write
 }
 {{/put_operations}}
 
-} // namespace
+}
 
 {{#list_operations}}
 messaging::{{response}}
@@ -909,7 +909,7 @@ void stamp_{{name_singular}}(domain::{{name_singular}}& row,
             std::string(ores::service::messaging::change_reasons::new_record);
 }
 
-} // namespace
+}
 {{/party_id_is_target}}
 
 {{name_singular}}_service::{{name_singular}}_service(context ctx)
@@ -964,7 +964,7 @@ domain::{{name_singular}} to_domain(const messaging::{{name_singular}}_write& wr
 }
 {{/put_operations}}
 
-} // namespace
+}
 
 {{#list_operations}}
 messaging::{{response}}

@@ -87,7 +87,7 @@ to_domain(const messaging::market_series_asset_class_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_market_series_asset_classes_response
 market_series_asset_class_service::list_market_series_asset_classes(

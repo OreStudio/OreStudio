@@ -93,7 +93,7 @@ domain::bond_yield_convention to_domain(const messaging::bond_yield_convention_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_yield_conventions_response
 bond_yield_convention_service::list_bond_yield_conventions(

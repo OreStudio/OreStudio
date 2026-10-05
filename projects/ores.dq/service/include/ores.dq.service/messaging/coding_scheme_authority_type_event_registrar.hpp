@@ -37,6 +37,6 @@ register_coding_scheme_authority_type_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::dq::service::messaging
+}
 
 #endif

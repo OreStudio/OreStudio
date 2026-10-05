@@ -41,4 +41,4 @@ void register_payment_frequency_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

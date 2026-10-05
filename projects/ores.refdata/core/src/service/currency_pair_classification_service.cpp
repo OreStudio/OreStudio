@@ -92,7 +92,7 @@ to_domain(const messaging::currency_pair_classification_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_pair_classifications_response
 currency_pair_classification_service::list_currency_pair_classifications(

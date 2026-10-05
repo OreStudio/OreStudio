@@ -89,7 +89,7 @@ domain::default_curve_config to_domain(const messaging::default_curve_config_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_default_curve_configs_response
 default_curve_config_service::list_default_curve_configs(

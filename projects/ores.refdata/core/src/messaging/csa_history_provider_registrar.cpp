@@ -40,4 +40,4 @@ void register_csa_history_provider(ores::history::service::dispatch_registry& re
         });
 }
 
-} // namespace ores::refdata::messaging
+}

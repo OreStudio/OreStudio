@@ -95,7 +95,7 @@ to_domain(const messaging::inflation_swap_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_inflation_swap_instruments_response
 inflation_swap_instrument_service::list_inflation_swap_instruments(

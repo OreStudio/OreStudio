@@ -89,7 +89,7 @@ domain::party_status to_domain(const messaging::party_status_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_statuses_response
 party_status_service::list_party_statuses(const messaging::list_party_statuses_request& request) {

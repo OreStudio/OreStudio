@@ -31,6 +31,6 @@ namespace ores::trading::messaging {
 
 void register_lifecycle_event_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::trading::messaging
+}
 
 #endif

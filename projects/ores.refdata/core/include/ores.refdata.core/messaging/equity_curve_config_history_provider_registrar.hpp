@@ -32,6 +32,6 @@ namespace ores::refdata::messaging {
 void register_equity_curve_config_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

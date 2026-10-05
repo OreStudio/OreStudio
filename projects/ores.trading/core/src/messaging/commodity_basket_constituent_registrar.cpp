@@ -31,7 +31,7 @@ namespace ores::trading::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.trading.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_commodity_basket_constituent_handlers(
     ores::nats::service::client& nats,
@@ -89,4 +89,4 @@ std::vector<ores::nats::service::subscription> register_commodity_basket_constit
     return subs;
 }
 
-} // namespace ores::trading::messaging
+}

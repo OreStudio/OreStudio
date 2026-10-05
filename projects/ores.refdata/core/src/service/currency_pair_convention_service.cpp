@@ -93,7 +93,7 @@ domain::currency_pair_convention to_domain(const messaging::currency_pair_conven
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_pair_conventions_response
 currency_pair_convention_service::list_currency_pair_conventions(

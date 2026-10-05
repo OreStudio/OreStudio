@@ -89,7 +89,7 @@ domain::swap_index_convention to_domain(const messaging::swap_index_convention_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_swap_index_conventions_response
 swap_index_convention_service::list_swap_index_conventions(

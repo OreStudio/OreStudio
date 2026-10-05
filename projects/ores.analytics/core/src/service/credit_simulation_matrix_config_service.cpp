@@ -92,7 +92,7 @@ to_domain(const messaging::credit_simulation_matrix_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_credit_simulation_matrix_configs_response
 credit_simulation_matrix_config_service::list_credit_simulation_matrix_configs(

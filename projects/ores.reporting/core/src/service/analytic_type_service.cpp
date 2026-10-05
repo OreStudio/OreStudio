@@ -90,7 +90,7 @@ domain::analytic_type to_domain(const messaging::analytic_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_analytic_types_response
 analytic_type_service::list_analytic_types(const messaging::list_analytic_types_request& request) {

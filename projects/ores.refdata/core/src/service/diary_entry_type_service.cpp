@@ -89,7 +89,7 @@ domain::diary_entry_type to_domain(const messaging::diary_entry_type_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_diary_entry_types_response diary_entry_type_service::list_diary_entry_types(
     const messaging::list_diary_entry_types_request& request) {

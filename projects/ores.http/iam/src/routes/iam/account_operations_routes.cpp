@@ -98,7 +98,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
     }
 }
 
-} // namespace
+}
 
 boost::asio::awaitable<http_response>
 account_operations_routes::handle_save_account(const http_request& req, nats_client& session) {

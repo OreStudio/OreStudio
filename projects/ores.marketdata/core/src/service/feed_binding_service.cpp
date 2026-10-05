@@ -89,7 +89,7 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_feed_bindings_response
 feed_binding_service::list_feed_bindings(const messaging::list_feed_bindings_request& request) {

@@ -90,7 +90,7 @@ domain::currency_market_tier to_domain(const messaging::currency_market_tier_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_market_tiers_response
 currency_market_tier_service::list_currency_market_tiers(

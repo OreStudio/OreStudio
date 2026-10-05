@@ -101,7 +101,7 @@ to_domain(const messaging::counterparty_contact_information_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_counterparty_contact_informations_response
 counterparty_contact_information_service::list_counterparty_contact_informations(

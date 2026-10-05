@@ -99,7 +99,7 @@ to_domain(const messaging::equity_position_option_underlying_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_position_option_underlyings_response
 equity_position_option_underlying_service::list_equity_position_option_underlyings(

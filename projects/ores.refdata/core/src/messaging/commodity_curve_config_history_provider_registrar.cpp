@@ -41,4 +41,4 @@ void register_commodity_curve_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

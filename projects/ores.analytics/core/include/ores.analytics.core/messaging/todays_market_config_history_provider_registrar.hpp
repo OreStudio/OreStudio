@@ -32,6 +32,6 @@ namespace ores::analytics::messaging {
 void register_todays_market_config_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

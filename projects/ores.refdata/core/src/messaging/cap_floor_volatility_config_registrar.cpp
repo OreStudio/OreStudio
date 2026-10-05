@@ -31,7 +31,7 @@ namespace ores::refdata::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_cap_floor_volatility_config_handlers(
     ores::nats::service::client& nats,
@@ -89,4 +89,4 @@ std::vector<ores::nats::service::subscription> register_cap_floor_volatility_con
     return subs;
 }
 
-} // namespace ores::refdata::messaging
+}

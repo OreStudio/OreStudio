@@ -56,7 +56,7 @@ std::vector<domain::calendar_date> read_one(repository::calendar_date_repository
     return repo.read_latest(key.calendar_code, key.date);
 }
 
-} // namespace
+}
 
 messaging::list_calendar_dates_response
 calendar_date_service::list_calendar_dates(const messaging::list_calendar_dates_request& request) {

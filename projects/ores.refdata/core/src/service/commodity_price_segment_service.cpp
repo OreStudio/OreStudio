@@ -96,7 +96,7 @@ domain::commodity_price_segment to_domain(const messaging::commodity_price_segme
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_commodity_price_segments_response
 commodity_price_segment_service::list_commodity_price_segments(

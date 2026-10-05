@@ -41,4 +41,4 @@ void register_stress_shift_family_history_provider(
         });
 }
 
-} // namespace ores::analytics::messaging
+}

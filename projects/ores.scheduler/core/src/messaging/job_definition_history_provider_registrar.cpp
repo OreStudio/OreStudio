@@ -40,4 +40,4 @@ void register_job_definition_history_provider(ores::history::service::dispatch_r
         });
 }
 
-} // namespace ores::scheduler::messaging
+}

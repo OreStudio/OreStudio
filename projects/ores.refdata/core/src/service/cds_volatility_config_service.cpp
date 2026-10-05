@@ -94,7 +94,7 @@ domain::cds_volatility_config to_domain(const messaging::cds_volatility_config_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cds_volatility_configs_response
 cds_volatility_config_service::list_cds_volatility_configs(

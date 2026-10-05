@@ -41,4 +41,4 @@ void register_base_correlation_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

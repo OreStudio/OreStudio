@@ -57,4 +57,4 @@ register_fx_variance_swap_instrument_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

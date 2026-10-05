@@ -32,6 +32,6 @@ namespace ores::reporting::messaging {
 void register_concurrency_policy_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::reporting::messaging
+}
 
 #endif

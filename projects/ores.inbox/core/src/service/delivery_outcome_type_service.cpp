@@ -62,7 +62,7 @@ read_one(repository::delivery_outcome_type_repository& repo,
     return repo.read_latest(ctx, key.code);
 }
 
-} // namespace
+}
 
 messaging::list_delivery_outcome_types_response
 delivery_outcome_type_service::list_delivery_outcome_types(

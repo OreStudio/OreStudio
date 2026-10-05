@@ -93,7 +93,7 @@ to_domain(const messaging::intraday_power_curve_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_intraday_power_curve_configs_response
 intraday_power_curve_config_service::list_intraday_power_curve_configs(

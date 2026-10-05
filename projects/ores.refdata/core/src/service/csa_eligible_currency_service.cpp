@@ -91,7 +91,7 @@ domain::csa_eligible_currency to_domain(const messaging::csa_eligible_currency_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_csa_eligible_currencies_response
 csa_eligible_currency_service::list_csa_eligible_currencies(

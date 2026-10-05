@@ -31,6 +31,6 @@ namespace ores::iam::messaging {
 
 void register_role_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::iam::messaging
+}
 
 #endif

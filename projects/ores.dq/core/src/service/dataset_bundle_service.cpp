@@ -89,7 +89,7 @@ domain::dataset_bundle to_domain(const messaging::dataset_bundle_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_dataset_bundles_response dataset_bundle_service::list_dataset_bundles(
     const messaging::list_dataset_bundles_request& request) {

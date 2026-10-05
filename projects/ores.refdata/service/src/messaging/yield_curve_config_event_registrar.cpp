@@ -55,4 +55,4 @@ register_yield_curve_config_event_mapping(ev::service::postgres_event_source& ev
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

@@ -85,7 +85,7 @@ domain::currency_currency_group to_domain(const messaging::currency_currency_gro
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_currency_groups_response
 currency_currency_group_service::list_currency_currency_groups(

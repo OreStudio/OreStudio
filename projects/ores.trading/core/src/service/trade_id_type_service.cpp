@@ -87,7 +87,7 @@ domain::trade_id_type to_domain(const messaging::trade_id_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_id_types_response
 trade_id_type_service::list_trade_id_types(const messaging::list_trade_id_types_request& request) {

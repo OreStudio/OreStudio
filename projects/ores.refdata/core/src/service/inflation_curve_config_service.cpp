@@ -105,7 +105,7 @@ domain::inflation_curve_config to_domain(const messaging::inflation_curve_config
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_inflation_curve_configs_response
 inflation_curve_config_service::list_inflation_curve_configs(

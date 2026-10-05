@@ -41,4 +41,4 @@ void register_crm_driver_pair_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

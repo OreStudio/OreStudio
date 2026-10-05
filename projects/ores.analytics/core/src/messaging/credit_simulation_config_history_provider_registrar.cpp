@@ -41,4 +41,4 @@ void register_credit_simulation_config_history_provider(
         });
 }
 
-} // namespace ores::analytics::messaging
+}

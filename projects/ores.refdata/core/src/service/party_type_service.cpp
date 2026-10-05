@@ -89,7 +89,7 @@ domain::party_type to_domain(const messaging::party_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_types_response
 party_type_service::list_party_types(const messaging::list_party_types_request& request) {

@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_average_ois_convention_h
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

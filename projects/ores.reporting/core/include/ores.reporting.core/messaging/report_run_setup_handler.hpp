@@ -44,7 +44,7 @@ inline auto& report_run_setup_handler_lg() {
         ores::logging::make_logger("ores.reporting.messaging.report_run_setup_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -473,6 +473,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::reporting::messaging
+}
 
 #endif

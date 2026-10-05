@@ -55,4 +55,4 @@ register_booking_nature_type_event_mapping(ev::service::postgres_event_source& e
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

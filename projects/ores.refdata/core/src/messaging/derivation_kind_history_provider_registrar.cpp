@@ -41,4 +41,4 @@ void register_derivation_kind_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

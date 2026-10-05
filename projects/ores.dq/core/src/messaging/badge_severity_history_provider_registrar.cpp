@@ -40,4 +40,4 @@ void register_badge_severity_history_provider(ores::history::service::dispatch_r
         });
 }
 
-} // namespace ores::dq::messaging
+}

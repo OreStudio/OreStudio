@@ -57,4 +57,4 @@ register_cap_floor_volatility_config_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

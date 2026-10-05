@@ -105,7 +105,7 @@ domain::dataset to_domain(const messaging::dataset_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_datasets_response
 dataset_service::list_datasets(const messaging::list_datasets_request& request) {

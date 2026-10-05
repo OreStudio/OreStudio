@@ -99,7 +99,7 @@ void apply_page(Request& req, const parsed_args& parsed) {
 }
 {{/shell.has_order}}
 
-} // namespace
+}
 {{/shell.has_helpers}}
 
 void {{entity_singular}}_commands::register_commands(cli::Menu& root_menu, nats_client& session) {

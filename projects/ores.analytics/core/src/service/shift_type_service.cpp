@@ -87,7 +87,7 @@ domain::shift_type to_domain(const messaging::shift_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_shift_types_response
 shift_type_service::list_shift_types(const messaging::list_shift_types_request& request) {

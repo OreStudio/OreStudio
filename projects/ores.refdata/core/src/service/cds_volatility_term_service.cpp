@@ -91,7 +91,7 @@ domain::cds_volatility_term to_domain(const messaging::cds_volatility_term_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cds_volatility_terms_response
 cds_volatility_term_service::list_cds_volatility_terms(

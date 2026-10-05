@@ -31,7 +31,7 @@ namespace ores::trading::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.trading.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_callable_swap_call_date_handlers(
     ores::nats::service::client& nats,
@@ -81,4 +81,4 @@ std::vector<ores::nats::service::subscription> register_callable_swap_call_date_
     return subs;
 }
 
-} // namespace ores::trading::messaging
+}

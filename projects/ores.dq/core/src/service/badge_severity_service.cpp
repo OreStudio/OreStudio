@@ -89,7 +89,7 @@ domain::badge_severity to_domain(const messaging::badge_severity_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_badge_severities_response badge_severity_service::list_badge_severities(
     const messaging::list_badge_severities_request& request) {

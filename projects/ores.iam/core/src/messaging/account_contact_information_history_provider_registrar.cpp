@@ -41,4 +41,4 @@ void register_account_contact_information_history_provider(
         });
 }
 
-} // namespace ores::iam::messaging
+}

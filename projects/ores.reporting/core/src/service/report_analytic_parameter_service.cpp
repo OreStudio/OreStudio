@@ -92,7 +92,7 @@ to_domain(const messaging::report_analytic_parameter_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_analytic_parameters_response
 report_analytic_parameter_service::list_report_analytic_parameters(

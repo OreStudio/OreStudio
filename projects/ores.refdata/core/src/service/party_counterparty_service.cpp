@@ -63,7 +63,7 @@ void stamp_party_counterparty(domain::party_counterparty& row, const ores::datab
         row.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
 }
 
-} // namespace
+}
 
 party_counterparty_service::party_counterparty_service(context ctx)
     : ctx_(std::move(ctx))
@@ -111,7 +111,7 @@ domain::party_counterparty to_domain(const messaging::party_counterparty_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_counterparties_response party_counterparty_service::list_party_counterparties(
     const messaging::list_party_counterparties_request& request) {

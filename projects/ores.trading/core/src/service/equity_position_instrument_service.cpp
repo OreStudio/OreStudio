@@ -94,7 +94,7 @@ to_domain(const messaging::equity_position_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_position_instruments_response
 equity_position_instrument_service::list_equity_position_instruments(

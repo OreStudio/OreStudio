@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/store-run-grants-in-iam
-#+pr:
+#+pr: 2675
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2675][#2675]] | [iam,sql,shell,codegen] Store run grants in IAM |
 
 * Review
 

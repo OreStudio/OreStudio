@@ -89,6 +89,8 @@ Source: =[[./pattern_distributed_tracing_context.puml][pattern_distributed_traci
   holes. The origin decides, and the =flags= field carries the decision.
 - *A second id scheme.* Running a correlation id and a trace id that differ makes
   two searches. Make the correlation id the trace id.
+- *An invalid trace id.* W3C Trace Context forbids an all-zero trace id and an
+  all-zero span id, so a generator must never produce either.
 
 * Security
 

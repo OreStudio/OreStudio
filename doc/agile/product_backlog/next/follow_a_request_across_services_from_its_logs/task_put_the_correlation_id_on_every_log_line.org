@@ -39,8 +39,10 @@ the lines of one request can be found together.
 - =log_handler_entry= opens a scoped Boost.Log attribute =correlation_id= for the
   handling, and the attribute is removed when the handling ends.
 - The console, file and telemetry sinks print or export the attribute.
-- An incoming id that is not 32 hex digits or a uuid is replaced; the log names
-  the replacement, not the rejected value.
+- =extract_or_generate_correlation_id= checks the shape: it accepts 32 hex
+  digits, normalises a uuid to 32 hex digits, and replaces anything else; the
+  log names the replacement, not the rejected value.
+- A new id is 32 lower-case hex digits and never all zeros.
 - A test writes two log lines inside one scope and finds the id on both.
 
 * Plan

@@ -73,6 +73,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- A seventh group, =observability=, was added later on PR #2651. The
+  text below that says six groups was true when it was written.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -104,6 +107,12 @@ via its "Verifies task" field.
 | 8 | PR #2651, Claude: a page outside the project gets no images silently | projects/ores.compass/src/compass.py | Decline | =site page= only publishes files in the repository. |
 | 9 | PR #2651, Claude: the emoji has a variation selector | projects/ores.compass/src/compass.py | Decline | 43 other status lines use the same form. |
 | 10 | PR #2651, Claude: say near the top that a design page states a target | report_execution_at_scale.org, run_grants_and_run_tokens.org | Accept | One sentence at the top of each summary. |
+| 11 | PR #2651, Claude, second round: the docs describe id validation the extractor does not do | correlation story, Correlation Identifier | Accept | The gap is in the starting point and In ORE Studio; task "Put the correlation id on every log line" owns it; one rule: 32 hex digits, a uuid normalised. |
+| 12 | PR #2651, Claude, second round: an observability filetag on a communication pattern | pattern_correlation_identifier.org | Decline | A filetag is a tag; the group is =#+pattern_group=, and nothing reads tags as groups. |
+| 13 | PR #2651, Claude, second round: the 19 of 379 count cannot be reproduced | correlation story | Accept | The story names both commands. |
+| 14 | PR #2651, Claude, second round: the workflow instance id as the correlation id | report_execution_at_scale.org | Accept | A run keeps the id its firing created; a uuid is normalised. |
+| 15 | PR #2651, Claude, second round: W3C forbids an all-zero trace id | pattern_distributed_tracing.org, correlation story | Accept | Stated as a pitfall and in the id decision. |
+| 16 | PR #2651, Claude, second round: older text says six groups | this task | Accept | A note that a seventh group was added later. |
 
 * Result
 

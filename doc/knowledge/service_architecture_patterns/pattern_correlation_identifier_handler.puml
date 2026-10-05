@@ -23,13 +23,13 @@ start
 :a message arrives;
 if (Nats-Correlation-Id header present?) then (yes)
   if (well formed: 32 hex digits\nor a uuid, bounded length?) then (yes)
-    :use it;
+    :use it; a uuid is normalised\nto 32 lower-case hex digits;
   else (no)
-    :create a new id;
+    :create a new id:\n32 hex digits, never all zeros;
     :log the rejected value's length,\nnot the value;
   endif
 else (no)
-  :create a new id;
+  :create a new id:\n32 hex digits, never all zeros;
   :log "no correlation id arrived";
 endif
 :open a log scope with correlation_id;

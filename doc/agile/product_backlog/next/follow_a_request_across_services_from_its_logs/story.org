@@ -33,7 +33,14 @@ Measured on 2026-10-05 at commit =511debee1e=:
   =Nats-Correlation-Id= header, =extract_or_generate_correlation_id=,
   =nats_client::with_correlation_id= and =log_handler_entry=.
 - 19 of the 379 files that build a request context call
-  =log_handler_entry=. No codegen template calls it.
+  =log_handler_entry=. No codegen template calls it. The counts come from
+  =grep -rl 'log_handler_entry(' projects --include=*.hpp --include=*.cpp=
+  without the helper's own header, and
+  =grep -rl 'make_request_context(' projects --include=*.hpp --include=*.cpp=
+  without =ores.service=.
+- =extract_or_generate_correlation_id= accepts any non-empty header value as it
+  arrives, and creates a hyphenated uuid when none does. Nothing checks the
+  shape, so an outside value reaches the log unchanged.
 - Nothing forwards the id: no handler, the HTTP edge, the scheduler, the shell
   and Qt do not set it. Each handler that logs it therefore creates a new one.
 - The log format is =time [severity] [channel] message=, so only the entry line
@@ -79,10 +86,12 @@ Measured on 2026-10-05 at commit =511debee1e=:
 
 * Decisions
 
-- *The id is 32 lower-case hex digits.* It has the shape of a W3C trace id, so
-  the move to Distributed Tracing reuses the ids already in the logs. An
-  incoming id of another shape is replaced, and the replacement is logged
-  without the rejected value, which keeps log injection out.
+- *The id is 32 lower-case hex digits, never all zeros.* It has the shape of a
+  W3C trace id, so the move to Distributed Tracing reuses the ids already in the
+  logs; W3C forbids the all-zero trace id. A uuid that arrives, including a
+  workflow instance id, is normalised by removing its hyphens and lower-casing
+  it. Any other shape is replaced, and the replacement is logged without the
+  rejected value, which keeps log injection out.
 - *The id carries no authority.* It is for following work, never for deciding
   access or for deduplicating it. A workflow step keeps its own step id as its
   idempotency key.

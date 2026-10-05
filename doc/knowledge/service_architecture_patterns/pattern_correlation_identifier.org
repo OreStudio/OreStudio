@@ -126,7 +126,9 @@ prevents. The id may be stored, unlike a token, because it is not a credential.
 
 - *The mechanism.* =ores.nats= defines the =Nats-Correlation-Id= header and
   =extract_or_generate_correlation_id=, and =nats_client::with_correlation_id=
-  forwards it. =log_handler_entry= in =ores.service= logs it on entry.
+  forwards it. =log_handler_entry= in =ores.service= logs it on entry. The
+  extractor does not yet check the shape: it accepts any non-empty value, so the
+  log-injection pitfall below is open until the story closes it.
 - *The workflow engine.* The start message carries a correlation id, and the
   engine's events carry it.
 - *The rest of the platform.* The handlers, the codegen templates, the origins and

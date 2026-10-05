@@ -22,6 +22,10 @@ journey is not entity-shaped.
 Nothing here is a checklist now. Every "read this before writing entity code"
 instruction below, and every requirement in it, is void.
 
+Screens that list and maintain records now follow the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]], which keeps
+this page's scope without the generated entity screens.
+
 Read =component_specification.org= for the current specification of the component:
 the shell, the session, the transport to the BFF, the i18n catalogue, and the
 wire-protocol package.

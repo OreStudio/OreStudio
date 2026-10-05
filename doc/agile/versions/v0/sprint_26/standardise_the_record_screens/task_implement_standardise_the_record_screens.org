@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 4A56D08C-0D66-45C7-8398-F67CFE138E7F
+:END:
+#+title: Task: Write the record screen standard
+#+description: Initial task for: Standardise the record screens
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_record_screens:sprint_26:v0:
+#+owner: marco
+#+branch: feature/standardise-the-record-screens
+#+pr: 2649
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every screen in ores.web that lists and maintains records has the same shape and the same behaviour, defined once in a standard and drawn from shared components, with the same scope the Qt entity standard had.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- A record screen standard covers lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions.
+- Each rule names the shared component that implements it, and the gaps between the standard and today's components are listed.
+- The existing record screens conform, starting with server paging through the shared pager.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2649][#2649]] | [doc] Add the record screen standard |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR review: Refresh's icon is not in the asset set | =record_screen_standard.org= | Accept | Stated as a file to add before use; it does not borrow Revert's icon |
+| 2 | PR review: Import and Export icons look reversed | =record_screen_standard.org= | Accept | They match the web icon reference, but no rule uses them, so the rows are dropped |
+| 3 | PR review: Remove a link and Close share =dismiss=; Close is worded Cancel | =record_screen_standard.org= | Accept | Remove a link gets =link_dismiss= (=delete_dismiss= means purge); the row is Cancel |
+| 4 | PR review: Load all and the paging memory | =record_screen_standard.org= | Accept | Load all reads the server's whole total, at most 1000, so it is never a cap; the memory is cited |
+| 5 | PR review: recency duration and timestamp form | =record_screen_standard.org= | Accept | Three seconds; the last-changed time follows the timestamp rule |
+| 6 | PR review: Add opens the new record, twice | =record_screen_standard.org= | Accept | Kept in Create only |
+| 7 | PR review: is deleting the parts one transaction | =record_screen_standard.org= | Accept | A sequence; on a failure the dialog stays open, names it, and the record is not deleted |
+| 8 | PR review: modified by and performed by wording; empty story sections | =record_screen_standard.org=, =story.org= | Accept | Words table entry; story decisions and out of scope written |
+
+* Result
+
+Wrote the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]
+in =doc/knowledge/ui=. It keeps the scope of the retired Qt-derived entity
+specification: words, what a record kind declares, layers, addresses, the list
+(header, search, table, server paging, states, recency), the record page (tabs,
+fields, last changed), writes (form, create, amend, delete, read-only), history,
+related records (links and parts), icons and cells, feedback, access, safety,
+naming, exceptions, and the steps to build a screen. It speaks of record
+screens, not entities: a journey decides which records, and the standard decides
+how each record screen looks and behaves.
+
+Each rule names its shared component, with a status, and the standard lists
+where each of today's screens differs. The UX language page no longer tells a
+journey step to draw its own table, the retired specification points to the new
+page, the knowledge index lists it, and a memory makes record screens follow it.
+The two follow-up tasks hold the conformance work, server paging first.

@@ -7,7 +7,6 @@
 #+level: s1
 #+filetags: :standardise_the_record_screens:sprint_26:v0:
 #+owner: marco
-#+branch: feature/standardise-the-record-screens
 #+pr:
 #+blocked_on:
 #+blocked_since:

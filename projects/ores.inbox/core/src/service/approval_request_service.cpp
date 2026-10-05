@@ -118,6 +118,20 @@ messaging::list_approval_requests_response approval_request_service::list_approv
         response.result.message = "The filter lists more than 1000 values in kind_code_one_of.";
         return response;
     }
+    if (request.filter && request.filter->state_code_one_of &&
+        request.filter->state_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in state_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->requested_by_one_of &&
+        request.filter->requested_by_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in requested_by_one_of.";
+        return response;
+    }
     response.requests =
         repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
     response.total = repo_.get_total_request_count(ctx_, request.filter);
@@ -147,6 +161,20 @@ approval_request_service::list_by_kind_code_approval_requests(
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "filter_too_large";
         response.result.message = "The filter lists more than 1000 values in kind_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->state_code_one_of &&
+        request.filter->state_code_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in state_code_one_of.";
+        return response;
+    }
+    if (request.filter && request.filter->requested_by_one_of &&
+        request.filter->requested_by_one_of->size() > 1000) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The filter lists more than 1000 values in requested_by_one_of.";
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {

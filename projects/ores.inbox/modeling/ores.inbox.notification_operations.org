@@ -1,0 +1,384 @@
+:PROPERTIES:
+:ID: EF749B45-B7B0-45A2-8339-633E4267F86B
+:END:
+#+title: ores.inbox.notification_operations
+#+description: Codegen operation model for raising notifications and for a person's own notifications -- the list, the unread count, marking read and clearing -- rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: inbox
+#+subcomponent: api
+#+entity_singular: notification_operations
+#+namespace: ores::inbox::messaging
+#+brief: Notification raising and reading operations.
+#+filetags: :model:operation:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+The operations a component and a person take on notifications. Raising one
+writes the notification, its arguments, a recipient row for each person told
+and their in-application delivery, in one transaction; a permission audience
+is resolved into the accounts that hold the permission at that moment. A
+person reads, marks and clears only their own.
+
+The handler is hand-written beside this model, because raising resolves the
+audience and reading joins a person's copies to the notifications they name.
+
+* Physical space
+
+The shell commands are switched off. These operations act as the signed-in
+person, and the shell reaches the notification entities through their own
+units.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** notification_argument_value
+
+#+begin_src cpp :name comment
+/**
+ * @brief One value a notification's message names.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** inbox_notification
+
+#+begin_src cpp :name comment
+/**
+ * @brief One notification as its recipient sees it: what happened, where it
+ * is dealt with, the values its message names, and the recipient's own read
+ * state.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The message the screen renders in the reader's language.
+ */
+#+end_src
+
+*** raised_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The username of the account that raised it.
+ */
+#+end_src
+
+*** raised_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** link_route
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** link_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The thing on the linked screen, or empty when the screen is the
+ * whole of the link.
+ */
+#+end_src
+
+*** arguments
+:PROPERTIES:
+:cpp_type: std::vector<notification_argument_value>
+:END:
+
+*** read_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the recipient read it, or empty while it is unread.
+ */
+#+end_src
+
+
+** raise_notification_request
+:PROPERTIES:
+:subject:  inbox.v1.notifications.raise
+:response: raise_notification_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tells people that something happened.
+ *
+ * The audience is the named accounts, the holders of a permission in the
+ * tenant, or both. The raiser is the signed-in account, a person or a
+ * service. Raising never fails the activity that asks for it: a caller
+ * logs an unsuccessful outcome and carries on.
+ */
+#+end_src
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** link_route
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** link_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** arguments
+:PROPERTIES:
+:cpp_type: std::vector<notification_argument_value>
+:END:
+
+*** account_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The accounts told by name, as UUID strings.
+ */
+#+end_src
+
+*** audience_permission_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The permission whose holders are told, or empty for none.
+ */
+#+end_src
+
+** raise_notification_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** notification_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** recipient_count
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many people the notification reached.
+ */
+#+end_src
+
+** list_my_notifications_request
+:PROPERTIES:
+:subject:  inbox.v1.notifications.mine
+:response: list_my_notifications_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the signed-in person's notifications that they have not
+ * cleared, newest first.
+ */
+#+end_src
+
+*** unread_only
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  50
+:END:
+
+** list_my_notifications_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** notifications
+:PROPERTIES:
+:cpp_type: std::vector<inbox_notification>
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+** count_unread_notifications_request
+:PROPERTIES:
+:subject:  inbox.v1.notifications.unread-count
+:response: count_unread_notifications_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads how many of the signed-in person's notifications are unread,
+ * for the bell on every screen.
+ */
+#+end_src
+
+** count_unread_notifications_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** unread
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+** mark_notifications_read_request
+:PROPERTIES:
+:subject:  inbox.v1.notifications.mark-read
+:response: mark_notifications_read_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Marks some or all of the signed-in person's notifications read.
+ */
+#+end_src
+
+*** notification_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The notifications to mark, or empty for every unread one.
+ */
+#+end_src
+
+** mark_notifications_read_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** marked
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+** clear_notifications_request
+:PROPERTIES:
+:subject:  inbox.v1.notifications.clear
+:response: clear_notifications_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Removes notifications from the signed-in person's list. A cleared
+ * notification is also read.
+ */
+#+end_src
+
+*** notification_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The notifications to clear, or empty for every read one.
+ */
+#+end_src
+
+** clear_notifications_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** cleared
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] -- the requirements these operations serve.
+- [[id:5D8A2C64-3E19-4B7F-A6D0-1C9E4F7B2A83][ores.inbox]] -- the module these operations belong to.

@@ -58,6 +58,7 @@ tenant holds.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:filterable: true
 :END:
 
 Where the request is. FK reference to ores_inbox_approval_request_states_tbl,
@@ -68,6 +69,7 @@ which the system tenant holds.
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:filterable: true
 :END:
 
 The account that asked. A system may ask on a person's behalf, through its own
@@ -79,6 +81,7 @@ service account. FK reference to ores_iam_accounts_tbl.
 :cpp_type:      std::chrono::system_clock::time_point
 :nullable:      false
 :default_value: {}
+:sortable: true
 :END:
 
 When the request was made.

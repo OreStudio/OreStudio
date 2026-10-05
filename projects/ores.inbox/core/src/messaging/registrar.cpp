@@ -20,12 +20,15 @@
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_decision_type_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_kind_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_kind_registrar.hpp"
+#include "ores.inbox.core/messaging/approval_operations_handler.hpp"
 #include "ores.inbox.core/messaging/approval_request_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_registrar.hpp"
 #include "ores.inbox.core/messaging/approval_request_state_history_provider_registrar.hpp"
@@ -39,10 +42,12 @@
 #include "ores.inbox.core/messaging/notification_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_kind_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_kind_registrar.hpp"
+#include "ores.inbox.core/messaging/notification_operations_handler.hpp"
 #include "ores.inbox.core/messaging/notification_preference_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_preference_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
+#include <memory>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -88,6 +93,59 @@ registrar::register_handlers(ores::nats::service::client& nats,
     add(register_notification_recipient_handlers(nats, ctx, verifier));
     add(register_notification_delivery_handlers(nats, ctx, verifier));
     add(register_notification_preference_handlers(nats, ctx, verifier));
+
+    // The approval lifecycle is operations rather than entity verbs: raising,
+    // withdrawing and deciding apply the lifecycle rules, and the queue and
+    // one's own requests are reads a person works from.
+    {
+        auto h = std::make_shared<approval_operations_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(raise_approval_request_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->raise(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(withdraw_approval_request_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->withdraw(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(decide_approval_request_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->decide(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            list_approval_queue_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->queue(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(list_my_approval_requests_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->mine(std::move(msg)); }));
+    }
+
+    // Notifications: a component raises one, and a person reads, marks and
+    // clears their own.
+    {
+        auto h = std::make_shared<notification_operations_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            raise_notification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->raise(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            list_my_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->mine(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(count_unread_notifications_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->unread(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(mark_notifications_read_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->mark_read(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            clear_notifications_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->clear(std::move(msg));
+            }));
+    }
 
     // Inbox history comes from the generic history provider.
     {

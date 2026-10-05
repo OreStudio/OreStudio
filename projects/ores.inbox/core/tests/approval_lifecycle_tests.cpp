@@ -1,0 +1,175 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+
+namespace {
+
+const std::string tags("[approval]");
+
+ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
+    auto ctx = ores::testing::make_generation_context(h);
+    auto a = ores::iam::generators::generate_synthetic_account(ctx);
+    a.change_reason_code = "system.test";
+    ores::iam::repository::account_repository repo;
+    repo.write(h.context(), a);
+    return a;
+}
+
+// The database stamps every row with the account that wrote it, and refuses a
+// write that names nobody, as production's signed-in context always names one.
+ores::database::context acting(ores::testing::scoped_database_helper& h) {
+    return h.context().with_tenant(h.tenant_id(), h.db_user());
+}
+
+}
+
+using ores::inbox::service::approval_lifecycle;
+
+TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto kind = lifecycle.kind("iam.role_grant");
+    REQUIRE(kind);
+    const auto raised = lifecycle.raise(*kind, "I cover the desk next week", asker.id);
+    CHECK(raised.state_code == "waiting");
+    CHECK(raised.requested_by == asker.id);
+    CHECK_FALSE(raised.expires_at);
+
+    const auto id = boost::uuids::to_string(raised.id);
+    const auto r = lifecycle.decide(id, raised.version, "approve", decider.id, "");
+    CHECK(r.outcome == "ok");
+    CHECK(r.state_code == "approved");
+    CHECK(lifecycle.request(id)->state_code == "approved");
+}
+
+TEST_CASE("the_person_who_asked_cannot_decide_their_own_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    CHECK_THROWS(lifecycle.decide(id, raised.version, "approve", asker.id, ""));
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}
+
+TEST_CASE("a_decision_on_a_version_someone_else_moved_is_a_conflict", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto stale = lifecycle.decide(id, raised.version + 1, "approve", decider.id, "");
+    CHECK(stale.outcome == "conflict");
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}
+
+TEST_CASE("a_closed_request_cannot_be_decided_again", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+    const auto refused =
+        lifecycle.decide(id, raised.version, "refuse", decider.id, "Not this desk");
+    REQUIRE(refused.outcome == "ok");
+    CHECK(refused.state_code == "refused");
+
+    const auto again = lifecycle.decide(id, refused.version, "approve", decider.id, "");
+    CHECK(again.outcome == "conflict");
+    CHECK(lifecycle.request(id)->state_code == "refused");
+}
+
+TEST_CASE("a_refusal_needs_a_comment", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto r = lifecycle.decide(id, raised.version, "refuse", decider.id, "  ");
+    CHECK(r.outcome == "invalid");
+    CHECK(lifecycle.request(id)->state_code == "waiting");
+}
+
+TEST_CASE("a_kind_that_does_not_hold_refuses_a_hold", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    const auto r =
+        lifecycle.decide(id, raised.version, "hold", decider.id, "Waiting on the desk head");
+    CHECK(r.outcome == "invalid");
+}
+
+TEST_CASE("only_the_person_who_asked_withdraws_a_request", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto other = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    CHECK_THROWS(lifecycle.decide(id, raised.version, "withdraw", other.id, ""));
+    const auto r = lifecycle.decide(id, raised.version, "withdraw", asker.id, "");
+    CHECK(r.outcome == "ok");
+    CHECK(r.state_code == "withdrawn");
+}
+
+TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto decider = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Please", asker.id);
+    const auto in = [&](const auto& page) {
+        return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
+    };
+
+    CHECK(in(lifecycle.queue({"iam.role_grant"}, decider.id, 0, 500)));
+    CHECK_FALSE(in(lifecycle.queue({"iam.role_grant"}, asker.id, 0, 500)));
+    CHECK_FALSE(in(lifecycle.queue({}, decider.id, 0, 500)));
+    CHECK(in(lifecycle.raised_by(asker.id, 0, 100)));
+    CHECK_FALSE(in(lifecycle.raised_by(decider.id, 0, 100)));
+}

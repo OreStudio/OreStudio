@@ -48,7 +48,9 @@ std::string notification_repository::sql() {
 }
 
 bool notification_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "raised_at",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 

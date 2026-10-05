@@ -1,0 +1,443 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_INBOX_CORE_MESSAGING_APPROVAL_OPERATIONS_HANDLER_HPP
+#define ORES_INBOX_CORE_MESSAGING_APPROVAL_OPERATIONS_HANDLER_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.inbox.core/service/notification_center.hpp"
+#include <algorithm>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::inbox::messaging {
+
+namespace {
+
+inline auto& approval_operations_handler_lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.inbox.messaging.approval_operations_handler");
+    return instance;
+}
+
+inline ores::utility::domain::result
+approval_result(ores::utility::domain::outcome o, std::string code, std::string message) {
+    return ores::utility::domain::result{
+        .outcome = o, .code = std::move(code), .message = std::move(message), .fields = {}};
+}
+
+inline ores::utility::domain::outcome outcome_named(const std::string& name) {
+    using ores::utility::domain::outcome;
+    if (name == "ok")
+        return outcome::ok;
+    if (name == "missing")
+        return outcome::missing;
+    if (name == "conflict")
+        return outcome::conflict;
+    if (name == "invalid")
+        return outcome::invalid;
+    return outcome::failed;
+}
+
+} // namespace
+
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using ores::service::messaging::reply;
+using namespace ores::logging;
+
+/**
+ * @brief Answers the approval request lifecycle operations.
+ *
+ * Every operation acts as the signed-in person. The handler resolves who that
+ * is, checks what they may decide from their token, and leaves the lifecycle
+ * rules to the approval lifecycle and the database.
+ */
+class approval_operations_handler {
+public:
+    approval_operations_handler(ores::nats::service::client& nats,
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
+
+    void raise(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<raise_approval_request_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  raise_approval_request_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto kind = lifecycle.kind(req->kind_code);
+            if (!kind) {
+                reply(nats_,
+                      msg,
+                      raise_approval_request_response{
+                          .result = approval_result(outcome::invalid,
+                                                    "unknown_kind",
+                                                    "No such kind of request: " + req->kind_code)});
+                return;
+            }
+            if (req->reason.empty()) {
+                reply(nats_,
+                      msg,
+                      raise_approval_request_response{
+                          .result = approval_result(
+                              outcome::invalid, "reason_required", "Say why you ask.")});
+                return;
+            }
+            const auto me = lifecycle.actor_account_id();
+            if (!me) {
+                reply(nats_,
+                      msg,
+                      raise_approval_request_response{
+                          .result = approval_result(outcome::denied,
+                                                    "no_account",
+                                                    "The signed-in account was not found.")});
+                return;
+            }
+            const auto raised = lifecycle.raise(*kind, req->reason, *me);
+            tell_deciders(*ctx, *kind, raised);
+            reply(nats_,
+                  msg,
+                  raise_approval_request_response{.result = approval_result(outcome::ok, "", ""),
+                                                  .request = raised});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error raising a request: " << e.what();
+            reply(nats_,
+                  msg,
+                  raise_approval_request_response{
+                      .result = approval_result(outcome::failed, "raise_failed", e.what())});
+        }
+    }
+
+    void withdraw(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<withdraw_approval_request_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  withdraw_approval_request_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto me = lifecycle.actor_account_id();
+            if (!me) {
+                reply(nats_,
+                      msg,
+                      withdraw_approval_request_response{
+                          .result = approval_result(outcome::denied,
+                                                    "no_account",
+                                                    "The signed-in account was not found.")});
+                return;
+            }
+            const auto r =
+                lifecycle.decide(req->request_id, req->version, "withdraw", *me, req->comment);
+            reply(nats_,
+                  msg,
+                  withdraw_approval_request_response{
+                      .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
+                      .request =
+                          lifecycle.request(req->request_id).value_or(domain::approval_request{})});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error withdrawing request " << req->request_id << ": " << e.what();
+            reply(nats_,
+                  msg,
+                  withdraw_approval_request_response{
+                      .result = approval_result(outcome::failed, "withdraw_failed", e.what())});
+        }
+    }
+
+    void decide(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<decide_approval_request_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  decide_approval_request_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        if (req->decision_code == "withdraw") {
+            reply(
+                nats_,
+                msg,
+                decide_approval_request_response{
+                    .result = approval_result(outcome::invalid,
+                                              "use_withdraw",
+                                              "A request is withdrawn by the person who asked.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto current = lifecycle.request(req->request_id);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      decide_approval_request_response{
+                          .result =
+                              approval_result(outcome::missing, "missing", "No such request.")});
+                return;
+            }
+            const auto kind = lifecycle.kind(current->kind_code);
+            if (!kind || !has_permission(*ctx, kind->decide_permission_code)) {
+                reply(nats_,
+                      msg,
+                      decide_approval_request_response{
+                          .result = approval_result(outcome::denied,
+                                                    "not_a_decider",
+                                                    "You may not decide this kind of request.")});
+                return;
+            }
+            const auto me = lifecycle.actor_account_id();
+            if (!me) {
+                reply(nats_,
+                      msg,
+                      decide_approval_request_response{
+                          .result = approval_result(outcome::denied,
+                                                    "no_account",
+                                                    "The signed-in account was not found.")});
+                return;
+            }
+            const auto r = lifecycle.decide(
+                req->request_id, req->version, req->decision_code, *me, req->comment);
+            const auto after = lifecycle.request(req->request_id).value_or(*current);
+            if (r.outcome == "ok" && after.state_code != current->state_code)
+                tell_asker(*ctx, *kind, after, req->comment);
+            reply(nats_,
+                  msg,
+                  decide_approval_request_response{
+                      .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
+                      .request = after});
+        } catch (const std::exception& e) {
+            // The database states a broken rule -- four-eyes, a second
+            // approval by one person -- as an error, and its words are the
+            // ones the decider should read.
+            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
+                << "Decision on request " << req->request_id << " refused: " << e.what();
+            reply(nats_,
+                  msg,
+                  decide_approval_request_response{
+                      .result = approval_result(outcome::conflict, "refused", e.what())});
+        }
+    }
+
+    void queue(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<list_approval_queue_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  list_approval_queue_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto me = lifecycle.actor_account_id();
+            if (!me) {
+                reply(nats_,
+                      msg,
+                      list_approval_queue_response{
+                          .result = approval_result(outcome::denied,
+                                                    "no_account",
+                                                    "The signed-in account was not found.")});
+                return;
+            }
+            std::vector<std::string> decidable;
+            for (const auto& k : lifecycle.kinds())
+                if (has_permission(*ctx, k.decide_permission_code))
+                    decidable.push_back(k.code);
+            auto page = lifecycle.queue(decidable, *me, req->offset, req->limit);
+            reply(nats_,
+                  msg,
+                  list_approval_queue_response{.result = approval_result(outcome::ok, "", ""),
+                                               .requests = std::move(page.requests),
+                                               .total = page.total});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading the approval queue: " << e.what();
+            reply(nats_,
+                  msg,
+                  list_approval_queue_response{
+                      .result = approval_result(outcome::failed, "queue_failed", e.what())});
+        }
+    }
+
+    void mine(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<list_my_approval_requests_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  list_my_approval_requests_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto me = lifecycle.actor_account_id();
+            if (!me) {
+                reply(nats_,
+                      msg,
+                      list_my_approval_requests_response{
+                          .result = approval_result(outcome::denied,
+                                                    "no_account",
+                                                    "The signed-in account was not found.")});
+                return;
+            }
+            auto page = lifecycle.raised_by(*me, req->offset, req->limit);
+            reply(nats_,
+                  msg,
+                  list_my_approval_requests_response{.result = approval_result(outcome::ok, "", ""),
+                                                     .requests = std::move(page.requests),
+                                                     .total = page.total});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading one's own requests: " << e.what();
+            reply(nats_,
+                  msg,
+                  list_my_approval_requests_response{
+                      .result = approval_result(outcome::failed, "mine_failed", e.what())});
+        }
+    }
+
+private:
+    /**
+     * @brief Tells the people who may decide a request that it waits.
+     *
+     * Telling is never the operation: a failure here is logged, and the
+     * request stands.
+     */
+    void tell_deciders(const ores::database::context& ctx,
+                       const domain::approval_kind& kind,
+                       const domain::approval_request& raised) {
+        try {
+            service::notification_center center(ctx);
+            auto deciders = center.holders_of(kind.decide_permission_code);
+            std::erase(deciders, boost::uuids::to_string(raised.requested_by));
+            if (deciders.empty())
+                return;
+            raise_notification_request n{
+                .kind_code = "inbox.approval_waiting",
+                .link_route = "requests",
+                .link_id = boost::uuids::to_string(raised.id),
+                .arguments = {{.name = "kind", .value = kind.name},
+                              {.name = "requester", .value = ctx.actor()},
+                              {.name = "reason", .value = raised.reason}},
+                .account_ids = {},
+                .audience_permission_code = kind.decide_permission_code};
+            center.raise(n, deciders, raised.requested_by);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
+                << "Request " << boost::uuids::to_string(raised.id)
+                << " raised, but its deciders were not told: " << e.what();
+        }
+    }
+
+    /**
+     * @brief Tells the person who asked that their request moved.
+     */
+    void tell_asker(const ores::database::context& ctx,
+                    const domain::approval_kind& kind,
+                    const domain::approval_request& after,
+                    const std::string& comment) {
+        try {
+            service::notification_center center(ctx);
+            const auto decider = center.actor_account_id();
+            if (!decider)
+                return;
+            raise_notification_request n{
+                .kind_code = "inbox.approval_decided",
+                .link_route = "requests",
+                .link_id = boost::uuids::to_string(after.id),
+                .arguments = {{.name = "kind", .value = kind.name},
+                              {.name = "state", .value = after.state_code},
+                              {.name = "decider", .value = ctx.actor()},
+                              {.name = "comment", .value = comment}},
+                .account_ids = {boost::uuids::to_string(after.requested_by)},
+                .audience_permission_code = ""};
+            center.raise(n, n.account_ids, *decider);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
+                << "Request " << boost::uuids::to_string(after.id)
+                << " decided, but the person who asked was not told: " << e.what();
+        }
+    }
+
+    std::optional<ores::database::context> context_for(const ores::nats::message& msg) {
+        BOOST_LOG_SEV(approval_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            error_reply(nats_, msg, ctx.error());
+            return std::nullopt;
+        }
+        return *ctx;
+    }
+
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+};
+
+}
+
+#endif

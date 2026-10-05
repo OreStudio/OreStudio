@@ -48,7 +48,9 @@ std::string approval_request_repository::sql() {
 }
 
 bool approval_request_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "requested_at",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -81,6 +83,10 @@ filter_condition(const std::optional<messaging::approval_requests_filter>& filte
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->kind_code)
         r.push_back(equals("kind_code", filter_value(*filter->kind_code)));
+    if (filter->state_code)
+        r.push_back(equals("state_code", filter_value(*filter->state_code)));
+    if (filter->requested_by)
+        r.push_back(equals("requested_by", filter_value(*filter->requested_by)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -92,6 +98,18 @@ filter_condition(const std::optional<messaging::approval_requests_filter>& filte
         for (const auto& v : *filter->kind_code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("kind_code", std::move(values)));
+    }
+    if (filter->state_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->state_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("state_code", std::move(values)));
+    }
+    if (filter->requested_by_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->requested_by_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("requested_by", std::move(values)));
     }
     return all_of(std::move(r));
 }

@@ -72,6 +72,7 @@ FK reference to ores_iam_accounts_tbl.
 :cpp_type:      std::chrono::system_clock::time_point
 :nullable:      false
 :default_value: {}
+:sortable: true
 :END:
 
 When it was raised.

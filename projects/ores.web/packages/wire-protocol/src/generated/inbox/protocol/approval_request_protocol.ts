@@ -60,8 +60,12 @@ export interface ApprovalRequestLookup {
 
 export interface ApprovalRequestsFilter {
     kind_code: string | null;
+    state_code: string | null;
+    requested_by: string | null;
     id_one_of: string[] | null;
     kind_code_one_of: string[] | null;
+    state_code_one_of: string[] | null;
+    requested_by_one_of: string[] | null;
 }
 
 export interface ApprovalRequestEvent {

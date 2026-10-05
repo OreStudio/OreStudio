@@ -8,7 +8,7 @@
 #+filetags: :remove_workspaces:sprint_27:v0:
 #+owner: marco
 #+branch: feature/sequence-workspace-removal
-#+pr:
+#+pr: 2665
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2665][#2665]] | [agile] Measure and sequence the workspace removal |
 
 * Review
 

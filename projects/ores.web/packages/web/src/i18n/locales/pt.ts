@@ -249,12 +249,6 @@ const pt: SourceCatalogue = {
     tenants: {
         title: 'Inquilinos',
         description: 'Os inquilinos deste ambiente e o estado de cada um.',
-        search: 'Pesquisar por código, nome ou nome do anfitrião',
-        noMatch: 'Nenhum inquilino corresponde a "{search}".',
-        showing: {
-            one: '{first}–{last} de {count} inquilino',
-            other: '{first}–{last} de {count} inquilinos',
-        },
         filterType: 'Filtrar por tipo',
         filterStatus: 'Filtrar por estado',
         allTypes: 'Todos os tipos',
@@ -264,10 +258,6 @@ const pt: SourceCatalogue = {
             one: '{count} inquilino de teste oculto',
             other: '{count} inquilinos de teste ocultos',
         },
-        noneFiltered: 'Nenhum inquilino corresponde a estes filtros.',
-        actions: 'Ações',
-        actionsFor: 'Ações para {name}',
-        open: 'Abrir',
         resumeSetup: 'Retomar a configuração',
         add: 'Adicionar inquilino',
         removeAction: 'Remover inquilino',
@@ -340,10 +330,6 @@ const pt: SourceCatalogue = {
             setupUnavailable: 'Não foi possível ler as execuções de aprovisionamento.',
             noRun: 'Não há registo de uma execução de aprovisionamento para este inquilino.',
             runCompleted: 'A execução de aprovisionamento terminou.',
-        },
-        empty: {
-            title: 'Esta instalação ainda não tem um inquilino próprio.',
-            body: 'O administrador do sistema existe, portanto a instalação está configurada. Um inquilino é o passo seguinte, e o primeiro cria-se como qualquer outro.',
         },
     },
 

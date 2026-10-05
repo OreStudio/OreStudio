@@ -250,22 +250,12 @@ export const en: SourceCatalogue = {
     tenants: {
         title: 'Tenants',
         description: 'The tenants this deployment holds, and the state each one is in.',
-        search: 'Search by code, name or hostname',
-        noMatch: 'No tenant matches "{search}".',
-        showing: {
-            one: 'Showing {first}–{last} of {count} tenant',
-            other: 'Showing {first}–{last} of {count} tenants',
-        },
         filterType: 'Filter by type',
         filterStatus: 'Filter by status',
         allTypes: 'All types',
         allStatuses: 'All statuses',
         showTest: 'Show test tenants',
         hiddenTest: { one: '{count} test tenant hidden', other: '{count} test tenants hidden' },
-        noneFiltered: 'No tenant matches these filters.',
-        actions: 'Actions',
-        actionsFor: 'Actions for {name}',
-        open: 'Open',
         resumeSetup: 'Resume setup',
         add: 'Add tenant',
         removeAction: 'Remove tenant',
@@ -335,10 +325,6 @@ export const en: SourceCatalogue = {
             setupUnavailable: 'The provisioning runs could not be read.',
             noRun: 'No setup run is on record for this tenant.',
             runCompleted: 'The setup run completed.',
-        },
-        empty: {
-            title: 'This deployment holds no tenant of its own yet.',
-            body: 'The system administrator exists, so the deployment is set up. A tenant is the next step, and the first one is created the same way as any other.',
         },
     },
 

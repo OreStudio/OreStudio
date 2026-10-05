@@ -20,7 +20,14 @@
  */
 
 import { keepPreviousData, useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+    useEffect,
+    useRef,
+    useState,
+    type KeyboardEvent,
+    type MouseEvent,
+    type ReactNode,
+} from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -391,6 +398,10 @@ export function RecordTable<Row>({
     const sortBy = (field: string): void =>
         state.order(field, state.sort === field ? !state.descending : false);
     const open = pathOf === undefined ? undefined : (row: Row): void => void navigate(pathOf(row));
+    /* A link or control inside a row does its own thing; the row opens only from the rest of it. */
+    const fromControl = (event: MouseEvent | KeyboardEvent): boolean =>
+        event.target instanceof Element &&
+        event.target.closest('a, button, input, select') !== null;
     const narrowed = state.search !== '' || Object.keys(state.filters).length > 0;
     const clear = (): void => {
         setTyped('');
@@ -558,9 +569,13 @@ export function RecordTable<Row>({
                                           tabIndex: 0,
                                           className:
                                               'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none',
-                                          onClick: () => open(row),
+                                          onClick: (event: MouseEvent) => {
+                                              if (!fromControl(event)) {
+                                                  open(row);
+                                              }
+                                          },
                                           onKeyDown: (event: KeyboardEvent) => {
-                                              if (event.key === 'Enter') {
+                                              if (event.key === 'Enter' && !fromControl(event)) {
                                                   open(row);
                                               }
                                           },

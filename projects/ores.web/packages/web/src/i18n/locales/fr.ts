@@ -246,12 +246,6 @@ const fr: SourceCatalogue = {
     tenants: {
         title: 'Locataires',
         description: 'Les locataires de ce déploiement, et l’état de chacun.',
-        search: 'Rechercher par code, nom ou nom d’hôte',
-        noMatch: 'Aucun locataire ne correspond à « {search} ».',
-        showing: {
-            one: '{first}–{last} sur {count} locataire',
-            other: '{first}–{last} sur {count} locataires',
-        },
         filterType: 'Filtrer par type',
         filterStatus: 'Filtrer par statut',
         allTypes: 'Tous les types',
@@ -261,10 +255,6 @@ const fr: SourceCatalogue = {
             one: '{count} locataire de test masqué',
             other: '{count} locataires de test masqués',
         },
-        noneFiltered: 'Aucun locataire ne correspond à ces filtres.',
-        actions: 'Actions',
-        actionsFor: 'Actions pour {name}',
-        open: 'Ouvrir',
         resumeSetup: 'Reprendre la mise en place',
         add: 'Ajouter un locataire',
         removeAction: 'Supprimer le locataire',
@@ -337,10 +327,6 @@ const fr: SourceCatalogue = {
             setupUnavailable: 'Les exécutions de provisionnement n’ont pas pu être lues.',
             noRun: 'Aucune exécution de provisionnement n’est enregistrée pour ce locataire.',
             runCompleted: 'L’exécution de provisionnement est terminée.',
-        },
-        empty: {
-            title: 'Ce déploiement ne détient encore aucun locataire propre.',
-            body: 'L’administrateur système existe, donc le déploiement est configuré. Un locataire est l’étape suivante, et le premier se crée comme tous les autres.',
         },
     },
 

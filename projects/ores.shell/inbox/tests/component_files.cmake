@@ -23,6 +23,7 @@ set(files
     "approval_decision_commands_tests.cpp"
     "approval_decision_type_commands_tests.cpp"
     "approval_kind_commands_tests.cpp"
+    "approval_operations_operations_commands_tests.cpp"
     "approval_request_commands_tests.cpp"
     "approval_request_state_commands_tests.cpp"
     "main.cpp"

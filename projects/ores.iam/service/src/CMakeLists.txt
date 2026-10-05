@@ -45,7 +45,8 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.utility.lib
         ores.telemetry.core.lib
-        ores.service.lib)
+        ores.service.lib
+        ores.inbox.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

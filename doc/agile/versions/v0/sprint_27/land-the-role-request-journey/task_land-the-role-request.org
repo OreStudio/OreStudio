@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Covered by [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]]: its task
+[[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] lands the request, the four-eyes guard and the
+grant, and [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] the member's ask
+screen and the administrator's queue.
 
 * Status
 

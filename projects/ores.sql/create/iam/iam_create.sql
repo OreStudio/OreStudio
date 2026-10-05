@@ -74,6 +74,14 @@
 \ir ./iam_account_party_create.sql
 \ir ./iam_account_party_functions_create.sql
 
+-- Role grant requests: the IAM detail of an iam.role_grant approval request.
+-- Their checks and the two reads into the inbox resolve when they run, so
+-- they need only the inbox tables to exist by then, not now.
+\ir ./iam_role_grant_requests_create.sql
+\ir ./iam_role_grant_requests_notify_trigger_create.sql
+\ir ./iam_role_grant_request_role_create.sql
+\ir ./iam_role_grant_request_functions_create.sql
+
 -- Publish-from-DQ functions (must follow accounts, account contact
 -- informations, roles, and account-party association)
 \ir ./iam_publish_from_dq_create.sql

@@ -1425,3 +1425,19 @@ tangled into the runnable script library
 * Notifications
 
 - [[id:6B42670E-6575-56EF-B902-50793B3ABC6F][How do I run the notifications commands from the shell?]]
+
+* Role Grant Request Roles
+
+- [[id:B56760AF-078D-51CE-832D-C7E067B39A75][How do I run the role_grant_request_roles commands from the shell?]]
+
+* Role Grant Requests
+
+- [[id:212B4FBE-8EF3-59EE-B128-FC41152038FD][How do I run the role_grant_requests commands from the shell?]]
+
+* Approval Operations
+
+- [[id:87A6B159-B028-5477-9AB8-DB6F58843216][How do I run the approval_operations commands from the shell?]]
+
+* Role Request Operations
+
+- [[id:C85E9926-4AE7-54EE-A4CB-2EB71598C1DC][How do I run the role_request_operations commands from the shell?]]

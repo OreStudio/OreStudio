@@ -1,0 +1,3 @@
+approval_operations list-approval-queue
+approval_operations decide-approval 01a10e25-e01d-707f-a4dc-f069118f5214 approve "Covers the desk" --version 1
+approval_operations decide-approval 01a10e25-e01d-707f-a4dc-f069118f5214 approve "Again" --version 2

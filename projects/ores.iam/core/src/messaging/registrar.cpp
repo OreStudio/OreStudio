@@ -50,7 +50,11 @@
 #include "ores.iam.core/messaging/permission_registrar.hpp"
 #include "ores.iam.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.iam.core/messaging/reset_handler.hpp"
+#include "ores.iam.core/messaging/role_grant_request_history_provider_registrar.hpp"
+#include "ores.iam.core/messaging/role_grant_request_registrar.hpp"
+#include "ores.iam.core/messaging/role_grant_request_role_registrar.hpp"
 #include "ores.iam.core/messaging/role_registrar.hpp"
+#include "ores.iam.core/messaging/role_request_handler.hpp"
 #include "ores.iam.core/messaging/seed_profile_parameter_registrar.hpp"
 #include "ores.iam.core/messaging/seed_profile_registrar.hpp"
 #include "ores.iam.core/messaging/seed_profile_step_registrar.hpp"
@@ -482,6 +486,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_seed_profile_parameter_handlers(nats, ctx, signer))
         subs.push_back(std::move(sub));
 
+    // --- Role requests ---
+    // The detail of an iam.role_grant approval request is generated; asking
+    // for roles is an operation that raises the request in the inbox as the
+    // person and records the detail.
+    for (auto& sub : register_role_grant_request_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_role_grant_request_role_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    {
+        auto rh = std::make_shared<role_request_handler>(nats, ctx, signer);
+        subs.push_back(nats.queue_subscribe(
+            ask_for_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
+                rh->ask(std::move(msg));
+            }));
+    }
+
     // --- Publish-from-DQ workflow step handlers ---
     {
         auto h = std::make_shared<publish_from_dq_handler>(nats, ctx);
@@ -514,6 +534,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         // history-provider-registrar facet).
         register_account_contact_information_history_provider(hist_registry);
         register_account_history_provider(hist_registry);
+        register_role_grant_request_history_provider(hist_registry);
         register_account_type_history_provider(hist_registry);
         register_role_history_provider(hist_registry);
         register_seed_profile_history_provider(hist_registry);

@@ -34,8 +34,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <optional>
-#include <string_view>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::inbox::messaging {
@@ -65,6 +65,15 @@ inline ores::utility::domain::outcome outcome_named(const std::string& name) {
     if (name == "invalid")
         return outcome::invalid;
     return outcome::failed;
+}
+
+/**
+ * @brief The result a decision answers with: the outcome the database named,
+ * with no code when it succeeded, as every other success answers.
+ */
+inline ores::utility::domain::result decision_reply(const service::decision_result& r) {
+    const auto o = outcome_named(r.outcome);
+    return approval_result(o, o == ores::utility::domain::outcome::ok ? "" : r.outcome, r.message);
 }
 
 /**
@@ -227,7 +236,7 @@ public:
             reply(nats_,
                   msg,
                   withdraw_approval_request_response{
-                      .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
+                      .result = decision_reply(r),
                       .request = lifecycle.request(req->request_id).value_or(*current)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
@@ -304,9 +313,7 @@ public:
                 tell_asker(*ctx, *kind, after, req->comment);
             reply(nats_,
                   msg,
-                  decide_approval_request_response{
-                      .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
-                      .request = after});
+                  decide_approval_request_response{.result = decision_reply(r), .request = after});
         } catch (const std::exception& e) {
             const auto refusal = rule_refusal(e);
             BOOST_LOG_SEV(approval_operations_handler_lg(), refusal ? warn : error)

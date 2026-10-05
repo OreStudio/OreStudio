@@ -24,8 +24,9 @@ audience and reading joins a person's copies to the notifications they name.
 
 * Physical space
 
-The shell commands are switched off. These operations act as the signed-in
-person, and the shell reaches the notification entities through their own
+The shell commands are switched off. Raising takes a list of named values,
+which has no shell token form, and a component raises a notification rather
+than a person; the shell reads notifications through the notification entity
 units.
 
 * Includes

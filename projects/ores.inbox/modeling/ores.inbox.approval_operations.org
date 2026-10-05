@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.shell-command.enabled: true
 :ID: 353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23
 :END:
 #+title: ores.inbox.approval_operations
@@ -25,9 +26,10 @@ the lifecycle rules of [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval reque
 
 * Physical space
 
-The shell commands are switched off. These operations act as the signed-in
-person, and the shell reaches the request and decision entities through their
-own units.
+The shell commands are switched on. These operations act as the signed-in
+person, so a shell session signed in as that person asks, decides and reads the
+queue as they would, and a script of those commands proves the lifecycle end to
+end.
 
 * Includes
 

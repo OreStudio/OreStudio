@@ -1,0 +1,2 @@
+authorization revoke-role 3862114e-b7e4-41d0-8986-c85e91dbca62 bfc1eee2-05da-4f19-8d02-1ab381959d5b
+authorization get-account-roles 3862114e-b7e4-41d0-8986-c85e91dbca62

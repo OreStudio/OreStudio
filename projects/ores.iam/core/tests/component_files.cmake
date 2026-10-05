@@ -42,6 +42,8 @@ set(files
     "repository_tenant_status_repository_tests.cpp"
     "repository_tenant_type_repository_tests.cpp"
     "role_eventing_integration_tests.cpp"
+    "role_grant_applier_tests.cpp"
+    "role_grant_request_eventing_integration_tests.cpp"
     "seed_profile_eventing_integration_tests.cpp"
     "seed_profile_parameter_eventing_integration_tests.cpp"
     "seed_profile_step_eventing_integration_tests.cpp"

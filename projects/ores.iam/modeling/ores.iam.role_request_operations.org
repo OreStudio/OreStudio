@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: true
+:ID: 925723B7-6F2C-40D6-81FF-FC913A723685
+:END:
+#+title: ores.iam.role_request_operations
+#+description: Codegen operation model for asking for roles: a person raises an iam.role_grant approval request and IAM records the roles it asks for, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: role_request_operations
+#+namespace: ores::iam::messaging
+#+brief: Asking for roles through an approval request.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+How a person asks for roles beyond the ones they hold. One call does it all:
+IAM raises an =iam.role_grant= request in the inbox as the person, then records
+which account would hold which roles, keyed by the request. If the record cannot
+be written, IAM withdraws the request it raised, so a person never leaves a
+request in the queue that names nothing.
+
+The request is decided in the inbox like any other. When it is approved, IAM
+grants each role the account does not already hold.
+
+The handler is hand-written beside this model, because it calls the inbox and
+compensates when the second half fails.
+
+Two limits are accepted rather than locked against. Two asks for the same role
+at the same moment can both pass the check and both wait; approving both is
+harmless, because a role already held is not granted twice. If recording the
+roles fails and withdrawing the request fails too, the request waits in the
+queue naming no roles; the handler logs it, and an administrator refuses it
+from the queue.
+
+* Physical space
+
+The shell commands are switched on. Asking acts as the signed-in person, so a
+shell session signed in as a member asks for a role as they would.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** ask_for_roles_request
+:PROPERTIES:
+:subject:  iam.v1.role-requests.ask
+:response: ask_for_roles_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for roles for the signed-in person.
+ *
+ * Refused when a role is unknown, already held, or already asked for in a
+ * request that still waits.
+ */
+#+end_src
+
+*** role_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The roles asked for, as UUID strings.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the person asks, in their words.
+ */
+#+end_src
+
+** ask_for_roles_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approval request raised, when the outcome is ok.
+ */
+#+end_src
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] -- the record a role request is a kind of.
+- [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] -- the detail this operation writes.

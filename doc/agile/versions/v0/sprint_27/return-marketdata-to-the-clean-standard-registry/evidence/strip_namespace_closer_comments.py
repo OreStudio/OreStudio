@@ -10,11 +10,11 @@ rewrites such a line to `}` in:
   * every generated file that has one. On 2026-10-05 every such file named
     one of those templates in its `Template:` header.
 
-A hand-written file is never touched, and nor is a file in EXCLUDED. Those
-generated files already drift from their templates for other reasons, and
-their components' own clean-up stories regenerate them; editing them here would
-make the catalogue sweep hold this change responsible for that drift. The
-templates no longer write the comment, so it leaves them at that regeneration. Applying the change to the generated
+A hand-written file is never touched, and nor is a file in EXCLUDED. Each
+file in EXCLUDED already drifts from its template for other reasons. If this
+script edited it, the catalogue sweep would hold this change responsible for
+that drift. Its component's clean-up story regenerates it. The templates no
+longer write the comment, so that regeneration removes the comment. Applying the change to the generated
 files, rather than regenerating them, keeps other components' unrelated drift
 out of the change; check_component_drift.py then proves the edited files match
 a fresh render.
@@ -30,6 +30,7 @@ import sys
 from pathlib import Path
 
 TEMPLATES = Path("projects/ores.codegen/library/templates")
+GENERATED_MARKER = "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY"
 CLOSER = re.compile(r"^\}[ \t]*// namespace.*$", re.M)
 EXCLUDED = frozenset({
     "projects/ores.scheduler/core/src/service/job_definition_service.cpp",
@@ -45,8 +46,16 @@ EXCLUDED = frozenset({
 })
 
 
+def read(path):
+    return path.read_text(encoding="utf-8", errors="surrogateescape")
+
+
+def write(path, text):
+    path.write_text(text, encoding="utf-8", errors="surrogateescape")
+
+
 def files_with_closers(paths):
-    return [p for p in paths if CLOSER.search(p.read_text(errors="replace"))]
+    return [p for p in paths if CLOSER.search(read(p))]
 
 
 def main(check):
@@ -62,17 +71,17 @@ def main(check):
         if name in EXCLUDED:
             continue
         p = Path(name)
-        if "AUTO-GENERATED FILE" in p.read_text(errors="replace")[:2000]:
+        if GENERATED_MARKER in read(p):
             generated.append(p)
 
     targets = template_files + generated
-    lines = sum(len(CLOSER.findall(p.read_text(errors="replace"))) for p in targets)
+    lines = sum(len(CLOSER.findall(read(p))) for p in targets)
     print(f"{len(template_files)} template files, {len(generated)} generated files, "
           f"{lines} closer comments")
     if check:
         return 1 if lines else 0
     for p in targets:
-        p.write_text(CLOSER.sub("}", p.read_text(errors="replace")))
+        write(p, CLOSER.sub("}", read(p)))
     return 0
 
 

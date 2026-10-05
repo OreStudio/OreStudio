@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 56C6A5CA-1A0D-435A-9AC5-1263CBB29485
+:END:
+#+title: Write a currency pair and its convention together, and check the pair code
+#+description: The pair and its one-to-one convention are two writes, the pair code is not checked against its legs, and the pair list cannot be filtered by currency.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:fx:currency_pairs:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A pair and its convention are written by two operations; if the second fails the pair exists without the convention it must have one of. The pair insert validates the legs and the classification but not that the pair code is =BASE/QUOTE=, that the legs differ, or that they are in base-precedence order. The pair list filter takes pair codes only. The convention model's note names a trading table for =business_day_convention=, while the insert validates against the refdata list. Add one operation that writes both, derive or check the pair code on the server, add currency and classification filters, and correct the model note.
+
+* Why
+
+Found while writing the currency pair journey; each item is a gap the screen has to work around.
+
+* References
+
+- Journey: [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]], gaps 1 to 4
+- =projects/ores.refdata/modeling/ores.refdata.currency_pair_convention.org=
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

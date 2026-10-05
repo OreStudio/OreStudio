@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: BDA029F9-671D-4C08-B816-8CDB8068CDAB
+:END:
+#+title: No role below the tenant administrator can maintain reference data
+#+description: Only TenantAdmin can run the reference data journeys end to end; Operations writes currency records but cannot read the lists its pickers need.
+#+type: capture
+#+level: cross
+#+filetags: :iam:refdata:permissions:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The seeded roles give =TenantAdmin= every permission and give =Operations= read, write and delete on currencies and the currency junctions only. Operations holds no read on countries, calendars, currency groups, rounding types, monetary natures or market tiers, so it can change a currency but cannot see the values the currency screen must pick from. No role maintains calendars, classification lists, currency pairs or desk groups. Decide whether to widen Operations or to add a reference data role.
+
+* Why
+
+The reference data screens hide their actions from anyone without the write permissions, so today only a tenant administrator can maintain reference data.
+
+* References
+
+- =projects/ores.sql/populate/iam/iam_roles_populate.sql=
+- Journeys: [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]], [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]]
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

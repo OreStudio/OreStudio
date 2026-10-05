@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 2B04C4A3-B555-47E5-B372-47340E998794
+:END:
+#+title: Check that every generated registrar is wired into its service
+#+description: The refdata service had calendar name and day counter registrars that nothing called, so their subjects had no responder.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:refdata:messaging:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=calendar_name_registrar.cpp= and =day_counter_registrar.cpp=, and their history providers, were generated but never called from =registrar.cpp=; a request to their subjects answered with no responder until this was fixed by hand. Add a check, in the codegen drift gate or a unit test, that every generated handler and history provider registrar is called by its service's registrar.
+
+* Why
+
+A new entity can ship with no server answering it, and nothing fails until a screen asks.
+
+* References
+
+- =projects/ores.refdata/core/src/messaging/registrar.cpp=
+- =compass-codegen-fix-drift= skill — the registrar wiring check it describes
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

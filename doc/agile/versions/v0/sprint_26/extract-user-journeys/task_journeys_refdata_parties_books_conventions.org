@@ -63,7 +63,7 @@ task and name that file in the Command column.
 
 - Continues [[id:4C97EADD-1D0E-474E-9B00-1EC49D15DC6F][Write the remaining ores.refdata user journeys]], which wrote journeys 2 and 3 and recorded six gaps.
 - Journey 8 (conventions) depends on the workspace removal: the conventions still use =workspace-scoped-lookup=.
-- The recurring gaps from both earlier refdata tasks are to be filed as captures when this task closes.
+- The recurring gaps from both earlier refdata tasks were filed as captures in the inbox on 2026-10-05; gaps found by journeys 5 to 9 are filed the same way.
 
 * Test Scenarios
 

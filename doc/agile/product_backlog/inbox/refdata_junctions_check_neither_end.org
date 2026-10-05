@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 9408DF73-0C20-43E0-935F-EF6CB52A9258
+:END:
+#+title: Refdata junction inserts check neither end of the link
+#+description: The currency, pair-convention and party junction inserts check the tenant only, so a link row can name a currency, calendar, group or party that does not exist.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:sql:data_quality:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The insert functions of =currency_calendar=, =currency_country=, =currency_currency_group=, =currency_pair_convention_calendar=, =party_counterparty=, =party_country= and =party_currency= validate the tenant and manage versions, but do not validate either code they link. Every other refdata write validates its soft foreign keys. Add the same existence checks to the junction inserts.
+
+* Why
+
+A screen can only offer codes it read, but any other writer (the shell, an import, a script) can create a link to nothing, and the screens then show rows they cannot resolve. Found while writing the currency and desk group journeys.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_currency_currency_group_create.sql= and the other junction create scripts
+- Journey: [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]], gap 2
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

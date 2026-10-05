@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 196DC388-7700-4C25-8109-31A4657CE039
+:END:
+#+title: Export currencies and calendar adjustments as ORE documents on the server
+#+description: There is no server operation that writes currencyconfig.xml, and the calendar adjustments export returns data rather than the document.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:ore:export:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The desktop client wrote =currencyconfig.xml= itself, with the ORE exporter linked into its binary. A browser cannot. =refdata.v1.calendar_adjustments.export= returns the adjustments and leaves the caller to write the =CalendarAdjustments= document. Add operations that return the documents, so a screen can offer the export.
+
+* Why
+
+The currency and calendar journeys both offer an ORE exchange that the web screens cannot provide yet.
+
+* References
+
+- Journey: [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]], gaps 1 and 2
+- Journey: [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], gap 3
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 210F3B2C-A2CC-4F8C-90D7-7FAF675C0111
+:END:
+#+title: Holiday rules and business days carry no holiday name
+#+description: A calendar rule has no name column and a materialised date carries none, so no screen can say Good Friday.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:modeling:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=calendar_rule= describes a holiday by its shape (fixed date, nth weekday, Easter offset) and has no name. =calendar_date= carries whether a day is a business day and how it was produced, nothing more. Only exceptions (description) and diary events (name) carry words. Add a name to the rule and carry it onto the materialised date.
+
+* Why
+
+A person reading a calendar's holidays sees dates and shapes, not the holidays they know.
+
+* References
+
+- Journey: [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], gap 5
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

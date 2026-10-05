@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4FB897EC-473A-4AF7-AC9D-ECE3947E6639
+:END:
+#+title: Read desk group members by group, and close them with their group
+#+description: Memberships can be read by currency only, and closing a desk group leaves its membership rows open.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:currencies:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=currency_currency_groups= offers =list_by_currency_iso_code= and a filter on currency codes, so listing or counting one group's members pages through every membership in the tenant. Closing a group does not close its memberships. Add =list_by_currency_group_code= and a group filter, and refuse a group delete while members remain or close them with it.
+
+* Why
+
+Found while writing the desk group journey.
+
+* References
+
+- Journey: [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]], gaps 1 and 3
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

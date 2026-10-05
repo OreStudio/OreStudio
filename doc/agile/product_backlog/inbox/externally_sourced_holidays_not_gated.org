@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 7DF8AC89-159D-4E38-AA49-4E46D9259916
+:END:
+#+title: Externally sourced holidays are not gated by authorisation
+#+description: The administration model expects a holiday from an untrusted source to wait for authorisation; nothing models a pending holiday or a trusted source.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:governance:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Holiday calendar administration describes a governance layer: a holiday proposed by an external source waits for authorisation unless the source is trusted. Today every written exception takes effect when the dates are rebuilt. Model a pending state or a workflow over imports.
+
+* Why
+
+A wrong external holiday moves settlement dates the moment it lands.
+
+* References
+
+- =doc/knowledge/domain/holiday_calendar_administration.org=
+- Journey: [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], gap 4
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

@@ -20,28 +20,51 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The inbox service runs and answers the approval and notification operations
+a person and a component use: raising, withdrawing and deciding a request, the
+queue and one's own requests; raising a notification to people or to a
+permission, one's own notifications, the unread count, marking read and
+clearing.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- ores.inbox.service is registered: database identity, role, NATS certificate
+  and environment, and it starts with the fleet.
+- Every generated entity handler, the history provider and the change events
+  are wired.
+- The approval operations apply the lifecycle: four-eyes, the decider's
+  permission, versions, closed requests, comments, holds, withdrawal and
+  approvals_required.
+- The notification operations reach the named people and the holders of a
+  permission, and a person reads and changes only their own copies.
+- Deciders are told when a request waits, and the asker when it is decided.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Register the service in the service registry and regenerate its database
+  identity; add the InboxService role, the NATS certificate and environment
+  version 27.
+- Wire the handlers in a hand-written core registrar and the event pipeline in
+  a hand-owned application, as ores.workspace does; the service-app facet is
+  off.
+- Model the operations as two operation models, generating the C++ and
+  TypeScript messages; write the handlers by hand beside them.
+- Put each multi-row write in one SQL function, so a decision and its state,
+  and a notification and its recipients, are written together: the database
+  layer has no transaction that spans repository calls.
+- Resolve a permission audience in the service with the same wildcard rules a
+  handler's permission check applies.
 
 * Measurements
 
@@ -83,3 +106,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The inbox service is registered and runs with the fleet; its heartbeat reaches
+telemetry. It answers ten operations besides the generated entity verbs.
+
+Deciding is =ores_inbox_decide_approval_request_fn=: it locks the request,
+checks the version, closes an expired request as expired, allows only the
+transitions the lifecycle names, refuses a hold for a kind that does not hold,
+asks for a comment where the decision type or kind needs one, writes the
+decision, and moves the request once the kind's approvals stand. Four-eyes and
+one approval per person remain the decisions table's own rules. Raising a
+notification, marking read and clearing are one SQL function each.
+
+The approval handler tells a kind's deciders, less the asker, that a request
+waits, and the asker when a decision moves their request; a failure to tell is
+logged and never fails the operation.
+
+Eleven tests drive the lifecycle and the notification center against the
+database; the inbox suites pass 4/4.
+
+Left for later, recorded here: reversing an approval (no state names where a
+reversed request goes, and the role request does not need it); a sweep that
+closes expired requests (a decision on one closes it today); raising with no
+signed-in person (a notification's raiser is an account of the tenant); and
+live arrival in the browser, which the screens task builds on the change events
+the service already publishes for notifications.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-currency-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A tenant administrator corrects a currency in ores.web on one screen: the curren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -86,3 +86,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Add or correct a currency runs in ores.web against the real server: a currency
+list with labels and a filter, and a currency page with its fields, its
+countries, calendars and desk groups as link panels, and its history. The
+screens read and write through a new registry of refdata record resources
+(wire-protocol) and generic, allow-listed BFF routes; one field table per
+resource drives the edit form, the details and the revert. The ORE export is
+stated on the screen as missing, per the journey. Checked on the real server:
+every resource read, a stale write refused, a correction diffed in the
+history.

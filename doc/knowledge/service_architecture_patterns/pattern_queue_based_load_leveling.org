@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 282FC5B3-5DB7-49DE-800D-6F9FBF3E5224
+:END:
+#+title: Queue-Based Load Leveling
+#+description: A queue sits between the work that arrives and the service that does it, so a peak waits instead of overloading the service.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:load:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: load
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Queue-Based Load Leveling in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A queue sits between the work that arrives and the service that does it, so a
+peak waits instead of overloading the service. In ORE Studio report runs over
+their quota wait as =queued=, and compute holds assignments in JetStream.
+
+* Also known as
+
+- /Load levelling/.
+
+* Context
+
+Work arrives in bursts: thousands of reports fire at the same minute. The service
+that does the work has a fixed capacity.
+
+* Problem
+
+How does a service survive a burst of work larger than its capacity?
+
+* Forces
+
+- Capacity sized for the peak is idle most of the day.
+- Refusing the burst loses work.
+- A person must be able to see work that waits.
+- Waiting work must not be lost on a restart.
+
+* Solution
+
+Put a durable queue between the source and the service. The source adds work at
+any rate; the service takes it at its own rate. The queue is visible, so a person
+sees what waits, and durable, so a restart loses nothing.
+
+#+caption: Queue-Based Load Leveling: a burst of firings starts up to the quota and waits as queued for the rest.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_queue_based_load_leveling.png]]
+
+Source: =[[./pattern_queue_based_load_leveling.puml][pattern_queue_based_load_leveling.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_queue_based_load_leveling.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed item leaves the queue with its error; it does not block the items behind it. |
+| Timeouts | Time spent waiting counts against nothing until the item starts. |
+| Retries | An item taken but not finished returns to the queue. |
+| Idempotency | An item may be taken twice; see [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]]. |
+| Observability | Queue length and wait time are measured, per tenant. |
+
+* Pitfalls
+
+- *A queue nobody can see.* Work waits with no state a person can read.
+- *A queue that only grows.* Capacity below the average rate is not levelling; the backlog never clears.
+- *Plain arrival order across tenants.* One tenant's burst delays everyone; see [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]].
+
+* Security
+
+No security consequence beyond availability.
+
+* Resulting context
+
+- Benefits :: Bursts become waits, and the service runs at a steady rate.
+- Liabilities :: Latency during bursts, and a queue to watch.
+
+* In ORE Studio
+
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — a run over its quota is born =queued= and promoted as runs finish.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — JetStream holds each assignment until a node acknowledges it.
+
+* Related patterns
+
+- [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] — the order the queue serves.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — the members that drain it.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — the alternative when work cannot wait.
+
+* Sources
+
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/queue-based-load-leveling][Queue-Based Load Leveling pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

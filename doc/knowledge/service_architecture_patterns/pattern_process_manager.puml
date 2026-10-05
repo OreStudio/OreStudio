@@ -1,0 +1,38 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Process Manager: one component holds the state and decides each next step
+
+skinparam componentStyle rectangle
+actor caller
+component "process manager\n(ores.workflow)" as pm
+database "run state\n(instance, steps, results)" as st
+component "definition\n(registered in code)" as def
+component "step handler A" as a
+component "step handler B" as b
+
+caller --> pm : start (type, request, run id)
+pm --> def : build the step list from the request
+pm --> st : persist each step before dispatch
+pm --> a : command (step id, run id, tenant)
+a --> pm : completion event (result or error)
+pm --> b : next command, built from earlier results by name
+pm --> st : record each outcome
+note bottom of pm : handlers never call each other;\nthe manager alone knows the order
+@enduml

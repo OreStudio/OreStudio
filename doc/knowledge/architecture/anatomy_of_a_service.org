@@ -202,6 +202,17 @@ missing):
 - [ ] *Re-seed + restart* — =compass db recreate -y -k= then restart services;
   confirm the service stays up (not crash-looping) and its logs are clean.
 
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — every service
+  operation is a request with an inbox; a refusal is an empty reply with
+  =X-Error=.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — every
+  service subscribes its subjects in a queue group named for the service.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — the service client retries
+  =token_expired= once, after a forced token refresh.
+
 * See also
 
 - [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.

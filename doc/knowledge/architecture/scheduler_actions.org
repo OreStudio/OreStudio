@@ -97,6 +97,15 @@ everything after that.
 defines the boundary for the case where the work behind a subject
 outlives one action.
 
+
+* Patterns used
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the request form
+  of =nats_publish= waits for the trigger's acknowledgement.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — the scheduler
+  deliberately does not retry a failed action; the next occurrence is the next
+  firing.
+
 * See also
 
 - [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the structure note that orders this cluster, and where to read this page in it.

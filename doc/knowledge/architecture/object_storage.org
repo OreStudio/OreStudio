@@ -368,6 +368,12 @@ caller sends]].
   =storage_paths.hpp= documents today with no C++ caller, or from configuration
   as every C++ caller actually does.
 
+
+* Patterns used
+
+- [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] — the bucket and key
+  protocol every claim check names.
+
 * See also
 
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] -- where object storage sits among the other stores, and which one owns which data.

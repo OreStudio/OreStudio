@@ -116,6 +116,12 @@ Both object access paths are as specified in
   =ignore-compute-results= — rather than naming the phase it replaces plus a
   flag.
 
+
+* Patterns used
+
+- [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] — the trades and
+  market data exports write to storage and answer with the key.
+
 * See also
 
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

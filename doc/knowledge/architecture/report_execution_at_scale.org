@@ -539,6 +539,14 @@ the computed permissions.
 - [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — reporting creates a run grant when a person schedules a definition,
   and revokes it when the definition is unscheduled or deleted.
 - [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — every message of a run carries the id the firing created.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — per-tenant step limits
+  in each replica, and dedicated compute pools.
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — a run
+  over its quota is born =queued= and promoted as runs finish.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — quotas cap the
+  running runs of each tenant and party.
+- [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] — admission, step
+  concurrency and grid dispatch each share capacity across tenants.
 
 * See also
 

@@ -166,11 +166,12 @@ completed workflow instance shows every step done.
 
 * Patterns used
 
-- Process Manager and Idempotent Receiver — the engine dispatches the plan's
-  steps, and a retry is safe because every step is idempotent. Their pages
-  belong to the coordination group and are not yet written.
 - Saga is not used: provisioning declares stop-and-retry rather than
   compensation, because its completed steps are published data.
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the engine runs
+  the provisioning plan's steps.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — every step
+  is idempotent, so a retry is safe.
 
 * Related
 

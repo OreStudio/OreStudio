@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 6C930659-6548-4371-B9EB-1AACE597D0E9
+:END:
+#+title: Story: Read each tenant's cache partition inside its tenant
+#+description: The root tenant lists every tenant's parties because IAM's party cache reads as IAM's own system-tenant identity and the parties policy was widened to let it. Apply Cache-Aside with Token Exchange: each cache partition loads with a narrow, short-lived token for its own tenant, minted in-process by IAM, and the parties policy and read return to strict tenant scoping.
+#+type: story
+#+level: s2
+#+filetags: :security:iam:refdata:rls:caching:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every tenant's partition of a generated event cache loads inside that tenant, with a token for that tenant obtained by Token Exchange, so no cache needs a policy that lets the system tenant read every tenant; the parties policy and read are strict again and the root tenant sees only its own parties.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The generated event caches take a token provider per partition, keep one token per tenant, renew it before expiry and re-exchange once on token_expired.
+- IAM mints each partition token in-process: tenant, the tenant's system party, IAM as the actor, read on parties only, a short lifetime, and every issue logged.
+- The parties policy scopes to the current tenant alone, the party read uses the default tenant scope, and a database test shows the root tenant lists only its own parties.
+- The sign-in party chooser still shows party names, and the root tenant's Parties tab shows only its own parties.
+- The Cache-Aside pattern page states the use, including the per-partition identity rule.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8E435740-9847-482B-A56C-62B8C32D6356][Scaffold story: Read each tenant's cache partition inside its tenant]] | STARTED | 2026-10-05 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0CBC3DD8-9A7A-4C59-A44F-B8A04047FF9E][Give the event cache facet a partition-scoped identity]] | BACKLOG | | | Initial task for: Read each tenant's cache partition inside its tenant |
+| [[id:8C119C20-734A-4E03-ADA8-2E0EED97B381][Mint each cache partition's token in IAM]] | BACKLOG | | | Task for: Read each tenant's cache partition inside its tenant |
+| [[id:E5197AB7-7FFA-4B89-B03E-CC8EF85BE9C3][Restore strict tenant scoping on parties]] | BACKLOG | | | Task for: Read each tenant's cache partition inside its tenant |
+| [[id:DEDC8C0D-5E9C-43ED-86CA-F5A3EF7BBE47][Write the Cache-Aside pattern page]] | BACKLOG | | | Task for: Read each tenant's cache partition inside its tenant |
+| [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let the system tenant read every tenant]] | BACKLOG | | | Task for: Read each tenant's cache partition inside its tenant |
+
+* Decisions
+
+* Out of scope
+
+-

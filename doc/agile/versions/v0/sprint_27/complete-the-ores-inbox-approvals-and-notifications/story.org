@@ -8,7 +8,7 @@
 #+filetags: :iam:inbox:sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment: brave_hopper
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -32,7 +32,7 @@ moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -51,9 +51,19 @@ moved here.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | BACKLOG | | | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
-| [[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] | BACKLOG | | | The IAM role grant request and its roles as the first approval kind, applying an approval through the ordinary grant and raising the waiting and decided notifications. |
+| [[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] | DONE | 2026-10-05 | 2026-10-05 | The IAM role grant request and its roles as the first approval kind, applying an approval through the ordinary grant and raising the waiting and decided notifications. |
 
 * Decisions
+
+- *A role request is one call.* IAM raises the inbox request as the person,
+  passing on their token, then records the roles; it withdraws the request if
+  the record fails.
+- *Approvals are applied by reconciliation.* IAM grants every approved role not
+  yet held, at start and on every request change, in every tenant not
+  terminated, as the approver. The change event is only a nudge.
+- *IAM reads the inbox through two functions it owns*, so its role holds no
+  grant on the inbox's tables; the cross-tenant one runs for the IAM service
+  only.
 
 * Out of scope
 

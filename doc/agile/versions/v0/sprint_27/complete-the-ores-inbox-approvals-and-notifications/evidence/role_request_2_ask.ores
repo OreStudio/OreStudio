@@ -1,0 +1,4 @@
+role_request_operations ask-for-roles 23608e2e-53a1-4370-9eec-e7ea27507c47 "I cover the trading desk next week"
+approval_operations list-my-approval-requests
+role_request_operations ask-for-roles 23608e2e-53a1-4370-9eec-e7ea27507c47 "Asking twice"
+role_request_operations ask-for-roles 9dd77f71-4b21-4d09-972b-bda9f4a1aa76 "A role I hold"

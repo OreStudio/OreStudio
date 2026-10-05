@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/trading/ore_commands.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -33,6 +34,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cli/cli.h>
 #include <filesystem>
@@ -165,6 +167,48 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
         },
         "Write a portfolio's trades back out as ORE portfolio XML",
         {"output_file [--node-id <uuid>] [--limit <n>]"});
+
+    ore_menu->Insert("import-run",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         auto parsed = parse_args(args, {{.name = "name", .requires_value = true}});
+                         if (!parsed) {
+                             fail(out) << parsed.error() << std::endl;
+                             return;
+                         }
+                         if (parsed->positionals.size() != 2) {
+                             fail(out) << "Usage: ore import-run <report_definition_id> <src_dir> "
+                                          "[--name <name>]"
+                                       << std::endl;
+                             return;
+                         }
+                         process_import_run(std::ref(out),
+                                            std::ref(session),
+                                            parsed->positionals.at(0),
+                                            parsed->positionals.at(1),
+                                            parsed->flag("name"));
+                     },
+                     "Store an ORE input directory's run configuration against a report definition",
+                     {"report_definition_id src_dir [--name <name>]"});
+
+    ore_menu->Insert("export-run",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         auto parsed = parse_args(args, {});
+                         if (!parsed) {
+                             fail(out) << parsed.error() << std::endl;
+                             return;
+                         }
+                         if (parsed->positionals.size() != 2) {
+                             fail(out) << "Usage: ore export-run <report_definition_id> <out_dir>"
+                                       << std::endl;
+                             return;
+                         }
+                         process_export_run(std::ref(out),
+                                            std::ref(session),
+                                            parsed->positionals.at(0),
+                                            parsed->positionals.at(1));
+                     },
+                     "Write a report definition's run configuration into a directory",
+                     {"report_definition_id out_dir"});
 
     ores::shell::app::insert_menu(root_menu, std::move(ore_menu));
 }
@@ -317,6 +361,88 @@ void ore_commands::process_export(std::ostream& out,
 
     out << "✓ Exported " << result->items.size() << " trade(s) to " << output_file << " ("
         << xml.size() << " bytes)." << std::endl;
+}
+
+void ore_commands::process_import_run(std::ostream& out,
+                                      nats_client& session,
+                                      const std::string& report_definition_id,
+                                      const std::string& src_dir,
+                                      const std::string& name) {
+    const std::filesystem::path source(src_dir);
+    std::error_code ec;
+    if (!std::filesystem::is_directory(source, ec)) {
+        fail(out) << "Not a directory: " << src_dir << std::endl;
+        return;
+    }
+
+    ores::ore::messaging::import_run_configuration_request req;
+    req.report_definition_id = report_definition_id;
+    auto directory = std::filesystem::absolute(source).lexically_normal();
+    if (!directory.has_filename())
+        directory = directory.parent_path();
+    req.name = name.empty() ? directory.filename().string() : name;
+    for (const auto& entry : std::filesystem::directory_iterator(source)) {
+        if (!entry.is_regular_file())
+            continue;
+        std::ifstream in(entry.path(), std::ios::binary);
+        req.files.push_back(
+            {entry.path().filename().string(),
+             std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>())});
+    }
+
+    auto result = do_auth_request<ores::ore::messaging::import_run_configuration_response>(
+        out, session, req.nats_subject, req, import_request_timeout);
+    if (!result)
+        return;
+    if (!result->success) {
+        fail(out) << "Import failed: " << result->message << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Run configuration import dispatched: "
+                              << result->workflow_instance_id;
+    out << "workflow_instance_id: " << result->workflow_instance_id << std::endl;
+    if (!workflow_run_commands::wait_for_instance(
+            out, session, result->workflow_instance_id, default_import_timeout, 1))
+        fail(out) << "Run configuration import did not complete: see the steps above." << std::endl;
+}
+
+void ore_commands::process_export_run(std::ostream& out,
+                                      nats_client& session,
+                                      const std::string& report_definition_id,
+                                      const std::string& out_dir) {
+    ores::ore::messaging::export_run_configuration_request req;
+    req.report_definition_id = report_definition_id;
+
+    auto result = do_auth_request<ores::ore::messaging::export_run_configuration_response>(
+        out, session, req.nats_subject, req, export_request_timeout);
+    if (!result)
+        return;
+    if (!result->success) {
+        fail(out) << "Export failed: " << result->message << std::endl;
+        return;
+    }
+
+    const std::filesystem::path target(out_dir);
+    std::error_code ec;
+    std::filesystem::create_directories(target, ec);
+    for (const auto& f : result->files) {
+        const auto relative = std::filesystem::path(f.name).lexically_normal();
+        const bool climbs = std::ranges::any_of(relative, [](const auto& p) { return p == ".."; });
+        if (relative.is_absolute() || relative.has_root_name() || climbs) {
+            fail(out) << "Refusing to write outside " << out_dir << ": " << f.name << std::endl;
+            return;
+        }
+        const auto path = target / relative;
+        std::filesystem::create_directories(path.parent_path(), ec);
+        std::ofstream file(path, std::ios::binary | std::ios::trunc);
+        file << f.content;
+        if (!file) {
+            fail(out) << "Cannot write: " << path.string() << std::endl;
+            return;
+        }
+    }
+    out << "✓ Exported " << result->files.size() << " file(s) to " << out_dir << std::endl;
 }
 
 }

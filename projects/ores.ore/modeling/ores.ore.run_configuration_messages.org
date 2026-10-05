@@ -1,0 +1,365 @@
+:PROPERTIES:
+:ID: D196F614-02AF-472E-9754-2BEED439A4F5
+:END:
+#+title: ores.ore.run_configuration_messages
+#+description: Codegen operation model for importing a run's configuration into a report definition and exporting it back: the files of an ORE input directory travel inline, and the service stores them through the run store under the caller's session.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: run_configuration
+#+namespace: ores::ore::messaging
+#+brief: Import and export a report definition's ORE run configuration.
+#+filetags: :model:operation:ore:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A report definition's configuration is an ORE input directory: the run document
+and the configuration documents it names. These messages carry that directory's
+files inline, since configuration documents are small.
+
+The import is a workflow saga. The client request starts it; the execute step
+maps the files and stores each document through the component that owns it,
+under the caller's delegated session, so the party is the caller's; on failure
+it deletes what it stored. The export reads the documents back through the same
+owners and returns the files. The ORE service never touches another component's
+tables.
+
+* Physical space
+
+The shell commands are switched off for the same reason as the ORE import's: the
+component has no part under =projects/ores.shell=. The hand-written =ore= menu
+reaches them through its =import-run= and =export-run= verbs.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** run_input_file
+
+#+begin_src cpp :name comment
+/**
+ * @brief One file of an ORE input directory.
+ *
+ * The name is the one the run document gives the file; the run document
+ * itself is ore.xml.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** saved_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief A configuration document an owner stored, by the configuration it
+ * fills, so an undo can delete it.
+ */
+#+end_src
+
+*** configuration_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** import_run_configuration_request
+:PROPERTIES:
+:subject: ore.v1.run_configuration.import
+:response: import_run_configuration_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Starts importing an ORE input directory into a report definition.
+ *
+ * The definition must hold no run document yet, and the session must act for
+ * the party that owns it.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** Prefixes each configuration the import creates, as name/file. */
+#+end_src
+
+*** files
+:PROPERTIES:
+:cpp_type: std::vector<run_input_file>
+:END:
+
+** import_run_configuration_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow running the import, whose status the caller follows.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** workflow_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** run_configuration_import_execute_request
+:PROPERTIES:
+:subject: ore.v1.run_configuration.import.execute
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The import's execute step, which the workflow engine sends.
+ *
+ * Carries the caller's token so the step stores each document as the caller.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** files
+:PROPERTIES:
+:cpp_type: std::vector<run_input_file>
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bearer_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The caller's JWT, which the step delegates to the owners. */
+#+end_src
+
+** run_configuration_import_execute_result
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the execute step stored, travelling as the step's result.
+ *
+ * It names what was stored, so a compensation can delete it.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** stored
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** The files stored, run document first. */
+#+end_src
+
+*** not_stored
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** Input files that hold no configuration the owners keep. */
+#+end_src
+
+*** world_conventions_kept
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** World conventions the tenant already held, left unchanged. */
+#+end_src
+
+*** fx_conventions_skipped
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** FX conventions, which have no store yet. */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** run_document_saved
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/** Whether reporting stored the run document, which the undo deletes. */
+#+end_src
+
+*** saved_documents
+:PROPERTIES:
+:cpp_type: std::vector<saved_document>
+:END:
+
+#+begin_src cpp :name comment
+/** The documents the owners stored, which the undo deletes. */
+#+end_src
+
+** run_configuration_import_rollback_request
+:PROPERTIES:
+:subject: ore.v1.run_configuration.import.rollback
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Deletes what an import stored.
+ *
+ * The workflow engine sends it as the import's compensation. Deleting what is
+ * already gone succeeds, so it can run twice.
+ */
+#+end_src
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bearer_token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The caller's JWT, which the rollback delegates to the owners. */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** run_document_saved
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/** Whether reporting stored the run document, which the undo deletes. */
+#+end_src
+
+*** saved_documents
+:PROPERTIES:
+:cpp_type: std::vector<saved_document>
+:END:
+
+#+begin_src cpp :name comment
+/** The documents the owners stored, which the undo deletes. */
+#+end_src
+
+** export_run_configuration_request
+:PROPERTIES:
+:subject: ore.v1.run_configuration.export
+:response: export_run_configuration_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Rebuilds a report definition's ORE input directory from the owners.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** export_run_configuration_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run document and every configuration document the definition binds.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** files
+:PROPERTIES:
+:cpp_type: std::vector<run_input_file>
+:END:
+
+* See also
+
+- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — component group overview.
+- [[id:E723EABC-54B5-4EAC-BC0E-CFA1AFB021CB][ores.ore.ore_import_messages]] — the trade and portfolio import.

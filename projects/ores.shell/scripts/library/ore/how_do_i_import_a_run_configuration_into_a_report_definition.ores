@@ -1,0 +1,11 @@
+# How do I import a run's configuration into a report definition?
+# Store an ORE input directory's run document and configuration documents against a report definition from the shell, and export them back to a directory.
+#
+# GENERATED from doc/recipes/shell/ore/how_do_i_import_a_run_configuration_into_a_report_definition.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+ore import-run $RUN_CONFIGURATION_DEFINITION_ID $RUN_CONFIGURATION_SOURCE
+ore export-run $RUN_CONFIGURATION_DEFINITION_ID $RUN_CONFIGURATION_OUTPUT
+logout

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 30CFD4C8-6C4F-49B8-8718-B05E29B3D0A3
+:END:
+#+title: How do I import a run's configuration into a report definition?
+#+description: Store an ORE input directory's run document and configuration documents against a report definition from the shell, and export them back to a directory.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ore:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The shell's =ore= menu carries the two verbs
+(=projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp=).
+They send =ore.v1.run_configuration.import= and
+=ore.v1.run_configuration.export= to ~ores.ore~. The import runs as the
+=run_configuration_import_workflow=: its step maps the files and stores each
+document through the component that owns it (reporting, refdata, analytics),
+under the logged-in account's session, so the configuration belongs to that
+account's party, and deletes what it stored if a later document fails. The
+export reads the documents back through the same owners.
+
+* Question
+
+How do I load a run's configuration from an ORE input directory into a report
+definition, and read it back?
+
+* Answer
+
+Recreate the database and provision the Acme Corporation tenant first (see
+*See also*). The import needs a report definition that holds no run document
+yet; =report_definitions list= shows the tenant's definitions and their ids.
+Set =RUN_CONFIGURATION_DEFINITION_ID= to that id, =RUN_CONFIGURATION_SOURCE=
+to an ORE input directory and =RUN_CONFIGURATION_OUTPUT= to a directory for the
+export.
+
+#+name: import-run-configuration
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+ore import-run $RUN_CONFIGURATION_DEFINITION_ID $RUN_CONFIGURATION_SOURCE
+ore export-run $RUN_CONFIGURATION_DEFINITION_ID $RUN_CONFIGURATION_OUTPUT
+logout
+exit
+#+end_src
+
+=ore import-run= sends every regular file at the top of the directory, whose
+run document is its =ore.xml=, and waits for the workflow. The step stores the
+run document and each
+configuration document it names (conventions, curve configuration, today's
+market and pricing engines), and reports the files it left out, such as the
+portfolio and the market data, which the run store does not hold. World
+conventions the tenant already holds stay as they are, and FX conventions are
+skipped until they have a store; the reply lists both. =--name= prefixes the
+configurations the import creates; it defaults to the directory's name.
+
+=ore export-run= writes the run document and every configuration document the
+definition binds into the output directory, under the names the run document
+gives them.
+
+The whole run against ORE-Python Example_1:
+
+#+begin_src sh :results output :wrap example
+export RUN_CONFIGURATION_SOURCE=external/ore/examples/ORE-Python/Notebooks/Example_1/Input
+export RUN_CONFIGURATION_OUTPUT=$(mktemp -d)
+export RUN_CONFIGURATION_DEFINITION_ID=<a report definition id>
+./compass.sh shell -l projects/ores.shell/scripts/library/ore/how_do_i_import_a_run_configuration_into_a_report_definition.ores
+ls $RUN_CONFIGURATION_OUTPUT
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/ore/how_do_i_import_a_run_configuration_into_a_report_definition.ores=,
+generated from this recipe's =ores-shell= block by =compass build --direct
+tangle_shell_scripts=. Do not edit the generated =.ores= by hand.
+
+* Tested by
+
+Manual, against a recreated database with the Acme Corporation tenant
+provisioned, on 2026-10-05: the import of ORE-Python Example_1 into the NPV
+report definition of Acme Corporation Plc, the logged-in account's party,
+completed its one workflow step, and the export wrote the five files. Pricing
+engines, today's market and the run document's setup and markets came back equal
+to the originals; the curve configuration differed only in how two tolerances
+print (=0.000000000001= against =9.9999999999999998e-13=); the conventions held
+every original but the FX convention, which has no store yet. Every write went
+through reporting, refdata and analytics under their own database grants.
+
+* See also
+
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
+- [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]]
+- [[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] — the run store.

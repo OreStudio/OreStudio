@@ -24,6 +24,7 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/workflow/ore_import_workflow.hpp"
+#include "ores.ore.api/workflow/run_configuration_import_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -103,6 +104,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     auto registry = std::make_shared<service::workflow_registry>();
     ore::workflow::register_ore_import_workflow(*registry);
+    ore::workflow::register_run_configuration_import_workflow(*registry);
     reporting::workflow::register_report_execution_workflow(*registry);
     dq::workflow::register_bundle_publish_workflow(*registry);
     ores::iam::workflow::register_provision_tenant_workflow(*registry);

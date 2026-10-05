@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 9007491B-B716-483C-B441-24E6F7B91A14
+:END:
+#+title: Task: Re-run the profile journeys end to end
+#+description: Recreate the deployment database from the regenerated scripts, provision and seed it, and re-run the profile journeys checker, so the member own saves and the administrator contact insert pass and each remaining failure is named.
+#+type: task
+#+level: s1
+#+filetags: :a_self_write_is_refused_on_a_tenant_with_accounts:sprint_26:v0:
+#+owner: marco
+#+branch: feature/fix-the-self-write
+#+pr: 2653
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The profile journeys run end to end on the fixed platform, and the two journey gaps that record the refusal close.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The journeys checker passes the member profile save, the member contact save, the round trip and the administrator contact insert, on a deployment whose database was built from the regenerated scripts.
+- Every remaining failure is named in the Result. Two are the upload over the message fabric payload cap (capture [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload cap cannot reach the validator]]). The third is the checker's own assertion that a version conflict carries a message: the store's conflict answer carries the code, the panel composes the sentence, and the open question is captured at [[id:25870CC8-06CF-4921-8804-878F2CF62401][A version conflict carries no message]]. No failure traces to the self write.
+- The two gaps that record the refusal close in their journey documents: Present myself and Keep my details current.
+- The run is recorded as evidence under the story, and the commit it stood on is stated.
+
+* Plan
+
+1. Recreate the database from the regenerated scripts.
+2. Bootstrap the deployment through the shell's =bootstrap
+   create-initial-admin=: the initial administrator is what clears
+   =system.bootstrap_mode= and lets the BFF's sign-in route answer.
+3. Seed the two members with the checker's own prerequisites, audited
+   by the shell service account, the member carrying the *Viewer* role.
+4. Run the journeys checker and read every failure.
+5. Record the run as evidence under the story, close the two journey
+   gaps, and close the task.
+
+The order is the whole plan, and the first two attempts are what made
+it explicit: the bootstrap expects a system tenant with no current
+accounts, so it must precede the seeds, and the sign-in is refused
+while bootstrap mode is on, so it must precede the check. The cycle is
+recreate, bootstrap, seed, check.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The recreated database | Fingerprint =082f5666a7fd2039=, built from 91d598f5f4-dirty, env_type development; 42 s | =compass services stop=, =compass db recreate -y -k=, =compass services start=; output in =evidence/task3_journeys_on_the_rebuilt_database.txt= | 91d598f5f4 (working tree; the journey edits are not committed yet) |
+| The bootstrap | Initial administrator =super_admin= created, account =5512a4ba-1a27-4ae4-a0a9-4213e26bb5f3=; =system.bootstrap_mode= moves to =false= | =compass shell -l /tmp/selfwrite_bootstrap.ores=; output in the same evidence file | same tree; database 082f5666a7fd2039 |
+| The checker | 67 checks ran, 64 passed, 3 failed; exit 1 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js=; output in the same evidence file | same tree; database 082f5666a7fd2039 |
+
+Every commit named above is a pre-sync commit: the branch was rebased onto
+main before its pull request, and these names denote the trees the numbers
+were measured on.
+
+* Notes
+
+- Attempt one seeded the members before bootstrapping. The checker's
+  sign-in answered 409: the BFF calls =bootstrapStatus()= and refuses
+  every sign-in while the deployment is in bootstrap mode.
+- Attempt two bootstrapped after the seeds. The initial-admin insert was
+  refused with =Invalid modified_by: super_admin= (23503): the seeds had
+  left current accounts in the system tenant, so the validator no longer
+  took its bootstrap branch, and the actor the insert names is not
+  current until the insert lands. The recipe states the same
+  expectation — "a database that has not been bootstrapped yet".
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2653][#2653]] | [codegen,sql] Fix the self write refusal on a tenant with accounts |
+
+* Review
+
+The local review pass over the diff, per the runbook's step 5a: the
+=compass-code-review-pr= checklist against =origin/main...HEAD=, and the
+misspell check with it. The on-demand review on PR #2653 adds four notes,
+none blocking, in rows 3 to 6.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =misspell-fixer .= exits 1 on the tree. | the sprint 25 and 26 task pages, and the local pnpm store | No action | Every hit is outside this diff: the task pages quote an upstream load-profile identifier misspelled in the portfolio, in review tables that already decline the correction, and the store is a gitignored local artifact. A run over this diff's files reports "nothing to replace" and exits 0. |
+| 2 | The site export aborts on the moved-assignment page: the command cell splits at its pipes, and the POSIX class in the fragment before the first split reads as a link to =:space:=. | task_order-the-actor-validation-before-the-version-replace.org:73 | Fixed | The command moves to a =sh= block below the Measurements table, exact as it ran. The emacs link check (=ores-check-org-links.el=) and =compass site page= then pass. |
+| 3 | The moved validation changes an error precedence: a write that is stale and carries a bad actor now answers the actor error where it answered the version conflict. | the three literate create templates | Recorded | Accepted as a note, not a change: the write was refused either way, the conflict message and its open question are captured at 25870CC8, and the story's Decisions now carry the new precedence. |
+| 4 | Only =iam_accounts= is guarded in the suite; the junction and table shapes rest on the drift gate. | repository_account_repository_tests.cpp | No action | Accepted as reviewed: the relocation is mechanical and identical in the three shapes, every generated file follows its template, and a per-shape case would assert the same order three times. |
+| 5 | The evidence dumps carry most of the added lines, =drift_gate_after.txt= alone at 26k lines. | the tasks' =evidence/= directories | No action | The raw record beside the task is the repository convention: the Measurements preamble asks for the raw output where it matters, and a summary would replace the record rather than trim it. |
+| 6 | The journeys evidence was not re-run after the rebase. | task_re-run-the-profile-journeys.org | No action | The caveat is the PR body's own Limitations paragraph, stated per run; the three failures are captured and none traces to the self write. |
+
+Verdict: ready to merge. The delta is the three templates' reorder, its
+regeneration across the create scripts, the repository case that guards the
+order, and the records; the one finding in it is fixed and re-checked, and
+the on-demand review on PR #2653 found no blocking issue.
+
+* Result
+
+The journeys ran over a database rebuilt from the regenerated scripts and
+bootstrapped. The database was recreated (fingerprint =082f5666a7fd2039=,
+built from 91d598f5f4-dirty, 42 s), the deployment was
+bootstrapped through the shell (=bootstrap create-initial-admin super_admin=,
+account =5512a4ba-1a27-4ae4-a0a9-4213e26bb5f3=, which moves
+=system.bootstrap_mode= to =false=), and the two members were seeded with the
+checker's own prerequisites, audited by =ores_brave_hopper_shell_user=, the
+member carrying the *Viewer* role. Every attempt, including the two the order
+refused, is in =evidence/task3_journeys_on_the_rebuilt_database.txt=, with the
+commit (91d598f5f4, working tree) and the fingerprint stated.
+
+The checker then ran end to end: 67 checks, 64 passed, 3 failed, and exit 1.
+Everything the self-write defect refused now passes. The member signs in
+(=http 200=), the self profile write lands with the written name and job
+title, the self contact write lands and bumps the record the read showed, the
+round trip reads back unchanged, and the administrator's contact insert lands
+with the claim the panel read. The read gap the journeys document stays as it
+is: the member's own account read is still refused with 403, which is the
+*Viewer* role's rule and not this story's.
+
+The three failures, each named:
+
+- *The oversized upload answers 503.* The transport raises
+  =MAX_PAYLOAD_EXCEEDED= before the validator's own answer is reached.
+- *The refusal names no size rule.* The same cause: the refusal never reaches
+  the validator's =image_too_large= message.
+- *The conflict carries no message.* The stale claim answers
+  =outcome=conflict= with =code=version_conflict= and an empty message. This
+  is the checker's own assertion, and it is stricter than the journeys state:
+  no service sets a message on that branch, the panel composes the
+  record-changed sentence itself (ProfilePage draws it from the conflict
+  outcome), and the self contact write carries no version claim, so no member
+  path reaches the empty message. Captured for a decision at
+  [[id:25870CC8-06CF-4921-8804-878F2CF62401][A version conflict carries no
+  message]].
+
+The two journey gaps close. =Present myself= item 6 and =Keep my details
+current= item 5 now read =*Closed: the self write on a tenant with
+accounts.*=, each stating what now lands and naming this story.
+
+Every acceptance item holds, with the second read against the run: the
+checker passes the four named checks, every remaining failure is named above,
+the two gaps close, and the run states its commit. No failure traces to the
+self write.

@@ -126,6 +126,11 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
     -- Bump ores_refdata_counterparties_tbl's version alongside this write (composite entity
     -- versioning — see the "Temporal composite entity versioning"
     -- architecture doc). The touch function re-validates modified_by
@@ -183,7 +188,6 @@ begin
 
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;

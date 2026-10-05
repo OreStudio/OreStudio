@@ -80,6 +80,11 @@ begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    -- The actor is validated before the version management below: the
+    -- validator accepts a username only while a current account row holds
+    -- it, and a self write retires that row.
+    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
+
     -- Version management
     select version into current_version
     from "ores_refdata_currency_calendars_tbl"
@@ -117,7 +122,6 @@ begin
     new.valid_from = clock_timestamp();
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);

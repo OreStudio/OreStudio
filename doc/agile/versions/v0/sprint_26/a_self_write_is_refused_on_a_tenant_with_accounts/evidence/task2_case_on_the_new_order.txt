@@ -1,0 +1,18 @@
+Task 2, the case on the new order: the database validates the actor before the
+version management retires it. The database was recreated from the regenerated
+scripts, and the build carries the matching fingerprint.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 (working tree, the case itself is not committed yet)
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 082f5666a7fd2039,
+          built from 4b000931b1-dirty at 2026/10/05 09:32:46
+Binary: build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests
+Case: write_account_with_itself_as_modified_by
+Date: 2026-10-05T10:02:18+01:00
+
+Filters: "write_account_with_itself_as_modified_by"
+Randomness seeded to: 2424930497
+===============================================================================
+All tests passed (5 assertions in 1 test case)
+
+
+exit code: 0

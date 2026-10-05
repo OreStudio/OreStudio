@@ -1,0 +1,257 @@
+Task 3, the profile journeys on the rebuilt database. The seeds follow the
+harness's own prerequisites: the auditor is the shell service account, and the
+member carries the Viewer role the journey's grant checks expect.
+Commit: 91d598f5f4 (working tree, the journey edits are not committed yet)
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 082f5666a7fd2039
+Services: started with compass services start; the fingerprint check passed
+Date: 2026-10-05T10:04:35+01:00
+
+--- attempt one: the seeds, then the checker ---
+
+The recreated database was seeded straight away. The checker was then refused
+at the sign-in: the recreated deployment is in bootstrap mode, which the BFF
+refuses with 409 before it reads the credentials.
+
+seed ores_web_probe, audited by ores_brave_hopper_shell_user:
+1|1|1|1
+seeded ores_web_probe in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_probe tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+exit code: 0
+
+seed ores_web_member, audited by ores_brave_hopper_shell_user, Viewer role:
+
+1|1|1|1
+seeded ores_web_member in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_member tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+exit code: 0
+
+the journeys checker, node
+doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js:
+
+profile journeys over http://127.0.0.1:20402
+
+Present myself and keep my details current, as the member:
+  [FAIL] ores_web_member signed in (http 409)
+
+1 checks ran
+1 CHECK(S) FAILED
+
+exit code: 1
+
+--- the diagnosis: the setting the BFF reads ---
+
+The BFF's POST /api/session calls bootstrapStatus() and throws
+bootstrapRequired() (409, code bootstrap-mode) while the deployment has not
+been provisioned. The setting behind it, read as the CLI user with the system
+tenant as the session tenant:
+
+begin; set local app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+select name, value, valid_to = ores_utility_infinity_timestamp_fn() as current
+  from ores_variability_system_settings_tbl where name = 'system.bootstrap_mode';
+
+         name          | value | current
+-----------------------+-------+---------
+ system.bootstrap_mode | true  | t
+
+--- the second attempt, the bootstrap after the seeds: refused ---
+
+compass shell -l /tmp/selfwrite_bootstrap.ores, whose script is the shell
+route to ores_iam_create_initial_admin_fn: connect, then
+'bootstrap create-initial-admin super_admin Secure-Password-123
+super_admin@localhost.com'.
+
+The seeds had already left two current accounts in the system tenant, so the
+validator's bootstrap branch no longer applied. The initial-admin insert names
+the principal it is creating as its actor, and that actor is not current yet,
+so the strict lookup refuses it. The recipes state the same expectation: they
+ask for a database that has not been bootstrapped yet, and the smoke recipe is
+run straight after a recreate.
+
+> bootstrap create-initial-admin super_admin Secure-Password-123 super_admin@localhost.com
+{"success":false,"error_message":"Query execution failed: ERROR:  Invalid modified_by: super_admin. Must be a valid account username or service role.\nCONTEXT:  PL/pgSQL function ores_iam_validate_account_username_fn(text) line 41 at RAISE\nPL/pgSQL function ores_iam_accounts_insert_fn() line 46 at assignment\n...\nPL/pgSQL function ores_iam_create_initial_admin_fn(text,text,text,text) line 33 at SQL statement\n","account_id":"","tenant_name":"","tenant_id":""}
+Script complete: 3 commands executed.
+
+--- the cycle the recipes state: stop, recreate, start ---
+
+compass services stop
+Stopped  : ores-brave_hopper.target (and every unit it aggregates).
+
+compass db recreate -y -k  (tail)
+=== ORE Studio Database Recreation ===
+Database name: ores_dev_brave_hopper
+Start: 2026-10-05 10:08:33
+...
+  Schema fingerprint: 082f5666a7fd2039
+  Build environment: local
+  Git commit:        91d598f5f4-dirty
+  Git date:          2026/10/05 10:03:57
+  env_type: development
+
+Database ores_dev_brave_hopper is ready.
+Duration: 0m 42s
+
+compass services start
+✅ Database schema fingerprint 082f5666a7fd2039 matches this checkout.
+  wait    nats-server (port 20405) ... ready
+  wait    24 unit(s) (active) ... done
+
+--- the bootstrap on the empty system tenant: the initial admin lands ---
+
+compass shell -l /tmp/selfwrite_bootstrap.ores
+> bootstrap create-initial-admin super_admin Secure-Password-123 super_admin@localhost.com
+{"success":true,"error_message":"","account_id":"5512a4ba-1a27-4ae4-a0a9-4213e26bb5f3","tenant_name":"","tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"}
+Script complete: 3 commands executed.
+
+the setting after the bootstrap:
+
+         name          | value | current
+-----------------------+-------+---------
+ system.bootstrap_mode | true  | f
+ system.bootstrap_mode | false | t
+
+the system tenant's current accounts: the 24 service accounts and super_admin.
+
+--- the seeds again, on the bootstrapped database ---
+
+seed ores_web_probe, audited by ores_brave_hopper_shell_user:
+0|1|1|1
+seeded ores_web_probe in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_probe tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+
+seed ores_web_member, audited by ores_brave_hopper_shell_user, Viewer role:
+0|1|1|1
+seeded ores_web_member in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_member tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+
+--- attempt two: the checker on the bootstrapped database ---
+
+node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js
+
+profile journeys over http://127.0.0.1:20402
+
+Present myself and keep my details current, as the member:
+  [PASS] ores_web_member signed in (http 200)
+
+the grants the session carries:
+  [PASS] the grants read answers (http 200)
+  [PASS] the session carries the Viewer role (Viewer)
+  [PASS] no held grant carries iam::accounts:read (refdata::currencies:read, variability::flags:read, workspace::workspaces:read)
+
+the read gap the journey documents state:
+  [PASS] the member's read of their own account is refused (http 403 forbidden)
+  [PASS] the refusal carries the server code
+
+the member's own contact record, which carries no guard:
+  [PASS] the own contact read answers (http 200)
+  [PASS] a record, when present, belongs to the session's account
+
+the self profile write:
+  [PASS] the self write answers (http 200)
+  [PASS] the write was accepted
+  [PASS] the account carries the written name
+  [PASS] the account carries the written job title
+  [PASS] the account names the session's account
+
+the self contact write:
+  [PASS] the contact write answers (http 200)
+  [PASS] the write was accepted
+  [PASS] the record names the session's account
+  [PASS] the record carries the written street
+  [PASS] the record carries the written contact address
+  [PASS] the write bumped the record the read showed
+
+the round trip:
+  [PASS] the record reads back with the city
+  [PASS] the record reads back unchanged
+
+the picker's rule, read from the validator:
+  [PASS] the policy read answers (http 200)
+  [PASS] the largest size is two megabytes (2097152)
+  [PASS] the smallest side is 128
+  [PASS] the formats are stated (image/png, image/jpeg, image/webp)
+
+the photo upload and a refusal:
+  [PASS] the upload answers (http 200)
+  [PASS] the upload was accepted
+  [PASS] the upload answers an identifier (01a10b54-4f2a-7ffe-9745-d05418f037ff)
+  [PASS] the oversized image is over the limit (2431333 bytes)
+  [FAIL] the oversized upload answers rather than fails (http 503)
+  [FAIL] the refusal names the size rule
+  [PASS] the photo write was accepted
+  [PASS] the account carries the uploaded picture
+
+the administrator's route refuses the member:
+  [PASS] the write is refused (http 403 forbidden)
+
+Change someone's details, as the tenant administrator:
+  [PASS] ores_web_probe signed in (http 200)
+
+the picker's read:
+  [PASS] the tenant list answers (http 200)
+  [PASS] the list holds the member
+
+the account read the member was refused:
+  [PASS] the administrator's account read answers (http 200)
+  [PASS] the read names the member's account
+  [PASS] the read shows the member's picture
+
+the administrator's profile write, the unset fields echoed:
+  [PASS] the administrator write answers (http 200)
+  [PASS] the write succeeded
+  [PASS] the name moved
+  [PASS] the job title moved
+  [PASS] the sign-in address stayed (ores_web_member@ores.web.test)
+  [PASS] the default party stayed
+  [PASS] the reporting line stayed
+  [PASS] the version moved forward
+
+the contact write with the claim the panel read:
+  [PASS] the administrator's contact read answers (http 200)
+  [PASS] the record the member wrote is the one read
+  [PASS] the claimed write answers (http 200)
+  [PASS] the claim held
+  [PASS] the street moved
+  [PASS] the version moved forward
+
+a claim that no longer holds:
+  [PASS] the stale claim is answered, not failed (http 200)
+  [PASS] the stale claim is a conflict (conflict)
+  [PASS] the conflict names the version (version_conflict)
+  [FAIL] the conflict carries a message
+  [PASS] no record came back with the refusal
+  [PASS] the refused write changed nothing
+
+a claim of no record where one exists:
+  [PASS] the no-record claim is a conflict (conflict)
+  [PASS] the conflict names the existing row (already_exists)
+
+a claim of no record where none exists:
+  [PASS] the no-record claim inserts one
+  [PASS] the inserted record names the administrator's account
+
+the picture the account points at:
+  [PASS] the picture answers (http 200)
+  [PASS] the picture is a png (image/png)
+  [PASS] the picture is the uploaded bytes (37368 bytes)
+
+67 checks ran
+3 CHECK(S) FAILED
+
+exit code: 1
+
+--- the three failures ---
+
+Two trace to the upload over the message fabric's payload cap alone
+(capture 820AC660-C3FC-4A45-998D-A65818FA4BB8): the oversized upload is
+refused by the transport with 503 before the validator's own answer is
+reached, so the refusal cannot name the size rule.
+
+The third does not trace to that defect. The stale claim answers
+outcome=conflict with code=version_conflict, which the checker asserts, and
+with an empty message, which it also asserts. No service in
+ores.iam/core/src/service sets a message on this branch: the panel composes
+the sentence itself (ProfilePage.tsx draws the record-changed sentence from
+the conflict outcome), and the self contact write carries no version claim,
+so no member path reaches the empty message. The assertion is stricter than
+the journeys state.

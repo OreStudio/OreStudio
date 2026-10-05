@@ -1,0 +1,21 @@
+Task 2, first attempt: the case on the build of the current tree against the
+database as it stands. The build carries the fingerprint of the regenerated SQL,
+the database carries the fingerprint of the pre-fix SQL, so the guard refuses.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 (working tree, the case is not committed yet)  Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, built from 13e8b9e1ef-dirty at 2026/10/05 04:15:38
+Binary: build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests
+Case: write_account_with_itself_as_modified_by
+Date: 2026-10-05T09:47:25+01:00
+
+
+==============================================================================
+REFUSING TO START: the database schema does not match this build.
+  Expected schema fingerprint (this build): 082f5666a7fd2039
+  Actual schema fingerprint (database)    : 089d3deaaa9b2e12
+  Database ores_dev_brave_hopper was built from commit 13e8b9e1ef-dirty at 2026/10/05 04:15:38.
+  The code and the database were built from different SQL, so queries
+  would fail or return wrong results.
+  Fix: compass services stop && compass db recreate -y -k
+==============================================================================
+
+exit code: 1

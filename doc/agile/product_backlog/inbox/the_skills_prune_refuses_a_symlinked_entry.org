@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: CD4A5E09-62C0-49EC-9B48-B00D3B54335B
+:END:
+#+title: The skills prune refuses a symlinked entry
+#+description: compass build --direct skills exits 1 on this checkout. ores/prune-stale-skills (projects/ores.lisp/src/ores-build-skills.el:127) lists .claude/skills/, finds the allium entry (a symlink to .agents/skills/allium, local tooling), finds no doc/llm/skills/allium/SKILL.org source, treats it as stale publish output and calls delete-directory on it; Emacs refuses a symlink and signals 'Removing directory: Not a directory', which aborts the build before kill-emacs 0. The publish phase runs first, so the deployed skills are current; the prune never runs, so genuinely stale outputs stay. The prune should skip symlinked entries: publish output is always a real directory.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,9 @@
+Self-write before-record (old order in the deployed schema)
+Commit: a6db8fe7233f40833fa2b0999a04daff53bd9b7a  Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, user ores_brave_hopper_cli_user
+Script: /tmp/selfwrite_repro.sql (three probes, rollback only)
+Date: 2026-10-05T09:15:25+01:00
+
+psql:/tmp/selfwrite_repro.sql:29: NOTICE:  probe 1 (self write): REFUSED sqlstate=23503 message=Invalid modified_by: ores_web_member. Must be a valid account username or service role.
+psql:/tmp/selfwrite_repro.sql:48: NOTICE:  probe 2 (another actor): LANDED
+psql:/tmp/selfwrite_repro.sql:66: NOTICE:  probe 3 (bogus actor): REFUSED sqlstate=23503 message=Invalid modified_by: no_such_actor_zzz. Must be a valid account username or service role.

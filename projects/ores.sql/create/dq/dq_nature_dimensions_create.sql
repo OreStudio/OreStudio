@@ -77,6 +77,11 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
     -- Version management
     select version into current_version
     from "ores_dq_nature_dimensions_tbl"
@@ -119,7 +124,6 @@ begin
 
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;

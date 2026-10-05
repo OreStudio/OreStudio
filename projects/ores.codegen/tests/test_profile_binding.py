@@ -309,20 +309,15 @@ def test_frontmatter_profile_rejected_in_all_readers(tmp_path):
         load_org_junction_model(p)
 
 
-def test_client_read_only_rejected_outside_a_junction(tmp_path):
-    # Only a junction separates its repository write surface from the verbs a
-    # client reaches, and load_org_junction_model is the only reader of the
-    # flag. A domain_entity or field group that declares it renders as though
-    # it had not, so the loader rejects it rather than let it no-op.
+def test_client_read_only_rejected_where_nothing_reads_it(tmp_path):
+    # A domain_entity reads the flag from its root * Flags drawer only; under
+    # * C++ it would render as though it had not, and a field group never
+    # reads it, so the loader rejects both rather than let them no-op.
     import pytest
 
-    for extra in (
-        "* Flags\n:PROPERTIES:\n:client_read_only: true\n:END:\n",
-        "* C++\n** Flags\n:PROPERTIES:\n:client_read_only: true\n:END:\n",
-    ):
-        text = MINIMAL_HEADER + extra
-        with pytest.raises(ValueError, match="client_read_only"):
-            org_document_to_model(parse_org(text))
+    text = MINIMAL_HEADER + "* C++\n** Flags\n:PROPERTIES:\n:client_read_only: true\n:END:\n"
+    with pytest.raises(ValueError, match="client_read_only"):
+        org_document_to_model(parse_org(text))
 
     p = tmp_path / "fg.org"
     p.write_text(
@@ -333,3 +328,15 @@ def test_client_read_only_rejected_outside_a_junction(tmp_path):
     )
     with pytest.raises(ValueError, match="client_read_only"):
         org_loader.load_org_field_group_model(p)
+
+
+def test_a_domain_entity_may_declare_client_read_only_at_its_root():
+    # The repository stays writable for the service's own code, and the wire
+    # carries the reads only: the shape of a table a person may read and only
+    # a server-side operation may write.
+    entity = org_document_to_model(parse_org(
+        MINIMAL_HEADER + "* Flags\n:PROPERTIES:\n:client_read_only: true\n:END:\n"
+    ))["domain_entity"]
+    assert entity["client_read_only"] is True
+    assert not entity.get("read_only")
+

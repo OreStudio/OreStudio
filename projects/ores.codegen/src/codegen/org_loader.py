@@ -310,19 +310,24 @@ def _ensure_profile_binding(doc: "OrgDocument") -> None:
             "a frontmatter profile is silently ignored.")
 
 
-def _reject_junction_only_flags(doc: "OrgDocument", kind: str) -> None:
-    """Reject ``:client_read_only:`` outside a junction model.
+def _reject_junction_only_flags(doc: "OrgDocument", kind: str,
+                                root_allowed: bool = False) -> None:
+    """Reject ``:client_read_only:`` where nothing reads it.
 
-    The flag splits a junction's repository write surface from the verbs a
-    client reaches, and only :func:`load_org_junction_model` reads it. Every
-    other model type that declares it renders as though it had not, which is
-    the silent no-op the profile guard above rejects for ``:profile:``.
+    The flag splits a repository write surface from the verbs a client
+    reaches. A junction reads it from its own drawers, and a domain_entity
+    reads it from its root =* Flags= drawer, where the protocol derivation
+    drops the write verbs and the repository keeps its writes for the
+    service's own code. A domain_entity that declares it under =* C++= would
+    render as though it had not, and a field group or an operation never reads
+    it, which is the silent no-op the profile guard above rejects for
+    ``:profile:``.
 
     ``:read_only:`` is not in this set: a domain_entity honours it too, for a
     table the application never writes.
     """
     cpp = _section(doc.root, "C++")
-    drawers = [("* Flags", _section(doc.root, "Flags"))]
+    drawers = [] if root_allowed else [("* Flags", _section(doc.root, "Flags"))]
     if cpp:
         drawers.append(("* C++ ** Flags", _section(cpp, "Flags")))
     for where, section in drawers:
@@ -331,9 +336,9 @@ def _reject_junction_only_flags(doc: "OrgDocument", kind: str) -> None:
                 for key in section.properties):
             raise ValueError(
                 f":client_read_only: found in {where} of a {kind} model — "
-                "only a junction separates a repository write surface from "
-                "the verbs a client reaches. Use :read_only: to suppress "
-                "every write, or model the table as a junction.")
+                "only a junction, or a domain_entity's root * Flags drawer, "
+                "separates a repository write surface from the verbs a client "
+                "reaches. Use :read_only: to suppress every write.")
 
 
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
@@ -1331,7 +1336,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     of codegen can consume it unchanged.
     """
     _ensure_profile_binding(doc)
-    _reject_junction_only_flags(doc, "domain_entity")
+    _reject_junction_only_flags(doc, "domain_entity", root_allowed=True)
     de: dict[str, Any] = {}
 
     # Frontmatter contains entity-wide string keys.

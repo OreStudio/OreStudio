@@ -36,10 +36,13 @@ A read-only bitemporal entity still answers =list_*_versions= and
 =get_*_version=, because those are reads.
 
 The flag is authored at the entity root, in the =* Flags= drawer, alongside
-=:has_tenant_id:=. =:client_read_only:= is the junction-only relative: it
-leaves the repository writable for a server-side producer and suppresses
-only the verbs a client reaches. The loader rejects =:client_read_only:= on
-a =domain_entity= and directs the model to this feature instead.
+=:has_tenant_id:=. =:client_read_only:= is its relative: it leaves the
+repository writable for a server-side producer and suppresses only the verbs
+a client reaches. A junction reads it from its drawers, and a =domain_entity=
+from its root =* Flags= drawer; that is the shape of a table a person may read
+and only the service's own operations may write, such as IAM's run grants.
+The loader rejects it under a =domain_entity='s =* C++= drawer, where nothing
+reads it.
 
 * Structural consequence
 

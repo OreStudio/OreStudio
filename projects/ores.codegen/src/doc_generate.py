@@ -70,6 +70,7 @@ TYPE_TO_TEMPLATE = {
 # The groups of the pattern language, in the order the pattern hub reads them.
 PATTERN_GROUPS = (
     "identity", "communication", "coordination", "resilience", "load", "data",
+    "observability",
 )
 
 # entity_org --shape presets: knob bundles sampled from a known-good

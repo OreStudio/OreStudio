@@ -1,0 +1,42 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Correlation Identifier: what a handler does with the id
+
+start
+:a message arrives;
+if (Nats-Correlation-Id header present?) then (yes)
+  if (well formed: 32 hex digits\nor a uuid, bounded length?) then (yes)
+    :use it;
+  else (no)
+    :create a new id;
+    :log the rejected value's length,\nnot the value;
+  endif
+else (no)
+  :create a new id;
+  :log "no correlation id arrived";
+endif
+:open a log scope with correlation_id;
+note right: every log line of this\nhandling now carries the id
+:forward the id on every outbound call\nand every event this work publishes;
+:store it with any work that outlives the request;
+:echo it on the reply, success or error;
+:close the log scope;
+stop
+@enduml

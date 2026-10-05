@@ -1,0 +1,46 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Correlation Identifier: one id from the origin through every hop
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "person" as person
+participant "origin\n(Qt, shell, HTTP edge,\nor a scheduler firing)" as origin
+participant "service A" as a
+participant "service B" as b
+participant "workflow engine" as engine
+participant "step service" as step
+collections "logs" as logs
+
+person -> origin : an action
+origin -> origin : create id C
+origin -> a : request (Nats-Correlation-Id: C)
+a -> logs : every line of this request: correlation_id=C
+a -> b : request (Nats-Correlation-Id: C)
+b -> logs : every line: correlation_id=C
+a -> engine : workflow.v1.start (correlation id C, stored on the run)
+a --> origin : reply (Nats-Correlation-Id: C)
+... later, after a restart if need be ...
+engine -> step : step command (Nats-Correlation-Id: C)
+step -> logs : every line: correlation_id=C
+note over logs : grep correlation_id=C\nreturns the whole trail
+@enduml

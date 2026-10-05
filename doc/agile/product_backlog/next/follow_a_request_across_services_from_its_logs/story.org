@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: A0125055-F1FE-4200-9F6D-0638CF6F72F4
+:END:
+#+title: Story: Follow a request across services from its logs
+#+description: Every request carries one correlation id from its origin through every service, every workflow step and every event it causes, and every log line of its handling names that id, so one search of the logs returns the whole trail.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who sees a failure can follow the request that caused it through every
+service from the logs alone. Every request carries one correlation id from its
+origin, through every service it reaches, every workflow step it starts and
+every event it causes, and every log line written while it is handled names that
+id. One search for the id returns the whole trail, in the order it happened.
+
+This story applies the [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] pattern to the whole platform. It is the first step
+towards [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]]: the id it carries is shaped so that it can become the trace id
+later, with no change to the ids already in the logs.
+
+* Where it starts
+
+Measured on 2026-10-05 at commit =511debee1e=:
+
+- The mechanism exists in =ores.nats= and =ores.service=: the
+  =Nats-Correlation-Id= header, =extract_or_generate_correlation_id=,
+  =nats_client::with_correlation_id= and =log_handler_entry=.
+- 19 of the 379 files that build a request context call
+  =log_handler_entry=. No codegen template calls it.
+- Nothing forwards the id: no handler, the HTTP edge, the scheduler, the shell
+  and Qt do not set it. Each handler that logs it therefore creates a new one.
+- The log format is =time [severity] [channel] message=, so only the entry line
+  names the id. The other lines of the handling cannot be joined to it.
+- =ores.telemetry= models trace ids, span ids and OpenTelemetry log records, and
+  no service uses them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Every log line written while a request is handled carries
+  =correlation_id=<id>=, in every service.
+- Every origin creates or accepts the id: the shell, Qt, the HTTP edge, the
+  scheduler's firing and the compute wrapper.
+- Every outbound call, event and storage transfer forwards the id it serves.
+- A workflow run keeps the id of the request that started it on every step,
+  compensation and completion, across a restart and a retry.
+- Every reply echoes the id, and the clients show it with an error.
+- A recipe follows one scheduled report run from its firing to its result by one
+  search, and a test checks that one id reaches every hop.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B03A49F0-DC80-4D90-AC24-6AC2252B0D07][Put the correlation id on every log line]] | BACKLOG | | | A scoped log attribute that the handler entry helper opens, and a log format that prints it, so every line of a handling names its request, not only the entry line. |
+| [[id:475746F7-9455-4624-A912-EB25CA549DE3][Open the correlation scope in every handler]] | BACKLOG | | | The generated handler templates and every hand-written handler call the entry helper, and a check fails a handler that does not. |
+| [[id:9C0412EE-E809-4190-8E6B-04957B726EF6][Forward the correlation id on every outbound call]] | BACKLOG | | | Every NATS request, every published event, and every storage transfer a handler makes carries the id of the request it serves. |
+| [[id:BF7415A0-82CD-44EC-ABB7-AAF41E9351FC][Create the correlation id at every origin]] | BACKLOG | | | Qt, the shell, the HTTP edge, the scheduler's firing and the compute wrapper create or accept the id at the start of each action, so no service has to invent one. |
+| [[id:2BA2F15B-3F82-47C8-ACDB-4F50DC15C79E][Carry the correlation id through the workflow engine]] | BACKLOG | | | The run stores the id of the request that started it and stamps it on every step command, compensation and completion, including after a restart or a retry. |
+| [[id:558B19D3-D03F-4448-81E9-DAAF8CFF2619][Echo the correlation id to the person]] | BACKLOG | | | Every reply, success or error, echoes the id, and the shell, Qt and the browser show it with an error so a person can report it. |
+| [[id:233BF484-ACCD-400F-8782-086FA862C6C8][Prove one trail end to end]] | BACKLOG | | | A recipe that follows a report run from the scheduler's firing to the result in the logs, and a test that checks one id reaches every hop. |
+
+* Decisions
+
+- *The id is 32 lower-case hex digits.* It has the shape of a W3C trace id, so
+  the move to Distributed Tracing reuses the ids already in the logs. An
+  incoming id of another shape is replaced, and the replacement is logged
+  without the rejected value, which keeps log injection out.
+- *The id carries no authority.* It is for following work, never for deciding
+  access or for deduplicating it. A workflow step keeps its own step id as its
+  idempotency key.
+- *A session id is a separate thing.* =Nats-Session-Id= groups the requests of
+  one login; the correlation id names one action.
+- *The id may be stored.* Unlike a token, it is not a credential, so a workflow
+  run and a report instance keep it.
+
+* Out of scope
+
+- Spans, timings and the W3C =traceparent= header. That is [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]], captured as
+  [[id:07F05C2C-C4E0-404A-9A10-D5186B661315][Tracing: OpenTelemetry identifiers across Qt and NATS]].
+  This story keeps the id compatible with it.
+- A log aggregation service. The logs are searched where they are written.

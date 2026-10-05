@@ -77,6 +77,12 @@ pattern.
   alone also means a system's overall style in Buschmann's sense, and the codegen
   already calls its local SQL, HTTP and shell conventions "patterns". The type
   was first added as =pattern= and renamed before the branch was pushed.
+- *Observability is a group of its own.* Correlation and tracing answer a
+  question no other group asks: how a person follows one action across services.
+  The group was added with Distributed Tracing, and Correlation Identifier was
+  written early, in the communication group, because following a request from
+  the logs had no plan. The platform work is the backlog story
+  [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]].
 - *The established name comes first.* A page is named for the pattern in its
   authoritative source. Local names are aliases.
 - *A pattern page owns the pattern; an architecture page owns a use of it.*

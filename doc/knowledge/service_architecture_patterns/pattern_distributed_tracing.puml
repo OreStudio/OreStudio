@@ -1,0 +1,43 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Distributed Tracing: one action becomes a tree of spans
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "Qt client" as qt
+participant "workflow" as wf
+participant "refdata" as rd
+participant "iam" as iam
+
+qt -> qt : root span 0001 of trace T
+qt -> wf : traceparent 00-T-0001-01
+wf -> wf : span 0002, parent 0001
+wf -> rd : traceparent 00-T-0002-01
+rd -> rd : span 0003, parent 0002
+wf -> iam : traceparent 00-T-0002-01
+iam -> iam : span 0004, parent 0002
+note over qt, iam
+  Each span records its start, its end and its outcome.
+  The spans of trace T rebuild the call tree with timings,
+  and every log line carries T and its own span id.
+end note
+@enduml

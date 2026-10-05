@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 8D66F1DA-9566-45C0-B410-69D27B483318
+:ID: B03A49F0-DC80-4D90-AC24-6AC2252B0D07
 :END:
-#+title: Task: Write the communication, coordination, resilience, load and data patterns
-#+description: Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside.
+#+title: Task: Put the correlation id on every log line
+#+description: A scoped log attribute that the handler entry helper opens, and a log format that prints it, so every line of a handling names its request, not only the entry line.
 #+type: task
 #+level: s1
-#+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
+#+filetags: :follow_a_request_across_services_from_its_logs:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,19 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every log line written while a request is handled names its correlation id, so
+the lines of one request can be found together.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
+| Parent story | [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,7 +36,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =log_handler_entry= opens a scoped Boost.Log attribute =correlation_id= for the
+  handling, and the attribute is removed when the handling ends.
+- The console, file and telemetry sinks print or export the attribute.
+- An incoming id that is not 32 hex digits or a uuid is replaced; the log names
+  the replacement, not the rejected value.
+- A test writes two log lines inside one scope and finds the id on both.
 
 * Plan
 
@@ -58,10 +64,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-- Correlation Identifier is already written, with Distributed Tracing in a new
-  observability group, on PR #2651. Log Aggregation is listed in that group and
-  belongs to this task.
 
 * Test Scenarios
 

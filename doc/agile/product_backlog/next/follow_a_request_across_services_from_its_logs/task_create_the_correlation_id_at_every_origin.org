@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 8D66F1DA-9566-45C0-B410-69D27B483318
+:ID: BF7415A0-82CD-44EC-ABB7-AAF41E9351FC
 :END:
-#+title: Task: Write the communication, coordination, resilience, load and data patterns
-#+description: Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside.
+#+title: Task: Create the correlation id at every origin
+#+description: Qt, the shell, the HTTP edge, the scheduler's firing and the compute wrapper create or accept the id at the start of each action, so no service has to invent one.
 #+type: task
 #+level: s1
-#+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
+#+filetags: :follow_a_request_across_services_from_its_logs:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The id is created where an action starts, never invented downstream.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
+| Parent story | [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,7 +35,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The shell and Qt create an id per user action and send it.
+- The HTTP edge accepts =X-Correlation-Id= from a browser, or creates one, and
+  forwards it on NATS.
+- A scheduler firing creates the id and records it on the firing.
+- A compute assignment carries the id of the run, and the wrapper logs it.
 
 * Plan
 
@@ -58,10 +62,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-- Correlation Identifier is already written, with Distributed Tracing in a new
-  observability group, on PR #2651. Log Aggregation is listed in that group and
-  belongs to this task.
 
 * Test Scenarios
 

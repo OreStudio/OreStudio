@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 8D66F1DA-9566-45C0-B410-69D27B483318
+:ID: 475746F7-9455-4624-A912-EB25CA549DE3
 :END:
-#+title: Task: Write the communication, coordination, resilience, load and data patterns
-#+description: Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside.
+#+title: Task: Open the correlation scope in every handler
+#+description: The generated handler templates and every hand-written handler call the entry helper, and a check fails a handler that does not.
 #+type: task
 #+level: s1
-#+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
+#+filetags: :follow_a_request_across_services_from_its_logs:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+No handler serves a request without opening the correlation scope.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
+| Parent story | [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,7 +35,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The generated handler templates call the entry helper at the start of every
+  operation.
+- Every hand-written handler does too.
+- A check in the PR checks fails a handler that builds a request context and
+  does not open the scope.
 
 * Plan
 
@@ -58,10 +62,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-- Correlation Identifier is already written, with Distributed Tracing in a new
-  observability group, on PR #2651. Log Aggregation is listed in that group and
-  belongs to this task.
 
 * Test Scenarios
 

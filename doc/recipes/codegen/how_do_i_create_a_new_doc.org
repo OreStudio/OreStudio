@@ -405,8 +405,8 @@ section, then wire the page into the inventory that lists the reports.
 [[proj:doc/knowledge/service_architecture_patterns][=doc/knowledge/service_architecture_patterns/=]], one page per
 established pattern, as =pattern_<slug>.org=. =--parent-dir= is optional and
 defaults to that folder. =--pattern-group= is required, and it names one group of
-the language: =identity=, =communication=, =coordination=, =resilience=, =load=
-or =data=. Title the page with the pattern's name in its source.
+the language: =identity=, =communication=, =coordination=, =resilience=, =load=,
+=data= or =observability=. Title the page with the pattern's name in its source.
 
 #+begin_src sh :results verbatim
 compass add service_architecture_pattern \

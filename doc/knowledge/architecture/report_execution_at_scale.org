@@ -480,7 +480,8 @@ and triggers another run, which reuses the archive by its digest.
 
 ** Observability
 
-Every message of a run carries the workflow instance id as the correlation id.
+Every message of a run carries the workflow instance id as the
+[[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][correlation id]].
 Every token carries the run id. A log line of any service in the run can
 therefore be joined to the instance.
 

@@ -48,7 +48,8 @@ because they have other sources and other readers:
   example =Token Exchange= or =Idempotent Receiver=. A name ORE Studio used
   before the page existed is an alias under =* Also known as=, never the title.
 - Group :: =#+pattern_group:= places the pattern in one group of the language:
-  =identity=, =communication=, =coordination=, =resilience=, =load= or =data=.
+  =identity=, =communication=, =coordination=, =resilience=, =load=, =data=
+  or =observability=.
   The scaffold refuses a pattern with no group or an unknown one.
 - Sources :: at least one authoritative source: the book, catalogue or standard
   that defines the pattern, with the section. A page with no source is a local

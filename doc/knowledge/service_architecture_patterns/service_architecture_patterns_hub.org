@@ -81,7 +81,7 @@ request, how bulk data travels, and how several replicas share the work.
 | Pattern | Source |
 |---------+--------|
 | Request-Reply | Hohpe and Woolf, /Enterprise Integration Patterns/ |
-| Correlation Identifier | Hohpe and Woolf |
+| [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] | Hohpe and Woolf; Newman |
 | Claim Check | Hohpe and Woolf |
 | Competing Consumers | Hohpe and Woolf; Azure Architecture Center |
 
@@ -132,6 +132,19 @@ reader keeps a copy without owning it.
 |---------+--------|
 | Database per Service | microservices.io |
 | Cache-Aside | Azure Architecture Center |
+
+** The observability group
+
+/How does a person follow what one action did across services?/ Each service
+writes its own logs and no transaction spans them. These patterns join the
+records of one action, show which service called which, and say where the time
+went. Correlation Identifier, in the communication group, is the first step; the
+patterns here build on it.
+
+| Pattern | Source |
+|---------+--------|
+| [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] | microservices.io; W3C Trace Context; OpenTelemetry |
+| Log Aggregation | microservices.io |
 
 * Choosing a pattern
 

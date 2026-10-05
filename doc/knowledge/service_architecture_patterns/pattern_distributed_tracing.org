@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 32FE1EB9-653F-4E12-9474-406BB884C56A
+:END:
+#+title: Distributed Tracing
+#+description: Each request carries a trace id and a span id per hop, so the tree of calls one action caused can be rebuilt with timings.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:observability:tracing:opentelemetry:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: observability
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Distributed Tracing in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Each request carries a trace id for the whole action and a span id for each hop,
+and each hop records its span, so the tree of calls one action caused can be
+rebuilt with its timings. In ORE Studio =ores.telemetry= models the trace and
+span ids; no service uses them yet.
+
+* Also known as
+
+- /OpenTelemetry tracing/, after the standard most implementations follow.
+- /W3C Trace Context/, the header format: =traceparent= and =tracestate=.
+
+* Context
+
+An action fans out across services and workflow steps. A
+[[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] already lets a
+person find every log line of the action. They also need to know which call
+caused which, and where the time went.
+
+* Problem
+
+How does a person see which service called which for one action, and how long
+each hop took?
+
+* Forces
+
+- A flat set of log lines shows what happened, not who called whom.
+- Clocks on different hosts differ, so timestamps alone cannot order hops.
+- Every hop must take part, as with a correlation id.
+- Recording every span of every action costs storage, so a deployment samples.
+
+* Solution
+
+The origin starts a trace: a trace id for the action and a root span. Each call
+carries the trace id and the caller's span id in the =traceparent= header. The
+called service starts a span of its own whose parent is the caller's span, does
+its work, and records the span with its start, end and outcome. Every log line
+of the span carries the trace id and the span id. The spans of one trace, joined
+by their parent ids, rebuild the call tree.
+
+#+caption: Distributed Tracing: the Qt client starts trace T, and each service starts a span whose parent is the caller's.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_distributed_tracing.png]]
+
+Source: =[[./pattern_distributed_tracing.puml][pattern_distributed_tracing.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_distributed_tracing.puml=.
+
+The context a hop carries is small, and each hop leaves two kinds of record:
+
+#+caption: Distributed Tracing: the trace context on the wire, the span each hop records, and the log records that name both.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_distributed_tracing_context.png]]
+
+Source: =[[./pattern_distributed_tracing_context.puml][pattern_distributed_tracing_context.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_distributed_tracing_context.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed hop records its span with an error status and the error, so the trace shows where it failed. |
+| Timeouts | The caller's span ends with a timeout status; the callee's span, if it ever ends, shows how late it was. |
+| Retries | Each attempt is its own span under the same parent, so retries are visible as siblings. |
+| Idempotency | Does not apply. Trace and span ids never deduplicate work. |
+| Observability | This is the pattern's purpose: the call tree, the timings and the failing hop. |
+
+* Pitfalls
+
+- *A hop that does not propagate.* Its callees start new traces, and the tree
+  splits. The rule is the one for a correlation id: forward what arrived.
+- *Asynchronous work with no parent.* A workflow step or an event consumer runs
+  after the request has ended. It must take the stored trace context as its
+  parent, or link to it, or it starts a tree of its own.
+- *Sampling decided per hop.* If each service samples on its own, a trace has
+  holes. The origin decides, and the =flags= field carries the decision.
+- *A second id scheme.* Running a correlation id and a trace id that differ makes
+  two searches. Make the correlation id the trace id.
+
+* Security
+
+Trace and span ids grant nothing. A span must not record secrets: tokens,
+passwords, or the payload of a request. The =tracestate= header from outside is
+untrusted and must be bounded.
+
+* Resulting context
+
+- Benefits :: The call tree of an action, with the time of each hop and the hop
+  that failed. Logs and spans join on the trace id.
+- Liabilities :: Every service records spans and a collector stores them. Without
+  sampling, the cost grows with every request.
+
+* In ORE Studio
+
+- *The model.* =ores.telemetry= defines =trace_id=, =span_id=, =span_context=,
+  =span= and a =log_record= that follows the OpenTelemetry log data model.
+- *The plan.* [[id:07F05C2C-C4E0-404A-9A10-D5186B661315][Tracing: OpenTelemetry identifiers across Qt and NATS]]
+  captures the work: =traceparent= from Qt through every NATS hop, and a session
+  id.
+- *The first step.* [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]]
+  carries a correlation id through every hop, shaped as a W3C trace id, so this
+  pattern can reuse it.
+
+* Related patterns
+
+- [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the first step: the same propagation, with no tree and no timings.
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — a scheduled run is a trace whose root is the firing.
+
+* Sources
+
+- Chris Richardson, [[https://microservices.io/patterns/observability/distributed-tracing.html][Pattern: Distributed tracing]], microservices.io.
+- W3C, [[https://www.w3.org/TR/trace-context/][Trace Context]], Recommendation — the =traceparent= and =tracestate= headers.
+- [[https://opentelemetry.io/docs/specs/otel/trace/api/][OpenTelemetry Tracing API specification]] and the [[https://opentelemetry.io/docs/specs/otel/logs/data-model/][Logs Data Model]].
+- Benjamin H. Sigelman et al., /Dapper, a Large-Scale Distributed Systems Tracing Infrastructure/, Google Technical Report, 2010.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

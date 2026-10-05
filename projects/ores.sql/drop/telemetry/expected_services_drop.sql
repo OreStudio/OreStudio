@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,9 +18,4 @@
  *
  */
 
-\ir ./telemetry_logs_create.sql
-\ir ./telemetry_stats_functions_create.sql
-\ir ./nats_server_samples_create.sql
-\ir ./nats_stream_samples_create.sql
-\ir ./service_samples_create.sql
-\ir ./expected_services_create.sql
+drop table if exists ores_telemetry_expected_services_tbl;

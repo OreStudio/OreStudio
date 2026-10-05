@@ -259,15 +259,10 @@ describe('The people list', () => {
     it("names the same list as the deployment's own accounts for a system administrator", () => {
         const html = render(
             (client) => {
-                client.setQueryData(
-                    [
-                        'records',
-                        'people',
-                        'page',
-                        { offset: 0, limit: 15, search: '', sort: '', descending: false },
-                    ],
-                    { rows: [daniel, batch], total: 2 },
-                );
+                client.setQueryData(pageKey({ key: 'people' }, FIRST_PAGE), {
+                    rows: [daniel, batch],
+                    total: 2,
+                });
             },
             '/people',
             <Route path="/people" element={<PeoplePage mode="system-administration" />} />,

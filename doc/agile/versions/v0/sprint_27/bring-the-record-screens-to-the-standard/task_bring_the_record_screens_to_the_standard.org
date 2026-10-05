@@ -121,6 +121,10 @@ via its "Verifies task" field.
 | 7 | A commit took the local =vcpkg= submodule pointer | =vcpkg= | Accepted | Removed from the unpushed commit |
 | 8 | The classification index shows a Read-only tag, not the access mark | =ClassificationsPage.tsx= | Declined | The mark is about the person's permissions; an ORE list is read only by itself, and the index is an area page the standard does not govern |
 | 9 | Reorder has no icon | =ClassificationListPage.tsx= | Declined | No reorder icon is in the set; a kind's own action, like Derive a calendar, carries its word only |
+| 10 | Round 1: note keys can collide when a screen note and a server note share words | =RecordList.tsx= | Accepted | Keyed by position and text; a test draws two notes with the same words |
+| 11 | Round 1: no test covers a tab change dropping the other address parameters | =Tabs.tsx= | Accepted | =tabAddress= holds the rule; =Tabs.test.tsx= checks it and how a tab is read from the address |
+| 12 | Round 1: a filter value from the address that no choice names shows as all | =RecordList.tsx= | Accepted | Drawn as its own selected option; values are not dropped, because some choices load after the page |
+| 13 | Round 1: empty-page reset, row control clicks and refresh with a filter | =RecordList.tsx= | No change | The review found each safe as written |
 
 * Result
 

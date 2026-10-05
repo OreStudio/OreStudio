@@ -122,4 +122,24 @@ describe('RecordTable', () => {
         expect(render('/pets', seed)).toContain('tabindex="0"');
         expect(render('/pets', seed, false)).not.toContain('tabindex="0"');
     });
+
+    it('shows a filter value no choice names, so a filtered list does not look unfiltered', () => {
+        const html = render('/pets?f.kind=bogus', (client) => {
+            client.setQueryData(pageKey(PETS, { ...FIRST_PAGE, filters: { kind: 'bogus' } }), one);
+        });
+        expect(html).toMatch(/<option value="bogus" selected="">bogus<\/option>/);
+    });
+
+    it('draws two notes that say the same thing', () => {
+        const html = render('/pets', (client) => {
+            client.setQueryData(pageKey(PETS, FIRST_PAGE), {
+                ...one,
+                notes: [
+                    { tone: 'info', text: 'Same words.' },
+                    { tone: 'info', text: 'Same words.' },
+                ],
+            });
+        });
+        expect(html.match(/Same words\./g)).toHaveLength(2);
+    });
 });

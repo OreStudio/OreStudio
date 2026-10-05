@@ -174,6 +174,18 @@ export function auditColumns<Row>(
     ];
 }
 
+/**
+ * A filter value from the address that is not among the filter's choices,
+ * such as a hand-edited link, drawn as its own option so the select shows
+ * the filter the list is applying rather than "all".
+ */
+function strayChoice(filter: Extract<ListFilter, { kind: 'choice' }>, value: string | undefined) {
+    if (value === undefined || filter.choices.some((choice) => choice.value === value)) {
+        return null;
+    }
+    return <option value={value}>{value}</option>;
+}
+
 /** The page a list shows, held in the address so a link and Back restore it. */
 export function useListState(filters: readonly ListFilter[] = []): {
     readonly offset: number;
@@ -458,6 +470,7 @@ export function RecordTable<Row>({
                                 onChange={(event) => state.filter(candidate.id, event.target.value)}
                             >
                                 <option value="">{candidate.all}</option>
+                                {strayChoice(candidate, state.filters[candidate.id])}
                                 {candidate.choices.map((choice) => (
                                     <option key={choice.value} value={choice.value}>
                                         {choice.label}
@@ -499,8 +512,8 @@ export function RecordTable<Row>({
                     </div>
                 </details>
             </div>
-            {[...notes, ...(data?.notes ?? [])].map((note) => (
-                <div key={note.text} className="border-b border-line p-3">
+            {[...notes, ...(data?.notes ?? [])].map((note, index) => (
+                <div key={`${index}:${note.text}`} className="border-b border-line p-3">
                     <Notice tone={note.tone}>{note.text}</Notice>
                 </div>
             ))}

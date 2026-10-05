@@ -6367,7 +6367,64 @@ def _cmd_site_page(paths, skip_index: bool = False):
             print(line)
     if proc.returncode != 0:
         print(proc.stderr, file=sys.stderr)
-    return proc.returncode
+        return proc.returncode
+    out_root = PROJECT_ROOT / _SITE_OUTPUT
+    copied = 0
+    for page in resolved:
+        html = out_root / Path(page).relative_to(PROJECT_ROOT).with_suffix(".html")
+        copied += _publish_page_images(html, out_root)
+    if copied:
+        print(f"\U0001f5bc️  copied {copied} image(s)")
+    return 0
+
+
+# The extensions the full build's site:images project publishes.
+_SITE_IMAGE_SRC = re.compile(
+    r'src="([^"?#]+\.(?:png|jpe?g|gif|svg))"', re.IGNORECASE)
+
+
+def _site_page_images(html: Path, out_root: Path):
+    """The (source, destination) pairs of the images a published page shows.
+
+    The page names each image by its site path, either rooted at /OreStudio/ or
+    relative to the page, and the site mirrors the repository layout, so the
+    source is the same path under the project root. A reference that leaves the
+    site, or names a file the repository does not hold, is skipped."""
+    pairs = []
+    for ref in _SITE_IMAGE_SRC.findall(html.read_text(errors="replace")):
+        if "://" in ref:
+            continue
+        if ref.startswith("/OreStudio/"):
+            dest = out_root / ref[len("/OreStudio/"):]
+        elif ref.startswith("/"):
+            continue
+        else:
+            dest = html.parent / ref
+        dest = Path(os.path.normpath(dest))
+        try:
+            rel = dest.relative_to(out_root)
+        except ValueError:
+            continue
+        src = PROJECT_ROOT / rel
+        if src.is_file():
+            pairs.append((src, dest))
+    return pairs
+
+
+def _publish_page_images(html: Path, out_root: Path) -> int:
+    """Copy the images a published page shows, when the copy is missing or
+    older than its source. org-publish publishes images in a separate project,
+    so a single-page publish would otherwise leave them out."""
+    if not html.is_file():
+        return 0
+    copied = 0
+    for src, dest in _site_page_images(html, out_root):
+        if dest.exists() and dest.stat().st_mtime >= src.stat().st_mtime:
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dest)
+        copied += 1
+    return copied
 
 
 def _cmd_site_show(path, raw=False, width=100):

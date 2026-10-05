@@ -11,7 +11,8 @@
 
 * Summary
 
-ORE Studio is a set of services that talk over NATS, share no tables, and act for
+ORE Studio is a set of services that talk over
+[[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]], share no tables, and act for
 many tenants and parties. The problems that come from this are not new. Every
 microservice platform meets them, and the literature names the solutions:
 Token Exchange, Saga, Idempotent Receiver, Bulkhead. This hub is the pattern

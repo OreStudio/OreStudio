@@ -8,7 +8,7 @@
 #+filetags: :keep_the_prototypes_in_git:sprint_27:v0:
 #+owner: marco
 #+branch: feature/merge-the-prototype-branches
-#+pr:
+#+pr: 2676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2676][#2676]] | [web] Keep the journey prototypes on main |
 
 * Review
 

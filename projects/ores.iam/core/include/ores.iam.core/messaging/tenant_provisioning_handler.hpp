@@ -658,9 +658,9 @@ private:
      */
     static constexpr std::chrono::seconds step_publish_timeout{7200};
 
-    /// The template image keys of the seeded administrator pictures. The
-    /// avatar seeds write the system-tenant rows under these codes, and the
-    /// attach_photos step copies each by code.
+    /// The image codes of the default administrator pictures. The
+    /// assets.system_avatars dataset publishes rows under these codes, and
+    /// the attach_photos step binds each picture by code.
     static constexpr std::string_view super_admin_avatar_key{"super_admin_avatar"};
     static constexpr std::string_view tenant_admin_avatar_key{"tenant_admin_avatar"};
 
@@ -1687,6 +1687,9 @@ private:
                                  "Attached the tenant administrator's picture during provisioning",
                                  images);
 
+        // The system tenant needs no copy: its published row is the tenant's
+        // own picture, and copy_template_image finds it by code, so the
+        // super administrators share that one row deliberately.
         auto sys_ctx = tenant_context::with_system_tenant(ctx_);
         ores::iam::service::account_service system_accounts(sys_ctx);
         boost::uuids::string_generator parse;

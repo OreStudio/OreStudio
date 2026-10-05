@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 8826DA01-FF39-4DDE-B3BB-3768ABEF691E
+:END:
+#+title: Task: Remove the ores.workspace component
+#+description: Delete ores.workspace, the ores.shell workspace part and scripts, the workspace SQL schema, grants and tenant seed, the live workspace utility functions, and the generated web protocol.
+#+type: task
+#+level: s1
+#+filetags: :remove_workspaces:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.workspace and every trace of it are gone: no component, service, schema, function, grant, script, protocol or diagram names a workspace in the data sense.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- projects/ores.workspace, projects/ores.shell/workspace and the shell workspaces scripts are deleted and nothing builds or deploys them.
+- projects/ores.sql has no workspace schema, no ores_workspace grants, no Live workspace seed in the tenant provisioner, and no ores_utility_live_workspace_id_fn or ores_workspace_validate_fn.
+- ores.utility has no live_workspace_id, and ores.web has no generated workspace protocol.
+- The measurement script in evidence/ reports zero for every workspace count; the remaining hits are unrelated uses of the word (npm and GitHub workspaces, the session workspace root).
+- The database recreates, the services start, the build is green and ctest passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

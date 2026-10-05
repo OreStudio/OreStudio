@@ -85,12 +85,12 @@ workspace activation in the Qt client.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Trading instrument codegen pilot landed (equity_position_instrument); the three instrument-port tasks have been re-parented to the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story in Sprint 25 (see Decisions). |
-| Waiting on    | Nothing directly.                       |
-| Next          | Continue workspace-specific follow-ups (audit-driven items); instrument conversions now track in their own story. |
-| Last touched  | 2026-08-08                               |
+| Now           | Nothing. Abandoned; see Result. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05 |
 
 * Acceptance
 
@@ -121,6 +121,14 @@ workspace activation in the Qt client.
 | [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | DONE | 2026-08-04 | 2026-08-05 | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
 
 * Decisions
+
+- *Abandoned* (2026-10-05). Workspaces are removed, not finished. Section 13 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]] replaced them with
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]es and virtual books, and trading dropped its
+  workspaces in PR #2620. No caller selects a workspace other than Live:
+  ores.web never calls =setWorkspace=, no service calls
+  =nats_client::with_workspace_id=, and the Qt client is gone. The removal
+  tracks in [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]]. The audit and the inheritance query fix stay as history.
 
 - Three pre-existing tasks are left in place under their current
   parent stories rather than re-parented here (re-parenting would

@@ -43,9 +43,29 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measure the tree with a script a reviewer can rerun, check who still
+selects a workspace other than Live, and turn the story's proposed
+sequence into tasks. Settle the story it conflicts with,
+[[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]].
+
+The order follows one rule: a column goes before the function that
+defaults or validates it. =ores_utility_live_workspace_id_fn= is the
+default and =ores_workspace_validate_fn= the insert check of every
+=workspace_id= column, so the columns go first and the component, which
+owns those functions, goes last.
+
+1. [[id:96B95473-3D50-4FF7-9584-FB65BB3C967A][Drop the workspace column from every entity]]. Models,
+   profiles, SQL, repositories, generated TypeScript, and the hand-written
+   resolution code in refdata, analytics, reporting and marketdata.
+2. [[id:21D83315-FD24-423E-9882-A9067CB38582][Remove the workspace from the request context]]. Database
+   context, NATS headers and client, service request context, ores.web
+   client. Needs step 1, because the generated repositories read the
+   context's workspace.
+3. [[id:2E4E86B0-D873-492A-8048-56DC1A396163][Remove the has_workspace_id feature from codegen]]. Needs
+   step 1, so that no model still sets the feature.
+4. [[id:8826DA01-FF39-4DDE-B3BB-3768ABEF691E][Remove the ores.workspace component]]. Needs steps 1 and 2:
+   the component owns the column functions and the header the context
+   reads.
 
 * Measurements
 
@@ -59,7 +79,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tables with a =workspace_id= column | refdata 26, analytics 3, reporting 2, marketdata 1, workspace 1; trading 0 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| Models that set =has_workspace_id= true | 4: analytics 2, marketdata 1, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| Models bound to a profile that defaults it true | 30: refdata 26, analytics 3, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| Files naming =workspace_id=, outside ores.workspace | refdata 133, sql 43, web 35, codegen 29, analytics 17, modeling 14, marketdata 12, reporting 11, nats 4, service 2, database 2, shell 2, trading 2 (stale class diagram), utility 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| =ores.workspace= component files | 81 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| ores.shell workspace part and script files | 23 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| Callers that select a workspace other than Live, outside tests | 0 (=setWorkspace= in ores.web; =with_workspace_id= and =with_workspace_resolution= in C++) | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
 
 * Notes
 
@@ -73,6 +99,20 @@ Points from the review of the scaffold (PR 2615) for this task to settle:
 - Record the command and commit behind every inventory count in the
   Measurements section; the trading counts fall as the trade shape story
   lands.
+
+Settled while measuring:
+
+- Nothing keeps work apart with workspaces. No surface selects a workspace
+  other than Live: ores.web defines =setWorkspace= and never calls it, no
+  service calls =with_workspace_id= or =with_workspace_resolution=, and the
+  Qt client that did is gone. Every row a service writes lands in Live,
+  so dropping the column loses no data a user can see.
+- The trading part is done: PR #2620 removed the workspace from every
+  trading entity, so the story waits on nothing. Two trading class
+  diagrams still show =workspace_id= members; step 4 sweeps them.
+- The five =ores.dsh_kanban= hits are test fixtures that quote old task
+  documents, and the GitHub workflow, npm and session hits use the word
+  in another sense. They stay.
 
 * Test Scenarios
 
@@ -98,3 +138,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The removal is measured and sequenced into four tasks, each its own PR
+in the order of the Plan. Nothing still selects a workspace other than
+Live, and trading already dropped its workspaces, so the story is
+unblocked. [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] is abandoned, with
+its two open dependents: the ores.workspace model drift fix and the
+ores.workspace user journeys extraction.

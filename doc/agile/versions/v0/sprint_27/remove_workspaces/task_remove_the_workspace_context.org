@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 21D83315-FD24-423E-9882-A9067CB38582
+:END:
+#+title: Task: Remove the workspace from the request context
+#+description: Remove the workspace from the database context, the NATS headers and client, the service request context and the ores.web client.
+#+type: task
+#+level: s1
+#+filetags: :remove_workspaces:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No request, session or database context carries a workspace. The X-Workspace-Id and X-Workspace-Resolution headers are gone from every client and service.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- ores.database context has no workspace_id or resolution chain.
+- ores.nats has no x_workspace_id or x_workspace_resolution header and nats_client has no with_workspace_id or with_workspace_resolution.
+- ores.service request_context reads no workspace header, and its tests no longer set one.
+- The ores.web wire-protocol client sends no workspace header and exports no WorkspaceContext or LIVE_WORKSPACE_ID.
+- The build is green, and ctest and the ores.web tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

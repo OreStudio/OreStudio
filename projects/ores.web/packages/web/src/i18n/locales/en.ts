@@ -83,6 +83,7 @@ export const en: SourceCatalogue = {
             roles: 'Roles',
             refdata: 'Reference data',
             access: 'My access',
+            profile: 'My profile',
         },
     },
 
@@ -468,6 +469,124 @@ export const en: SourceCatalogue = {
         nobody: 'nobody',
         unknown: 'unknown',
         none: 'none',
+    },
+
+    /*
+     * The profile screen: one page with a panel per record, so each panel
+     * saves on its own and reports on its own.
+     */
+    profile: {
+        title: {
+            mine: 'My profile',
+            other: "Change someone's details",
+        },
+        lead: {
+            mine: 'Your photo, your name, your job title and how colleagues reach you. A panel you cannot change says why.',
+            other: "Correct a colleague's profile and contact details. You are signed in as {signedIn} and editing {person}.",
+        },
+        version: 'Record version {version}.',
+        search: {
+            title: 'Find the person',
+            lead: 'Every account of this tenant, filtered as you type. Pick the person whose record the panels show.',
+            placeholder: 'Username or name',
+            mine: 'My profile',
+            none: 'No account matches.',
+            more: 'Type to narrow the list.',
+            failed: 'The account list could not be read. {reason}',
+        },
+        identity: {
+            title: 'Photo and identity',
+            whySelf: 'You may change your own name, job title and photo.',
+            whyAdmin: 'You hold iam::accounts:update in this tenant.',
+            whyReadOnly: 'Read-only for you: you do not hold iam::accounts:update in this tenant.',
+            fullName: 'Full name',
+            jobTitle: 'Job title',
+            username: 'Username',
+            usernameWhy: 'Set when the account was made, and never changed here.',
+            signInAddress: 'Sign-in address',
+            signInAddressWhy: 'The address you sign in with. An administrator owns it.',
+            accountType: 'Account type',
+            accountTypeWhy: 'The deployment and the seed profile set this. No screen changes it.',
+            noPhoto: 'No photo yet',
+            choosePhoto: 'Choose a photo',
+            replacePhoto: 'Replace the photo',
+            reporting: 'Reporting line',
+            reportsTo: 'Reports to {name}.',
+            reportsToUnknown:
+                'This screen cannot name the person here, so the recorded identifier is shown.',
+            noLine: 'No reporting line is recorded.',
+            propose: 'Propose a change',
+            proposeWhy: 'This screen cannot send a proposal yet.',
+            proposeApprovers: "The person's manager or a tenant administrator approves a change.",
+            proposeGap:
+                'The line does not change while a proposal waits, and nothing in the platform holds an approval today. The Draw the reporting line journey owns the queue, the notification and the decision.',
+            missing: 'No account of this tenant has that username.',
+            readRefused: 'The server did not let this screen read the account: {reason}',
+            readGap:
+                'The fields are not drawn and this panel offers no save, because a write with empty fields would clear them. A tenant administrator can change your details, or give you the read.',
+        },
+        photo: {
+            pick: 'The image is uploaded now and set when you save the panel.',
+            rule: 'The server accepts {formats}, up to {size} MB, at least {width}×{height}.',
+            uploading: 'Uploading...',
+            preview: 'At the size other screens show it',
+            cancel: 'Cancel',
+            use: 'Use this photo',
+            failed: 'The server refused the image: {message}',
+        },
+        contact: {
+            title: 'Contact details',
+            whySelf: 'You may change your own contact record.',
+            whyAdmin: 'You hold iam::account_contact_informations:write in this tenant.',
+            whyReadOnly:
+                'Read-only for you: you do not hold iam::account_contact_informations:write in this tenant.',
+            noRecord: 'This account has no contact record yet. The first save creates it.',
+            noRecordShort: 'No record yet',
+            streetLine1: 'Street',
+            streetLine2: 'Street, second line',
+            city: 'City',
+            state: 'State or region',
+            postalCode: 'Postcode',
+            country: 'Country code',
+            countryHint: 'The code of the country, such as GB.',
+            phone: 'Telephone',
+            email: 'Contact address',
+            emailHint:
+                'Where colleagues reach you. This is not the sign-in address ({email}), which an administrator owns.',
+            emailHintUnknown: 'Where colleagues reach you. It is not the sign-in address.',
+            webPage: 'Web page',
+        },
+        access: {
+            title: 'Sign-in and access',
+            lead: 'Read-only here. The screens that own these records are named below.',
+            roles: 'Roles you hold',
+            none: 'You hold no role yet.',
+            protect: 'Protect my account',
+            protectWhy: 'Your password, your sign-ins and your sessions:',
+            know: 'Know what I may do',
+            knowWhy: 'What your roles let you do:',
+            failed: 'Your access could not be read, so the administrator panels are not offered. {reason}',
+        },
+        save: {
+            identity: 'Save identity',
+            contact: 'Save contact details',
+            why: 'Why is the record changing?',
+            chooseReason: 'Choose a reason',
+            commentary: 'Commentary',
+            commentaryHint: 'Optional for this reason.',
+            commentaryRequired: 'This reason needs a commentary.',
+        },
+        saved: {
+            done: 'Saved.',
+            version: 'Saved. The record is now at version {version}.',
+            failed: 'The write failed.',
+        },
+        refused: {
+            notYours:
+                'The server refused the write: a field here is not yours to change. A tenant administrator owns your username and your sign-in address.',
+            recordChanged:
+                'The record may have changed since this panel read it. Reload the panel and try again.',
+        },
     },
 
     entity: {

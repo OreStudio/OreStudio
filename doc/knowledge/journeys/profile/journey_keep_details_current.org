@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member keeps their address, telephone and web page up to date.
@@ -115,6 +115,18 @@ operation exists and the caller may not use it.
    change the first through =iam.v1.accounts.update-email=, but not the second.
    The screen must label them, so the member does not expect one to change the
    other.
+4. *No self read.* The account read needs =iam::accounts:read=, which the
+   default *Viewer* role does not hold, so a plain member's read of their own
+   account is refused. The identity panel beside this one draws the refusal
+   instead of fields. The contact record needs no such permission, so this
+   journey's own panel is unaffected. (Reconnaissance, 2026-10-05.)
+5. *The self write is refused on a tenant with accounts.* Step 5's save cannot
+   land: the contact insert performs the account version touch, and the
+   generated insert trigger validates =modified_by= only after the version
+   replace has retired the actor's own row, so a member writing their own
+   record raises =Invalid modified_by= (23503). Captured at
+   [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][A self write is refused on a
+   tenant with accounts]]. (End-to-end run, 2026-10-05.)
 
 * Related journeys
 

@@ -21,10 +21,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router';
-import type { SessionMode } from '@ores/wire-protocol/browser';
+import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
-import { AccountPicture } from '../ui/Images.js';
+import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
 import { menuFor, modeKey } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
@@ -63,6 +63,14 @@ export interface AppShellProps {
      */
     readonly width?: ShellWidth;
     readonly onSignOut: () => void;
+    /**
+     * The signed-in person's own account, when the shell could read it.
+     *
+     * The menu's trigger shows their name and their picture from it. A member
+     * may not hold the read that names the image, so the prop is optional and
+     * the trigger falls back to the username and the initials.
+     */
+    readonly self?: Account | null;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
     readonly children: ReactNode;
@@ -75,6 +83,7 @@ export function AppShell({
     mode,
     width = 'column',
     onSignOut,
+    self,
     serverVersion,
     children,
 }: AppShellProps): ReactNode {
@@ -127,6 +136,7 @@ export function AppShell({
                             tenantName={tenantName}
                             partyName={partyName}
                             onSignOut={onSignOut}
+                            self={self}
                         />
                     </div>
                 </div>
@@ -156,21 +166,28 @@ export function AppShell({
  * signing out last. The menu is always in the page and hidden while closed,
  * so it is one element whether open or not, and Escape or a click elsewhere
  * closes it.
+ *
+ * The header's trigger shows the person's name and picture once the shell has
+ * read their own account, and the username and the initials until then.
  */
 function AccountMenu({
     username,
     tenantName,
     partyName,
     onSignOut,
+    self,
 }: {
     readonly username: string;
     readonly tenantName: string;
     readonly partyName: string | undefined;
     readonly onSignOut: () => void;
+    readonly self: Account | null | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
+    const name = self != null && self.fullName !== '' ? self.fullName : username;
+    const photo = self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -200,11 +217,11 @@ function AccountMenu({
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-label={t('nav.accountMenu')}
-                title={username}
+                title={name}
                 onClick={() => setOpen(!open)}
                 className="flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
-                <AccountPicture username={username} name={username} />
+                <PersonPicture username={username} name={name} photo={photo} />
             </button>
             <div
                 role="menu"
@@ -212,9 +229,12 @@ function AccountMenu({
                 className="absolute right-0 z-30 mt-2 w-64 rounded-md border border-line bg-surface-overlay p-2 shadow-xl"
             >
                 <div className="flex items-center gap-3 border-b border-line px-2 pb-3 pt-1">
-                    <AccountPicture username={username} name={username} />
+                    <PersonPicture username={username} name={name} photo={photo} />
                     <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-ink">{username}</div>
+                        <div className="truncate text-sm font-medium text-ink">{name}</div>
+                        {name !== username && (
+                            <div className="truncate text-xs text-ink-faint">@{username}</div>
+                        )}
                         <div className="truncate text-xs text-ink-muted">{tenantName}</div>
                         {partyName !== undefined && partyName !== '' && (
                             <div className="truncate text-xs text-ink-faint">{partyName}</div>
@@ -222,6 +242,9 @@ function AccountMenu({
                     </div>
                 </div>
                 <div className="space-y-0.5 border-b border-line py-1.5">
+                    <Link to="/profile" role="menuitem" className={item} onClick={close}>
+                        {t('shell.menu.profile')}
+                    </Link>
                     <Link to="/access" role="menuitem" className={item} onClick={close}>
                         {t('shell.menu.access')}
                     </Link>
@@ -245,5 +268,29 @@ function AccountMenu({
                 </div>
             </div>
         </div>
+    );
+}
+
+/**
+ * The person's picture: their own account's image when the shell read it, and
+ * the picture route by username otherwise.
+ *
+ * The two are not the same read. The picture route asks for the account read
+ * too, so a person who may not hold it reads their own initials either way.
+ */
+function PersonPicture({
+    username,
+    name,
+    photo,
+}: {
+    readonly username: string;
+    readonly name: string;
+    /** The image of the account the shell read, null for no image, undefined for no read. */
+    readonly photo: string | null | undefined;
+}): ReactNode {
+    return photo === undefined ? (
+        <AccountPicture username={username} name={name} />
+    ) : (
+        <Avatar name={name} src={photo} />
     );
 }

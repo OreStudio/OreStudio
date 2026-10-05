@@ -21,6 +21,8 @@
 
 import { useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
@@ -47,12 +49,13 @@ import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
+import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
 import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
-import type { SessionView } from '@ores/wire-protocol/browser';
+import type { Account, SessionView } from '@ores/wire-protocol/browser';
 
 /**
  * The route table, and the gate that keeps an installation on its setup screen.
@@ -102,6 +105,13 @@ export interface AppRoutesProps {
     readonly signUpJourney: ReactNode;
     /** Whether that journey is running, which keeps the browser on its rail. */
     readonly journeyInProgress: boolean;
+    /**
+     * The signed-in person's own account, when the wiring has read it.
+     *
+     * The shell's account menu shows their name and picture from it, and the
+     * profile screen is the one place that changes both.
+     */
+    readonly self?: Account | null;
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
@@ -116,12 +126,13 @@ export function AppRoutes({
     newPartyJourney,
     signUpJourney,
     journeyInProgress,
+    self,
     onSignIn,
     onChooseParty,
     onSignOut,
     onRetryBootstrap,
 }: AppRoutesProps): ReactNode {
-    const shell: ShellActions = { onSignOut };
+    const shell: ShellActions = { onSignOut, self: self ?? null };
     const { t } = useTranslation();
 
     if (gate.status === 'loading' || session.status === 'loading') {
@@ -217,6 +228,18 @@ export function AppRoutes({
                 path="/security"
                 element={signedIn(gate.version, session, shell, (view) => (
                     <SecurityPage session={view} />
+                ))}
+            />
+            {/*
+             * The member's own profile, and the administrator's way into
+             * somebody else's. It is one screen because it is one record: the
+             * panels are the ones the person themselves sees, and the search
+             * above them is the only difference.
+             */}
+            <Route
+                path="/profile"
+                element={signedIn(gate.version, session, shell, (view) => (
+                    <ProfilePage session={view} />
                 ))}
             />
             {/*
@@ -410,11 +433,25 @@ export function ConnectedApp(): ReactNode {
     const server = useJourneyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
+    const username = session.status === 'authenticated' ? session.session.username : '';
+    /*
+     * The signed-in person's own account: the shell's menu shows their name
+     * and picture from it, and the profile screen reads the same answer for
+     * its panels. A member may not hold the account read the route asks for,
+     * so a refused answer is left alone here; the shell falls back to the
+     * username and the initials, and the profile screen states the refusal.
+     */
+    const account = useQuery({
+        queryKey: ['account', username],
+        queryFn: () => api.account(username),
+        enabled: username !== '',
+    });
 
     return (
         <AppRoutes
             gate={gate}
             session={session}
+            self={account.data ?? null}
             journey={
                 <FirstRunJourney
                     server={server}
@@ -474,9 +511,10 @@ export function ConnectedApp(): ReactNode {
  * An unauthenticated visitor is sent to the sign-in screen rather than told
  * they may not look: they may, once they have signed in.
  */
-/** What the shell around every signed-in screen can do. */
+/** What the shell around every signed-in screen knows and can do. */
 interface ShellActions {
     readonly onSignOut: () => void;
+    readonly self: Account | null;
 }
 
 function signedIn(
@@ -505,6 +543,7 @@ function signedIn(
             width={width}
             serverVersion={version}
             onSignOut={shell.onSignOut}
+            self={shell.self}
         >
             {screen(view)}
         </AppShell>

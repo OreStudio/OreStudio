@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:journeys:profile:v0:sprint_26:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-05
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The requirements are settled, the screen prototype is built, and its verdict is recorded: one page with a save per panel, and a reporting line the person proposes and their superior or an administrator approves. No profile code has changed. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Schedule the implementation from the acceptance below: the two self-service subjects and the image upload first, because the screen cannot keep its promises without them, then the screen itself on the setup journeys' runtime. |
-| Last touched  | 2026-09-30                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
 
 * Acceptance
 
@@ -70,7 +70,7 @@ The three Profile journeys run in =ores.web= against the real server. A member s
 | [[id:4615E18E-96D8-4AFD-8FBA-241A441EA335][Return to a setup journey in progress]] | DONE | 2026-10-01 | 2026-10-01 | A setup journey's position is only in the browser, so leaving the tenant creation window loses it and nothing offers the way back. The way back is the tenant list, which needs the provisioning run to name the tenant it acts on. |
 | [[id:794C3E20-2A54-46BB-AECF-BE0410E3D4E8][Add the profile self-service subjects]] | DONE | 2026-10-04 | 2026-10-04 | Add iam.v1.accounts.update-self and iam.v1.account_contact_informations.update-self, each restricted to the caller's own account and to the fields a member owns, so a member can write their own profile and contact record. |
 | [[id:621F9074-0530-4E97-AE7C-46B95615F686][Upload a profile image]] | DONE | 2026-10-04 | 2026-10-05 | Add the upload path into ores.assets that stores an image and returns its id, and state the accepted formats and size once, so the picker and the server enforce one rule. |
-| [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the profile screen]] | BACKLOG | | | Build the three Profile journeys as one screen in ores.web on the journey runtime: the two writable panels with a save and a reason each, the read-only sign-in summary, the photo picker on the upload path, and the reporting-line proposal that states who approves. |
+| [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the profile screen]] | DONE | 2026-10-05 | 2026-10-05 | Build the three Profile journeys as one screen in ores.web on the journey runtime: the two writable panels with a save and a reason each, the read-only sign-in summary, the photo picker on the upload path, and the reporting-line proposal that states who approves. |
 
 * Decisions
 
@@ -233,6 +233,45 @@ The three Profile journeys run in =ores.web= against the real server. A member s
   [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] and
   [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]], so the
   profile screen carries it as a summary with the reason stated on it.
+- *The two platform defects the end-to-end run found are captured, not fixed
+  here.* The member's own saves are refused by the generated insert trigger's
+  ordering, and an upload over the message fabric's payload cap cannot reach
+  the validator; neither is in this branch's diff, so both go to the product
+  backlog for triage: [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][A self write
+  is refused on a tenant with accounts]] and
+  [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload
+  cap cannot reach the validator]]. (End-to-end run, 2026-10-05.)
+- *An upload larger than 1 MB travels over HTTP storage, not the message
+  fabric.* The 1 MB payload cap silently narrows the 2 MB the picker and the
+  validator state, so the bytes of a large upload leave the request and reply
+  fabric and travel over the storage surface instead. (Product owner,
+  2026-10-05.)
+
+* Result
+
+Closed 2026-10-05. The screen, its routes and its wire contract are built and
+reviewed, and the end-to-end run over the real stack proves everything the
+branch owns: the administrator's write to a colleague's record passes — the
+picker's read, the account read, the profile write with its unset fields
+echoed — and so do the picture byte round trip, the member's reads, the read
+gap's refusal, the grants read, the upload policy, and the refusal of the
+administrator's route. 67 checks ran; 29 failed, every one of them traced to
+the two platform defects the Decisions record: the member's own saves are
+refused, so the member's picture and contact record never land, and the
+administrator's checks that read them cannot pass. The one direct
+administrator failure is the same self-write defect: the administrator writing
+their own contact record.
+
+The two defects are not fixed here because neither is in this branch's diff.
+The member's own saves — =PUT /api/me/profile= and =PUT
+/api/me/contact-information= — are refused with "The write failed." on any
+tenant that holds accounts: the generated insert trigger validates
+=modified_by= after the version replace has retired the actor's own row. An
+image over roughly three quarters of a megabyte dies in the transport (http
+503) before the validator can judge it. Both are captured in the inbox for
+triage, and acceptance bullet 1 is met for the administrator and blocked for
+the member until they land. The raw output is
+=evidence/profile_journeys_run.txt= beside the task.
 
 * Out of scope
 

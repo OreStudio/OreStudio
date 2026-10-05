@@ -45,6 +45,7 @@ export type { Uuid, WireTimestamp } from './primitives.js';
 export {
     ACCOUNT_TYPES,
     accountAccessSchema,
+    accountContactInformationSchema,
     accountPageSchema,
     accountSignInsSchema,
     accountSchema,
@@ -72,6 +73,7 @@ export {
 export type {
     Account,
     AccountAccess,
+    AccountContactInformation,
     AccountPage,
     AccountSignIns,
     AccountType,
@@ -134,6 +136,35 @@ export type {
 // Subjects, so a browser-side module can name one without importing the
 // transport that would know how to reach it.
 export { SUBJECTS } from './operations.js';
+
+// The result as a form reads it: the outcome and code, and the field failures
+// a profile panel branches on.
+export { decidedResultSchema, fieldFailureSchema } from './operations.js';
+export type { DecidedResult } from './operations.js';
+
+// The profile screen's answers, as the BFF serves them: the writes' results
+// and records, and the contact read. The request shapes ride along so the
+// api client can type what it sends.
+export {
+    accountWriteViewSchema,
+    claimedContactWriteSchema,
+    contactViewSchema,
+    contactWriteSchema,
+    contactWriteViewSchema,
+    profileWriteSchema,
+} from './profile-operations.js';
+export type {
+    AccountWriteView,
+    ClaimedContactWrite,
+    ContactView,
+    ContactWrite,
+    ContactWriteView,
+    ProfileWrite,
+} from './profile-operations.js';
+
+// The upload and the rule it must satisfy, as the picker reads them.
+export { imageUploadPolicyViewSchema, imageUploadViewSchema } from './entities/image.js';
+export type { ImageUploadPolicy, ImageUploadView } from './entities/image.js';
 
 // The starting-point read, so the browser parses what the BFF served with the
 // definition the server serialised it from.

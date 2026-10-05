@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator corrects a colleague's profile, photo and contact details.
@@ -129,6 +129,11 @@ both writes carry the shared change intent.
    the screen states who decides and the line does not move.
    [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] records the same gap and owns the decision.
    (Product owner, 2026-09-30.)
+5. *No read for the member on this screen.* This screen reads the account
+   through =iam.v1.accounts.get=, which needs =iam::accounts:read=. The
+   administrator holds it; a plain member does not. On the member's side of the
+   same screen the panels that need the account draw the refusal instead of
+   fields. (Reconnaissance, 2026-10-05.)
 
 * Related journeys
 

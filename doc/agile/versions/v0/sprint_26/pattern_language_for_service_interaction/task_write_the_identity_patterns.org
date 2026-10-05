@@ -7,41 +7,50 @@
 #+level: s1
 #+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-pattern-document-type-and-hub
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A design that needs a service to act as an identity can name an identity
+pattern and link one page, with its failure handling, pitfalls and sources.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
 
--
+- Six pattern pages in the identity group: Access Token, Client Credentials,
+  Token Relay, Token Exchange, Grant Management, and the composite Scheduled
+  Work Acting as a Tenant.
+- Each page has every section of the contract, a diagram, and at least one
+  authoritative source.
+- The hub links each page from the identity group.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffold each page with =compass add pattern --pattern-group identity=, which
+also tests the new verb. Take the facts from the existing pages: the auth
+patterns guide, internal actor impersonation, anatomy of a service, the token
+settings in =ores.iam.core=, and the reporting design. Put each fact where the
+type contract says it belongs: the mechanism on the pattern page, the use on
+the architecture page.
 
 * Measurements
 
@@ -83,3 +92,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Six identity patterns are written, each with a sequence diagram and its
+sources: RFC 7519, 6749, 6750, 7517, 7009 and 8693, the OpenID Grant Management
+draft, microservices.io, Microsoft's On-Behalf-Of flow, Spring Cloud Gateway,
+Newman and Madden. The pitfalls record the failures ORE Studio has met: the
+empty result of a service identity reading party data, the RS256 mismatch at the
+edge, the impersonation token that expired during a poll, and the token minted
+before the service's subjects existed.
+
+The composite, Scheduled Work Acting as a Tenant, states what the combination
+adds: no token in durable state, one cache key per run, and a lapse that
+suspends the schedule. The hub's identity group links all six.

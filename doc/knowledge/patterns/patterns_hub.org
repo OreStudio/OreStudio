@@ -49,14 +49,18 @@ the caller's, the service's own, or one exchanged for a purpose. Work that
 starts from a schedule has no caller, and the composite pattern in this group
 covers it.
 
+Read Access Token first, then Client Credentials and Token Relay, which are the
+two ways a call carries a token it already has. Token Exchange and Grant
+Management come next, for an identity no call carries. The composite comes last.
+
 | Pattern | Source |
 |---------+--------|
-| Access Token | microservices.io; RFC 7519 |
-| Client Credentials | RFC 6749, section 4.4 |
-| Token Relay | RFC 8693, delegation semantics |
-| Token Exchange | RFC 8693 |
-| Grant Management | OpenID Foundation, Grant Management for OAuth 2.0 |
-| Scheduled Work Acting as a Tenant (composite) | the three patterns above it |
+| [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] | microservices.io; RFC 7519 |
+| [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] | RFC 6749, section 4.4 |
+| [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] | RFC 8693, delegation semantics |
+| [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] | RFC 8693 |
+| [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] | OpenID Foundation, Grant Management for OAuth 2.0 |
+| [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] (composite) | the three patterns above it |
 
 ** The communication group
 

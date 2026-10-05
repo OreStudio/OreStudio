@@ -1,0 +1,40 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Token Exchange: a service trades a token it holds for one fit for the next call
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+
+participant "a service" as svc
+participant "IAM\n(the issuer)" as iam
+participant "a target service" as tgt
+
+svc -> iam : exchange\n(subject token, or a grant;\nthe actor: the service's own token;\nthe audience and the scope wanted)
+iam -> iam : may this actor exchange for this subject?
+iam -> iam : narrow the permissions to the scope asked;\nset a short lifetime
+iam -> iam : record the issue
+iam --> svc : new token\n(sub: the subject; act: the service;\naud: the target; short expiry)
+svc -> tgt : request (Authorization: the new token)
+tgt -> tgt : verify; act as the subject,\nwith the narrowed permissions
+tgt --> svc : response
+
+@enduml

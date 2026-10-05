@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Grant Management: the issuer holds consent, and a client refers to it by id
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+
+actor "person" as person
+participant "a client service" as client
+participant "IAM\n(holds the grants)" as iam
+
+person -> client : allow this work to act for me\n(the person's token)
+client -> iam : create a grant (on behalf of the person;\nscope, resource, audience)
+iam -> iam : the person holds every permission in the scope
+iam --> client : grant id
+client -> client : store the grant id (not a credential)
+... later, with no person present ...
+client -> iam : use the grant (Token Exchange)
+iam -> iam : the grant is active and\nthe grantor still holds the scope
+iam --> client : short-lived token
+... when the work ends ...
+client -> iam : revoke the grant
+iam --> client : revoked
+
+@enduml

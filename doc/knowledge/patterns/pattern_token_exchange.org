@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 96460BBE-D7BF-4538-B620-AC5FD9F0C9FE
+:END:
+#+title: Token Exchange
+#+description: A service presents a token it holds to the issuer and receives a new one with a different subject, audience, scope or lifetime.
+#+type: pattern
+#+level: cross
+#+filetags: :pattern:identity:oauth:impersonation:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+Token Exchange in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A party presents a token it holds to the issuer and receives a new token with a
+different subject, audience, scope or lifetime. In ORE Studio IAM mints tokens
+that act as a specific account and party, for orchestration inside IAM and for
+work that runs under a stored grant.
+
+* Also known as
+
+- /Internal actor impersonation/, the name ORE Studio used for the in-process
+  form inside IAM.
+- /Impersonation/ and /delegation/, the two semantics RFC 8693 defines: the new
+  token acts as the subject alone, or as the subject with an actor named in the
+  =act= claim.
+- /Downscoped token/, for an exchange that only narrows the scope.
+
+* Context
+
+A service must call another service as an identity that no inbound request
+carries: an account and a party it acts for, with no caller present, or a
+narrower form of a token it holds. Only IAM signs tokens.
+
+* Problem
+
+How does a service obtain a token for an identity, an audience or a scope that
+it does not already hold, without holding the signing key?
+
+* Forces
+
+- Only the issuer may sign, or every service becomes a forger.
+- The issuer must decide whether this actor may act for this subject.
+- The new token must be as narrow as the purpose: one audience, the permissions
+  the work needs, a short lifetime.
+- An audit must show both who the token acts as and which service asked for it.
+- An exchange per request makes the issuer a bottleneck.
+
+* Solution
+
+The service sends the issuer a request with the actor token, its own, and the
+subject it wants to act as: a subject token, or a reference such as a grant id.
+It also names the audience and the scope it needs. The issuer checks that the
+actor may exchange for that subject, narrows the permissions to the scope, sets
+a short lifetime, records the issue, and signs. The new token names the subject
+in =sub= and the actor in =act=. The service uses it until shortly before it
+expires.
+
+#+caption: Token Exchange: the service presents its own token and the subject, and IAM returns a narrow, short-lived token that names both.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/patterns/pattern_token_exchange.png]]
+
+Source: =[[./pattern_token_exchange.puml][pattern_token_exchange.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/patterns/pattern_token_exchange.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A refused exchange answers =forbidden= with a reason. The reason is final for that subject: the caller fails its work and does not retry. |
+| Timeouts | The exchange is a request with a short timeout. A caller that cannot reach the issuer retries with back-off inside its own budget, then fails. |
+| Retries | A target that answers =token_expired= causes one new exchange and one retry of the request. Any other refusal fails the request. A refusal is never retried with the same token. |
+| Idempotency | An exchange is safe to repeat; each one returns a new token. Concurrent misses for one subject share one exchange. |
+| Observability | The issuer logs every issue: the subject, the actor, the audience, the scope and the expiry. A refused exchange logs the reason. |
+
+* Pitfalls
+
+- *A token shorter than the work.* A token minted for one call expires during a
+  long poll. The first version of internal impersonation retried until the wait
+  timed out, because it treated =token_expired= as a busy server. The fix is one
+  new exchange on =token_expired=, and a clear failure otherwise. See
+  [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] and
+  [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]].
+- *An exchange per request.* Without a cache, the issuer serves every call of
+  every service. Cache the token until shortly before it expires.
+- *A token wider than the purpose.* An exchanged token with the subject's full
+  permissions is a session for that subject. Narrow it to the scope the work
+  needs.
+- *Exchange where Token Relay fits.* When the identity to act as is the
+  request's own caller, relay the caller's token. Exchange only when no such
+  token exists.
+
+* Security
+
+The exchange is the most powerful operation in the identity group: it creates an
+identity. Three rules bound it. Only actors that hold an exchange permission may
+call it, and only for subjects they are allowed to act for. The token is narrow
+and short. Every issue is recorded. A leaked exchanged token acts for its subject
+within its scope until it expires, and names the service that obtained it.
+
+* Resulting context
+
+- Benefits :: A service can act as a tenant and a party with no caller and no
+  signing key. Every token is narrow and attributable.
+- Liabilities :: The issuer is on the path of new work, so its availability
+  matters, and the caller needs a cache.
+
+* In ORE Studio
+
+- *Inside IAM.* =internal_impersonation_service::mint_token= mints a token as a
+  given account and party, and =internal_request_client= re-mints once on
+  =token_expired=. Tenant provisioning drives several parties this way. See
+  [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]].
+- *Over the bus.* IAM serves the exchange as =iam.v1.run_grants.exchange= for
+  work that runs under a grant. The subject is a grant id, the actor is the step
+  service's own token, and the new token lasts five minutes. See
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]].
+
+* Related patterns
+
+- [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] — the actor proves itself with this token.
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — supplies a subject when no caller is present.
+- [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — the alternative when a caller's token exists.
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — combines this pattern with a grant and a cache.
+
+* Sources
+
+- [[https://www.rfc-editor.org/rfc/rfc8693][RFC 8693, OAuth 2.0 Token Exchange]], section 1.1 for impersonation and delegation, and section 4.1 for the =act= claim.
+- Neil Madden, /API Security in Action/, Manning, 2020, chapter 11, "Securing service-to-service APIs".
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.

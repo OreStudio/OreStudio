@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Access Token: the edge authenticates once, and every service verifies the token itself
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+
+actor "client" as client
+participant "IAM\n(the only signer)" as iam
+participant "a service" as svc
+participant "another service" as svc2
+database "store\n(row-level security)" as db
+
+client -> iam : log in
+iam --> client : signed token (tenant, party, permissions, expiry)
+svc -> iam : at startup: fetch the public key (JWKS)
+client -> svc : request (Authorization: Bearer token)
+svc -> svc : verify the signature and the expiry;\nbuild the request context
+svc -> svc : check the permission
+svc -> db : set the session tenant and party; read
+db --> svc : the rows the context may see
+svc -> svc2 : a further call carries a token\n(relayed, or the service's own)
+svc --> client : response, or X-Error: unauthorized, forbidden, token_expired
+
+@enduml

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 61090DA8-48EC-4205-82DB-7AB4AC1FC9DF
+:END:
+#+title: Seed the standard desk groups and their members
+#+description: A new tenant has no desk groups: currencies, pairs, calendars and their links each have a seed dataset, but currency groups and their memberships have no DQ artefact or seed script, so G10, G11, Scandies and the like must be typed by hand.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:currencies:seed:dq:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -252,15 +252,21 @@ export function PageHeader({
     title,
     description,
     actions,
+    mark,
 }: {
     readonly title: string;
     readonly description?: string;
     readonly actions?: ReactNode;
+    /** A picture drawn before the title, such as a currency's flag. */
+    readonly mark?: ReactNode;
 }): ReactNode {
     return (
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+                <h1 className="flex items-center gap-3 text-xl font-semibold tracking-tight">
+                    {mark}
+                    {title}
+                </h1>
                 {description !== undefined && (
                     <p className="mt-1 text-sm text-ink-muted">{description}</p>
                 )}

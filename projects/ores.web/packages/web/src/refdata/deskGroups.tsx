@@ -165,6 +165,7 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
                     parentField="currency_group_code"
                     parentValue={code}
                     childField="currency_iso_code"
+                    flag="currency"
                     readAll
                     choices={(currencies.data ?? []).map((currency) => ({
                         value: show(currency['iso_code']),

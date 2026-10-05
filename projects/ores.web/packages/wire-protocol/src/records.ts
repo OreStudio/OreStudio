@@ -24,6 +24,7 @@ import type { AuthenticatedCaller } from './account-operations.js';
 import { OperationFailedError } from './errors.js';
 import { subjects as currencySubjects } from './generated/refdata/protocol/currency_protocol.js';
 import { subjects as countrySubjects } from './generated/refdata/protocol/country_protocol.js';
+import { subjects as businessCentreSubjects } from './generated/refdata/protocol/business_centre_protocol.js';
 import { subjects as calendarSubjects } from './generated/refdata/protocol/calendar_protocol.js';
 import { subjects as currencyGroupSubjects } from './generated/refdata/protocol/currency_group_protocol.js';
 import { subjects as currencyCountrySubjects } from './generated/refdata/protocol/currency_country_protocol.js';
@@ -100,6 +101,22 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
             list: countrySubjects.list_countries_request,
             put: countrySubjects.put_country_request,
             remove: countrySubjects.delete_country_request,
+        },
+    },
+    {
+        key: 'business-centres',
+        entityType: 'ores.refdata.business_centre',
+        keyFields: ['code'],
+        rows: 'centres',
+        versioned: true,
+        writable: false,
+        search: false,
+        sortable: [],
+        asOf: false,
+        subjects: {
+            list: businessCentreSubjects.list_business_centres_request,
+            put: businessCentreSubjects.put_business_centre_request,
+            remove: businessCentreSubjects.delete_business_centre_request,
         },
     },
     {

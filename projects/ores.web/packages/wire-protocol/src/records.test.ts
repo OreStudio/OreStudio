@@ -97,6 +97,7 @@ describe('the record registry', () => {
         ).toEqual({
             currencies: 'currencies',
             countries: 'countries',
+            'business-centres': 'business_centres',
             calendars: 'calendars',
             'currency-groups': 'currency_groups',
             'currency-countries': 'currency_countries',

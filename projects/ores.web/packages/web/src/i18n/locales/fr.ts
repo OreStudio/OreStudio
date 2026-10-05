@@ -629,6 +629,13 @@ const fr: SourceCatalogue = {
         related: 'Associé',
     },
 
+    images: {
+        clear: 'Effacer',
+        select: 'Choisir',
+        choose: 'Choisir une image',
+        none: 'Aucune',
+    },
+
     audit: {
         createTitle: 'Motif du nouvel enregistrement',
         amendTitle: 'Motif du changement requis',
@@ -1406,6 +1413,7 @@ const fr: SourceCatalogue = {
             },
         },
         fields: {
+            image_id: 'Drapeau',
             version: 'Version',
             modified_by: 'Modifié par',
             performed_by: 'Effectué par',

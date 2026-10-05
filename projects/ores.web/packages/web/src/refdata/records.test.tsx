@@ -175,10 +175,10 @@ describe('the field table', () => {
         });
     });
 
-    it('covers every currency column the server writes but the image', () => {
+    it('covers every currency column the server writes, the flag among them', () => {
         expect(CURRENCY_FIELDS.map((spec) => spec.field).sort()).toEqual(
             Object.keys(euro)
-                .filter((field) => field !== 'version' && field !== 'image_id')
+                .filter((field) => field !== 'version')
                 .sort(),
         );
     });

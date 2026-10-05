@@ -27,7 +27,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
-import { Avatar, CentreFlag, imageUrl } from '../ui/Images.js';
+import { FlaggedCode } from '../images/flags.js';
+import { Avatar, imageUrl } from '../ui/Images.js';
 import { Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RemoveTenantDialog } from './RemoveTenantDialog.js';
@@ -268,7 +269,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
                                     {party.code}
                                 </td>
                                 <td className="py-2 pr-4 text-ink-muted">
-                                    <CentreFlag
+                                    <FlaggedCode
                                         code={party.businessCentreCode}
                                         src={
                                             party.flagImageId === null

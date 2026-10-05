@@ -27,6 +27,7 @@ import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { FlaggedCode } from '../images/flags.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList } from './RecordList.js';
@@ -63,12 +64,14 @@ const PAIR_FIELDS: readonly FieldSpec[] = [
         history: 'Base Currency',
         kind: { kind: 'record', resource: 'currencies', value: 'iso_code', label: 'name' },
         fixed: true,
+        flag: 'currency',
     },
     {
         field: 'quote_currency',
         history: 'Quote Currency',
         kind: { kind: 'record', resource: 'currencies', value: 'iso_code', label: 'name' },
         fixed: true,
+        flag: 'currency',
     },
     {
         field: 'classification',
@@ -128,6 +131,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['pair_code']),
                         mono: true,
                         sort: 'pair_code',
+                        flag: { source: 'pair', field: 'pair_code' },
                     },
                     {
                         id: 'base_currency',
@@ -135,6 +139,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['base_currency']),
                         mono: true,
                         sort: 'base_currency',
+                        flag: { source: 'currency', field: 'base_currency' },
                     },
                     {
                         id: 'quote_currency',
@@ -142,6 +147,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['quote_currency']),
                         mono: true,
                         sort: 'quote_currency',
+                        flag: { source: 'currency', field: 'quote_currency' },
                     },
                     {
                         id: 'classification',
@@ -379,6 +385,7 @@ function PairBody({
                 title={code}
                 recordKey={code}
                 version={pair.version}
+                flag="pair"
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
@@ -394,7 +401,7 @@ function PairBody({
                                 className="text-accent hover:underline"
                                 to={currencyPath(show(pair[leg]))}
                             >
-                                {show(pair[leg])}
+                                <FlaggedCode source="currency" code={show(pair[leg])} />
                             </Link>,
                         ])}
                     />
@@ -421,6 +428,7 @@ function PairBody({
                     parentField="pair_code"
                     parentValue={code}
                     childField="calendar_code"
+                    flag="calendar"
                     choices={(calendars.data ?? []).map((calendar) => ({
                         value: show(calendar['code']),
                         label: show(calendar['name']),

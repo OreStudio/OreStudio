@@ -28,6 +28,10 @@ import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
+import { ImageField } from '../images/ImageChooser.js';
+import { imageUrl } from '../ui/Images.js';
+import { RecordPicker, type Choice } from './RecordPicker.js';
 import { fieldValue } from './HistoryPanel.js';
 import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
 
@@ -50,6 +54,7 @@ export type FieldKind =
     | { readonly kind: 'int'; readonly min?: number; readonly max?: number }
     | { readonly kind: 'decimal' }
     | { readonly kind: 'bool' }
+    | { readonly kind: 'image' }
     | { readonly kind: 'classification'; readonly list: string }
     | {
           readonly kind: 'record';
@@ -65,6 +70,8 @@ export interface FieldSpec {
     readonly fixed?: boolean;
     readonly optional?: boolean;
     readonly blank?: boolean;
+    /** The field holds a code of this source, drawn with its flag. */
+    readonly flag?: FlagSource;
 }
 
 export type FieldValues = Readonly<Record<string, string>>;
@@ -202,9 +209,8 @@ export function useRecordPermissions(resource: string): {
 }
 
 /** The choices of a picker: code and the words to show for it. */
-function useChoices(
-    kind: FieldKind,
-): readonly { readonly value: string; readonly label: string }[] {
+function useChoices(kind: FieldKind, flag?: FlagSource): readonly Choice[] {
+    const flags = useFlags();
     const classification = useQuery({
         queryKey: ['classifications', kind.kind === 'classification' ? kind.list : ''],
         queryFn: () => api.classificationRows(kind.kind === 'classification' ? kind.list : ''),
@@ -222,10 +228,14 @@ function useChoices(
         }));
     }
     if (kind.kind === 'record') {
-        return (records.data ?? []).map((row) => ({
-            value: show(row[kind.value]),
-            label: `${show(row[kind.label])} (${show(row[kind.value])})`,
-        }));
+        return (records.data ?? []).map((row) => {
+            const value = show(row[kind.value]);
+            return {
+                value,
+                label: `${show(row[kind.label])} (${value})`,
+                image: flag === undefined || flag === 'pair' ? null : flags.flag(flag, value),
+            };
+        });
     }
     return [];
 }
@@ -246,9 +256,28 @@ export function FieldInput({
     readonly onBlur?: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const choices = useChoices(spec.kind);
+    const choices = useChoices(spec.kind, spec.flag);
     const label = t(`refdata.fields.${spec.field}`);
-    if (spec.kind.kind === 'classification' || spec.kind.kind === 'record') {
+    if (spec.kind.kind === 'image') {
+        return <ImageField label={label} imageId={value} disabled={disabled} onChange={onChange} />;
+    }
+    if (spec.kind.kind === 'record') {
+        return (
+            <Field label={label} {...(error === undefined ? {} : { error })}>
+                <RecordPicker
+                    value={value}
+                    choices={choices}
+                    onChange={onChange}
+                    disabled={disabled}
+                    optional={spec.optional === true}
+                    placeholder={t('refdata.records.linkChoose')}
+                    label={label}
+                    onBlur={onBlur}
+                />
+            </Field>
+        );
+    }
+    if (spec.kind.kind === 'classification') {
         return (
             <Field label={label} {...(error === undefined ? {} : { error })}>
                 <Select
@@ -424,6 +453,7 @@ export function RecordDialog({
         onSuccess: async (write) => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['image-map'] });
             onSaved?.(write);
             onClose();
         },
@@ -577,6 +607,17 @@ function DetailValue({
     if (spec.kind.kind === 'classification') {
         return <ClassifiedValue list={spec.kind.list} code={text} />;
     }
+    if (spec.kind.kind === 'image') {
+        return <Flag src={imageUrl(text)} size="lg" />;
+    }
+    if (spec.flag !== undefined) {
+        return (
+            <span className="inline-flex items-center gap-2">
+                <FlagOf source={spec.flag} code={text} />
+                {text}
+            </span>
+        );
+    }
     return <>{text}</>;
 }
 
@@ -679,6 +720,7 @@ export function LinkPanel({
     choices,
     pathOf,
     readAll,
+    flag,
 }: {
     readonly title: string;
     readonly junction: string;
@@ -688,7 +730,9 @@ export function LinkPanel({
     readonly choices: readonly { readonly value: string; readonly label: string }[];
     readonly pathOf?: (child: string) => string;
     readonly readAll?: boolean;
+    readonly flag?: Exclude<FlagSource, 'pair'>;
 }): ReactNode {
+    const flags = useFlags();
     const { t } = useTranslation();
     const queries = useQueryClient();
     const navigate = useNavigate();
@@ -742,6 +786,7 @@ export function LinkPanel({
                             key={child}
                             className="flex items-center gap-2 border-b border-line-subtle px-4 py-1.5 text-sm last:border-b-0"
                         >
+                            {flag !== undefined && <FlagOf source={flag} code={child} />}
                             <span className="font-mono text-xs text-ink-muted">{child}</span>
                             {pathOf === undefined ? (
                                 <span className="flex-1">{name(child)}</span>
@@ -772,20 +817,21 @@ export function LinkPanel({
             </ul>
             {may.write && (
                 <div className="flex gap-2 border-t border-line p-2">
-                    <Select
-                        value={adding}
-                        aria-label={t('refdata.records.linkChoose')}
-                        onChange={(event) => setAdding(event.target.value)}
-                    >
-                        <option value="">{t('refdata.records.linkChoose')}</option>
-                        {choices
-                            .filter((choice) => !linked.has(choice.value))
-                            .map((choice) => (
-                                <option key={choice.value} value={choice.value}>
-                                    {choice.label}
-                                </option>
-                            ))}
-                    </Select>
+                    <div className="flex-1">
+                        <RecordPicker
+                            value={adding}
+                            choices={choices
+                                .filter((choice) => !linked.has(choice.value))
+                                .map((choice) => ({
+                                    ...choice,
+                                    image:
+                                        flag === undefined ? null : flags.flag(flag, choice.value),
+                                }))}
+                            onChange={setAdding}
+                            placeholder={t('refdata.records.linkChoose')}
+                            label={t('refdata.records.linkChoose')}
+                        />
+                    </div>
                     <Button
                         size="sm"
                         icon="add"
@@ -840,6 +886,7 @@ export function RevertDialog({
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
+            await queries.invalidateQueries({ queryKey: ['image-map'] });
             onClose();
         },
     });
@@ -1003,6 +1050,7 @@ export function RecordHeader({
     own,
     onEdit,
     onDelete,
+    flag,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1011,6 +1059,8 @@ export function RecordHeader({
     readonly own?: ReactNode;
     readonly onEdit?: (() => void) | undefined;
     readonly onDelete?: (() => void) | undefined;
+    /** The record's own flag, drawn before its name. */
+    readonly flag?: FlagSource;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1018,6 +1068,9 @@ export function RecordHeader({
             <Crumbs parts={crumbs} />
             <PageHeader
                 title={title}
+                {...(flag === undefined
+                    ? {}
+                    : { mark: <FlagOf source={flag} code={recordKey} size="lg" /> })}
                 description={t('refdata.records.lead', {
                     code: recordKey,
                     version: String(version),

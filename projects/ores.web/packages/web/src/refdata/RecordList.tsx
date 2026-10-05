@@ -24,6 +24,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { FlagOf, type FlagSource } from '../images/flags.js';
 import { Icon } from '../ui/Icon.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Input, Notice, PageHeader } from '../ui/Primitives.js';
@@ -47,6 +48,8 @@ export interface ListColumn {
     readonly numeric?: boolean;
     readonly sort?: string;
     readonly hidden?: boolean;
+    /** The column holds a code of this source in this field, drawn with its flag. */
+    readonly flag?: { readonly source: FlagSource; readonly field: string };
 }
 
 /** The audit columns every versioned list offers, hidden by default. */
@@ -411,7 +414,17 @@ export function RecordList({
                                                     : '',
                                             ].join(' ')}
                                         >
-                                            {column.cell(row)}
+                                            {column.flag === undefined ? (
+                                                column.cell(row)
+                                            ) : (
+                                                <span className="inline-flex items-center gap-2">
+                                                    <FlagOf
+                                                        source={column.flag.source}
+                                                        code={show(row[column.flag.field])}
+                                                    />
+                                                    {column.cell(row)}
+                                                </span>
+                                            )}
                                         </td>
                                     ))}
                                 </tr>

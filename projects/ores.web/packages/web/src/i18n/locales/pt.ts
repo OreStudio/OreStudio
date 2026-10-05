@@ -624,6 +624,13 @@ const pt: SourceCatalogue = {
         related: 'Relacionado',
     },
 
+    images: {
+        clear: 'Limpar',
+        select: 'Escolher',
+        choose: 'Escolher uma imagem',
+        none: 'Nenhuma',
+    },
+
     audit: {
         createTitle: 'Motivo do novo registo',
         amendTitle: 'Motivo da alteração obrigatório',
@@ -1393,6 +1400,7 @@ const pt: SourceCatalogue = {
             },
         },
         fields: {
+            image_id: 'Bandeira',
             version: 'Versão',
             modified_by: 'Modificado por',
             performed_by: 'Executado por',

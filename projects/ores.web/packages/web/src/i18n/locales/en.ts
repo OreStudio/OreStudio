@@ -622,6 +622,13 @@ export const en: SourceCatalogue = {
         related: 'Related',
     },
 
+    images: {
+        clear: 'Clear',
+        select: 'Select',
+        choose: 'Choose an image',
+        none: 'None',
+    },
+
     audit: {
         createTitle: 'New Record Reason',
         amendTitle: 'Change Reason Required',
@@ -1380,6 +1387,7 @@ export const en: SourceCatalogue = {
             },
         },
         fields: {
+            image_id: 'Flag',
             version: 'Version',
             modified_by: 'Modified by',
             performed_by: 'Performed by',

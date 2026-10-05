@@ -453,3 +453,34 @@ describe('GET /api/refdata/:resource/key/:key', () => {
         expect(missing.statusCode).toBe(404);
     });
 });
+
+describe('GET /api/image-map', () => {
+    it('answers which image each flagged code uses, cacheable for a few minutes', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.currencies.list': {
+                result: ok,
+                currencies: [{ iso_code: 'EUR', image_id: 'eur-flag', version: 1 }],
+            },
+            'refdata.v1.countries.list': {
+                result: ok,
+                countries: [{ alpha2_code: 'GB', image_id: 'gb-flag', version: 1 }],
+            },
+            'refdata.v1.calendars.list': { result: ok, calendars: [] },
+            'refdata.v1.business_centres.list': { result: ok, centres: [] },
+            'assets.v1.images.list': {
+                result: ok,
+                images: [{ id: 'placeholder', code: 'xx', description: 'Flag of xx' }],
+                total: 1,
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/image-map');
+        expect(response.headers['cache-control']).toBe('private, max-age=300');
+        expect(response.json()).toEqual({
+            currencies: { EUR: 'eur-flag' },
+            countries: { GB: 'gb-flag' },
+            calendars: {},
+            businessCentres: {},
+            noFlag: 'placeholder',
+        });
+    });
+});

@@ -347,12 +347,14 @@ export type {
 export {
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
+    listImageSummaries,
     readImages,
     readImageUploadPolicy,
     uploadImage,
 } from './entities/image.js';
 export type {
     ImageContent,
+    ImageSummary,
     ImageUploadPolicy,
     ImageUploadReply,
     ImageUploadView,
@@ -440,3 +442,6 @@ export type {
     SignupRequest,
     SignupResult,
 } from './contracts.js';
+
+export { readImageMap } from './image-map.js';
+export type { ImageMap } from './image-map.js';

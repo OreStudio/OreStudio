@@ -43,6 +43,8 @@ import {
     createAdministratorRequestSchema,
     initialAdministratorSchema,
     searchLeiEntitiesResponseSchema,
+    listImageSummaries,
+    readImageMap,
     readImages,
     removeTenant,
     accountAccessSchema,
@@ -158,6 +160,12 @@ import {
  * The environment is chosen when the process starts and never changes, so every
  * route here talks to the same place for as long as the process runs.
  */
+
+const imagePageQuerySchema = z.object({
+    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+    limit: z.coerce.number().pipe(z.int().min(1).max(500)).default(100),
+    search: z.string().trim().max(256).default(''),
+});
 
 const SESSION_COOKIE = 'ores_web_session';
 
@@ -2142,13 +2150,42 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     /**
+     * Which image every flagged record uses: currencies, countries, calendars
+     * and business centres, and the placeholder for a code with none. The one
+     * read a screen needs to draw any flag; the browser keeps it for a few
+     * minutes and fetches each image once from its own address.
+     */
+    server.get('/api/image-map', async (request, reply) => {
+        const session = requireSession(request);
+        const map = await readImageMap(session.client);
+        return reply.header('cache-control', 'private, max-age=300').send(map);
+    });
+
+    /**
+     * One page of the session's images, for a chooser: identifier, code and
+     * words, searched on the server by code and description. The bytes stay
+     * behind; each image is drawn from its own address.
+     */
+    server.get('/api/images', async (request) => {
+        const session = requireSession(request);
+        const query = imagePageQuerySchema.safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest(
+                'A page of images names an offset, a limit of 1 to 500, and a search.',
+            );
+        }
+        return await listImageSummaries(session.client, query.data);
+    });
+
+    /**
      * One image of the session's own tenant, by its identifier.
      *
      * Flags and pictures live in the assets service as ordinary images, so this
      * is what a flag cell points at. Fetched through the BFF because the
      * browser never reaches NATS, which is the same reason every other read
-     * goes through here. Cached hard, because an image's identifier is its
-     * identity and its bytes never change.
+     * goes through here. Kept in the tenant image cache and cached hard by the
+     * browser, because an image's identifier is its identity and its bytes
+     * never change, so a flag shown on every row is read from the service once.
      */
     server.get('/api/images/:id', async (request, reply) => {
         const session = requireSession(request);
@@ -2156,10 +2193,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!isUuid(id)) {
             throw notFound('No image has this identifier.');
         }
+        const cached = tenantImages.get(session.tenantId, id);
+        if (cached !== undefined) {
+            return sendImage(reply, cached);
+        }
         const [image] = await readImages(session.client, [id]);
         if (image === undefined) {
             throw notFound('No image has this identifier.');
         }
+        tenantImages.put(session.tenantId, image);
         return sendImage(reply, image);
     });
 

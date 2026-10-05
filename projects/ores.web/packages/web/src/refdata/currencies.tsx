@@ -47,7 +47,13 @@ const RESOURCE = 'currencies';
 
 /** The currency fields a person edits, in form order, with the names the history gives them. */
 export const CURRENCY_FIELDS: readonly FieldSpec[] = [
-    { field: 'iso_code', history: 'ISO Code', kind: { kind: 'text', max: 3 }, fixed: true },
+    {
+        field: 'iso_code',
+        history: 'ISO Code',
+        kind: { kind: 'text', max: 3 },
+        fixed: true,
+        flag: 'currency',
+    },
     { field: 'name', history: 'Name', kind: { kind: 'text' } },
     { field: 'numeric_code', history: 'Numeric Code', kind: { kind: 'text', max: 3 } },
     { field: 'symbol', history: 'Symbol', kind: { kind: 'text', max: 20 } },
@@ -79,10 +85,8 @@ export const CURRENCY_FIELDS: readonly FieldSpec[] = [
     { field: 'spot_days', history: 'Spot Days', kind: { kind: 'int' } },
     { field: 'day_basis', history: 'Day Basis', kind: { kind: 'text', max: 20 } },
     { field: 'base_precedence', history: 'Base Precedence', kind: { kind: 'int' } },
+    { field: 'image_id', history: 'Image ID', kind: { kind: 'image' }, optional: true },
 ];
-
-/** The fields the server requires that the form does not edit. */
-const KEPT = ['image_id'];
 
 export function currencyPath(code?: string): string {
     return code === undefined
@@ -115,6 +119,7 @@ export function CurrenciesPage(): ReactNode {
                         cell: (row) => show(row['iso_code']),
                         mono: true,
                         sort: 'iso_code',
+                        flag: { source: 'currency', field: 'iso_code' },
                     },
                     {
                         id: 'name',
@@ -157,7 +162,6 @@ export function CurrenciesPage(): ReactNode {
                     resource={RESOURCE}
                     specs={CURRENCY_FIELDS}
                     row={undefined}
-                    keep={KEPT}
                     onClose={() => setAdding(false)}
                     onSaved={(write) => void navigate(currencyPath(String(write['iso_code'])))}
                 />
@@ -209,6 +213,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                 title={show(row['name'])}
                 recordKey={code}
                 version={row.version}
+                flag="currency"
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
@@ -226,6 +231,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     parentField="currency_iso_code"
                     parentValue={code}
                     childField="country_alpha2_code"
+                    flag="country"
                     choices={choices(countries.data, 'alpha2_code', 'name')}
                 />
             )}
@@ -236,6 +242,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     parentField="currency_iso_code"
                     parentValue={code}
                     childField="calendar_code"
+                    flag="calendar"
                     choices={choices(calendars.data, 'code', 'name')}
                 />
             )}
@@ -265,7 +272,6 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     resource={RESOURCE}
                     specs={CURRENCY_FIELDS}
                     row={row}
-                    keep={KEPT}
                     onClose={() => setEditing(false)}
                 />
             )}
@@ -286,7 +292,6 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     specs={CURRENCY_FIELDS}
                     row={row}
                     version={reverting}
-                    keep={KEPT}
                     onClose={() => setReverting(null)}
                 />
             )}

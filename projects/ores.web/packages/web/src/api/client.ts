@@ -144,6 +144,26 @@ const recordRowSchema = z.looseObject({ version: z.int().nonnegative() });
 
 export type RecordRow = z.infer<typeof recordRowSchema>;
 
+const codeImages = z.record(z.string(), z.string());
+
+const imageMapSchema = z.object({
+    currencies: codeImages,
+    countries: codeImages,
+    calendars: codeImages,
+    businessCentres: codeImages,
+    noFlag: z.string().nullable(),
+});
+
+export type ImageMap = z.infer<typeof imageMapSchema>;
+
+const imageSummarySchema = z.object({
+    imageId: z.string(),
+    code: z.string(),
+    description: z.string(),
+});
+
+export type ImageSummary = z.infer<typeof imageSummarySchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -448,6 +468,27 @@ export const api = {
                 method: 'GET',
             }),
         );
+    },
+
+    /** Which image each flagged code uses, for the whole tenant. */
+    async imageMap(): Promise<ImageMap> {
+        return imageMapSchema.parse(await request('/api/image-map', { method: 'GET' }));
+    },
+
+    /** One page of the tenant's images, for a chooser, searched on the server. */
+    async imageSummaries(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+    }): Promise<{ readonly images: readonly ImageSummary[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+        });
+        return z
+            .object({ images: z.array(imageSummarySchema), total: z.int().nonnegative() })
+            .parse(await request(`/api/images?${query.toString()}`, { method: 'GET' }));
     },
 
     /** One record, named by its key. */

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: DB762ADC-37BA-4234-9AF8-0515798F63C0
+:END:
+#+title: Defects in the generated C++ templates
+#+description: Five defects in the shared C++ templates found by the G04 review of ores.marketdata's generated code: lost claims report as internal errors, put_many reads back row by row, three archetypes have no generated test, generators fill foreign keys with random UUIDs, and the eventing test assumes audit columns.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The G04 review of the generated code in =ores.marketdata= found five defects
+that live in the shared templates, so every component carries them:
+
+1. *A lost claim reports as an internal error.* A service checks the claim in
+   =prepare_change=, then writes. If another writer wins in between, the insert
+   trigger raises =Version conflict= (=P0002=) and the repository throws. Every
+   generated handler catches any exception as =failed= with code
+   =internal_error=, so the caller sees a fault where it should see =conflict=.
+2. *=put_many= reads back one row at a time.* After its one-statement write, the
+   service reads each written row back with its own query.
+3. *Some archetypes have no generated test.* Nothing tests the =table=,
+   =table_io= or =history_field_mapper= output; only a live shell run reaches
+   them.
+4. *Generators fill foreign keys with random UUIDs.* A generated junction or
+   child row then fails its foreign-key check, so tests build such rows by hand.
+5. *The eventing integration test assumes audit columns.* It sets
+   =change_reason_code= and =change_commentary=, so it does not compile for an
+   entity without them, such as the time-series =market_fixing= and
+   =market_observation=.
+
+* Why
+
+G04 says a finding in generated code is a template defect and is fixed in the
+template. The first is a correctness defect under a race; the others are cost
+and coverage gaps that every generated entity inherits.
+
+* References
+
+- Found by the G04 review in
+  [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]].
+- The first was raised in the review of PR 2643.
+
+* See also
+
+-

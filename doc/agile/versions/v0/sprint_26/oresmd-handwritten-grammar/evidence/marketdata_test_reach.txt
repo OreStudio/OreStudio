@@ -1,0 +1,116 @@
+114 source files; 65 reached by a test; 49 not reached
+
+api/src/datum/market_datum.cpp	hand-written	api/datum_market_datum_tests.cpp, core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/datum/market_index.cpp	hand-written	api/datum_market_datum_tests.cpp, core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/datum/ore_types.cpp	hand-written	api/datum_market_datum_tests.cpp, core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/datum/schema.cpp	hand-written	api/datum_market_datum_tests.cpp, core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/datum/value.cpp	hand-written	api/datum_market_datum_tests.cpp, api/datum_value_tests.cpp, core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/domain/feed_binding_json_io.cpp	generated	core/feed_binding_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+api/src/domain/feed_binding_table.cpp	generated	-
+api/src/domain/feed_binding_table_io.cpp	generated	-
+api/src/domain/i_feed.cpp	hand-written	-
+api/src/domain/market_fixing_json_io.cpp	generated	api/domain_market_fixing_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+api/src/domain/market_fixing_table.cpp	generated	-
+api/src/domain/market_fixing_table_io.cpp	generated	-
+api/src/domain/market_observation_json_io.cpp	generated	api/domain_market_observation_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/domain/market_observation_table.cpp	generated	-
+api/src/domain/market_observation_table_io.cpp	generated	-
+api/src/domain/market_series_asset_class_json_io.cpp	generated	core/repository_entity_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+api/src/domain/market_series_asset_class_table.cpp	generated	-
+api/src/domain/market_series_asset_class_table_io.cpp	generated	-
+api/src/domain/market_series_json_io.cpp	generated	api/domain_market_series_tests.cpp, core/market_series_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/repository_market_series_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+api/src/domain/market_series_table.cpp	generated	-
+api/src/domain/market_series_table_io.cpp	generated	-
+api/src/domain/observation_lineage_json_io.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+api/src/domain/observation_lineage_table.cpp	generated	-
+api/src/domain/observation_lineage_table_io.cpp	generated	-
+api/src/domain/series_classification_rule_json_io.cpp	generated	core/repository_entity_repository_tests.cpp, core/series_classification_rule_eventing_integration_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+api/src/domain/series_classification_rule_table.cpp	generated	-
+api/src/domain/series_classification_rule_table_io.cpp	generated	-
+api/src/generators/feed_binding_generator.cpp	generated	core/feed_binding_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+api/src/generators/market_fixing_generator.cpp	generated	core/repository_market_fixing_repository_tests.cpp
+api/src/generators/market_observation_generator.cpp	generated	core/repository_market_observation_repository_tests.cpp
+api/src/generators/market_series_asset_class_generator.cpp	generated	-
+api/src/generators/market_series_generator.cpp	generated	core/market_series_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/repository_market_series_repository_tests.cpp
+api/src/generators/observation_lineage_generator.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+api/src/generators/series_classification_rule_generator.cpp	generated	core/repository_entity_repository_tests.cpp, core/series_classification_rule_eventing_integration_tests.cpp
+client/src/market_data_client.cpp	hand-written	-
+core/src/classification/series_classifier.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/datum/ore_index_codec.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_codec.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_commodity.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_credit.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_equity.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_fx.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_inflation.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_rates.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_securities.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/ore_key_volatility.cpp	hand-written	core/classification_series_classifier_tests.cpp, core/datum_ore_index_codec_tests.cpp, core/datum_ore_key_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/datum/oresmd_uri_codec.cpp	hand-written	core/datum_ore_index_codec_tests.cpp, core/datum_oresmd_uri_codec_tests.cpp, core/oresmd_pillar_quote_key_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/app_tick_plan_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/messaging/feed_binding_history_provider_registrar.cpp	generated	-
+core/src/messaging/feed_binding_registrar.cpp	generated	-
+core/src/messaging/market_fixing_registrar.cpp	generated	-
+core/src/messaging/market_observation_registrar.cpp	generated	-
+core/src/messaging/market_series_asset_class_registrar.cpp	generated	-
+core/src/messaging/market_series_history_provider_registrar.cpp	generated	-
+core/src/messaging/market_series_registrar.cpp	generated	-
+core/src/messaging/observation_lineage_history_provider_registrar.cpp	generated	-
+core/src/messaging/observation_lineage_registrar.cpp	generated	-
+core/src/messaging/publish_from_dq_handler.cpp	hand-written	-
+core/src/messaging/registrar.cpp	hand-written	-
+core/src/messaging/series_classification_rule_history_provider_registrar.cpp	generated	-
+core/src/messaging/series_classification_rule_registrar.cpp	generated	-
+core/src/oresmd/pillar_quote_key.cpp	hand-written	core/oresmd_pillar_quote_key_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/presentation/feed_binding_history_field_mapper.cpp	generated	-
+core/src/presentation/market_fixing_history_field_mapper.cpp	generated	-
+core/src/presentation/market_observation_history_field_mapper.cpp	generated	-
+core/src/presentation/market_series_history_field_mapper.cpp	generated	-
+core/src/presentation/observation_lineage_history_field_mapper.cpp	generated	-
+core/src/presentation/series_classification_rule_history_field_mapper.cpp	generated	-
+core/src/repository/as_of_rows.cpp	hand-written	core/repository_as_of_rows_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/feed_binding_entity.cpp	generated	core/feed_binding_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/feed_binding_mapper.cpp	generated	core/feed_binding_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/feed_binding_repository.cpp	generated	core/feed_binding_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/market_fixing_entity.cpp	generated	core/repository_market_fixing_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_fixing_mapper.cpp	generated	core/repository_market_fixing_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_fixing_repository.cpp	generated	core/repository_market_fixing_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_observation_entity.cpp	generated	core/repository_as_of_rows_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/market_observation_mapper.cpp	generated	core/repository_market_observation_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/market_observation_repository.cpp	generated	core/repository_market_observation_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/market_series_asset_class_entity.cpp	generated	core/repository_entity_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_series_asset_class_mapper.cpp	generated	core/repository_entity_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_series_asset_class_repository.cpp	generated	core/repository_entity_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/market_series_entity.cpp	generated	core/market_series_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/repository_market_series_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/market_series_mapper.cpp	generated	core/market_series_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/repository_market_series_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/market_series_repository.cpp	generated	core/market_series_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp, core/repository_market_fixing_repository_tests.cpp, core/repository_market_observation_repository_tests.cpp, core/repository_market_series_repository_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp, service/curve_pillar_reader_tests.cpp
+core/src/repository/observation_lineage_entity.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/observation_lineage_mapper.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/observation_lineage_repository.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp, core/repository_entity_repository_tests.cpp
+core/src/repository/series_classification_rule_entity.cpp	generated	core/repository_entity_repository_tests.cpp, core/series_classification_rule_eventing_integration_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/series_classification_rule_mapper.cpp	generated	core/repository_entity_repository_tests.cpp, core/series_classification_rule_eventing_integration_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/repository/series_classification_rule_repository.cpp	generated	core/repository_entity_repository_tests.cpp, core/series_classification_rule_eventing_integration_tests.cpp, core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/service/feed_binding_service.cpp	generated	core/feed_binding_eventing_integration_tests.cpp
+core/src/service/import_service.cpp	hand-written	core/service_corpus_import_tests.cpp, core/service_import_service_tests.cpp, core/service_ore_export_tests.cpp
+core/src/service/market_fixing_service.cpp	generated	-
+core/src/service/market_observation_service.cpp	generated	-
+core/src/service/market_series_asset_class_service.cpp	generated	-
+core/src/service/market_series_service.cpp	generated	core/market_series_eventing_integration_tests.cpp
+core/src/service/observation_lineage_service.cpp	generated	core/observation_lineage_eventing_integration_tests.cpp
+core/src/service/ore_export_service.cpp	hand-written	core/service_ore_export_tests.cpp
+core/src/service/series_classification_rule_service.cpp	generated	core/series_classification_rule_eventing_integration_tests.cpp
+service/src/app/application.cpp	hand-written	-
+service/src/app/crm_ingest_bridge.cpp	hand-written	service/app_crm_ingest_bridge_tests.cpp
+service/src/app/curve_republish_service.cpp	hand-written	-
+service/src/app/feed_ingest_loop.cpp	hand-written	-
+service/src/app/host.cpp	hand-written	-
+service/src/app/tick_plan.cpp	hand-written	service/app_tick_plan_tests.cpp
+service/src/config/options.cpp	hand-written	service/config_parser_tests.cpp
+service/src/config/parser.cpp	hand-written	service/config_parser_tests.cpp
+service/src/curve_pillar_reader.cpp	hand-written	service/curve_pillar_reader_tests.cpp
+service/src/curve_republish_resolver.cpp	hand-written	service/curve_pillar_reader_tests.cpp, service/curve_republish_resolver_fomc_tests.cpp, service/curve_republish_resolver_tests.cpp
+service/src/messaging/feed_binding_event_registrar.cpp	generated	-
+service/src/messaging/market_fixing_event_registrar.cpp	generated	-
+service/src/messaging/market_observation_event_registrar.cpp	generated	-
+service/src/messaging/market_series_event_registrar.cpp	generated	-
+service/src/messaging/observation_lineage_event_registrar.cpp	generated	-
+service/src/messaging/series_classification_rule_event_registrar.cpp	generated	-

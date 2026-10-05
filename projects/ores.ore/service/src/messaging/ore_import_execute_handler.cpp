@@ -24,6 +24,7 @@
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
@@ -114,49 +115,6 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 namespace {
-
-/**
- * @brief Makes an authenticated NATS request and deserialises the response.
- *
- * Returns nullopt and populates out_error on any error.
- */
-template <typename Req>
-std::optional<typename Req::response_type>
-nats_call(ores::nats::service::nats_client& nats, const Req& request, std::string& out_error) {
-    using Resp = typename Req::response_type;
-    try {
-        const auto& codec = ores::nats::default_wire_codec();
-        const auto msg = nats.authenticated_request(Req::nats_subject, codec.encode(request));
-
-        const auto err_it = msg.headers.find("X-Error");
-        if (err_it != msg.headers.end()) {
-            out_error = std::format("Service error on {}: {}", Req::nats_subject, err_it->second);
-            return std::nullopt;
-        }
-        auto result = codec.decode<Resp>(msg.data);
-        if (!result) {
-            out_error = std::format(
-                "Failed to parse response from {}: {}", Req::nats_subject, result.error().what());
-            return std::nullopt;
-        }
-        // A canonical response states its outcome in a result; an older
-        // response states it in success and message.
-        if constexpr (requires { result->result.outcome; }) {
-            if (result->result.outcome != ores::utility::domain::outcome::ok)
-                out_error = result->result.message;
-        } else if constexpr (requires {
-                                 result->success;
-                                 result->message;
-                             }) {
-            if (!result->success)
-                out_error = result->message;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
-        return std::nullopt;
-    }
-}
 
 // The document mirror types carry a date as the ISO spelling the XML
 // states, while the flat protocol writes carry a calendar date. These

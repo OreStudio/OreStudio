@@ -14,6 +14,8 @@
 
 Release notes for [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]].
 
+[[proj:assets/images/ore_studio-v0.0.26.png]]
+
 Sprint 26 ran the three-pass mission in order: sync codegen and clear the
 drift, analyse the user journeys, then build the UX. The sprint closed RED:
 it ran thirteen days against a seven-day plan, and it carried about four

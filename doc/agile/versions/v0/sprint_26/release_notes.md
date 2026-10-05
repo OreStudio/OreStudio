@@ -2,6 +2,8 @@
 
 Release notes for [Sprint 26](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_26/sprint.html).
 
+![ore_studio-v0.0.26.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.26.png)
+
 Sprint 26 ran the three-pass mission in order: sync codegen and clear the drift, analyse the user journeys, then build the UX. The sprint closed RED: it ran thirteen days against a seven-day plan, and it carried about four times the commit ceiling and five times the PR band. The work still shipped. Twenty-seven components came fully to the Component Clean Standard. The trade was redesigned on data-oriented principles, five journey groups run in ores.web on one shared journey runtime, and the HTTP surface is now generated end to end. Nineteen stories did not finish, and they moved to the product backlog inbox. Eleven stories closed at the scope they delivered, and each names a successor that carries the remainder. Sprint 27 opens from the product backlog.
 
 ---

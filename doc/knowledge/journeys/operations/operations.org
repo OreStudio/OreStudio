@@ -17,10 +17,11 @@ the telemetry and super-admin windows of the legacy =ores.qt= client.
 
 Four journeys belong to the system administrator. The last belongs to any
 signed-in person: the versions screen answers "what am I talking to", which a
-member asks as often as an administrator. No journey here changes anything —
-each one reads samples, summaries or lines that the installation writes about
-itself. That is also what keeps them cheap to build: the server already
-stores everything they show, with the gaps recorded below.
+member asks as often as an administrator. *Who reaches the screens* sets out
+what each of the three signed-in contexts sees. No journey here changes
+anything — each one reads samples, summaries or lines that the installation
+writes about itself. That is also what keeps them cheap to build: the server
+already stores everything they show, with the gaps recorded below.
 
 * Journeys
 
@@ -32,6 +33,29 @@ stores everything they show, with the gaps recorded below.
 | [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | system administrator | The NATS server's vitals and one row per stream: messages, bytes and consumers over time |
 | [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | system administrator | The lines behind a symptom, found by time, level, source, component, tag or session |
 | [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | any signed-in person | The client build, the server build, and the database fingerprint |
+
+* Who reaches the screens
+
+The shell draws the line with an area, not with a permission on a screen: the
+*system-administration* menu carries *Operations* and no other menu does, and
+a screen that belongs to another mode is absent rather than disabled, because
+it is not a door that person may open later. The four installation screens
+are therefore the super administrator's alone, and the versions screen is
+every signed-in person's, because the question it answers is not a privileged
+one.
+
+#+ATTR_HTML: :class hug-leading
+| Actor | Context | Operations area | Installation screens | Versions screen |
+|-------+---------+-----------------+----------------------+-----------------|
+| System administrator | =SuperAdmin= role, acting from the system tenant; *system administration mode* | Offered; it carries the five journeys | All four, installation-wide | Offered, from the area |
+| Tenant administrator | Signed in inside their own tenant; *tenant administration mode* | Absent | Unreachable | Offered, in every mode |
+| Regular user | Any other signed-in person; the shared *application* context | Absent | Unreachable | Offered, in every mode |
+
+The footer that states the client and the server rides on every screen in
+every mode, so the first step of the versions journey is every person's. The
+application row covers a privileged party user and a regular one alike: what
+separates them is the permissions they hold, not the mode, and neither
+reaches the *Operations* area.
 
 * Where the legacy screens went
 

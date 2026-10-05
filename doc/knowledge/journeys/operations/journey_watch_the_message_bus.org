@@ -28,7 +28,8 @@ whether any consumer is slow, and whether a stream is growing without bound.
 
 The system administrator: an account that holds the =SuperAdmin= role and acts
 from the system tenant, in *system administration mode*. The shell offers this
-screen in the *Operations* area, so a tenant administrator cannot reach it.
+screen in the *Operations* area, so a tenant administrator cannot reach it, and
+neither can any other signed-in person.
 
 The trigger is a symptom one level up: results are late, a service is quiet,
 or a stream is filling a disk. The administrator opens the bus screen and

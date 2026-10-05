@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:ux:design:badges:icons:
 #+created: 2026-06-04
-#+updated: 2026-09-27
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 * Summary
@@ -105,11 +105,12 @@ Fluent regular SVG files in
 ** Journey screen anatomy
 
 A journey is one screen, organised around a goal. The screen carries an
-ordered rail of steps, and each step draws the view it needs. The list,
-detail and history primitives do not exist: commit =e47043269f= deleted
-them with the generated entity screens, and no generic component has
-replaced them. A step that lists records draws its own table; a step
-that shows or edits one record draws its own form.
+ordered rail of steps, and each step draws the view it needs. Commit
+=e47043269f= deleted the generated entity screens. A step that lists,
+shows or maintains records of one kind does not draw its own table or
+form: it is a record screen, and it uses the shared list, record page,
+dialogs and history panel that the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] defines.
 
 The journey catalogue, and the "one screen, not one per entity" rule,
 live in [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]. The

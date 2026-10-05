@@ -1,0 +1,593 @@
+:PROPERTIES:
+:ID: 2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D
+:END:
+#+title: Record screen standard
+#+description: The one shape and behaviour of every ores.web screen that lists, reads, creates, amends and deletes records: lists and paging, the record page, writes and change reasons, history and revert, related records, icons, states, feedback, access, safety and naming.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+* Summary
+
+Many journeys maintain records of one kind: currencies, desk groups,
+calendars, tenants, parties, roles. Every such screen has the same shape and
+the same behaviour. This page defines that shape once. It covers the same scope
+as the Qt standard that the retired
+[[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][entity specification]] recorded:
+the list and its paging, the record page, create, amend and delete, change
+reasons, history and revert, related records, icons, states, feedback, access,
+safety, naming and exceptions.
+
+A journey decides which records a person works with and in what order. This
+standard decides how each record screen in that journey looks and behaves. Each
+rule names the shared component that implements it, so a screen gets the rule by
+using the component, not by copying it. A screen that needs to differ is an
+exception, named in [[*Exceptions][Exceptions]], and an exception changes which
+parts exist, never how they look.
+
+* Detail
+
+** Where this standard applies
+
+A /record screen/ is any screen, or any journey step, whose subject is the
+records of one kind: it lists them, opens one, and creates, amends or deletes
+them. The currency, desk group, currency pair and holiday calendar screens are
+record screens. So are the tenant, party and role screens.
+
+These are not record screens, and this standard does not govern them:
+
+- an Audit screen, which reads a log of events that happened, such as sign-ins
+  or publications (see the History and Audit rule in
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]);
+- a wizard step that collects input for one operation, such as provisioning a
+  tenant;
+- a dashboard or an area page of tiles.
+
+A journey can hold record screens and other steps together. The
+[[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] rule still holds:
+one screen per goal, not one screen per table. A record screen can therefore
+show the records a goal needs together, such as a currency with its countries
+and calendars. It shows them with the parts this page defines.
+
+** Words
+
+One word per idea, in code, in the interface and in conversation.
+
+| Word | Meaning |
+|------+---------|
+| /Record/ | One row a person reads and maintains, such as one currency |
+| /Record kind/ | What the records are, such as currencies. Named by its plural |
+| /List/ | The paged table of the records of one kind |
+| /Record page/ | The page of one record, with its tabs |
+| /Key/ | The fields that name a record, such as =iso_code=. Fixed once the record exists |
+| /Display field/ | The field a person knows the record by, such as the name |
+| /Version/ | The number of a record's accepted change, used to refuse a stale write |
+| /History/ | Every version of one record and the difference between them |
+| /Change reason/ | The code and commentary that say why a write was made |
+| /Provenance/ | Who wrote a version, for whom, when and why |
+| /Link/ | A row that joins two records and has no versions, such as a currency's country |
+| /Part/ | A record that belongs to one parent and has its own versions, such as a calendar's rule |
+| /Field table/ | The one list of a record kind's fields that drives its form, details, revert and write |
+
+** What a record kind declares
+
+A record kind is declared once. Every part of the screen reads the
+declaration, so no part repeats it.
+
+| Declaration | Where | What it decides |
+|-------------+-------+-----------------|
+| Resource: key fields, list reply field, subjects, parent field, versioned, writable | =REFDATA_RECORDS= in =wire-protocol/src/records.ts= | What the BFF lets a screen reach |
+| Write schema | =WRITES= in =bff/src/records.ts= | What a write must look like, checked against the generated write type |
+| Field table | A =FieldSpec[]= beside the screen | The form, the details, the revert and the write |
+| Columns | A column list beside the screen | The list's table |
+| Permissions | =refdata::<plural>:write= and =:delete= | Which actions the screen draws |
+
+Every versioned record carries =version=, =modified_by=, =performed_by=,
+=change_reason_code=, =change_commentary= and =recorded_at=, and the screen
+reads them; it never asks a person for them.
+
+** The layers
+
+#+begin_src text
+  Screen      list, record page, dialogs        web/src/refdata/*.tsx
+  Query       reads, writes, cache              React Query, keyed ['records', kind, parent?]
+  Route       HTTP, checked at the boundary     bff/src/records.ts  (/api/refdata/...)
+  Protocol    subjects, request and reply       wire-protocol/src/records.ts
+#+end_src
+
+A screen never names a subject or a wire field it was not given by its field
+table. The BFF answers only the record kinds its registry names. Adding a
+record kind adds a registry entry, a write schema, a field table and a screen.
+It never edits another kind's code; if it has to, a shared part is missing, and
+adding that part is the first task.
+
+** Addresses
+
+| Address | Shows |
+|---------+-------|
+| =/<area>/<plural>= | The list |
+| =/<area>/<plural>/:key= | The record page, on its first tab |
+| =/<area>/<plural>/:key?tab=<tab>= | The record page on one tab, so a link reopens it there |
+
+Add and Edit open a dialog over the page they start from; they have no address
+of their own. A record kind with a key of more than one field encodes the key in
+one path segment, as the pair code =EUR/USD= is.
+
+** The list
+
+#+begin_src text
+  Area › Currencies
+  Currencies                                            [↻ Refresh] [+ Add]
+  The currencies the tenant works in.
+  [ 🔍 Search…                    ]  [ Tier ▾ ]
+  ─────────────────────────────────────────────────────────────────────────
+   Code   Name                 Tier       Nature     Symbol
+  ─────────────────────────────────────────────────────────────────────────
+   EUR    Euro                 (G10)      Fiat       €
+   …
+  ─────────────────────────────────────────────────────────────────────────
+  1–100 of 168        [« First] [‹ Previous] [Next ›] [Last »]   Page size [100 ▾]
+#+end_src
+
+*** Header
+
+- The breadcrumb (=Crumbs=), then the plural as the title, in sentence case
+  (=PageHeader=).
+- One sentence that says what the records are.
+- At the right, /Refresh/ then /Add/. Add is the primary button and is drawn
+  only for a person who may write.
+
+*** Search and filter
+
+- A search box over the display field and the key. The search goes to the
+  server through the list contract's filter, so it searches every record, not
+  the page on the screen. A filter over the rows on one page is not a search.
+- Where a kind has a natural classification, such as a tier or a type, one
+  filter select beside the search.
+- Where the generated list contract has no filter for a field the search needs,
+  the contract is extended. The screen never reads every row to filter them
+  itself. See [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
+- A filter that matches nothing says "No <plural> match the search." and offers
+  to clear it.
+
+*** The table
+
+- The columns come from one column list per kind. The display field or the key
+  is the first column.
+- One row opens the record page on a click, and on Enter when the row has focus.
+  The table is reachable from the keyboard.
+- Selection is single. Bulk changes are a separate feature, not a table mode.
+- Every column sorts on the server through the list contract's =order=, on the
+  value, not on the text shown. The default order is the kind's natural order:
+  the display order, then the name, for reference data; most recent first for
+  records that accumulate.
+- The audit columns (=version=, =modified_by=, =performed_by=, =recorded_at=,
+  =change_reason_code=, =change_commentary=) are hidden by default and offered
+  in a column menu. =tenant_id= and an =id= that is a UUID are never shown.
+- Which columns show, and in what order, is remembered per person in the
+  browser, under a key that carries the column set's version.
+- A cell follows the cell rules in [[*Icons and cells][Icons and cells]].
+
+*** Paging
+
+Every list pages on the server. This is the rule the Qt standard had, and the
+memory [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]]
+repeats.
+
+- A list reads one page with =offset=, =limit= and the server's =total=, through
+  the generated list contract. It never reads with a large fixed limit, and it
+  never pages to the end to show everything.
+- The footer is the shared =Pager=: the count first ("1–100 of 168"), then
+  /First/, /Previous/, /Next/, /Last/, then /Page size/ with 25, 50, 100, 200
+  and 500, default 100.
+- /Load all/ is offered only when the total is 1000 or less.
+- A new search, a new filter, a new order or a new page size returns to the
+  first page. After a write the list returns to the first page, because the
+  changed record may have moved.
+- The page, page size, search and order are held in the address, so a link and
+  the browser's back button restore the list.
+
+*** States
+
+| State | What the list shows |
+|-------+---------------------|
+| First load | "Loading…" in the table body. Never an empty table without words |
+| Loading again | The current rows, dimmed, and the count marked as refreshing. Never a blank table |
+| No records | "There are no <plural> yet." and, for a person who may write, Add |
+| Nothing matches | "No <plural> match the search." and a way to clear it |
+| Error | The server's words in an error notice, and Retry in place. Never a modal box |
+| Changed on the server | Refresh draws the eye (see Recency) |
+
+*** Recency
+
+When a change notification says a record of this kind changed, the list marks
+Refresh as stale. After a reload, rows whose =recorded_at= is newer than the
+previous load are marked for a few seconds, so a person sees what changed. The
+first load marks nothing. A person can turn the mark off. The notifications
+come from [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
+
+** The record page
+
+#+begin_src text
+  Area › Currencies › EUR
+  Euro                                              [✎ Edit] [🗑 Delete]
+  EUR · version 4
+  [ Details ] [ Countries ] [ Calendars ] [ Desk groups ] [ History ]
+  ┌────────────────────────────────────────────────────────────────────┐
+  │ ISO code   Name    Numeric code   Symbol                           │
+  │ EUR        Euro    978            €                                │
+  │ …                                                                  │
+  ├────────────────────────────────────────────────────────────────────┤
+  │ Last changed: version 4 · priya for priya · 2026-10-04 22:10 ·     │
+  │ Rectification · "Corrected the symbol"                             │
+  └────────────────────────────────────────────────────────────────────┘
+#+end_src
+
+*** Header
+
+- The breadcrumb, then the display field as the title.
+- The lead line reads "<key> · version <n>" (=refdata.records.lead=).
+- The actions at the right, in this order: the kind's own actions (such as
+  /Derive a calendar/), then /Edit/, then /Delete/. Each is drawn only for a
+  person who may take it, and only when the record allows it.
+
+*** Tabs
+
+The tabs are held in the address (=useRecordTabs=). In this order:
+
+| Tab | Shown when | Holds |
+|-----+------------+-------|
+| /Details/ | Always, first | The record's own fields, laid out by =RecordDetails=, then the last-changed line |
+| /<Field group>/ | The kind declares a field group | The fields of that group |
+| /<Related plural>/ | The kind has links or parts of that kind | One related-records panel |
+| /History/ | The kind is versioned | The history panel |
+
+A tab that does not apply to this record is not drawn: a derived calendar has no
+Rules tab. A tab that applies but holds nothing yet is drawn, with "None yet."
+and its Add.
+
+*** Fields
+
+- A label above each value, in sentence case, with no colon.
+- A value with nothing in it shows a muted dash, so a blank is not taken for a
+  failure to load.
+- A classification shows its label (=ClassifiedValue=). A code that names
+  another record is a link to that record's page.
+
+*** Last changed
+
+The Details tab ends with the provenance of the current version, in this order:
+version, modified by, performed by, recorded at, change reason, commentary.
+When =modified_by= and =performed_by= are the same person, the line names them
+once. A record with no versions has no last-changed line.
+
+** Writes
+
+Every write goes through one of three dialogs: the record dialog for create and
+amend (=RecordDialog=), the remove dialog for delete (=RemoveRecordDialog=),
+and the revert dialog (=RevertDialog=). A screen does not build its own.
+
+*** The form
+
+The form is drawn from the field table. One control per field kind:
+
+| Field kind | Control | Writes |
+|------------+---------+--------|
+| =text= | Text input, with a maximum length | A string; a =blank= field may be empty |
+| =int= | Number input, with a minimum and maximum | An integer |
+| =decimal= | Number input | A number |
+| =bool= | Yes and No select | A boolean |
+| =date= | Date input | An ISO date |
+| =choice= | Select over fixed options, labelled from =refdata.choices.<field>= | The option, or its number |
+| =classification= | Select over a classification list, showing name and code | The code |
+| =record= | Select over another record kind, showing name and code | The key |
+
+- A field that names another record or a classification is always a select,
+  never free text.
+- An =optional= field writes null when it is empty. A field with =when= is asked
+  for only while the other values meet it, and writes null otherwise, as the
+  rule form does for each rule kind.
+- The key is entered when the record is created and is fixed after that
+  (=fixed=). So is a field that changes what the record is.
+- A field the server needs but the person does not edit, such as an image, is
+  carried over from the record (=keep=). A field the screen sets, such as the
+  parent of a part, is given by the screen (=given=).
+- A field that fails its check shows the message under it when the person leaves
+  it, and focus moves to the first such field on save. Save is disabled until the
+  form is complete.
+- Long text, such as commentary, is a text area.
+
+*** Create
+
+- The dialog is titled "Add <thing>" and its button is /Add/.
+- A new record is written with the reason =system.new_record=, the only reason
+  that applies to a new record, so the dialog states it in a note instead of
+  asking. It is written with =must_not_exist=: adding a key that exists is
+  refused, and the refusal names the key.
+- After the write the screen opens the new record's page.
+
+*** Amend
+
+- /Edit/ opens the record dialog with the current values. Its title is
+  "Edit <key>" and its button is /Save/.
+- The person picks a change reason from the server's reasons for an amendment
+  (=useReason('amend')=), and writes a commentary when the reason needs one.
+- The reasons follow the change. When a field changed, =common.non_material_update=
+  is not offered. When no field changed, only that reason is offered. The set is
+  worked out from the difference between the form and the record.
+- The write claims the version read (=must_match_version=). A record that
+  changed since is refused with 409, and the screen says so and offers to reload.
+- Leaving the dialog with changes asks "You have unsaved changes. Close anyway?"
+
+*** Delete
+
+- /Delete/ opens the remove dialog. Its title is "Delete <key>?" and it says
+  what is lost, and whether history stays: a versioned record keeps its
+  history; a link does not have one.
+- The person picks a reason for a deletion (=useReason('delete')=) and writes a
+  commentary when the reason needs one.
+- The write claims the version read. A record that changed since is refused
+  with 409.
+- Parts that belong only to this record are deleted first, with the same
+  reason, and the dialog says so. Links from other records are not deleted, and
+  the dialog says so.
+- After the delete the screen returns to the list.
+
+*** Read-only records
+
+A record the server does not let a person change, such as a QuantLib calendar
+or a country, shows no Edit and no Delete, and says why in one notice on the
+Details tab. Its kind may still offer an action that makes a writable record
+from it, as /Derive a calendar/ does.
+
+** History
+
+The History tab is the shared history panel (=HistoryPanel=), reading the
+generic history request (=GET /api/history=, =refdata.v1.history.get=).
+
+- On the left, the timeline, newest first. Each version shows its number, when,
+  who modified it and for whom, the change reason and the commentary.
+- On the right, the comparison: a /From/ and a /To/ version, and /All fields/ or
+  /Only changes/. The difference is drawn in the GitHub style, a removed line
+  and an added line per changed field, with the changed part marked.
+- The oldest version shows "Initial version". A version with no field change
+  shows "No field changes". A /From/ newer than the /To/ is refused.
+- The provenance fields are not compared; they differ by definition and show on
+  the timeline.
+- /Revert to this version/ is offered on any version but the current one, to a
+  person who may write. It opens the revert dialog, which says that the values
+  of version /n/ are written back as a new version and that no version is lost.
+  It asks for a reason, and writes against the current version.
+
+A screen that shows a log of events is an Audit screen, not History. It has
+Refresh and no comparison or revert.
+
+** Related records
+
+A record page shows the records that belong to it as tabs, one per kind. There
+are two kinds of related records, and each has one panel.
+
+*** Links
+
+A link joins two records and has no versions, such as a currency's countries
+or a desk group's members. The links panel (=LinkPanel=):
+
+- lists the linked records by key and name; a name opens the linked record's
+  page;
+- adds a link by picking a record that is not linked yet, and writes it with
+  =system.new_record=;
+- removes a link with /Remove/, not /Delete/, because the linked record stays.
+
+A link has no history, so the panel has none.
+
+*** Parts
+
+A part belongs to one parent and has its own versions, such as a calendar's
+rules, exceptions and diary events. The parts panel:
+
+- lists the parts in their natural order, with the columns the kind declares;
+- offers /History/, /Edit/ and /Delete/ on each row, and /Add/ under the table;
+- opens the record dialog for add and edit, with the parent given, the history
+  panel in a dialog, and the remove dialog for delete.
+
+Neither panel edits in the table. Neither offers Add while the parent is being
+created: the parent is saved first, and its page then offers the panel.
+
+** Icons and cells
+
+Icons come from the one Fluent set in
+[[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]], at 20 pixels in
+buttons and 16 pixels in tables, monochrome and coloured by the theme. A
+standard action carries its icon beside its word; an icon never stands alone
+where its meaning is not plain.
+
+| Action | Icon | Word |
+|--------+------+------|
+| Refresh | =arrow_clockwise= | Refresh |
+| Add | =add= | Add |
+| Edit | =edit= | Edit |
+| Delete | =delete= | Delete |
+| Remove a link | =dismiss= | Remove |
+| History | =history= | History |
+| Save | =save= | Save |
+| Close | =dismiss= | Cancel |
+| Revert | =arrow_rotate_counterclockwise= | Revert to this version |
+| Search | =search= | (the search box) |
+| Filter | =filter= | (the filter select) |
+| Copy | =copy= | Copy |
+| Import | =arrow_download= | Import |
+| Export | =arrow_upload= | Export |
+
+An action this table lacks is added to it and to the icon reference before it
+is used, so two screens never draw one idea with two icons.
+
+| Cell | How it is drawn |
+|------+-----------------|
+| A key or code | Monospace, left |
+| A number or amount | Monospace, right, tabular figures |
+| A classification | Its label (=RowLabel=); with no label, its name |
+| A code with no label mapping | The orange dashed fallback label, so the gap shows |
+| Yes or no | The words Yes and No |
+| A timestamp | Relative, with the exact value on hover |
+| A country | Its flag, then its code |
+| An empty value | A muted dash |
+
+** Feedback, access and safety
+
+*** Feedback
+
+| What happened | What the screen says |
+|---------------+----------------------|
+| A write succeeded | The dialog closes and the page shows the new values; Add opens the new record |
+| A field is wrong | The message under the field, and the list of fields still to fill in |
+| The server refused | The server's own words, in the dialog, which stays open |
+| The record changed since it was read | That it changed, and an offer to reload |
+| The key already exists | That it exists, naming the key |
+| The session ended | That it ended, and a way to sign in again |
+| The server cannot be reached | That it cannot be reached, and Retry |
+
+Every message says what happened and what to do. "Error" on its own is not a
+message.
+
+*** Access
+
+- An action a person may not take is not drawn, rather than drawn disabled.
+  =useRecordPermissions= decides from the registry and the person's roles.
+- The server decides; the screen only hides what the server would refuse. A
+  refusal is shown as a refusal, not as a failure.
+
+*** Safety
+
+- Delete always confirms, names the record, and says what is lost.
+- Revert always writes a new version and says so.
+- Every write carries a change reason; there is no silent write.
+
+** Naming
+
+| Thing | Rule | Example |
+|-------+------+---------|
+| Record kind key | Plural, kebab case | =currency-pairs= |
+| Address | Area, then the kind key | =/refdata/currency-pairs/EUR%2FUSD= |
+| BFF route | =/api/refdata/<kind key>= | =/api/refdata/currency-pairs= |
+| Query key | =['records', kind, parent?]= | =['records', 'calendar-rules', 'ACME_LDN']= |
+| Screen components | =<Plural>Page= and =<Singular>Page= | =CalendarsPage=, =CalendarPage= |
+| Path helper | =<singular>Path(key?)= | =calendarPath('TARGET')= |
+| Field labels | =refdata.fields.<field>= | =refdata.fields.calendar_type= |
+| Choice labels | =refdata.choices.<field>.<option>= | =refdata.choices.shift.none= |
+| Shared words | =refdata.records.*= | =refdata.records.save= |
+| Interface words | Sentence case | "Calendar type" |
+
+The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
+Refresh and Cancel. A kind's own action is a verb and its object, such as
+/Derive a calendar/ or /Rebuild business days/.
+
+** Exceptions
+
+Some record kinds are not regular. The exception is named on the kind's screen
+and in its journey, never found later.
+
+| Kind | What differs |
+|------+--------------|
+| /Classification list/ | Short code lists with an order and a label; maintained from the classifications screen, whose rows follow this standard |
+| /Link/ | No list or page of its own; maintained from a parent's links panel |
+| /Part/ | No list or page of its own; maintained from a parent's parts panel |
+| /Read-only/ | No Edit and no Delete; the reason shown on the Details tab |
+| /Shaped by its source/ | Tabs depend on what the record is made of, such as a QuantLib, derived or bespoke calendar |
+| /Singleton/ | One record by definition: no list, no Add, no Delete |
+| /Accumulating/ | Most recent first; Delete usually refused |
+
+An exception decides which parts exist and which actions show. It never changes
+the layout of a part, and it never brings a new icon or a new word for an
+existing idea.
+
+** The shared components
+
+Each rule above is carried by a shared component. The status says how far the
+component carries it today.
+
+| Rule | Component | Status |
+|------+-----------+--------|
+| Record kinds reachable from the browser | =REFDATA_RECORDS=, =/api/refdata= routes | Exists |
+| Write checked at the boundary | =WRITES= | Exists |
+| Field table, form, details | =FieldSpec=, =FieldInput=, =RecordDialog=, =RecordDetails= | Exists; no inline messages on leaving a field, no text area |
+| Tabs in the address | =useRecordTabs= | Exists |
+| Paged list | =Pager=, =pageBounds= in =ui/Pager.tsx= | Partial: Previous and Next only; no First, Last, page size or Load all |
+| Server paging of record kinds | =listRecords=, =useRecords= | Missing: they read every row; must read one page and the total |
+| Server search, filter and order | the list contract's =filter= and =order= | Missing for most refdata kinds |
+| List table | =RecordTable= | Partial: no sorting, column menu, keyboard opening or recency |
+| Change reasons | =useReason=, =ReasonFields= | Partial: no filter by whether a field changed |
+| Unsaved changes | (none) | Missing |
+| Delete | =RemoveRecordDialog= | Exists; its word is still Remove |
+| Revert | =RevertDialog= | Exists |
+| History | =HistoryPanel= | Exists |
+| Links | =LinkPanel= | Exists |
+| Parts | =PartsPanel= in =refdata/calendars.tsx= | Exists; to move beside =LinkPanel= |
+| Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
+| Icons | the SVG set in =web/src/assets/icons= | Missing: no screen draws them yet |
+| Last-changed line | (none) | Missing |
+| Recency | (none) | Missing; needs the change notification consumer |
+| Permissions | =useRecordPermissions= | Exists |
+
+** How today's record screens conform
+
+| Screen | Where it differs from this standard |
+|--------+-------------------------------------|
+| Currencies | Reads every row; links shown as panels on Details instead of tabs; Remove for Delete; no icons |
+| Desk groups | Reads every row; members on Details instead of a tab; Remove for Delete; no icons |
+| Currency pairs | Reads every row; calendars on Details instead of a tab; Remove for Delete; no icons |
+| Holiday calendars | Reads every row; Remove for Delete; no icons |
+| Classifications | Reads every row of a list; a different list layout; no icons |
+| Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |
+
+The story [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] closes these
+differences.
+
+** Building a record screen
+
+Work in this order. Each step ends in something to check.
+
+1. Name the record kind, its key, its display field and its natural order. Say
+   whether it is versioned and writable, and whether it is an exception.
+2. Add the registry entry and the write schema, with a test that the BFF
+   refuses a bad row and a read-only write.
+3. Write the field table and the column list.
+4. Build the list from the shared parts: header, search, =RecordTable=, =Pager=.
+5. Build the record page from =useRecordTabs=, =RecordDetails=, the related
+   panels and =HistoryPanel=.
+6. Use =RecordDialog=, =RemoveRecordDialog= and =RevertDialog= for every write.
+7. Add the strings in English, French and Portuguese.
+8. Check it on the running server: list, page, search, open, add, edit with a
+   stale version, delete, history and revert, and the empty, error and
+   no-permission states.
+
+** Where this departs from the Qt standard
+
+The Qt standard is the source of this scope. These are the places this page
+decides differently, on purpose.
+
+| Qt | Here | Why |
+|----+------+-----|
+| Edit, Delete and History on the list toolbar, acting on a selected row | The row opens the record page, where those actions are | A web page has an address; the record page is where a person acts on one record |
+| A detail dialog per record | A record page, with dialogs for add and edit | A page can be linked to and reopened on a tab |
+| A Provenance tab | A last-changed line at the end of Details | Six values do not need a tab |
+| A reason dialog on create offering the system reasons | The one creation reason stated in a note | Only =system.new_record= applies; a choice of one is not a choice |
+| Modal boxes for errors | A notice in place, with Retry | It keeps the person's place and can be retried |
+| No search on the list | Server search and one filter | No one pages through four hundred records to find one |
+| Labels with a trailing colon | Sentence case, no colon | The web convention; it reads the same |
+| Disabled actions | Actions not drawn | A disabled button asks a question a missing one does not |
+
+* See also
+
+- [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][The entity specification (superseded)]] — the Qt-derived standard this page replaces for record screens
+- [[id:2BF2FFC1-B6A0-495E-9B14-E26ACF09EA55][Qt account screen: raw reference analysis]] — the Qt dialog, save, delete and history flows in detail
+- [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]]
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colours, labels, and History versus Audit
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]
+- [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]]
+- [[id:257F3E59-8A08-4B49-B95F-7A956483D3D7][Badge catalogue]]
+- [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]]
+- [[id:DD0C6CEB-A285-40F5-8A97-B39DA6953B20][ores.web component specification]] — the routes the record screens use
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] — the list contract: offset, limit, total and order
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

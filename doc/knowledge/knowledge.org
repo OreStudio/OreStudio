@@ -131,6 +131,9 @@ features. Each component's own page carries its script inventory.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — what a person is trying to
   do, written down before it is built: the goal, the steps, the wireframe, the
   entity fields composed into one screen, and the operations each step needs.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the one shape and
+  behaviour of every screen that lists and maintains records: paging, the record
+  page, writes and change reasons, history, related records, icons and states.
 
 * Security
 

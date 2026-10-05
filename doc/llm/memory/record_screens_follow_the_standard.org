@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: CF052805-2B7A-46B9-B14C-EF8BCF810C44
+:END:
+#+title: Record screens follow the record screen standard
+#+description: Any screen that lists and maintains records of one kind uses the shared parts the record screen standard names, with no per-screen variation.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :web:ux:feedback:memory:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+A screen that lists, opens, creates, amends or deletes records of one kind is a record screen. It follows the Record screen standard (doc/knowledge/ui/record_screen_standard.org) and draws its list, paging, record page, dialogs, history and related-record panels from the shared components that page names.
+
+*Why:* The refdata screens were built with whole-list reads and their own layouts, so each screen behaved differently and none used the shared Pager; the user asked for one standard, with the same scope as the Qt entity standard, so that no record screen varies.
+
+*How to apply:* Before building or changing a record screen, read the standard and use its components. If a rule needs a component that is missing or partial, extend the shared component rather than writing a local one, and update the component table in the standard.

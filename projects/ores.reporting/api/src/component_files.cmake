@@ -163,7 +163,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/risk_report_config_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/domain/run_document.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/analytic_type_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/eventing/concurrency_policy_event.hpp"
@@ -218,6 +217,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_run_setup_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_type_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/run_document_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/ores.reporting.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/workflow/report_execution_workflow.hpp"
 )

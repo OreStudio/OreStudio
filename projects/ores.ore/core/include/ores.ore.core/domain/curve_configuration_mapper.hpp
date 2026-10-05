@@ -32,7 +32,6 @@
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/curve_configuration.hpp"
-#include "ores.refdata.api/domain/curve_configuration_document.hpp"
 #include "ores.refdata.api/domain/curve_configuration_section.hpp"
 #include "ores.refdata.api/domain/curve_correlation_config.hpp"
 #include "ores.refdata.api/domain/curve_definition.hpp"
@@ -57,6 +56,7 @@
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
@@ -82,7 +82,7 @@ public:
      * @throws std::runtime_error for a report configuration or a section with
      * entries the mapper does not model yet.
      */
-    static ores::refdata::domain::curve_configuration_document map(const curveconfiguration& v);
+    static ores::refdata::messaging::curve_configuration_document map(const curveconfiguration& v);
 
     /**
      * @brief Reconstructs an ORE CurveConfiguration document from mapped
@@ -93,7 +93,8 @@ public:
      * absent, or a quote directly on an entry whose section holds quotes only on
      * its segments.
      */
-    static curveconfiguration reverse(const ores::refdata::domain::curve_configuration_document& v);
+    static curveconfiguration
+    reverse(const ores::refdata::messaging::curve_configuration_document& v);
 };
 
 }

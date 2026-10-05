@@ -30,7 +30,6 @@
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
 #include "ores.refdata.api/domain/commodity_forward_convention.hpp"
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
-#include "ores.refdata.api/domain/conventions_document.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
@@ -50,6 +49,7 @@
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include <cstddef>
 #include <map>
 #include <string>
@@ -87,7 +87,7 @@ public:
     /**
      * @brief Maps all recognised convention types from an ORE conventions doc.
      */
-    static ores::refdata::domain::conventions_document map(const conventions& v);
+    static ores::refdata::messaging::conventions_document map(const conventions& v);
 
     /**
      * @brief The categories the document carries that no entity models, and how
@@ -146,7 +146,7 @@ public:
 
     static refdata::domain::bma_basis_swap_convention map_bma_basis_swap(const bmaBasisSwapType& v);
 
-    static ores::refdata::domain::fx_convention map_fx(const fxType& v);
+    static ores::refdata::messaging::fx_convention map_fx(const fxType& v);
 
     static refdata::domain::cds_convention map_cds(const cdsConventionsType& v);
 
@@ -164,7 +164,7 @@ public:
     /**
      * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.
      */
-    static domain::conventions reverse(const ores::refdata::domain::conventions_document& v);
+    static domain::conventions reverse(const ores::refdata::messaging::conventions_document& v);
 };
 
 /**

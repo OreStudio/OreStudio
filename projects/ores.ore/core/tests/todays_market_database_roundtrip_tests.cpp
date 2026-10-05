@@ -74,7 +74,7 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     todaysmarket original;
     ores::ore::domain::load_data(content, original);
 
-    ores::analytics::domain::todays_market_document mapped = todays_market_mapper::map(original);
+    ores::analytics::messaging::todays_market_document mapped = todays_market_mapper::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(!mapped.collections.empty());
     REQUIRE(!mapped.entries.empty());

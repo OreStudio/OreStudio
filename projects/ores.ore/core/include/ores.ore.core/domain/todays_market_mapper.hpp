@@ -24,8 +24,8 @@
 #include "ores.analytics.api/domain/todays_market_config.hpp"
 #include "ores.analytics.api/domain/todays_market_configuration.hpp"
 #include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
-#include "ores.analytics.api/domain/todays_market_document.hpp"
 #include "ores.analytics.api/domain/todays_market_entry.hpp"
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include <vector>
@@ -51,7 +51,7 @@ public:
     /**
      * @brief Maps an ORE TodaysMarket document to the analytics entities.
      */
-    static ores::analytics::domain::todays_market_document map(const todaysmarket& v);
+    static ores::analytics::messaging::todays_market_document map(const todaysmarket& v);
 
     /**
      * @brief Reconstructs an ORE TodaysMarket document from mapped entities.
@@ -61,7 +61,7 @@ public:
      * name the same key twice and a reference cannot be sorted back into
      * document order.
      */
-    static todaysmarket reverse(const ores::analytics::domain::todays_market_document& v);
+    static todaysmarket reverse(const ores::analytics::messaging::todays_market_document& v);
 };
 
 }

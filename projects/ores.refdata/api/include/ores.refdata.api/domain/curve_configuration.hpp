@@ -79,6 +79,10 @@ struct curve_configuration final {
      * @brief The reporting configuration this document is registered as. Nullable because a
      * document can be imported before it is registered: the mapper reads and writes content and
      * does not invent a header, the caller supplies one.
+     *
+     * The foreign key into reporting's configurations is not checked here (:skip_check:): a trigger
+     * runs with the inserting service's grants, and this component does not read reporting's
+     * tables. Reporting's binding holds the reference; this column only names it.
      */
     boost::uuids::uuid configuration_id;
 

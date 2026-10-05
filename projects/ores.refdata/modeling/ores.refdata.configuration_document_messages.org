@@ -1,0 +1,678 @@
+:PROPERTIES:
+:ID: BB690F37-423E-4FBC-AC93-5F5577DF7B10
+:END:
+#+title: ores.refdata.configuration_document_messages
+#+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document, and save and get the conventions.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: configuration_document
+#+namespace: ores::refdata::messaging
+#+brief: Refdata's ORE configuration documents as operations.
+#+filetags: :model:operation:refdata:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The configuration documents refdata owns, as operations: the curve
+configuration and the conventions. Another service reaches them only through
+these, never through refdata's tables. The handler stamps the session's party
+on every row it stores.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.refdata.api/domain/average_ois_convention.hpp"
+#include "ores.refdata.api/domain/base_correlation_config.hpp"
+#include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/bond_yield_convention.hpp"
+#include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/cds_volatility_config.hpp"
+#include "ores.refdata.api/domain/cds_volatility_term.hpp"
+#include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
+#include "ores.refdata.api/domain/commodity_curve_config.hpp"
+#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
+#include "ores.refdata.api/domain/commodity_future_convention.hpp"
+#include "ores.refdata.api/domain/commodity_price_segment.hpp"
+#include "ores.refdata.api/domain/commodity_volatility_config.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
+#include "ores.refdata.api/domain/curve_configuration.hpp"
+#include "ores.refdata.api/domain/curve_configuration_section.hpp"
+#include "ores.refdata.api/domain/curve_correlation_config.hpp"
+#include "ores.refdata.api/domain/curve_definition.hpp"
+#include "ores.refdata.api/domain/curve_global_report.hpp"
+#include "ores.refdata.api/domain/curve_parametric_smile.hpp"
+#include "ores.refdata.api/domain/curve_parametric_smile_parameter.hpp"
+#include "ores.refdata.api/domain/curve_quote.hpp"
+#include "ores.refdata.api/domain/curve_report_configuration.hpp"
+#include "ores.refdata.api/domain/curve_security_config.hpp"
+#include "ores.refdata.api/domain/curve_segment.hpp"
+#include "ores.refdata.api/domain/curve_segment_curve.hpp"
+#include "ores.refdata.api/domain/curve_volatility_config.hpp"
+#include "ores.refdata.api/domain/default_curve_config.hpp"
+#include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.api/domain/equity_curve_config.hpp"
+#include "ores.refdata.api/domain/equity_volatility_config.hpp"
+#include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/domain/future_convention.hpp"
+#include "ores.refdata.api/domain/fx_option_convention.hpp"
+#include "ores.refdata.api/domain/fx_volatility_config.hpp"
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/inflation_curve_config.hpp"
+#include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
+#include "ores.refdata.api/domain/inflation_swap_convention.hpp"
+#include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/intraday_power_load_convention.hpp"
+#include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/domain/swap_index_convention.hpp"
+#include "ores.refdata.api/domain/swaption_volatility_config.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
+#include "ores.refdata.api/domain/yield_curve_config.hpp"
+#include "ores.refdata.api/domain/yield_volatility_config.hpp"
+#include "ores.refdata.api/domain/zero_convention.hpp"
+#include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** fx_convention
+
+#+begin_src cpp :name comment
+/**
+ * @brief An FX convention as a conventions document carries it: the pair, its
+ * convention, and the advance calendars the document lists.
+ */
+#+end_src
+
+*** pair
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::currency_pair
+:END:
+
+*** convention
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::currency_pair_convention
+:END:
+
+*** spot_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** advance_calendars
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** conventions_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE conventions document as the rows refdata stores.
+ *
+ * The instrument conventions belong to a party. The index and FX conventions
+ * are world data, which every party in the tenant shares.
+ */
+#+end_src
+
+*** zero
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::zero_convention>
+:END:
+
+*** average_ois
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::average_ois_convention>
+:END:
+
+*** bma_basis_swap
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::bma_basis_swap_convention>
+:END:
+
+*** cross_currency_basis
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cross_currency_basis_convention>
+:END:
+
+*** cross_currency_fix_float
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cross_currency_fix_float_convention>
+:END:
+
+*** tenor_basis_swap
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::tenor_basis_swap_convention>
+:END:
+
+*** tenor_basis_two_swap
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::tenor_basis_two_swap_convention>
+:END:
+
+*** deposit
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::deposit_convention>
+:END:
+
+*** swap
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swap_convention>
+:END:
+
+*** swap_index
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swap_index_convention>
+:END:
+
+*** future
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::future_convention>
+:END:
+
+*** fx_option
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::fx_option_convention>
+:END:
+
+*** inflation_swap
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_swap_convention>
+:END:
+
+*** intraday_power_load
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::intraday_power_load_convention>
+:END:
+
+*** ois
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::ois_convention>
+:END:
+
+*** fra
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::fra_convention>
+:END:
+
+*** ibor_index
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::ibor_index_convention>
+:END:
+
+*** overnight_index
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::overnight_index_convention>
+:END:
+
+*** zero_inflation_index
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::zero_inflation_index_convention>
+:END:
+
+*** fx
+:PROPERTIES:
+:cpp_type: std::vector<fx_convention>
+:END:
+
+*** cds
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cds_convention>
+:END:
+
+*** cms_spread_option
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cms_spread_option_convention>
+:END:
+
+*** commodity_future
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::commodity_future_convention>
+:END:
+
+*** commodity_forward
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::commodity_forward_convention>
+:END:
+
+*** bond_yield
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::bond_yield_convention>
+:END:
+
+** curve_configuration_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE curve configuration document as the rows refdata stores.
+ *
+ * The header row and every child row the document maps to, grouped by table.
+ * Refdata stores and reads the document whole; a caller in another component
+ * reaches it through these operations, never refdata's tables.
+ */
+#+end_src
+
+*** config
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::curve_configuration
+:END:
+
+*** sections
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_configuration_section>
+:END:
+
+*** definitions
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_definition>
+:END:
+
+*** yield_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::yield_curve_config>
+:END:
+
+*** equity_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::equity_curve_config>
+:END:
+
+*** inflation_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_curve_config>
+:END:
+
+*** default_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::default_curve_config>
+:END:
+
+*** commodity_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::commodity_curve_config>
+:END:
+
+*** fx_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::fx_volatility_config>
+:END:
+
+*** yield_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::yield_volatility_config>
+:END:
+
+*** base_correlations
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::base_correlation_config>
+:END:
+
+*** correlations
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_correlation_config>
+:END:
+
+*** report_configurations
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_report_configuration>
+:END:
+
+*** cds_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cds_volatility_config>
+:END:
+
+*** cds_volatility_terms
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cds_volatility_term>
+:END:
+
+*** volatility_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_volatility_config>
+:END:
+
+*** inflation_cap_floor_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_cap_floor_volatility_config>
+:END:
+
+*** swaption_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::swaption_volatility_config>
+:END:
+
+*** cap_floor_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::cap_floor_volatility_config>
+:END:
+
+*** parametric_smiles
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_parametric_smile>
+:END:
+
+*** parametric_smile_parameters
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_parametric_smile_parameter>
+:END:
+
+*** equity_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::equity_volatility_config>
+:END:
+
+*** commodity_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::commodity_volatility_config>
+:END:
+
+*** bond_future_volatilities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::bond_future_volatility_config>
+:END:
+
+*** global_reports
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_global_report>
+:END:
+
+*** commodity_price_segments
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::commodity_price_segment>
+:END:
+
+*** default_curve_configurations
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::default_curve_configuration>
+:END:
+
+*** seasonality_factors
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::inflation_seasonality_factor>
+:END:
+
+*** securities
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_security_config>
+:END:
+
+*** intraday_power_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::intraday_power_curve_config>
+:END:
+
+*** bootstrap_configs
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_bootstrap_config>
+:END:
+
+*** segments
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment>
+:END:
+
+*** segment_curves
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_segment_curve>
+:END:
+
+*** quotes
+:PROPERTIES:
+:cpp_type: std::vector<ores::refdata::domain::curve_quote>
+:END:
+
+** save_curve_configuration_document_request
+:PROPERTIES:
+:subject: refdata.v1.curve_configuration_documents.save
+:response: save_curve_configuration_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stores a curve configuration document.
+ *
+ * The session must act for a party, which owns every row. The header carries the reporting
+ * configuration it fills, which is what a get finds it by.
+ */
+#+end_src
+
+*** document
+:PROPERTIES:
+:cpp_type: curve_configuration_document
+:END:
+
+** save_curve_configuration_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the header the save stored.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_curve_configuration_document_request
+:PROPERTIES:
+:subject: refdata.v1.curve_configuration_documents.get
+:response: get_curve_configuration_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a curve configuration document by the reporting configuration it fills.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
+#+end_src
+
+** get_curve_configuration_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief A curve configuration document, when one fills the configuration.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: curve_configuration_document
+:END:
+
+** delete_curve_configuration_document_request
+:PROPERTIES:
+:subject: refdata.v1.curve_configuration_documents.delete
+:response: delete_curve_configuration_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Deletes a curve configuration document that fills a reporting configuration.
+ *
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_curve_configuration_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the delete succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** save_conventions_document_request
+:PROPERTIES:
+:subject: refdata.v1.conventions_documents.save
+:response: save_conventions_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stores a conventions document.
+ *
+ * The instrument conventions belong to the session's party and replace any
+ * it holds under the same id. A world convention the tenant lacks is added;
+ * one it holds is left as it is.
+ */
+#+end_src
+
+*** document
+:PROPERTIES:
+:cpp_type: conventions_document
+:END:
+
+** save_conventions_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the save did not store, and why.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** world_kept
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** World conventions the tenant already held, left unchanged. */
+#+end_src
+
+*** fx_skipped
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** FX conventions, by ORE id, which have no store yet. */
+#+end_src
+
+** get_conventions_document_request
+:PROPERTIES:
+:subject: refdata.v1.conventions_documents.get
+:response: get_conventions_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads every convention the party sees: its instrument conventions
+ * and the tenant's world conventions.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
+#+end_src
+
+** get_conventions_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The conventions the party sees.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: conventions_document
+:END:
+
+* See also
+
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]]

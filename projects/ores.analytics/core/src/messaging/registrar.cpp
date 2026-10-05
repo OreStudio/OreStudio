@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.core/messaging/registrar.hpp"
+#include "ores.analytics.core/messaging/configuration_document_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_history_provider_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_config_history_provider_registrar.hpp"
@@ -54,6 +55,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // Per-entity handler subscriptions (codegen-generated).
     append(subs, register_pricing_engine_type_handlers(nats, ctx, verifier));
+    append(subs, register_configuration_document_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_config_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_product_handlers(nats, ctx, verifier));
     append(subs, register_pricing_model_product_parameter_handlers(nats, ctx, verifier));

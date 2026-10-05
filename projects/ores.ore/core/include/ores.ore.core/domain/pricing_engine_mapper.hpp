@@ -20,10 +20,10 @@
 #ifndef ORES_ORE_CORE_DOMAIN_PRICING_ENGINE_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_PRICING_ENGINE_MAPPER_HPP
 
-#include "ores.analytics.api/domain/pricing_engines_document.hpp"
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include <string>
@@ -55,7 +55,7 @@ public:
      * =model= under ModelParameters, =engine= under EngineParameters, and
      * =global= under GlobalParameters with no product id.
      */
-    static ores::analytics::domain::pricing_engines_document map(const pricingengines& v);
+    static ores::analytics::messaging::pricing_engines_document map(const pricingengines& v);
 
     /**
      * @brief Reconstructs an ORE PricingEngines document from mapped entities.
@@ -71,7 +71,7 @@ public:
      * for: an unknown scope, a global row that names a product, or a model or
      * engine row whose product is not among the products.
      */
-    static pricingengines reverse(const ores::analytics::domain::pricing_engines_document& v);
+    static pricingengines reverse(const ores::analytics::messaging::pricing_engines_document& v);
 };
 
 }

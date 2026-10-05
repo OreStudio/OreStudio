@@ -80,19 +80,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate configuration_id (optional soft FK to ores_reporting_configurations_tbl)
-    if NEW.configuration_id is not null then
-        if not exists (
-            select 1 from ores_reporting_configurations_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.configuration_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid configuration_id: %. No active configuration found with this id.', NEW.configuration_id
-                using errcode = '23503';
-        end if;
-    end if;
-
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

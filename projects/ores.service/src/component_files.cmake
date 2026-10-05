@@ -30,6 +30,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/config/standard_service_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/error_code.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/authorise.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/workflow_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/ores.service.hpp"

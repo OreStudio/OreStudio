@@ -78,7 +78,8 @@ std::optional<domain::oreTradeType> parse_ore_trade_type(const std::string& text
 // envelope is keyed by the trade, not the product, so dropping the whole
 // trade would lose it. Returns false when the type is not one the schema
 // names, which leaves no valid document to write.
-bool append_unmapped_trade(domain::portfolio& p, const trading::messaging::trade_export_item& item) {
+bool append_unmapped_trade(domain::portfolio& p,
+                           const trading::messaging::trade_export_item& item) {
     const auto trade_type = parse_ore_trade_type(item.anchor.trade_type);
     if (!trade_type)
         return false;
@@ -105,7 +106,7 @@ std::string exporter::export_calendar_adjustments(
     return domain::save_data(xsd);
 }
 
-std::string exporter::export_conventions(const ores::refdata::domain::conventions_document& mc) {
+std::string exporter::export_conventions(const ores::refdata::messaging::conventions_document& mc) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting conventions.";
     const auto xsd = domain::conventions_mapper::reverse(mc);
     return domain::save_data(xsd);
@@ -126,8 +127,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                 domain::trade xsd_t;
 
                 if constexpr (std::is_same_v<T, std::monostate>) {
-                    BOOST_LOG_SEV(lg(), debug)
-                        << "Skipping unmapped trade: " << item.ore_id;
+                    BOOST_LOG_SEV(lg(), debug) << "Skipping unmapped trade: " << item.ore_id;
                     return;
                 } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
                     if (tt == "Swap" || tt == "CrossCurrencySwap")
@@ -438,8 +438,9 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                 BOOST_LOG_SEV(lg(), debug)
                     << "Wrote trade as its type and envelope: " << item.ore_id;
             else
-                BOOST_LOG_SEV(lg(), warn) << "Dropping trade with no ORE trade type: "
-                                          << item.ore_id << " (" << tt << ")";
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Dropping trade with no ORE trade type: " << item.ore_id << " (" << tt
+                    << ")";
         }
     }
 

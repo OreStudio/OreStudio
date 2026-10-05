@@ -1,0 +1,363 @@
+:PROPERTIES:
+:ID: 17EFB01A-199E-4A3F-B14D-07B923F0E867
+:END:
+#+title: ores.analytics.configuration_document_messages
+#+description: Codegen operation model for the configuration documents analytics owns: save, get and delete pricing engines and today's market documents.
+#+type: ores.codegen.operation
+#+component: analytics
+#+subcomponent: api
+#+entity_singular: configuration_document
+#+namespace: ores::analytics::messaging
+#+brief: Analytics' ORE configuration documents as operations.
+#+filetags: :model:operation:analytics:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The configuration documents analytics owns, as operations: pricing engines
+and today's market. Another service reaches them only through these, never
+through analytics' tables. The handler stamps the session's party on every row
+it stores.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/domain/todays_market_collection.hpp"
+#include "ores.analytics.api/domain/todays_market_config.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
+#include "ores.analytics.api/domain/todays_market_entry.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** pricing_engines_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE pricing engines document as the rows analytics stores.
+ */
+#+end_src
+
+*** config
+:PROPERTIES:
+:cpp_type: ores::analytics::domain::pricing_model_config
+:END:
+
+*** products
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::pricing_model_product>
+:END:
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::pricing_model_product_parameter>
+:END:
+
+** todays_market_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE today's market document as the rows analytics stores.
+ */
+#+end_src
+
+*** config
+:PROPERTIES:
+:cpp_type: ores::analytics::domain::todays_market_config
+:END:
+
+*** collections
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_collection>
+:END:
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_entry>
+:END:
+
+*** configurations
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_configuration>
+:END:
+
+*** bindings
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_configuration_binding>
+:END:
+
+** save_pricing_engines_document_request
+:PROPERTIES:
+:subject: analytics.v1.pricing_engines_documents.save
+:response: save_pricing_engines_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stores a pricing engines document.
+ *
+ * The session must act for a party, which owns every row. The header carries the reporting
+ * configuration it fills, which is what a get finds it by.
+ */
+#+end_src
+
+*** document
+:PROPERTIES:
+:cpp_type: pricing_engines_document
+:END:
+
+** save_pricing_engines_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the header the save stored.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_pricing_engines_document_request
+:PROPERTIES:
+:subject: analytics.v1.pricing_engines_documents.get
+:response: get_pricing_engines_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a pricing engines document by the reporting configuration it fills.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
+#+end_src
+
+** get_pricing_engines_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief A pricing engines document, when one fills the configuration.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: pricing_engines_document
+:END:
+
+** delete_pricing_engines_document_request
+:PROPERTIES:
+:subject: analytics.v1.pricing_engines_documents.delete
+:response: delete_pricing_engines_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Deletes a pricing engines document that fills a reporting configuration.
+ *
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_pricing_engines_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the delete succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** save_todays_market_document_request
+:PROPERTIES:
+:subject: analytics.v1.todays_market_documents.save
+:response: save_todays_market_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stores a today's market document.
+ *
+ * The session must act for a party, which owns every row. The header carries the reporting
+ * configuration it fills, which is what a get finds it by.
+ */
+#+end_src
+
+*** document
+:PROPERTIES:
+:cpp_type: todays_market_document
+:END:
+
+** save_todays_market_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the header the save stored.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_todays_market_document_request
+:PROPERTIES:
+:subject: analytics.v1.todays_market_documents.get
+:response: get_todays_market_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a today's market document by the reporting configuration it fills.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
+#+end_src
+
+** get_todays_market_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief A today's market document, when one fills the configuration.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: todays_market_document
+:END:
+
+** delete_todays_market_document_request
+:PROPERTIES:
+:subject: analytics.v1.todays_market_documents.delete
+:response: delete_todays_market_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Deletes a today's market document that fills a reporting configuration.
+ *
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_todays_market_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the delete succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]]

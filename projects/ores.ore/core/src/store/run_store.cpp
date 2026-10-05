@@ -85,10 +85,10 @@ Document parse_file(const std::string& file, const std::string& content) {
  * @brief The configuration documents a run names, parsed and mapped.
  */
 struct parsed_documents {
-    std::optional<refdata::domain::conventions_document> conventions;
-    std::optional<refdata::domain::curve_configuration_document> curves;
-    std::optional<analytics::domain::todays_market_document> market;
-    std::optional<analytics::domain::pricing_engines_document> engines;
+    std::optional<refdata::messaging::conventions_document> conventions;
+    std::optional<refdata::messaging::curve_configuration_document> curves;
+    std::optional<analytics::messaging::todays_market_document> market;
+    std::optional<analytics::messaging::pricing_engines_document> engines;
 };
 
 void parse_document(std::string_view code,
@@ -178,7 +178,7 @@ run_import_result import_run(const context& ctx,
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
     const auto run = parse_file<domain::ore>(std::string(run_document_file), run_file->second);
-    reporting::domain::run_document document;
+    reporting::messaging::run_document document;
     document.setup = domain::run_document_mapper::map_setup(run);
     document.analytics = domain::run_document_mapper::map_analytics(run);
     document.market_bindings = domain::run_document_mapper::map_market_bindings(run);

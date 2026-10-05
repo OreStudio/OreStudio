@@ -22,11 +22,13 @@
 #include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <set>
 
 namespace ores::analytics::service {
 
 using namespace ores::analytics::repository;
+using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 using ores::database::repository::stamp_party;
@@ -34,16 +36,16 @@ using ores::database::repository::stamp_party;
 pricing_engines_document_service::pricing_engines_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void pricing_engines_document_service::save(domain::pricing_engines_document v) {
+void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
     stamp_party(ctx_, v);
     pricing_model_config_repository().write(ctx_, v.config);
     pricing_model_product_repository().write(ctx_, v.products);
     pricing_model_product_parameter_repository().write(ctx_, v.parameters);
 }
 
-domain::pricing_engines_document
+messaging::pricing_engines_document
 pricing_engines_document_service::get(const boost::uuids::uuid& config_id) {
-    domain::pricing_engines_document r;
+    messaging::pricing_engines_document r;
     r.config =
         read_one(ctx_, pricing_model_config_repository(), "pricing engines document", config_id);
     const auto of_config = [&](const auto& row) {
@@ -52,6 +54,15 @@ pricing_engines_document_service::get(const boost::uuids::uuid& config_id) {
     r.products = read_where(ctx_, pricing_model_product_repository(), of_config);
     r.parameters = read_where(ctx_, pricing_model_product_parameter_repository(), of_config);
     return r;
+}
+
+void pricing_engines_document_service::remove(const boost::uuids::uuid& id) {
+    const auto d = get(id);
+    if (!d.parameters.empty())
+        pricing_model_product_parameter_repository().remove(ctx_, ids_of(d.parameters));
+    if (!d.products.empty())
+        pricing_model_product_repository().remove(ctx_, ids_of(d.products));
+    pricing_model_config_repository().remove(ctx_, boost::uuids::to_string(d.config.id));
 }
 
 std::optional<boost::uuids::uuid> pricing_engines_document_service::find_by_configuration(

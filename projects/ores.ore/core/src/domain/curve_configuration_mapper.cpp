@@ -316,7 +316,7 @@ const std::map<std::string, std::string, std::less<>>& segment_kinds() {
 // The state one document's mapping accumulates, so each segment element's
 // reader adds its rows without threading the vectors through every call.
 struct import_context {
-    ores::refdata::domain::curve_configuration_document& out;
+    ores::refdata::messaging::curve_configuration_document& out;
     boost::uuids::uuid definition_id;
 
     refdata::domain::curve_segment& segment(const std::string& type, int position) {
@@ -546,7 +546,7 @@ void import_segments(import_context& ctx, const segmentsType& v) {
 }
 
 refdata::domain::curve_definition&
-add_definition(ores::refdata::domain::curve_configuration_document& out,
+add_definition(ores::refdata::messaging::curve_configuration_document& out,
                std::string_view section,
                const std::string& curve_id,
                const std::string& description,
@@ -563,7 +563,7 @@ add_definition(ores::refdata::domain::curve_configuration_document& out,
     return out.definitions.back();
 }
 
-void import_bootstrap(ores::refdata::domain::curve_configuration_document& out,
+void import_bootstrap(ores::refdata::messaging::curve_configuration_document& out,
                       const boost::uuids::uuid& definition_id,
                       const boost::uuids::uuid& configuration_id,
                       const bootstrapConfigType& b) {
@@ -598,7 +598,7 @@ bootstrapConfigType export_bootstrap(const refdata::domain::curve_bootstrap_conf
     return b;
 }
 
-void import_yield_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_yield_curve(ores::refdata::messaging::curve_configuration_document& out,
                         const yieldCurve& v,
                         int position) {
     const auto d = add_definition(
@@ -630,7 +630,7 @@ void import_yield_curve(ores::refdata::domain::curve_configuration_document& out
     import_segments(ctx, v.Segments);
 }
 
-void import_equity_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_equity_curve(ores::refdata::messaging::curve_configuration_document& out,
                          const equityCurve& v,
                          int position) {
     const auto d = add_definition(
@@ -665,7 +665,7 @@ void import_equity_curve(ores::refdata::domain::curve_configuration_document& ou
     }
 }
 
-void import_inflation_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_inflation_curve(ores::refdata::messaging::curve_configuration_document& out,
                             const inflationCurve& v,
                             int position) {
     const auto d = add_definition(
@@ -742,7 +742,7 @@ void import_configuration_settings(refdata::domain::default_curve_configuration&
 }
 
 template <typename Source>
-void import_configuration_lists(ores::refdata::domain::curve_configuration_document& out,
+void import_configuration_lists(ores::refdata::messaging::curve_configuration_document& out,
                                 const refdata::domain::curve_definition& d,
                                 const refdata::domain::default_curve_configuration& r,
                                 const Source& v) {
@@ -757,7 +757,7 @@ void import_configuration_lists(ores::refdata::domain::curve_configuration_docum
         import_bootstrap(out, d.id, r.id, *v.BootstrapConfig);
 }
 
-void import_default_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_default_curve(ores::refdata::messaging::curve_configuration_document& out,
                           const defaultCurve& v,
                           int position) {
     const auto d = add_definition(
@@ -806,7 +806,7 @@ void import_default_curve(ores::refdata::domain::curve_configuration_document& o
 
 // A commodity quote's owner is the entry, one of its price segments, or one of
 // the named lists the entry or a segment writes beside its Quotes.
-void add_commodity_quotes(ores::refdata::domain::curve_configuration_document& out,
+void add_commodity_quotes(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& definition_id,
                           const boost::uuids::uuid& price_segment_id,
                           std::optional<std::string_view> list,
@@ -828,7 +828,7 @@ void add_commodity_quotes(ores::refdata::domain::curve_configuration_document& o
     }
 }
 
-void import_commodity_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_commodity_curve(ores::refdata::messaging::curve_configuration_document& out,
                             const simCommodityCurve& v,
                             int position) {
     const auto d = add_definition(
@@ -915,7 +915,7 @@ void fill_report(Row& r, const reportConfiguration& v) {
     r.continuation_expiry = optional_text(v.ContinuationExpiry);
 }
 
-void import_report(ores::refdata::domain::curve_configuration_document& out,
+void import_report(ores::refdata::messaging::curve_configuration_document& out,
                    const boost::uuids::uuid& definition_id,
                    const reportConfiguration& v) {
     refdata::domain::curve_report_configuration r;
@@ -944,7 +944,7 @@ reportConfiguration export_report(const Row& r) {
     return v;
 }
 
-void import_parametric_smile(ores::refdata::domain::curve_configuration_document& out,
+void import_parametric_smile(ores::refdata::messaging::curve_configuration_document& out,
                              const boost::uuids::uuid& definition_id,
                              const parametricSmileConfig& v) {
     refdata::domain::curve_parametric_smile r;
@@ -998,7 +998,7 @@ parametricSmileConfig export_parametric_smile(
     return v;
 }
 
-void import_fx_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_fx_volatility(ores::refdata::messaging::curve_configuration_document& out,
                           const fxVolatility& v,
                           int position) {
     const auto d = add_definition(
@@ -1034,7 +1034,7 @@ void import_fx_volatility(ores::refdata::domain::curve_configuration_document& o
         import_report(out, d.id, *v.Report);
 }
 
-void import_yield_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_yield_volatility(ores::refdata::messaging::curve_configuration_document& out,
                              const yieldVolatility& v,
                              int position) {
     const auto d = add_definition(
@@ -1058,7 +1058,7 @@ void import_yield_volatility(ores::refdata::domain::curve_configuration_document
         import_report(out, d.id, *v.Report);
 }
 
-void import_base_correlation(ores::refdata::domain::curve_configuration_document& out,
+void import_base_correlation(ores::refdata::messaging::curve_configuration_document& out,
                              const baseCorrelation& v,
                              int position) {
     const auto d = add_definition(
@@ -1092,7 +1092,7 @@ void import_base_correlation(ores::refdata::domain::curve_configuration_document
     out.base_correlations.push_back(std::move(r));
 }
 
-void import_strike_surface(ores::refdata::domain::curve_configuration_document& out,
+void import_strike_surface(ores::refdata::messaging::curve_configuration_document& out,
                            const boost::uuids::uuid& definition_id,
                            const volatilityStrikeSurfaceConfig& v,
                            int position,
@@ -1160,7 +1160,7 @@ refdata::domain::curve_volatility_config new_volatility_config(
     return c;
 }
 
-void import_constant(ores::refdata::domain::curve_configuration_document& out,
+void import_constant(ores::refdata::messaging::curve_configuration_document& out,
                      const boost::uuids::uuid& definition_id,
                      const constantVolatilityConfig& v,
                      bool wrapped,
@@ -1187,7 +1187,7 @@ constantVolatilityConfig export_constant(const refdata::domain::curve_volatility
     return v;
 }
 
-void import_volatility_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_volatility_curve(ores::refdata::messaging::curve_configuration_document& out,
                              const boost::uuids::uuid& definition_id,
                              const volatilityCurveConfig& v,
                              bool wrapped,
@@ -1229,7 +1229,7 @@ export_volatility_curve(const refdata::domain::curve_volatility_config& c,
     return v;
 }
 
-void import_delta_surface(ores::refdata::domain::curve_configuration_document& out,
+void import_delta_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& definition_id,
                           const volatilityDeltaSurfaceConfig& v,
                           bool wrapped,
@@ -1286,7 +1286,7 @@ export_delta_surface(const refdata::domain::curve_volatility_config& c) {
     return v;
 }
 
-void import_proxy_surface(ores::refdata::domain::curve_configuration_document& out,
+void import_proxy_surface(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& definition_id,
                           const proxySurface& v,
                           bool wrapped,
@@ -1314,7 +1314,7 @@ proxySurface export_proxy_surface(const refdata::domain::curve_volatility_config
 // writes. Each holder has at most one of each kind, and a holder whose type has
 // no slot for a kind never writes it.
 template <typename Holder>
-void import_volatility_configs(ores::refdata::domain::curve_configuration_document& out,
+void import_volatility_configs(ores::refdata::messaging::curve_configuration_document& out,
                                const boost::uuids::uuid& definition_id,
                                const std::string& curve_id,
                                const Holder& v,
@@ -1401,7 +1401,7 @@ void export_volatility_configs(
     }
 }
 
-void import_equity_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_equity_volatility(ores::refdata::messaging::curve_configuration_document& out,
                               const equityVolatility& v,
                               int position) {
     const auto d = add_definition(
@@ -1434,7 +1434,7 @@ void import_equity_volatility(ores::refdata::domain::curve_configuration_documen
         import_report(out, d.id, *v.Report);
 }
 
-void import_commodity_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_commodity_volatility(ores::refdata::messaging::curve_configuration_document& out,
                                  const commodityVolatility& v,
                                  int position) {
     const auto d = add_definition(
@@ -1469,7 +1469,7 @@ void import_commodity_volatility(ores::refdata::domain::curve_configuration_docu
         import_report(out, d.id, *v.Report);
 }
 
-void import_bond_future_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_bond_future_volatility(ores::refdata::messaging::curve_configuration_document& out,
                                    const bondFutureVolatility& v,
                                    int position) {
     const auto d = add_definition(
@@ -1498,7 +1498,7 @@ void import_bond_future_volatility(ores::refdata::domain::curve_configuration_do
         import_volatility_configs(out, d.id, d.curve_id, *v.VolatilityConfig, true);
 }
 
-void import_cds_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_cds_volatility(ores::refdata::messaging::curve_configuration_document& out,
                            const cdsVolatility& v,
                            int position) {
     const auto d = add_definition(
@@ -1542,9 +1542,10 @@ void import_cds_volatility(ores::refdata::domain::curve_configuration_document& 
         import_strike_surface(out, d.id, *v.StrikeSurface, 0);
 }
 
-void import_inflation_cap_floor_volatility(ores::refdata::domain::curve_configuration_document& out,
-                                           const inflationCapFloorVolatility& v,
-                                           int position) {
+void import_inflation_cap_floor_volatility(
+    ores::refdata::messaging::curve_configuration_document& out,
+    const inflationCapFloorVolatility& v,
+    int position) {
     const auto d = add_definition(out,
                                   inflation_cap_floor_volatilities_section,
                                   text(v.CurveId),
@@ -1581,7 +1582,7 @@ void import_inflation_cap_floor_volatility(ores::refdata::domain::curve_configur
         import_bootstrap(out, d.id, boost::uuids::uuid{}, *v.BootstrapConfig);
 }
 
-void import_swaption_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_swaption_volatility(ores::refdata::messaging::curve_configuration_document& out,
                                 const swaptionVolatility& v,
                                 int position) {
     const auto d = add_definition(
@@ -1625,7 +1626,7 @@ void import_swaption_volatility(ores::refdata::domain::curve_configuration_docum
         import_report(out, d.id, *v.Report);
 }
 
-void import_cap_floor_volatility(ores::refdata::domain::curve_configuration_document& out,
+void import_cap_floor_volatility(ores::refdata::messaging::curve_configuration_document& out,
                                  const capFloorVolatility& v,
                                  int position) {
     const auto d = add_definition(
@@ -1683,7 +1684,7 @@ void import_cap_floor_volatility(ores::refdata::domain::curve_configuration_docu
         import_report(out, d.id, *v.Report);
 }
 
-void import_correlation(ores::refdata::domain::curve_configuration_document& out,
+void import_correlation(ores::refdata::messaging::curve_configuration_document& out,
                         const correlation& v,
                         int position) {
     const auto d = add_definition(
@@ -1710,7 +1711,7 @@ void import_correlation(ores::refdata::domain::curve_configuration_document& out
     out.correlations.push_back(std::move(r));
 }
 
-void import_security(ores::refdata::domain::curve_configuration_document& out,
+void import_security(ores::refdata::messaging::curve_configuration_document& out,
                      const security& v,
                      int position) {
     const auto d = add_definition(
@@ -1728,13 +1729,13 @@ void import_security(ores::refdata::domain::curve_configuration_document& out,
     out.securities.push_back(std::move(r));
 }
 
-void import_fx_spot(ores::refdata::domain::curve_configuration_document& out,
+void import_fx_spot(ores::refdata::messaging::curve_configuration_document& out,
                     const fxSpot& v,
                     int position) {
     add_definition(out, fx_spots_section, text(v.CurveId), text(v.CurveDescription), position);
 }
 
-void import_intraday_power_curve(ores::refdata::domain::curve_configuration_document& out,
+void import_intraday_power_curve(ores::refdata::messaging::curve_configuration_document& out,
                                  const intradayPowerCurve& v,
                                  int position) {
     const auto d = add_definition(
@@ -2796,7 +2797,7 @@ refdata::domain::curve_global_report new_global_report(const boost::uuids::uuid&
 }
 
 template <typename Family>
-void import_global_family(ores::refdata::domain::curve_configuration_document& out,
+void import_global_family(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& configuration_id,
                           std::string_view family,
                           const xsd::optional<Family>& element,
@@ -2814,7 +2815,7 @@ void import_global_family(ores::refdata::domain::curve_configuration_document& o
     out.global_reports.push_back(std::move(r));
 }
 
-void import_global_report(ores::refdata::domain::curve_configuration_document& out,
+void import_global_report(ores::refdata::messaging::curve_configuration_document& out,
                           const boost::uuids::uuid& configuration_id,
                           const globalReportConfiguration& v) {
     int position = 0;
@@ -2881,9 +2882,9 @@ export_global_report(const std::vector<const refdata::domain::curve_global_repor
 
 }
 
-ores::refdata::domain::curve_configuration_document
+ores::refdata::messaging::curve_configuration_document
 curve_configuration_mapper::map(const curveconfiguration& v) {
-    ores::refdata::domain::curve_configuration_document mapped;
+    ores::refdata::messaging::curve_configuration_document mapped;
 
     auto& config = mapped.config;
     config.id = new_uuid();
@@ -2970,8 +2971,8 @@ curve_configuration_mapper::map(const curveconfiguration& v) {
     return mapped;
 }
 
-curveconfiguration
-curve_configuration_mapper::reverse(const ores::refdata::domain::curve_configuration_document& v) {
+curveconfiguration curve_configuration_mapper::reverse(
+    const ores::refdata::messaging::curve_configuration_document& v) {
     curveconfiguration document;
 
     std::map<std::string, const section_access*, std::less<>> by_code;

@@ -155,15 +155,15 @@ reporting::domain::report_run_setup run_document_mapper::map_setup(const ore& v)
     return r;
 }
 
-std::vector<ores::reporting::domain::run_analytic>
+std::vector<ores::reporting::messaging::run_analytic>
 run_document_mapper::map_analytics(const ore& v) {
-    std::vector<ores::reporting::domain::run_analytic> r;
+    std::vector<ores::reporting::messaging::run_analytic> r;
     r.reserve(v.Analytics.Analytic.size());
 
     int order = 0;
     for (const auto& element : v.Analytics.Analytic) {
         ++order;
-        ores::reporting::domain::run_analytic mapped;
+        ores::reporting::messaging::run_analytic mapped;
         mapped.analytic.display_order = order;
         if (element.type)
             mapped.analytic.analytic_type_code = std::string(*element.type);
@@ -187,7 +187,7 @@ run_document_mapper::map_analytics(const ore& v) {
 }
 
 analyticsType run_document_mapper::reverse_analytics(
-    const std::vector<ores::reporting::domain::run_analytic>& v) {
+    const std::vector<ores::reporting::messaging::run_analytic>& v) {
     analyticsType r;
 
     for (const auto& mapped : v) {

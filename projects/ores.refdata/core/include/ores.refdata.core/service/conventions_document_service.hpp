@@ -21,7 +21,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CONVENTIONS_DOCUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/conventions_document.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
 #include <vector>
@@ -57,13 +57,13 @@ public:
 
     explicit conventions_document_service(context ctx);
 
-    conventions_save_result save(domain::conventions_document v);
+    conventions_save_result save(messaging::conventions_document v);
 
     /**
      * @brief Every convention the session sees: the party's instrument
      * conventions and the tenant's index conventions.
      */
-    domain::conventions_document get();
+    messaging::conventions_document get();
 
 private:
     context ctx_;

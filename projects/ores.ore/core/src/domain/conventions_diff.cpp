@@ -17,6 +17,8 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <rfl/json.hpp>
 #include <map>
 #include <string>
 
@@ -78,12 +80,13 @@ std::string conventions_difference(const conventions& original,
     }
 
     // The two documents are the same when the same mapper reads the same
-    // conventions out of each. The mapper collapses ORE's boolean spellings and
+    // conventions out of each, field for field. The mapper collapses ORE's boolean spellings and
     // its enum aliases to the canonical codes the refdata columns hold, and
     // that normalisation is deliberate and carries the same information, so
     // comparing the mapped values tolerates it. A value the mapper got wrong
     // survives neither direction, so this catches it.
-    if (conventions_mapper::map(original) != conventions_mapper::map(exported))
+    if (rfl::json::write(conventions_mapper::map(original)) !=
+        rfl::json::write(conventions_mapper::map(exported)))
         return path + ": the export reads back as different conventions";
 
     return {};

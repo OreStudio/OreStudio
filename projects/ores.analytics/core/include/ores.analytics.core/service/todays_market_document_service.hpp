@@ -20,7 +20,7 @@
 #ifndef ORES_ANALYTICS_CORE_SERVICE_TODAYS_MARKET_DOCUMENT_SERVICE_HPP
 #define ORES_ANALYTICS_CORE_SERVICE_TODAYS_MARKET_DOCUMENT_SERVICE_HPP
 
-#include "ores.analytics.api/domain/todays_market_document.hpp"
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -41,12 +41,20 @@ public:
 
     explicit todays_market_document_service(context ctx);
 
-    void save(domain::todays_market_document v);
+    void save(messaging::todays_market_document v);
 
     /**
      * @brief The document whose header has @p id.
      */
-    domain::todays_market_document get(const boost::uuids::uuid& id);
+    messaging::todays_market_document get(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Deletes the document whose header has @p id, its children first.
+     *
+     * Each table is its own write, not one transaction, so a failure part way
+     * leaves the rows not yet deleted.
+     */
+    void remove(const boost::uuids::uuid& id);
 
     /**
      * @brief The header id of the document a reporting configuration names.

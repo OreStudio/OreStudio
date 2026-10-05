@@ -117,6 +117,11 @@ that name to these rows. Nullable because a document can be imported before it
 is registered: the mapper reads and writes content and does not invent a
 header, the caller supplies one.
 
+The foreign key into reporting's configurations is not checked here
+(=:skip_check:=): a trigger runs with the inserting service's grants, and this
+component does not read reporting's tables. Reporting's binding holds the
+reference; this column only names it.
+
 #+begin_src cpp :name generator
 boost::uuids::nil_uuid()
 #+end_src
@@ -134,6 +139,7 @@ boost::uuids::nil_uuid()
 
 ** configuration_id
 :PROPERTIES:
+:skip_check:   true
 :table:         ores_reporting_configurations_tbl
 :target_column: id
 :parent_entity: configuration

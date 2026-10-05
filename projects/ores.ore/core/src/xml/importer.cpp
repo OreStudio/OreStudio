@@ -144,7 +144,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 }
 
 
-ores::refdata::domain::conventions_document
+ores::refdata::messaging::conventions_document
 importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 

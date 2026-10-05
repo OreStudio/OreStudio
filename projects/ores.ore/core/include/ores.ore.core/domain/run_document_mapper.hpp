@@ -25,7 +25,7 @@
 #include "ores.reporting.api/domain/report_analytic.hpp"
 #include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_run_setup.hpp"
-#include "ores.reporting.api/domain/run_document.hpp"
+#include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include <string>
 #include <vector>
 
@@ -81,7 +81,7 @@ public:
      * its own position within its analytic, so a later writer can fill the
      * column the schema asks for.
      */
-    static std::vector<ores::reporting::domain::run_analytic> map_analytics(const ore& v);
+    static std::vector<ores::reporting::messaging::run_analytic> map_analytics(const ore& v);
 
     /**
      * @brief Reconstructs a run document's ordered analytic list.
@@ -90,7 +90,7 @@ public:
      * ORE writes it, and the rest follow in order.
      */
     static analyticsType
-    reverse_analytics(const std::vector<ores::reporting::domain::run_analytic>& v);
+    reverse_analytics(const std::vector<ores::reporting::messaging::run_analytic>& v);
 
     /**
      * @brief Maps a run document's named market bindings to the entities.

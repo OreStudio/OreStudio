@@ -99,7 +99,7 @@ void add_missing_world_rows(const ores::database::context& ctx,
 conventions_document_service::conventions_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-conventions_save_result conventions_document_service::save(domain::conventions_document v) {
+conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
     stamp_party(ctx_, v);
     conventions_save_result r;
     replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
@@ -143,8 +143,8 @@ conventions_save_result conventions_document_service::save(domain::conventions_d
     return r;
 }
 
-domain::conventions_document conventions_document_service::get() {
-    domain::conventions_document r;
+messaging::conventions_document conventions_document_service::get() {
+    messaging::conventions_document r;
     r.zero = zero_convention_repository().read_latest(ctx_);
     r.average_ois = average_ois_convention_repository().read_latest(ctx_);
     r.bma_basis_swap = bma_basis_swap_convention_repository().read_latest(ctx_);

@@ -50,11 +50,13 @@
 #include "ores.refdata.core/repository/intraday_power_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <set>
 
 namespace ores::refdata::service {
 
 using namespace ores::refdata::repository;
+using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 using ores::database::repository::stamp_party;
@@ -62,7 +64,7 @@ using ores::database::repository::stamp_party;
 curve_configuration_document_service::curve_configuration_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void curve_configuration_document_service::save(domain::curve_configuration_document v) {
+void curve_configuration_document_service::save(messaging::curve_configuration_document v) {
     stamp_party(ctx_, v);
     curve_configuration_repository().write(ctx_, v.config);
 
@@ -99,9 +101,9 @@ void curve_configuration_document_service::save(domain::curve_configuration_docu
     curve_quote_repository().write(ctx_, v.quotes);
 }
 
-domain::curve_configuration_document
+messaging::curve_configuration_document
 curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
-    domain::curve_configuration_document r;
+    messaging::curve_configuration_document r;
     r.config = read_one(ctx_, curve_configuration_repository(), "curve configuration", config_id);
     const auto of_config = [&](const auto& row) {
         return row.curve_configuration_id == config_id;
@@ -158,6 +160,74 @@ curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
         return segments.contains(row.curve_segment_id);
     });
     return r;
+}
+
+void curve_configuration_document_service::remove(const boost::uuids::uuid& id) {
+    const auto d = get(id);
+    if (!d.quotes.empty())
+        curve_quote_repository().remove(ctx_, ids_of(d.quotes));
+    if (!d.segment_curves.empty())
+        curve_segment_curve_repository().remove(ctx_, ids_of(d.segment_curves));
+    if (!d.segments.empty())
+        curve_segment_repository().remove(ctx_, ids_of(d.segments));
+    if (!d.bootstrap_configs.empty())
+        curve_bootstrap_config_repository().remove(ctx_, ids_of(d.bootstrap_configs));
+    if (!d.bond_future_volatilities.empty())
+        bond_future_volatility_config_repository().remove(ctx_, ids_of(d.bond_future_volatilities));
+    if (!d.commodity_volatilities.empty())
+        commodity_volatility_config_repository().remove(ctx_, ids_of(d.commodity_volatilities));
+    if (!d.equity_volatilities.empty())
+        equity_volatility_config_repository().remove(ctx_, ids_of(d.equity_volatilities));
+    if (!d.parametric_smile_parameters.empty())
+        curve_parametric_smile_parameter_repository().remove(ctx_,
+                                                             ids_of(d.parametric_smile_parameters));
+    if (!d.parametric_smiles.empty())
+        curve_parametric_smile_repository().remove(ctx_, ids_of(d.parametric_smiles));
+    if (!d.cap_floor_volatilities.empty())
+        cap_floor_volatility_config_repository().remove(ctx_, ids_of(d.cap_floor_volatilities));
+    if (!d.swaption_volatilities.empty())
+        swaption_volatility_config_repository().remove(ctx_, ids_of(d.swaption_volatilities));
+    if (!d.inflation_cap_floor_volatilities.empty())
+        inflation_cap_floor_volatility_config_repository().remove(
+            ctx_, ids_of(d.inflation_cap_floor_volatilities));
+    if (!d.volatility_configs.empty())
+        curve_volatility_config_repository().remove(ctx_, ids_of(d.volatility_configs));
+    if (!d.cds_volatility_terms.empty())
+        cds_volatility_term_repository().remove(ctx_, ids_of(d.cds_volatility_terms));
+    if (!d.cds_volatilities.empty())
+        cds_volatility_config_repository().remove(ctx_, ids_of(d.cds_volatilities));
+    if (!d.report_configurations.empty())
+        curve_report_configuration_repository().remove(ctx_, ids_of(d.report_configurations));
+    if (!d.correlations.empty())
+        curve_correlation_config_repository().remove(ctx_, ids_of(d.correlations));
+    if (!d.base_correlations.empty())
+        base_correlation_config_repository().remove(ctx_, ids_of(d.base_correlations));
+    if (!d.fx_volatilities.empty())
+        fx_volatility_config_repository().remove(ctx_, ids_of(d.fx_volatilities));
+    if (!d.intraday_power_curves.empty())
+        intraday_power_curve_config_repository().remove(ctx_, ids_of(d.intraday_power_curves));
+    if (!d.securities.empty())
+        curve_security_config_repository().remove(ctx_, ids_of(d.securities));
+    if (!d.seasonality_factors.empty())
+        inflation_seasonality_factor_repository().remove(ctx_, ids_of(d.seasonality_factors));
+    if (!d.inflation_curves.empty())
+        inflation_curve_config_repository().remove(ctx_, ids_of(d.inflation_curves));
+    if (!d.default_curve_configurations.empty())
+        default_curve_configuration_repository().remove(ctx_,
+                                                        ids_of(d.default_curve_configurations));
+    if (!d.default_curves.empty())
+        default_curve_config_repository().remove(ctx_, ids_of(d.default_curves));
+    if (!d.equity_curves.empty())
+        equity_curve_config_repository().remove(ctx_, ids_of(d.equity_curves));
+    if (!d.yield_curves.empty())
+        yield_curve_config_repository().remove(ctx_, ids_of(d.yield_curves));
+    if (!d.definitions.empty())
+        curve_definition_repository().remove(ctx_, ids_of(d.definitions));
+    if (!d.global_reports.empty())
+        curve_global_report_repository().remove(ctx_, ids_of(d.global_reports));
+    if (!d.sections.empty())
+        curve_configuration_section_repository().remove(ctx_, ids_of(d.sections));
+    curve_configuration_repository().remove(ctx_, boost::uuids::to_string(d.config.id));
 }
 
 std::optional<boost::uuids::uuid> curve_configuration_document_service::find_by_configuration(

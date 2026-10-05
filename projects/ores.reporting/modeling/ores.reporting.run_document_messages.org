@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: F90ED5C2-46F7-4FFE-A38B-40F40A604623
+:END:
+#+title: ores.reporting.run_document_messages
+#+description: Codegen operation model for a report definition's run document and its configuration bindings: save, bind, get and delete.
+#+type: ores.codegen.operation
+#+component: reporting
+#+subcomponent: api
+#+entity_singular: run_document
+#+namespace: ores::reporting::messaging
+#+brief: A report definition's run document as operations.
+#+filetags: :model:operation:reporting:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A report definition's run document and its configuration bindings, as
+operations. The ORE service imports a run through these and the owning
+components' document operations, and exports it the same way; it never touches
+reporting's tables. A session changes a run only when it acts for the party
+that owns the definition; a session that acts for no party may only read.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.reporting.api/domain/report_configuration.hpp"
+#include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/report_market_binding.hpp"
+#include "ores.reporting.api/domain/report_run_setup.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** run_parameter
+
+#+begin_src cpp :name comment
+/**
+ * @brief One parameter of an analytic, by the name the run document uses.
+ *
+ * The stored parameter holds a definition id and a value, and the id is a
+ * database concern. The document is one step earlier, where the parameter is
+ * still the name ORE wrote, so the name rides beside the value and the store
+ * resolves it.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** position
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** run_analytic
+
+#+begin_src cpp :name comment
+/**
+ * @brief An analytic of the run and the parameters it sets.
+ *
+ * The active flag is a parameter in ORE's schema and a column on the analytic,
+ * so it lives on the analytic; the remaining parameters stay beside it, in the
+ * order the document wrote them.
+ */
+#+end_src
+
+*** analytic
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::report_analytic
+:END:
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<run_parameter>
+:END:
+
+** run_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE run document as reporting stores it against a report
+ * definition: the setup, the analytics with their parameters, and the market
+ * bindings.
+ */
+#+end_src
+
+*** setup
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::report_run_setup
+:END:
+
+*** analytics
+:PROPERTIES:
+:cpp_type: std::vector<run_analytic>
+:END:
+
+*** market_bindings
+:PROPERTIES:
+:cpp_type: std::vector<ores::reporting::domain::report_market_binding>
+:END:
+
+** save_run_document_request
+:PROPERTIES:
+:subject: reporting.v1.run_documents.save
+:response: save_run_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stores a run document against a report definition.
+ *
+ * Refused when the definition already holds one, or when an analytic sets a
+ * parameter no definition describes.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: run_document
+:END:
+
+** save_run_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the save succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** bind_configuration_request
+:PROPERTIES:
+:subject: reporting.v1.run_documents.bind
+:response: bind_configuration_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Creates a configuration of a type and binds it to the definition in
+ * that type's slot.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** configuration_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** bind_configuration_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The configuration the binding created.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_run_document_request
+:PROPERTIES:
+:subject: reporting.v1.run_documents.get
+:response: get_run_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a definition's run document and its bindings.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_run_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run document, the slots it fills, and the party that owns it.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** document
+:PROPERTIES:
+:cpp_type: run_document
+:END:
+
+*** bindings
+:PROPERTIES:
+:cpp_type: std::vector<domain::report_configuration>
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The party that owns the definition, whose configuration documents the run reads. */
+#+end_src
+
+** delete_run_document_request
+:PROPERTIES:
+:subject: reporting.v1.run_documents.delete
+:response: delete_run_document_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Deletes a definition's run document, its bindings and the
+ * configuration rows they name.
+ *
+ * A run import's compensation sends it, to undo a save.
+ */
+#+end_src
+
+*** report_definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** delete_run_document_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the delete succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]]

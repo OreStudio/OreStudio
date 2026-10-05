@@ -38,6 +38,7 @@
 #include "ores.refdata.core/messaging/calendar_name_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
@@ -73,8 +74,8 @@
 #include "ores.refdata.core/messaging/leg_type_registrar.hpp"
 #include "ores.refdata.core/messaging/monetary_nature_registrar.hpp"
 #include "ores.refdata.core/messaging/netting_agreement_registrar.hpp"
-#include "ores.refdata.core/messaging/netting_set_registrar.hpp"
 #include "ores.refdata.core/messaging/netting_set_identifier_registrar.hpp"
+#include "ores.refdata.core/messaging/netting_set_registrar.hpp"
 #include "ores.refdata.core/messaging/ois_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/overnight_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/party_contact_information_registrar.hpp"
@@ -243,6 +244,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_date_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
+    append(register_configuration_document_handlers(nats, ctx, verifier));
     append(register_calendar_adjustment_handlers(nats, ctx, verifier));
     append(register_calendar_event_handlers(nats, ctx, verifier));
     append(register_calendar_name_handlers(nats, ctx, verifier));

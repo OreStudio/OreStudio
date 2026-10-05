@@ -78,7 +78,9 @@ from the accepted design.
   stated on the screen, and every Related journeys entry is a link on the
   screen.
 - The Operations area carries the five screens with "Back to operations"
-  navigation, and every screen carries the footer with both builds.
+  navigation, the system-administration menu carries the Operations entry
+  and no tenant-administration menu does, and every screen carries the
+  footer with both builds.
 
 * Tasks
 
@@ -135,6 +137,11 @@ from the accepted design.
 - *A journey a person cannot reach from a screen is not finished.* Each
   journey's Related journeys list is links on the screen; a screen that omits
   them has not implemented the journey.
+- *The Operations area is offered in system administration alone.* The
+  journeys' actor is the super administrator acting from the system tenant,
+  so the system-administration menu carries the Operations entry and no
+  tenant-administration menu does. The accepted walk ran the prototype in
+  that mode.
 - *The screens follow the accepted contracts.* The
   [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]], the
   [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] and the

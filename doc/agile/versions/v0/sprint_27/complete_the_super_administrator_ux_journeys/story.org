@@ -25,7 +25,7 @@ The analysis behind the story: of the super administrator's journeys, first run,
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The pictures task is complete on its branch; the accounts and names tasks are complete on theirs, each awaiting its merge. |
+| Now           | The pictures task is redesigned and delivered on its branch; the accounts and names tasks are complete on theirs, each awaiting its merge. |
 | Waiting on    | Nothing.                               |
 | Next          | Merge the three PRs, then close the story. |
 | Last touched  | 2026-10-05                               |
@@ -34,7 +34,7 @@ The analysis behind the story: of the super administrator's journeys, first run,
 
 - The system administration area reads the deployment's own accounts, the service accounts among them, each shown as the account it is.
 - The initial administrator and a provisioned tenant's administrator carry human names, and every surface that greets or names a person prefers the name and falls back to the username.
-- The two administrator avatars are part of the seeded pictures: setting the ACME example up attaches them, and each administrator shows their picture wherever a picture is shown.
+- The two administrator avatars are part of the seeded pictures: the system avatars dataset installs with the base bundle, the attach step gives the super administrator and a tenant's administrator their pictures, and each shows wherever an account is shown.
 
 * Tasks
 
@@ -42,7 +42,7 @@ The analysis behind the story: of the super administrator's journeys, first run,
 |------+-------+-------+-----+-------------|
 | [[id:5338E08C-A5D6-4614-9AF4-036E5CF972DD][Show the accounts the deployment runs on]] | BACKLOG | | | The system administration area lists the deployment's own accounts, the platform's service accounts among them, so a super administrator sees the services the installation runs on without opening the system tenant from the roster. |
 | [[id:391139E2-DF18-4E5D-B7C4-B576A78D4C6E][Name the administrators and greet people by name]] | BACKLOG | | | The initial administrator and a provisioned tenant administrator are created with the full names Super Admin and Tenant Admin, and every surface that names the signed-in person shows the name, so the home page stops greeting a raw username. |
-| [[id:56F20355-7AED-49FD-8F45-9BC89DD51FB1][Give the administrators their pictures when ACME is set up]] | DONE | 2026-10-05 | 2026-10-05 | The two administrator avatars join the seeded pictures: setting the ACME example up attaches the super administrator's picture and the ACME tenant administrator's picture, and each shows wherever an account is shown. |
+| [[id:56F20355-7AED-49FD-8F45-9BC89DD51FB1][Give the administrators their pictures]] | DONE | 2026-10-05 | 2026-10-05 | The two administrator avatars ship as the system avatars dataset, which every bundle consumer installs; provisioning attaches the super administrator's picture and a tenant's administrator picture, and each shows wherever an account is shown. |
 | [[id:81DC5621-CC62-49DF-99CD-39D5AD8A463E][Record the super administrator journey audit]] | DONE | 2026-10-05 | 2026-10-05 | Audit the super administrator's journeys against the journey catalogue and the legacy Qt menus, and file what remains as this story with its tasks. |
 
 * Decisions
@@ -58,6 +58,14 @@ The analysis behind the story: of the super administrator's journeys, first run,
 - The administrator pictures are the product's own, so their template keys
   live in the provisioning code as constants, not in the seed profile's
   arguments; the parties' datasets stay the profile's data.
+- The administrator pictures are the platform's system avatars, not ACME
+  data, so they ship as the assets.system_avatars dataset: a base-bundle
+  member, so ACME, GLEIF and every other bundle consumer installs it, and
+  published to the system tenant at database build time because the super
+  administrator's account lives there.
+- The DQ image pipeline carries the live table's own (mime_type, data)
+  shape rather than SVG text, so an SVG document and a raster picture
+  stage alike and the pipeline holds no format knowledge.
 - The super administrators are the system tenant's SuperAdmin holders, the
   rule the bootstrap service already uses, and each picture is written
   through a token minted for that account rather than a direct write.

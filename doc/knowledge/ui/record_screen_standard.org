@@ -288,7 +288,8 @@ The form is drawn from the field table. One control per field kind:
 | =date= | Date input | An ISO date |
 | =choice= | Select over fixed options, labelled from =refdata.choices.<field>= | The option, or its number |
 | =classification= | Select over a classification list, showing name and code | The code |
-| =record= | Select over another record kind, showing name and code | The key |
+| =record= | The searchable picker over another record kind (=RecordPicker=), showing name and code, and the flag when the field names a flag source | The key |
+| =image= | The image field (=ImageField=): the image, large, opening the image chooser | The image's identifier |
 
 - A field that names another record or a classification is always a select,
   never free text.
@@ -406,6 +407,40 @@ rules, exceptions and diary events. The parts panel:
 Neither panel edits in the table. Neither offers Add while the parent is being
 created: the parent is saved first, and its page then offers the panel.
 
+** Flags and images
+
+A screen never works out a flag itself. Flags come from one place, as they did
+in the desktop client's image cache.
+
+- /The flag sources./ A currency and a country have their own image. A calendar
+  has its own, or else its country's. A business centre has its country's. A
+  currency pair draws both of its currencies' flags. A code with no image draws
+  the placeholder flag, the image with the code =xx=, so a missing image shows
+  as missing.
+- /One map./ =GET /api/image-map= answers which image every flagged code uses
+  (=readImageMap=). The browser reads it once (=useImageMap=), keeps it for five
+  minutes, and reads it again after any record write, so a table of a hundred
+  flags costs one read.
+- /Images fetched once./ Each image's bytes are read from its own address,
+  =/api/images/:id=. The BFF keeps them in its tenant image cache, and the
+  browser keeps them for a year, because an image's identifier is its identity.
+- /Declared, not drawn./ A screen names the flag source and the shared parts
+  draw the flag: =flag= on a field (=FieldSpec=), on a list column
+  (=ListColumn=), on a links panel (=LinkPanel=) and on a record header
+  (=RecordHeader=). The parts use =FlagOf=, =FlaggedCode= and =Flag= from
+  =web/src/images/flags.tsx=; a screen that draws a flag outside them, such as
+  a party list whose rows carry their own flag, still uses =FlaggedCode=.
+- /Choosing an image./ A record that names an image, such as a currency's
+  flag, edits it with the image field, which opens the image chooser
+  (=ImageChooser=): a server search by code and description over a page of the
+  tenant's images, with Clear. Adding images belongs to the storage screens.
+
+| Size | Where |
+|------+-------|
+| Small (20 by 14 pixels) | Table cells, pickers, link panels |
+| Large (36 by 24 pixels) | A record page's header |
+| Extra large (48 by 36 pixels) | The image field and the image chooser |
+
 ** Icons and cells
 
 Icons come from the one Fluent set in
@@ -443,7 +478,8 @@ and no icon carries two ideas.
 | A code with no label mapping | The orange dashed fallback label, so the gap shows |
 | Yes or no | The words Yes and No |
 | A timestamp | Relative, with the exact value on hover |
-| A country | Its flag, then its code |
+| A country, currency, calendar or business centre | Its flag, then its code (=FlaggedCode=) |
+| A currency pair | Both currencies' flags, then the pair code |
 | An empty value | A muted dash |
 
 ** Feedback, access and safety
@@ -530,7 +566,9 @@ component carries it today.
 | Paged list | =Pager= in =ui/Pager.tsx= | Exists: First, Previous, Next, Last, page size and Load all |
 | List screen | =RecordList=, =useListState= | Exists: server paging, search and order held in the address, column menu, keyboard opening, the states |
 | Server paging, search and order | =listRecordPage=, the model's =:searchable:= and =:sortable:= columns | Exists for currencies, desk groups and currency pairs |
-| Record pickers | =FieldInput= over =useRecords= | Partial: a picker reads its whole kind; a searchable picker replaces it |
+| Record pickers | =RecordPicker= | Searchable and flagged; Partial: its choices are its whole kind, read once and searched in the picker |
+| Flags | =useImageMap=, =useFlags=, =FlagOf=, =FlaggedCode=, =Flag= in =images/flags.tsx=; =GET /api/image-map= | Exists |
+| Image choice | =ImageChooser=, =ImageField= in =images/ImageChooser.tsx=; =GET /api/images= | Exists, searched on the server |
 | Change reasons | =useReason=, =reasonsFor=, =ReasonFields= | Exists, filtered by whether a field changed |
 | Unsaved changes | =useCloseGuard=, =LeavingFooter= | Exists |
 | Delete | =RemoveRecordDialog= | Exists; parts are deleted one after another |

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 3541A81F-81FD-4D1C-9802-B018EDD553A5
+:END:
+#+title: Story: Complete the super administrator UX journeys
+#+description: The super administrator's own journeys: the deployment's accounts read from system administration, the platform's service accounts among them; the seeded administrators named and pictured; and the welcome that shows a username replaced by a human name.
+#+type: story
+#+level: s2
+#+filetags: :iam:web:journeys:ux:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Signed in as the super administrator, the deployment's own world is real and named: the administrator is greeted by a human name and shown a picture, and the system administration area lists the accounts the installation runs on — the platform's service accounts among them.
+
+The analysis behind the story: of the super administrator's journeys, first run, new tenant, the roster, the tenant screen and acting inside a tenant are built, and retire or reset and the operations journeys are their own sprint 27 stories. The legacy Qt application kept the deployment's own accounts on a first-class screen, under Operations > User Accounts, and the web's system administration area holds only the roster. What remains is the super administrator's own sight of the deployment, and this story lands it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Broken into three tasks; nothing is built. |
+| Waiting on    | Nothing.                               |
+| Next          | Land the accounts read in system administration. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The system administration area reads the deployment's own accounts, the service accounts among them, each shown as the account it is.
+- The initial administrator and a provisioned tenant's administrator carry human names, and every surface that greets or names a person prefers the name and falls back to the username.
+- The two administrator avatars are part of the seeded pictures: setting the ACME example up attaches them, and each administrator shows their picture wherever a picture is shown.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5338E08C-A5D6-4614-9AF4-036E5CF972DD][Show the accounts the deployment runs on]] | BACKLOG | | | The system administration area lists the deployment's own accounts, the platform's service accounts among them, so a super administrator sees the services the installation runs on without opening the system tenant from the roster. |
+| [[id:391139E2-DF18-4E5D-B7C4-B576A78D4C6E][Name the administrators and greet people by name]] | BACKLOG | | | The initial administrator and a provisioned tenant administrator are created with the full names Super Admin and Tenant Admin, and every surface that names the signed-in person shows the name, so the home page stops greeting a raw username. |
+| [[id:56F20355-7AED-49FD-8F45-9BC89DD51FB1][Give the administrators their pictures when ACME is set up]] | BACKLOG | | | The two administrator avatars join the seeded pictures: setting the ACME example up attaches the super administrator's picture and the ACME tenant administrator's picture, and each shows wherever an account is shown. |
+| [[id:81DC5621-CC62-49DF-99CD-39D5AD8A463E][Record the super administrator journey audit]] | DONE | 2026-10-05 | 2026-10-05 | Audit the super administrator's journeys against the journey catalogue and the legacy Qt menus, and file what remains as this story with its tasks. |
+
+* Decisions
+
+- The deployment's own accounts are read as the session's own tenant, the
+  ordinary accounts read, with no cross-tenant read added. The session's
+  tenant is the system tenant for a super administrator, so the read
+  already answers with the deployment's accounts.
+- The system administration menu gains the accounts entry, revisiting the
+  accepted navigation prototype's Tenants-only menu.
+- The first run keeps its three fields (username, email, password); the
+  creation paths record the administrator's name with a default.
+
+* Out of scope
+
+- The roster and the tenant screen cannot show a tenant's administrator,
+  recorded in [[id:F14135EC-F136-4D93-B8A6-D4386FF20684][See the tenants]] and
+  [[id:9A77690B-8190-4237-94F1-D8111F3FB0B9][See one tenant]]; that stays with those journeys.
+- A tenant's sessions and sign-ins read from system administration have no
+  tab, recorded in [[id:0CD07C06-080B-4BBE-83DE-F6C3841BD209][Act inside a tenant]].
+- [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]]
+  and [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]]
+  are their own sprint 27 stories.
+- The legacy Qt screens with no journey behind them — System Settings,
+  Reset System and the Test Scenario Runner — are not built.
+- The system tenant's own roles catalogue and the tenant types have no
+  entry in system administration either; they have no journey yet.

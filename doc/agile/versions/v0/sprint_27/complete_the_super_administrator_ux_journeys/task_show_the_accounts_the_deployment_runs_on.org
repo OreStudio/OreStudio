@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 5338E08C-A5D6-4614-9AF4-036E5CF972DD
+:END:
+#+title: Task: Show the accounts the deployment runs on
+#+description: The system administration area lists the deployment's own accounts, the platform's service accounts among them, so a super administrator sees the services the installation runs on without opening the system tenant from the roster.
+#+type: task
+#+level: s1
+#+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Signed in as the super administrator, the system administration area reads the session's own tenant accounts. The services the platform runs on, its service and infrastructure accounts, are visible where the deployment is administered, and not only through the system tenant's screen on the roster.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The system administration area offers the deployment's own accounts a page at a time, each with its type and its picture or initials, and it is reachable without opening a tenant from the roster.
+- The service accounts are shown as services, with the mark the tenant screen already gives them.
+- The read is the ordinary accounts read of the session's own tenant; no cross-tenant read is added.
+- The navigation prototype records the new entry and the Tenants-only decision it revisits.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The pieces the entry reaches for:
+
+- The shell menus are data, in
+  =projects/ores.web/packages/web/src/shell/areas.ts= (=SHELL_MENUS=),
+  where system administration holds Home and Tenants today.
+- The read already exists: =GET /api/accounts= in
+  =projects/ores.web/packages/bff/src/server.ts= answers the accounts of
+  the session's own tenant, a page at a time, and the session's tenant is
+  the system tenant for a super administrator. Service accounts are
+  among the rows, and nothing filters on =account_type=.
+- The lists to reuse or mirror: =TenantPeople= in
+  =projects/ores.web/packages/web/src/pages/TenantPage.tsx= marks a
+  non-user account as a service, and the tenant administrator's screen is
+  =projects/ores.web/packages/web/src/access/PeoplePage.tsx=.
+- The system tenant is already on the roster and its screen opens
+  (=d4525844bc=, "Show the system tenant"), so this task adds the super
+  administrator's own entry, not the underlying reads.
+- =TenantsPage.tsx= carries a comment (lines 49-51) that says the system
+  tenant is not on the roster; =d4525844bc= made it reachable, so the
+  comment is stale and goes with this work.
+- The prototype page that fixed the Tenants-only menu is
+  [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]]; the
+  new entry and the decision it revisits are recorded there.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

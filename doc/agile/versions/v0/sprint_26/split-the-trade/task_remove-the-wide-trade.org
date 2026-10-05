@@ -8,7 +8,7 @@
 #+filetags: :split-the-trade:sprint_26:v0:
 #+owner: marco
 #+branch: feature/remove-the-wide-trade
-#+pr:
+#+pr: 2641
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2641][#2641]] | [trading] Remove the wide trade |
 
 * Review
 

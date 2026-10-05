@@ -197,6 +197,7 @@ which carries the filter from the screen.
 
 * See also
 
+- [[id:EC792BCB-EB4B-47E8-B279-9929A83C8949][Log Aggregation]] — the service architecture pattern this page states.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
 - [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]]
 - [[id:BBA0A093-C7BC-469A-8E90-7FF29C5542B0][The telemetry log query escapes SQL by hand]]

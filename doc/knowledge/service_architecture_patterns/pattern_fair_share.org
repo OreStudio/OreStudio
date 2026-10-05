@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 6E7979E9-8065-49D1-97AF-27375013A795
+:END:
+#+title: Fair Share
+#+description: Shared capacity is divided among tenants by weight, so one busy tenant cannot starve the others.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:load:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: load
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Fair Share in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Shared capacity is divided among tenants by weight, so one busy tenant cannot
+starve the others. In ORE Studio the reporting design applies it at three
+queues: admission, step concurrency and grid dispatch.
+
+* Also known as
+
+- /Fair-share scheduling/.
+- /Weighted fair queuing/, its network form.
+
+* Context
+
+Many tenants share one pool of capacity: workers, slots, grid nodes. Demand is
+uneven: one tenant fires five hundred reports, another three.
+
+* Problem
+
+How is shared capacity divided so that every tenant progresses, whatever the
+others ask for?
+
+* Forces
+
+- Arrival order lets the largest tenant delay everyone.
+- Fixed slices waste capacity a quiet tenant does not use.
+- Some tenants pay for more.
+- Order within a tenant should still hold.
+
+* Solution
+
+When capacity frees up, give it to the tenant furthest below its share: the lowest
+work in flight per unit of weight, skipping a tenant at its cap. Within a tenant,
+take the oldest waiting item. A quiet tenant's share flows to the busy ones until
+it has work again.
+
+#+caption: Fair Share: a free slot goes to the tenant with the least work in flight per unit of weight.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_fair_share.png]]
+
+Source: =[[./pattern_fair_share.puml][pattern_fair_share.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_fair_share.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed item frees its slot like a finished one. |
+| Timeouts | Does not apply: the share decides order, not duration. |
+| Retries | A retried item waits in its tenant's queue again. |
+| Idempotency | Does not apply. |
+| Observability | Each tenant's work in flight and wait time are measured. |
+
+* Pitfalls
+
+- *Fairness at one queue only.* A fair admission queue in front of a first-come grid still lets one tenant fill the grid.
+- *Weights nobody revisits.* Paid capacity changes; the weights must follow.
+- *Shares computed per replica.* Each replica is fair locally and unfair in total.
+
+* Security
+
+Availability across tenants: no tenant's load can starve another's.
+
+* Resulting context
+
+- Benefits :: Every tenant progresses during any peak.
+- Liabilities :: The largest tenant waits longer than under arrival order, and weights need care.
+
+* In ORE Studio
+
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — admission, step concurrency and grid dispatch each share capacity across tenants.
+
+* Related patterns
+
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the queues the share orders.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — the pools the share divides.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — the caps the share respects.
+
+* Sources
+
+- J. Kay and P. Lauder, "A Fair Share Scheduler", /Communications of the ACM/, 31(1), 1988.
+- Apache Hadoop, [[https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/FairScheduler.html][YARN Fair Scheduler]].
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/priority-queue][Priority Queue pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

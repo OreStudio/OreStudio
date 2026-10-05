@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2
+:END:
+#+title: Saga
+#+description: A long piece of work is a sequence of local steps, and a failure runs compensating steps in reverse, so work across services stays consistent without one transaction.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:coordination:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: coordination
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Saga in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A long piece of work is a sequence of local steps, each with a compensating step,
+so work that spans services stays consistent without a distributed transaction.
+In ORE Studio the workflow engine runs sagas by orchestration.
+
+* Also known as
+
+- /Orchestration-based saga/, the form ORE Studio uses: one coordinator drives the steps.
+- /Choreography-based saga/, the alternative not used here: services react to each other's events.
+
+* Context
+
+One business action writes in several services: provisioning a party, running a
+report. No transaction spans two services, and holding locks across them would
+stall the platform.
+
+* Problem
+
+How does work that writes in several services stay consistent when one of its
+steps fails?
+
+* Forces
+
+- No transaction spans services.
+- Other readers see the intermediate state; there is no isolation.
+- Undoing a completed step may itself fail.
+- Some completed work is worth keeping, and undoing it helps nobody.
+
+* Solution
+
+The work is a list of steps, each a local transaction in one service, and each
+with a compensating step that undoes its effect. A coordinator runs the steps in
+order. When a step fails, it runs the compensations of the completed steps in
+reverse. A definition may choose instead to stop and wait for a retry, when its
+completed work is worth more than a rollback.
+
+#+caption: Saga: step 3 fails, so the coordinator compensates steps 2 and 1 in reverse.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_saga.png]]
+
+Source: =[[./pattern_saga.puml][pattern_saga.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_saga.puml=.
+
+#+caption: Saga: a definition chooses compensate or stop-and-retry; a deadline always stops the run.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_saga_policies.png]]
+
+Source: =[[./pattern_saga_policies.puml][pattern_saga_policies.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_saga_policies.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A step that reports failure triggers the definition's policy: compensate, or stop for a retry. |
+| Timeouts | A step that goes silent is failed by its deadline, and the run stops; a silent step's work is unknown, so it is never compensated. |
+| Retries | A stopped run resumes at its failed step; completed steps keep their results. |
+| Idempotency | Every step and every compensation must converge on repeat. |
+| Observability | The run, its steps and their outcomes are the record a person reads. |
+
+* Pitfalls
+
+- *Compensation read as rollback.* Other services saw the intermediate state; a compensation is a new action, not an erasure.
+- *Compensating a step that timed out.* It may have finished. Stop and let a person decide.
+- *A compensation that cannot run.* A step whose effect cannot be undone belongs last, or in a stop-and-retry definition.
+- *Steps that are not idempotent.* Recovery re-dispatches steps, and a repeat that accumulates corrupts the run.
+
+* Security
+
+Each step runs with the identity its service needs, as for any call; the saga
+adds no authority.
+
+* Resulting context
+
+- Benefits :: Consistency across services without distributed locks, and a record of every step.
+- Liabilities :: No isolation, and every step needs a compensation or a reason it has none.
+
+* In ORE Studio
+
+- [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the compensate policy walks completed steps in reverse; a deadline stops the run instead.
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — every step compensates through =reporting.v1.report.fail=, which marks the instance failed.
+- [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][Identity]] — the fixture compensates the steps that declared a compensation.
+
+* Related patterns
+
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the coordinator that runs the saga.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — what makes a re-dispatched step safe.
+- [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] — the deadline that stops a silent step.
+
+* Sources
+
+- Hector Garcia-Molina and Kenneth Salem, "Sagas", /Proceedings of the 1987 ACM SIGMOD International Conference on Management of Data/, 1987.
+- Chris Richardson, [[https://microservices.io/patterns/data/saga.html][Pattern: Saga]], microservices.io.
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/saga][Saga distributed transactions pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

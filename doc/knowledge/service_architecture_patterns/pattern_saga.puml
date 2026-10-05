@@ -1,0 +1,42 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Saga: completed steps are compensated in reverse when a later step fails
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "process manager" as pm
+participant "service A" as a
+participant "service B" as b
+participant "service C" as c
+
+pm -> a : step 1
+a --> pm : completed
+pm -> b : step 2
+b --> pm : completed
+pm -> c : step 3
+c --> pm : failed (error)
+pm -> b : compensate step 2
+b --> pm : compensated
+pm -> a : compensate step 1
+a --> pm : compensated
+note over pm : the run ends compensated;\nno step held a lock across services
+@enduml

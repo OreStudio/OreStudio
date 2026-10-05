@@ -1,0 +1,39 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Competing Consumers: one queue group, each message to one member
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "publisher" as pub
+queue "subject S\nqueue group G" as q
+participant "replica 1" as r1
+participant "replica 2" as r2
+participant "replica 3" as r3
+
+pub -> q : message 1
+q -> r1 : message 1
+pub -> q : message 2
+q -> r2 : message 2
+pub -> q : message 3
+q -> r3 : message 3
+note over r1, r3 : each message reaches one member;\nadding a replica adds capacity with no change to the publisher
+@enduml

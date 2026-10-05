@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 93737023-4FB7-45CD-9511-9B27DBACB2FC
+:END:
+#+title: Retry
+#+description: An operation that failed for a transient reason is tried again, with a limit and a growing delay, and only when repeating it is safe.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:resilience:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: resilience
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Retry in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+An operation that failed for a transient reason is tried again, with a limit and a
+growing delay, and only when repeating it is safe. In ORE Studio the workflow
+retry verb resumes a failed run, and an expired token is renewed and retried once.
+
+* Also known as
+
+- /Retry with exponential back-off/.
+- /Resume/, for a workflow run restarted at its failed step.
+
+* Context
+
+A call fails: a timeout, an unavailable service, an expired token. Some failures
+pass on their own; others will fail the same way every time.
+
+* Problem
+
+When should a failed operation be tried again, and how often?
+
+* Forces
+
+- A transient failure passes; a permanent one never does.
+- Retries multiply load on a service that is already struggling.
+- Repeating a write that already took effect corrupts data.
+- Callers that retry together arrive together.
+
+* Solution
+
+Classify the failure first. Retry only a transient one, and only an operation that
+is safe to repeat. Wait between attempts, growing the delay and adding jitter so
+that callers spread out, and stop at a limit or at the caller's budget. A token
+that expired is renewed before the retry. A run stopped by a failure resumes at
+its failed step, keeping every completed step.
+
+#+caption: Retry: only a transient failure of a repeatable operation is retried, with back-off and jitter, within a limit.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_retry.png]]
+
+Source: =[[./pattern_retry.puml][pattern_retry.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_retry.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A permanent error, =forbidden= or =bad_request=, fails at once. |
+| Timeouts | Each attempt has its own timeout, and all attempts share the caller's budget. |
+| Retries | This is the pattern itself. |
+| Idempotency | The operation must be idempotent; see [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]]. |
+| Observability | Each attempt is logged with its number and the reason. |
+
+* Pitfalls
+
+- *Retrying a refusal.* =forbidden= will not change by asking again.
+- *Retries at every layer.* Three layers of three attempts make 27 calls.
+- *No jitter.* Clients that failed together retry together.
+- *Retrying an expired token with the same token.* Renew first; the first internal impersonation retried until its wait timed out.
+
+* Security
+
+No security consequence, provided a refusal is never retried with a different
+identity to get round it.
+
+* Resulting context
+
+- Benefits :: Transient failures heal without a person.
+- Liabilities :: Added load and latency, and a need for idempotent operations.
+
+* In ORE Studio
+
+- [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the retry verb resumes a failed run at its failed step, under the same step identity.
+- [[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]] — the scheduler deliberately does not retry a failed action; the next occurrence is the next firing.
+
+* Related patterns
+
+- [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] — the failure most often retried.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — what makes a retry safe.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — renew, then retry once.
+
+* Sources
+
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/retry][Retry pattern]].
+- Marc Brooker, [[https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/][Timeouts, retries, and backoff with jitter]], the Amazon Builders' Library.
+- Betsy Beyer et al., /Site Reliability Engineering/, O'Reilly, 2016, chapter 22, "Addressing Cascading Failures".
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 26AE458C-5E23-423B-BEBE-1B55D83A7AA5
+:END:
+#+title: Idempotent Receiver
+#+description: A receiver handles a repeated message so that the second delivery has no further effect.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:coordination:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: coordination
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Idempotent Receiver in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A receiver handles a repeated message so that the second delivery has no further
+effect. In ORE Studio every workflow step must be one, because the engine
+delivers a step at least once.
+
+* Also known as
+
+- /Idempotent Consumer/, in Richardson's catalogue.
+
+* Context
+
+A message can arrive twice: a restart re-dispatches unfinished work, a broker
+redelivers an unacknowledged message, a caller retries after a lost reply.
+
+* Problem
+
+How does a receiver make a repeated message safe?
+
+* Forces
+
+- Exactly-once delivery is not available across services.
+- Some effects are expensive: a second compute batch runs the engine twice.
+- A guard that asks another service can itself fail.
+- The second delivery may arrive while the first is still running.
+
+* Solution
+
+Key the work on a stable identity: the step id. Before acting, ask whether that
+identity already has an outcome, and replay it if so. Make the write itself
+converge, so a repeat meets its own earlier effect: an upsert on business keys, a
+batch adopted by its external reference, an object written under the same key.
+
+#+caption: Idempotent Receiver: replay a recorded outcome, otherwise do the work with converging writes.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_idempotent_receiver.png]]
+
+Source: =[[./pattern_idempotent_receiver.puml][pattern_idempotent_receiver.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_idempotent_receiver.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | An error is recorded against the step identity, and a replay returns it. |
+| Timeouts | The replay guard has a short timeout and fails open, so the work must still converge. |
+| Retries | A retry under the same identity runs the work once. |
+| Idempotency | This is the pattern's purpose: the step identity is the key. |
+| Observability | A replayed outcome is logged as a replay, so a repeat is visible. |
+
+* Pitfalls
+
+- *A guard without a converging write.* The guard fails open, so two deliveries in flight both do the work.
+- *The correlation id used as the key.* Two different steps of one action share it.
+- *An append in place of an upsert.* A repeat adds a second row.
+- *Report phases that do not check.* [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] records that the report handlers do not yet use the replay guard.
+
+* Security
+
+No security consequence: the identity decides repetition, not access.
+
+* Resulting context
+
+- Benefits :: At-least-once delivery becomes safe, and recovery needs no person.
+- Liabilities :: Every writer must find a converging form, and the guard adds a call.
+
+* In ORE Studio
+
+- [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]] — the replay guard and the converging write.
+- [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the convergence each report phase owes the engine.
+- [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — every step is idempotent, so a retry is safe.
+
+* Related patterns
+
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — delivers each step at least once.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — safe only against an idempotent receiver.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — redelivery to another member.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html][Idempotent Receiver]].
+- Chris Richardson, [[https://microservices.io/patterns/communication-style/idempotent-consumer.html][Pattern: Idempotent Consumer]], microservices.io.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -15,3 +15,7 @@ A service reads and writes only its own component's tables. It reaches another c
 *Why:* On 2026-10-04 the operator ruled that cross-service table access is an architectural error, after the run store in ores.ore.core wrote reporting, analytics and refdata tables directly and the ORE service needed DML grants on all three to run live. The tests passed only because they connect as a privileged user, so the error surfaced in the live shell test, not in ctest.
 
 *How to apply:* Before a service calls a repository, check the table's component is the service's own. When a feature spans components, add document or entity operations to each owner and orchestrate them, with a workflow saga where writes must be undone together. A grant beyond a service's own prefix in projects/modeling/service_registry.org is a sign of this error, not a fix for it.
+
+* See also
+
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] — the service architecture pattern this page states.

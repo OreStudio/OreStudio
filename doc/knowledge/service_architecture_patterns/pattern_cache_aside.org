@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 9FBA60F9-F0D4-425D-9BED-A34601CBACD6
+:END:
+#+title: Cache-Aside
+#+description: A reader looks in a cache first and, on a miss, loads the value from its source and puts it in the cache.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:data:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: data
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Cache-Aside in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A reader looks in a cache first and, on a miss, loads the value from its source
+and keeps it. In ORE Studio the run token cache of every step service works this
+way.
+
+* Also known as
+
+- /Lazy loading/.
+
+* Context
+
+A value is expensive to obtain and read often: a token from IAM, a grant, a
+configuration. It changes rarely, or has a known lifetime.
+
+* Problem
+
+How does a reader avoid asking the source every time, without the cache becoming
+the source?
+
+* Forces
+
+- Asking every time loads the source.
+- A copy can go stale.
+- The cache must be safe to lose.
+
+* Solution
+
+Read the cache. On a hit that is still fresh, use it. On a miss, or near the end
+of the value's life, load from the source and store the value with its lifetime.
+Bound the cache and evict on expiry. The source remains the system of record.
+
+A cache filled from change events instead of on a miss is a different technique;
+the platform's entity-mirror caches work that way, as
+[[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] describes.
+
+#+caption: Cache-Aside: a fresh hit is used; a miss loads from the source and fills the cache.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_cache_aside.png]]
+
+Source: =[[./pattern_cache_aside.puml][pattern_cache_aside.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_cache_aside.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed load fails the read; it never serves a value it does not have. |
+| Timeouts | The load has the source's timeout. |
+| Retries | Concurrent misses for one key share one load. |
+| Idempotency | Does not apply: reads have no effect. |
+| Observability | Hits, misses and load latency are measured. |
+
+* Pitfalls
+
+- *Serving past expiry.* A token used after its lifetime fails downstream.
+- *An unbounded cache.* Memory grows with every key ever seen.
+- *A thundering herd.* Many misses at once all load; share one load per key.
+- *A cache that must survive a restart.* Then it is a store, not a cache.
+
+* Security
+
+The cache holds what the source issued, for no longer than its lifetime, and
+only in memory.
+
+* Resulting context
+
+- Benefits :: Fewer loads, and lower latency.
+- Liabilities :: Staleness within the lifetime, and memory.
+
+* In ORE Studio
+
+The service token provider of [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] keeps and renews its own token the same way.
+
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — the run token cache exchanges on a miss and keeps the token until shortly before it expires.
+
+* Related patterns
+
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the source the run token cache loads from.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] — the owner stays the source.
+
+* Sources
+
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside][Cache-Aside pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

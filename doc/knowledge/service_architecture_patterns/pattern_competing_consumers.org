@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 5C52B5EA-C13B-4149-BC18-DCB2D9AE998B
+:END:
+#+title: Competing Consumers
+#+description: Several replicas subscribe to one channel and each message goes to exactly one of them, so work spreads across replicas.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:communication:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: communication
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Competing Consumers in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Several replicas subscribe to one channel and each message goes to exactly one
+of them. In ORE Studio every service subscribes in a queue group named for the
+service, and compute workers share a queue group per platform.
+
+* Also known as
+
+- /Queue group/, the NATS name.
+- /Work queue/.
+
+* Context
+
+A service runs as several replicas for capacity or availability. Messages for
+it arrive on one subject.
+
+* Problem
+
+How do several replicas share the work on one channel without doing it twice?
+
+* Forces
+
+- Each message must be handled once, not once per replica.
+- Adding a replica must add capacity with no change to the sender.
+- A replica can die while it holds a message.
+- Messages may be handled out of order.
+
+* Solution
+
+Every replica subscribes to the subject in the same queue group. The bus delivers
+each message to one member. Core NATS delivers at most once; a JetStream
+consumer holds the message until a member acknowledges it, so a member that
+dies mid-message does not lose it.
+
+#+caption: Competing Consumers: three replicas in one queue group each receive a different message.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_competing_consumers.png]]
+
+Source: =[[./pattern_competing_consumers.puml][pattern_competing_consumers.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_competing_consumers.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A member that fails a message replies with the error; the others are unaffected. |
+| Timeouts | A JetStream message not acknowledged in time is redelivered to another member. |
+| Retries | Redelivery is a retry; the work must be safe to repeat. |
+| Idempotency | A redelivered message may reach a member that already started it; see [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]]. |
+| Observability | Each member logs with its host, so a message's handler can be found. |
+
+* Pitfalls
+
+- *State in one replica's memory.* A cache or a session held by one member is not seen by the others.
+- *Order assumed.* Two messages may be handled in parallel by two members.
+- *A poison message.* A message that always fails is redelivered forever under JetStream unless a limit stops it.
+- *Two queue group names for one service.* Each group receives every message, so the work runs twice.
+
+* Security
+
+Every member verifies the token on each message; membership grants nothing.
+
+* Resulting context
+
+- Benefits :: Capacity grows with replicas, and a replica's failure costs no message under JetStream.
+- Liabilities :: No ordering, and per-replica state diverges.
+
+* In ORE Studio
+
+The convention is in =ores.nats/service/client.hpp=: the queue group is the service name, for example =ores.iam.service=.
+
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service subscribes its subjects in a queue group named for the service.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — worker nodes share a durable, queue-grouped consumer per platform.
+
+* Related patterns
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — one member answers each request.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — the pools the members belong to.
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the queue the members drain.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html][Competing Consumers]].
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/competing-consumers][Competing Consumers pattern]].
+- [[https://docs.nats.io/nats-concepts/core-nats/queue][NATS documentation, Queue Groups]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

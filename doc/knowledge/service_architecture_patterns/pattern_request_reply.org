@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 94C14185-EE64-412F-8681-849AFF04B4D8
+:END:
+#+title: Request-Reply
+#+description: A requester sends a request and waits for one reply on an address the request names, so a service call works over a message bus.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:communication:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: communication
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Request-Reply in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A requester sends a message and receives one reply on an address the
+request names. In ORE Studio every service operation is a NATS request with a
+private inbox as its reply address.
+
+* Also known as
+
+- /Request-response/.
+- /Return Address/, the companion pattern in Hohpe and Woolf for the reply's destination.
+
+* Context
+
+Services talk over a message bus, not direct connections. A caller needs an
+answer: data, a decision, or a refusal.
+
+* Problem
+
+How does a service ask another for an answer over a bus that only moves
+one-way messages?
+
+* Forces
+
+- The bus delivers messages one way; a reply needs an address.
+- The caller must not wait forever for an answer that may never come.
+- A refusal must be told apart from an answer, or a client decodes an error as data.
+- Several replicas serve one subject, and only one should answer.
+
+* Solution
+
+The requester creates a private inbox and sends the request with the inbox as its
+reply address. One replica of the serving queue group receives it, acts, and
+publishes one reply to the inbox. A refusal is a reply too: an empty body with an
+=X-Error= header. The requester waits up to its timeout, reads =X-Error= first,
+and only then decodes the body.
+
+#+caption: Request-Reply: the request names its inbox, one replica answers, and a refusal is an empty reply with X-Error.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_request_reply.png]]
+
+Source: =[[./pattern_request_reply.puml][pattern_request_reply.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_request_reply.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A refusal is an =X-Error= reply: =unauthorized=, =forbidden=, =bad_request= or =token_expired=. A client reads the header before the body. |
+| Timeouts | The requester waits at most its timeout; see [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]]. No reply does not prove the work was not done. |
+| Retries | Only =token_expired= is retried, once, after a renewal; see [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]]. |
+| Idempotency | A repeated request is a new delivery; the replier must tolerate it if the operation writes. |
+| Observability | The subject, the correlation id and the outcome are logged on both sides. |
+
+* Pitfalls
+
+- *A refusal decoded as a body.* The client reports a decode error; the real cause is the =X-Error= header it did not read.
+- *No subscriber.* A request to a subject nobody serves waits for its whole timeout and then fails, with nothing in any service's log.
+- *A long operation behind a request.* Work that takes minutes holds the caller; it belongs in a workflow that answers at once with a run id.
+- *A timeout read as "nothing happened".* The replier may have finished after the caller gave up.
+
+* Security
+
+The request carries the caller's token, and the replier authorises it on every
+request. The inbox is private to the requester's connection, so another client
+cannot read the reply.
+
+* Resulting context
+
+- Benefits :: A service call over the bus, with one answer and a clear refusal path.
+- Liabilities :: The caller is blocked for the call's length, and a slow replier holds it.
+
+* In ORE Studio
+
+The default timeout is 30 seconds, set once in =ores.nats/service/timeouts.hpp= for every overload.
+
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service operation is a request with an inbox; a refusal is an empty reply with =X-Error=.
+- [[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]] — the request form of =nats_publish= waits for the trigger's acknowledgement.
+
+* Related patterns
+
+- [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] — bounds the wait.
+- [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — joins the request and the reply in the logs.
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — chooses which replica answers.
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the alternative for work that outlives a request.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html][Request-Reply]] and [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/ReturnAddress.html][Return Address]].
+- [[https://docs.nats.io/nats-concepts/core-nats/reqreply][NATS documentation, Request-Reply]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

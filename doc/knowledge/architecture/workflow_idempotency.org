@@ -80,6 +80,12 @@ and the replay guard fails open. It therefore either asks the engine to replay a
 recorded outcome before it acts, or writes so that a repeat converges on stable
 business data.
 
+
+* Patterns used
+
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the replay
+  guard and the converging write.
+
 * See also
 
 - [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the structure note that orders this cluster, and where to read this page in it.

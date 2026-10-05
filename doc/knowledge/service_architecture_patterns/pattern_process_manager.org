@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 98177604-4092-4A95-B2C3-EE6F82A3185E
+:END:
+#+title: Process Manager
+#+description: One component holds the state of a multi-step process and decides each next step from the results so far.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:coordination:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: coordination
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Process Manager in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+One component holds the state of a multi-step process and decides each next
+step from the results so far. In ORE Studio that component is the workflow
+engine, =ores.workflow=.
+
+* Also known as
+
+- /Orchestrator/.
+- /Workflow engine/.
+
+* Context
+
+A process has several steps in different services, it outlives one request, and
+it must survive a restart.
+
+* Problem
+
+Where does the state of a process that spans services live, and who decides
+what runs next?
+
+* Forces
+
+- Steps that call each other couple every service to the order.
+- The process must resume after a restart.
+- A later step needs an earlier step's result.
+- A person must be able to see where a run is.
+
+* Solution
+
+A process manager owns the run. It builds the step list from the run's request
+and a registered definition, persists each step before it dispatches it, sends
+the step's command, and waits for one completion event. It records the outcome
+and dispatches the next step, built from the request and the earlier results,
+addressed by step name. Steps never call each other.
+
+#+caption: Process Manager: the engine builds the steps from the definition, persists and dispatches each one, and records each outcome.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_process_manager.png]]
+
+Source: =[[./pattern_process_manager.puml][pattern_process_manager.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_process_manager.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A failed step follows the definition's policy; see [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]]. |
+| Timeouts | Every step states a deadline; see [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]]. |
+| Retries | A restart re-dispatches every step left in progress, under its own identity. |
+| Idempotency | Dispatch is at least once, so every step must converge on repeat. |
+| Observability | The run and its steps are readable at any time, and every transition publishes an event. |
+
+* Pitfalls
+
+- *A step list that changes between dispatches.* The list must be a pure function of the stored request, or a recovered run changes shape.
+- *A handler that calls the next step.* The order then lives in two places.
+- *An unknown workflow type accepted.* The start must fail when the chain cannot be built, or a mistyped run looks like a success.
+
+* Security
+
+The manager dispatches with the step headers and no caller token; a step that
+must act as a tenant uses [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]].
+
+* Resulting context
+
+- Benefits :: One place holds the order and the state; steps stay single-purpose.
+- Liabilities :: The manager is on the path of every run, and its availability matters.
+
+* In ORE Studio
+
+- [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][The step protocol]] — the engine builds the step list from the request, dispatches each step and records each outcome.
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the engine runs the report chain the run configuration selects.
+- [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][Identity]] — the engine runs the steps the request declares.
+- [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — the engine runs the provisioning plan's steps.
+
+* Related patterns
+
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — the failure handling the manager runs.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — what the manager requires of each step.
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the alternative for work short enough to answer at once.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/ProcessManager.html][Process Manager]].
+- Chris Richardson, /Microservices Patterns/, Manning, 2018, chapter 4, "Managing transactions with sagas" — orchestration.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

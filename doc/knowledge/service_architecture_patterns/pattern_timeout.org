@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 1C419534-33BC-423E-8503-9D3945AF8648
+:END:
+#+title: Timeout
+#+description: Every wait has a stated limit, so a silent or slow service fails the waiter instead of holding it forever.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:resilience:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: resilience
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Timeout in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Every wait has a stated limit, so a silent or slow service fails the waiter
+instead of holding it. In ORE Studio requests have a default timeout and every
+workflow step states a deadline.
+
+* Also known as
+
+- /Deadline/, for a budget that spans several calls.
+
+* Context
+
+A caller waits for another service: a request, a workflow step, a grid batch.
+The other service can be slow, wedged or gone, and the bus does not say which.
+
+* Problem
+
+How long should a caller wait, and what happens when it stops waiting?
+
+* Forces
+
+- Waiting forever holds a thread, a connection or a run.
+- Giving up too early fails work that would have finished.
+- The callee may finish after the caller gave up.
+- One number is wrong for both a write and an import.
+
+* Solution
+
+Every wait states its limit where the operation is defined, not at each call site.
+When the limit passes, the caller fails the call with the subject and what it
+knows, and logs the correlation id. A budget that covers several calls is larger
+than any one of them, so the inner limit fails first and names the cause.
+
+#+caption: Timeout: the caller gives up after its limit and fails the call; the callee may still finish.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_timeout.png]]
+
+Source: =[[./pattern_timeout.puml][pattern_timeout.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_timeout.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The timeout is a failure with the subject and the elapsed time. |
+| Timeouts | This is the pattern itself. |
+| Retries | A retry after a timeout is safe only if the work is idempotent; see [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]]. |
+| Idempotency | A late answer after the timeout is ignored and logged as late. |
+| Observability | The engine states what it knew of the service that owned the silent step: absent, not reporting, or reporting. |
+
+* Pitfalls
+
+- *No timeout.* A step with no deadline waits forever, and every waiter behind it gives up with no reason.
+- *A timeout read as failure of the work.* The callee may have finished; never compensate on a timeout.
+- *Equal limits nested.* The outer wait expires with the inner and reports the wrong cause.
+- *A timeout per call site.* Callers of one operation then disagree on how long it takes.
+
+* Security
+
+No security consequence beyond availability: a limit stops a slow callee from
+holding the caller's resources.
+
+* Resulting context
+
+- Benefits :: A silent service becomes a visible failure with a cause.
+- Liabilities :: A slow but healthy service can be failed, and its late result must be handled.
+
+* In ORE Studio
+
+Requests default to 30 seconds in =ores.nats/service/timeouts.hpp=. Steps read their budgets from =data_step_timeout= and =write_step_timeout=, and the engine checks them every thirty seconds.
+
+- [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — every step states a deadline, and the engine fails a silent step.
+- [[id:C71A0118-63B5-4150-9C9F-007C690CBF11][Waiting, deadlines and cancellation]] — the budget belongs to the operation's definition, and expiry is a failure.
+
+* Related patterns
+
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — what follows a timeout.
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — a timed-out step stops the run instead of compensating it.
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — every request carries one.
+
+* Sources
+
+- Michael T. Nygard, /Release It!/, second edition, Pragmatic Bookshelf, 2018, chapter 5, "Stability Patterns" — Timeouts.
+- Marc Brooker, [[https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/][Timeouts, retries, and backoff with jitter]], the Amazon Builders' Library.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

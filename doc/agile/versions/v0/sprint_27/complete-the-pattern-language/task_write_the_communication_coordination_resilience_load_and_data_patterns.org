@@ -7,41 +7,47 @@
 #+level: s1
 #+filetags: :complete-the-pattern-language:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-remaining-pattern-groups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:300948F4-3597-4E53-8454-126D541D9360][Complete the pattern language]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every group of the pattern language has its pages, so a design can name any
+pattern it applies and inherit its failure handling, pitfalls and sources.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:300948F4-3597-4E53-8454-126D541D9360][Complete the pattern language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
 
--
+- The communication, coordination, resilience, load, data and observability
+  groups each have their pages, with diagrams and authoritative sources.
+- Every row of the hub links its page.
+- Every page a pattern lists as a use links the pattern back, and
+  =build/scripts/check_pattern_uses.py= passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the pages from one table of data, and generate the back-links on the use
+pages from the same table, so the two directions cannot disagree. Ground each
+In ORE Studio section in a page that already describes the use. Drop any pattern
+that ORE Studio neither uses nor has chosen in a design.
 
 * Measurements
 
@@ -55,7 +61,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pattern and check tests | 23 passed | =pytest test_doc_service_architecture_pattern_type.py test_check_pattern_uses.py= | before commit |
+| Site check | 356 pages, 0 failures, 16 images copied | =compass site page= | before commit |
 
 * Notes
 
@@ -87,3 +94,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fifteen pattern pages are written, with sixteen diagrams: Request-Reply, Claim
+Check and Competing Consumers in communication; Saga, Process Manager and
+Idempotent Receiver in coordination; Timeout, Retry and Bulkhead in resilience;
+Queue-Based Load Leveling, Throttling and Fair Share in load; Database per
+Service and Cache-Aside in data; and Log Aggregation in observability. Every
+hub row links its page.
+
+Eighteen use pages now name their patterns, generated from the same table: the
+workflow engine pages, the three workflow pages, the reporting design, the IAM
+run grants page, the compute, storage, scheduler and service anatomy pages, the
+memory on table ownership and the telemetry logs journey. The workflow pages'
+plain-text placeholders for the coordination patterns are now links.
+
+Circuit Breaker was dropped: the hub lists a pattern only when ORE Studio uses it
+or a design has chosen it, and neither holds. Cache-Aside records that the
+entity-mirror caches are a different technique, filled from change events.

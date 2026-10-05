@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 3A3752D7-9322-45F0-9932-762B727642E1
+:END:
+#+title: Throttling
+#+description: A service limits how much one caller or tenant may ask for in a period, so no single source can exhaust it.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:load:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: load
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Throttling in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A service limits how much one caller or tenant may ask for in a period, so no
+single source can exhaust it. In ORE Studio IAM limits token exchanges per
+service and per tenant, and reporting caps the runs of each tenant and party.
+
+* Also known as
+
+- /Rate limiting/.
+- /Quota/, for a limit on concurrent work rather than a rate.
+
+* Context
+
+A shared service serves many callers. One caller, by fault or by load, can send
+more than the service can serve.
+
+* Problem
+
+How does a service protect itself, and its other callers, from one source of
+excess load?
+
+* Forces
+
+- Every caller deserves service; none may take all of it.
+- Some work can wait; some must be refused.
+- A refused caller needs to know when to try again.
+
+* Solution
+
+Count each caller's use over a period, or its work in flight, against a limit.
+Over the limit, delay the request, queue it, or refuse it with a reason and a time
+to try again. Log every refusal with the caller and the limit.
+
+#+caption: Throttling: a request within its caller's and tenant's limits is served; over them it is queued or refused.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_throttling.png]]
+
+Source: =[[./pattern_throttling.puml][pattern_throttling.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_throttling.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A refusal names the limit and, where it can, when to try again. |
+| Timeouts | Does not apply: the limit counts use, not time. |
+| Retries | A refused caller retries after the stated time, with back-off; see [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]]. |
+| Idempotency | Does not apply. |
+| Observability | Refusals are counted per caller, per tenant and per limit. |
+
+* Pitfalls
+
+- *Limits nobody sees until they bite.* State them, and measure use against them.
+- *A limit per replica.* Several replicas each grant the limit, so the real limit multiplies.
+- *Retries that ignore the refusal's time.* They arrive at once and are refused again.
+
+* Security
+
+Availability: a faulty or hostile caller cannot exhaust the service. Limits per
+tenant keep one tenant's fault from reaching another.
+
+* Resulting context
+
+- Benefits :: The service stays up under excess load, and the cause is named.
+- Liabilities :: Legitimate bursts are delayed or refused, and limits need tuning.
+
+* In ORE Studio
+
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — IAM limits exchanges per service and per tenant.
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — quotas cap the running runs of each tenant and party.
+
+* Related patterns
+
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] — the alternative when work can wait.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — isolation behind the limit.
+- [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] — dividing what the limit admits.
+
+* Sources
+
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/throttling][Throttling pattern]] and [[https://learn.microsoft.com/en-us/azure/architecture/patterns/rate-limiting-pattern][Rate Limiting pattern]].
+- Betsy Beyer et al., /Site Reliability Engineering/, O'Reilly, 2016, chapter 21, "Handling Overload".
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

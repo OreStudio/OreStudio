@@ -34,6 +34,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Detail, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { displayName } from './names.js';
 /**
  * The forms of a person's account: who they are and how to reach them.
  *
@@ -92,7 +93,7 @@ export function resolveManager(
     if (reportsTo === null) return null;
     const manager = accounts.find((row) => row.id === reportsTo);
     if (manager === undefined) return reportsTo;
-    return manager.fullName === '' ? manager.username : manager.fullName;
+    return displayName(manager, manager.username);
 }
 
 /**
@@ -227,7 +228,7 @@ export function IdentityPanel({
             <div className="flex flex-wrap items-start gap-5">
                 <div className="flex flex-col items-center gap-2">
                     <Avatar
-                        name={draft.fullName === '' ? account.username : draft.fullName}
+                        name={displayName({ fullName: draft.fullName }, account.username)}
                         size="lg"
                         src={draft.imageId === '' ? null : imageUrl(draft.imageId)}
                     />
@@ -236,7 +237,7 @@ export function IdentityPanel({
                     )}
                     {canWrite && (
                         <PhotoPicker
-                            name={draft.fullName === '' ? account.username : draft.fullName}
+                            name={displayName({ fullName: draft.fullName }, account.username)}
                             imageId={draft.imageId === '' ? null : draft.imageId}
                             label={
                                 draft.imageId === ''

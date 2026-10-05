@@ -20,10 +20,12 @@
  */
 
 import { useHolds } from '../access/holds.js';
+import { displayName } from '../access/names.js';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type {
+    Account,
     DeploymentOverview,
     SessionMode,
     SetupActivity,
@@ -52,19 +54,34 @@ export interface HomePageProps {
     readonly partyName: string;
     /** The context the session runs in, which decides what this page shows. */
     readonly mode: SessionMode;
+    /**
+     * The signed-in person's own account, when the wiring has read it.
+     *
+     * The greeting shows the name it holds and falls back to the username,
+     * for the member who may not read their own account and for every account
+     * created before names were recorded.
+     */
+    readonly self?: Account | null;
 }
 
-export function HomePage({ username, tenantName, partyName, mode }: HomePageProps): ReactNode {
+export function HomePage({
+    username,
+    tenantName,
+    partyName,
+    mode,
+    self,
+}: HomePageProps): ReactNode {
+    const name = displayName(self, username);
     if (mode === 'system-administration') {
-        return <SystemHome username={username} />;
+        return <SystemHome name={name} />;
     }
     if (mode === 'tenant-administration') {
-        return <TenantHome username={username} tenantName={tenantName} />;
+        return <TenantHome name={name} tenantName={tenantName} />;
     }
-    return <PartyHome username={username} partyName={partyName} />;
+    return <PartyHome name={name} partyName={partyName} />;
 }
 
-function SystemHome({ username }: { readonly username: string }): ReactNode {
+function SystemHome({ name }: { readonly name: string }): ReactNode {
     const { t, plural } = useTranslation();
     const overview = useQuery({ queryKey: ['overview'], queryFn: api.overview });
     /*
@@ -79,7 +96,7 @@ function SystemHome({ username }: { readonly username: string }): ReactNode {
     return (
         <div className="space-y-6">
             <PageHeader
-                title={t('home.welcome', { name: username })}
+                title={t('home.welcome', { name })}
                 {...(data === undefined
                     ? {}
                     : { description: plural('home.system.lead', data.totalCount) })}
@@ -337,10 +354,10 @@ function FirstTenants({
 }
 
 function TenantHome({
-    username,
+    name,
     tenantName,
 }: {
-    readonly username: string;
+    readonly name: string;
     readonly tenantName: string;
 }): ReactNode {
     const { t } = useTranslation();
@@ -361,20 +378,17 @@ function TenantHome({
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={tenantName}
-                description={t('home.tenant.lead', { name: username })}
-            />
+            <PageHeader title={tenantName} description={t('home.tenant.lead', { name })} />
             <Tiles tiles={tiles} />
         </div>
     );
 }
 
 function PartyHome({
-    username,
+    name,
     partyName,
 }: {
-    readonly username: string;
+    readonly name: string;
     readonly partyName: string;
 }): ReactNode {
     const { t } = useTranslation();
@@ -387,7 +401,7 @@ function PartyHome({
     return (
         <div className="space-y-6">
             <PageHeader
-                title={t('home.welcome', { name: username })}
+                title={t('home.welcome', { name })}
                 description={t('home.party.lead', { party: partyName })}
             />
             <Tiles

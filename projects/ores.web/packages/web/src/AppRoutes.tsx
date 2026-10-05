@@ -208,6 +208,7 @@ export function AppRoutes({
                         tenantName={view.tenantName}
                         partyName={view.party.name}
                         mode={view.mode}
+                        self={shell.self}
                     />
                 ))}
             />

@@ -27,6 +27,7 @@ import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button } from '../ui/Primitives.js';
 import { useHolds } from '../access/holds.js';
+import { displayName } from '../access/names.js';
 import { menuFor, modeKey } from '../shell/areas.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
@@ -190,7 +191,7 @@ function AccountMenu({
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
-    const name = self != null && self.fullName !== '' ? self.fullName : username;
+    const name = displayName(self, username);
     const photo = self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
 
     useEffect(() => {

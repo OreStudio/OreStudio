@@ -31,13 +31,13 @@
 -- Commons (File:Barclays-Logo.svg, CC0 -- public domain), vendored at
 -- external/barclays/Barclays-logo.svg.
 --
--- This is an SVG asset, but still bypasses the SVG-only
--- ores_dq_images_artefact_tbl staging pipeline (see the "Generalise account
--- images" task) since it isn't part of a bulk flag/icon dataset -- it is
--- inserted directly into ores_assets_images_tbl under the system tenant,
--- then copied per-tenant and attached by tenant_handler::provision_acme
--- (ores.iam.core/messaging/tenant_handler.hpp). Idempotent: skips if a
--- system-tenant row with this key already exists.
+-- The row is inserted directly into ores_assets_images_tbl under the
+-- system tenant rather than staged as a DQ dataset artefact, because it is
+-- not part of a bulk icon dataset but a single demo asset. It is copied
+-- per-tenant and attached when the counterparty import meets the LEI, via
+-- the known-logo map in
+-- ores_refdata_publish_lei_counterparties_from_dq_fn. Idempotent: skips if
+-- a system-tenant row with this key already exists.
 -- =============================================================================
 
 DO $$

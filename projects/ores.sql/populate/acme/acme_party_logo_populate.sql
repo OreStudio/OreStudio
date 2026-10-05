@@ -32,11 +32,10 @@
 -- demonstrates the same image_id feature on a real GLEIF counterparty it
 -- trades with.
 --
--- This is a raster (PNG) asset, so it cannot go through the SVG-only
--- ores_dq_images_artefact_tbl staging pipeline (see the "Generalise account
--- images" task) -- it is inserted directly into ores_assets_images_tbl
--- under the system tenant, then copied per-tenant and attached by
--- tenant_handler::provision_acme (ores.iam.core/messaging/tenant_handler.hpp).
+-- The row is inserted directly into ores_assets_images_tbl under the system
+-- tenant rather than staged as a DQ dataset artefact, then copied per-tenant
+-- and attached by the party_logo step
+-- (ores.iam.core/messaging/tenant_provisioning_handler.hpp).
 -- Idempotent: skips if a system-tenant row with this key already exists.
 -- =============================================================================
 

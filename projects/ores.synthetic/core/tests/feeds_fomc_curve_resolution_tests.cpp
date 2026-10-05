@@ -52,14 +52,16 @@ struct fomc_tenant {
         const auto tenant =
             test_database_manager::provision_test_tenant(ctx, code, "ores.synthetic FOMC curve");
 
-        for (const auto& [dataset, entity] : {std::pair{"iso.countries", "countries"},
-                                              std::pair{"refdata.calendar_types", "calendar_types"},
-                                              std::pair{"refdata.calendars", "calendars"},
-                                              std::pair{"refdata.tenor_schedules", "tenor_schedules"},
-                                              std::pair{"refdata.calendar_events", "calendar_events"}}) {
+        for (const auto& [dataset, entity] :
+             {std::pair{"iso.countries", "countries"},
+              std::pair{"refdata.calendar_types", "calendar_types"},
+              std::pair{"refdata.calendars", "calendars"},
+              std::pair{"refdata.tenor_schedules", "tenor_schedules"},
+              std::pair{"refdata.calendar_events", "calendar_events"}}) {
             ores::database::repository::execute_parameterized_string_query(
                 ctx,
-                std::string("SELECT count(*)::text FROM ores_dq_datasets_tbl d, ores_refdata_publish_") +
+                std::string(
+                    "SELECT count(*)::text FROM ores_dq_datasets_tbl d, ores_refdata_publish_") +
                     entity +
                     "_from_dq_fn(d.id, $1::uuid) p WHERE d.code = $2"
                     " AND d.valid_to = ores_utility_infinity_timestamp_fn()",
@@ -95,11 +97,10 @@ TEST_CASE("fomc_tenors_resolve_to_meeting_dates_in_a_new_tenant", tags) {
     refctx->horizon = 2026y / October / 4d;
     refctx->spot = refctx->horizon;
 
-    const auto resolved = resolve({entry(0, "SPOT", "1F", "DEPO"),
-                                   entry(1, "1F", "2F", "FRA"),
-                                   entry(7, "7F", "8F", "FRA")},
-                                  *refctx,
-                                  "Quarterly");
+    const auto resolved = resolve(
+        {entry(0, "SPOT", "1F", "DEPO"), entry(1, "1F", "2F", "FRA"), entry(7, "7F", "8F", "FRA")},
+        *refctx,
+        "Quarterly");
 
     REQUIRE(resolved.size() == 3);
     CHECK(resolved[0].start_date == 2026y / October / 4d);

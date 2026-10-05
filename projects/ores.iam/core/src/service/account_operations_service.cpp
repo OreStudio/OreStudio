@@ -445,10 +445,8 @@ bool account_operations_service::update_account(
     return true;
 }
 
-messaging::update_self_account_response
-account_operations_service::update_self_account(
-    const messaging::update_self_account_request& request,
-    const boost::uuids::uuid& account_id) {
+messaging::update_self_account_response account_operations_service::update_self_account(
+    const messaging::update_self_account_request& request, const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Updating own account: " << boost::uuids::to_string(account_id);
     messaging::update_self_account_response response;
 

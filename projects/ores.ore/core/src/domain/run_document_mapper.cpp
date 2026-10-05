@@ -41,12 +41,12 @@ using setup_t = reporting::domain::report_run_setup;
  */
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> setup_t::* member;
+    std::optional<std::string> setup_t::*member;
 };
 
 struct int_binding {
     std::string_view parameter;
-    std::optional<int> setup_t::* member;
+    std::optional<int> setup_t::*member;
 };
 
 const std::array<text_binding, 40> text_bindings = {{

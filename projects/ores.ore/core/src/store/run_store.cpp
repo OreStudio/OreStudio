@@ -51,7 +51,7 @@ namespace {
  */
 struct document_kind {
     std::string_view code;
-    std::optional<std::string> report_run_setup::* file;
+    std::optional<std::string> report_run_setup::*file;
 };
 
 // In the order an import writes them: a curve segment names its conventions,

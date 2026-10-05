@@ -27,10 +27,10 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -111,8 +111,7 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     const auto response = trade_operations_service(f.ctx).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
-    REQUIRE(ores::trading::repository::trade_repository().read_latest(f.ctx, id).size() ==
-            1);
+    REQUIRE(ores::trading::repository::trade_repository().read_latest(f.ctx, id).size() == 1);
     const auto bookings =
         ores::trading::repository::trade_booking_repository().read_latest(f.ctx, id);
     REQUIRE(bookings.size() == 1);

@@ -159,8 +159,8 @@ public:
             svc.assign_role(sg(req->account_id),
                             sg(req->role_id),
                             ctx.actor(),
-                            req->change_commentary.empty() ? "Role assigned to account"
-                                                           : req->change_commentary,
+                            req->change_commentary.empty() ? "Role assigned to account" :
+                                                             req->change_commentary,
                             req->change_reason_code);
             BOOST_LOG_SEV(authorization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_response{.success = true});
@@ -209,7 +209,8 @@ public:
             }
             const auto account_id = sg(req->account_id);
             if (const auto refusal = authorization_revoke_refusal(*caller_id, account_id)) {
-                reply(nats_, msg, revoke_role_response{.success = false, .error_message = *refusal});
+                reply(
+                    nats_, msg, revoke_role_response{.success = false, .error_message = *refusal});
                 return;
             }
             svc.revoke_role(account_id, sg(req->role_id));

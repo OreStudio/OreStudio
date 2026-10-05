@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 708C2462-C1F8-455B-B091-9D9690FEEAAB
+:END:
+#+title: Keep journey prototypes on main
+#+description: A clickable journey prototype merges into main and stays there as the design record; it never lives only on an unmerged branch.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :web:prototype:journeys:memory:feedback:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+A clickable journey prototype merges into main once it is accepted, and stays there as the design record. Its screens live under projects/ores.web/packages/web/src/prototype/, its route joins the route table in PrototypeApp.tsx, and the journey's * Prototype section names main as the source.
+
+*Why:* On 2026-10-05 the operator found that seven prototype branches were never merged: the operations story re-read its prototype as the design record and had to check out a branch to do it. The operator's words: "we keep all prototypes in git for future reference".
+
+*How to apply:* When a journey prototype is accepted, merge it with a merge commit in the same PR set that records the acceptance. Add its route to the hub table rather than to the application's routes, with the shell of the journey's actor. Do not describe a prototype as throwaway or as living on a branch only. This is about journey prototypes; the empirical apparatus of compass-method-prototype is still thrown away.

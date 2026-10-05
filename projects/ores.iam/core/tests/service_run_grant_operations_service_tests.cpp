@@ -263,3 +263,78 @@ TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", tags) {
             .revoke_run_grant(req);
     CHECK(allowed.success);
 }
+
+TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto a = write_account(h, gen);
+    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    run_grant_operations_service sut(ctx);
+    const auto resource = resource_name();
+    const auto first = sut.create_run_grant(request_for(r, resource));
+    REQUIRE(first.success);
+
+    run_grant_service grants(ctx);
+    auto expired = grants.find_grant(id_of(first.grant_id));
+    REQUIRE(expired);
+    expired->not_after = std::chrono::system_clock::now() - std::chrono::hours(1);
+    expired->change_reason_code = "system.test";
+    grants.save_grant(*expired);
+
+    const auto renewed = sut.create_run_grant(request_for(r, resource));
+    REQUIRE(renewed.success);
+    CHECK(renewed.created);
+    CHECK(renewed.grant_id == first.grant_id);
+    const auto stored = grants.find_grant(id_of(renewed.grant_id));
+    REQUIRE(stored);
+    CHECK(stored->not_after == std::chrono::system_clock::time_point{});
+}
+
+TEST_CASE("create_run_grant_replaces_an_active_grant_with_a_new_role", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto a = write_account(h, gen);
+    const auto first_role = write_role_bundling(h, gen, granted_code);
+    const auto second_role = write_role_bundling(h, gen, granted_code);
+    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    run_grant_operations_service sut(ctx);
+    const auto resource = resource_name();
+    const auto first = sut.create_run_grant(request_for(first_role, resource));
+    REQUIRE(first.success);
+
+    const auto replaced = sut.create_run_grant(request_for(second_role, resource));
+    REQUIRE(replaced.success);
+    CHECK(replaced.created);
+    CHECK(replaced.grant_id == first.grant_id);
+    CHECK_THAT(replaced.message, ContainsSubstring("Replaced"));
+    const auto stored = run_grant_service(ctx).find_grant(id_of(replaced.grant_id));
+    REQUIRE(stored);
+    CHECK(stored->role_id == second_role.id);
+}
+
+TEST_CASE("revoke_run_grant_by_an_administrator_of_another_party_keeps_the_grants_party", tags) {
+    database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto grantor = write_account(h, gen);
+    const auto admin = write_account(h, gen);
+    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto party = boost::uuids::random_generator()();
+    const auto other_party = boost::uuids::random_generator()();
+    const auto created = run_grant_operations_service(person(h, grantor, party, {granted_code}))
+                             .create_run_grant(request_for(r, resource_name()));
+    REQUIRE(created.success);
+
+    const auto admin_ctx = h.context()
+                               .with_party(h.tenant_id(), other_party, {other_party, party},
+                                           admin.username)
+                               .with_roles({"iam::run_grants:revoke"});
+    revoke_run_grant_request req;
+    req.grant_id = created.grant_id;
+    REQUIRE(run_grant_operations_service(admin_ctx).revoke_run_grant(req).success);
+
+    const auto stored = run_grant_service(admin_ctx).find_grant(id_of(created.grant_id));
+    REQUIRE(stored);
+    CHECK(stored->party_id == party);
+    CHECK(stored->revoked_by == admin.username);
+}

@@ -316,9 +316,9 @@ def _reject_junction_only_flags(doc: "OrgDocument", kind: str,
 
     The flag splits a repository write surface from the verbs a client
     reaches. A junction reads it from its own drawers, and a domain_entity
-    reads it from its root =* Flags= drawer, where the protocol derivation
+    reads it from its root ``* Flags`` drawer, where the protocol derivation
     drops the write verbs and the repository keeps its writes for the
-    service's own code. A domain_entity that declares it under =* C++= would
+    service's own code. A domain_entity that declares it under ``* C++`` would
     render as though it had not, and a field group or an operation never reads
     it, which is the silent no-op the profile guard above rejects for
     ``:profile:``.

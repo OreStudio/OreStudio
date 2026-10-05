@@ -22,13 +22,13 @@
  * Template: cpp_domain_type_repository.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_REPOSITORY_HPP
-#define ORES_TRADING_CORE_REPOSITORY_TRADE_REPOSITORY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_ACTIVITY_REPOSITORY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_TRADE_ACTIVITY_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/domain/trade_activity.hpp"
+#include "ores.trading.api/messaging/trade_activity_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -42,11 +42,12 @@
 namespace ores::trading::repository {
 
 /**
- * @brief Reads and writes trades to data storage.
+ * @brief Reads and writes trade activities to data storage.
  */
-class ORES_TRADING_CORE_EXPORT trade_repository {
+class ORES_TRADING_CORE_EXPORT trade_activity_repository {
 private:
-    inline static std::string_view logger_name = "ores.trading.repository.trade_repository";
+    inline static std::string_view logger_name =
+        "ores.trading.repository.trade_activity_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -63,7 +64,7 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes trades to database.
+     * @brief Writes trade activities to database.
      *
      * The plain form replaces the row the caller last read: it states the
      * version the row carries now, so the store can tell a replace from a
@@ -71,12 +72,12 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::trade& v);
-    void write(context ctx, const std::vector<domain::trade>& v);
+    void write(context ctx, const domain::trade_activity& v);
+    void write(context ctx, const std::vector<domain::trade_activity>& v);
     /**@}*/
 
     /**
-     * @brief Writes a trade, honouring the claim it states.
+     * @brief Writes a trade activity, honouring the claim it states.
      *
      * The claim is the version the caller read (@c must_match_version), that no
      * current row exists (@c must_not_exist), or neither (@c any, which
@@ -90,45 +91,47 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void
-    write(context ctx, const domain::trade& v, const ores::utility::domain::precondition& claim);
+    void write(context ctx,
+               const domain::trade_activity& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Writes a set of trades, each honouring its own
+     * @brief Writes a set of trade activities, each honouring its own
      * claim, as one statement.
      */
     void write(context ctx,
-               const std::vector<domain::trade>& v,
+               const std::vector<domain::trade_activity>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
-     * @brief Reads latest trades, possibly filtered by primary key.
+     * @brief Reads latest trade activities, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::trade> read_latest(context ctx);
-    std::vector<domain::trade> read_latest(context ctx, const std::string& id);
-    std::vector<domain::trade> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::trade_activity> read_latest(context ctx);
+    std::vector<domain::trade_activity> read_latest(context ctx, const std::string& id);
+    std::vector<domain::trade_activity> read_latest(context ctx,
+                                                    const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
-     * @brief Reads the trade rows for the given primary key.
+     * @brief Reads the trade activity rows for the given primary key.
      *
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::trade> read_all(context ctx, const std::string& id);
+    std::vector<domain::trade_activity> read_all(context ctx, const std::string& id);
 
 
     /**
-     * @brief Whether a list of trades can be ordered by a field.
+     * @brief Whether a list of trade activities can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.
      */
     static bool is_sortable(std::string_view field);
 
     /**
-     * @brief Reads latest trades with pagination support.
+     * @brief Reads latest trade activities with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
@@ -136,24 +139,24 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::trade>
+    std::vector<domain::trade_activity>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::trades_filter>& filter = std::nullopt);
+                const std::optional<messaging::trade_activities_filter>& filter = std::nullopt);
 
     /**
-     * @brief Gets the total count of active trades.
+     * @brief Gets the total count of active trade activities.
      * @param ctx Repository context with database connection
-     * @return Total number of active trades
+     * @return Total number of active trade activities
      */
-    std::uint32_t
-    get_total_trade_count(context ctx,
-                          const std::optional<messaging::trades_filter>& filter = std::nullopt);
+    std::uint32_t get_total_activity_count(
+        context ctx,
+        const std::optional<messaging::trade_activities_filter>& filter = std::nullopt);
 
     /**
-     * @brief Deletes a trade permanently.
+     * @brief Deletes a trade activity permanently.
      *
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
@@ -172,7 +175,7 @@ public:
     enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Removes a trade, refusing a row that moved on.
+     * @brief Removes a trade activity, refusing a row that moved on.
      *
      * A stated version is the version the caller read. The removal is refused
      * with @c conflicting when the current row carries another, so a caller
@@ -183,7 +186,7 @@ public:
     remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
-     * @brief Deletes trades permanently.
+     * @brief Deletes trade activities permanently.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
@@ -193,16 +196,16 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::trade& v);
+    ores::utility::domain::precondition replace_claim(context ctx, const domain::trade_activity& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::trade apply_claim(context ctx,
-                              const domain::trade& v,
-                              const ores::utility::domain::precondition& claim);
+    domain::trade_activity apply_claim(context ctx,
+                                       const domain::trade_activity& v,
+                                       const ores::utility::domain::precondition& claim);
 };
 
 }

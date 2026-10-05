@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,31 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_domain_type_generator.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_TRADING_API_GENERATORS_TRADE_ACTIVITY_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_TRADE_ACTIVITY_GENERATOR_HPP
+
+#include "ores.trading.api/domain/trade_activity.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
+
+namespace ores::trading::generators {
+
 /**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
+ * @brief Generates a synthetic trade_activity.
  */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
+ORES_TRADING_API_EXPORT domain::trade_activity
+generate_synthetic_trade_activity(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic trade_activities.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::trade_activity>
+generate_synthetic_trade_activities(std::size_t n, utility::generation::generation_context& ctx);
+
 }
+
+#endif

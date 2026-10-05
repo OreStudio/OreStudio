@@ -60,6 +60,10 @@ drop policy if exists trade_bookings_tenant_isolation_policy on "ores_trading_tr
 drop policy if exists trade_states_party_isolation_policy on "ores_trading_trade_states_tbl";
 drop policy if exists trade_states_tenant_isolation_policy on "ores_trading_trade_states_tbl";
 
+-- Trade activities
+drop policy if exists trade_activities_party_isolation_policy on "ores_trading_trade_activities_tbl";
+drop policy if exists trade_activities_tenant_isolation_policy on "ores_trading_trade_activities_tbl";
+
 -- Trades
 drop policy if exists trades_party_isolation_policy on "ores_trading_trades_tbl";
 drop policy if exists trades_tenant_isolation_policy on "ores_trading_trades_tbl";

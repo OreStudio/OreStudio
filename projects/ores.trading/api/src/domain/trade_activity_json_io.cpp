@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,20 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_domain_type_json_io.cpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
+#include "ores.trading.api/domain/trade_activity_json_io.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace ores::trading::domain {
+
+std::ostream& operator<<(std::ostream& s, const trade_activity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

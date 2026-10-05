@@ -23,20 +23,20 @@
  * To modify, update the template and regenerate.
  */
 /**
- * The trade wire shape.
+ * The trade activity wire shape.
  *
  * Field names are the C++ member names, because they are the keys rfl::json
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.
  */
-export interface Trade {
+export interface TradeActivity {
     tenant_id: string;
     id: string;
     party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
+    activity_type_code: string;
+    actor: string;
+    occurred_at: string;
+    comment: string;
+    is_operational_error: boolean;
 }

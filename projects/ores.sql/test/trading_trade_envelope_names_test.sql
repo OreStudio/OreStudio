@@ -108,7 +108,7 @@ returns boolean as $$
         pg_temp.netting_set_of(p_netting_set_alias),
         case when p_record_names then pg_temp.alias('counterparty', p_counterparty_alias) end,
         case when p_record_names then pg_temp.alias('netting_set', p_netting_set_alias) end,
-        null, null, 'new_booking', owner_name, 'system.new_record', 'test')
+        null, null, 'new_booking', owner_name, 'system.new_record', 'test') is not null
     from t_ctx;
 $$ language sql;
 

@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,26 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
+/*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: sql_schema_domain_entity_drop.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-}
+
+drop rule if exists ores_trading_trade_activities_delete_rule on "ores_trading_trade_activities_tbl";
+drop trigger if exists ores_trading_trade_activities_insert_trg on "ores_trading_trade_activities_tbl";
+drop function if exists ores_trading_trade_activities_insert_fn;
+drop trigger if exists ores_trading_trade_activities_immutable_trg on "ores_trading_trade_activities_tbl";
+drop trigger if exists ores_trading_trade_activities_immutable_truncate_trg on "ores_trading_trade_activities_tbl";
+drop function if exists ores_trading_trade_activities_immutable_fn;
+drop table if exists "ores_trading_trade_activities_tbl";

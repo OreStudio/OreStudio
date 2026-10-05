@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,26 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
+/*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: sql_schema_notify_trigger_drop.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-}
+
+drop trigger if exists ores_trading_trade_activities_notify_trg on "ores_trading_trade_activities_tbl";
+drop function if exists ores_trading_trade_activities_notify_fn;

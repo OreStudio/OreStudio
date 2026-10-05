@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trade-activity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every business event on a trade is one append-only trade_activity row, and booki
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Every business event on a trade is one append-only trade_activity row, and booki
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =trade_activity= is an immutable entity, like the trade: id, party,
+  activity type, actor, the time the event occurred, a comment and an
+  operational-error flag. It takes the read-only profile, so its handler
+  serves reads only and every write goes through an operation.
+- RLS: tenant isolation and strict party isolation, as on the trade. The
+  purge loop already covers it, through the immutable purge switch.
+- =ores_trading_book_trade_fn= writes the trade first, so a refused second
+  booking writes nothing, then the activity, the booking and the state, and
+  returns the activity id instead of a boolean. The service reads an empty
+  result as the conflict and returns the id in =book_trade_response=.
+- A null amend is an activity whose type is not real: recorded, and
+  versioning nothing.
+- The component versions still carry the activity type code; the next task
+  replaces it with a foreign key to this row.
 
 * Measurements
 
@@ -57,7 +68,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| pgTAP, trade activity, under the test DDL role | 8 of 8 | =pg_prove test/trading_trade_activities_test.sql= | bbc41dd5f1 + working tree |
+| pgTAP, every trading file, under the test DDL role | 6 files, 79 tests, pass | =pg_prove test/trading_*_test.sql= | bbc41dd5f1 + working tree |
+| Activities the ACME import wrote | 16 =new_booking=, one per trade | psql count after the round trip | bbc41dd5f1 + working tree |
+| Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | bbc41dd5f1 + working tree |
+| Tenant purge of ACME | 119 rows in 10 tables to 0 (rolled back) | purge probe | bbc41dd5f1 + working tree |
+| codegen pytest | 1153 passed | =pytest projects/ores.codegen/tests= | bbc41dd5f1 + working tree |
+| ctest | 94 of 94 | =compass test run= | bbc41dd5f1 + working tree |
 
 * Notes
 
@@ -85,3 +102,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=trade_activity= records each business event once: type, actor, when it
+happened, a comment and an operational-error flag, under tenant and party
+isolation, and refuses any update or delete. Booking a trade writes its
+activity in the same transaction and returns the activity id; a refused
+second booking writes none. A null amend is recorded as an activity and
+versions nothing. The ACME import now leaves one =new_booking= activity per
+trade, and the round trip is unchanged.

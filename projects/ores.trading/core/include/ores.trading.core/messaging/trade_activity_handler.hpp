@@ -22,8 +22,8 @@
  * Template: cpp_nats_handler.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_HANDLER_HPP
-#define ORES_TRADING_CORE_MESSAGING_TRADE_HANDLER_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_ACTIVITY_HANDLER_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_ACTIVITY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -32,18 +32,19 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.trading.core/service/trade_service.hpp"
+#include "ores.trading.api/messaging/trade_activity_protocol.hpp"
+#include "ores.trading.core/service/trade_activity_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
 
 namespace {
-inline auto& trade_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.trading.messaging.trade_handler");
+inline auto& trade_activity_handler_lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.trading.messaging.trade_activity_handler");
     return instance;
 }
-}
+} // namespace
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -52,19 +53,19 @@ using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for trade operations.
+ * @brief NATS message handler for trade activity operations.
  */
-class trade_handler {
+class trade_activity_handler {
 public:
-    trade_handler(ores::nats::service::client& nats,
-                  ores::database::context ctx,
-                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    trade_activity_handler(ores::nats::service::client& nats,
+                           ores::database::context ctx,
+                           std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Serves trading.v1.trades.list.
+     * @brief Serves trading.v1.trade_activities.list.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -72,35 +73,32 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void list_trades(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+    void list_trade_activities(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "trading::trades:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<list_trades_request>(msg);
+        auto req = decode<list_trade_activities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::trade_service svc(req_ctx);
+        service::trade_activity_service svc(req_ctx);
         try {
-            auto response = svc.list_trades(*req);
-            BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+            auto response = svc.list_trade_activities(*req);
+            BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            list_trades_response failure;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_trade_activities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();
@@ -109,7 +107,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.trades.get.
+     * @brief Serves trading.v1.trade_activities.get.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -117,35 +115,32 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void get_trade(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+    void get_trade_activity(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "trading::trades:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<get_trade_request>(msg);
+        auto req = decode<get_trade_activity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::trade_service svc(req_ctx);
+        service::trade_activity_service svc(req_ctx);
         try {
-            auto response = svc.get_trade(*req);
-            BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+            auto response = svc.get_trade_activity(*req);
+            BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            get_trade_response failure;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_trade_activity_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();
@@ -154,7 +149,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.trades.get_many.
+     * @brief Serves trading.v1.trade_activities.get_many.
      *
      * The adapter decides nothing: it proves the request, checks the
      * permission a write needs, decodes the canonical request, calls the
@@ -162,35 +157,32 @@ public:
      * a caller reads -- missing, conflicting, denied -- is the service's
      * answer, so the two cannot disagree about what happened.
      */
-    void get_many_trades(ores::nats::message msg) {
-        BOOST_LOG_SEV(trade_handler_lg(), debug) << "Handling " << msg.subject;
+    void get_many_trade_activities(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "trading::trades:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<get_many_trades_request>(msg);
+        auto req = decode<get_many_trade_activities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(trade_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::trade_service svc(req_ctx);
+        service::trade_activity_service svc(req_ctx);
         try {
-            auto response = svc.get_many_trades(*req);
-            BOOST_LOG_SEV(trade_handler_lg(), debug) << "Completed " << msg.subject;
+            auto response = svc.get_many_trade_activities(*req);
+            BOOST_LOG_SEV(trade_activity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(trade_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            get_many_trades_response failure;
+            BOOST_LOG_SEV(trade_activity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_many_trade_activities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();
@@ -204,6 +196,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-}
+} // namespace ores::trading::messaging
 
 #endif

@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_domain_type_table.cpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
+#include "ores.trading.api/domain/trade_activity_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+
+namespace ores::trading::domain {
+
+
+std::string convert_to_table(const std::vector<trade_activity>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << "Activity Id" << "Activity Type" << "Actor" << "Occurred At"
+          << fort::endr;
+
+    for ([[maybe_unused]] const auto& act : v) {
+        table << act.id << act.activity_type_code << act.actor << act.occurred_at << fort::endr;
+    }
+    return table.to_string();
+}
+
 }

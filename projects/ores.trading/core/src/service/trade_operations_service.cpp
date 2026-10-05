@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <stdexcept>
@@ -56,9 +57,10 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     const auto booked = execute_parameterized_string_query(
         ctx_,
-        "SELECT ores_trading_book_trade_fn($1::uuid, $2::uuid, nullif($3, '')::uuid, $4, $5, "
-        "$6, $7, $8::uuid, nullif($9, '')::uuid, nullif($10, '')::uuid, nullif($11, '')::uuid, "
-        "nullif($12, '')::date, nullif($13, '')::timestamptz, $14, $15, $16, $17)::text",
+        "SELECT coalesce(ores_trading_book_trade_fn($1::uuid, $2::uuid, nullif($3, '')::uuid, "
+        "$4, $5, $6, $7, $8::uuid, nullif($9, '')::uuid, nullif($10, '')::uuid, "
+        "nullif($11, '')::uuid, nullif($12, '')::date, nullif($13, '')::timestamptz, $14, $15, "
+        "$16, $17)::text, '')",
         {boost::uuids::to_string(anchor.id),
          boost::uuids::to_string(anchor.party_id),
          optional_uuid(anchor.counterparty_id),
@@ -80,17 +82,19 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         lg(),
         "Booking a trade");
 
-    if (booked.size() != 1 || (booked.front() != "true" && booked.front() != "false"))
+    if (booked.size() != 1)
         throw std::runtime_error("Booking trade " + boost::uuids::to_string(anchor.id) +
                                  " returned no outcome.");
 
     messaging::book_trade_response response;
-    if (booked.front() == "false") {
+    if (booked.front().empty()) {
         response.result.outcome = outcome::conflict;
         response.result.code = "already_exists";
         response.result.message =
             "Trade " + boost::uuids::to_string(anchor.id) + " is already booked.";
+        return response;
     }
+    response.activity_id = boost::lexical_cast<boost::uuids::uuid>(booked.front());
     return response;
 }
 

@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,26 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_nats_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-}
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_ACTIVITY_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_ACTIVITY_REGISTRAR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::trading::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_trade_activity_handlers(ores::nats::service::client& nats,
+                                 ores::database::context ctx,
+                                 std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::trading::messaging
+
+#endif

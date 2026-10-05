@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,23 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_nats_event_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-}
+#ifndef ORES_TRADING_SERVICE_MESSAGING_TRADE_ACTIVITY_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_TRADE_ACTIVITY_EVENT_REGISTRAR_HPP
+
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::trading::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_trade_activity_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                      ores::eventing::service::event_bus& event_bus,
+                                      ores::nats::service::client& nats);
+
+} // namespace ores::trading::service::messaging
+
+#endif

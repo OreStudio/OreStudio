@@ -22,15 +22,15 @@
  * Template: cpp_service.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_CORE_SERVICE_TRADE_SERVICE_HPP
-#define ORES_TRADING_CORE_SERVICE_TRADE_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_TRADE_ACTIVITY_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_TRADE_ACTIVITY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/domain/trade_activity.hpp"
+#include "ores.trading.api/messaging/trade_activity_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -40,14 +40,14 @@
 namespace ores::trading::service {
 
 /**
- * @brief Service for managing trades.
+ * @brief Service for managing trade activities.
  *
- * Provides a higher-level interface for trade operations,
+ * Provides a higher-level interface for trade activity operations,
  * wrapping the underlying repository.
  */
-class ORES_TRADING_CORE_EXPORT trade_service {
+class ORES_TRADING_CORE_EXPORT trade_activity_service {
 private:
-    inline static std::string_view logger_name = "ores.trading.service.trade_service";
+    inline static std::string_view logger_name = "ores.trading.service.trade_activity_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,11 +59,11 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a trade_service with a database context.
+     * @brief Constructs a trade_activity_service with a database context.
      *
      * @param ctx The database context for operations.
      */
-    explicit trade_service(context ctx);
+    explicit trade_activity_service(context ctx);
 
     /**
      * @brief The protocol operations, one method per subject.
@@ -75,76 +75,78 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trades_response list_trades(const messaging::list_trades_request& request);
-    messaging::get_trade_response get_trade(const messaging::get_trade_request& request);
-    messaging::get_many_trades_response
-    get_many_trades(const messaging::get_many_trades_request& request);
+    messaging::list_trade_activities_response
+    list_trade_activities(const messaging::list_trade_activities_request& request);
+    messaging::get_trade_activity_response
+    get_trade_activity(const messaging::get_trade_activity_request& request);
+    messaging::get_many_trade_activities_response
+    get_many_trade_activities(const messaging::get_many_trade_activities_request& request);
     /**@}*/
 
     /**
-     * @brief Lists trades with pagination support.
+     * @brief Lists trade activities with pagination support.
      *
      * @param offset Number of records to skip.
      * @param limit Maximum number of records to return.
-     * @return Vector of trades for the requested page.
+     * @return Vector of trade activities for the requested page.
      */
-    std::vector<domain::trade> list_trades(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::trade_activity> list_activities(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active trades.
+     * @brief Gets the total count of active trade activities.
      *
-     * @return Total number of active trades.
+     * @return Total number of active trade activities.
      */
-    std::uint32_t count_trades();
+    std::uint32_t count_activities();
 
 
     /**
-     * @brief Retrieves a single trade by its primary key.
+     * @brief Retrieves a single trade activity by its primary key.
      *
      * The storage key is a uuid, so the signature says which key is meant and
      * the human-readable key cannot be passed here by mistake.
      *
-     * @return The trade if found, std::nullopt otherwise.
+     * @return The trade activity if found, std::nullopt otherwise.
      */
-    std::optional<domain::trade> get_trade(const boost::uuids::uuid& id);
+    std::optional<domain::trade_activity> get_activity(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a batch of trades by primary key.
+     * @brief Retrieves a batch of trade activities by primary key.
      */
-    std::vector<domain::trade> get_trades(const std::vector<std::string>& ids);
+    std::vector<domain::trade_activity> get_activities(const std::vector<std::string>& ids);
 
     /**
-     * @brief Saves a trade (creates or updates).
+     * @brief Saves a trade activity (creates or updates).
      *
-     * @param trade The trade to save.
+     * @param activity The trade activity to save.
      * @throws std::exception on failure.
      */
-    void save_trade(const domain::trade& trade);
+    void save_activity(const domain::trade_activity& activity);
 
     /**
-     * @brief Saves a batch of trades.
+     * @brief Saves a batch of trade activities.
      *
-     * @param trades The trades to save.
+     * @param activities The trade activities to save.
      * @throws std::exception on failure.
      */
-    void save_trades(const std::vector<domain::trade>& trades);
+    void save_activities(const std::vector<domain::trade_activity>& activities);
 
     /**
-     * @brief Deletes a trade by its primary key.
+     * @brief Deletes a trade activity by its primary key.
      *
      * @throws std::exception on failure.
      */
-    void delete_trade(const boost::uuids::uuid& id);
+    void delete_activity(const boost::uuids::uuid& id);
 
     /**
-     * @brief Deletes trades by their primary keys.
+     * @brief Deletes trade activities by their primary keys.
      */
-    void delete_trades(const std::vector<std::string>& ids);
+    void delete_activities(const std::vector<std::string>& ids);
 
 
 private:
     context ctx_;
-    repository::trade_repository repo_;
+    repository::trade_activity_repository repo_;
 };
 
 }

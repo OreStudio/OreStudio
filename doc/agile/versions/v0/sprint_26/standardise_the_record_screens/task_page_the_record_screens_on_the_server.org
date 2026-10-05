@@ -7,12 +7,13 @@
 #+level: s1
 #+filetags: :standardise_the_record_screens:sprint_26:v0:
 #+owner: marco
+#+branch: feature/build-the-currency-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -82,3 +83,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR #2644 for the currency, desk group and currency pair screens.
+The models mark their searchable and sortable columns, the generated lists
+search and order on the server, and one shared =RecordList= pages through them
+with the full =Pager= (First, Previous, Next, Last, page size, Load all), the
+search, the sortable headers, the column menu and the states. A record page
+reads its one record by key. Checked live: 168 currencies page and order by
+name and by code; a search for "dol" finds 25; a pair search orders by code;
+an unknown key answers 404.
+
+The holiday calendar screen moves onto the same parts in PR #2646, and the
+classification screens with the conformance task.

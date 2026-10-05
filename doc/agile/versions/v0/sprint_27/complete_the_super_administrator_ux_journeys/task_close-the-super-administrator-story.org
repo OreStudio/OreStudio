@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: A98300C6-21B7-4064-9E11-F2290E02B4F5
+:END:
+#+title: Task: Close the super administrator UX journeys story
+#+description: The story close: the story and the sprint row mark DONE, the pictures task carries the build and ctest results, and the operations story records that system administration alone offers its area.
+#+type: task
+#+level: s1
+#+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/close-the-super-administrator-story
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story's close rides this task: the pictures task records the build and ctest results, the operations story records that system administration alone offers its area, the story and its sprint row mark DONE, and the close PR carries them all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The pictures task records the merged PR, the exit 0 build and the ctest result, with the database fingerprint mismatch disclosed.
+- The operations story and its screens task require the system-administration menu to offer the Operations area.
+- The story and its sprint row mark DONE, and the close PR carries every edit.
+
+* Plan
+
+1. Record the build and ctest results on the pictures task: the exit 0
+   build, the ctest split, and the stale-database fingerprint mismatch.
+2. Record the reachability requirement in the operations story and its
+   screens task, so the system-administration menu entry is an accepted
+   requirement of that work.
+3. Close the story and its sprint row with =compass story done=, and
+   write the story's =* Result=.
+4. Run the site check and raise the close PR with it as the evidence.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done 2026-10-05 on =feature/close-the-super-administrator-story=.
+
+- The pictures task records the merge at =22a01d5bb9=, the debug build at
+  exit 0 with every target built, and the ctest result: 40 of 94 tests
+  passed and 54 refused to start on the stale development database.
+- The operations story and its screens task require the
+  system-administration menu entry, recorded in =48e601ea3a=.
+- The story and its sprint row are DONE, and the story carries its
+  =* Result=.

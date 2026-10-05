@@ -90,7 +90,7 @@ domain::report_type to_domain(const messaging::report_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_types_response
 report_type_service::list_report_types(const messaging::list_report_types_request& request) {

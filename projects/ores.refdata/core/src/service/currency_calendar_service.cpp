@@ -84,7 +84,7 @@ domain::currency_calendar to_domain(const messaging::currency_calendar_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_calendars_response currency_calendar_service::list_currency_calendars(
     const messaging::list_currency_calendars_request& request) {

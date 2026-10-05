@@ -96,7 +96,7 @@ to_domain(const messaging::pricing_model_product_parameter_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_pricing_model_product_parameters_response
 pricing_model_product_parameter_service::list_pricing_model_product_parameters(

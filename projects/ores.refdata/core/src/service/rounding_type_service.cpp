@@ -89,7 +89,7 @@ domain::rounding_type to_domain(const messaging::rounding_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_rounding_types_response
 rounding_type_service::list_rounding_types(const messaging::list_rounding_types_request& request) {

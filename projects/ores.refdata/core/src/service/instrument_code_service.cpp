@@ -92,7 +92,7 @@ domain::instrument_code to_domain(const messaging::instrument_code_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_codes_response instrument_code_service::list_instrument_codes(
     const messaging::list_instrument_codes_request& request) {

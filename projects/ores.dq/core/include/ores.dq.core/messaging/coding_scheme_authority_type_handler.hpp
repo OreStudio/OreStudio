@@ -44,7 +44,7 @@ inline auto& coding_scheme_authority_type_handler_lg() {
         ores::logging::make_logger("ores.dq.messaging.coding_scheme_authority_type_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -492,6 +492,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::dq::messaging
+}
 
 #endif

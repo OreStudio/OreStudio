@@ -103,7 +103,7 @@ to_domain(const messaging::bond_issue_leg_schedule_date_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_leg_schedule_dates_response
 bond_issue_leg_schedule_date_service::list_bond_issue_leg_schedule_dates(

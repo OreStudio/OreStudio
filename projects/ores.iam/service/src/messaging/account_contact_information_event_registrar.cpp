@@ -56,4 +56,4 @@ register_account_contact_information_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::iam::service::messaging
+}

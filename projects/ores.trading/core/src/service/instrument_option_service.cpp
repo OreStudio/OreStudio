@@ -118,7 +118,7 @@ domain::instrument_option to_domain(const messaging::instrument_option_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_options_response instrument_option_service::list_instrument_options(
     const messaging::list_instrument_options_request& request) {

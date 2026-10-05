@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.iam.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_role_grant_request_handlers(
     ores::nats::service::client& nats,
@@ -85,4 +85,4 @@ std::vector<ores::nats::service::subscription> register_role_grant_request_handl
     return subs;
 }
 
-} // namespace ores::iam::messaging
+}

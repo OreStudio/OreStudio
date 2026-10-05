@@ -61,7 +61,7 @@ std::vector<domain::lei_entity> read_one(repository::lei_entity_repository& repo
     return repo.read_latest(ctx, key.lei);
 }
 
-} // namespace
+}
 
 messaging::list_lei_entities_response
 lei_entity_service::list_lei_entities(const messaging::list_lei_entities_request& request) {

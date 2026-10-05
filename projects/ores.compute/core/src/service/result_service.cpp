@@ -93,7 +93,7 @@ domain::result to_domain(const messaging::result_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_results_response
 result_service::list_results(const messaging::list_results_request& request) {

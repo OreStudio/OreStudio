@@ -93,7 +93,7 @@ domain::platform to_domain(const messaging::platform_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_platforms_response
 platform_service::list_platforms(const messaging::list_platforms_request& request) {

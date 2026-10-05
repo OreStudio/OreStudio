@@ -93,7 +93,7 @@ domain::tenant to_domain(const messaging::tenant_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenants_response
 tenant_service::list_tenants(const messaging::list_tenants_request& request) {

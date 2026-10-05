@@ -40,7 +40,7 @@ inline auto& {{entity_singular}}_cache_lg() {
         "ores.{{cache_component}}.service.cache.{{entity_singular}}_cache");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief In-process per-tenant cache of {{component}} {{entity_plural}} data.
@@ -198,7 +198,7 @@ private:
     cache_t cache_;
 };
 
-} // namespace ores::{{cache_component}}::service::cache
+}
 
 #endif
 {{/domain_entity}}

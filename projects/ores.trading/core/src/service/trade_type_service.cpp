@@ -90,7 +90,7 @@ domain::trade_type to_domain(const messaging::trade_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_types_response
 trade_type_service::list_trade_types(const messaging::list_trade_types_request& request) {

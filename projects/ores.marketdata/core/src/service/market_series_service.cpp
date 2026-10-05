@@ -92,7 +92,7 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_market_series_response
 market_series_service::list_market_series(const messaging::list_market_series_request& request) {

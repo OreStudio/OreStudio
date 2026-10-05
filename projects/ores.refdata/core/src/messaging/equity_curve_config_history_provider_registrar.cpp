@@ -41,4 +41,4 @@ void register_equity_curve_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

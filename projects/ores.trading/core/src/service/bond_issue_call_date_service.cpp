@@ -91,7 +91,7 @@ domain::bond_issue_call_date to_domain(const messaging::bond_issue_call_date_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_call_dates_response
 bond_issue_call_date_service::list_bond_issue_call_dates(

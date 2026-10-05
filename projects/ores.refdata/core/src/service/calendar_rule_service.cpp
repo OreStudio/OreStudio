@@ -96,7 +96,7 @@ domain::calendar_rule to_domain(const messaging::calendar_rule_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_calendar_rules_response
 calendar_rule_service::list_calendar_rules(const messaging::list_calendar_rules_request& request) {

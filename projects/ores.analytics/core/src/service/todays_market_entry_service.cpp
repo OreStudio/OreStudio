@@ -94,7 +94,7 @@ domain::todays_market_entry to_domain(const messaging::todays_market_entry_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_todays_market_entries_response
 todays_market_entry_service::list_todays_market_entries(

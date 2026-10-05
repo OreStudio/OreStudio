@@ -44,7 +44,7 @@ inline auto& ir_curve_generation_config_process_parameter_value_handler_lg() {
         "ores.synthetic.messaging.ir_curve_generation_config_process_parameter_value_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -504,6 +504,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

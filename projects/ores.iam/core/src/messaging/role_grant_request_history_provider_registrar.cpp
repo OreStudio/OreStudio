@@ -41,4 +41,4 @@ void register_role_grant_request_history_provider(
         });
 }
 
-} // namespace ores::iam::messaging
+}

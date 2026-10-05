@@ -98,7 +98,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
     }
 }
 
-} // namespace
+}
 
 boost::asio::awaitable<http_response> login_routes::handle_login(const http_request& req,
                                                                  nats_client& session) {

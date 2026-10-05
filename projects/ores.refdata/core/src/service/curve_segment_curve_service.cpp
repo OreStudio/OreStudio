@@ -92,7 +92,7 @@ domain::curve_segment_curve to_domain(const messaging::curve_segment_curve_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_segment_curves_response
 curve_segment_curve_service::list_curve_segment_curves(

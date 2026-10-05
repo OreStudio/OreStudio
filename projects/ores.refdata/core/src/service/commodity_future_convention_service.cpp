@@ -138,7 +138,7 @@ to_domain(const messaging::commodity_future_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_commodity_future_conventions_response
 commodity_future_convention_service::list_commodity_future_conventions(

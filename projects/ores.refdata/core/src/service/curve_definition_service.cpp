@@ -91,7 +91,7 @@ domain::curve_definition to_domain(const messaging::curve_definition_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_definitions_response curve_definition_service::list_curve_definitions(
     const messaging::list_curve_definitions_request& request) {

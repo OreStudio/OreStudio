@@ -97,7 +97,7 @@ domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_swap_legs_response
 swap_leg_service::list_swap_legs(const messaging::list_swap_legs_request& request) {

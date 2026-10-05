@@ -34,4 +34,4 @@ void register_subject_area_history_provider(ores::history::service::dispatch_reg
     (void)registry;
 }
 
-} // namespace ores::dq::messaging
+}

@@ -44,7 +44,7 @@ inline auto& equity_position_option_underlying_handler_lg() {
         "ores.trading.messaging.equity_position_option_underlying_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -492,6 +492,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::trading::messaging
+}
 
 #endif

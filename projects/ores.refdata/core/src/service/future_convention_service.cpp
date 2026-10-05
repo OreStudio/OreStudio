@@ -91,7 +91,7 @@ domain::future_convention to_domain(const messaging::future_convention_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_future_conventions_response future_convention_service::list_future_conventions(
     const messaging::list_future_conventions_request& request) {

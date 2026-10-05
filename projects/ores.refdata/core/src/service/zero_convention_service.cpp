@@ -95,7 +95,7 @@ domain::zero_convention to_domain(const messaging::zero_convention_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_zero_conventions_response zero_convention_service::list_zero_conventions(
     const messaging::list_zero_conventions_request& request) {

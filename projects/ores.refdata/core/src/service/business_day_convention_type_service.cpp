@@ -92,7 +92,7 @@ to_domain(const messaging::business_day_convention_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_business_day_convention_types_response
 business_day_convention_type_service::list_business_day_convention_types(

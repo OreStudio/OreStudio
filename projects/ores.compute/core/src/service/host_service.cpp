@@ -94,7 +94,7 @@ domain::host to_domain(const messaging::host_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_hosts_response
 host_service::list_hosts(const messaging::list_hosts_request& request) {

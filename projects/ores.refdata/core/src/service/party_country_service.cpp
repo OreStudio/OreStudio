@@ -63,7 +63,7 @@ void stamp_party_country(domain::party_country& row, const ores::database::conte
         row.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
 }
 
-} // namespace
+}
 
 party_country_service::party_country_service(context ctx)
     : ctx_(std::move(ctx))
@@ -111,7 +111,7 @@ domain::party_country to_domain(const messaging::party_country_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_countries_response party_country_service::list_party_countries(
     const messaging::list_party_countries_request& request) {

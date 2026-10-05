@@ -55,4 +55,4 @@ register_role_grant_request_event_mapping(ev::service::postgres_event_source& ev
         });
 }
 
-} // namespace ores::iam::service::messaging
+}

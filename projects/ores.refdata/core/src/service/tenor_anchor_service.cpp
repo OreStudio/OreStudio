@@ -88,7 +88,7 @@ domain::tenor_anchor to_domain(const messaging::tenor_anchor_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenor_anchors_response
 tenor_anchor_service::list_tenor_anchors(const messaging::list_tenor_anchors_request& request) {

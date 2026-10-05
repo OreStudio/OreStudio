@@ -87,7 +87,7 @@ domain::stress_shift_family to_domain(const messaging::stress_shift_family_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_stress_shift_families_response
 stress_shift_family_service::list_stress_shift_families(

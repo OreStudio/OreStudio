@@ -91,7 +91,7 @@ domain::composite_instrument to_domain(const messaging::composite_instrument_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_composite_instruments_response
 composite_instrument_service::list_composite_instruments(

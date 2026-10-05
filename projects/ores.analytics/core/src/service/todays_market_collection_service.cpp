@@ -92,7 +92,7 @@ domain::todays_market_collection to_domain(const messaging::todays_market_collec
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_todays_market_collections_response
 todays_market_collection_service::list_todays_market_collections(

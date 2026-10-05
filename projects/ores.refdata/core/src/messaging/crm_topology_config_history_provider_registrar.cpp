@@ -41,4 +41,4 @@ void register_crm_topology_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

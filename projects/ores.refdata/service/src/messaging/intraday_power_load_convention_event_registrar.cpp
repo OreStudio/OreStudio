@@ -57,4 +57,4 @@ namespace ev = ores::eventing;
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

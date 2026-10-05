@@ -91,7 +91,7 @@ domain::bond_option to_domain(const messaging::bond_option_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_options_response
 bond_option_service::list_bond_options(const messaging::list_bond_options_request& request) {

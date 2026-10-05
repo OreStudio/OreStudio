@@ -41,4 +41,4 @@ void register_bma_basis_swap_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

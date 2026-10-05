@@ -41,4 +41,4 @@ void register_curve_security_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

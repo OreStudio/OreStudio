@@ -96,7 +96,7 @@ to_domain(const messaging::cms_spread_option_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cms_spread_option_conventions_response
 cms_spread_option_convention_service::list_cms_spread_option_conventions(

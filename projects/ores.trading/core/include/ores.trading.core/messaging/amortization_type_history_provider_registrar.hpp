@@ -32,6 +32,6 @@ namespace ores::trading::messaging {
 void register_amortization_type_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::trading::messaging
+}
 
 #endif

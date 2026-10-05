@@ -89,7 +89,7 @@ domain::curve_role to_domain(const messaging::curve_role_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_roles_response
 curve_role_service::list_curve_roles(const messaging::list_curve_roles_request& request) {

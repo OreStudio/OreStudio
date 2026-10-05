@@ -31,7 +31,7 @@ namespace ores::inbox::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.inbox.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_approval_request_state_handlers(
     ores::nats::service::client& nats,
@@ -79,4 +79,4 @@ std::vector<ores::nats::service::subscription> register_approval_request_state_h
     return subs;
 }
 
-} // namespace ores::inbox::messaging
+}

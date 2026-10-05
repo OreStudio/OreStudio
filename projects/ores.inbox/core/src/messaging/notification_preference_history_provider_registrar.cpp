@@ -35,4 +35,4 @@ void register_notification_preference_history_provider(
     (void)registry;
 }
 
-} // namespace ores::inbox::messaging
+}

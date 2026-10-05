@@ -41,4 +41,4 @@ void register_badge_definition_history_provider(
         });
 }
 
-} // namespace ores::dq::messaging
+}

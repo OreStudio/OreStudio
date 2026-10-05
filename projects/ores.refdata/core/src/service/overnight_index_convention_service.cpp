@@ -91,7 +91,7 @@ to_domain(const messaging::overnight_index_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_overnight_index_conventions_response
 overnight_index_convention_service::list_overnight_index_conventions(

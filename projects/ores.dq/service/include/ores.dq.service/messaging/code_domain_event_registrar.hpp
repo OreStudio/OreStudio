@@ -36,6 +36,6 @@ register_code_domain_event_mapping(ores::eventing::service::postgres_event_sourc
                                    ores::eventing::service::event_bus& event_bus,
                                    ores::nats::service::client& nats);
 
-} // namespace ores::dq::service::messaging
+}
 
 #endif

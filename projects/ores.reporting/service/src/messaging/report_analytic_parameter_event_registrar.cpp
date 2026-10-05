@@ -57,4 +57,4 @@ register_report_analytic_parameter_event_mapping(ev::service::postgres_event_sou
         });
 }
 
-} // namespace ores::reporting::service::messaging
+}

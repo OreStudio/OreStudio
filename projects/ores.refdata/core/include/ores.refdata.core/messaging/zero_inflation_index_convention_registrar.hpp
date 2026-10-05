@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_zero_inflation_index_con
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

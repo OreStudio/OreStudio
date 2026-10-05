@@ -31,6 +31,6 @@ namespace ores::workspace::messaging {
 
 void register_workspace_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::workspace::messaging
+}
 
 #endif

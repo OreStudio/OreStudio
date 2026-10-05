@@ -94,7 +94,7 @@ to_domain(const messaging::curve_parametric_smile_parameter_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_parametric_smile_parameters_response
 curve_parametric_smile_parameter_service::list_curve_parametric_smile_parameters(

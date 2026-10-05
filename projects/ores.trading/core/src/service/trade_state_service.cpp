@@ -88,7 +88,7 @@ domain::trade_state to_domain(const messaging::trade_state_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_states_response
 trade_state_service::list_trade_states(const messaging::list_trade_states_request& request) {

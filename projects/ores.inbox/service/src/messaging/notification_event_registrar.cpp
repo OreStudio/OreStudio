@@ -53,4 +53,4 @@ register_notification_event_mapping(ev::service::postgres_event_source& event_so
         });
 }
 
-} // namespace ores::inbox::service::messaging
+}

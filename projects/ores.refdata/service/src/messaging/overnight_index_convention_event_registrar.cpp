@@ -57,4 +57,4 @@ register_overnight_index_convention_event_mapping(ev::service::postgres_event_so
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

@@ -41,4 +41,4 @@ void register_currency_pair_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

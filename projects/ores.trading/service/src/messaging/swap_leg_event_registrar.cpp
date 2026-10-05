@@ -53,4 +53,4 @@ register_swap_leg_event_mapping(ev::service::postgres_event_source& event_source
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

@@ -61,7 +61,7 @@ std::vector<domain::report_definition> read_one(repository::report_definition_re
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
-} // namespace
+}
 
 messaging::list_report_definitions_response report_definition_service::list_report_definitions(
     const messaging::list_report_definitions_request& request) {

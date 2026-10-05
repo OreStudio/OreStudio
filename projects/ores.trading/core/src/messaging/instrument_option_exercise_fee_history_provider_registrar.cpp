@@ -35,4 +35,4 @@ void register_instrument_option_exercise_fee_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

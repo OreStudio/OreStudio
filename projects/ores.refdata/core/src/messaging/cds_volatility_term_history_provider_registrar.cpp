@@ -41,4 +41,4 @@ void register_cds_volatility_term_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

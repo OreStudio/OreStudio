@@ -31,6 +31,6 @@ namespace ores::scheduler::messaging {
 
 void register_job_definition_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::scheduler::messaging
+}
 
 #endif

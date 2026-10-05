@@ -87,7 +87,7 @@ domain::return_type to_domain(const messaging::return_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_return_types_response
 return_type_service::list_return_types(const messaging::list_return_types_request& request) {

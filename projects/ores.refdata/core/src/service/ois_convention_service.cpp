@@ -98,7 +98,7 @@ domain::ois_convention to_domain(const messaging::ois_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_ois_conventions_response ois_convention_service::list_ois_conventions(
     const messaging::list_ois_conventions_request& request) {

@@ -92,7 +92,7 @@ domain::notification to_domain(const messaging::notification_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notifications_response
 notification_service::list_notifications(const messaging::list_notifications_request& request) {

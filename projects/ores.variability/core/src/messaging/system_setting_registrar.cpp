@@ -31,7 +31,7 @@ namespace ores::variability::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.variability.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_system_setting_handlers(ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ register_system_setting_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::variability::messaging
+}

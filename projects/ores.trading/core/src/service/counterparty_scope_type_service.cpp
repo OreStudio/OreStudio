@@ -62,7 +62,7 @@ read_one(repository::counterparty_scope_type_repository& repo,
     return repo.read_latest(ctx, key.code);
 }
 
-} // namespace
+}
 
 messaging::list_counterparty_scope_types_response
 counterparty_scope_type_service::list_counterparty_scope_types(

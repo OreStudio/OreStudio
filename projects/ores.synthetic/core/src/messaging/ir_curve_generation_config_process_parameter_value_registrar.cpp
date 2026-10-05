@@ -31,7 +31,7 @@ namespace ores::synthetic::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.synthetic.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_ir_curve_generation_config_process_parameter_value_handlers(
@@ -98,4 +98,4 @@ register_ir_curve_generation_config_process_parameter_value_handlers(
     return subs;
 }
 
-} // namespace ores::synthetic::messaging
+}

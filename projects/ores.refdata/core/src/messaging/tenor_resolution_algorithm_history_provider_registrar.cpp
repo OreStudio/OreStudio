@@ -41,4 +41,4 @@ void register_tenor_resolution_algorithm_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

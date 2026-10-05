@@ -96,7 +96,7 @@ to_domain(const messaging::instrument_option_exercise_fee_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_option_exercise_fees_response
 instrument_option_exercise_fee_service::list_instrument_option_exercise_fees(

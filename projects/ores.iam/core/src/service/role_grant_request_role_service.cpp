@@ -87,7 +87,7 @@ domain::role_grant_request_role to_domain(const messaging::role_grant_request_ro
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_role_grant_request_roles_response
 role_grant_request_role_service::list_role_grant_request_roles(

@@ -41,4 +41,4 @@ void register_cap_floor_volatility_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

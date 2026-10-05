@@ -53,4 +53,4 @@ register_tenant_type_event_mapping(ev::service::postgres_event_source& event_sou
         });
 }
 
-} // namespace ores::iam::service::messaging
+}

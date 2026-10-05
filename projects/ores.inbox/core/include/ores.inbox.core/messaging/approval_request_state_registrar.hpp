@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_approval_request_state_h
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::inbox::messaging
+}
 
 #endif

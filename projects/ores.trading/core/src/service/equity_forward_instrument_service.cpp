@@ -97,7 +97,7 @@ to_domain(const messaging::equity_forward_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_forward_instruments_response
 equity_forward_instrument_service::list_equity_forward_instruments(

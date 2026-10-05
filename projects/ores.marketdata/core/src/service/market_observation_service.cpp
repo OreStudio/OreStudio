@@ -92,7 +92,7 @@ domain::market_observation to_domain(const messaging::market_observation_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_market_observations_response market_observation_service::list_market_observations(
     const messaging::list_market_observations_request& request) {

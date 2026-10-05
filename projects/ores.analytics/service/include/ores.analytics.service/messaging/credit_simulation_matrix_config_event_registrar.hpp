@@ -37,6 +37,6 @@ register_credit_simulation_matrix_config_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::analytics::service::messaging
+}
 
 #endif

@@ -89,7 +89,7 @@ domain::trade_party_role to_domain(const messaging::trade_party_role_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_party_roles_response trade_party_role_service::list_trade_party_roles(
     const messaging::list_trade_party_roles_request& request) {

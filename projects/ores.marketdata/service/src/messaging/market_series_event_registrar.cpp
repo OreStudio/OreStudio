@@ -55,4 +55,4 @@ register_market_series_event_mapping(ev::service::postgres_event_source& event_s
         });
 }
 
-} // namespace ores::marketdata::service::messaging
+}

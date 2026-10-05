@@ -92,7 +92,7 @@ domain::trade_additional_field to_domain(const messaging::trade_additional_field
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_trade_additional_fields_response
 trade_additional_field_service::list_trade_additional_fields(

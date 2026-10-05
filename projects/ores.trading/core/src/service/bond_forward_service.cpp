@@ -97,7 +97,7 @@ domain::bond_forward to_domain(const messaging::bond_forward_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_forwards_response
 bond_forward_service::list_bond_forwards(const messaging::list_bond_forwards_request& request) {

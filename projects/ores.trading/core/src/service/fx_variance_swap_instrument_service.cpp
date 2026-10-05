@@ -98,7 +98,7 @@ to_domain(const messaging::fx_variance_swap_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fx_variance_swap_instruments_response
 fx_variance_swap_instrument_service::list_fx_variance_swap_instruments(

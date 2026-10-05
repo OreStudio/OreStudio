@@ -40,6 +40,6 @@ register_todays_market_configuration_binding_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

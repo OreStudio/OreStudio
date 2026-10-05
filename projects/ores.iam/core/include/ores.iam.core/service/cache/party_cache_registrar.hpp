@@ -45,7 +45,7 @@ inline auto& party_cache_registrar_lg() {
         ores::logging::make_logger("ores.iam.service.cache.party_cache_registrar");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief Warms party_cache for every given tenant, then
@@ -86,6 +86,6 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::iam::service::cache
+}
 
 #endif

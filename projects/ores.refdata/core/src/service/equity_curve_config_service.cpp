@@ -100,7 +100,7 @@ domain::equity_curve_config to_domain(const messaging::equity_curve_config_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_curve_configs_response
 equity_curve_config_service::list_equity_curve_configs(

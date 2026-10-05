@@ -56,4 +56,4 @@ register_todays_market_config_event_mapping(ev::service::postgres_event_source& 
         });
 }
 
-} // namespace ores::analytics::service::messaging
+}

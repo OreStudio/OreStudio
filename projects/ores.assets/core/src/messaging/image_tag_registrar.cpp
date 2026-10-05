@@ -31,7 +31,7 @@ namespace ores::assets::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.assets.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_image_tag_handlers(ores::nats::service::client& nats,
@@ -74,4 +74,4 @@ register_image_tag_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::assets::messaging
+}

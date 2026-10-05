@@ -60,4 +60,4 @@ register_yield_curve_process_parameter_definition_event_mapping(
             });
 }
 
-} // namespace ores::synthetic::service::messaging
+}

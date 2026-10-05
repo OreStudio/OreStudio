@@ -90,7 +90,7 @@ domain::tenant_type to_domain(const messaging::tenant_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenant_types_response
 tenant_type_service::list_tenant_types(const messaging::list_tenant_types_request& request) {

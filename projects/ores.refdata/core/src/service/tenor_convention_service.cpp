@@ -89,7 +89,7 @@ domain::tenor_convention to_domain(const messaging::tenor_convention_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenor_conventions_response tenor_convention_service::list_tenor_conventions(
     const messaging::list_tenor_conventions_request& request) {

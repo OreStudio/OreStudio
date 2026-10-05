@@ -56,4 +56,4 @@ register_bond_issue_leg_schedule_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

@@ -95,7 +95,7 @@ domain::fx_forward_instrument to_domain(const messaging::fx_forward_instrument_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fx_forward_instruments_response
 fx_forward_instrument_service::list_fx_forward_instruments(

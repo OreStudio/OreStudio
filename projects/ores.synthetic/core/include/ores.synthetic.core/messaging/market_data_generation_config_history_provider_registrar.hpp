@@ -32,6 +32,6 @@ namespace ores::synthetic::messaging {
 void register_market_data_generation_config_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

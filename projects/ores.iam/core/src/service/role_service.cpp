@@ -89,7 +89,7 @@ domain::role to_domain(const messaging::role_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_roles_response
 role_service::list_roles(const messaging::list_roles_request& request) {

@@ -94,7 +94,7 @@ to_domain(const messaging::credit_simulation_entity_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_credit_simulation_entity_configs_response
 credit_simulation_entity_config_service::list_credit_simulation_entity_configs(

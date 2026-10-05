@@ -93,7 +93,7 @@ to_domain(const messaging::todays_market_collection_kind_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_todays_market_collection_kinds_response
 todays_market_collection_kind_service::list_todays_market_collection_kinds(

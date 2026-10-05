@@ -41,4 +41,4 @@ void register_instrument_code_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

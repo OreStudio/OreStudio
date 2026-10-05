@@ -99,7 +99,7 @@ domain::yield_curve_config to_domain(const messaging::yield_curve_config_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_yield_curve_configs_response yield_curve_config_service::list_yield_curve_configs(
     const messaging::list_yield_curve_configs_request& request) {

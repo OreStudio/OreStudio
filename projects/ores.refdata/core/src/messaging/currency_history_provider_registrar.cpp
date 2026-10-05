@@ -40,4 +40,4 @@ void register_currency_history_provider(ores::history::service::dispatch_registr
         });
 }
 
-} // namespace ores::refdata::messaging
+}

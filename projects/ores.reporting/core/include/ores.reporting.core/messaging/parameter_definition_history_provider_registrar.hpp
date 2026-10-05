@@ -32,6 +32,6 @@ namespace ores::reporting::messaging {
 void register_parameter_definition_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::reporting::messaging
+}
 
 #endif

@@ -41,4 +41,4 @@ void register_workflow_instance_history_provider(
         });
 }
 
-} // namespace ores::workflow::messaging
+}

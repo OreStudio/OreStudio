@@ -36,6 +36,6 @@ namespace ores::iam::service::messaging {
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::iam::service::messaging
+}
 
 #endif

@@ -61,7 +61,7 @@ std::vector<domain::csa> read_one(repository::csa_repository& repo,
     return repo.read_latest(ctx, key.netting_set_code);
 }
 
-} // namespace
+}
 
 messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_request& request) {
     messaging::list_csas_response response;

@@ -41,4 +41,4 @@ void register_commodity_forward_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

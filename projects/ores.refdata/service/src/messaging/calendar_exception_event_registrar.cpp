@@ -55,4 +55,4 @@ register_calendar_exception_event_mapping(ev::service::postgres_event_source& ev
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

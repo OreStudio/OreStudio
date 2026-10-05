@@ -40,4 +40,4 @@ void register_role_history_provider(ores::history::service::dispatch_registry& r
         });
 }
 
-} // namespace ores::iam::messaging
+}

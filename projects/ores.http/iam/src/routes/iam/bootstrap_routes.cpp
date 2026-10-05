@@ -98,7 +98,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
     }
 }
 
-} // namespace
+}
 
 boost::asio::awaitable<http_response>
 bootstrap_routes::handle_bootstrap_status(const http_request& req, nats_client& session) {

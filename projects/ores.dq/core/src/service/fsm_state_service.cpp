@@ -90,7 +90,7 @@ domain::fsm_state to_domain(const messaging::fsm_state_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fsm_states_response
 fsm_state_service::list_fsm_states(const messaging::list_fsm_states_request& request) {

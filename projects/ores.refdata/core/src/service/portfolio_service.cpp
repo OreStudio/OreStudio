@@ -97,7 +97,7 @@ domain::portfolio to_domain(const messaging::portfolio_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_portfolios_response
 portfolio_service::list_portfolios(const messaging::list_portfolios_request& request) {

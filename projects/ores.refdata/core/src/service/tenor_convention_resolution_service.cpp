@@ -57,7 +57,7 @@ read_one(repository::tenor_convention_resolution_repository& repo,
     return repo.read_latest(key.convention_code, key.tenor_code);
 }
 
-} // namespace
+}
 
 messaging::list_tenor_convention_resolutions_response
 tenor_convention_resolution_service::list_tenor_convention_resolutions(

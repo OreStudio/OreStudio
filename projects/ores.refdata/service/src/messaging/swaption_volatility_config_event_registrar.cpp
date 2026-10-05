@@ -57,4 +57,4 @@ register_swaption_volatility_config_event_mapping(ev::service::postgres_event_so
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

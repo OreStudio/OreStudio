@@ -55,4 +55,4 @@ register_badge_definition_event_mapping(ev::service::postgres_event_source& even
         });
 }
 
-} // namespace ores::dq::service::messaging
+}

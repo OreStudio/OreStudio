@@ -114,7 +114,7 @@ domain::commodity_instrument to_domain(const messaging::commodity_instrument_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_commodity_instruments_response
 commodity_instrument_service::list_commodity_instruments(

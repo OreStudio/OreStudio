@@ -32,6 +32,6 @@ namespace ores::refdata::messaging {
 void register_crm_enabled_derived_pair_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

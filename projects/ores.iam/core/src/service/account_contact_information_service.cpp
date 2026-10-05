@@ -98,7 +98,7 @@ to_domain(const messaging::account_contact_information_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_account_contact_informations_response
 account_contact_information_service::list_account_contact_informations(

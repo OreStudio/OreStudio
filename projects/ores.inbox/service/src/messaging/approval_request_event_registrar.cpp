@@ -55,4 +55,4 @@ register_approval_request_event_mapping(ev::service::postgres_event_source& even
         });
 }
 
-} // namespace ores::inbox::service::messaging
+}

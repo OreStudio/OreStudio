@@ -41,4 +41,4 @@ void register_curve_parametric_smile_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

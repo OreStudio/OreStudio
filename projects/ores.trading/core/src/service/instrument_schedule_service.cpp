@@ -115,7 +115,7 @@ domain::instrument_schedule to_domain(const messaging::instrument_schedule_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_schedules_response
 instrument_schedule_service::list_instrument_schedules(

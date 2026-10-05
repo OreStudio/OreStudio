@@ -90,7 +90,7 @@ domain::seed_profile_step to_domain(const messaging::seed_profile_step_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_seed_profile_steps_response seed_profile_step_service::list_seed_profile_steps(
     const messaging::list_seed_profile_steps_request& request) {

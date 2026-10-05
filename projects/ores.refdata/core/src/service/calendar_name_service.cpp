@@ -87,7 +87,7 @@ domain::calendar_name to_domain(const messaging::calendar_name_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_calendar_names_response
 calendar_name_service::list_calendar_names(const messaging::list_calendar_names_request& request) {

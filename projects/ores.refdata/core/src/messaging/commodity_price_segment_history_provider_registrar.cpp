@@ -41,4 +41,4 @@ void register_commodity_price_segment_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

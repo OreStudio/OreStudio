@@ -90,7 +90,7 @@ domain::notification_channel to_domain(const messaging::notification_channel_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notification_channels_response
 notification_channel_service::list_notification_channels(

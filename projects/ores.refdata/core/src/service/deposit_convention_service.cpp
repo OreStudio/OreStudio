@@ -93,7 +93,7 @@ domain::deposit_convention to_domain(const messaging::deposit_convention_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_deposit_conventions_response deposit_convention_service::list_deposit_conventions(
     const messaging::list_deposit_conventions_request& request) {

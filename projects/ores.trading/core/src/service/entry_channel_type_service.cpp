@@ -61,7 +61,7 @@ std::vector<domain::entry_channel_type> read_one(repository::entry_channel_type_
     return repo.read_latest(ctx, key.code);
 }
 
-} // namespace
+}
 
 messaging::list_entry_channel_types_response entry_channel_type_service::list_entry_channel_types(
     const messaging::list_entry_channel_types_request& request) {

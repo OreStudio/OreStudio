@@ -89,7 +89,7 @@ domain::stress_test_library to_domain(const messaging::stress_test_library_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_stress_test_libraries_response
 stress_test_library_service::list_stress_test_libraries(

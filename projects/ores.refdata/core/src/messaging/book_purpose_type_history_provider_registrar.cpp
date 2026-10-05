@@ -41,4 +41,4 @@ void register_book_purpose_type_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

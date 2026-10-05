@@ -110,7 +110,7 @@ void apply_page(Request& req, const parsed_args& parsed) {
     req.order.descending = parsed.flag_set("desc");
 }
 
-} // namespace
+}
 
 void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("swap_legs");

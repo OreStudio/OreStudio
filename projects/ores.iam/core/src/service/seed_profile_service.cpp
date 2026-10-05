@@ -100,7 +100,7 @@ domain::seed_profile to_domain(const messaging::seed_profile_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_seed_profiles_response
 seed_profile_service::list_seed_profiles(const messaging::list_seed_profiles_request& request) {

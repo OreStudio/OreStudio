@@ -55,4 +55,4 @@ register_report_definition_event_mapping(ev::service::postgres_event_source& eve
         });
 }
 
-} // namespace ores::reporting::service::messaging
+}

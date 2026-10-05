@@ -39,6 +39,6 @@ register_nature_dimension_handlers(ores::nats::service::client& nats,
                                    ores::database::context ctx,
                                    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::dq::messaging
+}
 
 #endif

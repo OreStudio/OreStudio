@@ -95,7 +95,7 @@ domain::counterparty to_domain(const messaging::counterparty_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_counterparties_response
 counterparty_service::list_counterparties(const messaging::list_counterparties_request& request) {

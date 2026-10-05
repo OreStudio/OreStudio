@@ -94,7 +94,7 @@ domain::netting_set to_domain(const messaging::netting_set_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_netting_sets_response
 netting_set_service::list_netting_sets(const messaging::list_netting_sets_request& request) {

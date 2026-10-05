@@ -41,4 +41,4 @@ void register_intraday_power_curve_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

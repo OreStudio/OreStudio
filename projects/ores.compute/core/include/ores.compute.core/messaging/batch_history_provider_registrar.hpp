@@ -31,6 +31,6 @@ namespace ores::compute::messaging {
 
 void register_batch_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::compute::messaging
+}
 
 #endif

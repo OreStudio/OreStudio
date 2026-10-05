@@ -34,4 +34,4 @@ void register_bond_leg_rate_history_provider(ores::history::service::dispatch_re
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

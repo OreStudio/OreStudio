@@ -61,7 +61,7 @@ std::vector<domain::trade> read_one(repository::trade_repository& repo,
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
-} // namespace
+}
 
 messaging::list_trades_response
 trade_service::list_trades(const messaging::list_trades_request& request) {

@@ -89,7 +89,7 @@ domain::bond_instrument to_domain(const messaging::bond_instrument_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_instruments_response bond_instrument_service::list_bond_instruments(
     const messaging::list_bond_instruments_request& request) {

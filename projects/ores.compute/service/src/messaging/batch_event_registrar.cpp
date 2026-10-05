@@ -53,4 +53,4 @@ register_batch_event_mapping(ev::service::postgres_event_source& event_source,
         });
 }
 
-} // namespace ores::compute::service::messaging
+}

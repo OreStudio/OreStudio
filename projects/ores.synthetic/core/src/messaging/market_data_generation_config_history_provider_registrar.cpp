@@ -41,4 +41,4 @@ void register_market_data_generation_config_history_provider(
         });
 }
 
-} // namespace ores::synthetic::messaging
+}

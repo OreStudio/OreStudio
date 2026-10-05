@@ -57,4 +57,4 @@ register_credit_simulation_config_event_mapping(ev::service::postgres_event_sour
         });
 }
 
-} // namespace ores::analytics::service::messaging
+}

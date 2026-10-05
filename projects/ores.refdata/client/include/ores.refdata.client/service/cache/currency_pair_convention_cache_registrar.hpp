@@ -45,7 +45,7 @@ inline auto& currency_pair_convention_cache_registrar_lg() {
         "ores.refdata.service.cache.currency_pair_convention_cache_registrar");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief Warms currency_pair_convention_cache for every given tenant, then
@@ -90,6 +90,6 @@ warm_and_subscribe_currency_pair_convention_cache(
     return subs;
 }
 
-} // namespace ores::refdata::service::cache
+}
 
 #endif

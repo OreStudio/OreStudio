@@ -40,6 +40,6 @@ register_credit_simulation_matrix_row_config_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

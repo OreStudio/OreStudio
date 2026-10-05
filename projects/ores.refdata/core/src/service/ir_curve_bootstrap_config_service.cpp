@@ -96,7 +96,7 @@ to_domain(const messaging::ir_curve_bootstrap_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_ir_curve_bootstrap_configs_response
 ir_curve_bootstrap_config_service::list_ir_curve_bootstrap_configs(

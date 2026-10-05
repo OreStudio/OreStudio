@@ -41,4 +41,4 @@ void register_diary_entry_type_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

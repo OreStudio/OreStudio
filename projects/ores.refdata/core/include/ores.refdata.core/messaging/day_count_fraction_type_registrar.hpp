@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_day_count_fraction_type_
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

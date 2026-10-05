@@ -37,6 +37,6 @@ register_tenor_basis_two_swap_convention_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::refdata::service::messaging
+}
 
 #endif

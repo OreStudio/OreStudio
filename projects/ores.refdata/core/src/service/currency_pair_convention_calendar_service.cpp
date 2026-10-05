@@ -87,7 +87,7 @@ to_domain(const messaging::currency_pair_convention_calendar_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_pair_convention_calendars_response
 currency_pair_convention_calendar_service::list_currency_pair_convention_calendars(

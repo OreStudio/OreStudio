@@ -102,7 +102,7 @@ domain::workflow_step to_domain(const messaging::workflow_step_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_workflow_steps_response
 workflow_step_service::list_workflow_steps(const messaging::list_workflow_steps_request& request) {

@@ -104,7 +104,7 @@ domain::base_correlation_config to_domain(const messaging::base_correlation_conf
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_base_correlation_configs_response
 base_correlation_config_service::list_base_correlation_configs(

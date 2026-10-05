@@ -31,6 +31,6 @@ namespace ores::marketdata::messaging {
 
 void register_market_series_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::marketdata::messaging
+}
 
 #endif

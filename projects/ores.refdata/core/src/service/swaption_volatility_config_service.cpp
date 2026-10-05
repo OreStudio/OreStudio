@@ -113,7 +113,7 @@ to_domain(const messaging::swaption_volatility_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_swaption_volatility_configs_response
 swaption_volatility_config_service::list_swaption_volatility_configs(

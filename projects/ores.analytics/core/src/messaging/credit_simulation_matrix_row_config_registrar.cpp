@@ -31,7 +31,7 @@ namespace ores::analytics::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.analytics.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_credit_simulation_matrix_row_config_handlers(
@@ -104,4 +104,4 @@ register_credit_simulation_matrix_row_config_handlers(
     return subs;
 }
 
-} // namespace ores::analytics::messaging
+}

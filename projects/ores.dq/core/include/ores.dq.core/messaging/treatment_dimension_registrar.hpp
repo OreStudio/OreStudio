@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_treatment_dimension_hand
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::dq::messaging
+}
 
 #endif

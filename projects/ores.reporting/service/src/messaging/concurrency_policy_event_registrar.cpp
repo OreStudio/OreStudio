@@ -55,4 +55,4 @@ register_concurrency_policy_event_mapping(ev::service::postgres_event_source& ev
         });
 }
 
-} // namespace ores::reporting::service::messaging
+}

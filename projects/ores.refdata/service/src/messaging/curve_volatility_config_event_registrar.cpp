@@ -56,4 +56,4 @@ register_curve_volatility_config_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

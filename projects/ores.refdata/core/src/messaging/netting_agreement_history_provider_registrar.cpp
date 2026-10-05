@@ -41,4 +41,4 @@ void register_netting_agreement_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

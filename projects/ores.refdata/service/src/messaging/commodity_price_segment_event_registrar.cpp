@@ -56,4 +56,4 @@ register_commodity_price_segment_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

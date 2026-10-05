@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_account_contact_informat
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::iam::messaging
+}
 
 #endif

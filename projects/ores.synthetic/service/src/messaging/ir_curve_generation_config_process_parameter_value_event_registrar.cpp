@@ -62,4 +62,4 @@ register_ir_curve_generation_config_process_parameter_value_event_mapping(
         });
 }
 
-} // namespace ores::synthetic::service::messaging
+}

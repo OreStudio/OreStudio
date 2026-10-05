@@ -44,7 +44,7 @@ inline auto& dataset_bundle_member_handler_lg() {
         ores::logging::make_logger("ores.dq.messaging.dataset_bundle_member_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -388,6 +388,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::dq::messaging
+}
 
 #endif

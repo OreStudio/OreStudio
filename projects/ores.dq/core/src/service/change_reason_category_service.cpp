@@ -88,7 +88,7 @@ domain::change_reason_category to_domain(const messaging::change_reason_category
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_change_reason_categories_response
 change_reason_category_service::list_change_reason_categories(

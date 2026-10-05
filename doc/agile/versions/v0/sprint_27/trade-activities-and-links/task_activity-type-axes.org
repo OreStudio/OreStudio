@@ -98,7 +98,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR review: priority defaulted to 0 in C++, which the check refuses. | =ores.trading.activity_type.org= | accept | Defaults to 9 (every other cause) in the column and the C++ structs. |
+| 2 | PR review: no migration for existing databases. | =trading_activity_types_create.sql= | decline | Schema changes ship by recreate; the binaries carry the schema fingerprint. |
+| 3 | PR review: validate the axes in the service before the database. | =activity_type_service.cpp= | decline | The checks are the one rule; a second copy in the service could drift from them. |
+| 4 | PR review: the shell commands take three more positionals. | =activity_type_commands.cpp= | decline | Every caller is generated and updated here; the only other mention is a sprint 26 evidence file. |
+| 5 | PR review: maturity and cancellation reversals are economic without confirmation. | =trading_activity_types_populate.sql= | decline | A reversal puts the trade's cash flows back, so it is revalued; the note says neither needs a new confirmation. |
 
 * Result
 

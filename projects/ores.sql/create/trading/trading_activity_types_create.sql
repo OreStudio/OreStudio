@@ -44,7 +44,7 @@ create table if not exists "ores_trading_activity_types_tbl" (
     "requires_confirmation" boolean not null default false,
     "is_economic" boolean not null default false,
     "is_real" boolean not null default true,
-    "priority" integer not null,
+    "priority" integer not null default 9,
     "description" text null,
     "fpml_event_type_code" text null,
     "fsm_transition_id" uuid null,

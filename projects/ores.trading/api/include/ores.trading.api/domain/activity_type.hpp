@@ -104,7 +104,7 @@ struct activity_type final {
      * reserve, CEM charge or contra revenue, close outs, triggered, exercised or expired, fixing,
      * misbooking); 9 is every other cause.
      */
-    int priority = 0;
+    int priority = 9;
 
     /**
      * @brief Detailed description of the activity type.

@@ -125,6 +125,8 @@ Sprint 26 ran the three-pass mission in order: sync codegen and clear the drift,
 -   **Send the filter with every web list request**: Every list request the web client builds by hand states the filter, and its schema is held to the generated request type so a member the protocol adds fails the typecheck instead of the live read.
 -   **Standardise the record screens**: One standard defines the shape and behaviour of every screen in ores.web that lists and maintains records — lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions — with the same scope the retired Qt entity standard had. Server paging through the shared Pager landed with the currency, desk group and currency pair screens (PR #2644); the People screens conformed, with my profile split from them (PR #2655), and the holiday calendar screen arrived at the standard (PR #2646).
 
+![ore_studio-v0.0.26-people.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.26-people.png)
+
 
 ## Documentation & Tooling
 

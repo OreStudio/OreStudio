@@ -376,7 +376,10 @@ describe('PUT /api/accounts/:username/profile', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]).toEqual({ subject: 'iam.v1.accounts.get', body: { key: { username: 'ada' } } });
+        expect(calls[0]).toEqual({
+            subject: 'iam.v1.accounts.get',
+            body: { key: { username: 'ada' } },
+        });
         expect(calls[1]).toEqual({
             subject: 'iam.v1.accounts.update',
             body: {
@@ -465,7 +468,10 @@ describe('PUT /api/accounts/:accountId/contact-information', () => {
         expect(put.change.write.id).toBe(RECORD_ID);
         expect(put.change.write.account_id).toBe(ACCOUNT_ID);
         expect(put.change.precondition).toEqual({ kind: 'must_match_version', version: 4 });
-        expect(put.intent).toEqual({ reason_code: 'common.rectification', commentary: 'moved desk' });
+        expect(put.intent).toEqual({
+            reason_code: 'common.rectification',
+            commentary: 'moved desk',
+        });
         expect(response.json().contact.version).toBe(4);
     });
 
@@ -490,7 +496,10 @@ describe('PUT /api/accounts/:accountId/contact-information', () => {
 
         expect(response.statusCode).toBe(200);
         const put = calls[1]?.body as {
-            change: { write: { id: string }; precondition: { kind: string; version: number | null } };
+            change: {
+                write: { id: string };
+                precondition: { kind: string; version: number | null };
+            };
         };
         expect(isUuid(put.change.write.id)).toBe(true);
         expect(put.change.write.id).not.toBe(RECORD_ID);

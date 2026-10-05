@@ -512,15 +512,18 @@ export const en: SourceCatalogue = {
             replacePhoto: 'Replace the photo',
             reporting: 'Reporting line',
             reportsTo: 'Reports to {name}.',
-            reportsToUnknown: 'This screen cannot name the person here, so the recorded identifier is shown.',
+            reportsToUnknown:
+                'This screen cannot name the person here, so the recorded identifier is shown.',
             noLine: 'No reporting line is recorded.',
             propose: 'Propose a change',
             proposeWhy: 'This screen cannot send a proposal yet.',
             proposeApprovers: "The person's manager or a tenant administrator approves a change.",
-            proposeGap: 'The line does not change while a proposal waits, and nothing in the platform holds an approval today. The Draw the reporting line journey owns the queue, the notification and the decision.',
+            proposeGap:
+                'The line does not change while a proposal waits, and nothing in the platform holds an approval today. The Draw the reporting line journey owns the queue, the notification and the decision.',
             missing: 'No account of this tenant has that username.',
             readRefused: 'The server did not let this screen read the account: {reason}',
-            readGap: 'The fields are not drawn and this panel offers no save, because a write with empty fields would clear them. A tenant administrator can change your details, or give you the read.',
+            readGap:
+                'The fields are not drawn and this panel offers no save, because a write with empty fields would clear them. A tenant administrator can change your details, or give you the read.',
         },
         photo: {
             pick: 'The image is uploaded now and set when you save the panel.',
@@ -535,7 +538,8 @@ export const en: SourceCatalogue = {
             title: 'Contact details',
             whySelf: 'You may change your own contact record.',
             whyAdmin: 'You hold iam::account_contact_informations:write in this tenant.',
-            whyReadOnly: 'Read-only for you: you do not hold iam::account_contact_informations:write in this tenant.',
+            whyReadOnly:
+                'Read-only for you: you do not hold iam::account_contact_informations:write in this tenant.',
             noRecord: 'This account has no contact record yet. The first save creates it.',
             noRecordShort: 'No record yet',
             streetLine1: 'Street',
@@ -547,7 +551,8 @@ export const en: SourceCatalogue = {
             countryHint: 'The code of the country, such as GB.',
             phone: 'Telephone',
             email: 'Contact address',
-            emailHint: 'Where colleagues reach you. This is not the sign-in address ({email}), which an administrator owns.',
+            emailHint:
+                'Where colleagues reach you. This is not the sign-in address ({email}), which an administrator owns.',
             emailHintUnknown: 'Where colleagues reach you. It is not the sign-in address.',
             webPage: 'Web page',
         },
@@ -577,8 +582,10 @@ export const en: SourceCatalogue = {
             failed: 'The write failed.',
         },
         refused: {
-            notYours: 'The server refused the write: a field here is not yours to change. A tenant administrator owns your username and your sign-in address.',
-            recordChanged: 'The record may have changed since this panel read it. Reload the panel and try again.',
+            notYours:
+                'The server refused the write: a field here is not yours to change. A tenant administrator owns your username and your sign-in address.',
+            recordChanged:
+                'The record may have changed since this panel read it. Reload the panel and try again.',
         },
     },
 

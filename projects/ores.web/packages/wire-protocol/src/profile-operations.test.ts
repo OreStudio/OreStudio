@@ -234,7 +234,11 @@ describe('updateSelfContactInformation', () => {
                     code: 'invalid_field_value',
                     message: 'The email address is not valid.',
                     fields: [
-                        { field: 'email', code: 'invalid_field_value', message: 'Not a valid address.' },
+                        {
+                            field: 'email',
+                            code: 'invalid_field_value',
+                            message: 'Not a valid address.',
+                        },
                     ],
                 },
                 account_contact_information: null,
@@ -297,7 +301,10 @@ describe('updateAccount', () => {
     });
 
     it('raises the server message when the body reports failure', async () => {
-        const caller = callerAnswering({ success: false, message: 'reports_to_account_id is not yours' });
+        const caller = callerAnswering({
+            success: false,
+            message: 'reports_to_account_id is not yours',
+        });
         await expect(updateAccount(caller, account, profileWrite)).rejects.toThrow(
             OperationFailedError,
         );

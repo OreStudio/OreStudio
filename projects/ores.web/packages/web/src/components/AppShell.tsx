@@ -187,8 +187,7 @@ function AccountMenu({
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
     const name = self != null && self.fullName !== '' ? self.fullName : username;
-    const photo =
-        self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
+    const photo = self == null ? undefined : self.imageId === null ? null : imageUrl(self.imageId);
 
     useEffect(() => {
         if (!open) return undefined;

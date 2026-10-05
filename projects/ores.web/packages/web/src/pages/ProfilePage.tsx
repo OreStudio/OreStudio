@@ -194,7 +194,9 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
                 accountId={shownAccountId}
                 signInEmail={signInEmail}
                 reasons={reasons.data ?? []}
-                onSaved={() => queries.invalidateQueries({ queryKey: ['contact-information', contactKey] })}
+                onSaved={() =>
+                    queries.invalidateQueries({ queryKey: ['contact-information', contactKey] })
+                }
             />
             {me && <AccessPanel roles={access.data?.roles ?? []} />}
         </div>
@@ -339,9 +341,9 @@ function IdentityPanel({
     readonly onSaved: () => Promise<unknown>;
 }): ReactNode {
     const { t } = useTranslation();
-    const [edits, setEdits] = useState<Partial<{ fullName: string; jobTitle: string; imageId: string }>>(
-        {},
-    );
+    const [edits, setEdits] = useState<
+        Partial<{ fullName: string; jobTitle: string; imageId: string }>
+    >({});
     const [reasonCode, setReasonCode] = useState('');
     const [commentary, setCommentary] = useState('');
     const [busy, setBusy] = useState(false);
@@ -421,8 +423,7 @@ function IdentityPanel({
         } catch (error) {
             setOutcome({
                 ok: false,
-                message:
-                    error instanceof Error ? error.message : t('profile.saved.failed'),
+                message: error instanceof Error ? error.message : t('profile.saved.failed'),
                 fields: [],
             });
         } finally {
@@ -569,7 +570,12 @@ function IdentityPanel({
                     <span className="text-xs text-ink-faint">
                         {t('profile.version', { version: String(account.version) })}
                     </span>
-                    <Button variant="primary" disabled={!maySave} pending={busy} onClick={() => void save()}>
+                    <Button
+                        variant="primary"
+                        disabled={!maySave}
+                        pending={busy}
+                        onClick={() => void save()}
+                    >
                         {t('profile.save.identity')}
                     </Button>
                 </div>
@@ -905,9 +911,7 @@ function ContactPanel({
                     <Input
                         value={draft.postalCode}
                         disabled={!canWrite}
-                        onChange={(event) =>
-                            setEdits({ ...edits, postalCode: event.target.value })
-                        }
+                        onChange={(event) => setEdits({ ...edits, postalCode: event.target.value })}
                     />
                 </Field>
                 <Field
@@ -985,7 +989,12 @@ function ContactPanel({
                             ? t('profile.contact.noRecordShort')
                             : t('profile.version', { version: String(contact.version) })}
                     </span>
-                    <Button variant="primary" disabled={!maySave} pending={busy} onClick={() => void save()}>
+                    <Button
+                        variant="primary"
+                        disabled={!maySave}
+                        pending={busy}
+                        onClick={() => void save()}
+                    >
                         {t('profile.save.contact')}
                     </Button>
                 </div>

@@ -513,15 +513,19 @@ const pt: SourceCatalogue = {
             replacePhoto: 'Substituir a fotografia',
             reporting: 'Linha hierárquica',
             reportsTo: 'Reporta a {name}.',
-            reportsToUnknown: 'Este ecrã não consegue nomear a pessoa aqui; o identificador registado é mostrado.',
+            reportsToUnknown:
+                'Este ecrã não consegue nomear a pessoa aqui; o identificador registado é mostrado.',
             noLine: 'Não está registada nenhuma linha hierárquica.',
             propose: 'Propor uma alteração',
             proposeWhy: 'Este ecrã ainda não consegue enviar uma proposta.',
-            proposeApprovers: 'O responsável da pessoa ou um administrador do inquilino aprova uma alteração.',
-            proposeGap: 'A linha não muda enquanto uma proposta espera, e nada na plataforma guarda uma aprovação hoje. O percurso Desenhar a linha hierárquica detém a fila, a notificação e a decisão.',
+            proposeApprovers:
+                'O responsável da pessoa ou um administrador do inquilino aprova uma alteração.',
+            proposeGap:
+                'A linha não muda enquanto uma proposta espera, e nada na plataforma guarda uma aprovação hoje. O percurso Desenhar a linha hierárquica detém a fila, a notificação e a decisão.',
             missing: 'Nenhuma conta deste inquilino tem esse nome de utilizador.',
             readRefused: 'O servidor não deixou este ecrã ler a conta: {reason}',
-            readGap: 'Os campos não são mostrados e este painel não oferece guardar, porque uma escrita com campos vazios iria apagá-los. Um administrador do inquilino pode alterar os seus dados, ou dar-lhe a leitura.',
+            readGap:
+                'Os campos não são mostrados e este painel não oferece guardar, porque uma escrita com campos vazios iria apagá-los. Um administrador do inquilino pode alterar os seus dados, ou dar-lhe a leitura.',
         },
         photo: {
             pick: 'A imagem é enviada agora e definida quando guardar o painel.',
@@ -536,7 +540,8 @@ const pt: SourceCatalogue = {
             title: 'Contactos',
             whySelf: 'Pode alterar o seu próprio registo de contactos.',
             whyAdmin: 'Tem iam::account_contact_informations:write neste inquilino.',
-            whyReadOnly: 'Apenas leitura para si: não tem iam::account_contact_informations:write neste inquilino.',
+            whyReadOnly:
+                'Apenas leitura para si: não tem iam::account_contact_informations:write neste inquilino.',
             noRecord: 'Esta conta ainda não tem registo de contactos. A primeira gravação cria-o.',
             noRecordShort: 'Ainda sem registo',
             streetLine1: 'Rua',
@@ -548,7 +553,8 @@ const pt: SourceCatalogue = {
             countryHint: 'O código do país, por exemplo GB.',
             phone: 'Telefone',
             email: 'Endereço de contacto',
-            emailHint: 'Onde os colegas o contactam. Não é o endereço de entrada ({email}), que pertence a um administrador.',
+            emailHint:
+                'Onde os colegas o contactam. Não é o endereço de entrada ({email}), que pertence a um administrador.',
             emailHintUnknown: 'Onde os colegas o contactam. Não é o endereço de entrada.',
             webPage: 'Página web',
         },
@@ -578,8 +584,10 @@ const pt: SourceCatalogue = {
             failed: 'A escrita falhou.',
         },
         refused: {
-            notYours: 'O servidor recusou a escrita: um campo aqui não lhe pertence. Um administrador do inquilino é dono do seu nome de utilizador e do seu endereço de entrada.',
-            recordChanged: 'O registo pode ter mudado desde que este painel o leu. Recarregue o painel e tente de novo.',
+            notYours:
+                'O servidor recusou a escrita: um campo aqui não lhe pertence. Um administrador do inquilino é dono do seu nome de utilizador e do seu endereço de entrada.',
+            recordChanged:
+                'O registo pode ter mudado desde que este painel o leu. Recarregue o painel e tente de novo.',
         },
     },
 

@@ -1054,9 +1054,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (!body.success) {
             throw invalidRequest('The profile fields must be text.');
         }
-        return accountWriteViewSchema.parse(
-            await updateSelfAccount(session.client, body.data),
-        );
+        return accountWriteViewSchema.parse(await updateSelfAccount(session.client, body.data));
     });
 
     /**
@@ -2138,9 +2136,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      */
     server.get('/api/image-upload-policy', async (request) => {
         const session = requireSession(request);
-        return imageUploadPolicyViewSchema.parse(
-            await readImageUploadPolicy(session.client),
-        );
+        return imageUploadPolicyViewSchema.parse(await readImageUploadPolicy(session.client));
     });
 
     /**

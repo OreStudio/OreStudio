@@ -983,10 +983,9 @@ export const api = {
     /** One account's contact record, or nothing when none exists. */
     async accountContactInformation(accountId: string): Promise<AccountContactInformation | null> {
         const view = contactViewSchema.parse(
-            await request(
-                `/api/accounts/${encodeURIComponent(accountId)}/contact-information`,
-                { method: 'GET' },
-            ),
+            await request(`/api/accounts/${encodeURIComponent(accountId)}/contact-information`, {
+                method: 'GET',
+            }),
         );
         return view.contact;
     },

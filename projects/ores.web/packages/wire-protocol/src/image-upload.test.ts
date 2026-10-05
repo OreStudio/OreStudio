@@ -90,20 +90,20 @@ describe('readImageUploadPolicy', () => {
 describe('uploadImage', () => {
     it('sends the media type and the base64 bytes', async () => {
         const sent: Recorded[] = [];
-        await uploadImage(
-            callerAnswering({ result: okResult, image_id: IMAGE_ID }, sent),
-            { mimeType: 'image/png', data: 'aGVsbG8=' },
-        );
+        await uploadImage(callerAnswering({ result: okResult, image_id: IMAGE_ID }, sent), {
+            mimeType: 'image/png',
+            data: 'aGVsbG8=',
+        });
 
         expect(sent[0]?.subject).toBe('assets.v1.images.upload');
         expect(sent[0]?.body).toEqual({ mime_type: 'image/png', data: 'aGVsbG8=' });
     });
 
     it('answers the id of the stored image', async () => {
-        const reply = await uploadImage(
-            callerAnswering({ result: okResult, image_id: IMAGE_ID }),
-            { mimeType: 'image/jpeg', data: 'aGVsbG8=' },
-        );
+        const reply = await uploadImage(callerAnswering({ result: okResult, image_id: IMAGE_ID }), {
+            mimeType: 'image/jpeg',
+            data: 'aGVsbG8=',
+        });
 
         expect(reply.result.outcome).toBe('ok');
         expect(reply.imageId).toBe(IMAGE_ID);

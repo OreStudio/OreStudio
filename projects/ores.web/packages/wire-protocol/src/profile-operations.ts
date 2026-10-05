@@ -22,7 +22,12 @@
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { Account, AccountContactInformation } from './domain.js';
-import { accountContactInformationSchema, accountSchema, uuidSchema, wireTimestampSchema } from './domain.js';
+import {
+    accountContactInformationSchema,
+    accountSchema,
+    uuidSchema,
+    wireTimestampSchema,
+} from './domain.js';
 import { OperationFailedError } from './errors.js';
 import { subjects as accountSubjects } from './generated/iam/protocol/account_operations_protocol.js';
 import { subjects as contactSubjects } from './generated/iam/protocol/account_contact_information_protocol.js';
@@ -148,7 +153,10 @@ export const contactWriteReplySchema = z
     })
     .transform((row) => ({
         result: row.result,
-        contact: row.account_contact_information === null ? null : mapContact(row.account_contact_information),
+        contact:
+            row.account_contact_information === null
+                ? null
+                : mapContact(row.account_contact_information),
     }));
 
 export type ContactWriteReply = z.infer<typeof contactWriteReplySchema>;
@@ -325,7 +333,10 @@ export async function putContactInformation(
     input: {
         readonly accountId: string;
         readonly recordId: string;
-        readonly claim: { readonly kind: 'must_match_version' | 'must_not_exist'; readonly version: number | null };
+        readonly claim: {
+            readonly kind: 'must_match_version' | 'must_not_exist';
+            readonly version: number | null;
+        };
         readonly write: ContactWrite;
     },
 ): Promise<ContactWriteReply> {

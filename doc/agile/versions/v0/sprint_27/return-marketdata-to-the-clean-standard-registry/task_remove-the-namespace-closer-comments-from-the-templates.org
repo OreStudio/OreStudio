@@ -64,7 +64,8 @@ task and name that file in the Command column.
 | Generated files with a closer comment from any other template | 0 | =git grep= for the closer, grouped by =Template:= header | =6d0865ee12= |
 | Changed code lines that are not a closer becoming =}= | 0 | =git diff -U0 -- projects=, filtered on the closer pattern | =70c014b735= |
 | Tangled templates the tangle changes after the rewrite | 0 | =compass build --direct codegen_templates=, then =git diff= | =70c014b735= |
-| Registry drift and catalogue sweep on the files touched | clean, both | =check_component_drift.py --all= and =--sweep= | =bee2d715a5= |
+| Generated files main added with a closer comment before the PR was raised | 15 in iam, 19 lines; rewritten, 0 after | the same script, after rebasing on main | rebased branch |
+| Registry drift and catalogue sweep on the files touched | clean, both, before and after the rebase | =check_component_drift.py --all= and =--sweep= | =bee2d715a5= |
 | Removed lines that end in a backslash (a line splice) | 0 of 3,705 | =git diff -U0 origin/main...HEAD -- projects=, removed lines ending in =\= | =bee2d715a5= |
 | Marketdata test targets and their dependencies, built and run | build clean; ctest =ores.marketdata= 5/5 on a recreated database | =compass build= on the four test targets, then =compass test run -R ores.marketdata= | =bee2d715a5= |
 
@@ -143,8 +144,9 @@ via its "Verifies task" field.
 
 * Result
 
-The fourteen templates and 2,944 of the files they generated close a namespace
-with a bare brace. The ten generated files that already drift for other reasons
+The fourteen templates and 2,959 of the files they generated close a namespace
+with a bare brace: 2,944 at the start, and 15 iam files main generated before
+the PR was raised. The ten generated files that already drift for other reasons
 keep their comment until their components' clean-up regenerates them. The drift
 checks prove every edited file matches a fresh render, and the diff changes
 nothing but closer lines.

@@ -23,11 +23,11 @@ version carries 0.0.27, with the vcpkg submodule at latest.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Nothing. |
+| Now           | Planning: promoting the carried stories into the sprint. |
 | Waiting on    | Nothing. |
-| Next          | Nothing. |
+| Next          | Land the planning PR. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -44,6 +44,7 @@ version carries 0.0.27, with the vcpkg submodule at latest.
 |------+-------+-------+-----+-------------|
 | [[id:F1883C42-09BF-4481-A41C-E52727273E2E][Open sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Scaffold sprint 27, set its mission, wire the version manifest and the agile index. |
 | [[id:3D7260FA-A224-4657-A128-7FC186808065][Bump project version to 0.0.27 for sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Bump the project version from 0.0.26 to 0.0.27 across the build files and badges, and update the vcpkg submodule to latest. |
+| [[id:960C7B09-9C5F-4449-9DD1-B72F4A5725A3][Promote the carried stories into sprint 27]] | STARTED | 2026-10-05 | | Move the fifteen stories carried from sprint 26 into sprint 27 and promote the retire-or-reset capture into a story, recording the sprint's scope. |
 
 * Decisions
 

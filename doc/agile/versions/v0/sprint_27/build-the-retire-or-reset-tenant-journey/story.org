@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8B276277-A49D-4813-A017-C0529C798DBB
+:END:
+#+title: Story: Build the retire or reset tenant journey
+#+description: The Retire or reset a tenant journey has a document and no implementation: suspend has no operation, terminate, deprovision and purge have SQL functions but no subjects, and a party-level reset has no subject. The roster's row menu shows Retire or reset as not built until these exist.
+#+type: story
+#+level: s2
+#+filetags: :iam:web:journeys:tenancy:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+[[id:00179132-3463-45E9-A6FC-75B0F3EBCC8E][Retire or reset a tenant]] runs end
+to end: a tenant administrator suspends a tenant, terminates,
+deprovisions and purges it, and resets a party's tenant, and the
+roster's row menu offers *Retire or reset* instead of showing it as
+not built.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The journey document is written; nothing is built. |
+| Waiting on    | Nothing.                               |
+| Next          | Land the retire and reset operations.            |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Suspend has its operation and its subject over
+  =iam::tenants:suspend=, and a suspended tenant cannot sign in.
+- Terminate, deprovision and purge each have a subject over their SQL
+  function (=ores_iam_terminate_tenant_fn=,
+  =ores_iam_deprovision_tenant_fn=, =ores_iam_purge_tenant_fn=).
+- The party-level reset has a subject over =ores_iam_reset_tenant_fn=.
+- The roster's row menu offers *Retire or reset*, and the screen does
+  not offer what the server cannot do.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63EB45DE-FCF8-433A-B680-5DE24A392581][Land the retire and reset operations]] | BACKLOG | | | Build the server path behind the Retire or reset a tenant journey: a suspend operation with its subject, subjects for terminate, deprovision and purge, a subject for the party-level reset, and the roster's row menu item. |
+
+* Decisions
+
+* Out of scope
+
+- The unguarded system-tenant delete and the sign-in path that ignores
+  a suspended tenant, which are
+  [[id:8DE384EE-E273-42AA-B0B6-81B2AE759BD4][Fix the security defects the ores.iam clean-up recorded]].

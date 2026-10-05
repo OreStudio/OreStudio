@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 28BF2793-41A7-428F-A1B9-AFEC95B1B647
+:END:
+#+title: Story: Bring the record screens to the standard
+#+description: Apply the record screen standard: the existing screens conform to it. Server paging through the shared Pager landed with the currency, desk group and currency pair screens, the People screens conformed, and the holiday calendar screen arrived at the standard before the close; the rest is what remains. Split from Standardise the record screens at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:standards:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every screen in =ores.web= that lists and maintains records conforms
+to the record screen standard. The standard itself shipped with the
+source story, server paging through the shared Pager landed with the
+currency, desk group and currency pair screens (PR #2644), the People
+screens conformed with my profile split from them (PR #2655), and the
+holiday calendar screen arrived at the standard (PR #2646); this story
+applies the rest.
+
+This story was split from
+[[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record
+screens]] when that story was reworded to the standard it wrote and
+closed DONE at the sprint 26 close on 2026-10-05; its remaining task
+moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Bring the screens to the standard. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The existing record screens conform to the standard.
+- Each deviation is either fixed or recorded as an exception the
+  standard names.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | BACKLOG | | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
+
+* Decisions
+
+* Out of scope
+
+-

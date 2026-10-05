@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 300948F4-3597-4E53-8454-126D541D9360
+:END:
+#+title: Story: Complete the pattern language
+#+description: The pattern groups still to write — communication, coordination, resilience, load and data — and the rule that makes a design name its patterns. Split from A pattern language for service interaction at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :knowledge:patterns:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The pattern language is complete: the communication, coordination,
+resilience, load and data pattern groups are written, each pattern
+naming its established name and its sources, and a design names its
+patterns as a rule rather than by memory. The type, the hub, the identity
+patterns and the reporting design shipped with the source story.
+
+This story was split from
+[[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service
+interaction]] when that story was reworded to the language it delivered
+and closed DONE at the sprint 26 close on 2026-10-05; its two remaining
+tasks moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Write the five pattern groups, then make a design name its patterns. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The communication, coordination, resilience, load and data groups
+  exist, each pattern naming its established name and its sources.
+- A design names its patterns, and the knowledge index links every
+  group.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5C1D296F-2F31-471E-A40A-7C23465B1049][Make a design name its patterns]] | BACKLOG | | | A memory that a design names its patterns from the hub, and a patterns-used section in the knowledge and workflow types. |
+| [[id:8D66F1DA-9566-45C0-B410-69D27B483318][Write the communication, coordination, resilience, load and data patterns]] | BACKLOG | | | Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside. |
+
+* Decisions
+
+* Out of scope
+
+-

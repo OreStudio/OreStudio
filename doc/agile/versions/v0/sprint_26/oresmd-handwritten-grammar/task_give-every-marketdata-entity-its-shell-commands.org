@@ -27,11 +27,11 @@ every command is proved against the live fleet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -72,6 +72,7 @@ task and name that file in the Command column.
 | Scripts the tangle added | 26, in 4 new folders; no existing script changed | =compass build --direct tangle_shell_scripts=, then =git status= | =ec7c5bdff4= |
 | Marketdata scripts run against the live fleet | 73: 32 ok, 19 missing, 18 failed, 4 aborted; each with its reason | =evidence/marketdata_shell_commands_run.txt= | =ec7c5bdff4= |
 | Shell unit tests | 16 of 16 suites pass | =compass test run -R ores.shell= | =ec7c5bdff4= |
+| Marketdata tests | 5 of 5 suites pass | =compass test run -R ores.marketdata= | =ec7c5bdff4= |
 
 * Notes
 

@@ -74,6 +74,10 @@ task and name that file in the Command column.
 | The bootstrap | Initial administrator =super_admin= created, account =5512a4ba-1a27-4ae4-a0a9-4213e26bb5f3=; =system.bootstrap_mode= moves to =false= | =compass shell -l /tmp/selfwrite_bootstrap.ores=; output in the same evidence file | same tree; database 082f5666a7fd2039 |
 | The checker | 67 checks ran, 64 passed, 3 failed; exit 1 | =node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js=; output in the same evidence file | same tree; database 082f5666a7fd2039 |
 
+Every commit named above is a pre-sync commit: the branch was rebased onto
+main before its pull request, and these names denote the trees the numbers
+were measured on.
+
 * Notes
 
 - Attempt one seeded the members before bootstrapping. The checker's
@@ -105,9 +109,17 @@ via its "Verifies task" field.
 
 * Review
 
+The local review pass over the diff, per the runbook's step 5a: the
+=compass-code-review-pr= checklist against =origin/main...HEAD=, and the
+misspell check with it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =misspell-fixer .= exits 1 on the tree. | the sprint 25 and 26 task pages, and the local pnpm store | No action | Every hit is outside this diff: the task pages quote an upstream load-profile identifier misspelled in the portfolio, in review tables that already decline the correction, and the store is a gitignored local artifact. A run over this diff's files reports "nothing to replace" and exits 0. |
+
+Verdict: ready to merge. The delta is the three templates' reorder, its
+regeneration across the create scripts, the repository case that guards the
+order, and the records; no finding lands in it.
 
 * Result
 

@@ -82,6 +82,10 @@ task and name that file in the Command column.
 | Self write on the seeded tenant, before / after | REFUSED 23503 / LANDED | [[file:evidence/before_record.txt][before]] and [[file:evidence/after_record.txt][after]] | 79d2861b46 |
 | Bogus actor, before / after | REFUSED 23503 / REFUSED 23503 | same two records | 79d2861b46 |
 
+Every commit named above is a pre-sync commit: the branch was rebased onto
+main before its pull request, and these names denote the trees the numbers
+were measured on.
+
 * Notes
 
 * Test Scenarios

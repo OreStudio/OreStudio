@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator keeps a holiday calendar's rules, exceptions and events correct, and checks the business days they produce.
@@ -75,8 +75,9 @@ A calendar has one of three shapes, and the screen follows the shape:
    whether the day is a business day, such as a central bank meeting, with its
    diary entry type, name and description.
 8. *Rebuild the business days.* The person chooses *Rebuild business days* and
-   says up to which year. The system regenerates the materialised dates for
-   this calendar from its rules, base and exceptions.
+   says up to which year. The system builds the materialised dates for this
+   calendar from its rules, base and exceptions, for the days it has not built
+   yet. A day already built keeps its value; see /What is missing/.
 9. *Check the business days.* The system shows the year's holidays, one month
    per block. Each holiday shows what produced it: a rule, an exception or the
    QuantLib base. The person can add a second calendar, such as the other
@@ -154,36 +155,43 @@ and unions them on the screen; it needs no operation of its own.
 
 * What is missing
 
-1. *The business days are not rebuilt when their inputs change.* Writing a
-   rule, an exception or a base does not regenerate =calendar_date=; only
-   =refdata.v1.calendar_dates.regenerate= does, and nothing records when a
-   calendar was last rebuilt. The candidate is to rebuild on every input write,
-   or to record a rebuilt-at time beside the inputs' last change. Until then
-   the screen rebuilds after every save it makes, and says that a change made
-   elsewhere is not visible until the dates are rebuilt.
-2. *The dates cannot be read by year.* The =calendar_dates_filter= takes only
+1. *The business days are not rebuilt when their inputs change, and a rebuild
+   never rewrites a built day.* Writing a rule, an exception or a base does not
+   regenerate =calendar_date=, and =refdata.v1.calendar_dates.regenerate= only
+   adds days past the last one built: a changed rule or a new exception never
+   reaches a year already built. The candidate is a rebuild that rewrites the
+   days whose inputs changed. Until then the screen does not rebuild after a
+   save, because that would change nothing; it says what a rebuild does, and
+   it marks each exception that the built days do not show.
+2. *A QuantLib calendar builds without its holidays.* The rebuild reads only
+   stored rules, and a QuantLib calendar has none: its holidays live in
+   QuantLib. Its days, and the days of a calendar derived from it, mark
+   weekends only. The candidate is for the rebuild to ask QuantLib for the
+   base's holidays. Until then the screen hides the business days of a
+   QuantLib calendar and warns on a calendar derived from one.
+3. *The dates cannot be read by year.* The =calendar_dates_filter= takes only
    calendar codes, so showing one year means paging through every materialised
    date in order. The side-by-side view doubles that cost, because it pages
    through every date of both calendars. The candidate is a date range on the
    filter. Until then the screen pages from the first date it holds to the end
    of the year it needs.
-3. *The ORE export is data, not a document.* =calendar_adjustments.export=
+4. *The ORE export is data, not a document.* =calendar_adjustments.export=
    returns the adjustments, and the caller is expected to write the
    =CalendarAdjustments= XML. A browser has no ORE writer. The candidate is for
    the operation, or the web back end, to return the document. Until then the
    screen offers no export.
-4. *Externally sourced holidays are not gated.* The administration model
+5. *Externally sourced holidays are not gated.* The administration model
    expects a holiday from an untrusted source to wait for authorisation before
    it takes effect. Nothing models a pending holiday or a trusted source. The
    candidate is a status on the exception, or a workflow over imports. Until
    then every written exception takes effect when the dates are rebuilt.
-5. *A holiday has no name.* A rule has no name column, and a materialised date
+6. *A holiday has no name.* A rule has no name column, and a materialised date
    carries only whether it is a business day and how it was produced. The
    screen cannot say "Good Friday"; only exceptions (description) and diary
    events (name) carry words. The candidate is a name on the rule, carried onto
    the materialised date. Until then the screen describes a rule by its shape,
    such as "1st Monday of May".
-6. *Only a tenant administrator can run this journey.* No role below
+7. *Only a tenant administrator can run this journey.* No role below
    =TenantAdmin= holds the calendar, rule, exception, event or date
    permissions. The candidate is a reference data role.
 

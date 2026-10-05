@@ -181,11 +181,17 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 }
 
 describe('the reference data area', () => {
-    it('opens classifications and shows the screens still to come', () => {
+    it('opens every reference data screen', () => {
         const html = render('/refdata', () => undefined);
-        expect(html).toContain('href="/refdata/classifications"');
-        expect(html).toContain('Holiday calendars');
-        expect(html).toContain('Designed; not built yet');
+        for (const path of [
+            'classifications',
+            'calendars',
+            'currencies',
+            'currency-pairs',
+            'desk-groups',
+        ]) {
+            expect(html).toContain(`href="/refdata/${path}"`);
+        }
     });
 });
 

@@ -177,8 +177,10 @@ The BFF serves these routes on =ORES_WEB_PORT=.
 | =PUT /api/classifications/:list/rows/:code/label= | Give a row a label from the shared catalogue, or take it away with a null badge. A label is how a code is drawn, not how ORE spells it, so a read-only list may be labelled. |
 | =GET /api/labels= | The shared label catalogue: every badge, and the badges each code domain uses. |
 | =GET /api/refdata= | The reference data resources the screens read and write, each with its key fields and the permissions the server checks. The resource keys are the BFF's authority: a key it does not name reaches nothing. |
-| =GET /api/refdata/:resource=, =GET /api/refdata/:resource/by/:parent= | Every row of a resource, or the rows of a junction that belong to one parent, in the server's own field names. |
+| =GET /api/refdata/:resource=, =GET /api/refdata/:resource/by/:parent= | Every row of a resource, or the rows of one parent, such as a currency's countries or a calendar's rules, in the server's own field names. |
 | =PUT /api/refdata/:resource=, =DELETE /api/refdata/:resource= | Write one row, new or against the version read, and remove one named by exactly its key fields, each with a change reason. Each write is checked against the resource's own schema. |
+| =GET /api/refdata/calendars/:code/days= | The materialised days of one calendar in one year. The dates filter takes no range, so the BFF pages through the calendar's days until it passes the year. |
+| =POST /api/refdata/calendars/:code/rebuild= | Build one calendar's business days up to the end of a year. The server adds only the days it has not built. |
 | =POST /api/classifications/:list/rows=, =PUT /api/classifications/:list/rows/:code=, =DELETE /api/classifications/:list/rows/:code= | Add a row, correct one against the version read, and remove one, each with a change reason. A list of ORE spellings is refused. |
 | =PUT /api/classifications/:list/order= | Write the new display order of the rows that moved, in one call. |
 | =GET /api/history= | Every version of one record, newest first, with the field-level changes in each. Served only for the entity types of the classification lists. |

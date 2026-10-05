@@ -26,6 +26,11 @@ import { subjects as currencySubjects } from './generated/refdata/protocol/curre
 import { subjects as countrySubjects } from './generated/refdata/protocol/country_protocol.js';
 import { subjects as businessCentreSubjects } from './generated/refdata/protocol/business_centre_protocol.js';
 import { subjects as calendarSubjects } from './generated/refdata/protocol/calendar_protocol.js';
+import { subjects as calendarRuleSubjects } from './generated/refdata/protocol/calendar_rule_protocol.js';
+import { subjects as calendarExceptionSubjects } from './generated/refdata/protocol/calendar_exception_protocol.js';
+import { subjects as calendarEventSubjects } from './generated/refdata/protocol/calendar_event_protocol.js';
+import { subjects as calendarDateSubjects } from './generated/refdata/protocol/calendar_date_protocol.js';
+import { subjects as calendarMaterialisationSubjects } from './generated/refdata/protocol/calendar_materialisation_protocol.js';
 import { subjects as currencyGroupSubjects } from './generated/refdata/protocol/currency_group_protocol.js';
 import { subjects as currencyCountrySubjects } from './generated/refdata/protocol/currency_country_protocol.js';
 import { subjects as currencyCalendarSubjects } from './generated/refdata/protocol/currency_calendar_protocol.js';
@@ -125,14 +130,68 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         keyFields: ['code'],
         rows: 'calendars',
         versioned: true,
-        writable: false,
-        search: false,
-        sortable: [],
+        writable: true,
+        search: true,
+        sortable: ['code', 'name', 'calendar_type', 'country_code'],
         asOf: false,
         subjects: {
             list: calendarSubjects.list_calendars_request,
             put: calendarSubjects.put_calendar_request,
             remove: calendarSubjects.delete_calendar_request,
+        },
+    },
+    {
+        key: 'calendar-rules',
+        entityType: 'ores.refdata.calendar_rule',
+        keyFields: ['id'],
+        rows: 'calendar_rules',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'calendar_code',
+        subjects: {
+            list: calendarRuleSubjects.list_calendar_rules_request,
+            put: calendarRuleSubjects.put_calendar_rule_request,
+            remove: calendarRuleSubjects.delete_calendar_rule_request,
+            listBy: calendarRuleSubjects.list_by_calendar_code_calendar_rules_request,
+        },
+    },
+    {
+        key: 'calendar-exceptions',
+        entityType: 'ores.refdata.calendar_exception',
+        keyFields: ['id'],
+        rows: 'calendar_exceptions',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'calendar_code',
+        subjects: {
+            list: calendarExceptionSubjects.list_calendar_exceptions_request,
+            put: calendarExceptionSubjects.put_calendar_exception_request,
+            remove: calendarExceptionSubjects.delete_calendar_exception_request,
+            listBy: calendarExceptionSubjects.list_by_calendar_code_calendar_exceptions_request,
+        },
+    },
+    {
+        key: 'calendar-events',
+        entityType: 'ores.refdata.calendar_event',
+        keyFields: ['id'],
+        rows: 'calendar_events',
+        versioned: true,
+        writable: true,
+        search: false,
+        sortable: [],
+        asOf: false,
+        listBy: 'calendar_code',
+        subjects: {
+            list: calendarEventSubjects.list_calendar_events_request,
+            put: calendarEventSubjects.put_calendar_event_request,
+            remove: calendarEventSubjects.delete_calendar_event_request,
+            listBy: calendarEventSubjects.list_by_calendar_code_calendar_events_request,
         },
     },
     {
@@ -496,4 +555,94 @@ export async function removeRecord(
         resultReplySchema,
     );
     return outcomeOf(reply.result);
+}
+
+/** One materialised day of a calendar: whether it is a business day, and what produced it. */
+export interface CalendarDay {
+    readonly date: string;
+    readonly businessDay: boolean;
+    readonly source: string;
+}
+
+const calendarDaysReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    calendar_dates: z
+        .array(z.object({ date: z.string(), is_business_day: z.boolean(), source: z.string() }))
+        .default([]),
+});
+
+/**
+ * The materialised days of one calendar in one year.
+ *
+ * The dates filter takes no range, so this reads the calendar's days in date
+ * order, a page at a time, until it passes the end of the year. The store
+ * pages in key order, calendar then date, and refuses a named order field, so
+ * the empty order is what gives date order here.
+ */
+export async function readCalendarYear(
+    caller: AuthenticatedCaller,
+    calendarCode: string,
+    year: number,
+): Promise<readonly CalendarDay[]> {
+    const first = `${String(year)}-01-01`;
+    const last = `${String(year)}-12-31`;
+    const days: CalendarDay[] = [];
+    for (let offset = 0; ; offset += RECORD_PAGE) {
+        const reply = await caller.callAuthenticated(
+            calendarDateSubjects.list_by_calendar_code_calendar_dates_request,
+            {
+                calendar_code: calendarCode,
+                scope: 'direct',
+                offset,
+                limit: RECORD_PAGE,
+                order: { field: '', descending: false },
+                filter: null,
+            },
+            calendarDaysReplySchema,
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(
+                calendarDateSubjects.list_by_calendar_code_calendar_dates_request,
+                reply.result.message,
+            );
+        }
+        for (const row of reply.calendar_dates) {
+            if (row.date >= first && row.date <= last) {
+                days.push({ date: row.date, businessDay: row.is_business_day, source: row.source });
+            }
+        }
+        const end = reply.calendar_dates.at(-1)?.date;
+        if (reply.calendar_dates.length < RECORD_PAGE || end === undefined || end > last) {
+            return days;
+        }
+    }
+}
+
+const rebuildReplySchema = z.object({
+    success: z.boolean(),
+    message: z.string().default(''),
+    rows_written: z.int().nonnegative().default(0),
+});
+
+/**
+ * Builds the business days of one calendar up to the end of a year.
+ *
+ * The server only adds days it has not built; a day already built keeps the
+ * value it was built with.
+ */
+export async function rebuildCalendar(
+    caller: AuthenticatedCaller,
+    calendarCode: string,
+    endYear: number,
+): Promise<number> {
+    const subject = calendarMaterialisationSubjects.regenerate_calendar_dates_request;
+    const reply = await caller.callAuthenticated(
+        subject,
+        { calendar_code: calendarCode, end_year: endYear },
+        rebuildReplySchema,
+    );
+    if (!reply.success) {
+        throw new OperationFailedError(subject, reply.message);
+    }
+    return reply.rows_written;
 }

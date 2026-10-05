@@ -26,6 +26,8 @@ import {
     listRecordPage,
     listRecords,
     readRecord,
+    readCalendarYear,
+    rebuildCalendar,
     recordResource,
     resourceName,
     removeRecord,
@@ -33,6 +35,10 @@ import {
     type RecordResource,
     type WriteOutcome,
 } from '@ores/wire-protocol';
+import type { CalendarWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_protocol';
+import type { CalendarEventWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_event_protocol';
+import type { CalendarExceptionWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_exception_protocol';
+import type { CalendarRuleWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_rule_protocol';
 import type { CurrencyWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_protocol';
 import type { CurrencyCalendarWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_calendar_protocol';
 import type { CurrencyCountryWrite } from '@ores/wire-protocol/generated/refdata/protocol/currency_country_protocol';
@@ -49,6 +55,50 @@ const isoCode = z.string().trim().length(3);
 const pairCode = z.string().trim().min(7).max(15);
 const text = z.string().max(2000);
 const count = z.int().min(0).max(1_000_000);
+const isoDay = z.iso.date();
+const calendarYear = z.int().min(1900).max(2200);
+
+const RULE_KINDS = [
+    'fixed_date',
+    'nth_weekday_of_month',
+    'last_weekday_of_month',
+    'easter_offset',
+] as const;
+
+const RULE_FIELDS = ['month', 'day', 'weekday', 'occurrence', 'day_offset'] as const;
+
+/** The fields each rule kind is made of; the rule engine ignores the others. */
+const RULE_NEEDS: Readonly<
+    Record<(typeof RULE_KINDS)[number], readonly (typeof RULE_FIELDS)[number][]>
+> = {
+    fixed_date: ['month', 'day'],
+    nth_weekday_of_month: ['month', 'weekday', 'occurrence'],
+    last_weekday_of_month: ['month', 'weekday'],
+    easter_offset: ['day_offset'],
+};
+
+/**
+ * Rules and exceptions make a calendar's business days, so they are written
+ * only to a calendar that is editable. Nothing on the server checks this yet.
+ */
+const EDITABLE_PARENT = new Set(['calendar-rules', 'calendar-exceptions']);
+
+async function refuseReadOnlyCalendar(
+    session: LiveSession,
+    write: Record<string, unknown>,
+): Promise<void> {
+    const calendars = recordResource('calendars');
+    const rows = calendars === undefined ? [] : await listRecords(session.client, calendars);
+    const calendar = rows.find((row) => row['code'] === write['calendar_code']);
+    if (calendar === undefined) {
+        throw invalidRequest(`There is no calendar ${String(write['calendar_code'])}.`);
+    }
+    if (calendar['is_editable'] !== true) {
+        throw notPermitted(
+            `${String(write['calendar_code'])} takes its holidays from QuantLib and is read only. Derive a calendar to change them.`,
+        );
+    }
+}
 
 /**
  * What each writable resource accepts, in the server's own field names.
@@ -119,6 +169,69 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         pair_code: pairCode,
         calendar_code: code,
     }) satisfies z.ZodType<CurrencyPairConventionCalendarWrite>,
+    calendars: z.object({
+        code,
+        name: text.min(1),
+        calendar_type: code,
+        country_code: code,
+        image_id: z.uuid().nullable(),
+        source: z.literal('user'),
+        is_editable: z.literal(true),
+        base_calendar_code: code.nullable(),
+    }) satisfies z.ZodType<CalendarWrite>,
+    'calendar-rules': z
+        .object({
+            id: z.uuid(),
+            calendar_code: code,
+            kind: z.enum(RULE_KINDS),
+            month: z.int().min(1).max(12).nullable(),
+            day: z.int().min(1).max(31).nullable(),
+            weekday: z.int().min(0).max(6).nullable(),
+            occurrence: z.int().min(1).max(4).nullable(),
+            day_offset: z.int().min(-366).max(366).nullable(),
+            shift: z.enum(['none', 'nearest_weekday', 'roll_forward_to_monday']),
+            effective_from: calendarYear.nullable(),
+            effective_to: calendarYear.nullable(),
+        })
+        .superRefine((rule, context) => {
+            const needs = RULE_NEEDS[rule.kind];
+            const missing = needs.filter((field) => rule[field] === null);
+            const extra = RULE_FIELDS.filter(
+                (field) => !needs.includes(field) && rule[field] !== null,
+            );
+            if (missing.length > 0 || extra.length > 0) {
+                context.addIssue({
+                    code: 'custom',
+                    message: `A ${rule.kind} rule needs ${needs.join(', ')}, and no other of ${RULE_FIELDS.join(', ')}.`,
+                });
+            }
+            if (
+                rule.effective_from !== null &&
+                rule.effective_to !== null &&
+                rule.effective_from > rule.effective_to
+            ) {
+                context.addIssue({
+                    code: 'custom',
+                    message: "A rule's first year is not after its last year.",
+                });
+            }
+        }) satisfies z.ZodType<CalendarRuleWrite>,
+    'calendar-exceptions': z.object({
+        id: z.uuid(),
+        calendar_code: code,
+        exception_date: isoDay,
+        is_business_day: z.boolean(),
+        description: text.nullable(),
+    }) satisfies z.ZodType<CalendarExceptionWrite>,
+    'calendar-events': z.object({
+        id: z.uuid(),
+        calendar_code: code,
+        event_date: isoDay,
+        diary_entry_type: code,
+        name: text.min(1),
+        description: text.nullable(),
+        source: text.nullable(),
+    }) satisfies z.ZodType<CalendarEventWrite>,
 };
 
 const intentSchema = z.object({
@@ -285,6 +398,30 @@ export function registerRecordRoutes(
         return { rows: await listRecords(session.client, resource, parent.data) };
     });
 
+    /** The materialised days of one calendar in one year, for the business days panel. */
+    server.get('/api/refdata/calendars/:code/days', async (request) => {
+        const session = requireSession(request);
+        const { code: calendar } = request.params as { code: string };
+        const query = z
+            .object({ year: z.coerce.number().pipe(calendarYear) })
+            .safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest('The days are read one year at a time, between 1900 and 2200.');
+        }
+        return { days: await readCalendarYear(session.client, calendar, query.data.year) };
+    });
+
+    /** Builds the business days of one calendar up to the end of a year. */
+    server.post('/api/refdata/calendars/:code/rebuild', async (request) => {
+        const session = requireSession(request);
+        const { code: calendar } = request.params as { code: string };
+        const body = z.object({ endYear: calendarYear }).safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('A rebuild names the last year to build, between 1900 and 2200.');
+        }
+        return { written: await rebuildCalendar(session.client, calendar, body.data.endYear) };
+    });
+
     /** Writes one row: a new row with no version, else a correction of the version read. */
     server.put('/api/refdata/:resource', async (request, reply) => {
         const session = requireSession(request);
@@ -299,6 +436,9 @@ export function registerRecordRoutes(
         if (write === undefined || !write.success) {
             const rule = write?.error.issues.find((issue) => issue.code === 'custom');
             throw invalidRequest(rule?.message ?? `The row is not a valid ${resource.key} row.`);
+        }
+        if (EDITABLE_PARENT.has(resource.key)) {
+            await refuseReadOnlyCalendar(session, write.data);
         }
         answer(
             await saveRecord(session.client, resource, write.data, body.data.version, {

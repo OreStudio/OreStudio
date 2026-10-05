@@ -26,6 +26,8 @@ import {
     listRecordPage,
     listRecords,
     readRecord,
+    readCalendarYear,
+    rebuildCalendar,
     recordResource,
     removeRecord,
     resourceName,
@@ -74,8 +76,8 @@ describe('the record registry', () => {
         }
     });
 
-    it('reads a junction by its parent, and only a junction', () => {
-        const junctions = REFDATA_RECORDS.filter((entry) => entry.listBy !== undefined).map(
+    it('reads every junction by its parent, and keeps no versions only for a junction', () => {
+        const junctions = REFDATA_RECORDS.filter((entry) => !entry.versioned).map(
             (entry) => entry.key,
         );
         expect(junctions.sort()).toEqual([
@@ -84,11 +86,19 @@ describe('the record registry', () => {
             'currency-memberships',
             'pair-calendars',
         ]);
-        expect(
-            REFDATA_RECORDS.filter((entry) => !entry.versioned)
-                .map((entry) => entry.key)
-                .sort(),
-        ).toEqual(junctions.sort());
+        for (const key of junctions) {
+            expect(resource(key).listBy).toBeDefined();
+        }
+    });
+
+    it('reads the parts of a calendar by the calendar', () => {
+        for (const key of ['calendar-rules', 'calendar-exceptions', 'calendar-events']) {
+            expect(resource(key)).toMatchObject({
+                listBy: 'calendar_code',
+                keyFields: ['id'],
+                versioned: true,
+            });
+        }
     });
 
     it('names the resource its permissions use, for every resource', () => {
@@ -99,6 +109,9 @@ describe('the record registry', () => {
             countries: 'countries',
             'business-centres': 'business_centres',
             calendars: 'calendars',
+            'calendar-rules': 'calendar_rules',
+            'calendar-exceptions': 'calendar_exceptions',
+            'calendar-events': 'calendar_events',
             'currency-groups': 'currency_groups',
             'currency-countries': 'currency_countries',
             'currency-calendars': 'currency_calendars',
@@ -299,5 +312,79 @@ describe('readRecord', () => {
             'refdata.v1.currency_groups.list': { result: ok, groups: [], total: 0 },
         });
         expect(await readRecord(caller, resource('currency-groups'), 'NONE')).toBeUndefined();
+    });
+});
+
+/** Consecutive days from a start date, as the server materialises them. */
+function days(
+    from: string,
+    count: number,
+): { date: string; is_business_day: boolean; source: string }[] {
+    const start = Date.parse(`${from}T00:00:00Z`);
+    return Array.from({ length: count }, (_, index) => ({
+        date: new Date(start + index * 86_400_000).toISOString().slice(0, 10),
+        is_business_day: index % 7 < 5,
+        source: 'user_defined',
+    }));
+}
+
+describe('readCalendarYear', () => {
+    it('pages through the days until it passes the year, and keeps only that year', async () => {
+        const all = days('2024-01-01', 2500);
+        const calls: number[] = [];
+        const caller = {
+            async callAuthenticated(
+                _subject: string,
+                body: { offset: number; limit: number },
+                schema: { parse: (value: unknown) => unknown },
+            ): Promise<unknown> {
+                calls.push(body.offset);
+                return schema.parse({
+                    result: ok,
+                    calendar_dates: all.slice(body.offset, body.offset + body.limit),
+                });
+            },
+        } as unknown as AuthenticatedCaller;
+        const year = await readCalendarYear(caller, 'X', 2025);
+        expect(year).toHaveLength(365);
+        expect(year[0]?.date).toBe('2025-01-01');
+        expect(year.at(-1)?.date).toBe('2025-12-31');
+        expect(calls).toEqual([0]);
+        expect(await readCalendarYear(caller, 'X', 2027)).toHaveLength(365);
+        expect(calls).toEqual([0, 0, 1000]);
+    });
+
+    it('answers no days for a year the calendar has not built', async () => {
+        const { caller } = fakeCaller({
+            'refdata.v1.calendar_dates.list_by_calendar_code': {
+                result: ok,
+                calendar_dates: days('2024-01-01', 366),
+            },
+        });
+        expect(await readCalendarYear(caller, 'X', 2030)).toEqual([]);
+    });
+});
+
+describe('rebuildCalendar', () => {
+    it('asks for one calendar up to a year, and answers the days written', async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.calendar_dates.regenerate': {
+                success: true,
+                message: '',
+                rows_written: 365,
+            },
+        });
+        expect(await rebuildCalendar(caller, 'X', 2030)).toBe(365);
+        expect(calls[0]?.body).toEqual({ calendar_code: 'X', end_year: 2030 });
+    });
+
+    it('fails with the server words when the rebuild is refused', async () => {
+        const { caller } = fakeCaller({
+            'refdata.v1.calendar_dates.regenerate': {
+                success: false,
+                message: 'Permission denied',
+            },
+        });
+        await expect(rebuildCalendar(caller, 'X', 2030)).rejects.toThrow('Permission denied');
     });
 });

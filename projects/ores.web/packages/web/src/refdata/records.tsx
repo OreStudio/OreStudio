@@ -48,7 +48,8 @@ const UNLINK_REASON = 'common.rectification';
  * A picker reads its choices from a classification list or another record
  * resource. A fixed field is the record's key: it is entered once and never
  * corrected. An optional field writes null when it is left empty; a blank
- * field writes an empty string.
+ * field writes an empty string. A field with `when` is asked for only while
+ * the form's values meet it, and writes null otherwise.
  */
 export type FieldKind =
     | { readonly kind: 'text'; readonly max?: number }
@@ -56,6 +57,8 @@ export type FieldKind =
     | { readonly kind: 'decimal' }
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
+    | { readonly kind: 'date' }
+    | { readonly kind: 'choice'; readonly options: readonly string[]; readonly numeric?: boolean }
     | { readonly kind: 'classification'; readonly list: string }
     | {
           readonly kind: 'record';
@@ -73,6 +76,11 @@ export interface FieldSpec {
     readonly blank?: boolean;
     /** The field holds a code of this source, drawn with its flag. */
     readonly flag?: FlagSource;
+    readonly when?: (values: FieldValues) => boolean;
+}
+
+function asked(spec: FieldSpec, values: FieldValues): boolean {
+    return spec.when === undefined || spec.when(values);
 }
 
 export type FieldValues = Readonly<Record<string, string>>;
@@ -100,13 +108,16 @@ export function writeOf(specs: readonly FieldSpec[], values: FieldValues): Recor
     const write: Record<string, unknown> = {};
     for (const spec of specs) {
         const raw = (values[spec.field] ?? '').trim();
-        if (raw === '' && spec.optional === true) {
+        if (!asked(spec, values) || (raw === '' && spec.optional === true)) {
             write[spec.field] = null;
             continue;
         }
         switch (spec.kind.kind) {
             case 'int':
                 write[spec.field] = Number.parseInt(raw, 10);
+                break;
+            case 'choice':
+                write[spec.field] = spec.kind.numeric === true ? Number.parseInt(raw, 10) : raw;
                 break;
             case 'decimal':
                 write[spec.field] = Number.parseFloat(raw);
@@ -277,6 +288,24 @@ export function FieldInput({
             </Field>
         );
     }
+    if (spec.kind.kind === 'choice') {
+        return (
+            <Field label={label}>
+                <Select
+                    value={value}
+                    disabled={disabled}
+                    onChange={(event) => onChange(event.target.value)}
+                >
+                    {(spec.optional === true || value === '') && <option value="">—</option>}
+                    {spec.kind.options.map((option) => (
+                        <option key={option} value={option}>
+                            {t(`refdata.choices.${spec.field}.${option}`)}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+        );
+    }
     if (spec.kind.kind === 'bool') {
         return (
             <Field label={label} {...(error === undefined ? {} : { error })}>
@@ -300,6 +329,7 @@ export function FieldInput({
                 value={value}
                 disabled={disabled}
                 onBlur={onBlur}
+                type={spec.kind.kind === 'date' ? 'date' : undefined}
                 inputMode={numeric ? 'decimal' : undefined}
                 maxLength={spec.kind.kind === 'text' ? (spec.kind.max ?? 2000) : 40}
                 onChange={(event) => onChange(event.target.value)}
@@ -308,16 +338,27 @@ export function FieldInput({
     );
 }
 
-/** The values a form refuses: a required field left empty, or a number that is not one. */
+/**
+ * The values a form refuses: a required field left empty, or a number that is
+ * not one or is out of its range. A field the form does not ask for is never refused.
+ */
 export function invalidFields(specs: readonly FieldSpec[], values: FieldValues): readonly string[] {
     return specs
         .filter((spec) => {
+            if (!asked(spec, values)) {
+                return false;
+            }
             const raw = (values[spec.field] ?? '').trim();
             if (raw === '') {
                 return spec.optional !== true && spec.blank !== true;
             }
             if (spec.kind.kind === 'int') {
-                return !/^-?[0-9]+$/.test(raw);
+                const number = Number.parseInt(raw, 10);
+                return (
+                    !/^-?[0-9]+$/.test(raw) ||
+                    number < (spec.kind.min ?? Number.MIN_SAFE_INTEGER) ||
+                    number > (spec.kind.max ?? Number.MAX_SAFE_INTEGER)
+                );
             }
             if (spec.kind.kind === 'decimal') {
                 return Number.isNaN(Number.parseFloat(raw));
@@ -369,8 +410,10 @@ export function LeavingFooter({
  * Adds a record, or corrects one against the version read.
  *
  * A new record needs no reason chosen; it is written as a new record. A
- * correction needs one, and some reasons need a commentary too. `after`
- * runs once the record is written, for a write that belongs with it.
+ * correction needs one, and some reasons need a commentary too. `given`
+ * holds the fields the screen sets rather than the person, such as the parent
+ * a row belongs to; `initial` fills a new row's form. `after` runs once the
+ * record is written, for a write that belongs with it.
  */
 export function RecordDialog({
     title,
@@ -378,6 +421,8 @@ export function RecordDialog({
     specs,
     row,
     keep,
+    given,
+    initial,
     onClose,
     onSaved,
     after,
@@ -387,6 +432,8 @@ export function RecordDialog({
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow | undefined;
     readonly keep?: readonly string[];
+    readonly given?: Readonly<Record<string, unknown>>;
+    readonly initial?: FieldValues;
     readonly onClose: () => void;
     readonly onSaved?: (write: Readonly<Record<string, unknown>>) => void;
     readonly after?: (
@@ -396,7 +443,7 @@ export function RecordDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const [values, setValues] = useState<FieldValues>(valuesOf(specs, row));
+    const [values, setValues] = useState<FieldValues>({ ...valuesOf(specs, row), ...initial });
     const [commentary, setCommentary] = useState('');
     const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
     const editing = row !== undefined;
@@ -420,7 +467,7 @@ export function RecordDialog({
     };
     const save = useMutation({
         mutationFn: async () => {
-            const write = { ...kept(keep, row), ...writeOf(specs, values) };
+            const write = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
             const intent = editing
                 ? { reasonCode: reason.code, commentary: commentary.trim() }
                 : { reasonCode: NEW_RECORD_REASON, commentary: '' };
@@ -467,17 +514,19 @@ export function RecordDialog({
         >
             <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                    {specs.map((spec) => (
-                        <FieldInput
-                            key={spec.field}
-                            spec={spec}
-                            value={values[spec.field] ?? ''}
-                            disabled={editing && spec.fixed === true}
-                            onChange={(value) => setValues({ ...values, [spec.field]: value })}
-                            onBlur={() => setTouched(new Set([...touched, spec.field]))}
-                            error={errorOf(spec)}
-                        />
-                    ))}
+                    {specs
+                        .filter((spec) => asked(spec, values))
+                        .map((spec) => (
+                            <FieldInput
+                                key={spec.field}
+                                spec={spec}
+                                value={values[spec.field] ?? ''}
+                                disabled={editing && spec.fixed === true}
+                                onChange={(value) => setValues({ ...values, [spec.field]: value })}
+                                onBlur={() => setTouched(new Set([...touched, spec.field]))}
+                                error={errorOf(spec)}
+                            />
+                        ))}
                 </div>
                 {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
                 {editing ? (
@@ -595,6 +644,9 @@ function DetailValue({
                 {text}
             </span>
         );
+    }
+    if (spec.kind.kind === 'choice') {
+        return <>{t(`refdata.choices.${spec.field}.${text}`)}</>;
     }
     return <>{text}</>;
 }

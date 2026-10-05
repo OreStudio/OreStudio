@@ -164,6 +164,14 @@ const imageSummarySchema = z.object({
 
 export type ImageSummary = z.infer<typeof imageSummarySchema>;
 
+const calendarDaySchema = z.object({
+    date: z.string(),
+    businessDay: z.boolean(),
+    source: z.string(),
+});
+
+export type CalendarDay = z.infer<typeof calendarDaySchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -556,6 +564,29 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify(input),
         });
+    },
+
+    /** The materialised days of one calendar in one year. */
+    async calendarDays(calendar: string, year: number): Promise<readonly CalendarDay[]> {
+        return z
+            .object({ days: z.array(calendarDaySchema) })
+            .parse(
+                await request(
+                    `/api/refdata/calendars/${encodeURIComponent(calendar)}/days?year=${String(year)}`,
+                    { method: 'GET' },
+                ),
+            ).days;
+    },
+
+    /** Builds the business days of one calendar up to a year; answers the days written. */
+    async rebuildCalendar(calendar: string, endYear: number): Promise<number> {
+        return z.object({ written: z.int() }).parse(
+            await request(`/api/refdata/calendars/${encodeURIComponent(calendar)}/rebuild`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ endYear }),
+            }),
+        ).written;
     },
 
     /** The shared label catalogue: every label, and the labels each code domain uses. */

@@ -8,7 +8,7 @@
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
 #+branch: feature/trade-activity
-#+pr:
+#+pr: 2672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2672][#2672]] | [trading] Record each business event as a trade activity |
 
 * Review
 

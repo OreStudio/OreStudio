@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 09D050BB-C1E1-46ED-AE72-1F9E025178AA
+:END:
+#+title: refdata_party_test inserts a party with no category
+#+description: The pgTAP test projects/ores.sql/test/refdata_party_test.sql inserts its first party without party_category, and the party validation trigger refuses an empty category, so the test aborts before its first assertion and plans 12 but runs 0. Give its inserts a category, or test the default where the trigger supplies one.
+#+type: capture
+#+level: cross
+#+filetags: :sql:pgtap:refdata:bug:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

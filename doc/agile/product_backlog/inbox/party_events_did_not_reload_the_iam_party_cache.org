@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 680CEF18-A45E-4F08-8ED4-9A6213932718
+:END:
+#+title: Party events did not reload IAM's party cache during provisioning
+#+description: While ACME was provisioned, refdata created its parties, but IAM's party cache issued no token for ACME, so no created-party event reached the cache's subscription and nothing reloaded the partition. Sign-in still works because it loads a missing partition on demand. Check whether refdata publishes party events to the subjects the generated registrar subscribes to, and whether the start-up warm-up should retry until the producer answers instead of trying once.
+#+type: capture
+#+level: cross
+#+filetags: :iam:refdata:caching:eventing:bug:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

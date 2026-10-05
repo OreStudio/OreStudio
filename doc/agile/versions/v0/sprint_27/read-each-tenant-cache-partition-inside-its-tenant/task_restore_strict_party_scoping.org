@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The parties policy scopes to the current tenant alone and the party read uses th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The parties policy admits the current tenant alone and the party read uses the default tenant scope. refdata_party_tenant_isolation_test.sql passes 5 of 5 after the recreate (it failed before, with 771 rows from other tenants). The root tenant's Parties tab lists its own 5 parties. ores.refdata.core.tests pass.

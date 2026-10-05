@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The Cache-Aside page joins the data group of the pattern language and states its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -83,3 +83,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Cache-Aside page already existed on main, so this task added the partition token cache as its use, and wrote the partition identity rule on the entity-mirror cache page. The event-filled cache has no pattern page yet; captured.

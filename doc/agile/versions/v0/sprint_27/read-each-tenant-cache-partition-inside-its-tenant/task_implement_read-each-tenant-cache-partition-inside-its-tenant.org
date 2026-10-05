@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :read-each-tenant-cache-partition-inside-its-tenant:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-each-tenant-cache-partition-inside-its-tenant
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every tenant's partition of a generated event cache loads inside that tenant, wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -87,3 +87,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The nats-event-cache facet takes a partition_token_provider and renews once on token_expired; partition_token_cache in ores.eventing.core holds one token per tenant. Both generated caches were regenerated. Six codegen tests and six Catch2 test cases (17 assertions) pass.

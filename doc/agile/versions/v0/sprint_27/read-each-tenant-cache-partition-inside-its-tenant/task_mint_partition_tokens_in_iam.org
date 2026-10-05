@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ IAM loads each tenant's party cache partition with a token it mints in-process f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -84,3 +84,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+tenant_session_service::read_inside issues the partition token in-process and shares its claim building with enter. Against the running services after a recreate, IAM logged one token per tenant for its service account, 300s, and the sign-in chooser named the ACME parties from the cache. ores.iam.core.tests pass.

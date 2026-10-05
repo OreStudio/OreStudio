@@ -54,7 +54,7 @@ generate_synthetic_observation_lineage(utility::generation::generation_context& 
     r.derivation_config_id = ctx.generate_uuid();
     r.derivation_config_version = faker::number::integer(1, 10);
     r.source_as_of = ctx.past_timepoint();
-    r.source_series_ids = std::string("[]");
+    r.source_series_ids = std::string(R"(["00000000-0000-0000-0000-000000000001"])");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

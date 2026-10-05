@@ -8,7 +8,7 @@
 #+filetags: :iam:approval:complete-the-ores-inbox-approvals-and-notifications:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/complete-the-ores-inbox-approvals-and-notifications
-#+pr:
+#+pr: 2673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2673][#2673]] | [iam] Land the role request as the first approval kind |
 
 * Review
 

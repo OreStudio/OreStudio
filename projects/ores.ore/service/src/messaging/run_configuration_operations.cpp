@@ -134,7 +134,7 @@ void store_document(nats_client& owners,
                     const std::string& configuration_id,
                     const std::string& configuration_name,
                     run_configuration_import_execute_result& r) {
-    const auto with_header = [&](auto& document) {
+    const auto with_header = [&](auto& document) -> auto& {
         document.config.configuration_id = parse_id(configuration_id);
         document.config.name = configuration_name;
         return document;
@@ -250,6 +250,9 @@ void undo_import(nats_client& owners,
         else if (code == "pricing_engines")
             call(owners, an::delete_pricing_engines_document_request{.configuration_id = id});
     }
+    // Deleting the run document also deletes every binding and the
+    // configuration row it names, including a binding whose document never
+    // stored, so a failed store leaves no orphan.
     if (run_document_saved)
         call(owners, rp::delete_run_document_request{.report_definition_id = report_definition_id});
 }

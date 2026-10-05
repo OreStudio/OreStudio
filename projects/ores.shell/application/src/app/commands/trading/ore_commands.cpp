@@ -55,6 +55,7 @@ constexpr std::chrono::seconds default_import_timeout(600);
 constexpr std::chrono::seconds import_request_timeout(60);
 constexpr std::chrono::seconds export_request_timeout(300);
 constexpr std::uint32_t default_export_limit = 10000;
+constexpr std::size_t max_inline_run_input = 900 * 1024;
 
 std::optional<boost::uuids::uuid>
 parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
@@ -388,6 +389,18 @@ void ore_commands::process_import_run(std::ostream& out,
         req.files.push_back(
             {entry.path().filename().string(),
              std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>())});
+    }
+
+    // The files travel inline in one NATS message, whose server limit is 1 MB
+    // by default, so a larger input is refused here with the reason rather
+    // than failing inside NATS.
+    std::size_t total = 0;
+    for (const auto& f : req.files)
+        total += f.content.size();
+    if (total > max_inline_run_input) {
+        fail(out) << "The input holds " << total << " bytes; a run's input travels inline and may "
+                  << "hold at most " << max_inline_run_input << "." << std::endl;
+        return;
     }
 
     auto result = do_auth_request<ores::ore::messaging::import_run_configuration_response>(

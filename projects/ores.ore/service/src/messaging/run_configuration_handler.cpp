@@ -28,8 +28,10 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
+#include <optional>
 #include <rfl/json.hpp>
 
 namespace ores::ore::service::messaging {
@@ -39,6 +41,19 @@ using namespace ores::service::messaging;
 using namespace ores::ore::messaging;
 
 namespace {
+
+// Refuses a request the workflow could only fail later, and less clearly.
+std::optional<std::string> refuse_request(const std::string& report_definition_id,
+                                          const std::string& name) {
+    try {
+        boost::uuids::string_generator()(report_definition_id);
+    } catch (const std::exception&) {
+        return "Not a report definition id: " + report_definition_id;
+    }
+    if (name.empty())
+        return std::string("An import needs a name, which prefixes the configurations it creates.");
+    return std::nullopt;
+}
 
 input_files files_of(const std::vector<run_input_file>& files) {
     input_files out;
@@ -76,10 +91,10 @@ void run_configuration_handler::import_run_configuration(ores::nats::message msg
         error_reply(nats_, msg, ores::service::error_code::bad_request);
         return;
     }
-    if (req->report_definition_id.empty()) {
+    if (const auto refusal = refuse_request(req->report_definition_id, req->name)) {
         reply(nats_,
               msg,
-              import_run_configuration_response{.message = "report_definition_id is required.",
+              import_run_configuration_response{.message = *refusal,
                                                 .correlation_id = correlation_id});
         return;
     }
@@ -127,6 +142,10 @@ void run_configuration_handler::export_run_configuration(ores::nats::message msg
     const auto req = decode<export_run_configuration_request>(msg);
     if (!req) {
         error_reply(nats_, msg, ores::service::error_code::bad_request);
+        return;
+    }
+    if (const auto refusal = refuse_request(req->report_definition_id, "export")) {
+        reply(nats_, msg, export_run_configuration_response{.message = *refusal});
         return;
     }
     try {

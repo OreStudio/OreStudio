@@ -227,6 +227,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/todays_market_configuration_binding_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/todays_market_configuration_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/generators/todays_market_entry_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/configuration_document_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_entity_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.api/messaging/credit_simulation_matrix_config_protocol.hpp"

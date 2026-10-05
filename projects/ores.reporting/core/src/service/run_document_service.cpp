@@ -40,6 +40,7 @@
 namespace ores::reporting::service {
 
 using namespace ores::reporting::repository;
+using ores::database::repository::ids_of;
 using ores::database::repository::read_where;
 using ores::database::repository::stamp_party;
 
@@ -192,6 +193,37 @@ domain::configuration run_document_service::bind(const boost::uuids::uuid& repor
     stamp_party(ctx_, binding);
     report_configuration_repository().write(ctx_, binding);
     return c;
+}
+
+void run_document_service::remove(const boost::uuids::uuid& report_definition_id) {
+    const auto of_definition = [&](const auto& row) {
+        return row.report_definition_id == report_definition_id;
+    };
+    const auto analytics = read_where(ctx_, report_analytic_repository(), of_definition);
+    std::set<boost::uuids::uuid> analytic_ids;
+    for (const auto& a : analytics)
+        analytic_ids.insert(a.id);
+    const auto parameters =
+        read_where(ctx_, report_analytic_parameter_repository(), [&](const auto& p) {
+            return analytic_ids.contains(p.report_analytic_id);
+        });
+    const auto market_bindings =
+        read_where(ctx_, report_market_binding_repository(), of_definition);
+    const auto setups = read_where(ctx_, report_run_setup_repository(), of_definition);
+    const auto slots = bindings(report_definition_id);
+
+    if (!parameters.empty())
+        report_analytic_parameter_repository().remove(ctx_, ids_of(parameters));
+    if (!analytics.empty())
+        report_analytic_repository().remove(ctx_, ids_of(analytics));
+    if (!market_bindings.empty())
+        report_market_binding_repository().remove(ctx_, ids_of(market_bindings));
+    if (!setups.empty())
+        report_run_setup_repository().remove(ctx_, ids_of(setups));
+    for (const auto& b : slots) {
+        report_configuration_repository().remove(ctx_, boost::uuids::to_string(b.id));
+        configuration_repository().remove(ctx_, boost::uuids::to_string(b.configuration_id));
+    }
 }
 
 std::vector<domain::report_configuration>

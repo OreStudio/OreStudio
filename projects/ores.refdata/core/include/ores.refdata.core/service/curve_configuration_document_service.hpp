@@ -49,6 +49,11 @@ public:
     domain::curve_configuration_document get(const boost::uuids::uuid& id);
 
     /**
+     * @brief Deletes the document whose header has @p id, its children first.
+     */
+    void remove(const boost::uuids::uuid& id);
+
+    /**
      * @brief The header id of the document a reporting configuration names.
      */
     std::optional<boost::uuids::uuid>

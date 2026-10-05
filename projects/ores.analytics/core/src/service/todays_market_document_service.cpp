@@ -24,11 +24,13 @@
 #include "ores.analytics.core/repository/todays_market_configuration_repository.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_repository.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <set>
 
 namespace ores::analytics::service {
 
 using namespace ores::analytics::repository;
+using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 using ores::database::repository::stamp_party;
@@ -64,6 +66,19 @@ todays_market_document_service::get(const boost::uuids::uuid& config_id) {
             return configurations.contains(row.todays_market_configuration_id);
         });
     return r;
+}
+
+void todays_market_document_service::remove(const boost::uuids::uuid& id) {
+    const auto d = get(id);
+    if (!d.bindings.empty())
+        todays_market_configuration_binding_repository().remove(ctx_, ids_of(d.bindings));
+    if (!d.configurations.empty())
+        todays_market_configuration_repository().remove(ctx_, ids_of(d.configurations));
+    if (!d.entries.empty())
+        todays_market_entry_repository().remove(ctx_, ids_of(d.entries));
+    if (!d.collections.empty())
+        todays_market_collection_repository().remove(ctx_, ids_of(d.collections));
+    todays_market_config_repository().remove(ctx_, boost::uuids::to_string(d.config.id));
 }
 
 std::optional<boost::uuids::uuid>

@@ -25,6 +25,7 @@
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
+#include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
@@ -34,6 +35,7 @@
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
+#include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <memory>
 #include <optional>
@@ -170,6 +172,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report instances (generated CRUD handler)
     // ----------------------------------------------------------------
+    auto rdoc = std::make_shared<run_document_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        save_run_document_request::nats_subject, group, [rdoc](ores::nats::message msg) {
+            rdoc->save_run_document(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        bind_configuration_request::nats_subject, group, [rdoc](ores::nats::message msg) {
+            rdoc->bind_configuration(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_run_document_request::nats_subject, group, [rdoc](ores::nats::message msg) {
+            rdoc->get_run_document(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_run_document_request::nats_subject, group, [rdoc](ores::nats::message msg) {
+            rdoc->delete_run_document(std::move(msg));
+        }));
+
     auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier);
     subs.push_back(nats.queue_subscribe(
         list_report_instances_request::nats_subject, group, [rih](ores::nats::message msg) {

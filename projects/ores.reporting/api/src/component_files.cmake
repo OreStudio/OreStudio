@@ -218,6 +218,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_run_setup_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/report_type_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/messaging/run_document_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/ores.reporting.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.api/workflow/report_execution_workflow.hpp"
 )

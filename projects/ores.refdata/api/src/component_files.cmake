@@ -1483,6 +1483,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/commodity_future_convention_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/commodity_price_segment_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/commodity_volatility_config_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/configuration_document_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/contact_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"

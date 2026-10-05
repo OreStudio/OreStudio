@@ -72,6 +72,13 @@ public:
                                const std::string& name);
 
     /**
+     * @brief Deletes the definition's run document, its bindings and the
+     * configuration rows they name. The documents those configurations name
+     * belong to their own components, which delete them.
+     */
+    void remove(const boost::uuids::uuid& report_definition_id);
+
+    /**
      * @brief The definition's configuration bindings, one per slot it fills.
      */
     std::vector<domain::report_configuration>

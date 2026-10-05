@@ -20,6 +20,8 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "messaging/configuration_document_handler.cpp"
+    "messaging/configuration_document_registrar.cpp"
     "messaging/credit_simulation_config_history_provider_registrar.cpp"
     "messaging/credit_simulation_config_registrar.cpp"
     "messaging/credit_simulation_entity_config_history_provider_registrar.cpp"
@@ -168,6 +170,8 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/configuration_document_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/configuration_document_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/credit_simulation_config_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/credit_simulation_config_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/credit_simulation_config_registrar.hpp"

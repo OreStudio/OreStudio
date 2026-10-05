@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 8421A419-0311-4CC8-9384-D1097477813F
+:END:
+#+title: Story: Remove workspaces from every component
+#+description: Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system.
+#+type: story
+#+level: s2
+#+filetags: :workspace:sandbox:codegen:cleanup:v0:sprint_27:
+#+created: 2026-10-04
+#+updated: 2026-10-05
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]], carried unfinished from [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No component carries a workspace: no table has a workspace_id, no request or session carries a workspace context, and ores.workspace is gone. Sandboxes and virtual books, which replaced workspaces in the trade shape design, are the only way to keep work apart from official data.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Inventory and sequence done; four removal tasks filed in order. |
+| Waiting on    | Nothing. Trading dropped its workspaces in PR #2620. |
+| Next          | Drop the workspace column from every entity. |
+| Last touched  | 2026-10-05 |
+
+* Acceptance
+
+- No codegen profile or model sets has_workspace_id, and no generated or hand-written table has a workspace_id column.
+- No request context, NATS header, session or database setting carries a workspace; ores_utility_live_workspace_id_fn and its kin are gone.
+- The ores.workspace component, its tables, protocol, shell and web surfaces are removed, with no references left.
+- Every component builds and its tests pass after each step; main is never half migrated.
+- The trading part is done by the trade shape story, Split the trade into an anchor and its components; this story covers the rest.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5FC28F73-62D7-4124-9EC8-55B51EC5C31A][Scaffold story: Remove workspaces from every component]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:507EC593-8A63-46BE-A741-B9E172144C14][Inventory and sequence the workspace removal]] | DONE | 2026-10-05 | 2026-10-05 | Initial task for: Remove workspaces from every component |
+| [[id:96B95473-3D50-4FF7-9584-FB65BB3C967A][Drop the workspace column from every entity]] | BACKLOG | | | Drop has_workspace_id from the remaining models and profiles in refdata, analytics, reporting and marketdata, and regenerate, so no table carries a workspace_id. |
+| [[id:21D83315-FD24-423E-9882-A9067CB38582][Remove the workspace from the request context]] | BACKLOG | | | Remove the workspace from the database context, the NATS headers and client, the service request context and the ores.web client. |
+| [[id:2E4E86B0-D873-492A-8048-56DC1A396163][Remove the has_workspace_id feature from codegen]] | BACKLOG | | | Once no model sets has_workspace_id, delete the feature from the codegen meta-model, templates, loader, profiles, scaffolding and modeling docs. |
+| [[id:8826DA01-FF39-4DDE-B3BB-3768ABEF691E][Remove the ores.workspace component]] | BACKLOG | | | Delete ores.workspace, the ores.shell workspace part and scripts, the workspace SQL schema, grants and tenant seed, the live workspace utility functions, and the generated web protocol. |
+
+* Decisions
+
+- Workspaces are removed, not reworked (owner's choice). Section 13 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]] replaced them with
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]]es and virtual books, which shipped in
+  [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]]. A layered workspace is an
+  application-level database branch that pushes a workspace into every key,
+  query and foreign key.
+- Trading is removed by [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]],
+  whose acceptance already requires that no trading entity carries a
+  workspace. This story removes the rest and then the component.
+- [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] is abandoned, with its open
+  dependents (the ores.workspace model drift fix and the ores.workspace
+  journeys extraction). It aimed to finish what this story removes.
+- Nothing keeps work apart with workspaces today: no surface selects a
+  workspace other than Live. Removing them loses no data a user can see.
+
+* Inventory
+
+The current counts, with the command behind each, are in the
+[[id:507EC593-8A63-46BE-A741-B9E172144C14][Inventory and sequence the workspace removal]] task's Measurements.
+=evidence/measure_workspaces.sh= reruns them on any tree; each task
+records it at its own head.
+
+* Sequence
+
+A column goes before the function that defaults or validates it, so the
+columns go first and ores.workspace, which owns those functions, goes
+last. Each step is one task and one PR, listed in order in the Tasks
+table: drop the column, remove the request context, remove the codegen
+feature, remove the component.
+
+* Out of scope
+
+- The trading tables and code, which [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] removes.
+- Migrating rows of workspaces other than the live one: the databases are
+  recreated, so no data is carried across.

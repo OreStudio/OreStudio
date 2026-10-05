@@ -60,7 +60,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] | BACKLOG | 2026-10-05 | | Take the marketdata registry entry once P01 and H01 close, and remove the namespace closer comments the templates forbid. |
 | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] | BACKLOG | 2026-10-05 | | One activity per business event, acts with participants, and typed directed links; every component version names the activity that caused it. |
 | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] | BACKLOG | 2026-10-05 | | The structure anchor, its kind and template, temporal membership with one structure per trade at a time, and one level of nesting. |
-| [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] | STARTED | 2026-10-05 | | The Live workspace set up properly and stand-alone workspaces allowed; the audit and template upgrade landed, the shell surface is in flight. |
+| [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] | ABANDONED | 2026-10-05 | 2026-10-05 | Abandoned: workspaces are removed, not finished, by Remove workspaces from every component. |
 | [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] | STARTED | 2026-10-05 | | Bring ores.scheduler to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | STARTED | 2026-10-05 | | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:B123459E-1C34-4EA7-82B0-58F3654CE555][Add the identity workflow and the commands that drive it]] | BACKLOG | 2026-10-05 | | The identity workflow as a registered definition whose steps the request declares, and the commands that drive it from ores.shell. |
@@ -68,6 +68,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A987BBAA-C749-4FB6-B6E6-03665563AADE][Remove the presentation keys no template reads]] | BACKLOG | 2026-10-05 | | The presentation keys no template, render path or validator reads, the helpers that exist only to compute them, and the pages that still describe the Qt layer as live. |
 | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] | STARTED | 2026-10-05 | | Give ACME a report type and definition whose run submits an existing example bundle to the compute grid and retrieves the results. |
 | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] | DONE | 2026-10-05 | 2026-10-05 | The super administrator's own journeys: the deployment's accounts read from system administration, the platform's service accounts among them; the seeded administrators named and pictured; and the welcome that shows a username replaced by a human name. |
+| [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] | STARTED | 2026-10-05 | | Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system. |
 
 ** Hotfixes
 

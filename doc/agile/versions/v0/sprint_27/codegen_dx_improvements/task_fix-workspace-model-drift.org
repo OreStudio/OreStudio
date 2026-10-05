@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
-#+updated: 2026-07-30
+#+updated: 2026-10-05
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -40,12 +40,12 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. Abandoned; see Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-30                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 
@@ -122,3 +122,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-10-05: ores.workspace is removed by [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]], so its model has no drift to fix.

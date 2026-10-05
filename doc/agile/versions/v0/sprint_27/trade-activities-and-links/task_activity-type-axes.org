@@ -8,7 +8,7 @@
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
 #+branch: feature/trade-activities-and-links
-#+pr:
+#+pr: 2668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2668][#2668]] | [trading] Give the activity type its axes and priority |
 
 * Review
 

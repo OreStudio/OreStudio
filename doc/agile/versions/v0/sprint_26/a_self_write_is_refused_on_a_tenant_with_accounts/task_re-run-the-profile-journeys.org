@@ -26,11 +26,11 @@ The profile journeys run end to end on the fixed platform, and the two journey g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
-| Now          | The run is recorded and the three failures are named; the task closes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance

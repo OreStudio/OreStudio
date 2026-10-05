@@ -8,7 +8,7 @@
 #+filetags: :implement-profile-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-profile-screen
-#+pr:
+#+pr: 2642
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -217,7 +217,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2642][#2642]] | [web] Build the profile screen |
 
 * Review
 

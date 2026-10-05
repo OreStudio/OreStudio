@@ -17,6 +17,7 @@ The =ores.iam= module groups all logical entities in the =ores.iam= namespace. E
 |--------+-------|
 | [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] | An account that can authenticate against the system. |
 | [[id:892C7799-23B7-4D3D-900D-8A2D08D62A6C][ores.iam.account_contact_information]] | Real name and contact details for an account. |
+| [[id:F3789B6F-042A-4F44-BCFC-E3BB2CA0E274][ores.iam.run_grant]] | A person's consent that runs of one resource act in one tenant and one party with one role. |
 | [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]] | Links an IAM account to a party. |
 | [[id:C9C16C50-C9DF-4D56-8E6B-FCCB0D29BA97][ores.iam.account_type]] | Classification of account types. |
 | [[id:8A507DA9-1FFE-4DD3-992F-7359F5531253][ores.iam.login_info]] | Login tracking and security state for an account. |

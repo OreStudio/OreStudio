@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 0F9B325F-8812-423B-969C-B9A7C0E9D28B
+:END:
+#+title: Task: Store run grants in IAM
+#+description: The run grant entity, its create, revoke and get operations, the checks at create, and the permission codes and seeds.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
+#+owner: marco
+#+branch: feature/store-run-grants-in-iam
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+IAM stores run grants: a person's consent that runs of one resource act in one
+tenant and one party with one role. Grants are read like any entity and written
+only through IAM's create and revoke operations, which make the checks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =ores.iam.run_grant= exists as a codegen entity: tenant-scoped, party-isolated,
+  bitemporal, with the fields of
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]].
+- Its reads are on the wire, HTTP and the shell; it has no generic write verbs.
+- =iam.v1.run_grants.create= creates a grant on behalf of the person, refuses a
+  role the person does not fully hold in the party, and returns the active
+  grant for the same resource and grantor.
+- =iam.v1.run_grants.revoke= ends a grant and is idempotent.
+- Handler tests cover each check; the build and the test suite pass.
+
+* Plan
+
+1. Codegen: allow =:client_read_only:= on a domain entity, so the repository is
+   writable and the wire carries reads only. The junction loader already
+   computes =wire_write_enabled= from it; the domain entity loader rejects it
+   today because it does not read it. A generated =put= would let a caller
+   store a grant with none of the checks.
+2. Model =ores.iam.run_grant= on =ores.analytics.pricing_model_config=: the
+   UUID-identified lookup profile, =party_id=, and party isolation. Regenerate
+   every layer, seed =iam::run_grants:read=, build and test through compass.
+3. An operation model for create and revoke, with a hand-written handler that
+   checks the grantor and the role.
+4. A recipe, and the IAM page's record of what is built.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -26,6 +26,7 @@
 #include "ores.iam.service/messaging/login_info_event_registrar.hpp"
 #include "ores.iam.service/messaging/permission_event_registrar.hpp"
 #include "ores.iam.service/messaging/role_event_registrar.hpp"
+#include "ores.iam.service/messaging/run_grant_event_registrar.hpp"
 #include "ores.iam.service/messaging/seed_profile_event_registrar.hpp"
 #include "ores.iam.service/messaging/seed_profile_parameter_event_registrar.hpp"
 #include "ores.iam.service/messaging/seed_profile_step_event_registrar.hpp"
@@ -54,6 +55,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_login_info_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_permission_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_role_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_run_grant_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_parameter_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_step_event_mapping(event_source, event_bus, nats));

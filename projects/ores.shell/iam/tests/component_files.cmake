@@ -37,6 +37,7 @@ set(files
     "role_grant_request_commands_tests.cpp"
     "role_grant_request_role_commands_tests.cpp"
     "role_request_operations_operations_commands_tests.cpp"
+    "run_grant_commands_tests.cpp"
     "seed_profile_commands_tests.cpp"
     "seed_profile_parameter_commands_tests.cpp"
     "seed_profile_step_commands_tests.cpp"

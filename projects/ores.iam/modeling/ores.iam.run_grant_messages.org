@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 6EDF3257-4D73-40AA-B55D-4C3B343F0E8C
+:END:
+#+title: ores.iam.run_grant_messages
+#+description: Codegen operation model for creating and revoking run grants, the only writes the run grant table accepts.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: run_grant_operations
+#+namespace: ores::iam::messaging
+#+brief: Create and revoke a run grant.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+Creating and revoking a run grant. The run grant table is readable through its
+generated entity protocol and writable only here, because each write needs a
+check no row write can express: the grantor must hold the whole role in the
+party, and only the grantor or an administrator may revoke.
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states the
+rules.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Messages
+
+** create_run_grant_request
+:PROPERTIES:
+:subject: iam.v1.run_grants.create
+:response: create_run_grant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Records a person's consent that runs of one resource act for them.
+ *
+ * Sent on behalf of the person, with their token. The grant's tenant and
+ * party are the session's, and its grantor is the session's account. Refused
+ * when the session acts for no party, or when the person does not hold every
+ * permission of the role. A second create for the same resource returns the
+ * active grant, and re-activates a revoked one.
+ */
+#+end_src
+
+*** resource
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the grant serves, as <component>.<entity>/<id>.
+ */
+#+end_src
+
+*** role
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name of the role a run token carries.
+ */
+#+end_src
+
+*** audience
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The service names that may exchange the grant, comma-separated.
+ */
+#+end_src
+
+*** max_runs
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The number of runs the grant serves; zero for a standing grant.
+ */
+#+end_src
+
+*** valid_seconds
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How long the grant serves runs; zero for a standing grant.
+ */
+#+end_src
+
+** create_run_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The grant, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** created
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief True when this request created or re-activated the grant; false
+ * when it returned one that was already active.
+ */
+#+end_src
+
+** revoke_run_grant_request
+:PROPERTIES:
+:subject: iam.v1.run_grants.revoke
+:response: revoke_run_grant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Ends a run grant.
+ *
+ * The grantor may revoke their own grant, and a holder of
+ * iam::run_grants:revoke may revoke any grant of the tenant. Revoking a
+ * revoked grant succeeds and changes nothing.
+ */
+#+end_src
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the grant ends: unscheduled, deleted, party_changed, or a
+ * person's reason.
+ */
+#+end_src
+
+** revoke_run_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the grant is now revoked.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:F3789B6F-042A-4F44-BCFC-E3BB2CA0E274][ores.iam.run_grant]] — the table these operations write.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — the checks and the lifecycle.

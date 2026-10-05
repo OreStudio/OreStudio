@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 6D3E7895-1A35-4168-86AE-947AF68E37DF
+:END:
+#+title: Story: A pattern language for service interaction
+#+description: Name the established microservice patterns the platform uses, in one pattern language with a hub, so a design can say use pattern X and inherit its pitfalls, failure handling and sources.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who designs a service interaction can say "use pattern X" and point at
+one page. That page names the established pattern, cites its authoritative
+sources, and states its forces, its failure handling, its pitfalls and its use in
+ORE Studio. The patterns form one pattern language with one hub, so a design
+inherits the known failure modes instead of finding them again.
+
+The design for scheduled reporting is the trigger. It needed a grant, a token
+exchange and a token cache, and none of them is specific to reporting: any work
+that starts from a schedule and acts as a tenant and a party needs them. Today
+the platform's pattern knowledge is spread across the IAM pages, two plans, the
+workflow engine pages and that design, and no page names an established
+pattern.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- A =pattern= document type exists, with a contract, a template, a glossary
+  entry and a =compass add pattern= scaffold. Every pattern page states its
+  established name and its sources.
+- A pattern hub orders the patterns by group, and the knowledge index links it.
+- The identity patterns exist: access token, client credentials, token relay,
+  token exchange, grant management, and the composite for scheduled work that
+  acts as a tenant.
+- The IAM pages name these patterns and do not restate them. Nothing they hold
+  is lost.
+- The reporting design links the patterns and keeps only what is specific to
+  reporting.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:81B22728-44DE-40E0-BF61-47EF3A6F6B34][Add the pattern document type and the pattern hub]] | DONE | 2026-10-05 | 2026-10-05 | A pattern type in the standard pattern-language form, its compass scaffold, and the hub that orders the patterns. |
+| [[id:8344A387-6B1A-4309-858F-C06B7364493B][Write the identity patterns]] | BACKLOG | | | Access token, client credentials, token relay, token exchange, grant management, and the composite for scheduled work that acts as a tenant. |
+| [[id:71F04B0E-A6C6-48F9-939A-0706C31F8704][Reconcile the IAM documents with the patterns]] | BACKLOG | | | Make the service-to-service guide, internal actor impersonation, anatomy of a service and the IAM hub name the patterns instead of restating them. |
+| [[id:77AC73A6-7095-4302-9D73-F2E6B44C9C55][Make the reporting design name its patterns]] | BACKLOG | | | Move the run grant, token exchange and token cache out of report execution at scale, and keep only what is specific to reporting. |
+| [[id:8D66F1DA-9566-45C0-B410-69D27B483318][Write the communication, coordination, resilience, load and data patterns]] | BACKLOG | | | Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside. |
+| [[id:5C1D296F-2F31-471E-A40A-7C23465B1049][Make a design name its patterns]] | BACKLOG | | | A memory that a design names its patterns from the hub, and a patterns-used section in the knowledge and workflow types. |
+
+* Decisions
+
+- *One hub for the whole pattern language, not a catalogue under security.*
+  About half the patterns are about communication and resilience, and the
+  identity patterns depend on them, for example token exchange on timeout and
+  retry. One language keeps one set of names. The Identity and Access hub links
+  the identity group of the pattern hub.
+- *The established name comes first.* A page is named for the pattern in its
+  authoritative source. Local names are aliases.
+- *A pattern page owns the pattern; an architecture page owns a use of it.*
+  The reporting design states the role, the audience and the moments it grants
+  and revokes. The pattern page states the mechanism and its failure handling.
+
+* Out of scope
+
+- Building the run grant, the token exchange and the token cache. This story
+  writes the patterns; the reporting story builds them.
+- Patterns the platform does not use. The hub lists a pattern only when ORE
+  Studio uses it or a design has chosen it.

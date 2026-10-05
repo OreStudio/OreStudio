@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 2BF68189-57CF-42F7-BA33-9673B7D620DD
+:END:
+#+title: Document type: pattern
+#+description: The contract for the pattern document type: folder, frontmatter, sections, and what a pattern page owns as against an architecture page that uses it.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:pattern:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page defines the =pattern= document type. It is one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The
+taxonomy page holds the general contract every document follows: frontmatter,
+state, linking and tags. This page holds only what is specific to =pattern=.
+
+* Contract
+
+- Implements :: loading, citation. A pattern page loads what is known about one
+  established pattern, and a design cites it by name: "use Token Exchange". See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
+- Folder :: [[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]], one page
+  per pattern, as =pattern_<slug>.org=. The hub,
+  [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]], lives in the same
+  folder and orders the pages.
+- Scope :: the page owns *one pattern*: its mechanism, its failure handling, its
+  pitfalls and its sources. A *use* of the pattern is not this page's subject.
+  The architecture page that uses the pattern owns the choices that are its
+  own: the role, the subjects, the limits, the moments it acts. The pattern page
+  names each use in =* In ORE Studio= and links it. It does not restate it.
+- Name :: the title is the pattern's name in its authoritative source, for
+  example =Token Exchange= or =Idempotent Receiver=. A name ORE Studio used
+  before the page existed is an alias under =* Also known as=, never the title.
+- Group :: =#+pattern_group:= places the pattern in one group of the language:
+  =identity=, =communication=, =coordination=, =resilience=, =load= or =data=.
+  The scaffold refuses a pattern with no group or an unknown one.
+- Sources :: at least one authoritative source: the book, catalogue or standard
+  that defines the pattern, with the section. A page with no source is a local
+  convention, not a pattern, and it belongs in an architecture page.
+- Level :: =cross=.
+- Not stateful. A pattern page has no TODO and no =* Status= table.
+- How to create :: =compass add pattern --pattern-group <group>=.
+  =--parent-dir= is optional and defaults to
+  [[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]]. See
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for
+  the flags.
+- Required sections (in this order) ::
+  - /Blurb/: two to four sentences before the first heading. It names the
+    pattern, states its intent and says where ORE Studio uses it. A pattern page
+    has no =* Summary= heading; the blurb is the summary.
+  - =* Also known as=: the other names, each with its source, and any local name.
+  - =* Context=: the situation in which the problem arises.
+  - =* Problem=: one question.
+  - =* Forces=: what pulls in opposite directions.
+  - =* Solution=: the pattern, with a diagram embedded with a =#+caption:= line
+    and a =[[proj:...png]]= image, followed by the =.puml= source link and the
+    =plantuml -tpng= regenerate line.
+  - =* Failure handling=: a table with one row each for errors, timeouts,
+    retries, idempotency and observability. A row that does not apply says so
+    and gives the reason.
+  - =* Pitfalls=: the known ways the pattern goes wrong, with the symptom and
+    the cause, including the ones ORE Studio has met.
+  - =* Security=: the trust boundaries, and what a leak or a forgery costs.
+  - =* Resulting context=: the benefits and the liabilities.
+  - =* In ORE Studio=: each use, with a link to the page that owns it.
+  - =* Related patterns=: the other patterns of the language, each with how it
+    relates.
+  - =* Sources=: the authoritative references.
+  - =* See also=: the hub, and any other internal page.
+
+* A pattern page and an architecture page
+
+The two pages answer different questions, and a fact belongs to one of them.
+
+#+ATTR_HTML: :class hug-leading
+| Question | Page |
+|----------+------|
+| How does the mechanism work, and how does it fail? | the pattern page |
+| What do the sources call it, and where do they define it? | the pattern page |
+| Which role, subject, limit or lifetime does this use choose? | the architecture page |
+| When does this component act, and why? | the architecture page |
+
+A rule that both pages state drifts, and a reader finds the stale copy first. So
+an architecture page links the pattern for the mechanism, and the pattern page
+links the architecture page for the use.
+
+* A composite pattern
+
+Some problems need several patterns together, for example scheduled work that
+must act as a tenant. A composite is a pattern page of its own. Its =* Solution=
+names the patterns it combines and links them, and it states only what the
+combination adds: the order, the boundaries between them, and the failures that
+arise between them. It cites the sources of its parts, and it may cite a source
+of its own when one names the combination.

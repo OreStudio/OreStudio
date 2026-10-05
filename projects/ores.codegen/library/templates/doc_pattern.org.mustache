@@ -1,0 +1,119 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+#+title: {{title}}
+#+description: {{description}}
+#+type: pattern
+#+level: cross
+#+filetags: {{filetags}}
+#+created: {{date}}
+#+updated: {{date}}
+#+pattern_group: {{pattern_group}}
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+{{title}} in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+(Second sentence: the intent of the pattern in one line, in the words of its
+source.) (Third sentence: the problem it solves in ORE Studio, and where the
+platform uses it.) (Keep the whole blurb to two to four sentences. It is the
+summary; the page carries no =* Summary= heading.)
+
+* Also known as
+
+(The other names of the pattern, each with the source that uses it, and any name
+ORE Studio used for it before this page existed. The page title is the
+established name; a local name is an alias here, never the title.)
+
+* Context
+
+(The situation in which the problem arises: the architecture around it, and what
+is already in place. A reader who is not in this context does not need the
+pattern.)
+
+* Problem
+
+(One question the pattern answers. Write it as a question.)
+
+* Forces
+
+(What pulls in opposite directions, one force per item: what makes the obvious
+solution wrong, and what any solution must keep.)
+
+-
+
+* Solution
+
+(The pattern itself: who takes part, what each one does, and in what order.
+Draw it. Sketch the interaction with PlantUML, export it to PNG beside this
+page, and embed it here. See
+[[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]].)
+
+#+begin_example
+#+caption: One sentence saying what the diagram shows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/patterns/{{slug}}.png]]
+#+end_example
+
+Source: =[[./{{slug}}.puml][{{slug}}.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/patterns/{{slug}}.puml=.
+
+* Failure handling
+
+(How each participant fails, and what the pattern does about it. Cover every row;
+write "does not apply" with a reason rather than deleting a row.)
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | |
+| Timeouts | |
+| Retries | |
+| Idempotency | |
+| Observability | |
+
+* Pitfalls
+
+(The known ways the pattern goes wrong, one per item: the symptom a person sees,
+and the cause. Include the ones ORE Studio has met, with a link to the task or
+investigation that found each.)
+
+-
+
+* Security
+
+(The trust boundaries the pattern crosses, what a leaked credential or a forged
+message costs, and what bounds that cost. Write "No security consequence" with a
+reason when the pattern carries none.)
+
+* Resulting context
+
+(What is true after the pattern is applied.)
+
+- Benefits ::
+- Liabilities ::
+
+* In ORE Studio
+
+(Where the platform uses the pattern: the components, the subjects, the code,
+and one worked example. Link the architecture page that owns each use. A use
+belongs to that page; this section names it and links it.)
+
+* Related patterns
+
+(Other patterns of the language, each with how it relates: uses, used by, or an
+alternative to this one.)
+
+-
+
+* Sources
+
+(The authoritative references that define the pattern: the book, the catalogue
+or the standard, with the section. At least one source is required. A blog post
+is not a source unless its author defined the pattern.)
+
+-
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.

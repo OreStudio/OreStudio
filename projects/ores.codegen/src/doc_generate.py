@@ -64,7 +64,13 @@ TYPE_TO_TEMPLATE = {
     "user_journey": "doc_user_journey.org.mustache",
     "workflow": "doc_workflow.org.mustache",
     "report": "doc_report.org.mustache",
+    "pattern": "doc_pattern.org.mustache",
 }
+
+# The groups of the pattern language, in the order the pattern hub reads them.
+PATTERN_GROUPS = (
+    "identity", "communication", "coordination", "resilience", "load", "data",
+)
 
 # entity_org --shape presets: knob bundles sampled from a known-good
 # reference entity for each named domain_entity shape (see task EE237306 /
@@ -138,6 +144,7 @@ DEFAULT_INITIAL_STATE = {
     "runbook": "",
     "workflow": "",
     "report": "",
+    "pattern": "",
     "entity_org": "",
     "field_group": "",
     "junction": "",
@@ -166,7 +173,7 @@ PARENT_OF_TYPE = {
 PARENTLESS_TYPES = {
     "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
-    "workflow", "report",
+    "workflow", "report", "pattern",
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
     "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
@@ -408,6 +415,11 @@ def parse_args(argv=None):
                         help="For --type report: the stable code this report is "
                              "known by, written to #+report_code:. Defaults to "
                              "the slug.")
+    parser.add_argument("--pattern-group", dest="pattern_group", default="",
+                        choices=("",) + PATTERN_GROUPS,
+                        help="For --type pattern: the group of the pattern "
+                             "language the pattern belongs to, written to "
+                             "#+pattern_group:. Required for a pattern.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. acme_corporation). Drives the output path "
@@ -687,6 +699,16 @@ def main(argv=None):
     else:
         report_code = ""
 
+    # A pattern belongs to exactly one group of the pattern language, and the
+    # hub orders its reading by group, so a pattern with no group has no place.
+    if args.type == "pattern":
+        if not args.pattern_group:
+            sys.exit("error: --pattern-group is required for a pattern: "
+                     + ", ".join(PATTERN_GROUPS))
+        pattern_group = args.pattern_group
+    else:
+        pattern_group = ""
+
     goal_default = {
         "task": "(Describe what user-visible-or-internal change this "
                 "task produces.)",
@@ -762,6 +784,7 @@ def main(argv=None):
         "lookup_has_artefact_insert_fn": args.entity_has_artefact_insert_fn,
         "dataset_name": dataset_name,
         "report_code": report_code,
+        "pattern_group": pattern_group,
         "dataset_version": dataset_version,
         "dataset_type": dataset_type,
         "source_methodology": source_methodology,
@@ -785,6 +808,8 @@ def main(argv=None):
     #              sort together in the shared folder)
     # - report:    <parent-dir>/report_<slug>.org    (flat file under
     #              doc/knowledge/reports, prefixed for the same reason)
+    # - pattern:   <parent-dir>/pattern_<slug>.org   (flat file under
+    #              doc/knowledge/patterns, prefixed for the same reason)
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
@@ -878,6 +903,12 @@ def main(argv=None):
         # Every report page shares doc/knowledge/reports, so the prefix groups
         # them in the folder and makes the type obvious in ls.
         leaf = args.slug if args.slug.startswith("report_") else f"report_{args.slug}"
+        out_dir = parent_dir
+        out_file = out_dir / f"{leaf}.org"
+    elif args.type == "pattern":
+        # Every pattern page shares doc/knowledge/patterns, so the prefix groups
+        # them in the folder and keeps the hub apart from the patterns.
+        leaf = args.slug if args.slug.startswith("pattern_") else f"pattern_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",

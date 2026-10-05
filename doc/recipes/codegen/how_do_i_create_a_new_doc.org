@@ -396,6 +396,30 @@ compass add report \
 This writes =doc/knowledge/reports/report_headline_position.org=. Fill in every
 section, then wire the page into the inventory that lists the reports.
 
+** New pattern
+:PROPERTIES:
+:ID: DBB2EF24-8240-4533-B2FB-9A2A3EEA774B
+:END:
+
+[[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Pattern pages]] live in
+[[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]], one page per
+established pattern, as =pattern_<slug>.org=. =--parent-dir= is optional and
+defaults to that folder. =--pattern-group= is required, and it names one group of
+the language: =identity=, =communication=, =coordination=, =resilience=, =load=
+or =data=. Title the page with the pattern's name in its source.
+
+#+begin_src sh :results verbatim
+compass add pattern \
+  --slug token_exchange \
+  --title "Token Exchange" \
+  --description "A service exchanges one token for another with a different subject, audience or scope." \
+  --pattern-group identity \
+  --tags "pattern,identity,oauth"
+#+end_src
+
+This writes =doc/knowledge/patterns/pattern_token_exchange.org=. Fill in every
+section, cite at least one source, then add the page to its group in the hub.
+
 ** New capture
 :PROPERTIES:
 :ID: 978E0A8F-197C-48DA-A405-457E0AEE91D9

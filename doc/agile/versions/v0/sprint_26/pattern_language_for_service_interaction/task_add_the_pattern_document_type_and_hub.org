@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 81B22728-44DE-40E0-BF61-47EF3A6F6B34
+:END:
+#+title: Task: Add the pattern document type and the pattern hub
+#+description: A pattern type in the standard pattern-language form, its compass scaffold, and the hub that orders the patterns.
+#+type: task
+#+level: s1
+#+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
+#+owner: marco
+#+branch: feature/add-the-pattern-document-type-and-hub
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can scaffold a pattern page with =compass add pattern= and add it to
+one hub. The page has the pattern-language sections, a group and required
+sources, so every pattern page in the tree has the same shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =compass add pattern --pattern-group <group>= writes
+  =doc/knowledge/patterns/pattern_<slug>.org= with the thirteen sections of the
+  contract, and refuses a missing or unknown group.
+- The type has a contract page, a glossary entry, an entry in the taxonomy, a
+  row in the regulatory-function table, a recipe section and a row in the
+  generator documentation.
+- The hub reads the six groups in order, and the knowledge index links it.
+
+* Plan
+
+Follow the registration of the report type, commit =312d275345=: the template,
+the generator tables, the =compass add= default folder and help, the contract,
+the taxonomy, the glossary, the recipe, the generator documentation, the
+regulatory-function row, and a generator test file.
+
+Add one thing the report type does not have: =--pattern-group=, with a fixed
+set of groups held in =PATTERN_GROUPS=. The hub reads its groups in that order,
+and a test checks the hub against it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generator cases for the pattern type | 8 passed | =pytest projects/ores.codegen/tests/test_doc_pattern_type.py= | 7aeed93390 |
+| Codegen suite | 1138 passed | =pytest projects/ores.codegen/tests= | 7aeed93390 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The =pattern= document type exists and its scaffold works through
+=compass add pattern=. The template has a two-to-four sentence blurb and the
+thirteen required sections: also known as, context, problem, forces, solution,
+failure handling, pitfalls, security, resulting context, in ORE Studio, related
+patterns, sources and see also. =--pattern-group= takes one of six groups and is
+required.
+
+The hub, [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]], lives in
+=doc/knowledge/patterns/=. It states the three rules of the language, reads the
+six groups in order with each group's question, and lists the planned patterns
+with their sources. A pattern becomes a link when its page exists. The knowledge
+index links the hub.

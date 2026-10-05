@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 3377D9CE-F74C-4D9C-ACB8-FA94940DAB1D
+:END:
+#+title: Story: Open sprint 27
+#+description: Scaffold sprint 27, set its mission, wire the version manifest and the agile index, and bump the project version to 0.0.27.
+#+type: story
+#+level: s2
+#+filetags: :open_sprint_27:sprint_27:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 27 exists as a proper agile artefact, with its mission set and
+wired into the version manifest and the agile index, and the project
+version carries 0.0.27, with the vcpkg submodule at latest.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Sprint 27 has its mission and links Sprint 26 as Previous.
+- The version manifest lists Sprint 27 and the agile index names it
+  as the current sprint.
+- The project version is 0.0.27 across the six recipe files, and the
+  vcpkg submodule tracks latest.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F1883C42-09BF-4481-A41C-E52727273E2E][Open sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Scaffold sprint 27, set its mission, wire the version manifest and the agile index. |
+| [[id:3D7260FA-A224-4657-A128-7FC186808065][Bump project version to 0.0.27 for sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Bump the project version from 0.0.26 to 0.0.27 across the build files and badges, and update the vcpkg submodule to latest. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+Sprint 27 is open with its mission: finish the UX pass. No story
+carried over from sprint 26: its close resolved every story, and the
+nineteen unfinished ones wait in the product backlog inbox for sprint
+27 planning. The version bump to 0.0.27 and the vcpkg update land
+with this same change, unlike sprint 26, where both were missed at
+the opening and patched at the close.

@@ -112,6 +112,9 @@ via its "Verifies task" field.
 | 1 | Local: two ORE netting pgTAP tests failed when run as the owner role. | =refdata_ore_sample_netting_test.sql= | decline | The owner bypasses row-level security; under the test roles they pass. Recorded as a memory: run pgTAP under RLS. |
 | 2 | Local: four pgTAP files fail before their first test. | =test/= | decline | Pre-existing fixture drift outside trading; captured in the inbox. |
 | 3 | Local: five codegen tests used the deleted trade models as fixtures. | =projects/ores.codegen/tests= | accept | The field group TypeScript test moved to the instrument identity group; the cases that only exercised the trade's five-group shape went. The now unused N-way group path is captured. |
+| 4 | PR review: the purge found a table's soft-delete rule by naming convention. | =iam_tenant_purger_create.sql= | accept | It now disables every ON DELETE rule the catalogue lists for the table; the ACME probe still purges 103 rows to 0. |
+| 5 | PR review: the purge hard-codes the public schema. | =iam_tenant_purger_create.sql= | decline | Every other purge statement and the schema itself use public. |
+| 6 | PR review: the purge has no pgTAP test. | =iam_tenant_purger_create.sql= | decline | Needs a booked trade and instrument for a test tenant; captured in the inbox. |
 
 * Result
 

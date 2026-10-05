@@ -45,7 +45,7 @@ declare
     v_blocked text[];
     v_table text;
     v_rule text;
-    v_has_rule boolean;
+    v_rules text[];
     v_pass integer;
 begin
     v_system_tenant_id := ores_utility_system_tenant_id_fn();
@@ -169,10 +169,11 @@ begin
 
     -- Trading: every tenant-scoped trading table, the instruments and the
     -- trade's anchor and components alike. Every version goes, so each
-    -- table's soft-delete rule, which would only close the current one, is
-    -- disabled around its delete. A component references its anchor with an
-    -- enforced foreign key, so a table whose rows are still referenced is
-    -- retried in a later pass once its referrers are gone. An anchor is
+    -- table's delete rules, which would only close the current version, are
+    -- disabled around its delete, whatever they are named. A component
+    -- references its anchor with an enforced foreign key, so a table whose
+    -- rows are still referenced is retried in a later pass once its
+    -- referrers are gone. An anchor is
     -- immutable, so the purge turns on the purge signal for this transaction
     -- first: it is the one sanctioned way past the anchor's guard.
     perform ores_utility_allow_immutable_purge_fn();
@@ -190,21 +191,22 @@ begin
         exit when cardinality(v_pending) = 0;
         v_blocked := '{}';
         foreach v_table in array v_pending loop
-            v_rule := regexp_replace(v_table, '_tbl$', '_delete_rule');
-            v_has_rule := exists (
-                select 1 from pg_rules r
-                where r.schemaname = 'public'
-                  and r.tablename = v_table
-                  and r.rulename = v_rule);
+            select coalesce(array_agg(r.rulename::text), '{}') into v_rules
+            from pg_rewrite r
+            join pg_class c on c.oid = r.ev_class
+            join pg_namespace n on n.oid = c.relnamespace
+            where n.nspname = 'public'
+              and c.relname = v_table
+              and r.ev_type = '4';
             begin
-                if v_has_rule then
+                foreach v_rule in array v_rules loop
                     execute format('alter table %I disable rule %I', v_table, v_rule);
-                end if;
+                end loop;
                 execute format('delete from %I where tenant_id = $1', v_table)
                     using p_tenant_id;
-                if v_has_rule then
+                foreach v_rule in array v_rules loop
                     execute format('alter table %I enable rule %I', v_table, v_rule);
-                end if;
+                end loop;
             exception when foreign_key_violation then
                 v_blocked := v_blocked || v_table;
             end;

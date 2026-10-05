@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :bring-the-record-screens-to-the-standard:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/bring-the-record-screens-to-the-standard
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

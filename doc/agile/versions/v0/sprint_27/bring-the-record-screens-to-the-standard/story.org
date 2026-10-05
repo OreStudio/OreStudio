@@ -8,7 +8,7 @@
 #+filetags: :web:ux:standards:sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment: brave_hopper
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,7 +33,7 @@ moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -50,7 +50,7 @@ moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | BACKLOG | | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
+| [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | STARTED | 2026-10-05 | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
 
 * Decisions
 

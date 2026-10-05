@@ -25,9 +25,9 @@ The analysis behind the story: of the super administrator's journeys, first run,
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Broken into three tasks; nothing is built. |
+| Now           | The audit and the accounts area are done; the names and the pictures remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Land the accounts read in system administration. |
+| Next          | Name the administrators and greet people by name. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance

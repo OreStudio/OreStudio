@@ -43,6 +43,8 @@ import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js
 import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
+const isoCode = z.string().trim().length(3);
+const pairCode = z.string().trim().min(7).max(15);
 const text = z.string().max(2000);
 const count = z.int().min(0).max(1_000_000);
 
@@ -54,9 +56,9 @@ const count = z.int().min(0).max(1_000_000);
  */
 const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
     currencies: z.object({
-        iso_code: z.string().trim().length(3),
+        iso_code: isoCode,
         name: text.min(1),
-        numeric_code: z.string().max(3),
+        numeric_code: z.string().regex(/^([0-9]{3})?$/),
         symbol: z.string().max(20),
         fraction_symbol: z.string().max(20),
         fractions_per_unit: count,
@@ -78,25 +80,32 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         display_order: count,
     }) satisfies z.ZodType<CurrencyGroupWrite>,
     'currency-countries': z.object({
-        currency_iso_code: code,
+        currency_iso_code: isoCode,
         country_alpha2_code: code,
     }) satisfies z.ZodType<CurrencyCountryWrite>,
     'currency-calendars': z.object({
-        currency_iso_code: code,
+        currency_iso_code: isoCode,
         calendar_code: code,
     }) satisfies z.ZodType<CurrencyCalendarWrite>,
     'currency-memberships': z.object({
-        currency_iso_code: code,
+        currency_iso_code: isoCode,
         currency_group_code: code,
     }) satisfies z.ZodType<CurrencyCurrencyGroupWrite>,
-    'currency-pairs': z.object({
-        pair_code: z.string().trim().min(7).max(15),
-        base_currency: code,
-        quote_currency: code,
-        classification: code,
-    }) satisfies z.ZodType<CurrencyPairWrite>,
+    'currency-pairs': z
+        .object({
+            pair_code: pairCode,
+            base_currency: isoCode,
+            quote_currency: isoCode,
+            classification: code,
+        })
+        .refine((pair) => pair.base_currency !== pair.quote_currency, {
+            message: 'The two legs of a pair differ.',
+        })
+        .refine((pair) => pair.pair_code === `${pair.base_currency}/${pair.quote_currency}`, {
+            message: 'A pair code is its base and quote currencies, as BASE/QUOTE.',
+        }) satisfies z.ZodType<CurrencyPairWrite>,
     'currency-pair-conventions': z.object({
-        pair_code: z.string().trim().min(7).max(15),
+        pair_code: pairCode,
         pip_factor: z.number().positive(),
         tick_size: z.number().positive(),
         decimal_places: z.int().min(0).max(12),
@@ -105,7 +114,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         end_of_month: z.boolean().nullable(),
     }) satisfies z.ZodType<CurrencyPairConventionWrite>,
     'pair-calendars': z.object({
-        pair_code: z.string().trim().min(7).max(15),
+        pair_code: pairCode,
         calendar_code: code,
     }) satisfies z.ZodType<CurrencyPairConventionCalendarWrite>,
 };
@@ -121,7 +130,8 @@ const saveBodySchema = intentSchema.extend({
 });
 
 const removeBodySchema = intentSchema.extend({
-    key: z.record(z.string(), z.string().min(1).max(100)),
+    key: z.record(z.string(), code),
+    version: z.int().nonnegative().nullable().default(null),
 });
 
 /**
@@ -215,8 +225,11 @@ export function registerRecordRoutes(
         if (resource.listBy === undefined) {
             throw notFound(`${resource.key} is not read by a parent.`);
         }
-        const { parent } = request.params as { parent: string };
-        return { rows: await listRecords(session.client, resource, parent) };
+        const parent = code.safeParse((request.params as { parent: string }).parent);
+        if (!parent.success) {
+            throw invalidRequest('A parent is named by a code of 1 to 100 characters.');
+        }
+        return { rows: await listRecords(session.client, resource, parent.data) };
     });
 
     /** Writes one row: a new row with no version, else a correction of the version read. */
@@ -231,7 +244,8 @@ export function registerRecordRoutes(
         }
         const write = WRITES[resource.key]?.safeParse(body.data.write);
         if (write === undefined || !write.success) {
-            throw invalidRequest(`The row is not a valid ${resource.key} row.`);
+            const rule = write?.error.issues.find((issue) => issue.code === 'custom');
+            throw invalidRequest(rule?.message ?? `The row is not a valid ${resource.key} row.`);
         }
         answer(
             await saveRecord(session.client, resource, write.data, body.data.version, {
@@ -242,7 +256,10 @@ export function registerRecordRoutes(
         return reply.code(204).send();
     });
 
-    /** Removes one row, named by exactly its key fields. */
+    /**
+     * Removes one row, named by exactly its key fields. A removal that names
+     * the version it read is refused with 409 when the row moved on since.
+     */
     server.delete('/api/refdata/:resource', async (request, reply) => {
         const session = requireSession(request);
         const resource = writableFor(request);
@@ -254,7 +271,7 @@ export function registerRecordRoutes(
             );
         }
         answer(
-            await removeRecord(session.client, resource, body.data.key, {
+            await removeRecord(session.client, resource, body.data.key, body.data.version, {
                 reasonCode: body.data.reasonCode,
                 commentary: body.data.commentary,
             }),

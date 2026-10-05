@@ -445,6 +445,7 @@ export const api = {
         resource: string,
         input: {
             readonly key: Readonly<Record<string, string>>;
+            readonly version?: number | null;
             readonly reasonCode: string;
             readonly commentary: string;
         },

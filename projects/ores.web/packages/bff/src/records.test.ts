@@ -189,6 +189,18 @@ describe('GET /api/refdata/:resource', () => {
         expect(calls[0]?.body).toMatchObject({ currency_iso_code: 'EUR' });
     });
 
+    it('refuses a blank parent', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/currency-countries/by/%20%20',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
     it('refuses to read a resource by a parent it does not have', async () => {
         const { server, sessionId } = buildTestServer({});
         const response = await send(server, sessionId, 'GET', '/api/refdata/currencies/by/EUR');
@@ -254,6 +266,45 @@ describe('PUT /api/refdata/:resource', () => {
     });
 });
 
+describe('a currency pair write', () => {
+    const pair = {
+        pair_code: 'EUR/USD',
+        base_currency: 'EUR',
+        quote_currency: 'USD',
+        classification: 'major',
+    };
+
+    it('refuses a pair code that is not BASE/QUOTE, and identical legs, with the reason', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const mismatched = await send(server, sessionId, 'PUT', '/api/refdata/currency-pairs', {
+            write: { ...pair, pair_code: 'GBP/JPY' },
+            version: null,
+            ...reason,
+        });
+        expect(mismatched.statusCode).toBe(400);
+        expect(mismatched.json()).toMatchObject({ message: expect.stringContaining('BASE/QUOTE') });
+        const same = await send(server, sessionId, 'PUT', '/api/refdata/currency-pairs', {
+            write: { ...pair, pair_code: 'EUR/EUR', quote_currency: 'EUR' },
+            version: null,
+            ...reason,
+        });
+        expect(same.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('writes a pair whose code is its legs', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.currency_pairs.put': { result: ok },
+        });
+        const response = await send(server, sessionId, 'PUT', '/api/refdata/currency-pairs', {
+            write: pair,
+            version: null,
+            ...reason,
+        });
+        expect(response.statusCode).toBe(204);
+    });
+});
+
 describe('DELETE /api/refdata/:resource', () => {
     it('removes a junction row named by both its keys', async () => {
         const { server, sessionId, calls } = buildTestServer({
@@ -271,7 +322,27 @@ describe('DELETE /api/refdata/:resource', () => {
         );
         expect(response.statusCode).toBe(204);
         expect(calls[0]?.body).toMatchObject({
-            removal: { key: { currency_iso_code: 'EUR', country_alpha2_code: 'DE' } },
+            removal: {
+                key: { currency_iso_code: 'EUR', country_alpha2_code: 'DE' },
+                precondition: { kind: 'any' },
+            },
+        });
+    });
+
+    it('removes a versioned row against the version read, and answers 409 when it moved on', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.currency_groups.delete': {
+                result: { outcome: 'conflict', code: 'version_conflict', message: '' },
+            },
+        });
+        const response = await send(server, sessionId, 'DELETE', '/api/refdata/currency-groups', {
+            key: { code: 'G11' },
+            version: 3,
+            ...reason,
+        });
+        expect(response.statusCode).toBe(409);
+        expect(calls[0]?.body).toMatchObject({
+            removal: { precondition: { kind: 'must_match_version', version: 3 } },
         });
     });
 

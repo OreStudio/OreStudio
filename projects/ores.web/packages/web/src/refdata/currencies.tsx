@@ -321,6 +321,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     title={t('refdata.records.removeTitle', { code })}
                     warning={t('refdata.currencies.removeWarning')}
                     recordKey={{ iso_code: code }}
+                    version={row.version}
                     onClose={() => setRemoving(false)}
                     onRemoved={() => void navigate(currencyPath())}
                 />

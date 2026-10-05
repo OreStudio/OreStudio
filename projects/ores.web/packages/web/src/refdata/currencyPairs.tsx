@@ -493,6 +493,7 @@ function PairBody({
                     title={t('refdata.records.removeTitle', { code })}
                     warning={t('refdata.pairs.removeWarning')}
                     recordKey={{ pair_code: code }}
+                    version={pair.version}
                     before={async (intent) => {
                         if (convention !== undefined) {
                             await api.removeRecord(CONVENTIONS, {

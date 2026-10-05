@@ -259,15 +259,16 @@ export function outcomeOf(result: z.infer<typeof resultEnvelopeSchema>): WriteOu
 /** A record as the server sends it: its own field names, with its version. */
 export type RecordRow = Readonly<Record<string, unknown>> & { readonly version: number };
 
+/** A junction keeps no versions; the default lets one schema read every resource. */
 const rowSchema = z.looseObject({ version: z.int().nonnegative().default(0) });
 
-/** The resources are short; one page reads any of them whole. */
 const RECORD_PAGE = 1000;
 
 const resultReplySchema = z.object({ result: resultEnvelopeSchema });
 
 /**
- * Every row of a resource, or every row of one parent when `parent` names it.
+ * Every row of a resource, or every row of one parent when `parent` names it,
+ * read a page at a time until a page comes back short.
  *
  * Rows keep the server's field names: a screen reads them through the
  * resource it asked for, and a mapping per resource would only rename them.
@@ -281,24 +282,31 @@ export async function listRecords(
     const subject = byParent
         ? (resource.subjects.listBy ?? resource.subjects.list)
         : resource.subjects.list;
-    const reply = await caller.callAuthenticated(
-        subject,
-        {
-            ...(byParent && resource.listBy !== undefined
-                ? { [resource.listBy]: parent, scope: 'direct' }
-                : {}),
-            offset: 0,
-            limit: RECORD_PAGE,
-            order: { field: '', descending: false },
-            filter: null,
-            ...(resource.asOf && !byParent ? { as_of: null } : {}),
-        },
-        z.looseObject({ result: resultEnvelopeSchema }),
-    );
-    if (reply.result.outcome !== 'ok') {
-        throw new OperationFailedError(subject, reply.result.message);
+    const rows: RecordRow[] = [];
+    for (let offset = 0; ; offset += RECORD_PAGE) {
+        const reply = await caller.callAuthenticated(
+            subject,
+            {
+                ...(byParent && resource.listBy !== undefined
+                    ? { [resource.listBy]: parent, scope: 'direct' }
+                    : {}),
+                offset,
+                limit: RECORD_PAGE,
+                order: { field: '', descending: false },
+                filter: null,
+                ...(resource.asOf && !byParent ? { as_of: null } : {}),
+            },
+            z.looseObject({ result: resultEnvelopeSchema }),
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(subject, reply.result.message);
+        }
+        const page = z.array(rowSchema).default([]).parse(reply[resource.rows]);
+        rows.push(...page);
+        if (page.length < RECORD_PAGE) {
+            return rows;
+        }
     }
-    return z.array(rowSchema).default([]).parse(reply[resource.rows]);
 }
 
 /** Writes one row: a new row when no version is given, else a new version of it. */
@@ -317,17 +325,28 @@ export async function saveRecord(
     return outcomeOf(reply.result);
 }
 
-/** Closes one row, named by its key fields. A versioned row stays in its history. */
+/**
+ * Closes one row, named by its key fields. A versioned row stays in its
+ * history. A removal that names the version it read is refused when the row
+ * moved on since; a junction row has no version to name.
+ */
 export async function removeRecord(
     caller: AuthenticatedCaller,
     resource: RecordResource,
     key: Readonly<Record<string, unknown>>,
+    version: number | null,
     intent: WriteIntent,
 ): Promise<WriteOutcome> {
     const reply = await caller.callAuthenticated(
         resource.subjects.remove,
         {
-            removal: { key, precondition: { kind: 'any', version: null } },
+            removal: {
+                key,
+                precondition:
+                    version === null
+                        ? { kind: 'any', version: null }
+                        : { kind: 'must_match_version', version },
+            },
             intent: intentFor(intent),
         },
         resultReplySchema,

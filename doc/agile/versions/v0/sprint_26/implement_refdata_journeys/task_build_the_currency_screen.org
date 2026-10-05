@@ -88,6 +88,13 @@ via its "Verifies task" field.
 | 3 | Local review: optional chaining on rows that are never null | =web/src/refdata/currencyPairs.tsx= | Accept | Removed |
 | 4 | Local review: five comments that restate the code | =web/src/refdata/*.tsx=, =bff/src/records.ts= | Accept | Deleted |
 | 5 | Local review: misspell check | changed files | Accept | Clean, no hits |
+| 6 | PR review: =listRecords= reads one page of 1000 and drops the rest silently | =wire-protocol/src/records.ts= | Accept | Pages until a page comes back short; tested with 1500 rows |
+| 7 | PR review: =resourceName= returns an empty name if the subject layout changes | =wire-protocol/src/records.ts= | Accept | A test pins the permission name of every resource |
+| 8 | PR review: removals skip the version check | =wire-protocol/src/records.ts=, =bff/src/records.ts=, =web/src/refdata/records.tsx= | Accept | A removal names the version read; a stale one answers 409 (checked live). Junction rows and dependent rows removed first still use =any= |
+| 9 | PR review: the BFF does not check the pair code against its legs | =bff/src/records.ts= | Accept | Refused unless =BASE/QUOTE= with different legs, with the reason. The convention is not checked against its pair: that needs a read, and the server's insert checks the pair exists |
+| 10 | PR review: loose schema rules | =bff/src/records.ts= | Accept | Numeric code empty or three digits (CNH, GGP and others have none); junction currency codes are three characters; removal keys are trimmed codes |
+| 11 | PR review: the list-by parent is not validated | =bff/src/records.ts= | Accept | Checked as a code; Fastify already refuses one over 100 characters |
+| 12 | PR review: split the list request into a helper; comment the default version | =wire-protocol/src/records.ts= | Partly | Comment added. Helper declined: the request is one expression read in one place |
 
 * Result
 

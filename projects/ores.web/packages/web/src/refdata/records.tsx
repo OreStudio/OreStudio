@@ -777,11 +777,13 @@ export function RevertDialog({
     );
 }
 
+/** Removes a record against the version read, so a change made since is refused rather than lost. */
 export function RemoveRecordDialog({
     resource,
     title,
     warning,
     recordKey,
+    version,
     onClose,
     onRemoved,
     before,
@@ -790,6 +792,7 @@ export function RemoveRecordDialog({
     readonly title: string;
     readonly warning: string;
     readonly recordKey: Readonly<Record<string, string>>;
+    readonly version: number;
     readonly onClose: () => void;
     readonly onRemoved: () => void;
     readonly before?: (intent: { reasonCode: string; commentary: string }) => Promise<void>;
@@ -803,7 +806,7 @@ export function RemoveRecordDialog({
         mutationFn: async () => {
             const intent = { reasonCode: reason.code, commentary: commentary.trim() };
             await before?.(intent);
-            await api.removeRecord(resource, { key: recordKey, ...intent });
+            await api.removeRecord(resource, { key: recordKey, version, ...intent });
         },
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['records'] });

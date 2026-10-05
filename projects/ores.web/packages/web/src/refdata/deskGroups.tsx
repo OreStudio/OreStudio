@@ -241,6 +241,7 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
                     title={t('refdata.records.removeTitle', { code })}
                     warning={t('refdata.deskGroups.removeWarning')}
                     recordKey={{ code }}
+                    version={row.version}
                     before={async (intent) => {
                         const members = (memberships.data ?? []).filter(
                             (member) => member['currency_group_code'] === code,

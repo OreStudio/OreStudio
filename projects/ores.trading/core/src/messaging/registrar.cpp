@@ -89,7 +89,7 @@
 #include "ores.trading.core/messaging/trade_additional_field_registrar.hpp"
 #include "ores.trading.core/messaging/trade_portfolio_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_portfolio_registrar.hpp"
-#include "ores.trading.core/messaging/trade_anchor_registrar.hpp"
+#include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_booking_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_history_provider_registrar.hpp"
@@ -164,7 +164,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_settlement_type_handlers(nats, ctx, verifier));
     append(register_trade_additional_field_handlers(nats, ctx, verifier));
     append(register_trade_portfolio_handlers(nats, ctx, verifier));
-    append(register_trade_anchor_handlers(nats, ctx, verifier));
+    append(register_trade_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
         auto toh = std::make_shared<trade_operations_handler>(nats, ctx, verifier, http_base_url);

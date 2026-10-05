@@ -26,7 +26,7 @@
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
@@ -566,8 +566,8 @@ trade_export_service::export_trades(const std::vector<std::string>& trade_ids) c
              "Reading the ORE identifiers of the exported trades."))
         ore_ids.emplace(*row[0], row[1].value_or(""));
 
-    auto anchors = repository::trade_anchor_repository().read_latest(ctx_, trade_ids);
-    std::ranges::sort(anchors, {}, &domain::trade_anchor::id);
+    auto anchors = repository::trade_repository().read_latest(ctx_, trade_ids);
+    std::ranges::sort(anchors, {}, &domain::trade::id);
 
     std::vector<trade_export_item> items;
     items.reserve(anchors.size());

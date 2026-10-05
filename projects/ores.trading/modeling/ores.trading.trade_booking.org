@@ -176,8 +176,8 @@ std::nullopt
 
 | name                | columns                                   | table                          | target_columns                | error_message                                                                    |
 |---------------------+-------------------------------------------+--------------------------------+-------------------------------+----------------------------------------------------------------------------------|
-| anchor_party        | trade_id, party_id                        | ores_trading_trade_anchors_tbl | id, party_id                  | Invalid trade_id: %. The booking's party must be the trade's.                    |
-| anchor_counterparty | trade_id, counterparty_id                 | ores_trading_trade_anchors_tbl | id, counterparty_id           | Invalid trade_id: %. The booking's counterparty must be the trade's.             |
+| anchor_party        | trade_id, party_id                        | ores_trading_trades_tbl | id, party_id                  | Invalid trade_id: %. The booking's party must be the trade's.                    |
+| anchor_counterparty | trade_id, counterparty_id                 | ores_trading_trades_tbl | id, counterparty_id           | Invalid trade_id: %. The booking's counterparty must be the trade's.             |
 | book_party          | book_id, party_id                         | ores_refdata_books_tbl         | id, party_id                  | Invalid book_id: %. The book must belong to the trade's party.                   |
 | netting_set         | netting_set_id, counterparty_id, party_id | ores_refdata_netting_sets_tbl  | id, counterparty_id, party_id | Invalid netting_set_id: %. The set must be the trade's counterparty's and party's. |
 | counterparty_name   | counterparty_identifier_id, counterparty_id | ores_refdata_counterparty_identifiers_tbl | id, counterparty_id | Invalid counterparty_identifier_id: %. The identifier must be the trade's counterparty's. |
@@ -210,7 +210,7 @@ that follows checks the booking in turn.
 
 ** trade_id
 :PROPERTIES:
-:table:         ores_trading_trade_anchors_tbl
+:table:         ores_trading_trades_tbl
 :enforce:       true
 :nullable:      false
 :END:
@@ -218,15 +218,15 @@ that follows checks the booking in turn.
 A database foreign key: the anchor is immutable.
 
 #+begin_src cpp :name parent_seed_includes
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #+end_src
 
 #+begin_src cpp :name parent_seed
     {
-        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
-        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
         v.party_id = anchor.party_id;
@@ -344,4 +344,4 @@ The netting set identifier. Temporal, so a trigger check.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
-- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] — the anchor this booking belongs to.
+- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] — the anchor this booking belongs to.

@@ -92,9 +92,9 @@ begin
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
-    -- Validate trade_id (soft FK to ores_trading_trade_anchors_tbl)
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
     if not exists (
-        select 1 from ores_trading_trade_anchors_tbl
+        select 1 from ores_trading_trades_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
     ) then

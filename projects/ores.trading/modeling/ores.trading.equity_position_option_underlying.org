@@ -169,7 +169,7 @@ Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE sett
 
 ** trade_id
 :PROPERTIES:
-:table:         ores_trading_trade_anchors_tbl
+:table:         ores_trading_trades_tbl
 :target_column: id
 :nullable:      false
 :error_message: Invalid trade_id: %. Trade must exist for tenant.
@@ -180,15 +180,15 @@ fact or child row names the trade its document states and the insert
 trigger checks it there.
 
 #+begin_src cpp :name parent_seed_includes
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #+end_src
 
 #+begin_src cpp :name parent_seed
     {
-        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
-        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
         v.trade_id = anchor.id;
     }
 #+end_src

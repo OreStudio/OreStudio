@@ -24,14 +24,14 @@
 -- These policies enforce strict tenant isolation for trade tables.
 
 -- -----------------------------------------------------------------------------
--- Trade anchors
+-- Trades
 -- -----------------------------------------------------------------------------
-alter table ores_trading_trade_anchors_tbl enable row level security;
+alter table ores_trading_trades_tbl enable row level security;
 
-drop policy if exists trade_anchors_tenant_isolation_policy
-    on ores_trading_trade_anchors_tbl;
+drop policy if exists trades_tenant_isolation_policy
+    on ores_trading_trades_tbl;
 
-create policy trade_anchors_tenant_isolation_policy on ores_trading_trade_anchors_tbl
+create policy trades_tenant_isolation_policy on ores_trading_trades_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -41,11 +41,11 @@ with check (
 
 -- Party isolation: strict enforcement, as on trades. FOR SELECT only, so the
 -- booking write is checked by its own party validation.
-drop policy if exists trade_anchors_party_isolation_policy
-    on ores_trading_trade_anchors_tbl;
+drop policy if exists trades_party_isolation_policy
+    on ores_trading_trades_tbl;
 
-create policy trade_anchors_party_isolation_policy
-on ores_trading_trade_anchors_tbl
+create policy trades_party_isolation_policy
+on ores_trading_trades_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())

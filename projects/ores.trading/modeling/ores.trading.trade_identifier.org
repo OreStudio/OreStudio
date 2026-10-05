@@ -118,7 +118,7 @@ std::nullopt
 
 | name         | columns            | table                          | target_columns | error_message                                                     |
 |--------------+--------------------+--------------------------------+----------------+-------------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trade_anchors_tbl | id, party_id   | Invalid trade_id: %. The identifier's party must be the trade's. |
+| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The identifier's party must be the trade's. |
 
 ** Indexes
 
@@ -130,7 +130,7 @@ std::nullopt
 
 ** trade_id
 :PROPERTIES:
-:table:    ores_trading_trade_anchors_tbl
+:table:    ores_trading_trades_tbl
 :enforce:  true
 :nullable: false
 :END:

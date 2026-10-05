@@ -26,7 +26,7 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
-#include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
@@ -52,7 +52,7 @@ namespace ores::ore::xml {
  */
 struct trade_import_item {
     std::string ore_id;
-    trading::domain::trade_anchor anchor;
+    trading::domain::trade anchor;
     trading::domain::trade_booking booking;
     std::string activity_type_code = "new_booking";
     std::optional<trading::domain::trade_envelope_data> envelope;

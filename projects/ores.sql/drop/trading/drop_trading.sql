@@ -193,9 +193,9 @@
 \ir ./trading_trade_bookings_drop.sql
 \ir ./trading_trade_components_functions_drop.sql
 
--- Trade anchors (drop before the classification lookups they reference)
-\ir ./trading_trade_anchors_notify_trigger_drop.sql
-\ir ./trading_trade_anchors_drop.sql
+-- Trades (drop before the classification lookups they reference)
+\ir ./trading_trades_notify_trigger_drop.sql
+\ir ./trading_trades_drop.sql
 
 -- Trade reference data (no inter-dependencies within reference data)
 \ir ./trading_trade_id_types_notify_trigger_drop.sql

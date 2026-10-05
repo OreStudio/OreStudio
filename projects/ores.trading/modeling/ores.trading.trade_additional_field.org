@@ -118,13 +118,13 @@ std::string("MyValue")
 
 | name         | columns            | table                          | target_columns | error_message                                                |
 |--------------+--------------------+--------------------------------+----------------+--------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trade_anchors_tbl | id, party_id   | Invalid trade_id: %. The field's party must be the trade's. |
+| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The field's party must be the trade's. |
 
 * Foreign keys
 
 ** trade_id
 :PROPERTIES:
-:table:    ores_trading_trade_anchors_tbl
+:table:    ores_trading_trades_tbl
 :enforce:  true
 :nullable: false
 :END:
@@ -172,4 +172,4 @@ A database foreign key: the anchor is immutable.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
-- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] — the anchor this field belongs to.
+- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] — the anchor this field belongs to.

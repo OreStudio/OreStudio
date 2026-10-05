@@ -27,9 +27,9 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
@@ -89,7 +89,7 @@ struct fixture final {
 
     book_trade_request request() {
         book_trade_request r;
-        r.anchor = ores::trading::generators::generate_synthetic_trade_anchor(gen);
+        r.anchor = ores::trading::generators::generate_synthetic_trade(gen);
         r.booking = ores::trading::generators::generate_synthetic_trade_booking(gen);
         r.booking.book_id = book_id;
         r.booking.change_reason_code = "system.test";
@@ -111,7 +111,7 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     const auto response = trade_operations_service(f.ctx).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
-    REQUIRE(ores::trading::repository::trade_anchor_repository().read_latest(f.ctx, id).size() ==
+    REQUIRE(ores::trading::repository::trade_repository().read_latest(f.ctx, id).size() ==
             1);
     const auto bookings =
         ores::trading::repository::trade_booking_repository().read_latest(f.ctx, id);
@@ -145,7 +145,7 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
 
     CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
 
-    CHECK(ores::trading::repository::trade_anchor_repository()
+    CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
               .empty());
 }

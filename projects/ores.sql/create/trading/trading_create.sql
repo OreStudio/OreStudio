@@ -290,18 +290,18 @@
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
 
--- Trade anchors (depend on the classification lookups above)
-\ir ./trading_trade_anchors_create.sql
-\ir ./trading_trade_anchors_notify_trigger_create.sql
+-- Trades (depend on the classification lookups above)
+\ir ./trading_trades_create.sql
+\ir ./trading_trades_notify_trigger_create.sql
 
--- Trade components (depend on the anchor)
+-- Trade components (depend on the trade)
 \ir ./trading_trade_components_functions_create.sql
 \ir ./trading_trade_bookings_create.sql
 \ir ./trading_trade_bookings_notify_trigger_create.sql
 \ir ./trading_trade_states_create.sql
 \ir ./trading_trade_states_notify_trigger_create.sql
 
--- Trade identifiers, party roles and additional fields (depend on the anchor)
+-- Trade identifiers, party roles and additional fields (depend on the trade)
 \ir ./trading_trade_identifiers_create.sql
 \ir ./trading_trade_identifiers_notify_trigger_create.sql
 

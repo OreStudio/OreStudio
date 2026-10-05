@@ -60,9 +60,9 @@ drop policy if exists trade_bookings_tenant_isolation_policy on "ores_trading_tr
 drop policy if exists trade_states_party_isolation_policy on "ores_trading_trade_states_tbl";
 drop policy if exists trade_states_tenant_isolation_policy on "ores_trading_trade_states_tbl";
 
--- Trade anchors
-drop policy if exists trade_anchors_party_isolation_policy on "ores_trading_trade_anchors_tbl";
-drop policy if exists trade_anchors_tenant_isolation_policy on "ores_trading_trade_anchors_tbl";
+-- Trades
+drop policy if exists trades_party_isolation_policy on "ores_trading_trades_tbl";
+drop policy if exists trades_tenant_isolation_policy on "ores_trading_trades_tbl";
 
 -- Bond relational model (pilot), task D7943D7E
 drop policy if exists bond_issues_tenant_isolation_policy on "ores_trading_bond_issues_tbl";

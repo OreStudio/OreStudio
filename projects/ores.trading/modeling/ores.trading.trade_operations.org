@@ -33,7 +33,7 @@ generates no service handler.
 #include <string>
 #include <vector>
 #include "ores.trading.api/domain/instrument_payload.hpp"
-#include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -59,7 +59,7 @@ generates no service handler.
 
 *** anchor
 :PROPERTIES:
-:cpp_type: ores::trading::domain::trade_anchor
+:cpp_type: ores::trading::domain::trade
 :END:
 
 #+begin_src cpp :name comment
@@ -133,7 +133,7 @@ generates no service handler.
 
 *** anchor
 :PROPERTIES:
-:cpp_type: ores::trading::domain::trade_anchor
+:cpp_type: ores::trading::domain::trade
 :END:
 
 #+begin_src cpp :name comment

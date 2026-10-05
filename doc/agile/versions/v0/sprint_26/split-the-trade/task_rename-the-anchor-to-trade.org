@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 1178D040-F5CD-440F-BCD6-871F112D948F
+:END:
+#+title: Task: Rename the trade anchor to trade
+#+description: Now that the wide trade is gone, the immutable anchor takes the name trade: model, table, SQL functions and policies, C++ types, protocol subjects, permissions, TypeScript, shell and docs.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/rename-the-anchor-to-trade
+#+pr: 2645
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The trade is called trade everywhere: no identifier, table, subject or file names trade_anchor.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The anchor model is ores.trading.trade, keeping its org id, and every file it generates is renamed with it.
+- Table, functions, triggers, policies, subjects, permissions and hand-written code use trade and trades; no trade_anchor identifier remains outside history.
+- The round trip stays at in-scope lost 0 with every envelope as stated; build, ctest, pgTAP under RLS and the local check set pass.
+
+* Plan
+
+- List the anchor model's 30 generated files with =codegen generate
+  --dry-run= and delete them, then rename the model to
+  =ores.trading.trade.org=, keeping its org id so every link holds.
+- Rename every identifier with one script
+  (=scratchpad/rename_anchor.py=): =trade_anchors= to =trades=,
+  =trade_anchor= to =trade=, =TradeAnchors= to =Trades= and =TradeAnchor=
+  to =Trade=, over every tracked file except the agile history and the
+  kanban fixtures. Prose that calls the trade's immutable row its anchor
+  keeps the word, because it names the concept, not the entity.
+- Regenerate the trade component, refresh the CMake lists and the ER
+  diagram, and rename the pgTAP test with the table.
+- The wide trade is gone, so no name collides: its files, table, subjects
+  and functions were deleted with it, and the =trading::trades:*=
+  permissions the booking already checks are the ones the entity's own
+  handler now checks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Anchor outputs deleted and regenerated under the new name | 30 and 30 | =codegen generate --dry-run=, then =codegen regenerate= | 84c6628286 + working tree |
+| Tracked files the rename changed | 166 | =scratchpad/rename_anchor.py= | 84c6628286 + working tree |
+| =trade_anchor= / =TradeAnchor= identifiers left outside history | 0 | =git grep -E "trade_anchor\|TradeAnchor"= | 84c6628286 + working tree |
+| Tables and functions in the database named for the anchor | 0 (the three hits are refdata tenor anchors) | =pg_tables= and =pg_proc= after recreate | 84c6628286 + working tree |
+| Round trip, merged portfolio: saved, exported, in scope | 16, 16, lost 0 / unexplained 0 | =reset_and_roundtrip.sh rtx= | 84c6628286 + working tree |
+| Envelopes as stated, empty elements ignored | 16 of 16 | per-trade compare of type and envelope | 84c6628286 + working tree |
+| Tenant purge of ACME | 103 rows in 9 tables to 0 in 90 (rolled back) | purge probe | 84c6628286 + working tree |
+| pgTAP under the test DDL role | 16 of 20; the 4 known stale files (captured) | =pg_prove= as =ORES_TEST_DB_DDL_USER= | 84c6628286 + working tree |
+| ctest | 90 of 90 | =compass test run= | 84c6628286 + working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2645][#2645]] | [trading] Rename the trade anchor to trade |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local: section headers in the SQL scripts still named the table "Trade anchors". | =trading_create.sql=, =drop_trading.sql=, RLS scripts | accept | Renamed to "Trades"; prose that calls the immutable row an anchor keeps the word. |
+
+* Result
+
+The trade is called trade everywhere: the model =ores.trading.trade= (same
+org id), the table =ores_trading_trades_tbl=, its functions, triggers and
+policies, the C++ types, the =trading.v1.trades.*= subjects, the
+=trading::trades:*= permissions, the TypeScript twins and the pgTAP test.
+No =trade_anchor= identifier remains outside the agile history. The round
+trip, the purge and every test are unchanged.

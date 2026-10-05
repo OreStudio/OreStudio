@@ -26,7 +26,7 @@
 #define ORES_TRADING_API_MESSAGING_TRADE_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/instrument_payload.hpp"
-#include "ores.trading.api/domain/trade_anchor.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -56,7 +56,7 @@ struct book_trade_request {
     /**
      * @brief The trade's immutable facts.
      */
-    ores::trading::domain::trade_anchor anchor;
+    ores::trading::domain::trade anchor;
     /**
      * @brief Where the trade is booked. Its trade id, party and counterparty
      * are replaced by the anchor's.
@@ -94,7 +94,7 @@ struct trade_export_item {
     /**
      * @brief The trade's immutable facts.
      */
-    ores::trading::domain::trade_anchor anchor;
+    ores::trading::domain::trade anchor;
     /**
      * @brief The trade's ORE identifier, or its id when it has none.
      */

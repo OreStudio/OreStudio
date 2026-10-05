@@ -30,6 +30,8 @@ import { CURRENCY_FIELDS, CurrenciesPage, CurrencyPage } from './currencies.js';
 import { CurrencyPairPage } from './currencyPairs.js';
 import { DeskGroupPage } from './deskGroups.js';
 import { valuesFromHistory, writeOf, type FieldSpec } from './records.js';
+import { reasonsFor } from './shared.js';
+import { parseTimestamp, relativeTime } from '../ui/Time.js';
 
 /**
  * The record screens, rendered from a seeded query cache, and the field table
@@ -44,6 +46,8 @@ function resource(key: string, keyFields: string[], versioned = true): RecordRes
         keyFields,
         versioned,
         writable: true,
+        search: key === 'currencies',
+        sortable: key === 'currencies' ? ['iso_code', 'name'] : [],
         writePermission: `refdata::${name}:write`,
         deletePermission: `refdata::${name}:delete`,
     };
@@ -180,19 +184,65 @@ describe('the field table', () => {
     });
 });
 
+const firstPage = { offset: 0, limit: 100, search: '', sort: '', descending: false };
+
 describe('the currency screens', () => {
-    it('lists the currencies with an add for a writer', () => {
+    it('lists one page of currencies with the server total, Refresh, Add and the pager', () => {
         const html = render('/refdata/currencies', (client) => {
-            client.setQueryData(['records', 'currencies'], [euro]);
+            client.setQueryData(['records', 'currencies', 'page', firstPage], {
+                rows: [euro],
+                total: 168,
+            });
             client.setQueryData(['my-access'], access(['refdata::currencies:write']));
         });
         expect(html).toContain('Add currency');
+        expect(html).toContain('Refresh');
         expect(html).toContain('Euro');
+        expect(html).toContain('1–1 of 168');
+        expect(html).toContain('Page size');
+        expect(html).toContain('Load all');
+        expect(html).toContain('Search…');
     });
 
-    it('shows a currency with its fields, its link panels and the export note', () => {
+    it('orders by a sortable column from the address, and marks it', () => {
+        const html = render('/refdata/currencies?sort=name&desc=1', (client) => {
+            client.setQueryData(
+                ['records', 'currencies', 'page', { ...firstPage, sort: 'name', descending: true }],
+                { rows: [euro], total: 1 },
+            );
+        });
+        expect(html).toContain('aria-sort="descending"');
+        expect(html).toContain('Name ↓');
+    });
+
+    it('says the list is empty, and offers Add to a writer', () => {
+        const html = render('/refdata/currencies', (client) => {
+            client.setQueryData(['records', 'currencies', 'page', firstPage], {
+                rows: [],
+                total: 0,
+            });
+            client.setQueryData(['my-access'], access(['*']));
+        });
+        expect(html).toContain('There are no currencies yet.');
+    });
+
+    it('shows a currency with its fields, the export note, Edit and Delete, and its links as tabs', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
-            client.setQueryData(['records', 'currencies'], [euro]);
+            client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
+            client.setQueryData(['my-access'], access(['*']));
+        });
+        expect(html).toContain('ACT/360');
+        expect(html).toContain('>Countries<');
+        expect(html).toContain('>Desk groups<');
+        expect(html).toContain('needs a server operation that does not exist yet');
+        expect(html).toContain('Edit');
+        expect(html).toContain('Delete');
+        expect(html).not.toContain('>Remove<');
+    });
+
+    it('lists the countries on their own tab, each removable as a link', () => {
+        const html = render('/refdata/currencies/EUR?tab=countries', (client) => {
+            client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
             client.setQueryData(
                 ['records', 'countries'],
                 [{ version: 1, alpha2_code: 'DE', name: 'Germany' }],
@@ -201,42 +251,49 @@ describe('the currency screens', () => {
                 ['records', 'currency-countries', 'EUR'],
                 [{ version: 1, currency_iso_code: 'EUR', country_alpha2_code: 'DE' }],
             );
-            client.setQueryData(['records', 'currency-calendars', 'EUR'], []);
-            client.setQueryData(['records', 'currency-memberships', 'EUR'], []);
             client.setQueryData(['my-access'], access(['*']));
         });
-        expect(html).toContain('ACT/360');
         expect(html).toContain('Germany');
-        expect(html).toContain('Desk groups');
-        expect(html).toContain('needs a server operation that does not exist yet');
-        expect(html).toContain('>Edit<');
+        expect(html).toContain('Remove');
+    });
+
+    it('ends the details with who last changed the record', () => {
+        const html = render('/refdata/currencies/EUR', (client) => {
+            client.setQueryData(['records', 'currencies', 'key', 'EUR'], {
+                ...euro,
+                modified_by: 'svc',
+                performed_by: 'priya',
+                recorded_at: '2026-10-04 22:10:00Z',
+                change_reason_code: 'common.rectification',
+                change_commentary: 'Fixed the symbol',
+            });
+        });
+        expect(html).toContain('Last changed:');
+        expect(html).toContain('svc for priya');
+        expect(html).toContain('common.rectification');
+        expect(html).toContain('Fixed the symbol');
     });
 
     it('offers a reader no change', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
-            client.setQueryData(['records', 'currencies'], [euro]);
+            client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
             client.setQueryData(['my-access'], access(['refdata::currencies:read']));
         });
-        expect(html).not.toContain('>Edit<');
-        expect(html).not.toContain('Choose one to add');
+        expect(html).not.toContain('Edit');
+        expect(html).not.toContain('Delete');
     });
 });
 
 describe('the desk group screen', () => {
-    it("lists the group's members from the whole junction", () => {
-        const html = render('/refdata/desk-groups/G11', (client) => {
-            client.setQueryData(
-                ['records', 'currency-groups'],
-                [
-                    {
-                        version: 1,
-                        code: 'G11',
-                        name: 'Group of eleven',
-                        description: '',
-                        display_order: 10,
-                    },
-                ],
-            );
+    it("lists the group's members on their own tab", () => {
+        const html = render('/refdata/desk-groups/G11?tab=members', (client) => {
+            client.setQueryData(['records', 'currency-groups', 'key', 'G11'], {
+                version: 1,
+                code: 'G11',
+                name: 'Group of eleven',
+                description: '',
+                display_order: 10,
+            });
             client.setQueryData(['records', 'currencies'], [euro]);
             client.setQueryData(
                 ['records', 'currency-memberships'],
@@ -264,35 +321,57 @@ describe('the currency pair screen', () => {
 
     it('shows the convention with a sample rate at its precision', () => {
         const html = render('/refdata/currency-pairs/EUR%2FUSD', (client) => {
-            client.setQueryData(['records', 'currency-pairs'], [pair]);
-            client.setQueryData(
-                ['records', 'currency-pair-conventions'],
-                [
-                    {
-                        version: 1,
-                        pair_code: 'EUR/USD',
-                        pip_factor: 0.0001,
-                        tick_size: 1,
-                        decimal_places: 4,
-                        spot_relative: true,
-                        end_of_month: false,
-                    },
-                ],
-            );
-            client.setQueryData(['records', 'pair-calendars', 'EUR/USD'], []);
+            client.setQueryData(['records', 'currency-pairs', 'key', 'EUR/USD'], pair);
+            client.setQueryData(['records', 'currency-pair-conventions', 'key', 'EUR/USD'], {
+                version: 1,
+                pair_code: 'EUR/USD',
+                pip_factor: 0.0001,
+                tick_size: 1,
+                decimal_places: 4,
+                spot_relative: true,
+                end_of_month: false,
+            });
             client.setQueryData(['my-access'], access(['*']));
         });
         expect(html).toContain('EUR/USD');
         expect(html).toContain('1.0842');
         expect(html).toContain('href="/refdata/currencies/USD"');
+        expect(html).toContain('>Calendars<');
     });
 
     it('says when a pair has no convention', () => {
         const html = render('/refdata/currency-pairs/EUR%2FUSD', (client) => {
-            client.setQueryData(['records', 'currency-pairs'], [pair]);
-            client.setQueryData(['records', 'currency-pair-conventions'], []);
+            client.setQueryData(['records', 'currency-pairs', 'key', 'EUR/USD'], pair);
+            client.setQueryData(['records', 'currency-pair-conventions', 'key', 'EUR/USD'], null);
             client.setQueryData(['my-access'], access(['*']));
         });
         expect(html).toContain('This pair has no convention');
+    });
+});
+
+describe('the reasons a write offers', () => {
+    const reasons = [
+        { code: 'common.non_material_update' },
+        { code: 'common.rectification' },
+        { code: 'common.data_correction' },
+    ];
+
+    it('refuses a touch for a change, and anything but a touch for no change', () => {
+        expect(reasonsFor(reasons, 'amend', true).map((reason) => reason.code)).toEqual([
+            'common.rectification',
+            'common.data_correction',
+        ]);
+        expect(reasonsFor(reasons, 'amend', false).map((reason) => reason.code)).toEqual([
+            'common.non_material_update',
+        ]);
+        expect(reasonsFor(reasons, 'delete', true)).toHaveLength(3);
+    });
+});
+
+describe('a relative time', () => {
+    it("says how long ago, in the person's language", () => {
+        const now = new Date('2026-10-05T12:00:00Z');
+        expect(relativeTime(parseTimestamp('2026-10-05 10:00:00Z'), now, 'en')).toBe('2 hours ago');
+        expect(relativeTime(parseTimestamp('2026-10-04 12:00:00Z'), now, 'en')).toBe('yesterday');
     });
 });

@@ -20,27 +20,28 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Input, Notice, PageHeader } from '../ui/Primitives.js';
+import { Notice } from '../ui/Primitives.js';
 import { HistoryPanel } from './HistoryPanel.js';
+import { RecordList } from './RecordList.js';
 import {
     ClassifiedValue,
     LinkPanel,
-    RecordDialog,
     RecordDetails,
-    RecordTable,
+    RecordDialog,
+    RecordGate,
+    RecordHeader,
     RemoveRecordDialog,
     RevertDialog,
+    show,
     useRecordPermissions,
     useRecordTabs,
-    show,
     useRecords,
     type FieldSpec,
 } from './records.js';
-import { Crumbs } from './shared.js';
 
 const RESOURCE = 'currencies';
 
@@ -89,97 +90,67 @@ export function currencyPath(code?: string): string {
         : `/refdata/currencies/${encodeURIComponent(code)}`;
 }
 
-/** The tenant's currencies, filtered by code or name, with an add for a person who may write. */
+/** The tenant's currencies: one page at a time, searched and sorted on the server. */
 export function CurrenciesPage(): ReactNode {
     const { t } = useTranslation();
-    const currencies = useRecords(RESOURCE);
-    const may = useRecordPermissions(RESOURCE);
-    const [filter, setFilter] = useState('');
-    const [adding, setAdding] = useState(false);
     const navigate = useNavigate();
-
-    if (currencies.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (currencies.isError) {
-        return <Notice tone="error">{currencies.error.message}</Notice>;
-    }
-    const wanted = filter.trim().toLowerCase();
-    const shown = currencies.data.filter(
-        (row) =>
-            wanted === '' ||
-            `${show(row['iso_code'])} ${show(row['name'])}`.toLowerCase().includes(wanted),
-    );
+    const [adding, setAdding] = useState(false);
     return (
-        <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.currencies.title') },
-                    ]}
-                />
-                <PageHeader
-                    title={t('refdata.currencies.title')}
-                    description={t('refdata.currencies.lead')}
-                    actions={
-                        may.write ? (
-                            <Button variant="primary" onClick={() => setAdding(true)}>
-                                {t('refdata.currencies.add')}
-                            </Button>
-                        ) : undefined
-                    }
-                />
-            </div>
-            <section className="overflow-hidden rounded-md border border-line">
-                <div className="border-b border-line p-3">
-                    <Input
-                        type="search"
-                        value={filter}
-                        placeholder={t('refdata.records.filter')}
-                        aria-label={t('refdata.records.filter')}
-                        onChange={(event) => setFilter(event.target.value)}
-                    />
-                </div>
-                <RecordTable
-                    rows={shown}
-                    pathOf={(row) => currencyPath(show(row['iso_code']))}
-                    empty={t('refdata.records.noMatch')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.iso_code'),
-                            cell: (row) => show(row['iso_code']),
-                            mono: true,
-                        },
-                        { header: t('refdata.fields.name'), cell: (row) => show(row['name']) },
-                        { header: t('refdata.fields.symbol'), cell: (row) => show(row['symbol']) },
-                        {
-                            header: t('refdata.fields.monetary_nature'),
-                            cell: (row) => (
-                                <ClassifiedValue
-                                    list="monetary-nature"
-                                    code={show(row['monetary_nature'])}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.market_tier'),
-                            cell: (row) => (
-                                <ClassifiedValue
-                                    list="currency-market-tier"
-                                    code={show(row['market_tier'])}
-                                />
-                            ),
-                        },
-                    ]}
-                />
-                <div className="border-t border-line px-4 py-2 text-xs text-ink-muted">
-                    {t('refdata.classifications.shown', {
-                        shown: String(shown.length),
-                        total: String(currencies.data.length),
-                    })}
-                </div>
-            </section>
+        <>
+            <RecordList
+                resource={RESOURCE}
+                title={t('refdata.currencies.title')}
+                lead={t('refdata.currencies.lead')}
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.currencies.title') },
+                ]}
+                pathOf={(row) => currencyPath(show(row['iso_code']))}
+                addLabel={t('refdata.currencies.add')}
+                onAdd={() => setAdding(true)}
+                columns={[
+                    {
+                        id: 'iso_code',
+                        header: t('refdata.fields.iso_code'),
+                        cell: (row) => show(row['iso_code']),
+                        mono: true,
+                        sort: 'iso_code',
+                    },
+                    {
+                        id: 'name',
+                        header: t('refdata.fields.name'),
+                        cell: (row) => show(row['name']),
+                        sort: 'name',
+                    },
+                    {
+                        id: 'symbol',
+                        header: t('refdata.fields.symbol'),
+                        cell: (row) => show(row['symbol']),
+                    },
+                    {
+                        id: 'monetary_nature',
+                        header: t('refdata.fields.monetary_nature'),
+                        cell: (row) => (
+                            <ClassifiedValue
+                                list="monetary-nature"
+                                code={show(row['monetary_nature'])}
+                            />
+                        ),
+                        sort: 'monetary_nature',
+                    },
+                    {
+                        id: 'market_tier',
+                        header: t('refdata.fields.market_tier'),
+                        cell: (row) => (
+                            <ClassifiedValue
+                                list="currency-market-tier"
+                                code={show(row['market_tier'])}
+                            />
+                        ),
+                        sort: 'market_tier',
+                    },
+                ]}
+            />
             {adding && (
                 <RecordDialog
                     title={t('refdata.currencies.addTitle')}
@@ -191,30 +162,22 @@ export function CurrenciesPage(): ReactNode {
                     onSaved={(write) => void navigate(currencyPath(String(write['iso_code'])))}
                 />
             )}
-        </div>
+        </>
     );
 }
 
 /**
- * One currency on one screen: the currency, its countries, calendars and desk
- * groups, and its history. The links keep no versions, so only the currency
- * itself has a history.
+ * One currency: its fields, then a tab for each kind of link (countries,
+ * calendars and desk groups), then its history. The links keep no versions,
+ * so only the currency itself has a history.
  */
 export function CurrencyPage(): ReactNode {
-    const { t } = useTranslation();
     const { code } = useParams();
-    const currencies = useRecords(RESOURCE);
-    if (currencies.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (currencies.isError) {
-        return <Notice tone="error">{currencies.error.message}</Notice>;
-    }
-    const row = currencies.data.find((candidate) => candidate['iso_code'] === code);
-    if (row === undefined) {
-        return <Navigate to={currencyPath()} replace />;
-    }
-    return <CurrencyBody row={row} />;
+    return (
+        <RecordGate resource={RESOURCE} recordKey={code ?? ''} listPath={currencyPath()}>
+            {(row) => <CurrencyBody row={row} />}
+        </RecordGate>
+    );
 }
 
 function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
@@ -222,7 +185,10 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const navigate = useNavigate();
     const code = show(row['iso_code']);
     const may = useRecordPermissions(RESOURCE);
-    const { tab, bar } = useRecordTabs({ label: code, tabs: ['details', 'history'] });
+    const { tab, bar } = useRecordTabs({
+        label: code,
+        tabs: ['details', 'countries', 'calendars', 'groups', 'history'],
+    });
     const countries = useRecords('countries');
     const calendars = useRecords('calendars');
     const groups = useRecords('currency-groups');
@@ -234,69 +200,57 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
 
     return (
         <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.currencies.title'), to: currencyPath() },
-                        { label: code },
-                    ]}
-                />
-                <PageHeader
-                    title={show(row['name'])}
-                    description={t('refdata.records.lead', { code, version: String(row.version) })}
-                    actions={
-                        may.write || may.remove ? (
-                            <div className="flex gap-2">
-                                {may.write && (
-                                    <Button onClick={() => setEditing(true)}>
-                                        {t('refdata.records.edit')}
-                                    </Button>
-                                )}
-                                {may.remove && (
-                                    <Button variant="danger" onClick={() => setRemoving(true)}>
-                                        {t('refdata.records.remove')}
-                                    </Button>
-                                )}
-                            </div>
-                        ) : undefined
-                    }
-                />
-            </div>
+            <RecordHeader
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.currencies.title'), to: currencyPath() },
+                    { label: code },
+                ]}
+                title={show(row['name'])}
+                recordKey={code}
+                version={row.version}
+                onEdit={may.write ? () => setEditing(true) : undefined}
+                onDelete={may.remove ? () => setRemoving(true) : undefined}
+            />
             {bar}
-            {tab === 'details' ? (
+            {tab === 'details' && (
                 <div className="space-y-4">
                     <RecordDetails specs={CURRENCY_FIELDS} row={row} />
-                    <div className="grid gap-4 lg:grid-cols-3">
-                        <LinkPanel
-                            title={t('refdata.currencies.countries')}
-                            junction="currency-countries"
-                            parentField="currency_iso_code"
-                            parentValue={code}
-                            childField="country_alpha2_code"
-                            choices={choices(countries.data, 'alpha2_code', 'name')}
-                        />
-                        <LinkPanel
-                            title={t('refdata.currencies.calendars')}
-                            junction="currency-calendars"
-                            parentField="currency_iso_code"
-                            parentValue={code}
-                            childField="calendar_code"
-                            choices={choices(calendars.data, 'code', 'name')}
-                        />
-                        <LinkPanel
-                            title={t('refdata.currencies.groups')}
-                            junction="currency-memberships"
-                            parentField="currency_iso_code"
-                            parentValue={code}
-                            childField="currency_group_code"
-                            choices={choices(groups.data, 'code', 'name')}
-                            pathOf={(group) => `/refdata/desk-groups/${encodeURIComponent(group)}`}
-                        />
-                    </div>
                     <Notice tone="info">{t('refdata.currencies.oreExport')}</Notice>
                 </div>
-            ) : (
+            )}
+            {tab === 'countries' && (
+                <LinkPanel
+                    title={t('refdata.currencies.countries')}
+                    junction="currency-countries"
+                    parentField="currency_iso_code"
+                    parentValue={code}
+                    childField="country_alpha2_code"
+                    choices={choices(countries.data, 'alpha2_code', 'name')}
+                />
+            )}
+            {tab === 'calendars' && (
+                <LinkPanel
+                    title={t('refdata.currencies.calendars')}
+                    junction="currency-calendars"
+                    parentField="currency_iso_code"
+                    parentValue={code}
+                    childField="calendar_code"
+                    choices={choices(calendars.data, 'code', 'name')}
+                />
+            )}
+            {tab === 'groups' && (
+                <LinkPanel
+                    title={t('refdata.currencies.groups')}
+                    junction="currency-memberships"
+                    parentField="currency_iso_code"
+                    parentValue={code}
+                    childField="currency_group_code"
+                    choices={choices(groups.data, 'code', 'name')}
+                    pathOf={(group) => `/refdata/desk-groups/${encodeURIComponent(group)}`}
+                />
+            )}
+            {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.refdata.currency"
                     entityId={code}
@@ -318,7 +272,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
             {removing && (
                 <RemoveRecordDialog
                     resource={RESOURCE}
-                    title={t('refdata.records.removeTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code })}
                     warning={t('refdata.currencies.removeWarning')}
                     recordKey={{ iso_code: code }}
                     version={row.version}

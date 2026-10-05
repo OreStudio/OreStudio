@@ -20,27 +20,27 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Notice, PageHeader } from '../ui/Primitives.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
+import { RecordList } from './RecordList.js';
 import {
     LinkPanel,
-    RecordDialog,
     RecordDetails,
-    RecordTable,
+    RecordDialog,
+    RecordGate,
+    RecordHeader,
     RemoveRecordDialog,
     RevertDialog,
+    show,
     useRecordPermissions,
     useRecordTabs,
-    show,
     useRecords,
     type FieldSpec,
 } from './records.js';
-import { Crumbs } from './shared.js';
 
 const RESOURCE = 'currency-groups';
 const MEMBERSHIPS = 'currency-memberships';
@@ -58,72 +58,54 @@ export function deskGroupPath(code?: string): string {
         : `/refdata/desk-groups/${encodeURIComponent(code)}`;
 }
 
-/** The desk groups in display order, each with how many currencies it holds. */
+/** The desk groups, in their display order, one page at a time. */
 export function DeskGroupsPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const groups = useRecords(RESOURCE);
-    const memberships = useRecords(MEMBERSHIPS);
-    const may = useRecordPermissions(RESOURCE);
     const [adding, setAdding] = useState(false);
-
-    if (groups.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (groups.isError) {
-        return <Notice tone="error">{groups.error.message}</Notice>;
-    }
-    const members = (code: string): number =>
-        (memberships.data ?? []).filter((row) => row['currency_group_code'] === code).length;
-    const ordered = [...groups.data].sort(
-        (a, b) =>
-            Number(a['display_order'] ?? 0) - Number(b['display_order'] ?? 0) ||
-            show(a['code']).localeCompare(show(b['code'])),
-    );
     return (
-        <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.deskGroups.title') },
-                    ]}
-                />
-                <PageHeader
-                    title={t('refdata.deskGroups.title')}
-                    description={t('refdata.deskGroups.lead')}
-                    actions={
-                        may.write ? (
-                            <Button variant="primary" onClick={() => setAdding(true)}>
-                                {t('refdata.deskGroups.add')}
-                            </Button>
-                        ) : undefined
-                    }
-                />
-            </div>
-            <section className="overflow-hidden rounded-md border border-line">
-                <RecordTable
-                    rows={ordered}
-                    pathOf={(row) => deskGroupPath(show(row['code']))}
-                    empty={t('refdata.deskGroups.empty')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.code'),
-                            cell: (row) => show(row['code']),
-                            mono: true,
-                        },
-                        { header: t('refdata.fields.name'), cell: (row) => show(row['name']) },
-                        {
-                            header: t('refdata.deskGroups.members'),
-                            cell: (row) => members(show(row['code'])),
-                        },
-                        {
-                            header: t('refdata.fields.display_order'),
-                            cell: (row) => show(row['display_order']),
-                        },
-                    ]}
-                />
-            </section>
+        <>
+            <RecordList
+                resource={RESOURCE}
+                title={t('refdata.deskGroups.title')}
+                lead={t('refdata.deskGroups.lead')}
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.deskGroups.title') },
+                ]}
+                pathOf={(row) => deskGroupPath(show(row['code']))}
+                addLabel={t('refdata.deskGroups.add')}
+                onAdd={() => setAdding(true)}
+                columns={[
+                    {
+                        id: 'display_order',
+                        header: t('refdata.fields.display_order'),
+                        cell: (row) => show(row['display_order']),
+                        mono: true,
+                        numeric: true,
+                        sort: 'display_order',
+                    },
+                    {
+                        id: 'code',
+                        header: t('refdata.fields.code'),
+                        cell: (row) => show(row['code']),
+                        mono: true,
+                        sort: 'code',
+                    },
+                    {
+                        id: 'name',
+                        header: t('refdata.fields.name'),
+                        cell: (row) => show(row['name']),
+                        sort: 'name',
+                    },
+                    {
+                        id: 'description',
+                        header: t('refdata.fields.description'),
+                        cell: (row) => show(row['description']),
+                        hidden: true,
+                    },
+                ]}
+            />
             {adding && (
                 <RecordDialog
                     title={t('refdata.deskGroups.addTitle')}
@@ -134,26 +116,18 @@ export function DeskGroupsPage(): ReactNode {
                     onSaved={(write) => void navigate(deskGroupPath(String(write['code'])))}
                 />
             )}
-        </div>
+        </>
     );
 }
 
-/** One desk group: its details, its members and its history. */
+/** One desk group: its fields, its members, and its history. */
 export function DeskGroupPage(): ReactNode {
-    const { t } = useTranslation();
     const { code } = useParams();
-    const groups = useRecords(RESOURCE);
-    if (groups.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (groups.isError) {
-        return <Notice tone="error">{groups.error.message}</Notice>;
-    }
-    const row = groups.data.find((candidate) => candidate['code'] === code);
-    if (row === undefined) {
-        return <Navigate to={deskGroupPath()} replace />;
-    }
-    return <DeskGroupBody row={row} />;
+    return (
+        <RecordGate resource={RESOURCE} recordKey={code ?? ''} listPath={deskGroupPath()}>
+            {(row) => <DeskGroupBody row={row} />}
+        </RecordGate>
+    );
 }
 
 function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
@@ -161,7 +135,7 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
     const navigate = useNavigate();
     const code = show(row['code']);
     const may = useRecordPermissions(RESOURCE);
-    const { tab, bar } = useRecordTabs({ label: code, tabs: ['details', 'history'] });
+    const { tab, bar } = useRecordTabs({ label: code, tabs: ['details', 'members', 'history'] });
     const currencies = useRecords('currencies');
     const memberships = useRecords(MEMBERSHIPS);
     const [editing, setEditing] = useState(false);
@@ -170,54 +144,36 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
 
     return (
         <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.deskGroups.title'), to: deskGroupPath() },
-                        { label: code },
-                    ]}
-                />
-                <PageHeader
-                    title={show(row['name'])}
-                    description={t('refdata.records.lead', { code, version: String(row.version) })}
-                    actions={
-                        may.write || may.remove ? (
-                            <div className="flex gap-2">
-                                {may.write && (
-                                    <Button onClick={() => setEditing(true)}>
-                                        {t('refdata.records.edit')}
-                                    </Button>
-                                )}
-                                {may.remove && (
-                                    <Button variant="danger" onClick={() => setRemoving(true)}>
-                                        {t('refdata.records.remove')}
-                                    </Button>
-                                )}
-                            </div>
-                        ) : undefined
-                    }
-                />
-            </div>
+            <RecordHeader
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.deskGroups.title'), to: deskGroupPath() },
+                    { label: code },
+                ]}
+                title={show(row['name'])}
+                recordKey={code}
+                version={row.version}
+                onEdit={may.write ? () => setEditing(true) : undefined}
+                onDelete={may.remove ? () => setRemoving(true) : undefined}
+            />
             {bar}
-            {tab === 'details' ? (
-                <div className="grid gap-4 lg:grid-cols-2">
-                    <RecordDetails specs={GROUP_FIELDS} row={row} />
-                    <LinkPanel
-                        title={t('refdata.deskGroups.members')}
-                        junction={MEMBERSHIPS}
-                        parentField="currency_group_code"
-                        parentValue={code}
-                        childField="currency_iso_code"
-                        readAll
-                        choices={(currencies.data ?? []).map((currency) => ({
-                            value: show(currency['iso_code']),
-                            label: show(currency['name']),
-                        }))}
-                        pathOf={(currency) => currencyPath(currency)}
-                    />
-                </div>
-            ) : (
+            {tab === 'details' && <RecordDetails specs={GROUP_FIELDS} row={row} />}
+            {tab === 'members' && (
+                <LinkPanel
+                    title={t('refdata.deskGroups.members')}
+                    junction={MEMBERSHIPS}
+                    parentField="currency_group_code"
+                    parentValue={code}
+                    childField="currency_iso_code"
+                    readAll
+                    choices={(currencies.data ?? []).map((currency) => ({
+                        value: show(currency['iso_code']),
+                        label: show(currency['name']),
+                    }))}
+                    pathOf={(currency) => currencyPath(currency)}
+                />
+            )}
+            {tab === 'history' && (
                 <HistoryPanel
                     entityType="ores.refdata.currency_group"
                     entityId={code}
@@ -238,7 +194,7 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
             {removing && (
                 <RemoveRecordDialog
                     resource={RESOURCE}
-                    title={t('refdata.records.removeTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code })}
                     warning={t('refdata.deskGroups.removeWarning')}
                     recordKey={{ code }}
                     version={row.version}

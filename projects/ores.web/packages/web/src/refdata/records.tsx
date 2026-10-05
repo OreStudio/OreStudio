@@ -21,13 +21,15 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { Navigate, useNavigate, useSearchParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { RelativeTime } from '../ui/Time.js';
 import { fieldValue } from './HistoryPanel.js';
-import { ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
+import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
 
 /** The reason a new row is written with; no other reason applies to a new record. */
 export const NEW_RECORD_REASON = 'system.new_record';
@@ -163,6 +165,15 @@ export function useRegistry(): ReturnType<
     return useQuery({ queryKey: ['refdata-registry'], queryFn: api.refdataRegistry });
 }
 
+/** One record, named by its key; the page of a record reads only that record. */
+export function useRecord(resource: string, key: string) {
+    return useQuery({
+        queryKey: ['records', resource, 'key', key],
+        queryFn: () => api.record(resource, key),
+        retry: false,
+    });
+}
+
 export function useRecords(resource: string, parent?: string) {
     return useQuery({
         queryKey: parent === undefined ? ['records', resource] : ['records', resource, parent],
@@ -224,21 +235,26 @@ export function FieldInput({
     value,
     disabled,
     onChange,
+    error,
+    onBlur,
 }: {
     readonly spec: FieldSpec;
     readonly value: string;
     readonly disabled: boolean;
     readonly onChange: (value: string) => void;
+    readonly error?: string | undefined;
+    readonly onBlur?: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const choices = useChoices(spec.kind);
     const label = t(`refdata.fields.${spec.field}`);
     if (spec.kind.kind === 'classification' || spec.kind.kind === 'record') {
         return (
-            <Field label={label}>
+            <Field label={label} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
+                    onBlur={onBlur}
                     onChange={(event) => onChange(event.target.value)}
                 >
                     {(spec.optional === true || value === '') && <option value="">—</option>}
@@ -256,10 +272,11 @@ export function FieldInput({
     }
     if (spec.kind.kind === 'bool') {
         return (
-            <Field label={label}>
+            <Field label={label} {...(error === undefined ? {} : { error })}>
                 <Select
                     value={value}
                     disabled={disabled}
+                    onBlur={onBlur}
                     onChange={(event) => onChange(event.target.value)}
                 >
                     {spec.optional === true && <option value="">—</option>}
@@ -271,10 +288,11 @@ export function FieldInput({
     }
     const numeric = spec.kind.kind === 'int' || spec.kind.kind === 'decimal';
     return (
-        <Field label={label}>
+        <Field label={label} {...(error === undefined ? {} : { error })}>
             <Input
                 value={value}
                 disabled={disabled}
+                onBlur={onBlur}
                 inputMode={numeric ? 'decimal' : undefined}
                 maxLength={spec.kind.kind === 'text' ? (spec.kind.max ?? 2000) : 40}
                 onChange={(event) => onChange(event.target.value)}
@@ -300,6 +318,44 @@ export function invalidFields(specs: readonly FieldSpec[], values: FieldValues):
             return false;
         })
         .map((spec) => spec.field);
+}
+
+/**
+ * Asks before a form with changes closes, as the record screen standard
+ * requires. `close` asks once; the footer then offers to keep editing or to
+ * close anyway.
+ */
+export function useCloseGuard(
+    dirty: boolean,
+    onClose: () => void,
+): { readonly leaving: boolean; readonly close: () => void; readonly stay: () => void } {
+    const [leaving, setLeaving] = useState(false);
+    return {
+        leaving,
+        close: () => (dirty && !leaving ? setLeaving(true) : onClose()),
+        stay: () => setLeaving(false),
+    };
+}
+
+/** The footer a form shows while it asks whether to close with unsaved changes. */
+export function LeavingFooter({
+    onStay,
+    onLeave,
+}: {
+    readonly onStay: () => void;
+    readonly onLeave: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <>
+            <Button variant="ghost" onClick={onStay}>
+                {t('refdata.records.keepEditing')}
+            </Button>
+            <Button variant="danger" icon="cancel" onClick={onLeave}>
+                {t('refdata.records.closeAnyway')}
+            </Button>
+        </>
+    );
 }
 
 /**
@@ -333,12 +389,28 @@ export function RecordDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const reason = useReason('amend');
     const [values, setValues] = useState<FieldValues>(valuesOf(specs, row));
     const [commentary, setCommentary] = useState('');
+    const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
     const editing = row !== undefined;
+    const changed =
+        JSON.stringify(writeOf(specs, values)) !==
+        JSON.stringify(writeOf(specs, valuesOf(specs, row)));
+    const reason = useReason('amend', changed);
     const missing = editing && reason.needsCommentary && commentary.trim() === '';
     const invalid = invalidFields(specs, values);
+    const dirty = editing
+        ? changed || commentary.trim() !== ''
+        : Object.values(values).some((value) => value !== '');
+    const guard = useCloseGuard(dirty, onClose);
+    const errorOf = (spec: FieldSpec): string | undefined => {
+        if (!touched.has(spec.field) || !invalid.includes(spec.field)) {
+            return undefined;
+        }
+        return (values[spec.field] ?? '').trim() === ''
+            ? t('refdata.records.required')
+            : t('refdata.records.invalidValue');
+    };
     const save = useMutation({
         mutationFn: async () => {
             const write = { ...kept(keep, row), ...writeOf(specs, values) };
@@ -360,22 +432,29 @@ export function RecordDialog({
     return (
         <Dialog
             title={title}
-            onClose={onClose}
+            onClose={guard.close}
             wide
             footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('refdata.records.cancel')}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        pending={save.isPending}
-                        disabled={invalid.length > 0 || missing || (editing && reason.code === '')}
-                        onClick={() => save.mutate()}
-                    >
-                        {editing ? t('refdata.records.save') : t('refdata.records.add')}
-                    </Button>
-                </>
+                guard.leaving ? (
+                    <LeavingFooter onStay={guard.stay} onLeave={onClose} />
+                ) : (
+                    <>
+                        <Button variant="ghost" icon="cancel" onClick={guard.close}>
+                            {t('refdata.records.cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            icon={editing ? 'save' : 'add'}
+                            pending={save.isPending}
+                            disabled={
+                                invalid.length > 0 || missing || (editing && reason.code === '')
+                            }
+                            onClick={() => save.mutate()}
+                        >
+                            {editing ? t('refdata.records.save') : t('refdata.records.add')}
+                        </Button>
+                    </>
+                )
             }
         >
             <div className="space-y-3">
@@ -387,9 +466,12 @@ export function RecordDialog({
                             value={values[spec.field] ?? ''}
                             disabled={editing && spec.fixed === true}
                             onChange={(value) => setValues({ ...values, [spec.field]: value })}
+                            onBlur={() => setTouched(new Set([...touched, spec.field]))}
+                            error={errorOf(spec)}
                         />
                     ))}
                 </div>
+                {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
                 {editing ? (
                     <ReasonFields
                         reason={reason}
@@ -415,6 +497,32 @@ export function RecordDialog({
     );
 }
 
+/**
+ * Who last changed a record, for whom, when and why, as the record screen
+ * standard closes the Details tab with it. A record with no versions has none.
+ */
+export function LastChanged({ row }: { readonly row: RecordRow }): ReactNode {
+    const { t } = useTranslation();
+    const modified = show(row['modified_by']);
+    const performed = show(row['performed_by']);
+    const commentary = show(row['change_commentary']);
+    if (show(row['recorded_at']) === '') {
+        return null;
+    }
+    return (
+        <p className="border-t border-line px-4 py-3 text-xs text-ink-muted">
+            <span className="text-ink-faint">{t('refdata.records.lastChanged')}</span>{' '}
+            {t('refdata.records.versionLabel', { version: String(row.version) })} ·{' '}
+            {modified === performed || performed === ''
+                ? modified
+                : t('refdata.records.modifiedFor', { modified, performed })}{' '}
+            · <RelativeTime at={show(row['recorded_at'])} /> ·{' '}
+            <span className="font-mono">{show(row['change_reason_code'])}</span>
+            {commentary !== '' && <> · “{commentary}”</>}
+        </p>
+    );
+}
+
 /** A record's fields, laid out as labelled values. Pickers show the label of their choice. */
 export function RecordDetails({
     specs,
@@ -427,8 +535,8 @@ export function RecordDetails({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <section className="rounded-md border border-line bg-surface-raised p-4">
-            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="rounded-md border border-line bg-surface-raised">
+            <dl className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
                 {specs.map((spec) => (
                     <div key={spec.field}>
                         <dt className="text-xs text-ink-faint">
@@ -446,6 +554,7 @@ export function RecordDetails({
                     </div>
                 ))}
             </dl>
+            <LastChanged row={row} />
         </section>
     );
 }
@@ -649,11 +758,12 @@ export function LinkPanel({
                                 <Button
                                     size="sm"
                                     variant="ghost"
+                                    icon="remove"
                                     aria-label={t('refdata.records.unlink', { name: name(child) })}
                                     pending={remove.isPending && remove.variables === child}
                                     onClick={() => remove.mutate(child)}
                                 >
-                                    ×
+                                    {t('refdata.records.removeLink')}
                                 </Button>
                             )}
                         </li>
@@ -678,6 +788,7 @@ export function LinkPanel({
                     </Select>
                     <Button
                         size="sm"
+                        icon="add"
                         disabled={adding === ''}
                         pending={add.isPending}
                         onClick={() => add.mutate()}
@@ -738,11 +849,12 @@ export function RevertDialog({
             onClose={onClose}
             footer={
                 <>
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
                         {t('refdata.records.cancel')}
                     </Button>
                     <Button
                         variant="primary"
+                        icon="revert"
                         pending={revert.isPending}
                         disabled={reason.code === ''}
                         onClick={() => revert.mutate()}
@@ -819,16 +931,17 @@ export function RemoveRecordDialog({
             onClose={onClose}
             footer={
                 <>
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
                         {t('refdata.records.cancel')}
                     </Button>
                     <Button
                         variant="danger"
+                        icon="delete"
                         pending={remove.isPending}
                         disabled={reason.code === '' || missing}
                         onClick={() => remove.mutate()}
                     >
-                        {t('refdata.records.remove')}
+                        {t('refdata.records.delete')}
                     </Button>
                 </>
             }
@@ -844,5 +957,87 @@ export function RemoveRecordDialog({
                 {remove.isError && <Notice tone="error">{remove.error.message}</Notice>}
             </div>
         </Dialog>
+    );
+}
+
+/**
+ * Reads one record by its key and draws it, or says it is loading, or says why
+ * it failed. A key with no record returns to the list.
+ */
+export function RecordGate({
+    resource,
+    recordKey,
+    listPath,
+    children,
+}: {
+    readonly resource: string;
+    readonly recordKey: string;
+    readonly listPath: string;
+    readonly children: (row: RecordRow) => ReactNode;
+}): ReactNode {
+    const { t } = useTranslation();
+    const record = useRecord(resource, recordKey);
+    if (record.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (record.isError) {
+        return record.error instanceof ApiFailure && record.error.status === 404 ? (
+            <Navigate to={listPath} replace />
+        ) : (
+            <Notice tone="error">{record.error.message}</Notice>
+        );
+    }
+    return <>{children(record.data)}</>;
+}
+
+/**
+ * The head of a record page: the trail, the record's name, its key and
+ * version, and its actions in the standard order, the kind's own first, then
+ * Edit, then Delete. An action the person may not take is not drawn.
+ */
+export function RecordHeader({
+    crumbs,
+    title,
+    recordKey,
+    version,
+    own,
+    onEdit,
+    onDelete,
+}: {
+    readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
+    readonly title: string;
+    readonly recordKey: string;
+    readonly version: number;
+    readonly own?: ReactNode;
+    readonly onEdit?: (() => void) | undefined;
+    readonly onDelete?: (() => void) | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div>
+            <Crumbs parts={crumbs} />
+            <PageHeader
+                title={title}
+                description={t('refdata.records.lead', {
+                    code: recordKey,
+                    version: String(version),
+                })}
+                actions={
+                    <div className="flex gap-2">
+                        {own}
+                        {onEdit !== undefined && (
+                            <Button icon="edit" onClick={onEdit}>
+                                {t('refdata.records.edit')}
+                            </Button>
+                        )}
+                        {onDelete !== undefined && (
+                            <Button variant="danger" icon="delete" onClick={onDelete}>
+                                {t('refdata.records.delete')}
+                            </Button>
+                        )}
+                    </div>
+                }
+            />
+        </div>
     );
 }

@@ -149,13 +149,22 @@ export {
 export type { AccessWrite } from './access.js';
 export {
     REFDATA_RECORDS,
+    listRecordPage,
     listRecords,
+    readRecord,
     recordResource,
     removeRecord,
     resourceName,
     saveRecord,
 } from './records.js';
-export type { RecordResource, RecordRow, WriteIntent, WriteOutcome } from './records.js';
+export type {
+    PageRequest,
+    RecordPage,
+    RecordResource,
+    RecordRow,
+    WriteIntent,
+    WriteOutcome,
+} from './records.js';
 export {
     CLASSIFICATION_LISTS,
     classificationCatalogue,

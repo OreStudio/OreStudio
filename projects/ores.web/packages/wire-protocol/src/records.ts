@@ -40,6 +40,8 @@ import { resultEnvelopeSchema } from './operations.js';
  *
  * A junction has no versions and is read by its parent, through `listBy`.
  * A resource that is not writable is read only, for the pickers that need it.
+ * `search` and `sortable` say what the model made searchable and sortable on
+ * the server, so a list pages, searches and sorts there and never in the browser.
  */
 export interface RecordResource {
     readonly key: string;
@@ -49,6 +51,8 @@ export interface RecordResource {
     readonly versioned: boolean;
     readonly writable: boolean;
     readonly asOf: boolean;
+    readonly search: boolean;
+    readonly sortable: readonly string[];
     readonly listBy?: string;
     readonly subjects: {
         readonly list: string;
@@ -73,6 +77,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'currencies',
         versioned: true,
         writable: true,
+        search: true,
+        sortable: ['iso_code', 'name', 'monetary_nature', 'market_tier'],
         asOf: true,
         subjects: {
             list: currencySubjects.list_currencies_request,
@@ -87,6 +93,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'countries',
         versioned: true,
         writable: false,
+        search: false,
+        sortable: [],
         asOf: true,
         subjects: {
             list: countrySubjects.list_countries_request,
@@ -101,6 +109,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'calendars',
         versioned: true,
         writable: false,
+        search: false,
+        sortable: [],
         asOf: false,
         subjects: {
             list: calendarSubjects.list_calendars_request,
@@ -115,6 +125,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'groups',
         versioned: true,
         writable: true,
+        search: true,
+        sortable: ['code', 'name', 'display_order'],
         asOf: false,
         subjects: {
             list: currencyGroupSubjects.list_currency_groups_request,
@@ -129,6 +141,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'currency_countries',
         versioned: false,
         writable: true,
+        search: false,
+        sortable: [],
         asOf: false,
         listBy: 'currency_iso_code',
         subjects: {
@@ -145,6 +159,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'currency_calendars',
         versioned: false,
         writable: true,
+        search: false,
+        sortable: [],
         asOf: false,
         listBy: 'currency_iso_code',
         subjects: {
@@ -161,6 +177,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'currency_currency_groups',
         versioned: false,
         writable: true,
+        search: false,
+        sortable: [],
         asOf: false,
         listBy: 'currency_iso_code',
         subjects: {
@@ -177,6 +195,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'pairs',
         versioned: true,
         writable: true,
+        search: true,
+        sortable: ['pair_code', 'base_currency', 'quote_currency', 'classification'],
         asOf: false,
         subjects: {
             list: currencyPairSubjects.list_currency_pairs_request,
@@ -191,6 +211,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'conventions',
         versioned: true,
         writable: true,
+        search: false,
+        sortable: [],
         asOf: false,
         subjects: {
             list: currencyPairConventionSubjects.list_currency_pair_conventions_request,
@@ -205,6 +227,8 @@ export const REFDATA_RECORDS: readonly RecordResource[] = [
         rows: 'currency_pair_convention_calendars',
         versioned: false,
         writable: true,
+        search: false,
+        sortable: [],
         asOf: false,
         listBy: 'pair_code',
         subjects: {
@@ -265,6 +289,109 @@ const rowSchema = z.looseObject({ version: z.int().nonnegative().default(0) });
 const RECORD_PAGE = 1000;
 
 const resultReplySchema = z.object({ result: resultEnvelopeSchema });
+
+/**
+ * A list's filter record, with every member the resource's filter has. The
+ * server decodes the record whole, so a member the call does not use is sent
+ * as null rather than left out.
+ */
+function filterFor(
+    resource: RecordResource,
+    members: { readonly oneOf?: readonly string[]; readonly search?: string },
+): Record<string, unknown> {
+    const [key] = resource.keyFields;
+    return {
+        ...(key === undefined || resource.keyFields.length !== 1
+            ? {}
+            : { [`${key}_one_of`]: members.oneOf ?? null }),
+        ...(resource.search ? { search: members.search ?? null } : {}),
+    };
+}
+
+/** How a list asks for one page: where it starts, how long it is, the search and the order. */
+export interface PageRequest {
+    readonly offset: number;
+    readonly limit: number;
+    readonly search: string;
+    readonly sort: string;
+    readonly descending: boolean;
+}
+
+/** One page of a list, and how many rows match in all. */
+export interface RecordPage {
+    readonly rows: readonly RecordRow[];
+    readonly total: number;
+}
+
+const pageReplySchema = z.looseObject({
+    result: resultEnvelopeSchema,
+    total: z.int().nonnegative().default(0),
+});
+
+/**
+ * One page of a resource, with the server's total, searched and ordered on the
+ * server. The search and the order are refused by the caller unless the
+ * resource declares them, so they reach the server only where the model has
+ * them.
+ */
+export async function listRecordPage(
+    caller: AuthenticatedCaller,
+    resource: RecordResource,
+    page: PageRequest,
+): Promise<RecordPage> {
+    const reply = await caller.callAuthenticated(
+        resource.subjects.list,
+        {
+            offset: page.offset,
+            limit: page.limit,
+            order: { field: page.sort, descending: page.descending },
+            filter: page.search === '' ? null : filterFor(resource, { search: page.search }),
+            ...(resource.asOf ? { as_of: null } : {}),
+        },
+        pageReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(resource.subjects.list, reply.result.message);
+    }
+    return {
+        rows: z.array(rowSchema).default([]).parse(reply[resource.rows]),
+        total: reply.total,
+    };
+}
+
+/**
+ * One record, named by its key, or undefined when there is none. The list's
+ * one-of filter on the key reads it, so a record page reads one row rather
+ * than the whole list. Only a resource with a one-field key is read this way.
+ */
+export async function readRecord(
+    caller: AuthenticatedCaller,
+    resource: RecordResource,
+    key: string,
+): Promise<RecordRow | undefined> {
+    const [field] = resource.keyFields;
+    if (field === undefined || resource.keyFields.length !== 1) {
+        throw new OperationFailedError(
+            resource.subjects.list,
+            `${resource.key} has no one-field key.`,
+        );
+    }
+    const reply = await caller.callAuthenticated(
+        resource.subjects.list,
+        {
+            offset: 0,
+            limit: 1,
+            order: { field: '', descending: false },
+            filter: filterFor(resource, { oneOf: [key] }),
+            ...(resource.asOf ? { as_of: null } : {}),
+        },
+        z.looseObject({ result: resultEnvelopeSchema }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(resource.subjects.list, reply.result.message);
+    }
+    return z.array(rowSchema).default([]).parse(reply[resource.rows])[0];
+}
 
 /**
  * Every row of a resource, or every row of one parent when `parent` names it,

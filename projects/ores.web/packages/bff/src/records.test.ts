@@ -147,6 +147,8 @@ describe('GET /api/refdata', () => {
             keyFields: ['currency_iso_code', 'country_alpha2_code'],
             versioned: false,
             writable: true,
+            search: false,
+            sortable: [],
             writePermission: 'refdata::currency_countries:write',
             deletePermission: 'refdata::currency_countries:delete',
         });
@@ -385,5 +387,69 @@ describe('GET /api/history for a record', () => {
             '/api/history?entityType=ores.refdata.currency_country&entityId=EUR',
         );
         expect(refused.statusCode).toBe(404);
+    });
+});
+
+describe('a paged list read', () => {
+    it('answers one page and the total, ordered and searched on the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.currencies.list': {
+                result: ok,
+                currencies: [{ iso_code: 'EUR', version: 2 }],
+                total: 168,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/currencies?offset=100&limit=50&search=eu&sort=name&descending=true',
+        );
+        expect(response.json()).toEqual({ rows: [{ iso_code: 'EUR', version: 2 }], total: 168 });
+        expect(calls[0]?.body).toMatchObject({
+            offset: 100,
+            limit: 50,
+            order: { field: 'name', descending: true },
+            filter: { search: 'eu' },
+        });
+    });
+
+    it('refuses an order the resource does not declare, a search it lacks, and a limit over 1000', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        for (const url of [
+            '/api/refdata/currencies?limit=50&sort=symbol',
+            '/api/refdata/countries?limit=50&search=fr',
+            '/api/refdata/currencies?limit=5000',
+        ]) {
+            expect((await send(server, sessionId, 'GET', url)).statusCode).toBe(400);
+        }
+        expect(calls).toHaveLength(0);
+    });
+});
+
+describe('GET /api/refdata/:resource/key/:key', () => {
+    it('answers the one record, and 404 when there is none', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.currency_pairs.list': {
+                result: ok,
+                pairs: [{ pair_code: 'EUR/USD', version: 3 }],
+                total: 1,
+            },
+            'refdata.v1.currency_groups.list': { result: ok, groups: [], total: 0 },
+        });
+        const found = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/currency-pairs/key/EUR%2FUSD',
+        );
+        expect(found.json()).toEqual({ row: { pair_code: 'EUR/USD', version: 3 } });
+        const missing = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/currency-groups/key/NONE',
+        );
+        expect(missing.statusCode).toBe(404);
     });
 });

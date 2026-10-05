@@ -131,6 +131,8 @@ const recordResourceViewSchema = z.object({
     keyFields: z.array(z.string()),
     versioned: z.boolean(),
     writable: z.boolean(),
+    search: z.boolean(),
+    sortable: z.array(z.string()),
     writePermission: z.string(),
     deletePermission: z.string(),
 });
@@ -421,6 +423,43 @@ export const api = {
         return z
             .object({ rows: z.array(recordRowSchema) })
             .parse(await request(path, { method: 'GET' })).rows;
+    },
+
+    /** One page of a resource and the server's total, searched and ordered on the server. */
+    async recordPage(
+        resource: string,
+        page: {
+            readonly offset: number;
+            readonly limit: number;
+            readonly search: string;
+            readonly sort: string;
+            readonly descending: boolean;
+        },
+    ): Promise<{ readonly rows: readonly RecordRow[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+            sort: page.sort,
+            descending: String(page.descending),
+        });
+        return z.object({ rows: z.array(recordRowSchema), total: z.int().nonnegative() }).parse(
+            await request(`/api/refdata/${encodeURIComponent(resource)}?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** One record, named by its key. */
+    async record(resource: string, key: string): Promise<RecordRow> {
+        return z
+            .object({ row: recordRowSchema })
+            .parse(
+                await request(
+                    `/api/refdata/${encodeURIComponent(resource)}/key/${encodeURIComponent(key)}`,
+                    { method: 'GET' },
+                ),
+            ).row;
     },
 
     /** Writes one row: a new row with no version, else a correction of the version read. */

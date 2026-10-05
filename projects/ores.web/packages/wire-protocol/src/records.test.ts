@@ -23,7 +23,9 @@ import { describe, expect, it } from 'vitest';
 import type { AuthenticatedCaller } from './account-operations.js';
 import {
     REFDATA_RECORDS,
+    listRecordPage,
     listRecords,
+    readRecord,
     recordResource,
     removeRecord,
     resourceName,
@@ -223,5 +225,78 @@ describe('the record writes', () => {
         expect(calls[0]?.body).toMatchObject({
             removal: { precondition: { kind: 'must_match_version', version: 3 } },
         });
+    });
+});
+
+describe('listRecordPage', () => {
+    it('asks for one page with the search and the order, and answers the total', async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.currencies.list': {
+                result: ok,
+                currencies: [{ iso_code: 'EUR', version: 1 }],
+                total: 168,
+            },
+        });
+        const page = await listRecordPage(caller, resource('currencies'), {
+            offset: 100,
+            limit: 50,
+            search: 'eu',
+            sort: 'name',
+            descending: true,
+        });
+        expect(page).toEqual({ rows: [{ iso_code: 'EUR', version: 1 }], total: 168 });
+        expect(calls[0]?.body).toEqual({
+            offset: 100,
+            limit: 50,
+            order: { field: 'name', descending: true },
+            filter: { iso_code_one_of: null, search: 'eu' },
+            as_of: null,
+        });
+    });
+
+    it('sends no filter when there is no search', async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.currency_groups.list': { result: ok, groups: [], total: 0 },
+        });
+        await listRecordPage(caller, resource('currency-groups'), {
+            offset: 0,
+            limit: 100,
+            search: '',
+            sort: '',
+            descending: false,
+        });
+        expect(calls[0]?.body).toMatchObject({ filter: null, order: { field: '' } });
+    });
+
+    it('declares search and sorting only where the model has them', () => {
+        expect(resource('currencies')).toMatchObject({ search: true });
+        expect(resource('countries')).toMatchObject({ search: false, sortable: [] });
+    });
+});
+
+describe('readRecord', () => {
+    it("reads one record through the key's one-of filter", async () => {
+        const { caller, calls } = fakeCaller({
+            'refdata.v1.currency_pairs.list': {
+                result: ok,
+                pairs: [{ pair_code: 'EUR/USD', version: 3 }],
+                total: 1,
+            },
+        });
+        expect(await readRecord(caller, resource('currency-pairs'), 'EUR/USD')).toEqual({
+            pair_code: 'EUR/USD',
+            version: 3,
+        });
+        expect(calls[0]?.body).toMatchObject({
+            limit: 1,
+            filter: { pair_code_one_of: ['EUR/USD'] },
+        });
+    });
+
+    it('answers undefined for a key with no record', async () => {
+        const { caller } = fakeCaller({
+            'refdata.v1.currency_groups.list': { result: ok, groups: [], total: 0 },
+        });
+        expect(await readRecord(caller, resource('currency-groups'), 'NONE')).toBeUndefined();
     });
 });

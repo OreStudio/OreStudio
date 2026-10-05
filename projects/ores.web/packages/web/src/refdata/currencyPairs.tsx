@@ -19,25 +19,30 @@
  *
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Input, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Dialog, Notice } from '../ui/Primitives.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
+import { RecordList } from './RecordList.js';
 import {
     ClassifiedValue,
     FieldInput,
+    LeavingFooter,
     LinkPanel,
     NEW_RECORD_REASON,
     RecordDetails,
-    RecordTable,
+    RecordGate,
+    RecordHeader,
     RemoveRecordDialog,
     RevertDialog,
     invalidFields,
+    useCloseGuard,
     useRecordPermissions,
     useRecordTabs,
     show,
@@ -47,7 +52,7 @@ import {
     type FieldSpec,
     type FieldValues,
 } from './records.js';
-import { Crumbs, ReasonFields, useReason } from './shared.js';
+import { ReasonFields, useReason } from './shared.js';
 
 const PAIRS = 'currency-pairs';
 const CONVENTIONS = 'currency-pair-conventions';
@@ -98,101 +103,59 @@ function sampleRate(decimals: string): string {
     return Number.isNaN(places) ? '' : (1.084235719).toFixed(Math.min(Math.max(places, 0), 10));
 }
 
-/** The pairs, filtered by code, with their classification and display precision. */
+/** The pairs, one page at a time, searched and sorted on the server. */
 export function CurrencyPairsPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const pairs = useRecords(PAIRS);
-    const conventions = useRecords(CONVENTIONS);
-    const may = useRecordPermissions(PAIRS);
-    const [filter, setFilter] = useState('');
     const [adding, setAdding] = useState(false);
-
-    if (pairs.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (pairs.isError) {
-        return <Notice tone="error">{pairs.error.message}</Notice>;
-    }
-    const conventionOf = (code: string) =>
-        conventions.data?.find((row) => row['pair_code'] === code);
-    const wanted = filter.trim().toLowerCase();
-    const shown = pairs.data.filter(
-        (row) => wanted === '' || show(row['pair_code']).toLowerCase().includes(wanted),
-    );
     return (
-        <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.pairs.title') },
-                    ]}
-                />
-                <PageHeader
-                    title={t('refdata.pairs.title')}
-                    description={t('refdata.pairs.lead')}
-                    actions={
-                        may.write ? (
-                            <Button variant="primary" onClick={() => setAdding(true)}>
-                                {t('refdata.pairs.add')}
-                            </Button>
-                        ) : undefined
-                    }
-                />
-            </div>
-            <section className="overflow-hidden rounded-md border border-line">
-                <div className="border-b border-line p-3">
-                    <Input
-                        type="search"
-                        value={filter}
-                        placeholder={t('refdata.records.filter')}
-                        aria-label={t('refdata.records.filter')}
-                        onChange={(event) => setFilter(event.target.value)}
-                    />
-                </div>
-                <RecordTable
-                    rows={shown}
-                    pathOf={(row) => pairPath(show(row['pair_code']))}
-                    empty={t('refdata.records.noMatch')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.pair_code'),
-                            cell: (row) => show(row['pair_code']),
-                            mono: true,
-                        },
-                        {
-                            header: t('refdata.fields.base_currency'),
-                            cell: (row) => show(row['base_currency']),
-                        },
-                        {
-                            header: t('refdata.fields.quote_currency'),
-                            cell: (row) => show(row['quote_currency']),
-                        },
-                        {
-                            header: t('refdata.fields.classification'),
-                            cell: (row) => (
-                                <ClassifiedValue
-                                    list="currency-pair-classification"
-                                    code={show(row['classification'])}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.decimal_places'),
-                            cell: (row) =>
-                                show(conventionOf(show(row['pair_code']))?.['decimal_places']) ||
-                                '—',
-                        },
-                    ]}
-                />
-                <div className="border-t border-line px-4 py-2 text-xs text-ink-muted">
-                    {t('refdata.classifications.shown', {
-                        shown: String(shown.length),
-                        total: String(pairs.data.length),
-                    })}
-                </div>
-            </section>
+        <>
+            <RecordList
+                resource={PAIRS}
+                title={t('refdata.pairs.title')}
+                lead={t('refdata.pairs.lead')}
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.pairs.title') },
+                ]}
+                pathOf={(row) => pairPath(show(row['pair_code']))}
+                addLabel={t('refdata.pairs.add')}
+                onAdd={() => setAdding(true)}
+                columns={[
+                    {
+                        id: 'pair_code',
+                        header: t('refdata.fields.pair_code'),
+                        cell: (row) => show(row['pair_code']),
+                        mono: true,
+                        sort: 'pair_code',
+                    },
+                    {
+                        id: 'base_currency',
+                        header: t('refdata.fields.base_currency'),
+                        cell: (row) => show(row['base_currency']),
+                        mono: true,
+                        sort: 'base_currency',
+                    },
+                    {
+                        id: 'quote_currency',
+                        header: t('refdata.fields.quote_currency'),
+                        cell: (row) => show(row['quote_currency']),
+                        mono: true,
+                        sort: 'quote_currency',
+                    },
+                    {
+                        id: 'classification',
+                        header: t('refdata.fields.classification'),
+                        cell: (row) => (
+                            <ClassifiedValue
+                                list="currency-pair-classification"
+                                code={show(row['classification'])}
+                            />
+                        ),
+                        sort: 'classification',
+                    },
+                ]}
+            />
             {adding && (
                 <PairDialog
                     pair={undefined}
@@ -201,7 +164,7 @@ export function CurrencyPairsPage(): ReactNode {
                     onSaved={(code) => void navigate(pairPath(code))}
                 />
             )}
-        </div>
+        </>
     );
 }
 
@@ -225,13 +188,16 @@ function PairDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const reason = useReason('amend');
     const editing = pair !== undefined;
-    const [values, setValues] = useState<FieldValues>({
+    const initial: FieldValues = {
         ...valuesOf(PAIR_FIELDS, pair),
         ...valuesOf(CONVENTION_FIELDS, convention),
-    });
+    };
+    const [values, setValues] = useState<FieldValues>(initial);
     const [commentary, setCommentary] = useState('');
+    const changed = JSON.stringify(values) !== JSON.stringify(initial);
+    const reason = useReason('amend', changed);
+    const guard = useCloseGuard(changed || commentary.trim() !== '', onClose);
     const base = values['base_currency'] ?? '';
     const quote = values['quote_currency'] ?? '';
     const code = editing ? show(pair['pair_code']) : `${base}/${quote}`;
@@ -281,27 +247,32 @@ function PairDialog({
     return (
         <Dialog
             title={editing ? t('refdata.records.editTitle', { code }) : t('refdata.pairs.addTitle')}
-            onClose={onClose}
+            onClose={guard.close}
             wide
             footer={
-                <>
-                    <Button variant="ghost" onClick={onClose}>
-                        {t('refdata.records.cancel')}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        pending={save.isPending}
-                        disabled={
-                            invalid.length > 0 ||
-                            sameLegs ||
-                            missing ||
-                            (editing && reason.code === '')
-                        }
-                        onClick={() => save.mutate()}
-                    >
-                        {editing ? t('refdata.records.save') : t('refdata.records.add')}
-                    </Button>
-                </>
+                guard.leaving ? (
+                    <LeavingFooter onStay={guard.stay} onLeave={onClose} />
+                ) : (
+                    <>
+                        <Button variant="ghost" icon="cancel" onClick={guard.close}>
+                            {t('refdata.records.cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            icon={editing ? 'save' : 'add'}
+                            pending={save.isPending}
+                            disabled={
+                                invalid.length > 0 ||
+                                sameLegs ||
+                                missing ||
+                                (editing && reason.code === '')
+                            }
+                            onClick={() => save.mutate()}
+                        >
+                            {editing ? t('refdata.records.save') : t('refdata.records.add')}
+                        </Button>
+                    </>
+                )
             }
         >
             <div className="space-y-3">
@@ -331,6 +302,7 @@ function PairDialog({
                         {t('refdata.classifications.newRecordNote')}
                     </p>
                 )}
+                {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
                 {save.isError && <Notice tone="error">{save.error.message}</Notice>}
             </div>
         </Dialog>
@@ -339,22 +311,38 @@ function PairDialog({
 
 /** One pair: the pair and its convention, its settlement calendars, and the history of both. */
 export function CurrencyPairPage(): ReactNode {
-    const { t } = useTranslation();
     const { code } = useParams();
-    const pairs = useRecords(PAIRS);
-    const conventions = useRecords(CONVENTIONS);
-    if (pairs.isPending || conventions.isPending) {
+    return (
+        <RecordGate resource={PAIRS} recordKey={code ?? ''} listPath={pairPath()}>
+            {(pair) => <PairWithConvention pair={pair} />}
+        </RecordGate>
+    );
+}
+
+/** Reads the pair's convention; a pair with none yet still opens, and says so. */
+function PairWithConvention({ pair }: { readonly pair: RecordRow }): ReactNode {
+    const { t } = useTranslation();
+    const code = show(pair['pair_code']);
+    const convention = useQuery({
+        queryKey: ['records', CONVENTIONS, 'key', code],
+        queryFn: async () => {
+            try {
+                return await api.record(CONVENTIONS, code);
+            } catch (error) {
+                if (error instanceof ApiFailure && error.status === 404) {
+                    return null;
+                }
+                throw error;
+            }
+        },
+    });
+    if (convention.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    if (pairs.isError) {
-        return <Notice tone="error">{pairs.error.message}</Notice>;
+    if (convention.isError) {
+        return <Notice tone="error">{convention.error.message}</Notice>;
     }
-    const pair = pairs.data.find((candidate) => candidate['pair_code'] === code);
-    if (pair === undefined) {
-        return <Navigate to={pairPath()} replace />;
-    }
-    const convention = conventions.data?.find((candidate) => candidate['pair_code'] === code);
-    return <PairBody pair={pair} convention={convention} />;
+    return <PairBody pair={pair} convention={convention.data ?? undefined} />;
 }
 
 function PairBody({
@@ -368,7 +356,10 @@ function PairBody({
     const navigate = useNavigate();
     const code = show(pair['pair_code']);
     const may = useRecordPermissions(PAIRS);
-    const { tab, bar } = useRecordTabs({ label: code, tabs: ['details', 'history'] });
+    const { tab, bar } = useRecordTabs({
+        label: code,
+        tabs: ['details', 'calendars', 'history'],
+    });
     const calendars = useRecords('calendars');
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
@@ -379,37 +370,20 @@ function PairBody({
 
     return (
         <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.pairs.title'), to: pairPath() },
-                        { label: code },
-                    ]}
-                />
-                <PageHeader
-                    title={code}
-                    description={t('refdata.records.lead', { code, version: String(pair.version) })}
-                    actions={
-                        may.write || may.remove ? (
-                            <div className="flex gap-2">
-                                {may.write && (
-                                    <Button onClick={() => setEditing(true)}>
-                                        {t('refdata.records.edit')}
-                                    </Button>
-                                )}
-                                {may.remove && (
-                                    <Button variant="danger" onClick={() => setRemoving(true)}>
-                                        {t('refdata.records.remove')}
-                                    </Button>
-                                )}
-                            </div>
-                        ) : undefined
-                    }
-                />
-            </div>
+            <RecordHeader
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.pairs.title'), to: pairPath() },
+                    { label: code },
+                ]}
+                title={code}
+                recordKey={code}
+                version={pair.version}
+                onEdit={may.write ? () => setEditing(true) : undefined}
+                onDelete={may.remove ? () => setRemoving(true) : undefined}
+            />
             {bar}
-            {tab === 'details' ? (
+            {tab === 'details' && (
                 <div className="space-y-4">
                     <RecordDetails
                         specs={PAIR_FIELDS.filter((spec) => spec.kind.kind !== 'record')}
@@ -438,19 +412,22 @@ function PairBody({
                             ]}
                         />
                     )}
-                    <LinkPanel
-                        title={t('refdata.pairs.calendars')}
-                        junction="pair-calendars"
-                        parentField="pair_code"
-                        parentValue={code}
-                        childField="calendar_code"
-                        choices={(calendars.data ?? []).map((calendar) => ({
-                            value: show(calendar['code']),
-                            label: show(calendar['name']),
-                        }))}
-                    />
                 </div>
-            ) : (
+            )}
+            {tab === 'calendars' && (
+                <LinkPanel
+                    title={t('refdata.pairs.calendars')}
+                    junction="pair-calendars"
+                    parentField="pair_code"
+                    parentValue={code}
+                    childField="calendar_code"
+                    choices={(calendars.data ?? []).map((calendar) => ({
+                        value: show(calendar['code']),
+                        label: show(calendar['name']),
+                    }))}
+                />
+            )}
+            {tab === 'history' && (
                 <div className="space-y-6">
                     <section className="space-y-2">
                         <h3 className="text-sm font-medium">{t('refdata.pairs.pairHistory')}</h3>
@@ -490,7 +467,7 @@ function PairBody({
             {removing && (
                 <RemoveRecordDialog
                     resource={PAIRS}
-                    title={t('refdata.records.removeTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code })}
                     warning={t('refdata.pairs.removeWarning')}
                     recordKey={{ pair_code: code }}
                     version={pair.version}

@@ -23,7 +23,9 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     REFDATA_RECORDS,
+    listRecordPage,
     listRecords,
+    readRecord,
     recordResource,
     resourceName,
     removeRecord,
@@ -129,6 +131,17 @@ const saveBodySchema = intentSchema.extend({
     version: z.int().nonnegative().nullable(),
 });
 
+const pageQuerySchema = z.object({
+    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+    limit: z.coerce.number().pipe(z.int().min(1).max(1000)),
+    search: z.string().trim().max(256).default(''),
+    sort: z.string().max(100).default(''),
+    descending: z
+        .enum(['true', 'false'])
+        .default('false')
+        .transform((value) => value === 'true'),
+});
+
 const removeBodySchema = intentSchema.extend({
     key: z.record(z.string(), code),
     version: z.int().nonnegative().nullable().default(null),
@@ -207,15 +220,55 @@ export function registerRecordRoutes(
                 keyFields: resource.keyFields,
                 versioned: resource.versioned,
                 writable: resource.writable,
+                search: resource.search,
+                sortable: resource.sortable,
                 writePermission: `refdata::${resourceName(resource)}:write`,
                 deletePermission: `refdata::${resourceName(resource)}:delete`,
             })),
         };
     });
 
+    /**
+     * A resource's rows. A read that names a limit gets one page and the total,
+     * searched and ordered on the server; a read without one gets every row,
+     * for the pickers that offer a whole kind.
+     */
     server.get('/api/refdata/:resource', async (request) => {
         const session = requireSession(request);
-        return { rows: await listRecords(session.client, resourceFor(request)) };
+        const resource = resourceFor(request);
+        const query = request.query as Record<string, unknown>;
+        if (query['limit'] === undefined) {
+            return { rows: await listRecords(session.client, resource) };
+        }
+        const page = pageQuerySchema.safeParse(query);
+        if (!page.success) {
+            throw invalidRequest('A page names an offset and a limit of 1 to 1000.');
+        }
+        if (page.data.sort !== '' && !resource.sortable.includes(page.data.sort)) {
+            throw invalidRequest(`${resource.key} cannot be ordered by ${page.data.sort}.`);
+        }
+        if (page.data.search !== '' && !resource.search) {
+            throw invalidRequest(`${resource.key} cannot be searched.`);
+        }
+        return await listRecordPage(session.client, resource, page.data);
+    });
+
+    /** One record, named by its key, for a record page. */
+    server.get('/api/refdata/:resource/key/:key', async (request) => {
+        const session = requireSession(request);
+        const resource = resourceFor(request);
+        if (resource.keyFields.length !== 1) {
+            throw notFound(`${resource.key} is not read by one key.`);
+        }
+        const key = code.safeParse((request.params as { key: string }).key);
+        if (!key.success) {
+            throw invalidRequest('A record is named by a code of 1 to 100 characters.');
+        }
+        const row = await readRecord(session.client, resource, key.data);
+        if (row === undefined) {
+            throw notFound(`There is no ${resource.key} record ${key.data}.`);
+        }
+        return { row };
     });
 
     /** The rows of a junction that belong to one parent, such as one currency's countries. */

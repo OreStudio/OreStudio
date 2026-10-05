@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,11 +18,4 @@
  *
  */
 
--- Stats functions depend on logs
-\ir ./telemetry_stats_functions_drop.sql
-\ir ./telemetry_logs_drop.sql
-\ir ./nats_server_samples_drop.sql
-\ir ./nats_stream_samples_drop.sql
-\ir ./service_roster_functions_drop.sql
-\ir ./expected_services_drop.sql
-\ir ./service_samples_drop.sql
+drop function if exists ores_telemetry_service_roster_fn();

@@ -38,6 +38,11 @@ create table if not exists ores_telemetry_service_samples_tbl (
 create index if not exists service_samples_name_idx
     on ores_telemetry_service_samples_tbl (service_name, sampled_at desc);
 
+-- The roster ranks each instance's latest report; this order lets the
+-- distinct-on in ores_telemetry_service_roster_fn read it from the index.
+create index if not exists service_samples_instance_idx
+    on ores_telemetry_service_samples_tbl (service_name, instance_id, sampled_at desc);
+
 do $$
 declare
     tsdb_installed boolean;

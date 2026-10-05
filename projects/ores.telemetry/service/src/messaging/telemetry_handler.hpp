@@ -25,6 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.telemetry.core/domain/telemetry_batch.hpp"
@@ -49,7 +50,16 @@ inline auto& telemetry_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::authorise;
 using namespace ores::logging;
+
+/**
+ * @brief The permission the service liveness reads require.
+ *
+ * The seed grants it to SuperAdmin and to service roles, so the roster stays
+ * an installation view a tenant administrator cannot read.
+ */
+inline constexpr std::string_view samples_read_permission = "telemetry::samples:read";
 
 class telemetry_handler {
 public:
@@ -159,12 +169,10 @@ public:
 
     void service_samples_list(ores::nats::message msg) {
         BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
+        if (!authorised)
             return;
-        }
-        const auto& ctx = *ctx_expected;
+        const auto& ctx = *authorised;
         if (decode<get_service_samples_request>(msg)) {
             database::repository::telemetry_repository repo;
             get_service_samples_response resp;
@@ -174,6 +182,35 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to list service samples: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        }
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Replies with the services roster: every expected instance and its
+     * state.
+     */
+    void service_roster_list(ores::nats::message msg) {
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
+        if (!authorised)
+            return;
+        const auto& ctx = *authorised;
+        if (decode<get_service_roster_request>(msg)) {
+            database::repository::telemetry_repository repo;
+            get_service_roster_response resp;
+            try {
+                resp.slots = repo.list_service_roster(ctx, std::chrono::system_clock::now());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to read the services roster: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }

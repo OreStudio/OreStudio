@@ -607,10 +607,10 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
-    // Fetch all rows from the last 5 minutes so we can pick
+    // Fetch all rows inside the running window so we can pick
     // the most recent per (service_name, instance_id) in C++.
     // This avoids a DISTINCT ON which sqlgen doesn't model directly.
-    const auto cutoff = std::chrono::system_clock::now() - std::chrono::minutes(5);
+    const auto cutoff = std::chrono::system_clock::now() - service_running_window;
     const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
 
     const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
@@ -633,6 +633,43 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
         result.push_back(std::move(sample));
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " active service instance(s)";
+    return result;
+}
+
+std::vector<messaging::service_roster_slot>
+telemetry_repository::list_service_roster(context ctx,
+                                          std::chrono::system_clock::time_point now) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
+
+    const std::string sql = "SELECT service_name, slot, instance_id, host_id, version, sampled_at "
+                            "FROM ores_telemetry_service_roster_fn()";
+    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading the services roster");
+
+    std::vector<messaging::service_roster_slot> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 6)
+            continue;
+
+        messaging::service_roster_slot slot;
+        slot.service_name = row[0].value_or("");
+        slot.slot = std::stoi(row[1].value_or("0"));
+        if (row[5].has_value() && !row[5]->empty()) {
+            slot.instance_id = row[2];
+            slot.host_id = row[3];
+            slot.version = row[4];
+            slot.sampled_at = datetime::from_db_string(*row[5]);
+            slot.state = now - *slot.sampled_at <= service_running_window ?
+                             ores::telemetry::domain::service_state::running :
+                             ores::telemetry::domain::service_state::stopped;
+        } else {
+            slot.state = ores::telemetry::domain::service_state::missing;
+        }
+        result.push_back(std::move(slot));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Roster has " << result.size() << " expected instance(s)";
     return result;
 }
 

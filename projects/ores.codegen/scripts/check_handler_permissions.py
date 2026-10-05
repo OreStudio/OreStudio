@@ -37,7 +37,8 @@ POPULATE = (
 # carries catalogue slugs. analytics joined with its clean-standard pass, whose
 # W02 item this check proves; compute and assets joined with theirs, dq with
 # pass 2 of its own clean-standard work, trading with its clean-standard
-# pass, and marketdata once its seeds named the codes its handlers check.
+# pass, marketdata once its seeds named the codes its handlers check, and
+# inbox with its first models, whose generated handlers' codes it seeds.
 REGISTRY = ("refdata", "analytics", "compute", "assets", "storage", "reporting",
             "dq", "trading", "marketdata", "inbox")
 

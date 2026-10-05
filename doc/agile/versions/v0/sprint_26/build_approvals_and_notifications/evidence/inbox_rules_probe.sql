@@ -73,6 +73,25 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0,
 from probe_accounts order by username offset 1 limit 1;
 rollback to s3;
 
+\echo '--- a decision on a request that does not exist is refused'
+savepoint s4;
+insert into ores_inbox_approval_decisions_tbl (
+    id, tenant_id, version, request_id, decision_code, decided_by, decided_at,
+    comment, modified_by, performed_by, change_reason_code, change_commentary)
+select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0,
+    '99999999-9999-9999-9999-999999999999', 'approve', id, now(), '',
+    current_user, current_user, 'system.initial_load', 'probe'
+from probe_accounts order by username offset 1 limit 1;
+rollback to s4;
+
+\echo '--- an update that changes the decider is refused'
+savepoint s5;
+update ores_inbox_approval_decisions_tbl
+set decided_by = (select id from probe_accounts order by username limit 1)
+where request_id = '11111111-1111-1111-1111-111111111111'
+  and decision_code = 'approve';
+rollback to s5;
+
 \echo '--- the asker withdrawing is accepted'
 insert into ores_inbox_approval_decisions_tbl (
     id, tenant_id, version, request_id, decision_code, decided_by, decided_at,

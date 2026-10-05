@@ -87,6 +87,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the inbox service has no database identity, service registry entry or registrar wiring, so it cannot run yet | projects/ores.inbox/service | Deferred | The serve task registers the service and wires the sub-registrar and event registrar, per the post-generation checklist. |
 | 2 | Local review: only the inbox, shell inbox and shell targets were rebuilt, not the whole tree | projects/ores.codegen | Accepted | The codegen changes alter no other component's output, which the drift sweep shows; the PR states the limitation. |
+| 3 | PR 2638: the four-eyes trigger lets a decision through when the request row is missing | inbox_approval_decision_rules_create.sql | Accepted | The trigger raises when there is no current request; the probe has the case. |
+| 4 | PR 2638: confirm no update can change a decision | inbox_approval_decision_rules_create.sql | Accepted | A before-update trigger refuses changing the request, decision or decider; the probe has the case. |
+| 5 | PR 2638: optional timestamps write with to_db_string, required ones with to_iso8601_utc | ores.cpp.repository.mapper_impl.org | Declined | The junction branch copies the entity mapper's optional-timestamp branch, which already writes to_db_string; timestamp_to_timepoint reads both. |
+| 6 | PR 2638: skipping seeds for an enforced key assumes an immutable lookup | core.py | Declined | Codegen already refuses :enforce: on a target that is not immutable, so the assumption is checked where the key is declared. |
+| 7 | PR 2638: plantuml_er_parse_sql.py rewritten whole | plantuml_er_parse_sql.py | Accepted | An edit turned its CRLF endings to LF; restored main's endings, leaving a one-line change. |
+| 8 | PR 2638: the handler permission registry comment does not mention inbox | check_handler_permissions.py | Accepted | Comment updated. |
+| 9 | CI: stale ER diagram, shell recipe inventory and tangled shell scripts | ores_schema.puml, shell.org, scripts/library | Accepted | Regenerated with the commands CI names; the schema PNG stays main's, since plantuml cannot render it at this size. |
 
 * Result
 

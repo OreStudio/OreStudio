@@ -18,5 +18,7 @@
  *
  */
 
+drop trigger if exists ores_inbox_approval_decisions_unchanged_trg on "ores_inbox_approval_decisions_tbl";
+drop function if exists ores_inbox_approval_decisions_unchanged_fn;
 drop trigger if exists ores_inbox_approval_decisions_rules_trg on "ores_inbox_approval_decisions_tbl";
 drop function if exists ores_inbox_approval_decisions_rules_fn;

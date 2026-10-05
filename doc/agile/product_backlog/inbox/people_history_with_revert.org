@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8358BD7C-3A65-46E7-9333-D94D0E805C51
+:END:
+#+title: Give each person a history tab, with revert
+#+description: The person page has no history. Add a History tab with one section per record, as the currency pair page does: identity (account) and contact history with the GitHub-style diff and revert through the iam saves, and an Audit section of role grants and removals once the server keeps grant history, which it does not today.
+#+type: capture
+#+level: cross
+#+filetags: :web:iam:people:history:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

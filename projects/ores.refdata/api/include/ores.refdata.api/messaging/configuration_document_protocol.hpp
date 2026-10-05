@@ -99,6 +99,7 @@ struct fx_convention {
     ores::refdata::domain::currency_pair pair;
     ores::refdata::domain::currency_pair_convention convention;
     int spot_days = 0;
+    std::vector<std::string> advance_calendars;
 };
 
 /**

@@ -113,6 +113,11 @@ on every row it stores.
 :default: 0
 :END:
 
+*** advance_calendars
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
 ** conventions_document
 
 #+begin_src cpp :name comment

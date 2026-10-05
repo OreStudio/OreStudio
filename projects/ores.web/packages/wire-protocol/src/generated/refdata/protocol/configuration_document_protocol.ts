@@ -91,6 +91,7 @@ export interface FxConvention {
     pair: CurrencyPair;
     convention: CurrencyPairConvention;
     spot_days: number;
+    advance_calendars: string[];
 }
 
 /**

@@ -28,7 +28,7 @@ ores.refdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] |
-| Now          | Complete, with no accepted exception left, and re-verified a second time on main. Every applicable item passes, V04 included: the shell sweep runs all 732 generated refdata commands with 0 aborts, and =ores.refdata= is listed in =COMPONENTS_UNDER_TEST= with =check_component_drift.py --all= reporting no drift. The second rebase (main had moved 292 commits) re-ran the whole gate on a store rebuilt from nothing; it found two main-side defects, both filed, and one stale environment variable. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next | Nothing. |
 | Last touched | 2026-09-28                               |

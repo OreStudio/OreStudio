@@ -25,7 +25,7 @@ it says for a person as well as for a service.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | All tasks done.                        |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-03                               |
@@ -174,3 +174,7 @@ reason, and the tenant session carries an explicit read-only list.
 
 - =projects/ores.iam/core/include/ores.iam.core/messaging/auth_handler.hpp= -- login builds claims without roles
 - =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp= -- the empty-list pass-through
+
+* Result
+
+All tasks done.

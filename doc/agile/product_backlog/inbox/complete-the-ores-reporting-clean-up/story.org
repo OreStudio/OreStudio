@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: FD3E753D-57AB-47B1-9C5D-5D6E98BAEB9F
+:END:
+#+title: Story: Complete the ores.reporting clean-up
+#+description: The remainder of the ores.reporting clean-up: the shared template defects, the model corrections, the registrar composition, the shell commands, the diagrams and audit record, the input bundle model, and the schedule's definition key. Split from Clean ores.reporting to the component clean standard at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :codegen:clean_standard:product_backlog:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The defects and gaps the ores.reporting clean-standard pass left open
+are closed: the three shared template defects, the entity-model
+corrections, the registrar composition and the =risk_report_config=
+surface, the shell commands, the diagrams and the audit record, the
+report input bundle decision, and the schedule's definition key.
+
+This story was split from
+[[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the
+component clean standard]] when that story was reworded to the
+clean-standard pass it delivered and closed DONE at the sprint 26 close
+on 2026-10-05; its seven remaining tasks moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Work the seven tasks in order, starting with the shared template defects. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Every defect the clean-standard pass recorded is fixed at its source,
+  with a regression test where the defect can recur.
+- The reporting diagrams and the audit record are complete, and the
+  instance's definition key is validated and its schedule typed.
+- =ores.reporting= stays in =COMPONENTS_UNDER_TEST= and
+  =check_component_drift.py --all= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:537367BD-2294-498B-9BD5-707D6A67B8A0][Fix the three shared codegen template defects]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:BC6EF127-E160-4FE1-A602-41BAB92A5F12][Decide and act on the report input bundle model]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:118EA950-13F2-48E2-9574-B67957AFBC87][Complete the reporting diagrams and write the audit record]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:3F97E996-07C6-46F9-9296-E571EA78D4F5][Correct the ores.reporting entity models]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:1DBC799D-396F-4C9A-BF5A-5163FE05AC5A][Repair the registrar composition and generate the risk_report_config surface]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:5A2E6A1D-DA47-421C-B1E2-51A9665ECFBF][Make reporting's shell commands answer]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+| [[id:A9875FC8-1F58-4654-B1FA-700B640734FC][Validate the instance's definition key and type the schedule]] | BACKLOG | | | Task for: Clean ores.reporting to the component clean standard |
+
+* Decisions
+
+* Out of scope
+
+-

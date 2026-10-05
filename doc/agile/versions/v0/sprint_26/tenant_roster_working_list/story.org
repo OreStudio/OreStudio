@@ -23,7 +23,7 @@ A system administrator finds a tenant among many and acts on it from the roster:
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | All tasks done.                        |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-02                               |
@@ -96,3 +96,7 @@ Showing 1 of 1 tenant
 * Out of scope
 
 -
+
+* Result
+
+All tasks done.

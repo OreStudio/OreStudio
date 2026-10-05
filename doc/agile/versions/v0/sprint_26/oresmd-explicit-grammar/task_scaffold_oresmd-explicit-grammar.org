@@ -28,7 +28,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next | Nothing. |
 | Last touched | 2026-10-01                               |

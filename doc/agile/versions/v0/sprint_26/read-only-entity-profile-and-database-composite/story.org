@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: AD2B4B61-306D-48A7-9F71-7D9B014F87B9
 :END:
-#+title: Story: Add a read-only entity profile and make ores.database hostable
-#+description: Two pieces: a named variability profile that generates read-only entities (list, get, get_many, no writes, no versions), then the ores.database composite that lets the component host a generated entity without inverting the layering.
+#+title: Story: Add a read-only entity profile
+#+description: A named variability profile that generates read-only entities: list, get and get_many, no writes, no versions. Making ores.database a composite split to its own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:v0:codegen:composite:clean_standard:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-10-05
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,27 +15,33 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Two outcomes, in order. First, a named variability profile that produces a
+A named variability profile produces a
 read-only entity: the generated protocol carries =list=, =get= and =get_many=,
-and no write verb and no version read. Second, =ores.database= becomes a
-composite that can host such an entity, so the database metadata the UI needs
-can travel on the wire without the foundation library linking the layers above
-it.
+and no write verb and no version read. Making =ores.database= a composite that
+can host such an entity — so the database metadata the UI needs can travel on
+the wire without the foundation library linking the layers above it — split to
+[[id:8D182BD4-8C65-4974-B0AC-EDBC94FD1120][Make ores.database a composite and host the generated entity]] at the sprint 26 close on 2026-10-05.
 
-The first outcome stands alone. Read-only entities are needed beyond this
-component, and the mechanism a profile would carry is already implemented as a
-per-entity flag, so the work is to make it bindable.
+The profile stands alone. Read-only entities are needed beyond this
+component, and the mechanism a profile carries is already implemented as a
+per-entity flag; this story made it bindable.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Start the profile task. |
-| Last touched  | 2026-09-26                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the
+profile it delivered and closed DONE. The composite is
+[[id:8D182BD4-8C65-4974-B0AC-EDBC94FD1120][Make ores.database a composite and
+host the generated entity]], and the task Make ores.database a composite and
+host the generated entity moved there.
 
 * Acceptance
 
@@ -43,20 +49,12 @@ per-entity flag, so the work is to make it bindable.
   =get= and =get_many= only: no =put_=, no =delete_=, no =*_versions_*=.
 - A codegen regression test covers the profile, so the read-only promise
   cannot regress in silence.
-- =ores.database= carries =api=, =core= and =service= parts, and the
-  foundation library lives in a part rather than the composite root.
-- The generated =database.api= link closure stays inside =ores.utility= and
-  =ores.platform=, both of which sit below =ores.database=. No part of the
-  component links a layer that links the component.
-- The whole tree builds and the component's suites pass, with every consumer
-  of =ores.database= migrated in the same change.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:527B8D67-34B0-4B55-B0F3-3525850328BD][Add a read-only entity profile]] | DONE | | 2026-09-26 | Extend _FEATURE_NAMESPACE so a profile can carry read_only and current_state, add the profile document, and prove the generated protocol carries list, get and get_many only. |
-| [[id:841EA68A-0490-421D-83E4-8C9D01D148EF][Make ores.database a composite and host the generated entity]] | BACKLOG | | | Prototype the api/core emission under one modelling directory, move the foundation library into a part, and add database.api, database.core and database.service so database_info can be a generated read-only entity without inverting the layering. |
 
 * Decisions
 

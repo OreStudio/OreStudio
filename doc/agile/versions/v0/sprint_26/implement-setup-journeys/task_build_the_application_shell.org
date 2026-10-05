@@ -28,7 +28,7 @@ The story has a rail that renders and no application to render it in. Build the 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The two shells, the route table and the bootstrap gate are in, and the gate reads the server's own answer. The workspace typechecks, passes the format check, tests green and builds. |
+| Now          | Nothing. |
 | Waiting on | Nothing. |
 | Next | Nothing. |
 | Last touched | 2026-09-27                               |

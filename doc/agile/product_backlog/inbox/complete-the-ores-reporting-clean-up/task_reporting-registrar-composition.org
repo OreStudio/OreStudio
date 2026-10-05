@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 1DBC799D-396F-4C9A-BF5A-5163FE05AC5A
+:END:
+#+title: Task: Repair the registrar composition and generate the risk_report_config surface
+#+description: Task for: Clean ores.reporting to the component clean standard
+#+type: task
+#+level: s1
+#+filetags: :complete-the-ores-reporting-clean-up:inbox:product_backlog:
+#+owner: marco
+#+branch: feature/reporting-registrar-composition
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FD3E753D-57AB-47B1-9C5D-5D6E98BAEB9F][Complete the ores.reporting clean-up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close P01 and S01. risk_report_config generates no C++ protocol, handler, command unit or test, because registrar.cpp is a hand-written fan-out with nowhere to join a generated registrar, and the four per-entity and four history-provider registrar families it would join are composed nowhere.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FD3E753D-57AB-47B1-9C5D-5D6E98BAEB9F][Complete the ores.reporting clean-up]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- The composition points consume the generated registrar families, or the families are deleted with the reason recorded.
+- risk_report_config generates its protocol, handler and shell command unit with a test, and every generated command answers.
+- P01, S01 and W01 pass, and the subjects that exist only in TypeScript acquire a C++ counterpart.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

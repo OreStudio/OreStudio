@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B
+:END:
+#+title: Story: Sprint 26 closure: story cleanup and reset for sprint 27
+#+description: Close out sprint 26: resolve every story at the sprint close — rework and split the eleven that delivered part of their scope, carry the nineteen unfinished ones to the product backlog inbox — and write the release notes, the charts and the retrospective.
+#+type: story
+#+level: s2
+#+filetags: :sprint_26:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Own the final steps of sprint 26: the close health review, a cleanup
+that leaves no half-finished story for sprint 27, the release notes
+and the retrospective.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Every other sprint 26 story is DONE or ABANDONED, and
+  =compass sprint audit= is clean.
+- Release notes are generated and linked from the sprint's Status table.
+- The sprint's Retrospective section is filled.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5D230C1B-AE05-4338-BCA3-0A2F866686B0][Clean up the sprint 26 stories for close]] | DONE | 2026-10-05 | 2026-10-05 | Close every finished story, rework and split the eleven that delivered part of their scope, carry the nineteen unfinished stories to the product backlog inbox, and clear every closed document's Now field. |
+| [[id:2452E716-8726-4049-9B65-7CF586275610][Write sprint 26 release notes]] | DONE | 2026-10-05 | 2026-10-05 | Generate the sprint 26 release notes from the merged PR data, fill the summary blurbs, render the charts and export the markdown for the draft GitHub release. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+Sprint 26 is closed out. Health review 1 rated the sprint RED. Every
+other story is DONE or ABANDONED, and =compass sprint audit= is clean.
+Eleven stories were reworked at the sprint close to the scope they
+actually delivered and closed DONE, each with its remainder split to a
+successor story in the product backlog inbox; nineteen unfinished
+stories were carried to the inbox by file move, and the sprint table
+records each as ABANDONED at the close date. The release notes, the
+charts over the full sprint and the retrospective are written. The
+v0.0.26 tag and the draft GitHub release follow the merge.

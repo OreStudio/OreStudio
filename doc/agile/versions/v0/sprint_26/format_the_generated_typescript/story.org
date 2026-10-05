@@ -23,7 +23,7 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The style is committed, the render formats its own output, the tree passes the check, and the check runs on a pull request. The drift gate is clean. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. The story is complete. |
 | Next          | Nothing. refdata's drifted projection and the regenerate-all hazard are captures. |
 | Last touched  | 2026-09-27                               |

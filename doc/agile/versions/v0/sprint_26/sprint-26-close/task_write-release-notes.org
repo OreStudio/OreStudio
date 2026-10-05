@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 2452E716-8726-4049-9B65-7CF586275610
+:END:
+#+title: Task: Write sprint 26 release notes
+#+description: Generate the sprint 26 release notes from the merged PR data, fill the summary blurbs, render the charts and export the markdown for the draft GitHub release.
+#+type: task
+#+level: s1
+#+filetags: :sprint-26-close:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sprint-26-health-review-1
+#+pr: 2654
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 26 has release notes that describe what shipped, what was
+carried at close and why, and a post mortem. The notes ship as the
+body of the v0.0.26 draft GitHub release.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =release_notes.org= has no placeholder left, and every claim matches
+  the record.
+- The four charts are rendered at the sprint root.
+- =release_notes.md= is exported for the draft GitHub release.
+
+* Result
+
+The release notes are written, linked and exported. They are generated
+from the 516 pull requests merged since the v0.0.25 tag (2026-09-23 to
+2026-10-05) and then edited: the summary blurb, the highlights, the
+ores.cli known-issue reason and the next-sprint line state the sprint's
+real record, and the twenty abandoned stories the generator listed as
+key improvements are pruned from that section. The sprint's status
+table and retrospective link the notes by ID. The four charts — PRs
+and commits per day, daily line churn, PR cycle time and cumulative
+stories done — are rendered at the sprint root over the sprint's real
+window, 2026-09-23 to 2026-10-05, since the status table keeps the
+planned end date. =release_notes.md= is exported for the v0.0.26 draft
+GitHub release, which is created after the merge.

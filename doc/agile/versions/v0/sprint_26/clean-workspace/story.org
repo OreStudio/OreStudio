@@ -23,7 +23,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing. The component is generated, builds, tests, recreates its schema from scratch, is listed in =COMPONENTS_UNDER_TEST=, carries the namespace documentation headers G08 asks for, and cannot have its Live workspace archived or deleted. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. One item is handed over rather than done: the composite part gate, which stays in the inbox with its measurement. |
 | Last touched  | 2026-09-28                               |
@@ -90,3 +90,7 @@ ores.workspace meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 * Out of scope
 
 -
+
+* Result
+
+The component is generated, builds, tests, recreates its schema from scratch, is listed in =COMPONENTS_UNDER_TEST=, carries the namespace documentation headers G08 asks for, and cannot have its Live workspace archived or deleted.

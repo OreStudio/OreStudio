@@ -23,7 +23,7 @@ Every oresmd URI states what it means without the reader knowing a default or a 
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Every unit landed. The generated grammar it built was later replaced by the hand-written codecs of [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
@@ -86,3 +86,7 @@ The full analysis is in
 
 - Modelling =curveconfig.xml= or =todaysmarket.xml= as entities. This story
   settles who owns today's market, not what its entities are.
+
+* Result
+
+Every unit landed. The generated grammar it built was later replaced by the hand-written codecs of [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]].

@@ -23,7 +23,7 @@ A system administrator can enter one tenant on purpose, see on every screen that
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | All tasks done.                        |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-03                               |
@@ -67,3 +67,7 @@ A system administrator can enter one tenant on purpose, see on every screen that
 * Out of scope
 
 -
+
+* Result
+
+All tasks done.

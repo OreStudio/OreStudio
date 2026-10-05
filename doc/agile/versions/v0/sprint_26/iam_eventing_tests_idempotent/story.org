@@ -36,7 +36,7 @@ and the key the generator fabricates is unique only within one process.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The synthetic seed profile's code is unique per deployment, so =ores.iam.core.tests= passes twice in a row against one database: 425 assertions in 165 test cases, both runs. What the tests still leave behind is captured rather than silent. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-09-30                               |
@@ -71,3 +71,7 @@ and the key the generator fabricates is unique only within one process.
   test that seeds a parent leaves it active, and making them delete it is a
   change to the test template over many files. It is hygiene rather than
   idempotence, and it is captured on its own.
+
+* Result
+
+The synthetic seed profile's code is unique per deployment, so =ores.iam.core.tests= passes twice in a row against one database: 425 assertions in 165 test cases, both runs. What the tests still leave behind is captured rather than silent.

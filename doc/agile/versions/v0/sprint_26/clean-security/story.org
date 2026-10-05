@@ -23,7 +23,7 @@ ores.security meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Merged as `b2e6c069db` in PR #2162. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
@@ -89,3 +89,7 @@ ores.security meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cle
   repo-wide sweep. This story fixes only security's two.
 - The registry gap. security has no catalogue row and no model, so it
   cannot join `COMPONENTS_UNDER_TEST`.
+
+* Result
+
+Merged as `b2e6c069db` in PR #2162.

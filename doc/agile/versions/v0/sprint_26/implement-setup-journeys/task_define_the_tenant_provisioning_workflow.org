@@ -28,7 +28,7 @@ iam.v1.tenants.provision starts a real run. The provision_tenant_workflow defini
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Complete: a live run of the Operational profile finishes in four steps, the tenant leaves bootstrap mode and holds the data its profile ordered. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next | Nothing. |
 | Last touched | 2026-09-28                               |

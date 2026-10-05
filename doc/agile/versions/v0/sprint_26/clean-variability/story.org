@@ -23,7 +23,7 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing. Delivered on =feature/clean-variability=, PR #2176. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
 | Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
@@ -57,3 +57,7 @@ ores.variability meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 * Out of scope
 
 -
+
+* Result
+
+Delivered on =feature/clean-variability=, PR #2176.

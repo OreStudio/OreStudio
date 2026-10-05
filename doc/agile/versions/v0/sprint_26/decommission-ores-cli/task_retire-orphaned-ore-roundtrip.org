@@ -28,7 +28,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] |
-| Now          | Closed unstarted. The method is kept and covered instead. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-09-26                               |

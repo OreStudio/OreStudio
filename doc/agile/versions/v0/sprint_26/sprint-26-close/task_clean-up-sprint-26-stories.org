@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 5D230C1B-AE05-4338-BCA3-0A2F866686B0
+:END:
+#+title: Task: Clean up the sprint 26 stories for close
+#+description: Close every finished story, rework and split the eleven that delivered part of their scope, carry the nineteen unfinished stories to the product backlog inbox, and clear every closed document's Now field.
+#+type: task
+#+level: s1
+#+filetags: :sprint-26-close:sprint_26:v0:
+#+owner: marco
+#+branch: feature/sprint-26-health-review-1
+#+pr: 2654
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Leave sprint 26 with no half-finished stories. Sprint 27 opens from
+the product backlog: every story that delivered part of its scope
+closes DONE at what it delivered with its remainder split to a
+successor in the inbox, every unfinished story is carried to the inbox
+by file move, and =compass sprint audit= is clean.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The sprint table matches every story file: the eleven reworked
+  sources are DONE, the nineteen carried stories are ABANDONED with
+  the close date.
+- Every closed document's =Now= field is exactly =Nothing.=, with its
+  prose kept in =* Result=.
+- =compass sprint audit= reports no findings.
+
+* Result
+
+All thirty open stories are resolved. Eleven closed DONE at the scope
+they delivered, each reworded so its Goal and Acceptance describe only
+what shipped, with the remainder moved to a successor story and a row
+added to the product backlog inbox; the successors carry the moved
+task files with their identifiers intact. Nineteen unfinished stories
+were carried whole to the inbox by =git mv=, keeping their identifiers,
+with their intro and filetags updated. The sprint table was rewritten
+to match, and the fifty-one closed documents whose =Now= held prose
+were repaired: the prose moved into =* Result= and =Now= set to
+=Nothing.=. =compass sprint audit= is clean.

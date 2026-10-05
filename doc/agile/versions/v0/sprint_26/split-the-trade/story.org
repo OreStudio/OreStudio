@@ -23,7 +23,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done: the trade is an immutable row with temporal components, and the wide trade is gone. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-05 |
@@ -115,3 +115,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 * Out of scope
 
 -
+
+* Result
+
+Done: the trade is an immutable row with temporal components, and the wide trade is gone.

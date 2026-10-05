@@ -32,7 +32,7 @@ Bring the Linux and Windows continuous builds on main back to green.
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Fix verified locally; PR raised.       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Merge, then watch the next CI runs.    |
 | Last touched  | 2026-10-04                               |
@@ -63,3 +63,7 @@ Bring the Linux and Windows continuous builds on main back to green.
 - The MSVC C1202 on =bond_instrument_data= (capture
   [[id:7878D057-5504-4117-98DF-6CEA9BB5D6B9][MSVC fails C1202 on the bond export carrier]]).
 - The macOS debug runner running out of disk.
+
+* Result
+
+Fix verified locally; PR raised.

@@ -23,7 +23,7 @@ A person sees the work they can do, in their own words. The home screen shows ar
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done: every task is merged or in its final PR. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
@@ -66,3 +66,7 @@ A person sees the work they can do, in their own words. The home screen shows ar
 * Out of scope
 
 -
+
+* Result
+
+Done: every task is merged or in its final PR.

@@ -23,7 +23,7 @@ Every list request the web client builds by hand states the filter, and its sche
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done.                                  |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
@@ -45,3 +45,7 @@ Every list request the web client builds by hand states the filter, and its sche
 * Out of scope
 
 -
+
+* Result
+
+Done.

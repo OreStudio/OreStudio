@@ -23,7 +23,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Both journeys run. The server refuses the registration it should never have accepted, resolves the tenant from the address, and writes the state; the BFF serves the policy read and the sign-up route; and the door renders the closed notice or the same rail the setup journeys use, with the confirmation naming what the account received and what it still waits for. The sign-in dialog and the door carry the same banner element as the setup journeys. Asking for more roles is the Access group's own journey, and it is written. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing on this story. Three door gaps are recorded on [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]]: releasing a waiting account, the approval workflow, and telling somebody that a registration is waiting. |
 | Last touched  | 2026-09-30                               |
@@ -87,3 +87,7 @@ The two Entry journeys run in ores.web against the real server. Sign in is finis
 - Email verification, invitation delivery and the notification that tells an administrator somebody is waiting.
 - Self-service password recovery from the door, which needs a delivery mechanism outside IAM.
 - The Directory screens that release a pending account and show it on the roster. The target state states the requirement; [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory journeys]] owns the screen.
+
+* Result
+
+Both journeys run. The server refuses the registration it should never have accepted, resolves the tenant from the address, and writes the state; the BFF serves the policy read and the sign-up route; and the door renders the closed notice or the same rail the setup journeys use, with the confirmation naming what the account received and what it still waits for. The sign-in dialog and the door carry the same banner element as the setup journeys. Asking for more roles is the Access group's own journey, and it is written.

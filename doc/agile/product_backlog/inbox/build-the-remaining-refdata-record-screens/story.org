@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 748695CE-3A0E-4CA2-BEA9-87CCB2B406EF
+:END:
+#+title: Story: Build the remaining ores.refdata record screens
+#+description: The ores.refdata record screen left to build: the holiday calendar, on the journey runtime and the generic history request. The currency, currency pair and desk group screens landed with PR #2644 before the close. Split from Implement the refdata journeys in ores.web at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:journeys:refdata:product_backlog:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ores.refdata record screen left to build — the holiday calendar — runs
+in =ores.web= against the real server, on the journey runtime and the
+generic history request. The classification-list screen shipped with the
+source story, and the currency, currency pair and desk group screens with
+PR #2644; this story is what remains of the set.
+
+This story was split from
+[[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys
+in ores.web]] when that story was reworded to the journeys it delivered and
+closed DONE at the sprint 26 close on 2026-10-05; its remaining screen task
+moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Build the holiday calendar screen. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Keep a holiday calendar right runs in =ores.web= against the real
+  server.
+- Every screen uses the journey runtime and the generic history request;
+  none adds a per-entity list, detail or history primitive.
+- Every gap a journey document records is either closed or stated on the
+  screen as the document says.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:978FEF55-DFCB-440B-A7DB-BB65C8C018C8][Build the holiday calendar screen]] | BACKLOG | | | Build Keep a holiday calendar right in ores.web: the calendar by shape, rules, exceptions, events, rebuild and business days. |
+
+* Decisions
+
+* Out of scope
+
+-

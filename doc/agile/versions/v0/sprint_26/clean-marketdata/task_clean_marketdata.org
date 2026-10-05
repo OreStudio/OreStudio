@@ -28,7 +28,7 @@ ores.marketdata passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
-| Now          | Complete. 28 checklist items Pass, four Fail and one Partial; the five are recorded with their dispositions in =* Result= and none is left untracked. The story's four other tasks are merged. |
+| Now          | Nothing. |
 | Waiting on | Nothing. |
 | Next | Nothing. |
 | Last touched | 2026-10-01                               |

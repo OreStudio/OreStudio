@@ -28,7 +28,7 @@ The setup screen is what a person sees against an empty installation, before the
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The screen carries the banner and the copy states the condition, the consequence and what the setup process begins with. The workspace typechecks, passes the format check, tests green and builds. |
+| Now          | Nothing. |
 | Waiting on | Nothing. |
 | Next | Nothing. |
 | Last touched | 2026-09-27                               |

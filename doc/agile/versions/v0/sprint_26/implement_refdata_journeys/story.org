@@ -2,12 +2,12 @@
 :ID: A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B
 :END:
 #+title: Story: Implement the refdata journeys in ores.web
-#+description: Build the ores.refdata user journeys as ores.web screens on the journey runtime, starting with the classification list and the currency.
+#+description: Build the ores.refdata user journeys as ores.web screens on the journey runtime, starting with the classification list. The currency, desk group and currency pair screens landed before the close; the holiday calendar screen splits to its own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :web:refdata:user_journey:sprint_26:v0:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The written ores.refdata journeys run in ores.web against the real server: a reference data administrator can maintain the classification lists, currencies, currency pairs, desk groups and holiday calendars from the screens the journey documents describe, instead of the deleted per-entity screens.
+The written ores.refdata journeys run in ores.web against the real server: a reference data administrator can maintain the classification lists, currencies, currency pairs and desk groups from the screens the journey documents describe, instead of the deleted per-entity screens. The holiday calendar screen still to build splits to [[id:748695CE-3A0E-4CA2-BEA9-87CCB2B406EF][Build the remaining ores.refdata record screens]] at the sprint 26 close on 2026-10-05.
 
 * Status
 
@@ -23,14 +23,22 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | All five journey screens built: classifications, currencies, desk groups, currency pairs and holiday calendars. |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing.     |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the
+journeys it delivered and closed DONE: the classification list, currency,
+desk group and currency pair screens run on the real server (PR #2644), and
+the history panel and the change-reason form every later screen reuses were
+built with the first. The holiday calendar screen is
+[[id:748695CE-3A0E-4CA2-BEA9-87CCB2B406EF][Build the remaining ores.refdata
+record screens]], and its task moved there.
 
 * Acceptance
 
-- Maintain a classification list, Add or correct a currency, Set up a currency pair, Group currencies for the desk and Keep a holiday calendar right each run in ores.web against the real server.
+- Maintain a classification list, Add or correct a currency, Set up a currency pair and Group currencies for the desk each run in ores.web against the real server.
 - Every screen uses the journey runtime and the generic history request; none adds a per-entity list, detail or history primitive.
 - Every gap a journey document records is either closed or stated on the screen as the document says.
 
@@ -41,9 +49,8 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 | [[id:738628F9-DBAD-4626-9A22-CAA9AF5C88BF][Scaffold story: Implement the refdata journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:A6FEE241-EA6B-4290-B21E-750D089EC3C0][Build the classification list screen]] | DONE | 2026-10-04 | 2026-10-05 | Build Maintain a classification list in ores.web: 28 code lists by topic, edit form and history. |
 | [[id:F18DC40C-6CF6-413B-A5C3-3509B422AB1E][Build the currency screen]] | DONE | 2026-10-05 | 2026-10-05 | Build Add or correct a currency in ores.web: the currency, its pickers, countries, calendars, desk groups and history. |
-| [[id:978FEF55-DFCB-440B-A7DB-BB65C8C018C8][Build the holiday calendar screen]] | DONE | 2026-10-05 | 2026-10-05 | Build Keep a holiday calendar right in ores.web: the calendar by shape, rules, exceptions, events, rebuild and business days. |
-| [[id:5D47FE58-7DFE-4FB9-B5DB-26E2A5B762A4][Build the currency pair screen]] | DONE | | 2026-10-05 | Build Set up a currency pair in ores.web: the pair and convention form, settlement calendars and history. |
-| [[id:B99318CA-9335-40FF-9643-132CA63E3EB7][Build the desk group screen]] | DONE | | 2026-10-05 | Build Group currencies for the desk in ores.web: groups in order, members and history. |
+| [[id:5D47FE58-7DFE-4FB9-B5DB-26E2A5B762A4][Build the currency pair screen]] | DONE |  | 2026-10-05 | Build Set up a currency pair in ores.web: the pair and convention form, settlement calendars and history. |
+| [[id:B99318CA-9335-40FF-9643-132CA63E3EB7][Build the desk group screen]] | DONE |  | 2026-10-05 | Build Group currencies for the desk in ores.web: groups in order, members and history. |
 
 * Order
 
@@ -71,17 +78,6 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 - *New routes and menu items only.* The screens add routes and menu entries in
   =AppRoutes.tsx= and =shell/areas.ts=, and touch no page another story owns,
   so they do not clash with the access and profile work in the same files.
-
-- *One registry of record resources is the BFF's authority.* Each screen
-  reads and writes through =/api/refdata/:resource=, keyed by a name the
-  registry allows; a write is checked against a schema that satisfies the
-  generated write type. No screen names a subject.
-- *A field table drives every record form.* Text, numbers, dates, choices,
-  classification and record pickers, with conditional fields, give the form,
-  the details, the revert and the write from one list per entity.
-- *A screen states a server gap rather than hiding it.* Where the server
-  behaves differently from the journey, as with the calendar rebuild, the
-  screen says so and the journey is corrected.
 
 * Out of scope
 

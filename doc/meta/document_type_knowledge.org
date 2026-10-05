@@ -60,6 +60,12 @@ it is a normal knowledge document — no extra obligations.
     the first =*= heading. Knowledge docs do /not/ carry a separate
     =* Summary= section; the summary is the blurb.
   - =* Detail= — the content.
+  - =* Patterns used= — optional; present when the page describes how services
+    work together. One line per
+    [[id:EA249899-6611-407F-A43A-B37019EBD1A7][service architecture pattern]]
+    the page applies, linked, saying how it applies it. The pattern lists the
+    page back under =* In ORE Studio=, and
+    =build/scripts/check_pattern_uses.py= checks both directions.
   - /See also/ — optional, for external cross-references only
     (internal references weave into the body).
 

@@ -532,6 +532,14 @@ the computed permissions.
 - How a party is told that a grant lapsed. The notification channel belongs to
   the user journeys.
 
+
+* Patterns used
+
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — every scheduled run acts as its tenant and party through it.
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — reporting creates a run grant when a person schedules a definition,
+  and revokes it when the definition is unscheduled or deleted.
+- [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — every message of a run carries the id the firing created.
+
 * See also
 
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

@@ -67,6 +67,13 @@ page carries only what is specific to =workflow=.
     declares, what a retry resumes from, and what cancelling it does.
   - =* Progress= — the read a client follows to render progress, and
     the states it exposes.
+  - =* Patterns used= — one line per
+    [[id:EA249899-6611-407F-A43A-B37019EBD1A7][service architecture pattern]]
+    the workflow applies, saying how it applies it. A workflow coordinates
+    services, so the section is never empty. A pattern whose page exists is
+    linked, and lists the workflow back under =* In ORE Studio=; a pattern
+    whose page is not yet written is named in plain text.
+    =build/scripts/check_pattern_uses.py= checks the links.
   - =* Related= — a link to every page that bears on the workflow:
     =[[file:...]]= links for pages in the documentation, and =id:=
     links for the agile artefacts that built it, such as its story and

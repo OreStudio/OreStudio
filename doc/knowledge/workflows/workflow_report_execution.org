@@ -145,6 +145,14 @@ failed, skipped and cancelled, defined on
 The engine's instance states are a separate vocabulary, and the two are not the
 same table.
 
+* Patterns used
+
+- [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the start message carries the run's correlation id.
+- Process Manager, Saga in its orchestrated form, and Idempotent Receiver —
+  the engine dispatches the steps, and every step compensates through the
+  same fail message. Their pages belong to the coordination group and are
+  not yet written.
+
 * Related
 
 - [[file:./workflows.org][Workflow pages]] — the inventory this page is listed in.

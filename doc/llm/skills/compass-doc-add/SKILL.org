@@ -79,7 +79,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =field_group= | =compass add field_group= | =projects/ores.<component>/modeling/= | =Includes=, =Fields= |
 | =investigation= | =compass add investigation= | =--parent-dir= | =Context=, =Methodology=, =Paths taken=, =Conclusions=, =Recommendations=, =See also= |
 | =junction= | =compass add junction= | =--parent-dir= | =Left=, =Right=, =Columns=, =SQL=, =Repository=, =C++=, =See also= |
-| =knowledge= | =compass add knowledge= | =--parent-dir= | =Summary=, =Detail=, =See also= |
+| =knowledge= | =compass add knowledge= | =--parent-dir= | =Summary=, =Detail=, =Patterns used=, =See also= |
 | =lookup_entity= | =compass add lookup_entity= | =--parent-dir= | =Primary key=, =Columns=, =Artefact indexes=, =See also= |
 | =manual= | =compass add manual= | =doc/manual/user_guide= | — |
 | =memory= | =compass add memory= | =doc/llm/memory= | — |
@@ -99,7 +99,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =test_scenario= | =compass add test_scenario= | =--parent-dir= | =Before you start=, =Scenario Info=, =Steps=, =Results=, =Notes= |
 | =user_journey= | =compass add user_journey= | =--parent-dir= | =Goal=, =Actor and trigger=, =Steps=, =Screens and wireframes=, =Prototype=, =Entities composed=, =Operations and messages=, =What is missing=, =Related journeys=, =Related knowledge=, =See also= |
 | =version= | =compass add version= | =--parent-dir= | =Identity=, =Mission=, =Definition of done=, =Status=, =Sprints=, =Release scope= |
-| =workflow= | =compass add workflow= | =doc/knowledge/workflows= | =Purpose=, =Participants=, =Messages=, =Steps=, =Interaction=, =Failure and recovery=, =Progress=, =Related=, =See also= |
+| =workflow= | =compass add workflow= | =doc/knowledge/workflows= | =Purpose=, =Participants=, =Messages=, =Steps=, =Interaction=, =Failure and recovery=, =Progress=, =Patterns used=, =Related=, =See also= |
 
 # END generated types
 

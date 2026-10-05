@@ -45,6 +45,17 @@ read on.)
 (The content proper. Subheadings welcome; aim for navigable, not
 exhaustive.)
 
+,* Patterns used
+
+(Optional. When this page describes how services work together, list each
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][service architecture pattern]] it
+applies, with a link and one line on how this page applies it. The pattern
+lists this page back in its =* In ORE Studio= section, and
+=build/scripts/check_pattern_uses.py= checks both directions. Delete the
+section when the page describes no interaction between services.)
+
+-
+
 ,* See also
 
 -

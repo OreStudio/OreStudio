@@ -164,6 +164,14 @@ one line per operation, so the rail shows every step as the workflow instance
 advances. A failed step carries its error until a retry resumes it, and a
 completed workflow instance shows every step done.
 
+* Patterns used
+
+- Process Manager and Idempotent Receiver — the engine dispatches the plan's
+  steps, and a retry is safe because every step is idempotent. Their pages
+  belong to the coordination group and are not yet written.
+- Saga is not used: provisioning declares stop-and-retry rather than
+  compensation, because its completed steps are published data.
+
 * Related
 
 - [[id:FF8BAB73-9A76-4B23-87F5-59D1BE1A2877][The workflow definition]] — how a definition declares these steps, how it is registered, and what a change to it does to a run in progress.

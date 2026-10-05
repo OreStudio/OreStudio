@@ -8,7 +8,7 @@
 #+filetags: :knowledge:patterns:sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment: brave_hopper
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -31,7 +31,7 @@ tasks moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -49,7 +49,7 @@ tasks moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:5C1D296F-2F31-471E-A40A-7C23465B1049][Make a design name its patterns]] | BACKLOG | | | A memory that a design names its patterns from the hub, and a patterns-used section in the knowledge and workflow types. |
+| [[id:5C1D296F-2F31-471E-A40A-7C23465B1049][Make a design name its patterns]] | DONE | 2026-10-05 | 2026-10-05 | A memory that a design names its patterns from the hub, and a patterns-used section in the knowledge and workflow types. |
 | [[id:8D66F1DA-9566-45C0-B410-69D27B483318][Write the communication, coordination, resilience, load and data patterns]] | BACKLOG | | | Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside. |
 
 * Decisions

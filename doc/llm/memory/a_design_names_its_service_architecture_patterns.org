@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 470D4571-47A4-4AEF-9A93-2B4DE0279C1E
+:END:
+#+title: A design names its service architecture patterns
+#+description: When a design or workflow page describes how services work together, it names the service architecture patterns it applies from the hub, and the patterns list it back.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+A page that designs how services work together names, in a Patterns used section, each service architecture pattern it applies, linked from the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] hub, and the pattern lists the page back under In ORE Studio. A mechanism that matches no pattern in the hub is first written as a pattern page, with its established name and sources, before the design relies on it.
+
+*Why:* Without a named pattern each design invents its own mechanism and rediscovers the same pitfalls. The reporting design did exactly that: its run grant, token exchange and token cache were reporting-only text until they were extracted as Grant Management, Token Exchange and Scheduled Work Acting as a Tenant.
+
+*How to apply:* Before designing a service interaction, read the hub group whose question the design faces. Add a Patterns used section to the knowledge or workflow page, one linked line per pattern saying how it applies. Add the page to each pattern's In ORE Studio section. Run python3 build/scripts/check_pattern_uses.py, which fails when a link goes only one way.

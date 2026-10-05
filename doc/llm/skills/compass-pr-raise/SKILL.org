@@ -168,6 +168,11 @@ lifecycle is ordered this way.
      readiness cases sat inside such a guard and never reached the
      compiler. Run it when anything under =projects/**/tests/*= or
      =projects/ores.codegen/*= changed.
+   - *pattern uses*: =python3 build/scripts/check_pattern_uses.py=. A
+     service architecture pattern names each use under =* In ORE Studio=,
+     and a page that applies a pattern names it under =* Patterns used=;
+     the check fails when a link goes only one way, or when a Patterns used
+     entry is not a pattern. Run it when anything under =doc/= changed.
    - *Compass test suite*:
      =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
    - *CDash experimental* (code class; visibility only):

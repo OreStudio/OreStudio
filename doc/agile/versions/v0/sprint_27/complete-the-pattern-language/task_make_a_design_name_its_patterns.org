@@ -7,41 +7,53 @@
 #+level: s1
 #+filetags: :complete-the-pattern-language:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/make-a-design-name-its-patterns
+#+pr: 2664
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:300948F4-3597-4E53-8454-126D541D9360][Complete the pattern language]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A page that designs how services work together names the service architecture
+patterns it applies, and a check keeps the pattern and the page linked both
+ways.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:300948F4-3597-4E53-8454-126D541D9360][Complete the pattern language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
 
--
+- A memory states the rule: a design names its patterns from the hub, and a
+  mechanism with no pattern becomes a pattern page first.
+- The knowledge template has an optional =* Patterns used= section, and the
+  workflow template a required one; both contracts state it.
+- =build/scripts/check_pattern_uses.py= fails when a pattern's use does not link
+  back, when a used pattern does not list the page, or when a Patterns used
+  entry is not a pattern. Plans, external pages and agile records are exempt.
+- The doc lint workflow and the PR-raise skill run the check.
+- The existing design pages and the three workflow pages pass it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the check first, because it defines the rule, then make the templates,
+the contracts and the pages satisfy it. Keep the section optional for knowledge
+pages, which are mostly not about services, and required for workflow pages,
+which always coordinate services. Name a pattern whose page is not yet written
+in plain text, so the coordination group can link it later.
 
 * Measurements
 
@@ -55,7 +67,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Check tests | 9 passed | =pytest projects/ores.codegen/tests/test_check_pattern_uses.py= | before commit |
+| Compass and codegen suites | 1461 passed, 1 skipped | =pytest projects/ores.compass/tests projects/ores.codegen/tests= | before commit |
+| Site check | 413 pages, 0 failures | =compass site page= | before commit |
 
 * Notes
 
@@ -81,12 +95,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2664][#2664]] | [doc,codegen] Make a design name its service architecture patterns |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #2664, Claude: a shared =:ID:= is silent | build/scripts/check_pattern_uses.py | Accept | Reported when the id is a pattern or a use. |
+| 2 | PR #2664, Claude: an unresolved id under In ORE Studio passes | build/scripts/check_pattern_uses.py | Accept | Reported. |
+| 3 | PR #2664, Claude: a pattern's own Patterns used is not checked | build/scripts/check_pattern_uses.py | Decline | Patterns relate under Related patterns. |
+| 4 | PR #2664, Claude: exact heading match; a section last in the file | test_check_pattern_uses.py | Partly accept | Test for the last section; the templates produce the exact heading. |
+| 5 | PR #2664, Claude: test gaps | test_check_pattern_uses.py | Accept | Empty tree tested; a body-only link triggers no reverse check by design. |
+| 6 | PR #2664, Claude: unreadable files skipped silently | build/scripts/check_pattern_uses.py | Accept | A warning on stderr. |
 
 * Result
+
+The rule is in place in four forms. The memory
+[[id:470D4571-47A4-4AEF-9A93-2B4DE0279C1E][A design names its service
+architecture patterns]] states it. The knowledge template carries an optional
+=* Patterns used= section and the workflow template a required one, and both
+contracts say so. =build/scripts/check_pattern_uses.py= enforces the links both
+ways, with nine tests; its first run found that the reporting design did not
+link Grant Management, which lists it as a use. The doc lint workflow and the
+PR-raise skill run the check.
+
+The reporting design, the IAM run grants page and the three workflow pages now
+carry the section. The workflow pages name Process Manager, Saga and Idempotent
+Receiver in plain text until the coordination group is written.

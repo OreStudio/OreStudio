@@ -141,6 +141,13 @@ pending, in progress, completed, completed with warnings, compensated and
 failed, and a client must be ready to display each of them, because the fixture
 can reach all of them from a request.
 
+* Patterns used
+
+- Process Manager, Saga in its orchestrated form, and Idempotent Receiver —
+  the engine dispatches the steps the request declares, and compensates the
+  steps that declared a compensation. Their pages belong to the coordination
+  group and are not yet written.
+
 * Related
 
 - [[id:FF8BAB73-9A76-4B23-87F5-59D1BE1A2877][The workflow definition]] — how this definition is registered, and what a change to it does to a run in progress.

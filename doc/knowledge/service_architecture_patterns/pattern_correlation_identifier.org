@@ -130,7 +130,9 @@ prevents. The id may be stored, unlike a token, because it is not a credential.
   extractor does not yet check the shape: it accepts any non-empty value, so the
   log-injection pitfall below is open until the story closes it.
 - *The workflow engine.* The start message carries a correlation id, and the
-  engine's events carry it.
+  engine's events carry it. [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] relies on it.
+- *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] carries the firing's id through every step of a
+  run.
 - *The rest of the platform.* The handlers, the codegen templates, the origins and
   the log format do not yet carry it through.
   [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]]

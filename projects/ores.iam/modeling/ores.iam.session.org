@@ -53,17 +53,15 @@ coexist rather than compete, and no handler is suppressed here.
 
 The row names the account a session belongs to, where it came from and how much
 it moved, so the generated reads are not open to every signed-in caller: the
-model sets =:guard_reads: true=, and the generated =iam.v1.sessions.list=,
-=.get= and =.get_many= handlers require =iam::sessions:read= before they serve
-anything. The catalogue grants that permission for exactly this purpose, and the
-account and login-record models guard their reads the same way.
+generated =iam.v1.sessions.list=, =.get= and =.get_many= handlers require
+=iam::sessions:read= before they serve anything, as every generated read
+requires its resource's read code.
 
 :PROPERTIES:
 :schema:        public
 :product:       ores
 :component:     iam
 :profile:       readonly-timeseries
-:guard_reads:   true
 :END:
 
 * Natural keys

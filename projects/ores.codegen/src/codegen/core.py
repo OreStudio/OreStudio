@@ -5089,6 +5089,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_shell_plan,
             entity_http_route_plan,
             http_recipe_document,
+            open_reads_of,
             operations_by_verb,
             protocol_operations,
             response_payload_member,
@@ -5210,7 +5211,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.
         _ops = protocol_operations(
-            domain_entity['messages'], domain_entity.get('guard_reads', False))
+            domain_entity['messages'], open_reads_of(domain_entity))
         domain_entity['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             domain_entity[f'{_verb}_operations'] = _verb_ops
@@ -5376,6 +5377,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             http_recipe_document,
             junction_entity_shape,
             junction_protocol_messages,
+            open_reads_of,
             operations_by_verb,
             protocol_operations,
             shell_menu_name,
@@ -5407,7 +5409,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # a junction addresses the same verbs and its handler is the same
         # adapter, so the two are projected from one derivation.
         _ops = protocol_operations(
-            junction['messages'], junction.get('guard_reads', False))
+            junction['messages'], open_reads_of(junction))
         junction['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             junction[f'{_verb}_operations'] = _verb_ops

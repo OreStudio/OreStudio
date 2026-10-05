@@ -100,6 +100,11 @@ A read checks the =:read= code of its resource, such as
 the default. A model, a handler or a subject does not ask for it; it is there
 unless this page allows the read to be open.
 
+Who holds a read code is a role's business, not this page's. The reads every
+person's screens need are held by the Member role every person account holds,
+and a job role adds what its job needs; see
+[[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]].
+
 A read may be open for one of two reasons only:
 
 - *It is a self read.* The subject takes no account id, so the answer can hold
@@ -141,14 +146,27 @@ is not in this table checks its read permission.
 A row is added to this table in the same change that opens the read, with its
 reason. Removing a row closes the read.
 
-** Where the code is today
+** How the code obeys it
 
-The rule above is the target. On 2026-10-06, 363 of the 367 generated handlers
-that serve reads checked no read permission, because codegen guarded a read only
-when its model set =:guard_reads: true=. Only =account=, =login_info=, =session=
-and =tenant= set it. [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read
-the security documentation does not allow]] closes the gap and adds the check
-that keeps it closed.
+Codegen guards every generated read with its resource's =:read= code, as it
+guards a write with its =:write= or =:delete= code. A model opens a read only
+by naming its subject in =:open_reads:=, and the subject must be one of the
+resource's own reads, or the generation fails. The open subjects in the models
+are the generated rows of the allow-list above: =iam.v1.roles.list= and
+=iam.v1.roles.get= on the role model, and =iam.v1.permissions.list= on the
+permission model. The self reads are hand-written operations that take no
+account id.
+
+A history is guarded too. =<component>.v1.history.get= serves every version of
+any entity of its component, so each history provider registers with its
+entity's read code, and the dispatcher refuses a caller who does not hold it.
+The history subject is never on the allow-list.
+
+Until 2026-10-06 the default was the reverse: a read needed authentication
+alone unless its model asked for a guard, and 363 of 367 generated read
+handlers answered every signed-in member.
+[[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security
+documentation does not allow]] turned it round.
 
 ** One answer per screen
 

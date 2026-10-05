@@ -3694,9 +3694,36 @@ def _operation_verb(name: str) -> str:
     return ""
 
 
+def open_reads_of(resource: dict[str, Any]) -> frozenset[str]:
+    """The read subjects a model opens to every signed-in caller.
+
+    The model states them in ``:open_reads:``, separated by spaces. Each must
+    be one of the resource's own derived read subjects, so a misspelt or stale
+    subject fails the generation rather than leaving a read guarded that the
+    allow-list says is open, or the reverse.
+    """
+    stated = frozenset(str(resource.get("open_reads") or "").split())
+    if not stated:
+        return stated
+    reads = set()
+    for message in resource.get("messages") or []:
+        if not message.get("derived") or not message.get("subject"):
+            continue
+        verb = message.get("verb") or _operation_verb(message["name"])
+        if verb not in ("put", "put_many", "delete", "delete_many", ""):
+            reads.add(message["subject"])
+    unknown = sorted(stated - reads)
+    if unknown:
+        raise ValueError(
+            f"{resource.get('entity_singular') or resource.get('name')}: :open_reads: names "
+            f"{', '.join(unknown)}, which is not one of its read subjects: "
+            f"{', '.join(sorted(reads))}")
+    return stated
+
+
 def protocol_operations(
         messages: list[dict[str, Any]],
-        guard_reads: bool = False) -> list[dict[str, Any]]:
+        open_reads: frozenset[str] = frozenset()) -> list[dict[str, Any]]:
     """The operations a resource addresses, in the order the messages state them.
 
     A message with a subject is an operation; one without is a record. The
@@ -3708,11 +3735,11 @@ def protocol_operations(
     protocol and its handler beside it, so the derived surface a generated
     handler serves stops at what the derivation owns.
 
-    ``guard_reads`` makes each read name a permission as well, for an entity
-    whose reads expose material a signed-in caller must not see. The model
-    asks for it with ``:guard_reads: true``, and the permission is the
-    resource's own ``:read`` code. Without the flag a read needs
-    authentication alone, which is the estate's default.
+    Every operation names a permission. A write names the resource's
+    ``:write`` or ``:delete`` code, and a read names its ``:read`` code. A read
+    is open to every signed-in caller only when its subject is in
+    ``open_reads``, which the model states with ``:open_reads:``; Authorised
+    reads allow-lists each such subject with the reason it is open.
     """
     operations: list[dict[str, Any]] = []
     for message in messages:
@@ -3723,7 +3750,8 @@ def protocol_operations(
         leading_type = fields[0].get("cpp_type", "") if fields else ""
         verb = message.get("verb") or _operation_verb(message["name"])
         is_write = verb in ("put", "put_many", "delete", "delete_many")
-        guarded_read = guard_reads and not is_write and verb != ""
+        guarded_read = (not is_write and verb != ""
+                        and message["subject"] not in open_reads)
         operations.append({
             "method": message["name"][:-len("_request")],
             "request": message["name"],
@@ -3749,9 +3777,8 @@ def protocol_operations(
             "leading_is_optional": "optional" in leading_type,
             # A write is an operation that changes state, and the permission
             # it needs is the one the resource already names for that kind of
-            # change. A read needs authentication alone, so it names none --
-            # unless the model guards its reads, when it names the resource's
-            # own read code.
+            # change. A read names the resource's own read code, unless the
+            # model opens it by subject.
             "is_write": is_write,
             "is_guarded": is_write or guarded_read,
             # The single write verb has one hook the other verbs do not: a

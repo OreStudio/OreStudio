@@ -25,7 +25,6 @@ applied it.
 * Flags
 :PROPERTIES:
 :profile: tenant-scoped-junction
-:guard_reads: true
 :END:
 
 * Left

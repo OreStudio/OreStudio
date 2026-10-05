@@ -1,19 +1,19 @@
-"""Tests that a model can guard its reads, not only its writes.
+"""Tests that every generated read checks its resource's read code.
 
 Run::
 
     python3 -m pytest projects/ores.codegen/tests/test_guarded_reads.py
 
-By default a generated read proves authentication alone, which is the
-estate's rule: the permission a write needs is the one the resource
-already names for that change, and a read names none. An entity whose
-reads expose material a signed-in caller must not see says
-:guard_reads: true, and each read then checks the resource's own read
-code. Without the flag nothing changes, which is what keeps the flag from
-becoming a house-wide behaviour change.
+A read checks the resource's own read code, as a write checks its write or
+delete code. A model opens a read to every signed-in caller only by naming
+its subject in :open_reads:, and the security documentation allow-lists each
+such subject. A subject that is not one of the resource's reads fails the
+generation, so the model and the allow-list cannot drift by a typo.
 """
 import sys
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
@@ -43,7 +43,6 @@ Probe entity.
 :product:     ores
 :component:   testcomp
 :subcomponent: api
-:guard_reads: true
 :END:
 
 * Columns
@@ -67,7 +66,10 @@ Primary key.
 A plain string column.
 """
 
-PLAIN_ENTITY = ENTITY.replace(":guard_reads: true\n", "")
+OPEN_LIST_ENTITY = ENTITY.replace(
+    ":subcomponent: api\n", ":subcomponent: api\n:open_reads: testcomp.v1.probes.list\n")
+MISSPELT_ENTITY = ENTITY.replace(
+    ":subcomponent: api\n", ":subcomponent: api\n:open_reads: testcomp.v1.probe.list\n")
 
 
 def _generate(tmp_path, output, body=ENTITY):
@@ -99,7 +101,7 @@ def _blocks(handler):
     return out
 
 
-def test_a_guarded_read_checks_the_resource_read_code(tmp_path):
+def test_every_read_checks_the_resource_read_code(tmp_path):
     handler = _generate(tmp_path, "probe_handler.hpp")
     blocks = _blocks(handler)
 
@@ -115,25 +117,29 @@ def test_a_guarded_read_checks_the_resource_read_code(tmp_path):
         assert '"testcomp::probes:read"' not in blocks[name], name
 
 
-def test_a_model_without_the_flag_leaves_its_reads_unguarded(tmp_path):
-    handler = _generate(tmp_path, "probe_handler.hpp", body=PLAIN_ENTITY)
+def test_an_open_read_needs_no_permission_and_the_others_stay_guarded(tmp_path):
+    handler = _generate(tmp_path, "probe_handler.hpp", body=OPEN_LIST_ENTITY)
     blocks = _blocks(handler)
 
-    assert '"testcomp::probes:read"' not in handler
-    for name, block in blocks.items():
-        if name.startswith(("list_", "get_")):
-            assert "has_permission(" not in block, name
-    # The writes keep the check they always had.
+    assert "has_permission(" not in blocks["list_probes"]
+    other_reads = [name for name in blocks
+                   if name.startswith(("list_", "get_")) and name != "list_probes"]
+    assert other_reads, "the entity derived no other read"
+    for name in other_reads:
+        assert '"testcomp::probes:read"' in blocks[name], name
     assert '"testcomp::probes:write"' in handler
+
+
+def test_an_open_read_that_is_not_a_read_subject_fails_the_generation(tmp_path):
+    with pytest.raises(ValueError, match="testcomp.v1.probe.list"):
+        _generate(tmp_path, "probe_handler.hpp", body=MISSPELT_ENTITY)
 
 
 JUNCTION = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.role_grant_request_role.org"
 
 
-def _generate_junction(tmp_path, guarded):
+def _generate_junction(tmp_path):
     body = JUNCTION.read_text(encoding="utf-8")
-    if not guarded:
-        body = body.replace(":guard_reads: true\n", "")
     model_path = tmp_path / JUNCTION.name
     model_path.write_text(body, encoding="utf-8")
     output_dir = tmp_path / "out"
@@ -151,18 +157,10 @@ def _generate_junction(tmp_path, guarded):
     return (output_dir / output).read_text(encoding="utf-8")
 
 
-def test_a_guarded_junction_checks_its_read_code(tmp_path):
-    blocks = _blocks(_generate_junction(tmp_path, guarded=True))
+def test_a_junction_checks_its_read_code(tmp_path):
+    blocks = _blocks(_generate_junction(tmp_path))
 
     reads = [name for name in blocks if name.startswith(("list_", "get_"))]
     assert reads, "the junction derived no read operation"
     for name in reads:
         assert '"iam::role_grant_request_roles:read"' in blocks[name], name
-
-
-def test_a_junction_without_the_flag_leaves_its_reads_unguarded(tmp_path):
-    blocks = _blocks(_generate_junction(tmp_path, guarded=False))
-
-    for name, block in blocks.items():
-        if name.startswith(("list_", "get_")):
-            assert "has_permission(" not in block, name

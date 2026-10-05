@@ -33,7 +33,7 @@ void register_yield_curve_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.yield_curve_config",
-        "",
+        "refdata::yield_curve_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::yield_curve_config_service svc(scoped_ctx);
             auto versions = svc.get_yield_curve_config_history(entity_id);

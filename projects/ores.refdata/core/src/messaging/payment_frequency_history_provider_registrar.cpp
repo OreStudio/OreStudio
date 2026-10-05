@@ -33,7 +33,7 @@ void register_payment_frequency_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.payment_frequency",
-        "",
+        "refdata::payment_frequencies:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::payment_frequency_service svc(scoped_ctx);
             auto versions = svc.get_payment_frequency_history(entity_id);

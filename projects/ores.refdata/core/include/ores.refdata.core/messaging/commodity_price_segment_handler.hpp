@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::commodity_price_segments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_commodity_price_segments_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(commodity_price_segment_handler_lg(), warn)
@@ -125,6 +129,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::commodity_price_segments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_commodity_price_segment_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(commodity_price_segment_handler_lg(), warn)
@@ -169,6 +177,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::commodity_price_segments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_commodity_price_segments_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(commodity_price_segment_handler_lg(), warn)
@@ -405,6 +417,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::commodity_price_segments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_commodity_price_segment_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(commodity_price_segment_handler_lg(), warn)
@@ -449,6 +465,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::commodity_price_segments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_commodity_price_segment_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(commodity_price_segment_handler_lg(), warn)

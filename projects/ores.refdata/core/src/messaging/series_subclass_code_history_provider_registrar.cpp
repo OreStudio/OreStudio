@@ -33,7 +33,7 @@ void register_series_subclass_code_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.series_subclass_code",
-        "",
+        "refdata::series_subclass_codes:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::series_subclass_code_service svc(scoped_ctx);
             auto versions = svc.get_series_subclass_history(entity_id);

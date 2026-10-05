@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::image_tags:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_image_tags_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -115,6 +119,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::image_tags:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_image_tag_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -150,6 +158,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::image_tags:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_image_tags_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -341,6 +353,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "assets::image_tags:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_image_id_image_tags_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_tag_handler_lg(), warn) << "Failed to decode: " << msg.subject;

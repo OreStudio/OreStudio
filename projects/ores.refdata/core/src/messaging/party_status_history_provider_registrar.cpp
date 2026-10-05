@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_party_status_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.party_status",
-        "",
+        "refdata::party_statuses:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::party_status_service svc(scoped_ctx);
             auto versions = svc.get_status_history(entity_id);

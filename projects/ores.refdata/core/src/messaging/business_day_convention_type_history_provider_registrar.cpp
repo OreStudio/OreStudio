@@ -33,7 +33,7 @@ void register_business_day_convention_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.business_day_convention_type",
-        "",
+        "refdata::business_day_convention_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::business_day_convention_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

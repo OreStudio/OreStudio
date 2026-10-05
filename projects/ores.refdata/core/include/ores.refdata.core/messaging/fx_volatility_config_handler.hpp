@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::fx_volatility_configs:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_fx_volatility_configs_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(fx_volatility_config_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::fx_volatility_configs:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_fx_volatility_config_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(fx_volatility_config_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::fx_volatility_configs:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_fx_volatility_configs_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(fx_volatility_config_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::fx_volatility_configs:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_fx_volatility_config_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(fx_volatility_config_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::fx_volatility_configs:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_fx_volatility_config_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(fx_volatility_config_handler_lg(), warn)

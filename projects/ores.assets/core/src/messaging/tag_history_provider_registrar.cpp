@@ -32,7 +32,7 @@ namespace ores::assets::messaging {
 void register_tag_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.assets.tag",
-        "",
+        "assets::tags:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tag_service svc(scoped_ctx);
             auto versions = svc.get_tag_history(entity_id);

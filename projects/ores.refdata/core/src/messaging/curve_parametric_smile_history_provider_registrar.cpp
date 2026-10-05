@@ -33,7 +33,7 @@ void register_curve_parametric_smile_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_parametric_smile",
-        "",
+        "refdata::curve_parametric_smiles:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_parametric_smile_service svc(scoped_ctx);
             auto versions = svc.get_parametric_smile_history(entity_id);

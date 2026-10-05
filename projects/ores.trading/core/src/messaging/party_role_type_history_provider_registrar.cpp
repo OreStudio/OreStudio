@@ -33,7 +33,7 @@ void register_party_role_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.party_role_type",
-        "",
+        "trading::party_role_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::party_role_type_service svc(scoped_ctx);
             auto versions = svc.get_role_type_history(entity_id);

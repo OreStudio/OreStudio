@@ -33,7 +33,7 @@ void register_report_analytic_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_analytic",
-        "",
+        "reporting::report_analytics:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_analytic_service svc(scoped_ctx);
             auto versions = svc.get_analytic_history(entity_id);

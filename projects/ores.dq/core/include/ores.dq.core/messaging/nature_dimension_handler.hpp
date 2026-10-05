@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::nature_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_nature_dimensions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::nature_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_nature_dimension_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
@@ -166,6 +174,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::nature_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_nature_dimensions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
@@ -397,6 +409,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::nature_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_nature_dimension_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)
@@ -440,6 +456,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::nature_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_nature_dimension_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(nature_dimension_handler_lg(), warn)

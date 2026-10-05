@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_tenor_schedule_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.tenor_schedule",
-        "",
+        "refdata::tenor_schedules:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tenor_schedule_service svc(scoped_ctx);
             auto versions = svc.get_schedule_history(entity_id);

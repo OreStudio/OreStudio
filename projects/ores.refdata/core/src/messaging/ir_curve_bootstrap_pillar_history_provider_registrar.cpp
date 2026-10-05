@@ -33,7 +33,7 @@ void register_ir_curve_bootstrap_pillar_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.ir_curve_bootstrap_pillar",
-        "",
+        "refdata::ir_curve_bootstrap_pillars:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::ir_curve_bootstrap_pillar_service svc(scoped_ctx);
             auto versions = svc.get_pillar_history(entity_id);

@@ -82,6 +82,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::series_classification_rules:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_series_classification_rules_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
@@ -126,6 +130,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::series_classification_rules:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_series_classification_rule_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
@@ -170,6 +178,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::series_classification_rules:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_series_classification_rules_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
@@ -406,6 +418,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::series_classification_rules:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_series_classification_rule_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)
@@ -450,6 +466,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::series_classification_rules:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_series_classification_rule_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(series_classification_rule_handler_lg(), warn)

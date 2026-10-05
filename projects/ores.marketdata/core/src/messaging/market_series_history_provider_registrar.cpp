@@ -32,7 +32,7 @@ namespace ores::marketdata::messaging {
 void register_market_series_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.marketdata.market_series",
-        "",
+        "marketdata::market_series:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::market_series_service svc(scoped_ctx);
             auto versions = svc.get_market_series_history(entity_id);

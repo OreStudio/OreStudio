@@ -33,7 +33,7 @@ void register_parameter_value_domain_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.parameter_value_domain",
-        "",
+        "reporting::parameter_value_domains:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::parameter_value_domain_service svc(scoped_ctx);
             auto versions = svc.get_domain_history(entity_id);

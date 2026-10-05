@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_book_status_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.book_status",
-        "",
+        "refdata::book_statuses:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::book_status_service svc(scoped_ctx);
             auto versions = svc.get_status_history(entity_id);

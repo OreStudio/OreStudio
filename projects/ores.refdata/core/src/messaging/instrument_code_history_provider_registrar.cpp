@@ -33,7 +33,7 @@ void register_instrument_code_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.instrument_code",
-        "",
+        "refdata::instrument_codes:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::instrument_code_service svc(scoped_ctx);
             auto versions = svc.get_instrument_history(entity_id);

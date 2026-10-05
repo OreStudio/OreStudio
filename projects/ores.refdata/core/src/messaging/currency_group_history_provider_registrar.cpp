@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_currency_group_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.currency_group",
-        "",
+        "refdata::currency_groups:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::currency_group_service svc(scoped_ctx);
             auto versions = svc.get_group_history(entity_id);

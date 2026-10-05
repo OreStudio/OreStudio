@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::data_domains:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_data_domains_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(data_domain_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -122,6 +126,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::data_domains:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_data_domain_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(data_domain_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -164,6 +172,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::data_domains:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_data_domains_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(data_domain_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -390,6 +402,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::data_domains:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_data_domain_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(data_domain_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -432,6 +448,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::data_domains:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_data_domain_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(data_domain_handler_lg(), warn) << "Failed to decode: " << msg.subject;

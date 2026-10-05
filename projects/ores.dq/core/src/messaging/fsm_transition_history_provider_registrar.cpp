@@ -32,7 +32,7 @@ namespace ores::dq::messaging {
 void register_fsm_transition_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.fsm_transition",
-        "",
+        "dq::fsm_transitions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::fsm_transition_service svc(scoped_ctx);
             auto versions = svc.get_transition_history(entity_id);

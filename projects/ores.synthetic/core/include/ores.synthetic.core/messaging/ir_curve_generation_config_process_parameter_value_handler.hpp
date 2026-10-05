@@ -83,6 +83,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(
+                req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
@@ -128,6 +133,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(
+                req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_ir_curve_generation_config_process_parameter_value_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
@@ -173,6 +183,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(
+                req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req =
             decode<get_many_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
@@ -422,6 +437,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(
+                req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req =
             decode<list_ir_curve_generation_config_process_parameter_value_versions_request>(msg);
         if (!req) {
@@ -469,6 +489,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(
+                req_ctx, "synthetic::ir_curve_generation_config_process_parameter_values:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req =
             decode<get_ir_curve_generation_config_process_parameter_value_version_request>(msg);
         if (!req) {

@@ -32,7 +32,7 @@ namespace ores::workflow::messaging {
 void register_workflow_step_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.workflow.workflow_step",
-        "",
+        "workflow::workflow_steps:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::workflow_step_service svc(scoped_ctx);
             auto versions = svc.get_step_history(entity_id);

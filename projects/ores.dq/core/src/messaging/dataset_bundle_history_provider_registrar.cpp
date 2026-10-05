@@ -32,7 +32,7 @@ namespace ores::dq::messaging {
 void register_dataset_bundle_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.dataset_bundle",
-        "",
+        "dq::dataset_bundles:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::dataset_bundle_service svc(scoped_ctx);
             auto versions = svc.get_bundle_history(entity_id);

@@ -33,7 +33,7 @@ void register_future_convention_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.future_convention",
-        "",
+        "refdata::future_conventions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::future_convention_service svc(scoped_ctx);
             auto versions = svc.get_future_convention_history(entity_id);

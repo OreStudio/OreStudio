@@ -33,7 +33,7 @@ void register_report_instance_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_instance",
-        "",
+        "reporting::report_instances:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_instance_service svc(scoped_ctx);
             auto versions = svc.get_instance_history(entity_id);

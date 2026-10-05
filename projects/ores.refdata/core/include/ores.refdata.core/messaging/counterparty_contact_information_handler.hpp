@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_counterparty_contact_informations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_counterparty_contact_information_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_counterparty_contact_informations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_counterparty_id_counterparty_contact_informations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_counterparty_contact_information_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)
@@ -504,6 +524,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparty_contact_informations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_counterparty_contact_information_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_information_handler_lg(), warn)

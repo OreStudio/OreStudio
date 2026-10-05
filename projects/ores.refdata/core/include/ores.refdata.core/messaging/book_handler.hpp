@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_books_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_book_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_books_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -383,6 +395,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_parent_portfolio_id_books_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -424,6 +440,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_book_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -465,6 +485,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::books:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_book_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(book_handler_lg(), warn) << "Failed to decode: " << msg.subject;

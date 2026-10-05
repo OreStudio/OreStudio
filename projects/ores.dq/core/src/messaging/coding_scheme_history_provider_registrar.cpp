@@ -32,7 +32,7 @@ namespace ores::dq::messaging {
 void register_coding_scheme_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.coding_scheme",
-        "",
+        "dq::coding_schemes:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::coding_scheme_service svc(scoped_ctx);
             auto versions = svc.get_scheme_history(entity_id);

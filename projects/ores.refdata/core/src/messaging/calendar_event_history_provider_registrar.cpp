@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_calendar_event_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.calendar_event",
-        "",
+        "refdata::calendar_events:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::calendar_event_service svc(scoped_ctx);
             auto versions = svc.get_calendar_event_history(entity_id);

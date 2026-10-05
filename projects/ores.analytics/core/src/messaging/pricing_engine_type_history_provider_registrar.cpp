@@ -33,7 +33,7 @@ void register_pricing_engine_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.pricing_engine_type",
-        "",
+        "analytics::pricing_engine_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::pricing_engine_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

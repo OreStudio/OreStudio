@@ -32,7 +32,7 @@ namespace ores::compute::messaging {
 void register_workunit_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.compute.workunit",
-        "",
+        "compute::workunits:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::workunit_service svc(scoped_ctx);
             auto versions = svc.get_workunit_history(entity_id);

@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
 void register_fra_convention_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.fra_convention",
-        "",
+        "refdata::fra_conventions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::fra_convention_service svc(scoped_ctx);
             auto versions = svc.get_fra_convention_history(entity_id);

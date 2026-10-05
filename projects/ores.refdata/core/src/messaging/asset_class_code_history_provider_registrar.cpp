@@ -33,7 +33,7 @@ void register_asset_class_code_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.asset_class_code",
-        "",
+        "refdata::asset_class_codes:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::asset_class_code_service svc(scoped_ctx);
             auto versions = svc.get_asset_class_history(entity_id);

@@ -33,7 +33,7 @@ void register_report_definition_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_definition",
-        "",
+        "reporting::report_definitions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_definition_service svc(scoped_ctx);
             auto versions = svc.get_definition_history(entity_id);

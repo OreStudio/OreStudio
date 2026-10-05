@@ -33,7 +33,7 @@ void register_seed_profile_parameter_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.seed_profile_parameter",
-        "",
+        "iam::seed_profile_parameters:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::seed_profile_parameter_service svc(scoped_ctx);
             auto versions = svc.get_seed_profile_parameter_history(entity_id);

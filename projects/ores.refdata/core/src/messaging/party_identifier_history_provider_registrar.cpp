@@ -33,7 +33,7 @@ void register_party_identifier_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.party_identifier",
-        "",
+        "refdata::party_identifiers:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::party_identifier_service svc(scoped_ctx);
             auto versions = svc.get_party_identifier_history(entity_id);

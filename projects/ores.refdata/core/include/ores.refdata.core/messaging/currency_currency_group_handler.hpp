@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_currency_groups:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_currency_currency_groups_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_currency_group_handler_lg(), warn)
@@ -119,6 +123,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_currency_groups:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_currency_currency_group_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_currency_group_handler_lg(), warn)
@@ -157,6 +165,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_currency_groups:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_currency_currency_groups_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_currency_group_handler_lg(), warn)
@@ -363,6 +375,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_currency_groups:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_currency_iso_code_currency_currency_groups_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_currency_group_handler_lg(), warn)

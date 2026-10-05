@@ -32,7 +32,7 @@ namespace ores::dq::messaging {
 void register_badge_severity_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.badge_severity",
-        "",
+        "dq::badge_severities:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::badge_severity_service svc(scoped_ctx);
             auto versions = svc.get_severity_history(entity_id);

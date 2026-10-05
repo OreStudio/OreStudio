@@ -33,7 +33,7 @@ void register_stress_test_library_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.stress_test_library",
-        "",
+        "analytics::stress_test_libraries:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::stress_test_library_service svc(scoped_ctx);
             auto versions = svc.get_stress_test_library_history(entity_id);

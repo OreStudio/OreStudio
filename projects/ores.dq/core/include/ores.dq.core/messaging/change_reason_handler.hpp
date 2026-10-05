@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reasons:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_change_reasons_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(change_reason_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -122,6 +126,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reasons:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_change_reason_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(change_reason_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -164,6 +172,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reasons:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_change_reasons_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(change_reason_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -390,6 +402,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reasons:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_change_reason_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(change_reason_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -432,6 +448,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::change_reasons:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_change_reason_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(change_reason_handler_lg(), warn) << "Failed to decode: " << msg.subject;

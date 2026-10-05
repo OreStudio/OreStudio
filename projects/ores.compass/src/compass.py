@@ -3047,8 +3047,8 @@ _STATIC_PARENT = {
     # Workflow pages share one folder, so the default is fixed rather than
     # derived from the current sprint.
     "workflow": "doc/knowledge/workflows",
-    # Pattern pages share one folder with the pattern hub.
-    "pattern": "doc/knowledge/patterns",
+    # Service architecture pattern pages share one folder with their hub.
+    "service_architecture_pattern": "doc/knowledge/service_architecture_patterns",
     # Report pages share one folder for the same reason.
     "report": "doc/knowledge/reports",
 }
@@ -3660,13 +3660,15 @@ def cmd_add(argv):
               "         component capture memory investigation product_identity skill\n"
               "         diagram entity_org field_group dataset_overview\n"
               "         facet facet_group technical_space archetype profile\n"
-              "         feature user_journey workflow report pattern\n"
+              "         feature user_journey workflow report\n"
+              "         service_architecture_pattern\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
               "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"
               "  doc/knowledge/workflows (workflow),\n"
               "  doc/knowledge/reports (report),\n"
-              "  doc/knowledge/patterns (pattern),\n"
+              "  doc/knowledge/service_architecture_patterns\n"
+              "    (service_architecture_pattern),\n"
               "  or doc/agile/product_backlog/inbox (capture); required\n"
               "  otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: EA249899-6611-407F-A43A-B37019EBD1A7
 :END:
-#+title: Patterns
-#+description: Structure note for the pattern language of service interaction: the established microservice patterns the platform uses, grouped by the problem each solves, with their sources, failure handling and pitfalls.
+#+title: Service architecture patterns
+#+description: Structure note for the service architecture patterns: the established microservice patterns the platform uses, grouped by the problem each solves, with their sources, failure handling and pitfalls.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:patterns:structure_note:
@@ -32,8 +32,17 @@ Three rules govern the language:
 - *The pattern owns the mechanism; the user owns the use.* A pattern page names
   each use and links it. The architecture page that uses a pattern links the
   pattern and states only its own choices.
-  [[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Document type: pattern]] states the
+  [[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Document type: service_architecture_pattern]] states the
   contract.
+
+* Scope
+
+The hub covers the patterns that govern how services work together across a
+process boundary. It does not cover code-level design patterns inside one
+component, user interface patterns, or the local conventions of the codegen,
+such as the SQL, HTTP and shell entity patterns: those have no outside source
+and keep their own pages. [[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Document type: service_architecture_pattern]]
+states the boundary.
 
 * Reading order
 
@@ -131,7 +140,7 @@ says when the pattern applies and =* Related patterns= names the alternatives.
 When no pattern fits, write the design without one and record the gap on the
 story. Do not stretch a pattern to fit.
 
-To add a pattern, run =compass add pattern= with its group, fill in every
+To add a pattern, run =compass add service_architecture_pattern= with its group, fill in every
 section, cite its source, and add it to its group above. See
 [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 

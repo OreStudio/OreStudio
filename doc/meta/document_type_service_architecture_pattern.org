@@ -1,27 +1,43 @@
 :PROPERTIES:
 :ID: 2BF68189-57CF-42F7-BA33-9673B7D620DD
 :END:
-#+title: Document type: pattern
-#+description: The contract for the pattern document type: folder, frontmatter, sections, and what a pattern page owns as against an architecture page that uses it.
+#+title: Document type: service_architecture_pattern
+#+description: The contract for the service architecture pattern document type: folder, frontmatter, sections, and what a pattern page owns as against an architecture page that uses it.
 #+type: meta
 #+level: cross
-#+filetags: :meta:document_types:pattern:
+#+filetags: :meta:document_types:service_architecture_pattern:
 #+created: 2026-10-05
 #+updated: 2026-10-05
 
-This page defines the =pattern= document type. It is one entry in the
+This page defines the =service_architecture_pattern= document type. It is one entry in the
 [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The
 taxonomy page holds the general contract every document follows: frontmatter,
-state, linking and tags. This page holds only what is specific to =pattern=.
+state, linking and tags. This page holds only what is specific to =service_architecture_pattern=.
+The rest of the page calls a page of this type a /pattern page/.
+
+* Scope
+
+A service architecture pattern governs how the services of the platform work
+together across a process boundary: the identity a call carries, how a message
+travels, how work that spans services stays consistent, how a failure or a load
+peak is contained, and who owns data. Three kinds of pattern are out of scope,
+because they have other sources and other readers:
+
+- *Code-level design patterns*, such as the Gang of Four's or a C++ idiom, which
+  live inside one component.
+- *User interface patterns*, which belong to the journeys and the screens.
+- *Local conventions*, such as the SQL, HTTP and shell entity patterns of the
+  codegen. They have no outside source, so they are conventions, and their
+  pages keep their own type.
 
 * Contract
 
 - Implements :: loading, citation. A pattern page loads what is known about one
   established pattern, and a design cites it by name: "use Token Exchange". See
   [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
-- Folder :: [[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]], one page
+- Folder :: [[proj:doc/knowledge/service_architecture_patterns][=doc/knowledge/service_architecture_patterns/=]], one page
   per pattern, as =pattern_<slug>.org=. The hub,
-  [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]], lives in the same
+  [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]], lives in the same
   folder and orders the pages.
 - Scope :: the page owns *one pattern*: its mechanism, its failure handling, its
   pitfalls and its sources. A *use* of the pattern is not this page's subject.
@@ -39,9 +55,9 @@ state, linking and tags. This page holds only what is specific to =pattern=.
   convention, not a pattern, and it belongs in an architecture page.
 - Level :: =cross=.
 - Not stateful. A pattern page has no TODO and no =* Status= table.
-- How to create :: =compass add pattern --pattern-group <group>=.
+- How to create :: =compass add service_architecture_pattern --pattern-group <group>=.
   =--parent-dir= is optional and defaults to
-  [[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]]. See
+  [[proj:doc/knowledge/service_architecture_patterns][=doc/knowledge/service_architecture_patterns/=]]. See
   [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] for
   the flags.
 - Required sections (in this order) ::

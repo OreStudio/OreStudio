@@ -319,7 +319,7 @@ contract.
 | How to generate | =compass add report=                        |
 | Inventory       | [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] |
 
-* Pattern
+* Service architecture pattern
 :PROPERTIES:
 :ID: 68FAC606-569C-4B9B-932B-3B3A0181AC8B
 :END:
@@ -330,16 +330,16 @@ solution, how it handles errors, timeouts and retries, its pitfalls, its
 security, its use in ORE Studio, and the authoritative sources that define it.
 A pattern page is named for the pattern in its source, so a design can say "use
 pattern X" and inherit what is known about X. Lives under
-[[proj:doc/knowledge/patterns][=doc/knowledge/patterns/=]]. See
-[[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Document type: pattern]] for the
+[[proj:doc/knowledge/service_architecture_patterns][=doc/knowledge/service_architecture_patterns/=]]. See
+[[id:2BF68189-57CF-42F7-BA33-9673B7D620DD][Document type: service_architecture_pattern]] for the
 contract.
 
 #+ATTR_HTML: :class hug-leading
 | Field           | Value                                       |
 |-----------------+---------------------------------------------|
 | Owner           | cross-cutting                               |
-| How to generate | =compass add pattern=                       |
-| Inventory       | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] |
+| How to generate | =compass add service_architecture_pattern=                       |
+| Inventory       | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] |
 
 * Knowledge document
 :PROPERTIES:

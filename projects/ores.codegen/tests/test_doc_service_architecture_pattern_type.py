@@ -1,8 +1,8 @@
-"""Tests for the pattern document type.
+"""Tests for the service architecture pattern document type.
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_doc_pattern_type.py
+    python3 -m pytest projects/ores.codegen/tests/test_doc_service_architecture_pattern_type.py
 
 A pattern page names one established pattern of service interaction, cites the
 sources that define it, and states its forces, its failure handling, its
@@ -25,10 +25,10 @@ import doc_generate  # noqa: E402
 
 TEMPLATE_DIR = REPO_ROOT / "projects" / "ores.codegen" / "library" / "templates"
 GLOSSARY = REPO_ROOT / "doc" / "meta" / "glossary.org"
-HUB = REPO_ROOT / "doc" / "knowledge" / "patterns" / "patterns_hub.org"
+HUB = REPO_ROOT / "doc" / "knowledge" / "service_architecture_patterns" / "service_architecture_patterns_hub.org"
 
 # The contract's required sections, in the order the contract states them,
-# taken from doc/meta/document_type_pattern.org.
+# taken from doc/meta/document_type_service_architecture_pattern.org.
 REQUIRED_SECTIONS = [
     "Also known as",
     "Context",
@@ -48,7 +48,7 @@ REQUIRED_SECTIONS = [
 
 def _run(parent, slug, group="identity"):
     argv = [
-        "--type", "pattern",
+        "--type", "service_architecture_pattern",
         "--slug", slug,
         "--parent-dir", str(parent),
         "--title", "Probe pattern",
@@ -78,8 +78,8 @@ def _id_of(path, heading=None):
 
 
 def test_the_pattern_template_is_registered():
-    assert doc_generate.TYPE_TO_TEMPLATE["pattern"] == "doc_pattern.org.mustache"
-    assert (TEMPLATE_DIR / "doc_pattern.org.mustache").exists()
+    assert doc_generate.TYPE_TO_TEMPLATE["service_architecture_pattern"] == "doc_service_architecture_pattern.org.mustache"
+    assert (TEMPLATE_DIR / "doc_service_architecture_pattern.org.mustache").exists()
 
 
 def test_the_scaffold_is_named_for_its_type(tmp_path):
@@ -91,7 +91,7 @@ def test_the_scaffold_is_named_for_its_type(tmp_path):
 
 def test_the_frontmatter_states_the_type_and_the_group(tmp_path):
     text = _scaffold(tmp_path, "probe", "resilience")
-    assert "#+type: pattern" in text
+    assert "#+type: service_architecture_pattern" in text
     assert "#+level: cross" in text
     assert "#+pattern_group: resilience" in text
 
@@ -117,7 +117,7 @@ def test_the_required_sections_are_present_in_order(tmp_path):
 
 def test_the_template_links_the_glossary_entry_and_the_hub(tmp_path):
     text = _scaffold(tmp_path, "probe")
-    assert f"id:{_id_of(GLOSSARY, '* Pattern')}" in text
+    assert f"id:{_id_of(GLOSSARY, '* Service architecture pattern')}" in text
     assert f"id:{_id_of(HUB)}" in text
 
 

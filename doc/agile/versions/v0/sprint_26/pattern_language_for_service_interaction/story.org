@@ -71,6 +71,12 @@ pattern.
   identity patterns depend on them, for example token exchange on timeout and
   retry. One language keeps one set of names. The Identity and Access hub links
   the identity group of the pattern hub.
+- *They are service architecture patterns.* The type, the folder and the hub are
+  named =service_architecture_pattern=, not a bare "pattern". Every page is about
+  how services work together across a process boundary. "Architectural pattern"
+  alone also means a system's overall style in Buschmann's sense, and the codegen
+  already calls its local SQL, HTTP and shell conventions "patterns". The type
+  was first added as =pattern= and renamed before the branch was pushed.
 - *The established name comes first.* A page is named for the pattern in its
   authoritative source. Local names are aliases.
 - *A pattern page owns the pattern; an architecture page owns a use of it.*

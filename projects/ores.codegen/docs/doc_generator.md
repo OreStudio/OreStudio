@@ -20,7 +20,7 @@ file that already follows the contract in
 | investigation | `<parent-dir>/investigation_<slug>.org` (flat file under the story folder that commissioned it; `--parent-dir` is required — an investigation belongs to a story, not to a fixed directory). See `doc/meta/document_type_investigation.org`: it is a point-in-time record, and its durable conclusions are promoted to the page that owns the subject. |
 | workflow | `<parent-dir>/workflow_<slug>.org` (flat file, prefixed so the workflow pages sort together; `--parent-dir` defaults to `doc/knowledge/workflows`). See `doc/meta/document_type_workflow.org`: the page is written from the definition a service registers, and the engine mechanics stay in `doc/knowledge/architecture/`. |
 | report | `<parent-dir>/report_<slug>.org` (flat file, prefixed so the report pages sort together; `--parent-dir` defaults to `doc/knowledge/reports`). See `doc/meta/document_type_report.org`: the page is written from the report's definition and its ORE configuration, and the pipeline stays in `doc/knowledge/architecture/`. |
-| pattern | `<parent-dir>/pattern_<slug>.org` (flat file, prefixed so the pattern pages sort apart from the hub; `--parent-dir` defaults to `doc/knowledge/patterns`; `--pattern-group` is required). See `doc/meta/document_type_pattern.org`: the page owns the mechanism, and the architecture page that uses it owns the use. |
+| service_architecture_pattern | `<parent-dir>/pattern_<slug>.org` (flat file, prefixed so the pattern pages sort apart from the hub; `--parent-dir` defaults to `doc/knowledge/service_architecture_patterns`; `--pattern-group` is required). See `doc/meta/document_type_service_architecture_pattern.org`: the page owns the mechanism, and the architecture page that uses it owns the use. |
 
 Each output has a fresh UUID in `:ID:` (or a caller-supplied UUID via
 `--id` — see below), today's date in `#+created` and `#+updated`, the
@@ -142,7 +142,7 @@ compass add report \
 ## Example — add a pattern
 
 ```sh
-compass add pattern \
+compass add service_architecture_pattern \
   --slug token_exchange \
   --title "Token Exchange" \
   --description "A service exchanges one token for another with a different subject, audience or scope." \

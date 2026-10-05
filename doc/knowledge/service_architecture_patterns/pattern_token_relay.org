@@ -3,7 +3,7 @@
 :END:
 #+title: Token Relay
 #+description: A service forwards its caller's token to the services it calls, so each one acts as the caller with the caller's tenant, party and permissions.
-#+type: pattern
+#+type: service_architecture_pattern
 #+level: cross
 #+filetags: :pattern:identity:oauth:delegation:
 #+created: 2026-10-05
@@ -11,7 +11,7 @@
 #+pattern_group: identity
 #+startup: inlineimages
 
-This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
 Token Relay in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
 A service forwards its caller's token to the services it calls, so each one acts
 as the caller with the caller's tenant, party and permissions. In ORE Studio the
@@ -54,10 +54,10 @@ the length of the request and keeps no copy.
 
 #+caption: Token Relay: service A forwards the caller's token, and service B reads the caller's rows as the caller.
 #+attr_html: :width 100%
-[[proj:doc/knowledge/patterns/pattern_token_relay.png]]
+[[proj:doc/knowledge/service_architecture_patterns/pattern_token_relay.png]]
 
 Source: =[[./pattern_token_relay.puml][pattern_token_relay.puml]]=. Regenerate with
-=plantuml -tpng doc/knowledge/patterns/pattern_token_relay.puml=.
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_relay.puml=.
 
 * Failure handling
 
@@ -125,4 +125,4 @@ do with it.
 
 * See also
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

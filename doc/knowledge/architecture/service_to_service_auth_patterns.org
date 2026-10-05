@@ -225,7 +225,7 @@ handling and the pitfalls.
 
 * See also
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the pattern language; this page is the decision guide for its identity group.
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the pattern language; this page is the decision guide for its identity group.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the run grant
   and the token exchange that let a scheduled run act as its tenant and party.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the

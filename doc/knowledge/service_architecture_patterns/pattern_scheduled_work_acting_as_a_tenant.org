@@ -3,7 +3,7 @@
 :END:
 #+title: Scheduled Work Acting as a Tenant
 #+description: A composite: work that starts from a schedule, with no caller, acts as a tenant and a party through a stored grant, a token exchange and a token cache.
-#+type: pattern
+#+type: service_architecture_pattern
 #+level: cross
 #+filetags: :pattern:identity:scheduling:multi_tenancy:
 #+created: 2026-10-05
@@ -11,7 +11,7 @@
 #+pattern_group: identity
 #+startup: inlineimages
 
-This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
 Scheduled Work Acting as a Tenant in the
 [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]]. It is a composite:
 work that starts from a schedule, with no caller, acts as a tenant and a party
@@ -74,10 +74,10 @@ The combination adds three rules of its own:
 
 #+caption: Scheduled Work Acting as a Tenant: a person consents once, the scheduler starts each run as itself, and each step exchanges the grant for a short-lived run token behind a cache.
 #+attr_html: :width 100%
-[[proj:doc/knowledge/patterns/pattern_scheduled_work_acting_as_a_tenant.png]]
+[[proj:doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant.png]]
 
 Source: =[[./pattern_scheduled_work_acting_as_a_tenant.puml][pattern_scheduled_work_acting_as_a_tenant.puml]]=. Regenerate with
-=plantuml -tpng doc/knowledge/patterns/pattern_scheduled_work_acting_as_a_tenant.puml=.
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant.puml=.
 
 * Failure handling
 
@@ -151,5 +151,5 @@ The composite has no single source. Each part cites its own:
 
 * See also
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.
 - [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]] — the boundary between the firing and the run.

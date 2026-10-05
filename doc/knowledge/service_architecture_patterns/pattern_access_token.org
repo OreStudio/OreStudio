@@ -3,7 +3,7 @@
 :END:
 #+title: Access Token
 #+description: Every request carries a signed token that names the requester, so each service verifies the identity and its permissions without calling the issuer.
-#+type: pattern
+#+type: service_architecture_pattern
 #+level: cross
 #+filetags: :pattern:identity:jwt:
 #+created: 2026-10-05
@@ -11,7 +11,7 @@
 #+pattern_group: identity
 #+startup: inlineimages
 
-This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
 Access Token in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
 Every request carries a token that securely identifies the requester, and each
 service verifies it without calling the issuer. In ORE Studio the token is a JWT
@@ -55,10 +55,10 @@ operation needs, and sets the tenant and the party on the database session.
 
 #+caption: Access Token: the client logs in once, each service verifies the token with the issuer's public key, and the database filters rows by the tenant and the party in it.
 #+attr_html: :width 100%
-[[proj:doc/knowledge/patterns/pattern_access_token.png]]
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token.png]]
 
 Source: =[[./pattern_access_token.puml][pattern_access_token.puml]]=. Regenerate with
-=plantuml -tpng doc/knowledge/patterns/pattern_access_token.puml=.
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token.puml=.
 
 * Failure handling
 
@@ -132,4 +132,4 @@ snapshot, so a revoked permission takes effect at the next token.
 
 * See also
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

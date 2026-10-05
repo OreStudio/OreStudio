@@ -3,7 +3,7 @@
 :END:
 #+title: Grant Management
 #+description: The issuer holds a person's consent as a grant with an id, so a client can use, query and revoke it without holding a long-lived credential.
-#+type: pattern
+#+type: service_architecture_pattern
 #+level: cross
 #+filetags: :pattern:identity:oauth:consent:
 #+created: 2026-10-05
@@ -11,7 +11,7 @@
 #+pattern_group: identity
 #+startup: inlineimages
 
-This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][pattern]]
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
 Grant Management in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
 The issuer holds a person's consent as a grant with an id, and a client uses,
 queries and revokes it by that id. In ORE Studio IAM holds the run grants that
@@ -61,10 +61,10 @@ the work ends.
 
 #+caption: Grant Management: a person's consent becomes a grant held by IAM, used later through Token Exchange and revoked when the work ends.
 #+attr_html: :width 100%
-[[proj:doc/knowledge/patterns/pattern_grant_management.png]]
+[[proj:doc/knowledge/service_architecture_patterns/pattern_grant_management.png]]
 
 Source: =[[./pattern_grant_management.puml][pattern_grant_management.puml]]=. Regenerate with
-=plantuml -tpng doc/knowledge/patterns/pattern_grant_management.puml=.
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_grant_management.puml=.
 
 * Failure handling
 
@@ -128,4 +128,4 @@ that name it until they are revoked, and the issue log records each use.
 
 * See also
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
 #define ORES_IAM_CORE_SERVICE_CACHE_PARTY_CACHE_HPP
 
+#include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -64,10 +65,11 @@ inline auto& party_cache_lg() {
  * archetype). See the "Generic entity-mirror cache primitive + codegen
  * facet" story.
  *
- * The canonical list read requires a valid signed JWT (see the
- * nats-handler archetype); pass a @c token_provider — typically
- * ores::iam::client::make_service_token_provider's return value — so
- * every load() attaches a fresh service-account Bearer token. Omit it
+ * Each partition is one tenant's copy, so it is read inside that tenant:
+ * the @c token_provider gives a token for the partition's tenant, obtained
+ * by Token Exchange (see partition_token_cache), and row-level security
+ * returns exactly the rows that tenant may see. A target that answers
+ * @c token_expired gets one renewed token and one retry. Omit the provider
  * only against a producer that has not opted into the auth check.
  */
 class party_cache {
@@ -80,8 +82,9 @@ class party_cache {
                                                                       key_hash>;
 
 public:
-    explicit party_cache(ores::nats::service::client& nats,
-                         std::function<std::string(bool)> token_provider = nullptr)
+    explicit party_cache(
+        ores::nats::service::client& nats,
+        ores::eventing::service::cache::partition_token_provider token_provider = nullptr)
         : nats_(nats)
         , token_provider_(std::move(token_provider)) {}
 
@@ -98,7 +101,8 @@ public:
      * against its own just-registered subjects. See "Service Bootstrap
      * Phases" in the architecture docs.
      */
-    void set_token_provider(std::function<std::string(bool)> token_provider) {
+    void
+    set_token_provider(ores::eventing::service::cache::partition_token_provider token_provider) {
         token_provider_ = std::move(token_provider);
     }
 
@@ -124,12 +128,25 @@ public:
         try {
             const auto& codec = ores::nats::default_wire_codec();
             std::unordered_map<std::string, std::string> headers;
-            if (token_provider_)
+            const auto authorise = [&](bool renew) {
+                if (!token_provider_)
+                    return true;
+                const auto token = token_provider_(tenant_id, renew);
+                if (token.empty())
+                    return false;
                 headers[std::string(ores::nats::headers::authorization)] =
-                    std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
+                    std::string(ores::nats::headers::bearer_prefix) + token;
+                return true;
+            };
+            if (!authorise(false)) {
+                const std::string msg = "no token acts inside this tenant";
+                BOOST_LOG_SEV(party_cache_lg(), warn)
+                    << "Party cache load failed for tenant " << tenant_id << ": " << msg;
+                return msg;
+            }
+            bool renewed = false;
             auto entries_t = cache_t::entries_map{}.transient();
             std::uint64_t count = 0;
-            std::size_t kept = 0;
             constexpr std::uint32_t page_size = 100;
             std::uint32_t offset = 0;
             while (true) {
@@ -137,6 +154,12 @@ public:
                     .offset = offset, .limit = page_size});
                 const auto reply = nats_.request_sync(
                     ores::refdata::messaging::list_parties_request::nats_subject, bytes, headers);
+                const auto refusal = reply.headers.find(std::string(ores::nats::headers::x_error));
+                if (refusal != reply.headers.end() && refusal->second == "token_expired" &&
+                    !renewed && authorise(true)) {
+                    renewed = true;
+                    continue;
+                }
                 auto resp =
                     codec.decode<ores::refdata::messaging::list_parties_response>(reply.data);
                 if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -147,13 +170,8 @@ public:
                     return msg;
                 }
                 const auto page_count = resp->parties.size();
-                // The read spans tenants, so file only this partition's rows.
-                for (auto& v : resp->parties) {
-                    if (v.tenant_id.to_string() != tenant_id)
-                        continue;
+                for (auto& v : resp->parties)
                     entries_t.set(v.id, std::move(v));
-                    ++kept;
-                }
                 count += page_count;
                 if (page_count == 0 || count >= resp->total)
                     break;
@@ -171,8 +189,8 @@ public:
             }
             auto aux = children_t.persistent();
             cache_.replace_partition(tenant_id, entries, aux);
-            BOOST_LOG_SEV(party_cache_lg(), debug) << "Loaded " << kept << " parties for tenant "
-                                                   << tenant_id << " (of " << count << " read)";
+            BOOST_LOG_SEV(party_cache_lg(), debug)
+                << "Loaded " << count << " parties for tenant " << tenant_id;
             return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(party_cache_lg(), warn)
@@ -208,7 +226,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    std::function<std::string(bool)> token_provider_;
+    ores::eventing::service::cache::partition_token_provider token_provider_;
     cache_t cache_;
 };
 

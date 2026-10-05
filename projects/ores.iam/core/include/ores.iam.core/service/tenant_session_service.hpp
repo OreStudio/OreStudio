@@ -21,6 +21,7 @@
 #define ORES_IAM_CORE_SERVICE_TENANT_SESSION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.iam.api/messaging/tenant_session_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -48,6 +49,19 @@ struct tenant_session_caller {
     utility::uuid::tenant_id tenant_id;
     std::optional<std::string> party_id;
     std::optional<std::string> acting_from_tenant_id;
+    std::vector<std::string> permissions;
+};
+
+/**
+ * @brief A service that reads inside a tenant with no caller, such as IAM
+ * loading one tenant's partition of its party cache.
+ *
+ * The permissions are the scope the read needs and nothing more; the token
+ * carries them and no others.
+ */
+struct tenant_reader {
+    boost::uuids::uuid account_id;
+    std::string username;
     std::vector<std::string> permissions;
 };
 
@@ -104,6 +118,20 @@ public:
     messaging::leave_tenant_response leave(const tenant_session_caller& caller);
 
     /**
+     * @brief A token for @p reader acting inside @p tenant_id, by Token
+     * Exchange with delegation semantics.
+     *
+     * The token names the tenant, the tenant's system party and the parties
+     * it sees, and carries only the reader's permissions. Outside the system
+     * tenant it names the system tenant the reader acts from, as an entry
+     * does. Each issue is logged. Called in-process only: no subject serves
+     * it. A tenant that is unknown or has no system party yields no token.
+     */
+    eventing::service::cache::partition_token read_inside(const tenant_reader& reader,
+                                                          const std::string& tenant_id,
+                                                          std::chrono::seconds lifetime);
+
+    /**
      * @brief The read permissions among those granted.
      *
      * A read permission is a catalogue code whose verb is read. A grant of
@@ -116,6 +144,19 @@ public:
                                               const std::vector<std::string>& catalogue);
 
 private:
+    /**
+     * @brief The claims of a session inside @p target: its tenant, its system
+     * party and the parties that party sees. Empty when the tenant has no
+     * system party.
+     */
+    struct inside_party {
+        std::string party_id;
+        std::string party_name;
+        std::vector<std::string> visible;
+    };
+    std::optional<inside_party> party_inside(const utility::uuid::tenant_id& target,
+                                             const std::string& username) const;
+
     context ctx_;
     security::jwt::jwt_authenticator signer_;
     std::chrono::seconds lifetime_;

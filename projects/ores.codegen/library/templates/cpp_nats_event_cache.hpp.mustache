@@ -4,6 +4,7 @@
 #ifndef ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
 #define ORES_{{cache_component_upper}}_{{cache_subcomponent_upper}}_SERVICE_CACHE_{{entity_singular_upper}}_CACHE_HPP
 
+#include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -51,10 +52,11 @@ inline auto& {{entity_singular}}_cache_lg() {
  * archetype). See the "Generic entity-mirror cache primitive + codegen
  * facet" story.
  *
- * The canonical list read requires a valid signed JWT (see the
- * nats-handler archetype); pass a @c token_provider — typically
- * ores::iam::client::make_service_token_provider's return value — so
- * every load() attaches a fresh service-account Bearer token. Omit it
+ * Each partition is one tenant's copy, so it is read inside that tenant:
+ * the @c token_provider gives a token for the partition's tenant, obtained
+ * by Token Exchange (see partition_token_cache), and row-level security
+ * returns exactly the rows that tenant may see. A target that answers
+ * @c token_expired gets one renewed token and one retry. Omit the provider
  * only against a producer that has not opted into the auth check.
  */
 class {{entity_singular}}_cache {
@@ -76,7 +78,7 @@ class {{entity_singular}}_cache {
 
 public:
     explicit {{entity_singular}}_cache(ores::nats::service::client& nats,
-        std::function<std::string(bool)> token_provider = nullptr)
+        ores::eventing::service::cache::partition_token_provider token_provider = nullptr)
         : nats_(nats)
         , token_provider_(std::move(token_provider)) {}
 
@@ -93,7 +95,8 @@ public:
      * against its own just-registered subjects. See "Service Bootstrap
      * Phases" in the architecture docs.
      */
-    void set_token_provider(std::function<std::string(bool)> token_provider) {
+    void set_token_provider(
+        ores::eventing::service::cache::partition_token_provider token_provider) {
         token_provider_ = std::move(token_provider);
     }
 
@@ -119,14 +122,26 @@ public:
         try {
             const auto& codec = ores::nats::default_wire_codec();
             std::unordered_map<std::string, std::string> headers;
-            if (token_provider_)
+            const auto authorise = [&](bool renew) {
+                if (!token_provider_)
+                    return true;
+                const auto token = token_provider_(tenant_id, renew);
+                if (token.empty())
+                    return false;
                 headers[std::string(ores::nats::headers::authorization)] =
-                    std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
+                    std::string(ores::nats::headers::bearer_prefix) + token;
+                return true;
+            };
+            if (!authorise(false)) {
+                const std::string msg = "no token acts inside this tenant";
+                BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
+                    << "{{entity_pascal}} cache load failed for tenant " << tenant_id << ": "
+                    << msg;
+                return msg;
+            }
+            bool renewed = false;
             auto entries_t = cache_t::entries_map{}.transient();
             std::uint64_t count = 0;
-{{#cache_tenant_filter}}
-            std::size_t kept = 0;
-{{/cache_tenant_filter}}
             constexpr std::uint32_t page_size = 100;
             std::uint32_t offset = 0;
             while (true) {
@@ -136,6 +151,12 @@ public:
                 const auto reply = nats_.request_sync(
                     ores::{{component}}::messaging::list_{{entity_plural}}_request::nats_subject,
                     bytes, headers);
+                const auto refusal = reply.headers.find(std::string(ores::nats::headers::x_error));
+                if (refusal != reply.headers.end() && refusal->second == "token_expired" &&
+                    !renewed && authorise(true)) {
+                    renewed = true;
+                    continue;
+                }
                 auto resp = codec.decode<
                     ores::{{component}}::messaging::list_{{entity_plural}}_response>(reply.data);
                 if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
@@ -147,19 +168,8 @@ public:
                     return msg;
                 }
                 const auto page_count = resp->{{entity_plural_short}}.size();
-{{#cache_tenant_filter}}
-                // The read spans tenants, so file only this partition's rows.
-                for (auto& v : resp->{{entity_plural_short}}) {
-                    if (v.tenant_id.to_string() != tenant_id)
-                        continue;
-                    entries_t.set(v.{{primary_key.column}}, std::move(v));
-                    ++kept;
-                }
-{{/cache_tenant_filter}}
-{{^cache_tenant_filter}}
                 for (auto& v : resp->{{entity_plural_short}})
                     entries_t.set(v.{{primary_key.column}}, std::move(v));
-{{/cache_tenant_filter}}
                 count += page_count;
                 if (page_count == 0 || count >= resp->total)
                     break;
@@ -168,15 +178,8 @@ public:
             auto entries = entries_t.persistent();
 <<paste:60520267-94E5-4369-97E9-7AED54CDEDD2>>
             cache_.replace_partition(tenant_id, entries{{#cache_aux_type}}, aux{{/cache_aux_type}});
-{{#cache_tenant_filter}}
-            BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
-                << "Loaded " << kept << " {{entity_plural}} for tenant " << tenant_id
-                << " (of " << count << " read)";
-{{/cache_tenant_filter}}
-{{^cache_tenant_filter}}
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), debug)
                 << "Loaded " << count << " {{entity_plural}} for tenant " << tenant_id;
-{{/cache_tenant_filter}}
             return {};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)
@@ -194,7 +197,7 @@ public:
 <<paste:C0EDFBDF-F38F-4E02-874F-A086FB435FB0>>
 private:
     ores::nats::service::client& nats_;
-    std::function<std::string(bool)> token_provider_;
+    ores::eventing::service::cache::partition_token_provider token_provider_;
     cache_t cache_;
 };
 

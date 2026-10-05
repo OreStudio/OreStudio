@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_CLIENT_SERVICE_CACHE_CURRENCY_PAIR_CONVENTION_CACHE_HPP
 #define ORES_REFDATA_CLIENT_SERVICE_CACHE_CURRENCY_PAIR_CONVENTION_CACHE_HPP
 
+#include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -60,10 +61,11 @@ inline auto& currency_pair_convention_cache_lg() {
  * archetype). See the "Generic entity-mirror cache primitive + codegen
  * facet" story.
  *
- * The canonical list read requires a valid signed JWT (see the
- * nats-handler archetype); pass a @c token_provider — typically
- * ores::iam::client::make_service_token_provider's return value — so
- * every load() attaches a fresh service-account Bearer token. Omit it
+ * Each partition is one tenant's copy, so it is read inside that tenant:
+ * the @c token_provider gives a token for the partition's tenant, obtained
+ * by Token Exchange (see partition_token_cache), and row-level security
+ * returns exactly the rows that tenant may see. A target that answers
+ * @c token_expired gets one renewed token and one retry. Omit the provider
  * only against a producer that has not opted into the auth check.
  */
 class currency_pair_convention_cache {
@@ -75,7 +77,7 @@ class currency_pair_convention_cache {
 public:
     explicit currency_pair_convention_cache(
         ores::nats::service::client& nats,
-        std::function<std::string(bool)> token_provider = nullptr)
+        ores::eventing::service::cache::partition_token_provider token_provider = nullptr)
         : nats_(nats)
         , token_provider_(std::move(token_provider)) {}
 
@@ -92,7 +94,8 @@ public:
      * against its own just-registered subjects. See "Service Bootstrap
      * Phases" in the architecture docs.
      */
-    void set_token_provider(std::function<std::string(bool)> token_provider) {
+    void
+    set_token_provider(ores::eventing::service::cache::partition_token_provider token_provider) {
         token_provider_ = std::move(token_provider);
     }
 
@@ -118,9 +121,24 @@ public:
         try {
             const auto& codec = ores::nats::default_wire_codec();
             std::unordered_map<std::string, std::string> headers;
-            if (token_provider_)
+            const auto authorise = [&](bool renew) {
+                if (!token_provider_)
+                    return true;
+                const auto token = token_provider_(tenant_id, renew);
+                if (token.empty())
+                    return false;
                 headers[std::string(ores::nats::headers::authorization)] =
-                    std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
+                    std::string(ores::nats::headers::bearer_prefix) + token;
+                return true;
+            };
+            if (!authorise(false)) {
+                const std::string msg = "no token acts inside this tenant";
+                BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)
+                    << "CurrencyPairConvention cache load failed for tenant " << tenant_id << ": "
+                    << msg;
+                return msg;
+            }
+            bool renewed = false;
             auto entries_t = cache_t::entries_map{}.transient();
             std::uint64_t count = 0;
             constexpr std::uint32_t page_size = 100;
@@ -133,6 +151,12 @@ public:
                     ores::refdata::messaging::list_currency_pair_conventions_request::nats_subject,
                     bytes,
                     headers);
+                const auto refusal = reply.headers.find(std::string(ores::nats::headers::x_error));
+                if (refusal != reply.headers.end() && refusal->second == "token_expired" &&
+                    !renewed && authorise(true)) {
+                    renewed = true;
+                    continue;
+                }
                 auto resp =
                     codec.decode<ores::refdata::messaging::list_currency_pair_conventions_response>(
                         reply.data);
@@ -172,7 +196,7 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    std::function<std::string(bool)> token_provider_;
+    ores::eventing::service::cache::partition_token_provider token_provider_;
     cache_t cache_;
 };
 

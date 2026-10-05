@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 6A9162A2-527C-4CFB-B597-A71379145C67
+:END:
+#+title: Task: Merge the prototype branches into main
+#+description: The three chain tips (new-party-journey, audit-sign-ins, operations-journeys) merge into main with the conflicts resolved; the prototype hub answers every prototype route; the journey records stop calling the prototypes unmerged.
+#+type: task
+#+level: s1
+#+filetags: :keep_the_prototypes_in_git:sprint_27:v0:
+#+owner: marco
+#+branch: feature/merge-the-prototype-branches
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC15BD44-1660-48EA-84AA-E4062FAE0DFF][Keep the prototypes in git]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Main carries every prototype. The three chain tips merge, so all seven
+prototype branches become ancestors of main; the =/prototype= hub answers
+every prototype route, and the onboarding screens, which their branch wired
+onto the application's own routes, are re-homed under the hub. The web
+package stays green: it typechecks, its tests pass, and the site check is
+clean on the changed pages.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EC15BD44-1660-48EA-84AA-E4062FAE0DFF][Keep the prototypes in git]] |
+| Now          | The merges run in a scratch worktree; the hub and the docs follow. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge the three tips, verify the web package, update the records, close. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The three chain tips merge into main and the seven prototype branches are
+  their ancestors, so git reports each of them merged.
+- The hub answers every prototype route: credentials, operations and
+  onboarding; no prototype route collides with an application route.
+- The web package typechecks and its tests pass with the prototypes on main,
+  and the site check is clean on the changed pages.
+- The journey records and the prototype task docs state main as the
+  prototype's home, so no document calls the prototypes unmerged.
+- The story's inventory lists every prototype branch, backed by a sweep of
+  every remote branch.
+
+* Plan
+
+1. Sweep every remote branch for prototype paths, so the inventory cannot
+   miss one.
+2. Merge the three chain tips in acceptance order, oldest first:
+   =prototype/new-party-journey= (onboarding), =prototype/audit-sign-ins=
+   (credentials), =prototype/operations-journeys= (operations). Each merge
+   keeps a merge commit, so the branches stay merged in git's own record.
+3. Resolve conflicts toward main for every shared file a prototype branch
+   drafted earlier (the sprint 25 documents, the i18n locales, the password
+   field and policy, the sign-in page, the dev stack script): main carries
+   the merged successor of that same work. Keep the prototype screens as
+   accepted.
+4. Author the hub once, after the last merge: the credentials and operations
+   route tables unite, the shell props follow the screen's audience, and the
+   onboarding screens gain hub routes under =PublicShell=, because their old
+   routes belong to the application now.
+5. Verify: the web package typechecks and its tests pass; the site check
+   passes on the changed pages; the drift checks that cover =projects/= run.
+6. Update the records: each journey's Prototype section, the prototype task
+   docs, and the story inventory.
+7. Close the task, raise the PR, and merge it at the operator's word.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Remote branches carrying web prototype files | 7 of 115, all named =prototype/*= | sweep: every =git ls-tree -r --name-only <branch> -- projects/ores.web= filtered by =prototype= | merge base a971cb6a3e |
+| Web test suite | | =npm test= in =projects/ores.web= | |
+| Site check | | =./compass.sh site page= | |
+
+* Notes
+
+The two older prototype branches compile against a shell that has moved:
+=AppShell= now requires =mode=, which the credentials hub does not pass. The
+fix rides the authored hub rather than the branch, because the hub is the one
+file the credentials and operations prototypes both claim.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

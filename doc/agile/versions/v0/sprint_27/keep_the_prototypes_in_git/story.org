@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: EC15BD44-1660-48EA-84AA-E4062FAE0DFF
+:END:
+#+title: Story: Keep the prototypes in git
+#+description: The seven prototype branches merge into main, so each design record stays reachable after its sprint closes; the prototype hub answers the credentials, operations and onboarding screens.
+#+type: story
+#+level: s2
+#+filetags: :web:agile:sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A prototype is the design record its journey cites, and this story keeps it
+readable after the sprint that built it closes. Every prototype branch merges
+into main: the =/prototype= hub answers the credentials, operations and
+onboarding screens, and each journey's Prototype section names the path on
+main rather than a branch that may disappear.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The task merges the three chain tips and settles the hub; the inventory below lists every prototype branch. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge, verify the web package, and close the task. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The seven prototype branches are ancestors of main: three merges carry
+  them, because each chain has one tip.
+- The prototype hub answers every prototype route on main: the credentials
+  screens, the operations screens and the onboarding screens.
+- The web package typechecks and its tests pass with the prototypes on main,
+  and the site check is clean on the changed pages.
+- Each journey's Prototype section and the prototype task docs name main as
+  the prototype's home.
+- The inventory below lists every prototype branch and its state.
+
+* Prototype inventory
+
+The sweep behind this list covers every remote branch, 115 of them, for paths
+holding prototype screens under =projects/ores.web=. The command is on the
+task's Measurements, so the sweep can be rerun.
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | Branch | Screens | State |
+|-----------+--------+---------+-------|
+| Onboarding: first run, new tenant, new party | =prototype/new-party-journey= (carries =prototype/new-tenant-journey= and =prototype/first-run-journey=) | Setup, tenant onboarding, party onboarding | Merges in this story |
+| Credentials: protect my account, rescue access, audit sign-ins | =prototype/audit-sign-ins= (carries =prototype/rescue-access= and =prototype/protect-my-account=) | Security, rescue, sign-in audit | Merges in this story |
+| Operations: services, grid, bus, logs, versions | =prototype/operations-journeys= | Five screens | Merges in this story |
+| The static UX prototypes | on main under =doc/prototypes/= | Access, home, navigation, profile, refdata, registration door, trade entry | Already on main |
+
+Two further branches carry "prototype" in the name and are already merged:
+=feature/web-bootstrap-prototype=, the sign-in work the onboarding prototypes
+settled, and =feature/prototype-operations-journeys=, the operations design
+record.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6A9162A2-527C-4CFB-B597-A71379145C67][Merge the prototype branches into main]] | STARTED | 2026-10-05 | | The three chain tips (new-party-journey, audit-sign-ins, operations-journeys) merge into main with the conflicts resolved; the prototype hub answers every prototype route; the journey records stop calling the prototypes unmerged. |
+
+* Decisions
+
+- The operator set the convention on 2026-10-05: prototypes stay in git for
+  future reference, like the operations prototype a later task re-read as its
+  design record. The merges are kept as merge commits, so each prototype
+  branch becomes an ancestor of main and git itself reports it merged.
+- The hub answers every route under =/prototype=. The credentials and
+  operations screens arrive as their branches wired them; the onboarding
+  screens, which their branch wired onto the application's own routes
+  (=/setup=, =/iam/tenant/onboard=, =/refdata/party/new=), are re-homed under
+  the hub, because those routes now belong to the application.
+- Conflicts resolve toward main for every shared file a prototype branch had
+  drafted earlier (the sprint 25 documents, the i18n locales, the password
+  field and policy, the sign-in page), because main carries the merged
+  successor of that same work. The prototype screens themselves are kept as
+  accepted.
+
+* Out of scope
+
+- Cleaning the prototypes up (tests, typing, wiring them into the
+  application's real routes) stays out; they are the record as accepted.
+- The static prototypes under =doc/prototypes= stay where they are.

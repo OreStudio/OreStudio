@@ -59,6 +59,19 @@ task and name that file in the Command column.
 
 * Notes
 
+The profile page reads the caller's own contact record through
+=iam.v1.account_contact_informations.list_by_account_id=, passing the session's
+account id (=readContactInformation= in =wire-protocol/src/profile-operations.ts=).
+The server cannot tell that call from a read of a colleague's record, so
+guarding the read would break the profile. Add a self read,
+=iam.v1.account_contact_informations.mine=, beside the existing =update-self=,
+move the profile onto it, and only then guard the list. The self read is in
+the planned table of [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+
+Permission wildcards are =*= and =component::*= only
+(=ores::security::authorization::grants=); there is no read-only wildcard such
+as =iam::*:read=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

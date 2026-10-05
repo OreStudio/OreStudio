@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -101,7 +101,7 @@ most resources, so the permission exists and nothing checks it.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C8F06D29-CA09-43FF-A76D-3803FDB29BD0][State the read rule and the allow-list]] | BACKLOG | | | Authorised reads states that a read checks its permission unless allow-listed, and lists every open read by subject with its reason. |
+| [[id:C8F06D29-CA09-43FF-A76D-3803FDB29BD0][State the read rule and the allow-list]] | STARTED | 2026-10-06 | | Authorised reads states that a read checks its permission unless allow-listed, and lists every open read by subject with its reason. |
 | [[id:31A4DB2C-AE0C-488C-AE07-6203B0415E35][Guard the personal data in IAM]] | BACKLOG | | | Contact information, account parties and role requests check their read code, and a person still reads their own through a self read. |
 | [[id:816D9D8A-A4CA-45FE-8350-7DF3AE2C629A][Guard reads by default in codegen]] | BACKLOG | | | A generated read checks its resource's read code unless its model opts out by naming its allow-list entry; every component is regenerated. |
 | [[id:ED8035BF-475C-4F8A-B899-5DB479E0B86A][Seed the read codes each role uses]] | BACKLOG | | | Each person role and service role holds the read codes its journeys and calls use, checked live as each role. |

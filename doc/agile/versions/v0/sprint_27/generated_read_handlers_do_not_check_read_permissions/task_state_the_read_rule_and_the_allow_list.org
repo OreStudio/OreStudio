@@ -7,26 +7,29 @@
 #+level: s1
 #+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generated-read-handlers-do-not-check-read-permissions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule:
+a read checks its read permission unless the page's allow-list names its
+subject with the reason it is open. The allow-list holds every read that is
+meant to be open today.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,7 +38,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The rule is in the Summary and in its own section, with the two reasons a
+  read may be open: a self read, or a read a member needs before holding any
+  role that grants it.
+- The allow-list names each open subject, what it answers, and why.
+- The planned self read for contact information is listed, so task 2 can open
+  it.
+- The page says where the code is today, so a reader does not mistake the rule
+  for the current state.
+- Every subject on the list exists in the generated protocol.
 
 * Plan
 

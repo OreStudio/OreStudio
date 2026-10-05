@@ -2,17 +2,21 @@
 :ID: 804C7048-DBBF-4B39-8737-BFB4949884C4
 :END:
 #+title: Authorised reads
-#+description: How a read decides whether to answer, where a refusal travels, and why reading your own access and reading somebody else's are different subjects.
+#+description: How a read decides whether to answer: every read checks its read permission unless this page allow-lists it, where a refusal travels, and why reading your own access and reading somebody else's are different subjects.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:security:iam:authorisation:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-06
 
 * Summary
 
 A read is authorised by the service that answers it, per operation and per
-resource, before any of the work is done. Reading your own access and reading
+resource, before any of the work is done. Every read checks the read permission
+of the resource it answers about. A read that answers every signed-in member is
+an exception: it is allowed only when the allow-list on this page names its
+subject and the reason it is open. A read that is open and not on the list is a
+defect. Reading your own access and reading
 somebody else's are two different subjects rather than one subject with a
 parameter, because a self read that cannot name another account is safer than a
 self read that must compare one. A refusal is a payload: the response carries a
@@ -57,7 +61,8 @@ There are two permission checks in the tree and they are not the same check.
 | | =authorization_service::has_permission= | =ores::service::messaging::has_permission= |
 |---+------------------------------------------+---------------------------------------------|
 | Reads | the effective permissions from the database | the token's =roles= claim, which holds permission codes |
-| Empty permission list | denies | allows, as backward compatibility |
+| Empty permission list | denies | denies |
+| No permission list | — | allows: the context is the service's own, not a caller's |
 | Bare =*= | allows | allows |
 | Component wildcard =iam::*= | not handled | handled |
 | Cost | one query | free |
@@ -87,6 +92,69 @@ reason: *there is nothing to override because there is no field to send*. A
 single subject that allowed the caller's own account by comparison would work,
 and would be one guard weaker: the day a handler forgets the comparison, the
 subject reads anybody's access.
+
+** Guarded unless allowed
+
+A read checks the =:read= code of its resource, such as
+=iam::account_contact_informations:read=, before it does any work. The check is
+the default. A model, a handler or a subject does not ask for it; it is there
+unless this page allows the read to be open.
+
+A read may be open for one of two reasons only:
+
+- *It is a self read.* The subject takes no account id, so the answer can hold
+  only the caller's own rows. The account comes from the authenticated actor.
+- *A member needs it before holding any role that grants it.* The member reads
+  the role catalogue to choose a role to ask for, as
+  [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] describes. A
+  read that a member needs because of the role they hold is not open: that role
+  grants its =:read= code.
+
+So "every member needs it" is not a reason to open a read. Grant the code to
+every role that needs it. An open read answers people who hold no role at all,
+and it hides the read from the roles that model what each person may do.
+
+An allowed read is allowed by its subject. Other operations on the same
+resource stay guarded: allowing =iam.v1.roles.list= does not allow
+=iam.v1.roles_versions.list=.
+
+A service acting as itself carries no permission list, and the check passes.
+A service that relays a caller's token is checked as the caller.
+
+** The allow-list
+
+These subjects answer every signed-in member. Each row says why. A subject that
+is not in this table checks its read permission.
+
+| Subject | Answers | Why it is open |
+|---------+---------+----------------|
+| =iam.v1.roles.mine= | The caller's roles, each with the permissions it grants and its assignment tail | Self read |
+| =iam.v1.roles.list= | The tenant's roles: name, description and flags | A member chooses the role to ask for |
+| =iam.v1.roles.get= | One role | A member reads the role to ask for |
+| =iam.v1.roles.permissions= | The permission codes one role bundles | A member reads what a role grants before asking for it |
+| =iam.v1.permissions.list= | The permission codes and their descriptions | A member reads a role's codes in words, and asks "Can I…?" |
+| =inbox.v1.approval-requests.mine= | The requests the caller raised, and their decisions | Self read |
+| =inbox.v1.notifications.mine= | The notifications addressed to the caller | Self read |
+| =inbox.v1.notifications.unread-count= | How many of those are unread | Self read |
+
+Planned, by [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the
+security documentation does not allow]]:
+
+| Subject | Answers | Why it will be open |
+|---------+---------+---------------------|
+| =iam.v1.account_contact_informations.mine= | The caller's own contact record | Self read; the profile reads it today through the guarded =list_by_account_id= |
+
+A row is added to this table in the same change that opens the read, with its
+reason. Removing a row closes the read.
+
+** Where the code is today
+
+The rule above is the target. On 2026-10-06, 363 of the 367 generated handlers
+that serve reads checked no read permission, because codegen guarded a read only
+when its model set =:guard_reads: true=. Only =account=, =login_info=, =session=
+and =tenant= set it. [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read
+the security documentation does not allow]] closes the gap and adds the check
+that keeps it closed.
 
 ** One answer per screen
 
@@ -122,8 +190,8 @@ One role's bundle needs no permission, and that is deliberate rather than an
 omission: registration gives a person one role, asking for more is the journey
 [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] runs, and a
 person deciding what to ask for reads what the role grants. The tenant's roles
-are already listable by any member, so gating the bundle would hide the half of
-the answer that makes the ask informed.
+are listable by any member for the same reason, so gating the bundle would hide
+the half of the answer that makes the ask informed. Both are on the allow-list.
 
 ** The divergence this page does not settle
 
@@ -148,4 +216,6 @@ piece of work, and it is recorded rather than decided here.
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol]] — the response and outcome contract, and the authorisation rule this page applies.
 - [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — why a journey that only reads wants one joined answer.
 - [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] — the group whose reads this page settles.
+- [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] — the story that makes the code obey the rule.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the journey the role catalogue reads are open for.
 - [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] and [[id:3C753578-BC0E-433C-92B5-38031F050ADC][Change someone's access]] — the two journeys these reads carry.

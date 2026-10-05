@@ -8,7 +8,7 @@
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-administrators-their-pictures
-#+pr:
+#+pr: 2671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -135,7 +135,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2671][#2671]] | [iam,sql] Seed and attach the administrator avatars |
 
 * Review
 

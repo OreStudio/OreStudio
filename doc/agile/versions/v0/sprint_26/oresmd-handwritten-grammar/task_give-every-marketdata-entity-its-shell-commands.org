@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-every-marketdata-entity-its-shell-commands
+#+pr: 2643
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ every command is proved against the live fleet.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -43,6 +43,18 @@ every command is proved against the live fleet.
 * Plan
 
 Bind the models to the shell surface, regenerate, then run the recipes.
+
+1. Opt =feed_binding=, =market_fixing= and =market_observation= into
+   =ores.cpp.shell-command= in their property drawers. Their profiles,
+   =readonly-timeseries= and none, do not turn the facet on.
+2. Give the junction a list read. Codegen withholds every messaging facet, the
+   protocol and the shell unit from a junction that declares no =list_by= side,
+   so =market_series_id= gets =:list_by: true=.
+3. Regenerate marketdata at the =ores= address, wire the new registrar and the
+   four shell units into their hand-written aggregators, and seed the two
+   permissions the junction's handler checks.
+4. Regenerate the cmake lists, the recipe inventory and the script library,
+   then run every marketdata script against the live fleet.
 
 * Measurements
 
@@ -56,9 +68,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Marketdata models with shell commands, before and after | 3 before, 7 after | =ls projects/ores.shell/marketdata/src/app/commands/marketdata/= | =ec7c5bdff4= |
+| Scripts the tangle added | 26, in 4 new folders; no existing script changed | =compass build --direct tangle_shell_scripts=, then =git status= | =ec7c5bdff4= |
+| Marketdata scripts run against the live fleet | 73: 32 ok, 19 missing, 18 failed, 4 aborted; each with its reason | =evidence/marketdata_shell_commands_run.txt= | =ec7c5bdff4= |
+| Shell unit tests | 16 of 16 suites pass | =compass test run -R ores.shell= | =ec7c5bdff4= |
+| Marketdata tests | 5 of 5 suites pass | =compass test run -R ores.marketdata= | =ec7c5bdff4= |
 
 * Notes
+
+** The live run
+
+Each of the 73 marketdata scripts ran in its own =ores.shell --load=
+invocation, logged in as the ACME tenant administrator, because the shell
+stops at the first failing command. The full table is
+=evidence/marketdata_shell_commands_run.txt=.
+
+- 32 =ok=: the command reached its service and decoded. That includes the three
+  =marketdata import= scripts, whose hand-written command prints counts rather
+  than an outcome.
+- 19 =missing=: the sentinel key addresses no row.
+- 18 =failed=: each is the database refusing a sentinel, never a fault. The
+  nil UUID breaks the =id= check on =set= and =put-many=; =__none__= is not a
+  series subclass; the lineage sentinel is not JSON; the junction's nil series
+  is no series.
+- 4 =aborted=: the =crm_rates_*= scripts. No shell menu answers =crm= since
+  commit =ee4e739a65= deleted the hand-written CRM commands, so these cannot
+  run. Recorded as
+  [[id:393E5F62-88E9-4EB5-841C-1DDF071F1394][The CRM shell recipes call a command that no longer exists]].
+
 
 Today only =market_series=, =observation_lineage= and
 =series_classification_rule= have shell commands. See [[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]], section 4.
@@ -78,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2643][#2643]] | [marketdata] Give every marketdata entity its shell commands |
 
 * Review
 
@@ -87,3 +124,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every marketdata entity and the asset-class junction now has generated shell
+commands, tests and a recipe that the inventory lists. The junction gained its
+NATS surface on the way, because codegen gives a junction no protocol until a
+side declares a list read. Every marketdata script ran against the live fleet,
+and each verdict has a reason; the four CRM scripts cannot run and are a
+capture of their own.

@@ -1361,3 +1361,19 @@ tangled into the runnable script library
 * Netting Set Aliases
 
 - [[id:759255D2-7920-5CA2-BCFF-DBD057DA8740][How do I run the netting_set_aliases commands from the shell?]]
+
+* Feed Bindings
+
+- [[id:407A432A-C73D-5633-872A-5DC9D39E2394][How do I run the feed_bindings commands from the shell?]]
+
+* Market Fixings
+
+- [[id:3B4C29BE-8FA9-505B-B3DD-D322676AC7A8][How do I run the market_fixings commands from the shell?]]
+
+* Market Observations
+
+- [[id:E9CAAD5B-9A2A-5DCA-A532-31CF977C130F][How do I run the market_observations commands from the shell?]]
+
+* Market Series Asset Classes
+
+- [[id:F67E9099-8BBB-5747-9342-114FB26F0B12][How do I run the market_series_asset_classes commands from the shell?]]

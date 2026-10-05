@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 393E5F62-88E9-4EB5-841C-1DDF071F1394
+:END:
+#+title: The CRM shell recipes call a crm command that no longer exis…
+#+description: The CRM shell recipes call a crm command that no longer exists. Commit ee4e739a65 (Generate the refdata shell surface) deleted the hand-written crm_commands from ores.shell's application part, but the four recipes under doc/recipes/shell/marketdata/crm/ and their scripts in projects/ores.shell/scripts/library/marketdata/crm_rates_*.ores still send 'crm rates majors' and its siblings. On 2026-10-05 each aborted with 'Wrong command: crm rates majors' against the live fleet. The CRM requests are declared in ores.marketdata.operations (marketdata.v1.crm.rate and marketdata.v1.crm.rates), so opting that operation model into ores.cpp.shell-command would generate the commands again; the recipes would then need the generated command names.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The four CRM shell recipes under =doc/recipes/shell/marketdata/crm/=, and the
+scripts they tangle to (=projects/ores.shell/scripts/library/marketdata/crm_rates_*.ores=),
+send =crm rates majors= and its siblings. No shell menu answers =crm= any more:
+commit =ee4e739a65= deleted the hand-written =crm_commands= from the shell's
+application part. On 2026-10-05 each script aborted with =Wrong command: crm
+rates majors= against the live fleet.
+
+* Why
+
+A reader following the recipe gets an error, and the script library carries
+four scripts that cannot pass. The CRM requests are declared in the
+=ores.marketdata.operations= model (=marketdata.v1.crm.rate= and
+=marketdata.v1.crm.rates=), so opting that operation model into
+=ores.cpp.shell-command= would generate the commands again. The recipes would
+then use the generated command names.
+
+* References
+
+- Found while running every marketdata shell command for
+  [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]].
+
+* See also
+
+-

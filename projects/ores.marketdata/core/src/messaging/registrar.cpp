@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/market_fixing_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_observation_registrar.hpp"
+#include "ores.marketdata.core/messaging/market_series_asset_class_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_handler.hpp"
 #include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/market_series_registrar.hpp"
@@ -63,7 +64,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     constexpr auto queue = "ores.marketdata.service";
 
     // Generated per-entity registrars (market series, fixings, observations,
-    // feed bindings, observation lineages, classification rules). Each wires
+    // feed bindings, observation lineages, classification rules and the
+    // series asset-class junction). Each wires
     // the canonical CRUD set -- list/get/get-many/put/put-many/delete/
     // delete-many and the version reads -- to the generated handler.
     // subscription is move-only, so fold each returned vector in with move
@@ -78,6 +80,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_feed_binding_handlers(nats, ctx, verifier));
     fold(register_observation_lineage_handlers(nats, ctx, verifier));
     fold(register_series_classification_rule_handlers(nats, ctx, verifier));
+    fold(register_market_series_asset_class_handlers(nats, ctx, verifier));
 
     // Market series export: the one market-series verb with no generated
     // protocol model, because it is a report-feed read rather than CRUD. It

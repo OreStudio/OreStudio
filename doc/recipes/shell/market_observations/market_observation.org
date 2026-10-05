@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: E9CAAD5B-9A2A-5DCA-A532-31CF977C130F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_observations commands from the shell?
+#+description: Every command the market_observations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_observations:
+
+This file documents the market_observations resource at the shell, one section per command. Every command is a subcommand of =market_observations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F114847C-8D46-5C37-84F3-DD0A66623C0B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.list=.
+
+#+name: market_observations-list
+#+begin_src ores-shell :tangle market_observations-list.ores :exports none
+market_observations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 86AD236B-F339-5D3E-8A70-1F33F8ABA879
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.get=.
+
+#+name: market_observations-get
+#+begin_src ores-shell :tangle market_observations-get.ores :exports none
+market_observations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A96EEB0C-10EE-5C2F-9928-4A5D05D19705
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.get_many=.
+
+#+name: market_observations-get-many
+#+begin_src ores-shell :tangle market_observations-get-many.ores :exports none
+market_observations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5C44FA34-A7CA-59C3-9ADA-5967BB6ED5BD
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations add <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.put=.
+
+#+name: market_observations-add
+#+begin_src ores-shell :tangle market_observations-add.ores :exports none
+market_observations add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 350B618B-7BA2-5BC4-9571-3D40C9E7B4A0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.put=.
+
+#+name: market_observations-set
+#+begin_src ores-shell :tangle market_observations-set.ores :exports none
+market_observations set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 79D92EF3-2D74-5339-9A2B-2D4E14807CA9
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <value> <source> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.put_many=.
+
+#+name: market_observations-put-many
+#+begin_src ores-shell :tangle market_observations-put-many.ores :exports none
+market_observations put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D3825149-2224-5E39-B6FC-4FF91832F0D4
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.delete=.
+
+#+name: market_observations-delete
+#+begin_src ores-shell :tangle market_observations-delete.ores :exports none
+market_observations delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 619B3AC2-4FE5-5BB4-89EE-686638BF9CEF
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.delete_many=.
+
+#+name: market_observations-delete-many
+#+begin_src ores-shell :tangle market_observations-delete-many.ores :exports none
+market_observations delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-series-id=
+:PROPERTIES:
+:ID: 9699D613-8689-5B23-ABE4-C70534FB0905
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_observations by-series-id <series_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_observations.list_by_series_id=.
+
+#+name: market_observations-by-series-id
+#+begin_src ores-shell :tangle market_observations-by-series-id.ores :exports none
+market_observations by-series-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

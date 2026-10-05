@@ -1,0 +1,79 @@
+Marketdata shell commands against the live fleet
+
+Run on 2026-10-05 on =feature/give-every-marketdata-entity-its-shell-commands=, against a recreated database with the ACME tenant provisioned, logged in as =tenant_admin@acme_corporation=. Each script ran in its own =ores.shell --load= invocation as doc/recipes/shell/how_do_i_test_the_shell.org directs.
+
+| Script | Verdict | Reason |
+|--------+---------+--------|
+| =market_series-add= | failed | sentinel =__none__= refused as a series subclass |
+| =market_series-delete-many= | ok | reached the service and decoded |
+| =market_series-delete= | missing | the sentinel key addresses no row |
+| =market_series-get-many= | ok | reached the service and decoded |
+| =market_series-get= | missing | the sentinel key addresses no row |
+| =market_series-list= | ok | reached the service and decoded |
+| =market_series-put-many= | failed | sentinel =__none__= refused as a series subclass |
+| =market_series-set= | failed | sentinel =__none__= refused as a series subclass |
+| =market_series-version= | missing | the sentinel key addresses no row |
+| =market_series-versions= | ok | reached the service and decoded |
+| =observation_lineages-add= | failed | sentinel refused as JSON |
+| =observation_lineages-delete-many= | ok | reached the service and decoded |
+| =observation_lineages-delete= | missing | the sentinel key addresses no row |
+| =observation_lineages-get-many= | ok | reached the service and decoded |
+| =observation_lineages-get= | missing | the sentinel key addresses no row |
+| =observation_lineages-list= | ok | reached the service and decoded |
+| =observation_lineages-put-many= | failed | sentinel refused as JSON |
+| =observation_lineages-set= | failed | sentinel refused as JSON |
+| =observation_lineages-version= | missing | the sentinel key addresses no row |
+| =observation_lineages-versions= | ok | reached the service and decoded |
+| =series_classification_rules-add= | failed | sentinel =__none__= refused as a series subclass |
+| =series_classification_rules-delete-many= | ok | reached the service and decoded |
+| =series_classification_rules-delete= | missing | the sentinel key addresses no row |
+| =series_classification_rules-get-many= | ok | reached the service and decoded |
+| =series_classification_rules-get= | missing | the sentinel key addresses no row |
+| =series_classification_rules-list= | ok | reached the service and decoded |
+| =series_classification_rules-put-many= | failed | sentinel =__none__= refused as a series subclass |
+| =series_classification_rules-set= | failed | sentinel =__none__= refused as a series subclass |
+| =series_classification_rules-version= | missing | the sentinel key addresses no row |
+| =series_classification_rules-versions= | ok | reached the service and decoded |
+| =feed_bindings-add= | ok | reached the service and decoded |
+| =feed_bindings-delete-many= | ok | reached the service and decoded |
+| =feed_bindings-delete= | missing | the sentinel key addresses no row |
+| =feed_bindings-get-many= | ok | reached the service and decoded |
+| =feed_bindings-get= | missing | the sentinel key addresses no row |
+| =feed_bindings-list= | ok | reached the service and decoded |
+| =feed_bindings-put-many= | failed | nil UUID id refused by the id check |
+| =feed_bindings-set= | failed | nil UUID id refused by the id check |
+| =feed_bindings-version= | missing | the sentinel key addresses no row |
+| =feed_bindings-versions= | missing | the sentinel key addresses no row |
+| =market_fixings-add= | ok | reached the service and decoded |
+| =market_fixings-delete-many= | ok | reached the service and decoded |
+| =market_fixings-delete= | missing | the sentinel key addresses no row |
+| =market_fixings-get-many= | ok | reached the service and decoded |
+| =market_fixings-get= | missing | the sentinel key addresses no row |
+| =market_fixings-list= | ok | reached the service and decoded |
+| =market_fixings-put-many= | failed | nil UUID id refused by the id check |
+| =market_fixings-set= | failed | nil UUID id refused by the id check |
+| =market_observations-add= | ok | reached the service and decoded |
+| =market_observations-by-series-id= | ok | reached the service and decoded |
+| =market_observations-delete-many= | ok | reached the service and decoded |
+| =market_observations-delete= | missing | the sentinel key addresses no row |
+| =market_observations-get-many= | ok | reached the service and decoded |
+| =market_observations-get= | missing | the sentinel key addresses no row |
+| =market_observations-list= | ok | reached the service and decoded |
+| =market_observations-put-many= | failed | nil UUID id refused by the id check |
+| =market_observations-set= | failed | nil UUID id refused by the id check |
+| =market_series_asset_classes-add= | failed | nil UUID series refused by the series check |
+| =market_series_asset_classes-by-market-series-id= | ok | reached the service and decoded |
+| =market_series_asset_classes-delete-many= | ok | reached the service and decoded |
+| =market_series_asset_classes-delete= | missing | the sentinel key addresses no row |
+| =market_series_asset_classes-get-many= | ok | reached the service and decoded |
+| =market_series_asset_classes-get= | missing | the sentinel key addresses no row |
+| =market_series_asset_classes-list= | ok | reached the service and decoded |
+| =market_series_asset_classes-put-many= | failed | nil UUID series refused by the series check |
+| =market_series_asset_classes-set= | failed | nil UUID series refused by the series check |
+| =crm_rates_exotics= | aborted | the =crm= menu no longer exists; see the capture |
+| =crm_rates_majors= | aborted | the =crm= menu no longer exists; see the capture |
+| =crm_rates_matrix= | aborted | the =crm= menu no longer exists; see the capture |
+| =crm_rates_scandies= | aborted | the =crm= menu no longer exists; see the capture |
+| =import_legacy_example_56= | ok | import completed; the hand-written command prints counts, not an outcome |
+| =import_marketrisk_histsimvar= | ok | import completed; the hand-written command prints counts, not an outcome |
+| =import_ta002_ir_swap= | ok | import completed; the hand-written command prints counts, not an outcome |

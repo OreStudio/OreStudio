@@ -36,6 +36,7 @@ relationship is a junction.
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up the classes a series belongs to
+:list_by:       true
 :END:
 
 ID of the market series.

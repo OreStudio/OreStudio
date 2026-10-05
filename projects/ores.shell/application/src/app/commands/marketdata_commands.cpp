@@ -22,6 +22,10 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/marketdata/feed_binding_commands.hpp"
+#include "ores.shell/app/commands/marketdata/market_fixing_commands.hpp"
+#include "ores.shell/app/commands/marketdata/market_observation_commands.hpp"
+#include "ores.shell/app/commands/marketdata/market_series_asset_class_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_series_commands.hpp"
 #include "ores.shell/app/commands/marketdata/observation_lineage_commands.hpp"
 #include "ores.shell/app/commands/marketdata/series_classification_rule_commands.hpp"
@@ -72,7 +76,11 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
     // Generated per-entity command units. Each projects one market-data
     // entity onto the REPL as a top-level menu of its own, so the commands a
     // user can type cannot drift from the operations the service offers.
+    feed_binding_commands::register_commands(root_menu, session);
+    market_fixing_commands::register_commands(root_menu, session);
+    market_observation_commands::register_commands(root_menu, session);
     market_series_commands::register_commands(root_menu, session);
+    market_series_asset_class_commands::register_commands(root_menu, session);
     observation_lineage_commands::register_commands(root_menu, session);
     series_classification_rule_commands::register_commands(root_menu, session);
 

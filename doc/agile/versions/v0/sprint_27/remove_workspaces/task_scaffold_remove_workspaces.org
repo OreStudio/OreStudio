@@ -1,45 +1,41 @@
 :PROPERTIES:
-:ID: 507EC593-8A63-46BE-A741-B9E172144C14
+:ID: 5FC28F73-62D7-4124-9EC8-55B51EC5C31A
 :END:
-#+title: Task: Inventory and sequence the workspace removal
-#+description: Initial task for: Remove workspaces from every component
+#+title: Task: Scaffold story: Remove workspaces from every component
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :remove_workspaces:sprint_26:v0:
+#+filetags: :remove_workspaces:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-workspaces
+#+pr: 2615
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
-#+environment:
+#+updated: 2026-10-05
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-No component carries a workspace: no table has a workspace_id, no request or session carries a workspace context, and ores.workspace is gone. Sandboxes and virtual books, which replaced workspaces in the trade shape design, are the only way to keep work apart from official data.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
-- No codegen profile or model sets has_workspace_id, and no generated or hand-written table has a workspace_id column.
-- No request context, NATS header, session or database setting carries a workspace; ores_utility_live_workspace_id_fn and its kin are gone.
-- The ores.workspace component, its tables, protocol, shell and web surfaces are removed, with no references left.
-- Every component builds and its tests pass after each step; main is never half migrated.
-- The trading part is done by the trade shape story, Split the trade into an anchor and its components; this story covers the rest.
+-
 
 * Plan
 
@@ -63,17 +59,6 @@ task and name that file in the Command column.
 
 * Notes
 
-Points from the review of the scaffold (PR 2615) for this task to settle:
-
-- Confirm that nothing still relies on workspaces to keep work apart from
-  official data, so sandboxes and virtual books are the only way.
-- Order the steps so no default, policy or index still calls
-  =ores_utility_live_workspace_id_fn= or its kin while a column exists:
-  columns go before the functions.
-- Record the command and commit behind every inventory count in the
-  Measurements section; the trading counts fall as the trade shape story
-  lands.
-
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -89,12 +74,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2615][#2615]] | [agile] Scaffold the story to remove workspaces from every component |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Story state STARTED disagrees with the sprint row and the Status. | story.org | Accept | BACKLOG. |
+| 2 | Out of scope is empty. | story.org | Accept | Trading and data migration listed. |
+| 3 | Nothing checks that no isolation still relies on workspaces. | task_implement_remove_workspaces.org | Accept | A note for the inventory task. |
+| 4 | Columns must go before the workspace functions. | task_implement_remove_workspaces.org | Accept | A note for the inventory task. |
+| 5 | The inventory gives no commands. | task_implement_remove_workspaces.org | Accept | A note: record them in Measurements. |
+| 6 | Removing ores.workspace waits on the trade shape story. | story.org | Accept | Waiting on set. |
 
 * Result
+
+The story is scaffolded with its goal, acceptance, the decision that
+workspaces are removed rather than reworked, a measured inventory of where
+they remain and a proposed task sequence. The first task, the inventory and
+sequencing, is in the backlog.

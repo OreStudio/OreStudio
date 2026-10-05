@@ -67,6 +67,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A987BBAA-C749-4FB6-B6E6-03665563AADE][Remove the presentation keys no template reads]] | BACKLOG | 2026-10-05 | | The presentation keys no template, render path or validator reads, the helpers that exist only to compute them, and the pages that still describe the Qt layer as live. |
 | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] | STARTED | 2026-10-05 | | Give ACME a report type and definition whose run submits an existing example bundle to the compute grid and retrieves the results. |
 | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] | DONE | 2026-10-05 | 2026-10-05 | The super administrator's own journeys: the deployment's accounts read from system administration, the platform's service accounts among them; the seeded administrators named and pictured; and the welcome that shows a username replaced by a human name. |
+| [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] | BACKLOG | 2026-10-05 | | Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system. |
 
 ** Hotfixes
 

@@ -79,6 +79,14 @@ select ores_utility_allow_version_replace_fn();
 \ir ../iam/iam_populate.sql
 
 -- =============================================================================
+-- Inbox (approval request lookups; the kinds name IAM permissions)
+-- =============================================================================
+
+\echo ''
+\echo '--- Inbox ---'
+\ir ../inbox/inbox_populate.sql
+
+-- =============================================================================
 -- Data Governance Framework
 -- =============================================================================
 

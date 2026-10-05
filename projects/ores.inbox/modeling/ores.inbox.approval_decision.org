@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96
+:END:
+#+title: ores.inbox.approval_decision
+#+description: Codegen entity model for the inbox =approval_decision= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: One decision a person took on an approval request.
+#+entity_singular: approval_decision
+#+entity_plural: approval_decisions
+#+entity_title: Approval Decision
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+A request is decided by many decisions, not one: a kind may need two approvers,
+and a hold, a return to waiting, a withdrawal, a refusal and a reversal are each
+a decision of their own. Each is a row here, and a decision is never edited.
+
+Two rules of the record are rules of the schema. The person who asked cannot
+decide their own request, and a withdrawal is the one decision only they take:
+a hand-written trigger in =inbox_approval_decision_rules_create.sql= checks
+both. One person approves a request at most once: the unique index below
+states it.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key for the decision.
+
+** request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The request this decision decides. FK reference to
+ores_inbox_approval_requests_tbl.
+
+** decision_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the decision does. FK reference to ores_inbox_approval_decision_types_tbl,
+which the system tenant holds.
+
+** decided_by
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The account that decided. FK reference to ores_iam_accounts_tbl.
+
+** decided_at
+:PROPERTIES:
+:type:          timestamp with time zone
+:cpp_type:      std::chrono::system_clock::time_point
+:nullable:      false
+:default_value: {}
+:END:
+
+When the decision was taken.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** comment
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why, in the decider's words. Empty when neither the decision type nor the kind
+asks for one.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid request_id: %. No approval request found with this id.
+:list_by:       true
+:END:
+
+** decision_code
+:PROPERTIES:
+:table:             ores_inbox_approval_decision_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid decision_code: %. No approval decision type found with this code.
+:END:
+
+The lookup is system reference data, so the check reads the system tenant.
+
+** decided_by
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid decided_by: %. No account found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_inbox_approval_decisions_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Indexes
+
+One person approves a request at most once, so nobody counts twice towards the
+kind's =approvals_required=.
+
+| name                        | columns                           | unique | current_only | where_extra               |
+|-----------------------------+-----------------------------------+--------+--------------+---------------------------|
+| one_approval_per_person     | tenant_id, request_id, decided_by | true   | true         | decision_code = 'approve' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: decision
+:entity_plural_short:   decisions
+:entity_singular_words: approval decision
+:entity_plural_words:   approval decisions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ad
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| id            | ID          |
+| request_id    | Request     |
+| decision_code | Decision    |
+| decided_by    | Decided By  |
+| decided_at    | Decided At  |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the design this decision implements.
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the request a decision decides.
+- [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] — what a decision does.

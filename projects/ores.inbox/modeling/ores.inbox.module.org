@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 5D8A2C64-3E19-4B7F-A6D0-1C9E4F7B2A83
+:END:
+#+title: ores.inbox
+#+description: MASD module catalogue for the ores.inbox logical namespace — approval requests and notifications, with their lookups.
+#+type: ores.codegen.module
+#+component: inbox
+#+filetags: :model:module:inbox:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The =ores.inbox= module groups all logical entities in the =ores.inbox= namespace. Each entity is a [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical-space]] type projected by [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] into C++, SQL, and other technical spaces.
+
+* Entities
+
+| Entity | Brief |
+|--------+-------|
+| [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] | What an approval request asks for, and the rules that decide it. |
+| [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] | Where an approval request is in its lifecycle. |
+| [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] | What a decision on an approval request does. |
+| [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] | A request that waits for a person to decide it. |
+| [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] | One decision a person took on an approval request. |
+| [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] | What kind of thing a notification tells a person. |
+| [[id:B269E536-5267-432E-A1F8-2AA43DD75AC0][ores.inbox.notification_channel]] | A way a person is reached by a notification. |
+| [[id:DE939606-47FE-458E-B009-EC34DE815DBA][ores.inbox.delivery_outcome_type]] | The closed set of outcomes of a notification delivery. |
+| [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] | One thing that happened that people are told about. |
+| [[id:9A498098-9038-4930-9074-67F84BAFB19E][ores.inbox.notification_argument]] | One value a notification's message names. |
+| [[id:2451E78F-269A-4C48-819F-F7F24E03B4D8][ores.inbox.notification_recipient]] | One person a notification reaches, with their read state. |
+| [[id:AEE6449A-FAE3-4FC2-994D-796A6EFF286C][ores.inbox.notification_delivery]] | One attempt to reach one recipient through one channel. |
+| [[id:70AA8E99-D6C6-41A0-BAD0-7FF9698A3CEB][ores.inbox.notification_preference]] | Whether a person is reached through a channel for a kind. |
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the design the approval entities implement.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the design the notification entities implement.

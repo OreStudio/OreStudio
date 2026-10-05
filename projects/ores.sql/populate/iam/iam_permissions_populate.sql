@@ -1288,6 +1288,54 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'storage::*', 'Full access to all storage operations');
 
     -- =============================================================================
+    -- Inbox Component Permissions
+    -- =============================================================================
+
+    -- Approval requests and their lookups. Deciding a request of a kind needs
+    -- the permission the kind names, not one of these.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:read',            'Read and list approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:write',           'Create and update approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_kinds:delete',          'Delete approval kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:read',   'Read and list approval request states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:write',  'Create and update approval request states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_request_states:delete', 'Delete approval request states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:read',   'Read and list approval decision types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:write',  'Create and update approval decision types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decision_types:delete', 'Delete approval decision types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:read',         'Read and list approval requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:write',        'Create and update approval requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:delete',       'Delete approval requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decisions:read',        'Read and list approval decisions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decisions:write',       'Create and update approval decisions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_decisions:delete',      'Delete approval decisions');
+
+    -- Notifications and their lookups. A person reads their own notifications
+    -- through the service, which scopes them to the person, not through these.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_kinds:read',         'Read and list notification kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_kinds:write',        'Create and update notification kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_kinds:delete',       'Delete notification kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_channels:read',      'Read and list notification channels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_channels:write',     'Create and update notification channels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_channels:delete',    'Delete notification channels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notifications:read',              'Read and list notifications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notifications:write',             'Create and update notifications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notifications:delete',            'Delete notifications');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_arguments:read',     'Read and list notification arguments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_arguments:write',    'Create and update notification arguments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_arguments:delete',   'Delete notification arguments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_recipients:read',    'Read and list notification recipients');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_recipients:write',   'Create and update notification recipients');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_recipients:delete',  'Delete notification recipients');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_deliveries:read',    'Read and list notification deliveries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_deliveries:write',   'Create and update notification deliveries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_deliveries:delete',  'Delete notification deliveries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_preferences:read',   'Read and list notification preferences');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_preferences:write',  'Create and update notification preferences');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::notification_preferences:delete', 'Delete notification preferences');
+
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::*', 'Full access to all inbox operations');
+
+    -- =============================================================================
     -- Global Wildcard Permission
     -- =============================================================================
 

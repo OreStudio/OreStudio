@@ -82,7 +82,7 @@ stated, and no column that holds a document. Nothing is stored as JSON.
 | =decide_permission_code= | FK to =ores_iam_permissions_tbl= | The permission a decider needs |
 | =allows_hold= | | Whether =held= is a state this kind uses |
 | =comment_on_approve= | | Whether an approval needs a comment |
-| =expires_after= | | The window after which an unanswered request closes, or null |
+| =expires_after_days= | | The days after which an unanswered request closes, or null when it does not expire |
 | =approvals_required= | | How many approvals, each by a different person, close a request as approved; one for most kinds |
 
 =ores_inbox_approval_request_states_tbl=, a lookup of the states, with which are
@@ -116,7 +116,10 @@ of their own. Each is a row:
 | =decided_by= | FK to =ores_iam_accounts_tbl= | Who decided |
 | =decided_at= | | When |
 | =comment= | | Why |
-| =hold_reason_code= | FK to the kind's hold reasons, null unless held | Why it is held |
+
+The kinds, the states and the decision types are lookups the system tenant holds,
+so a request or decision in any tenant checks its codes against them through
+their validation functions, as an account checks its status.
 
 The request's =state_code= is the state the decisions have reached. A check, in
 the decision's insert trigger, refuses a decision by the person who asked, so
@@ -143,7 +146,9 @@ tables, not a column added to one of them.
 
 The kind's own table is also where "one open request per subject" is checked,
 because only it knows what the subject is. A hold reason, for a kind that
-allows holding, is a lookup of its own with a foreign key from the header.
+allows holding, is a lookup of its own, keyed from the kind's detail table. The
+first kind, the role request, does not hold, so the first build has no hold
+reasons.
 
 ** The lifecycle
 

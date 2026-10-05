@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 7FF706B5-0094-5B97-A90D-AFC732B46E74
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the approval_requests commands from the shell?
+#+description: Every command the approval_requests submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:approval_requests:
+
+This file documents the approval_requests resource at the shell, one section per command. Every command is a subcommand of =approval_requests=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F7E64C25-A701-5FAB-B71B-D293CF7F2220
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.list=.
+
+#+name: approval_requests-list
+#+begin_src ores-shell :tangle approval_requests-list.ores :exports none
+approval_requests list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8582F79D-2940-5782-9247-0ECDBDCF91AF
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests get <id>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.get=.
+
+#+name: approval_requests-get
+#+begin_src ores-shell :tangle approval_requests-get.ores :exports none
+approval_requests get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5251CD42-9753-5062-A8A7-1738304A8292
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests get-many <id>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.get_many=.
+
+#+name: approval_requests-get-many
+#+begin_src ores-shell :tangle approval_requests-get-many.ores :exports none
+approval_requests get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 5C8609AE-FA0B-549A-8635-C6F1B6677279
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests add <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.put=.
+
+#+name: approval_requests-add
+#+begin_src ores-shell :tangle approval_requests-add.ores :exports none
+approval_requests add __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 9178EDEC-E3F3-553D-B484-C8287FB9E685
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests set <id> <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.put=.
+
+#+name: approval_requests-set
+#+begin_src ores-shell :tangle approval_requests-set.ores :exports none
+approval_requests set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 66D1A814-5D8A-501C-BE07-C42D42685275
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests put-many --count <n> <id> <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.put_many=.
+
+#+name: approval_requests-put-many
+#+begin_src ores-shell :tangle approval_requests-put-many.ores :exports none
+approval_requests put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 9A8BA887-8B69-56ED-A9A2-3F93F74E2FBA
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.delete=.
+
+#+name: approval_requests-delete
+#+begin_src ores-shell :tangle approval_requests-delete.ores :exports none
+approval_requests delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F8AC0639-61CE-5FFC-9968-C42E3230457A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.delete_many=.
+
+#+name: approval_requests-delete-many
+#+begin_src ores-shell :tangle approval_requests-delete-many.ores :exports none
+approval_requests delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-kind-code=
+:PROPERTIES:
+:ID: 64E236A1-DD05-5580-B3E8-CCAFBC0748DA
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests by-kind-code <kind_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests.list_by_kind_code=.
+
+#+name: approval_requests-by-kind-code
+#+begin_src ores-shell :tangle approval_requests-by-kind-code.ores :exports none
+approval_requests by-kind-code __none__ --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E04F0610-B0F1-5B3E-96B3-D1CA6A942E26
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests_versions.list=.
+
+#+name: approval_requests-versions
+#+begin_src ores-shell :tangle approval_requests-versions.ores :exports none
+approval_requests versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B08A18AC-0A75-5110-88E9-AEFECB308C90
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_requests version <id> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.approval_requests_versions.get=.
+
+#+name: approval_requests-version
+#+begin_src ores-shell :tangle approval_requests-version.ores :exports none
+approval_requests version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/notification_recipients/notification_recipient.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+notification_recipients list --limit 1

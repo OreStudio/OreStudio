@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: AEE6449A-FAE3-4FC2-994D-796A6EFF286C
+:END:
+#+title: ores.inbox.notification_delivery
+#+description: Codegen entity model for the inbox =notification_delivery= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: One attempt to reach one recipient through one channel.
+#+entity_singular: notification_delivery
+#+entity_plural: notification_deliveries
+#+entity_title: Notification Delivery
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+One attempt to reach one recipient through one channel, and its outcome. A
+recipient has many: a failed mail is retried, and each attempt is a row of its
+own, so "were they told?" has an answer. A failed delivery never fails the
+activity that raised the notification.
+
+=outcome= is =pending=, =delivered= or =failed=, the C++ enum
+=domain::delivery_outcome=. =failure_reason= says why a failed attempt failed,
+and is null otherwise.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key for the delivery.
+
+** notification_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The notification delivered. FK reference to ores_inbox_notifications_tbl.
+
+** account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The recipient reached. FK reference to ores_iam_accounts_tbl.
+
+** channel_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The channel used. FK reference to ores_inbox_notification_channels_tbl, which
+the system tenant holds.
+
+** attempted_at
+:PROPERTIES:
+:type:          timestamp with time zone
+:cpp_type:      std::chrono::system_clock::time_point
+:nullable:      false
+:default_value: {}
+:END:
+
+When the attempt was made.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** outcome
+:PROPERTIES:
+:type:          text
+:cpp_type:      domain::delivery_outcome
+:is_enum:       true
+:nullable:      false
+:default_value: domain::delivery_outcome::pending
+:END:
+
+What came of the attempt: =pending=, =delivered= or =failed=.
+
+#+begin_src cpp :name generator
+domain::delivery_outcome::delivered
+#+end_src
+
+** failure_reason
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Why a failed attempt failed, or null when it did not fail.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** notification_id
+:PROPERTIES:
+:table:         ores_inbox_notifications_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid notification_id: %. No notification found with this id.
+:list_by:       true
+:END:
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid account_id: %. No account found with this id.
+:END:
+
+** channel_code
+:PROPERTIES:
+:table:             ores_inbox_notification_channels_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid channel_code: %. No notification channel found with this code.
+:END:
+
+The lookup is system reference data, so the check reads the system tenant.
+
+** outcome
+:PROPERTIES:
+:table:         ores_inbox_delivery_outcome_types_tbl
+:target_column: code
+:enforce:       true
+:use_no_tenant: true
+:nullable:      false
+:END:
+
+A database foreign key: the lookup is immutable and has no tenant.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_inbox_notification_deliveries_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+A failed attempt says why; any other outcome carries no reason.
+
+| expression                                                |
+|-----------------------------------------------------------|
+| ("outcome" = 'failed') = ("failure_reason" is not null) |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: delivery
+:entity_plural_short:   deliveries
+:entity_singular_words: notification delivery
+:entity_plural_words:   notification deliveries
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.inbox.api/domain/delivery_outcome.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: nd
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| id              | ID           |
+| notification_id | Notification |
+| account_id      | Account      |
+| channel_code    | Channel      |
+| attempted_at    | Attempted At |
+| outcome         | Outcome      |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+** Custom repository methods
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — audit, and raising never blocks the activity.
+- [[id:2451E78F-269A-4C48-819F-F7F24E03B4D8][ores.inbox.notification_recipient]] — the recipient a delivery reaches.
+- [[id:DE939606-47FE-458E-B009-EC34DE815DBA][ores.inbox.delivery_outcome_type]] — the closed set of outcomes.

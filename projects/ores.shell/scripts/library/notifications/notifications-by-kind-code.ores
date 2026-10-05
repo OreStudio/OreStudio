@@ -1,0 +1,6 @@
+# =by-kind-code=
+#
+# GENERATED from doc/recipes/shell/notifications/notification.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+notifications by-kind-code __none__ --limit 1

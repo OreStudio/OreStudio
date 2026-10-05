@@ -1,0 +1,62 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_app_host.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_INBOX_SERVICE_APP_HOST_HPP
+#define ORES_INBOX_SERVICE_APP_HOST_HPP
+
+#include "ores.inbox.service/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
+
+namespace ores::inbox::service::app {
+
+/**
+ * @brief Provides hosting services to the application.
+ */
+class ORES_INBOX_SERVICE_EXPORT host {
+private:
+    inline static std::string_view logger_name = "ores.inbox.service.app.host";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Executes the console workflow.
+     */
+    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
+                                               std::ostream& std_output,
+                                               std::ostream& error_output,
+                                               boost::asio::io_context& io_ctx);
+};
+
+}
+
+#endif

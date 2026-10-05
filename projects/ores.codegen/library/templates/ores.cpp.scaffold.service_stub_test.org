@@ -37,7 +37,6 @@ The full template source. Edit here and re-tangle with
 
 namespace {
 
-const std::string_view test_suite("{{full_name}}.tests");
 const std::string tags("[config]");
 
 }

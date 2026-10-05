@@ -2062,9 +2062,12 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path, owner_
             # currency on both sides.
             var = f"{parent_var}_{mfk['column']}_parent"
         named.add(var)
-        items.extend(_plan_required_seeds(
-            grandparent['mandatory_fks'], var, org_by_table, component,
-            path | {mfk.get('table')}, gp_prefixes))
+        # A system-tenant ancestor is read from the seeded catalogue, never
+        # written, so its own foreign keys need no seeding.
+        if not mfk.get('use_system_tenant'):
+            items.extend(_plan_required_seeds(
+                grandparent['mandatory_fks'], var, org_by_table, component,
+                path | {mfk.get('table')}, gp_prefixes))
         items.append({
             'var': var,
             'column': mfk['column'],
@@ -3903,8 +3906,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk['group_prefix'] = _prefix_by_column.get(fk.get('column'), '')
                 # A parent seed snippet stands in place of the derived
                 # seeding: the model knows how its parent must be seeded, so
-                # the generated write is not emitted beside it.
-                if fk.get('nullable') or fk.get('parent_seed_snippet'):
+                # the generated write is not emitted beside it. An enforced
+                # key targets an immutable lookup the populate scripts seed,
+                # and the generator already names one of its codes, so the
+                # test writes nothing for it.
+                if (fk.get('nullable') or fk.get('parent_seed_snippet')
+                        or fk.get('enforce')):
                     continue
                 parent = _parent_entity_info(
                     (org_by_table.get(fk.get('table')) or {}).get('org'))

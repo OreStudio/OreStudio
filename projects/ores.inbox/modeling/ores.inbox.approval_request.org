@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68
+:END:
+#+title: ores.inbox.approval_request
+#+description: Codegen entity model for the inbox =approval_request= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: A request that waits for a person to decide it.
+#+entity_singular: approval_request
+#+entity_plural: approval_requests
+#+entity_title: Approval Request
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+The header every kind of approval request shares: what is asked, who asked,
+when and why, where the request is, and when it closes unanswered. What the
+request is about lives in the kind's own detail table, owned by the component
+that owns the kind and keyed by this request's id.
+
+=state_code= is the state the request's decisions have reached. The decisions
+themselves are rows of [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]], many per request.
+
+The record is bitemporal, so every change of state is a version and the history
+is the audit trail an auditor reads.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID primary key for the request.
+
+** kind_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What is asked. FK reference to ores_inbox_approval_kinds_tbl, which the system
+tenant holds.
+
+** state_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Where the request is. FK reference to ores_inbox_approval_request_states_tbl,
+which the system tenant holds.
+
+** requested_by
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The account that asked. A system may ask on a person's behalf, through its own
+service account. FK reference to ores_iam_accounts_tbl.
+
+** requested_at
+:PROPERTIES:
+:type:          timestamp with time zone
+:cpp_type:      std::chrono::system_clock::time_point
+:nullable:      false
+:default_value: {}
+:END:
+
+When the request was made.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** reason
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the person asks, in their words.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** expires_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the request closes unanswered, or null when it does not expire.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Foreign keys
+
+** kind_code
+:PROPERTIES:
+:table:             ores_inbox_approval_kinds_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid kind_code: %. No approval kind found with this code.
+:list_by:           true
+:END:
+
+The lookup is system reference data, so the check reads the system tenant.
+
+** state_code
+:PROPERTIES:
+:table:             ores_inbox_approval_request_states_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid state_code: %. No approval request state found with this code.
+:END:
+
+The lookup is system reference data, so the check reads the system tenant.
+
+** requested_by
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid requested_by: %. No account found with this id.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_inbox_approval_requests_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: request
+:entity_plural_short:   requests
+:entity_singular_words: approval request
+:entity_plural_words:   approval requests
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ar
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | ID           |
+| kind_code    | Kind         |
+| state_code   | State        |
+| requested_by | Requested By |
+| requested_at | Requested At |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the design this record implements.
+- [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] — what a request asks for.
+- [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] — where a request is.
+- [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] — the decisions that move it.

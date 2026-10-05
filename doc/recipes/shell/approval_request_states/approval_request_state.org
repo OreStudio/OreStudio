@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: A0E896B8-B593-59B2-96A3-299501C49391
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the approval_request_states commands from the shell?
+#+description: Every command the approval_request_states submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:approval_request_states:
+
+This file documents the approval_request_states resource at the shell, one section per command. Every command is a subcommand of =approval_request_states=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7DA739C3-847A-5EF4-B0A1-397BCFE60247
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.list=.
+
+#+name: approval_request_states-list
+#+begin_src ores-shell :tangle approval_request_states-list.ores :exports none
+approval_request_states list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C6B98B45-1017-58B3-B187-542B57DA445C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states get <code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.get=.
+
+#+name: approval_request_states-get
+#+begin_src ores-shell :tangle approval_request_states-get.ores :exports none
+approval_request_states get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: EA6B90B9-4896-54C2-8D29-3BF1EDE467AD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states get-many <code>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.get_many=.
+
+#+name: approval_request_states-get-many
+#+begin_src ores-shell :tangle approval_request_states-get-many.ores :exports none
+approval_request_states get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 87F066BB-F9D1-5EDE-A4B1-48F60C73C382
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states add <code> <name> <description> <is_final> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.put=.
+
+#+name: approval_request_states-add
+#+begin_src ores-shell :tangle approval_request_states-add.ores :exports none
+approval_request_states add __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: D429E50E-91DA-5BFB-B305-337264B9E661
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states set <code> <name> <description> <is_final> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.put=.
+
+#+name: approval_request_states-set
+#+begin_src ores-shell :tangle approval_request_states-set.ores :exports none
+approval_request_states set __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 5903DB51-3F50-5DE9-8F93-BE78AC6A4A06
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states put-many --count <n> <code> <name> <description> <is_final> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.put_many=.
+
+#+name: approval_request_states-put-many
+#+begin_src ores-shell :tangle approval_request_states-put-many.ores :exports none
+approval_request_states put-many --count 1 __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 5910BC40-95C1-5D9A-96DC-AA75B6B8164F
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.delete=.
+
+#+name: approval_request_states-delete
+#+begin_src ores-shell :tangle approval_request_states-delete.ores :exports none
+approval_request_states delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 3D04F2D8-0D6F-5932-A0EE-5BD31B2525A2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states.delete_many=.
+
+#+name: approval_request_states-delete-many
+#+begin_src ores-shell :tangle approval_request_states-delete-many.ores :exports none
+approval_request_states delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: EB314EF4-C73B-59C2-AC2E-A1FE2E25E94D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states_versions.list=.
+
+#+name: approval_request_states-versions
+#+begin_src ores-shell :tangle approval_request_states-versions.ores :exports none
+approval_request_states versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 680C66E0-F4B8-575B-9244-66582F4C8DE3
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_request_states version <code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.approval_request_states_versions.get=.
+
+#+name: approval_request_states-version
+#+begin_src ores-shell :tangle approval_request_states-version.ores :exports none
+approval_request_states version __none__ --version 1
+#+end_src
+

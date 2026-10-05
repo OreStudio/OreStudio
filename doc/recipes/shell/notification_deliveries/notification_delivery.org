@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 862D9794-DDC0-5AE6-81FA-50C5B3D4E9FC
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notification_deliveries commands from the shell?
+#+description: Every command the notification_deliveries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notification_deliveries:
+
+This file documents the notification_deliveries resource at the shell, one section per command. Every command is a subcommand of =notification_deliveries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 09818B33-51B8-539A-A54C-673953438A22
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.list=.
+
+#+name: notification_deliveries-list
+#+begin_src ores-shell :tangle notification_deliveries-list.ores :exports none
+notification_deliveries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7ABC0043-93F3-5974-B7AB-CE4788BD80BD
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries get <id>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.get=.
+
+#+name: notification_deliveries-get
+#+begin_src ores-shell :tangle notification_deliveries-get.ores :exports none
+notification_deliveries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BB8E155B-26E4-5F61-AF29-6E049B52F79E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries get-many <id>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.get_many=.
+
+#+name: notification_deliveries-get-many
+#+begin_src ores-shell :tangle notification_deliveries-get-many.ores :exports none
+notification_deliveries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CCEE39C8-B204-5274-95C9-120B45799CF4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries add <notification_id> <account_id> <channel_code> <attempted_at> <outcome> <failure_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.put=.
+
+#+name: notification_deliveries-add
+#+begin_src ores-shell :tangle notification_deliveries-add.ores :exports none
+notification_deliveries add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 4B8DF9B7-6C98-5B2E-83F8-3C55E7F08D4A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries set <id> <notification_id> <account_id> <channel_code> <attempted_at> <outcome> <failure_reason> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.put=.
+
+#+name: notification_deliveries-set
+#+begin_src ores-shell :tangle notification_deliveries-set.ores :exports none
+notification_deliveries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B8F5097D-093D-54EE-A14A-E3DBACFFAC26
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries put-many --count <n> <id> <notification_id> <account_id> <channel_code> <attempted_at> <outcome> <failure_reason> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.put_many=.
+
+#+name: notification_deliveries-put-many
+#+begin_src ores-shell :tangle notification_deliveries-put-many.ores :exports none
+notification_deliveries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6B8C8396-2C1D-56A4-900D-7D65879B2A58
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.delete=.
+
+#+name: notification_deliveries-delete
+#+begin_src ores-shell :tangle notification_deliveries-delete.ores :exports none
+notification_deliveries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 87B3F251-9A96-516F-8D7E-1882482510F5
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.delete_many=.
+
+#+name: notification_deliveries-delete-many
+#+begin_src ores-shell :tangle notification_deliveries-delete-many.ores :exports none
+notification_deliveries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-notification-id=
+:PROPERTIES:
+:ID: E64CFAF6-C28D-577D-8B7E-67661F352531
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries by-notification-id <notification_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries.list_by_notification_id=.
+
+#+name: notification_deliveries-by-notification-id
+#+begin_src ores-shell :tangle notification_deliveries-by-notification-id.ores :exports none
+notification_deliveries by-notification-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 64EC0906-714D-53DA-912C-48B0904CCB2E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries_versions.list=.
+
+#+name: notification_deliveries-versions
+#+begin_src ores-shell :tangle notification_deliveries-versions.ores :exports none
+notification_deliveries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8369C254-0CB7-5E26-BE23-05E41F74F2A7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_deliveries version <id> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.notification_deliveries_versions.get=.
+
+#+name: notification_deliveries-version
+#+begin_src ores-shell :tangle notification_deliveries-version.ores :exports none
+notification_deliveries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

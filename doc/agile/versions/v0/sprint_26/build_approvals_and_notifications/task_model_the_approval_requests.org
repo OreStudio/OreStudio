@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: FD90F1A8-0E54-4E82-99E3-EBF3D7A10B14
+:END:
+#+title: Task: Model the approval requests
+#+description: Codegen models for the approval kinds, request states, decision types, hold reasons, requests and decisions in ores.inbox, with keys, foreign keys and the four-eyes check.
+#+type: task
+#+level: s1
+#+filetags: :inbox:approval:codegen:build_approvals_and_notifications:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-approvals-and-notifications
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The approval record exists in the database and in C++: codegen models for the
+approval kinds, request states, decision types, requests and decisions in
+ores.inbox, the generated domain, repository, service, protocol, shell and web
+types, and the seed rows for the role request kind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- Five codegen models in projects/ores.inbox/modeling generate the tables, with
+  primary keys, foreign keys to IAM accounts and permissions, and validation of
+  the system-tenant lookups.
+- The database refuses a decision by the person who asked, a withdrawal by
+  anyone else, and a second approval by the same person.
+- A recreate seeds the six states, six decision types and the iam.role_grant
+  kind, and the inbox permissions.
+- The scaffold stubs are gone; the parts build and their tests pass.
+
+* Plan
+
+- The three lookups use the simple-lookup profile, held by the system tenant
+  like IAM's account statuses. A request or decision checks its codes through
+  the lookup's validation function, because a same-tenant foreign key cannot
+  see system-tenant rows.
+- The request and decision use the uuid-identified-lookup profile, with
+  row-level security and foreign keys to IAM accounts.
+- The four-eyes rule and the one-approval-per-person index live in a
+  hand-written SQL file beside the generated tables, since codegen has no paste
+  block for a trigger.
+- Hold reasons wait for the first kind that holds; the role request does not.
+- The kind's expiry is a nullable number of days, null meaning no expiry.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Five models generate the approval tables: kinds, request states and decision
+types as system-tenant lookups, and the request and decision as tenant-scoped,
+row-level-secured records with foreign keys to IAM accounts. Every reference to
+a system lookup, the kind's permission included, is a foreign key with
+=:use_system_tenant:=. The one-approval-per-person rule is a modelled partial
+unique index; the four-eyes rule is a hand-written trigger, the one rule
+codegen cannot express.
+
+A recreate seeds six states, six decision types, the iam.role_grant kind and
+the inbox permissions. The probe in =evidence/inbox_rules_probe.sql= shows the
+database refusing an unknown kind, the asker deciding, a stranger withdrawing
+and a second approval by one person, and accepting another person's approval
+and the asker's withdrawal.
+
+Hold reasons wait for the first kind that holds; the role request does not.
+

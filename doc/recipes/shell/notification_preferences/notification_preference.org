@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 53E3ACCC-0C60-5EB7-A9CC-7DB810013595
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notification_preferences commands from the shell?
+#+description: Every command the notification_preferences submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notification_preferences:
+
+This file documents the notification_preferences resource at the shell, one section per command. Every command is a subcommand of =notification_preferences=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B96BF498-BF63-560B-BEBA-7C87A93AA829
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.list=.
+
+#+name: notification_preferences-list
+#+begin_src ores-shell :tangle notification_preferences-list.ores :exports none
+notification_preferences list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 472E1F4A-EF13-521F-93C2-06E659270C2A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences get <account_id> <kind_code> <channel_code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.get=.
+
+#+name: notification_preferences-get
+#+begin_src ores-shell :tangle notification_preferences-get.ores :exports none
+notification_preferences get 00000000-0000-0000-0000-000000000000 __none__ __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B2EC2258-B3DA-51FB-AAA7-39851EB69791
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences get-many <account_id> <kind_code> <channel_code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.get_many=.
+
+#+name: notification_preferences-get-many
+#+begin_src ores-shell :tangle notification_preferences-get-many.ores :exports none
+notification_preferences get-many 00000000-0000-0000-0000-000000000000 __none__ __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4CA8F592-B2EA-5C18-BE74-79BEFFC6D345
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences add <kind_code> <channel_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.put=.
+
+#+name: notification_preferences-add
+#+begin_src ores-shell :tangle notification_preferences-add.ores :exports none
+notification_preferences add __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 14D24E43-CE86-5C35-9889-65DDC792191F
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences set <account_id> <kind_code> <channel_code> <enabled> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.put=.
+
+#+name: notification_preferences-set
+#+begin_src ores-shell :tangle notification_preferences-set.ores :exports none
+notification_preferences set 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: C4FC7124-4E20-5B32-ACBE-9D5D6DE938F5
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences put-many --count <n> <account_id> <kind_code> <channel_code> <enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.put_many=.
+
+#+name: notification_preferences-put-many
+#+begin_src ores-shell :tangle notification_preferences-put-many.ores :exports none
+notification_preferences put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 09D2D5A7-4CD6-5E9B-A03D-F81F30DBC33C
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences delete <account_id> <kind_code> <channel_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.delete=.
+
+#+name: notification_preferences-delete
+#+begin_src ores-shell :tangle notification_preferences-delete.ores :exports none
+notification_preferences delete 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7C4E0155-E55A-52EE-8F24-D109C93FE847
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences delete-many <account_id> <kind_code> <channel_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.delete_many=.
+
+#+name: notification_preferences-delete-many
+#+begin_src ores-shell :tangle notification_preferences-delete-many.ores :exports none
+notification_preferences delete-many 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: FF4315EE-FA30-5C4F-B7CF-3CD34580D0F2
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences.list_by_account_id=.
+
+#+name: notification_preferences-by-account-id
+#+begin_src ores-shell :tangle notification_preferences-by-account-id.ores :exports none
+notification_preferences by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 224243D0-4B3C-5C70-8E91-7CCB655EE372
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences versions <account_id> <kind_code> <channel_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences_versions.list=.
+
+#+name: notification_preferences-versions
+#+begin_src ores-shell :tangle notification_preferences-versions.ores :exports none
+notification_preferences versions 00000000-0000-0000-0000-000000000000 __none__ __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: B2C47999-BD1F-521A-B671-2B9447F9E49C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_preferences version <account_id> <kind_code> <channel_code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.notification_preferences_versions.get=.
+
+#+name: notification_preferences-version
+#+begin_src ores-shell :tangle notification_preferences-version.ores :exports none
+notification_preferences version 00000000-0000-0000-0000-000000000000 __none__ __none__ --version 1
+#+end_src
+

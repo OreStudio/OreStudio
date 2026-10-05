@@ -1,0 +1,1698 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.inbox.api Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace inbox #F2F2F2 {
+        namespace domain #F2F2F2 {
+            class approval_decision <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +request_id : boost::uuids::uuid
+                +decision_code : string
+                +decided_by : boost::uuids::uuid
+                +decided_at : chrono::system_clock::time_point
+                +comment : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class approval_decision_type <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +requires_comment : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class approval_kind <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +decide_permission_code : string
+                +allows_hold : bool
+                +comment_on_approve : bool
+                +expires_after_days : optional<int>
+                +approvals_required : int
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class approval_request <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +kind_code : string
+                +state_code : string
+                +requested_by : boost::uuids::uuid
+                +requested_at : chrono::system_clock::time_point
+                +reason : string
+                +expires_at : optional<chrono::system_clock::time_point>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class approval_request_state <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +is_final : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            enum delivery_outcome {
+                pending
+                delivered
+                failed
+            }
+            class delivery_outcome_type <<struct>> {
+                +code : string
+                +description : string
+            }
+            class notification <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +kind_code : string
+                +raised_by : boost::uuids::uuid
+                +raised_at : chrono::system_clock::time_point
+                +link_route : string
+                +link_id : optional<string>
+                +audience_permission_code : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_argument <<struct>> {
+                +version : int
+                +tenant_id : string
+                +notification_id : boost::uuids::uuid
+                +name : string
+                +value : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_channel <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_delivery <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +notification_id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +channel_code : string
+                +attempted_at : chrono::system_clock::time_point
+                +outcome : domain::delivery_outcome
+                +failure_reason : optional<string>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_kind <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +code : string
+                +name : string
+                +description : string
+                +message_key : string
+                +mail_optional : bool
+                +display_order : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_preference <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +account_id : boost::uuids::uuid
+                +kind_code : string
+                +channel_code : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class notification_recipient <<struct>> {
+                +version : int
+                +tenant_id : string
+                +notification_id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +read_at : optional<chrono::system_clock::time_point>
+                +cleared_at : optional<chrono::system_clock::time_point>
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class approval_decision_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class approval_decision_write <<struct>> {
+                +id : boost::uuids::uuid
+                +request_id : boost::uuids::uuid
+                +decision_code : string
+                +decided_by : boost::uuids::uuid
+                +decided_at : chrono::system_clock::time_point
+                +comment : string
+            }
+            class approval_decision_change <<struct>> {
+                +write : approval_decision_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_decision_removal <<struct>> {
+                +key : approval_decision_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_decision_lookup <<struct>> {
+                +key : approval_decision_key
+                +approval_decision : optional<ores::inbox::domain::approval_decision>
+            }
+            class approval_decisions_filter <<struct>> {
+                +request_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +request_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class approval_decision_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : approval_decision_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class approval_decision_version_key <<struct>> {
+                +approval_decision : approval_decision_key
+                +version : uint32_t
+            }
+            class approval_decision_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_approval_decisions_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_decisions_filter>
+            }
+            class list_approval_decisions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +decisions : vector<ores::inbox::domain::approval_decision>
+                +total : uint64_t
+            }
+            class get_approval_decision_request <<struct>> {
+                +key : approval_decision_key
+            }
+            class get_approval_decision_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_decision : optional<ores::inbox::domain::approval_decision>
+            }
+            class get_many_approval_decisions_request <<struct>> {
+                +keys : vector<approval_decision_key>
+            }
+            class get_many_approval_decisions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<approval_decision_lookup>
+            }
+            class put_approval_decision_request <<struct>> {
+                +change : approval_decision_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_approval_decision_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_decision : optional<ores::inbox::domain::approval_decision>
+            }
+            class put_many_approval_decisions_request <<struct>> {
+                +changes : vector<approval_decision_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_approval_decisions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +decisions : vector<ores::inbox::domain::approval_decision>
+            }
+            class delete_approval_decision_request <<struct>> {
+                +removal : approval_decision_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_approval_decision_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_approval_decisions_request <<struct>> {
+                +removals : vector<approval_decision_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_approval_decisions_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_request_id_approval_decisions_request <<struct>> {
+                +request_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_decisions_filter>
+            }
+            class list_by_request_id_approval_decisions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +decisions : vector<ores::inbox::domain::approval_decision>
+                +total : uint64_t
+            }
+            class list_approval_decision_versions_request <<struct>> {
+                +key : approval_decision_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_decision_versions_filter>
+            }
+            class list_approval_decision_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::approval_decision>
+                +total : uint64_t
+            }
+            class get_approval_decision_version_request <<struct>> {
+                +key : approval_decision_version_key
+            }
+            class get_approval_decision_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::approval_decision>
+            }
+            class approval_decision_type_key <<struct>> {
+                +code : string
+            }
+            class approval_decision_type_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +requires_comment : bool
+                +display_order : int
+            }
+            class approval_decision_type_change <<struct>> {
+                +write : approval_decision_type_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_decision_type_removal <<struct>> {
+                +key : approval_decision_type_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_decision_type_lookup <<struct>> {
+                +key : approval_decision_type_key
+                +approval_decision_type : optional<ores::inbox::domain::approval_decision_type>
+            }
+            class approval_decision_types_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class approval_decision_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : approval_decision_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class approval_decision_type_version_key <<struct>> {
+                +approval_decision_type : approval_decision_type_key
+                +version : uint32_t
+            }
+            class approval_decision_type_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_approval_decision_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_decision_types_filter>
+            }
+            class list_approval_decision_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +decision_types : vector<ores::inbox::domain::approval_decision_type>
+                +total : uint64_t
+            }
+            class get_approval_decision_type_request <<struct>> {
+                +key : approval_decision_type_key
+            }
+            class get_approval_decision_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_decision_type : optional<ores::inbox::domain::approval_decision_type>
+            }
+            class get_many_approval_decision_types_request <<struct>> {
+                +keys : vector<approval_decision_type_key>
+            }
+            class get_many_approval_decision_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<approval_decision_type_lookup>
+            }
+            class put_approval_decision_type_request <<struct>> {
+                +change : approval_decision_type_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_approval_decision_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_decision_type : optional<ores::inbox::domain::approval_decision_type>
+            }
+            class put_many_approval_decision_types_request <<struct>> {
+                +changes : vector<approval_decision_type_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_approval_decision_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +decision_types : vector<ores::inbox::domain::approval_decision_type>
+            }
+            class delete_approval_decision_type_request <<struct>> {
+                +removal : approval_decision_type_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_approval_decision_type_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_approval_decision_types_request <<struct>> {
+                +removals : vector<approval_decision_type_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_approval_decision_types_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_approval_decision_type_versions_request <<struct>> {
+                +key : approval_decision_type_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_decision_type_versions_filter>
+            }
+            class list_approval_decision_type_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::approval_decision_type>
+                +total : uint64_t
+            }
+            class get_approval_decision_type_version_request <<struct>> {
+                +key : approval_decision_type_version_key
+            }
+            class get_approval_decision_type_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::approval_decision_type>
+            }
+            class approval_kind_key <<struct>> {
+                +code : string
+            }
+            class approval_kind_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +decide_permission_code : string
+                +allows_hold : bool
+                +comment_on_approve : bool
+                +expires_after_days : optional<int>
+                +approvals_required : int
+                +display_order : int
+            }
+            class approval_kind_change <<struct>> {
+                +write : approval_kind_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_kind_removal <<struct>> {
+                +key : approval_kind_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_kind_lookup <<struct>> {
+                +key : approval_kind_key
+                +approval_kind : optional<ores::inbox::domain::approval_kind>
+            }
+            class approval_kinds_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class approval_kind_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : approval_kind_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class approval_kind_version_key <<struct>> {
+                +approval_kind : approval_kind_key
+                +version : uint32_t
+            }
+            class approval_kind_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_approval_kinds_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_kinds_filter>
+            }
+            class list_approval_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +kinds : vector<ores::inbox::domain::approval_kind>
+                +total : uint64_t
+            }
+            class get_approval_kind_request <<struct>> {
+                +key : approval_kind_key
+            }
+            class get_approval_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_kind : optional<ores::inbox::domain::approval_kind>
+            }
+            class get_many_approval_kinds_request <<struct>> {
+                +keys : vector<approval_kind_key>
+            }
+            class get_many_approval_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<approval_kind_lookup>
+            }
+            class put_approval_kind_request <<struct>> {
+                +change : approval_kind_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_approval_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_kind : optional<ores::inbox::domain::approval_kind>
+            }
+            class put_many_approval_kinds_request <<struct>> {
+                +changes : vector<approval_kind_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_approval_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +kinds : vector<ores::inbox::domain::approval_kind>
+            }
+            class delete_approval_kind_request <<struct>> {
+                +removal : approval_kind_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_approval_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_approval_kinds_request <<struct>> {
+                +removals : vector<approval_kind_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_approval_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_approval_kind_versions_request <<struct>> {
+                +key : approval_kind_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_kind_versions_filter>
+            }
+            class list_approval_kind_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::approval_kind>
+                +total : uint64_t
+            }
+            class get_approval_kind_version_request <<struct>> {
+                +key : approval_kind_version_key
+            }
+            class get_approval_kind_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::approval_kind>
+            }
+            class approval_request_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class approval_request_write <<struct>> {
+                +id : boost::uuids::uuid
+                +kind_code : string
+                +state_code : string
+                +requested_by : boost::uuids::uuid
+                +requested_at : chrono::system_clock::time_point
+                +reason : string
+                +expires_at : optional<chrono::system_clock::time_point>
+            }
+            class approval_request_change <<struct>> {
+                +write : approval_request_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_request_removal <<struct>> {
+                +key : approval_request_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_request_lookup <<struct>> {
+                +key : approval_request_key
+                +approval_request : optional<ores::inbox::domain::approval_request>
+            }
+            class approval_requests_filter <<struct>> {
+                +kind_code : optional<string>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +kind_code_one_of : optional<vector<string>>
+            }
+            class approval_request_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : approval_request_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class approval_request_version_key <<struct>> {
+                +approval_request : approval_request_key
+                +version : uint32_t
+            }
+            class approval_request_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_approval_requests_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_requests_filter>
+            }
+            class list_approval_requests_response <<struct>> {
+                +result : ores::utility::domain::result
+                +requests : vector<ores::inbox::domain::approval_request>
+                +total : uint64_t
+            }
+            class get_approval_request_request <<struct>> {
+                +key : approval_request_key
+            }
+            class get_approval_request_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_request : optional<ores::inbox::domain::approval_request>
+            }
+            class get_many_approval_requests_request <<struct>> {
+                +keys : vector<approval_request_key>
+            }
+            class get_many_approval_requests_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<approval_request_lookup>
+            }
+            class put_approval_request_request <<struct>> {
+                +change : approval_request_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_approval_request_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_request : optional<ores::inbox::domain::approval_request>
+            }
+            class put_many_approval_requests_request <<struct>> {
+                +changes : vector<approval_request_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_approval_requests_response <<struct>> {
+                +result : ores::utility::domain::result
+                +requests : vector<ores::inbox::domain::approval_request>
+            }
+            class delete_approval_request_request <<struct>> {
+                +removal : approval_request_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_approval_request_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_approval_requests_request <<struct>> {
+                +removals : vector<approval_request_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_approval_requests_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_kind_code_approval_requests_request <<struct>> {
+                +kind_code : string
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_requests_filter>
+            }
+            class list_by_kind_code_approval_requests_response <<struct>> {
+                +result : ores::utility::domain::result
+                +requests : vector<ores::inbox::domain::approval_request>
+                +total : uint64_t
+            }
+            class list_approval_request_versions_request <<struct>> {
+                +key : approval_request_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_request_versions_filter>
+            }
+            class list_approval_request_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::approval_request>
+                +total : uint64_t
+            }
+            class get_approval_request_version_request <<struct>> {
+                +key : approval_request_version_key
+            }
+            class get_approval_request_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::approval_request>
+            }
+            class approval_request_state_key <<struct>> {
+                +code : string
+            }
+            class approval_request_state_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +is_final : bool
+                +display_order : int
+            }
+            class approval_request_state_change <<struct>> {
+                +write : approval_request_state_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_request_state_removal <<struct>> {
+                +key : approval_request_state_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class approval_request_state_lookup <<struct>> {
+                +key : approval_request_state_key
+                +approval_request_state : optional<ores::inbox::domain::approval_request_state>
+            }
+            class approval_request_states_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class approval_request_state_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : approval_request_state_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class approval_request_state_version_key <<struct>> {
+                +approval_request_state : approval_request_state_key
+                +version : uint32_t
+            }
+            class approval_request_state_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_approval_request_states_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_request_states_filter>
+            }
+            class list_approval_request_states_response <<struct>> {
+                +result : ores::utility::domain::result
+                +states : vector<ores::inbox::domain::approval_request_state>
+                +total : uint64_t
+            }
+            class get_approval_request_state_request <<struct>> {
+                +key : approval_request_state_key
+            }
+            class get_approval_request_state_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_request_state : optional<ores::inbox::domain::approval_request_state>
+            }
+            class get_many_approval_request_states_request <<struct>> {
+                +keys : vector<approval_request_state_key>
+            }
+            class get_many_approval_request_states_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<approval_request_state_lookup>
+            }
+            class put_approval_request_state_request <<struct>> {
+                +change : approval_request_state_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_approval_request_state_response <<struct>> {
+                +result : ores::utility::domain::result
+                +approval_request_state : optional<ores::inbox::domain::approval_request_state>
+            }
+            class put_many_approval_request_states_request <<struct>> {
+                +changes : vector<approval_request_state_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_approval_request_states_response <<struct>> {
+                +result : ores::utility::domain::result
+                +states : vector<ores::inbox::domain::approval_request_state>
+            }
+            class delete_approval_request_state_request <<struct>> {
+                +removal : approval_request_state_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_approval_request_state_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_approval_request_states_request <<struct>> {
+                +removals : vector<approval_request_state_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_approval_request_states_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_approval_request_state_versions_request <<struct>> {
+                +key : approval_request_state_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<approval_request_state_versions_filter>
+            }
+            class list_approval_request_state_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::approval_request_state>
+                +total : uint64_t
+            }
+            class get_approval_request_state_version_request <<struct>> {
+                +key : approval_request_state_version_key
+            }
+            class get_approval_request_state_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::approval_request_state>
+            }
+            class delivery_outcome_type_key <<struct>> {
+                +code : string
+            }
+            class delivery_outcome_type_lookup <<struct>> {
+                +key : delivery_outcome_type_key
+                +delivery_outcome_type : optional<ores::inbox::domain::delivery_outcome_type>
+            }
+            class delivery_outcome_types_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class delivery_outcome_type_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : delivery_outcome_type_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_delivery_outcome_types_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<delivery_outcome_types_filter>
+            }
+            class list_delivery_outcome_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +delivery_outcome_types : vector<ores::inbox::domain::delivery_outcome_type>
+                +total : uint64_t
+            }
+            class get_delivery_outcome_type_request <<struct>> {
+                +key : delivery_outcome_type_key
+            }
+            class get_delivery_outcome_type_response <<struct>> {
+                +result : ores::utility::domain::result
+                +delivery_outcome_type : optional<ores::inbox::domain::delivery_outcome_type>
+            }
+            class get_many_delivery_outcome_types_request <<struct>> {
+                +keys : vector<delivery_outcome_type_key>
+            }
+            class get_many_delivery_outcome_types_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<delivery_outcome_type_lookup>
+            }
+            class notification_argument_key <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +name : string
+            }
+            class notification_argument_write <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +name : string
+                +value : string
+            }
+            class notification_argument_change <<struct>> {
+                +write : notification_argument_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_argument_removal <<struct>> {
+                +key : notification_argument_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_argument_lookup <<struct>> {
+                +key : notification_argument_key
+                +notification_argument : optional<ores::inbox::domain::notification_argument>
+            }
+            class notification_arguments_filter <<struct>> {
+                +notification_id : optional<boost::uuids::uuid>
+                +notification_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class list_notification_arguments_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_arguments_filter>
+            }
+            class list_notification_arguments_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_arguments : vector<ores::inbox::domain::notification_argument>
+                +total : uint64_t
+            }
+            class get_notification_argument_request <<struct>> {
+                +key : notification_argument_key
+            }
+            class get_notification_argument_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_argument : optional<ores::inbox::domain::notification_argument>
+            }
+            class get_many_notification_arguments_request <<struct>> {
+                +keys : vector<notification_argument_key>
+            }
+            class get_many_notification_arguments_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_argument_lookup>
+            }
+            class put_notification_argument_request <<struct>> {
+                +change : notification_argument_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_argument_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_argument : optional<ores::inbox::domain::notification_argument>
+            }
+            class put_many_notification_arguments_request <<struct>> {
+                +changes : vector<notification_argument_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_arguments_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_arguments : vector<ores::inbox::domain::notification_argument>
+            }
+            class delete_notification_argument_request <<struct>> {
+                +removal : notification_argument_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_argument_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_arguments_request <<struct>> {
+                +removals : vector<notification_argument_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_arguments_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_notification_id_notification_arguments_request <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_arguments_filter>
+            }
+            class list_by_notification_id_notification_arguments_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_arguments : vector<ores::inbox::domain::notification_argument>
+                +total : uint64_t
+            }
+            class notification_channel_key <<struct>> {
+                +code : string
+            }
+            class notification_channel_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +display_order : int
+            }
+            class notification_channel_change <<struct>> {
+                +write : notification_channel_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_channel_removal <<struct>> {
+                +key : notification_channel_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_channel_lookup <<struct>> {
+                +key : notification_channel_key
+                +notification_channel : optional<ores::inbox::domain::notification_channel>
+            }
+            class notification_channels_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class notification_channel_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : notification_channel_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class notification_channel_version_key <<struct>> {
+                +notification_channel : notification_channel_key
+                +version : uint32_t
+            }
+            class notification_channel_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_notification_channels_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_channels_filter>
+            }
+            class list_notification_channels_response <<struct>> {
+                +result : ores::utility::domain::result
+                +channels : vector<ores::inbox::domain::notification_channel>
+                +total : uint64_t
+            }
+            class get_notification_channel_request <<struct>> {
+                +key : notification_channel_key
+            }
+            class get_notification_channel_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_channel : optional<ores::inbox::domain::notification_channel>
+            }
+            class get_many_notification_channels_request <<struct>> {
+                +keys : vector<notification_channel_key>
+            }
+            class get_many_notification_channels_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_channel_lookup>
+            }
+            class put_notification_channel_request <<struct>> {
+                +change : notification_channel_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_channel_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_channel : optional<ores::inbox::domain::notification_channel>
+            }
+            class put_many_notification_channels_request <<struct>> {
+                +changes : vector<notification_channel_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_channels_response <<struct>> {
+                +result : ores::utility::domain::result
+                +channels : vector<ores::inbox::domain::notification_channel>
+            }
+            class delete_notification_channel_request <<struct>> {
+                +removal : notification_channel_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_channel_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_channels_request <<struct>> {
+                +removals : vector<notification_channel_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_channels_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_notification_channel_versions_request <<struct>> {
+                +key : notification_channel_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_channel_versions_filter>
+            }
+            class list_notification_channel_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::notification_channel>
+                +total : uint64_t
+            }
+            class get_notification_channel_version_request <<struct>> {
+                +key : notification_channel_version_key
+            }
+            class get_notification_channel_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::notification_channel>
+            }
+            class notification_delivery_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class notification_delivery_write <<struct>> {
+                +id : boost::uuids::uuid
+                +notification_id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +channel_code : string
+                +attempted_at : chrono::system_clock::time_point
+                +outcome : domain::delivery_outcome
+                +failure_reason : optional<string>
+            }
+            class notification_delivery_change <<struct>> {
+                +write : notification_delivery_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_delivery_removal <<struct>> {
+                +key : notification_delivery_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_delivery_lookup <<struct>> {
+                +key : notification_delivery_key
+                +notification_delivery : optional<ores::inbox::domain::notification_delivery>
+            }
+            class notification_deliveries_filter <<struct>> {
+                +notification_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +notification_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class notification_delivery_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : notification_delivery_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class notification_delivery_version_key <<struct>> {
+                +notification_delivery : notification_delivery_key
+                +version : uint32_t
+            }
+            class notification_delivery_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_notification_deliveries_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_deliveries_filter>
+            }
+            class list_notification_deliveries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +deliveries : vector<ores::inbox::domain::notification_delivery>
+                +total : uint64_t
+            }
+            class get_notification_delivery_request <<struct>> {
+                +key : notification_delivery_key
+            }
+            class get_notification_delivery_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_delivery : optional<ores::inbox::domain::notification_delivery>
+            }
+            class get_many_notification_deliveries_request <<struct>> {
+                +keys : vector<notification_delivery_key>
+            }
+            class get_many_notification_deliveries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_delivery_lookup>
+            }
+            class put_notification_delivery_request <<struct>> {
+                +change : notification_delivery_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_delivery_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_delivery : optional<ores::inbox::domain::notification_delivery>
+            }
+            class put_many_notification_deliveries_request <<struct>> {
+                +changes : vector<notification_delivery_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_deliveries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +deliveries : vector<ores::inbox::domain::notification_delivery>
+            }
+            class delete_notification_delivery_request <<struct>> {
+                +removal : notification_delivery_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_delivery_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_deliveries_request <<struct>> {
+                +removals : vector<notification_delivery_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_deliveries_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_notification_id_notification_deliveries_request <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_deliveries_filter>
+            }
+            class list_by_notification_id_notification_deliveries_response <<struct>> {
+                +result : ores::utility::domain::result
+                +deliveries : vector<ores::inbox::domain::notification_delivery>
+                +total : uint64_t
+            }
+            class list_notification_delivery_versions_request <<struct>> {
+                +key : notification_delivery_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_delivery_versions_filter>
+            }
+            class list_notification_delivery_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::notification_delivery>
+                +total : uint64_t
+            }
+            class get_notification_delivery_version_request <<struct>> {
+                +key : notification_delivery_version_key
+            }
+            class get_notification_delivery_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::notification_delivery>
+            }
+            class notification_kind_key <<struct>> {
+                +code : string
+            }
+            class notification_kind_write <<struct>> {
+                +code : string
+                +name : string
+                +description : string
+                +message_key : string
+                +mail_optional : bool
+                +display_order : int
+            }
+            class notification_kind_change <<struct>> {
+                +write : notification_kind_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_kind_removal <<struct>> {
+                +key : notification_kind_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_kind_lookup <<struct>> {
+                +key : notification_kind_key
+                +notification_kind : optional<ores::inbox::domain::notification_kind>
+            }
+            class notification_kinds_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
+            class notification_kind_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : notification_kind_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class notification_kind_version_key <<struct>> {
+                +notification_kind : notification_kind_key
+                +version : uint32_t
+            }
+            class notification_kind_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_notification_kinds_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_kinds_filter>
+            }
+            class list_notification_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_kinds : vector<ores::inbox::domain::notification_kind>
+                +total : uint64_t
+            }
+            class get_notification_kind_request <<struct>> {
+                +key : notification_kind_key
+            }
+            class get_notification_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_kind : optional<ores::inbox::domain::notification_kind>
+            }
+            class get_many_notification_kinds_request <<struct>> {
+                +keys : vector<notification_kind_key>
+            }
+            class get_many_notification_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_kind_lookup>
+            }
+            class put_notification_kind_request <<struct>> {
+                +change : notification_kind_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_kind : optional<ores::inbox::domain::notification_kind>
+            }
+            class put_many_notification_kinds_request <<struct>> {
+                +changes : vector<notification_kind_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_kinds : vector<ores::inbox::domain::notification_kind>
+            }
+            class delete_notification_kind_request <<struct>> {
+                +removal : notification_kind_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_kind_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_kinds_request <<struct>> {
+                +removals : vector<notification_kind_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_kinds_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_notification_kind_versions_request <<struct>> {
+                +key : notification_kind_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_kind_versions_filter>
+            }
+            class list_notification_kind_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::notification_kind>
+                +total : uint64_t
+            }
+            class get_notification_kind_version_request <<struct>> {
+                +key : notification_kind_version_key
+            }
+            class get_notification_kind_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::notification_kind>
+            }
+            class notification_preference_key <<struct>> {
+                +account_id : boost::uuids::uuid
+                +kind_code : string
+                +channel_code : string
+            }
+            class notification_preference_write <<struct>> {
+                +account_id : boost::uuids::uuid
+                +kind_code : string
+                +channel_code : string
+                +enabled : bool
+            }
+            class notification_preference_change <<struct>> {
+                +write : notification_preference_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_preference_removal <<struct>> {
+                +key : notification_preference_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_preference_lookup <<struct>> {
+                +key : notification_preference_key
+                +notification_preference : optional<ores::inbox::domain::notification_preference>
+            }
+            class notification_preferences_filter <<struct>> {
+                +account_id : optional<boost::uuids::uuid>
+                +account_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class notification_preference_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : notification_preference_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class notification_preference_version_key <<struct>> {
+                +notification_preference : notification_preference_key
+                +version : uint32_t
+            }
+            class notification_preference_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_notification_preferences_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_preferences_filter>
+            }
+            class list_notification_preferences_response <<struct>> {
+                +result : ores::utility::domain::result
+                +preferences : vector<ores::inbox::domain::notification_preference>
+                +total : uint64_t
+            }
+            class get_notification_preference_request <<struct>> {
+                +key : notification_preference_key
+            }
+            class get_notification_preference_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_preference : optional<ores::inbox::domain::notification_preference>
+            }
+            class get_many_notification_preferences_request <<struct>> {
+                +keys : vector<notification_preference_key>
+            }
+            class get_many_notification_preferences_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_preference_lookup>
+            }
+            class put_notification_preference_request <<struct>> {
+                +change : notification_preference_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_preference_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_preference : optional<ores::inbox::domain::notification_preference>
+            }
+            class put_many_notification_preferences_request <<struct>> {
+                +changes : vector<notification_preference_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_preferences_response <<struct>> {
+                +result : ores::utility::domain::result
+                +preferences : vector<ores::inbox::domain::notification_preference>
+            }
+            class delete_notification_preference_request <<struct>> {
+                +removal : notification_preference_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_preference_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_preferences_request <<struct>> {
+                +removals : vector<notification_preference_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_preferences_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_account_id_notification_preferences_request <<struct>> {
+                +account_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_preferences_filter>
+            }
+            class list_by_account_id_notification_preferences_response <<struct>> {
+                +result : ores::utility::domain::result
+                +preferences : vector<ores::inbox::domain::notification_preference>
+                +total : uint64_t
+            }
+            class list_notification_preference_versions_request <<struct>> {
+                +key : notification_preference_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_preference_versions_filter>
+            }
+            class list_notification_preference_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::notification_preference>
+                +total : uint64_t
+            }
+            class get_notification_preference_version_request <<struct>> {
+                +key : notification_preference_version_key
+            }
+            class get_notification_preference_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::notification_preference>
+            }
+            class notification_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class notification_write <<struct>> {
+                +id : boost::uuids::uuid
+                +kind_code : string
+                +raised_by : boost::uuids::uuid
+                +raised_at : chrono::system_clock::time_point
+                +link_route : string
+                +link_id : optional<string>
+                +audience_permission_code : optional<string>
+            }
+            class notification_change <<struct>> {
+                +write : notification_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_removal <<struct>> {
+                +key : notification_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_lookup <<struct>> {
+                +key : notification_key
+                +notification : optional<ores::inbox::domain::notification>
+            }
+            class notifications_filter <<struct>> {
+                +kind_code : optional<string>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +kind_code_one_of : optional<vector<string>>
+            }
+            class notification_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : notification_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class notification_version_key <<struct>> {
+                +notification : notification_key
+                +version : uint32_t
+            }
+            class notification_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_notifications_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notifications_filter>
+            }
+            class list_notifications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notifications : vector<ores::inbox::domain::notification>
+                +total : uint64_t
+            }
+            class get_notification_request <<struct>> {
+                +key : notification_key
+            }
+            class get_notification_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification : optional<ores::inbox::domain::notification>
+            }
+            class get_many_notifications_request <<struct>> {
+                +keys : vector<notification_key>
+            }
+            class get_many_notifications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_lookup>
+            }
+            class put_notification_request <<struct>> {
+                +change : notification_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification : optional<ores::inbox::domain::notification>
+            }
+            class put_many_notifications_request <<struct>> {
+                +changes : vector<notification_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notifications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notifications : vector<ores::inbox::domain::notification>
+            }
+            class delete_notification_request <<struct>> {
+                +removal : notification_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notifications_request <<struct>> {
+                +removals : vector<notification_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notifications_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_kind_code_notifications_request <<struct>> {
+                +kind_code : string
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notifications_filter>
+            }
+            class list_by_kind_code_notifications_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notifications : vector<ores::inbox::domain::notification>
+                +total : uint64_t
+            }
+            class list_notification_versions_request <<struct>> {
+                +key : notification_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_versions_filter>
+            }
+            class list_notification_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::inbox::domain::notification>
+                +total : uint64_t
+            }
+            class get_notification_version_request <<struct>> {
+                +key : notification_version_key
+            }
+            class get_notification_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::inbox::domain::notification>
+            }
+            class notification_recipient_key <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+            }
+            class notification_recipient_write <<struct>> {
+                +notification_id : boost::uuids::uuid
+                +account_id : boost::uuids::uuid
+                +read_at : optional<chrono::system_clock::time_point>
+                +cleared_at : optional<chrono::system_clock::time_point>
+            }
+            class notification_recipient_change <<struct>> {
+                +write : notification_recipient_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_recipient_removal <<struct>> {
+                +key : notification_recipient_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class notification_recipient_lookup <<struct>> {
+                +key : notification_recipient_key
+                +notification_recipient : optional<ores::inbox::domain::notification_recipient>
+            }
+            class notification_recipients_filter <<struct>> {
+                +account_id : optional<boost::uuids::uuid>
+                +account_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class list_notification_recipients_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_recipients_filter>
+            }
+            class list_notification_recipients_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_recipients : vector<ores::inbox::domain::notification_recipient>
+                +total : uint64_t
+            }
+            class get_notification_recipient_request <<struct>> {
+                +key : notification_recipient_key
+            }
+            class get_notification_recipient_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_recipient : optional<ores::inbox::domain::notification_recipient>
+            }
+            class get_many_notification_recipients_request <<struct>> {
+                +keys : vector<notification_recipient_key>
+            }
+            class get_many_notification_recipients_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<notification_recipient_lookup>
+            }
+            class put_notification_recipient_request <<struct>> {
+                +change : notification_recipient_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_notification_recipient_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_recipient : optional<ores::inbox::domain::notification_recipient>
+            }
+            class put_many_notification_recipients_request <<struct>> {
+                +changes : vector<notification_recipient_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_notification_recipients_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_recipients : vector<ores::inbox::domain::notification_recipient>
+            }
+            class delete_notification_recipient_request <<struct>> {
+                +removal : notification_recipient_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_notification_recipient_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_notification_recipients_request <<struct>> {
+                +removals : vector<notification_recipient_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_notification_recipients_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_account_id_notification_recipients_request <<struct>> {
+                +account_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<notification_recipients_filter>
+            }
+            class list_by_account_id_notification_recipients_response <<struct>> {
+                +result : ores::utility::domain::result
+                +notification_recipients : vector<ores::inbox::domain::notification_recipient>
+                +total : uint64_t
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.inbox.api.puml"
+' End:
+@enduml

@@ -1,0 +1,6 @@
+# =versions=
+#
+# GENERATED from doc/recipes/shell/notification_kinds/notification_kind.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+notification_kinds versions __none__ --limit 1

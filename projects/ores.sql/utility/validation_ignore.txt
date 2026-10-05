@@ -223,6 +223,7 @@ TENANT_001 ores_telemetry_service_samples_tbl
 # =============================================================================
 TENANT_001 ores_trading_entry_channel_types_tbl
 TENANT_001 ores_trading_counterparty_scope_types_tbl
+TENANT_001 ores_inbox_delivery_outcome_types_tbl
 TENANT_001 ores_trading_booking_nature_types_tbl
 
 # =============================================================================
@@ -288,6 +289,15 @@ RLS_001 ores_iam_account_types_tbl
 RLS_001 ores_iam_account_statuses_tbl
 RLS_001 ores_iam_tenant_statuses_tbl
 RLS_001 ores_iam_tenant_types_tbl
+
+# Inbox system lookup tables — approval kinds, request states, decision types,
+# notification kinds and channels are seeded at startup in the system tenant
+# and never vary per tenant.
+RLS_001 ores_inbox_approval_kinds_tbl
+RLS_001 ores_inbox_approval_request_states_tbl
+RLS_001 ores_inbox_approval_decision_types_tbl
+RLS_001 ores_inbox_notification_kinds_tbl
+RLS_001 ores_inbox_notification_channels_tbl
 
 # IAM auth events — append-only audit log. The entire log is accessible to
 # tenant admins; party-level isolation is not applied to audit trails.

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 358A54AB-CB49-401E-A108-18C5F622AFD2
+:END:
+#+title: Story: Build approval requests and notifications
+#+description: A new ores.inbox component holds a generic approval record and queue and a notification subsystem any activity can use; the role request is the first approval kind and its first notifications.
+#+type: story
+#+level: s2
+#+filetags: :inbox:approval:notification:iam:web:sprint_26:v0:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One component, ores.inbox, holds the approval requests and the notifications as designed: a relational schema generated from codegen models, the approval rules enforced in the database and the service, notifications raised by any component, and the role request built as the first kind with its screens.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-04                               |
+
+* Acceptance
+
+- ores.inbox is a standard codegen component: overviews, generated CMake, C++, SQL, protocol and web types.
+- The approval and notification tables match the accepted schema, with keys and foreign keys and no JSON.
+- A member asks for a role, an administrator answers from the queue, and both are told through in-application notifications.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C43A0128-E5FD-46E7-81CA-C151C58FD0D8][Scaffold story: Build approval requests and notifications]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CE14C6C8-1D26-40A2-9BC4-1476C7BB5BC5][Scaffold the ores.inbox component]] | DONE | 2026-10-04 | 2026-10-05 | The ores.inbox composite with api, core, service and shell parts, and the codegen fixes the new component exposed. |
+| [[id:FD90F1A8-0E54-4E82-99E3-EBF3D7A10B14][Model the approval requests]] | DONE | 2026-10-04 | 2026-10-05 | Codegen models for the approval kinds, request states, decision types, hold reasons, requests and decisions in ores.inbox, with keys, foreign keys and the four-eyes check. |
+| [[id:EF83313C-BD92-470B-9D92-DB2D8BD7B0AD][Model the notifications]] | DONE | 2026-10-04 | 2026-10-05 | Codegen models for the notification kinds, channels, notifications, arguments, recipients, deliveries with the outcome enum, and preferences in ores.inbox. |
+| [[id:579A903A-2E42-4A81-A7D1-7E09C053DD7A][Serve approvals and notifications]] | BACKLOG | | | The ores.inbox service operations: raise, withdraw and decide a request, the queue and one's own requests; raise a notification to people or a permission, list one's own, the unread count, mark read and clear, and live arrival. |
+| [[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] | BACKLOG | | | The IAM role grant request and its roles as the first approval kind, applying an approval through the ordinary grant and raising the waiting and decided notifications. |
+| [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | BACKLOG | | | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
+
+* Decisions
+
+- *System lookups are foreign keys into the system tenant.* The approval and
+  notification kinds, states, decision types, channels and the kind's
+  permission are system reference data; every reference to them is a foreign
+  key with =:use_system_tenant:=.
+- *Closed sets are enums.* The delivery outcome is the C++ enum
+  =domain::delivery_outcome=, backed by an immutable tenant-less lookup and an
+  enforced database foreign key, as trading's enums are.
+- *Rules live in the schema where they can.* The one-approval-per-person rule
+  is a modelled unique index and a failed delivery's reason a modelled check;
+  only the four-eyes rule is a hand-written trigger.
+- *Fix the generator, not the output.* Defects the new component exposed were
+  fixed in the codegen templates and planner, and the drift sweep shows no other
+  component's output changes.
+
+* Out of scope
+
+-

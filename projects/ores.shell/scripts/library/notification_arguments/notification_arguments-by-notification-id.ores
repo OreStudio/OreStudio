@@ -1,0 +1,6 @@
+# =by-notification-id=
+#
+# GENERATED from doc/recipes/shell/notification_arguments/notification_argument.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+notification_arguments by-notification-id 00000000-0000-0000-0000-000000000000 --limit 1

@@ -1377,3 +1377,51 @@ tangled into the runnable script library
 * Market Series Asset Classes
 
 - [[id:F67E9099-8BBB-5747-9342-114FB26F0B12][How do I run the market_series_asset_classes commands from the shell?]]
+
+* Approval Decision Types
+
+- [[id:23B6E84C-B4F6-5F30-A513-DDE91F64C44E][How do I run the approval_decision_types commands from the shell?]]
+
+* Approval Decisions
+
+- [[id:A3B52EA3-E150-5086-BA2B-7BA35CE1E246][How do I run the approval_decisions commands from the shell?]]
+
+* Approval Kinds
+
+- [[id:533E13DA-8C30-514F-A76E-22A86971C878][How do I run the approval_kinds commands from the shell?]]
+
+* Approval Request States
+
+- [[id:A0E896B8-B593-59B2-96A3-299501C49391][How do I run the approval_request_states commands from the shell?]]
+
+* Approval Requests
+
+- [[id:7FF706B5-0094-5B97-A90D-AFC732B46E74][How do I run the approval_requests commands from the shell?]]
+
+* Notification Arguments
+
+- [[id:530957F4-3D23-50C0-AD71-EB94EC43EC1E][How do I run the notification_arguments commands from the shell?]]
+
+* Notification Channels
+
+- [[id:356BBAC7-DE25-5BE8-A75D-6634E08FC7E8][How do I run the notification_channels commands from the shell?]]
+
+* Notification Deliveries
+
+- [[id:862D9794-DDC0-5AE6-81FA-50C5B3D4E9FC][How do I run the notification_deliveries commands from the shell?]]
+
+* Notification Kinds
+
+- [[id:46F23DD9-CE0E-5275-AF3D-E2611C83509B][How do I run the notification_kinds commands from the shell?]]
+
+* Notification Preferences
+
+- [[id:53E3ACCC-0C60-5EB7-A9CC-7DB810013595][How do I run the notification_preferences commands from the shell?]]
+
+* Notification Recipients
+
+- [[id:5A850240-1C64-506E-B579-770BB341ED43][How do I run the notification_recipients commands from the shell?]]
+
+* Notifications
+
+- [[id:6B42670E-6575-56EF-B902-50793B3ABC6F][How do I run the notifications commands from the shell?]]

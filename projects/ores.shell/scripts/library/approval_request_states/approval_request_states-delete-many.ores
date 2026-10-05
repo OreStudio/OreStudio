@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/approval_request_states/approval_request_state.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+approval_request_states delete-many __none__ system.new_record generated_script

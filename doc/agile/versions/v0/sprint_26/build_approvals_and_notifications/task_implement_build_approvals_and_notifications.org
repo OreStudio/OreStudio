@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: CE14C6C8-1D26-40A2-9BC4-1476C7BB5BC5
+:END:
+#+title: Task: Scaffold the ores.inbox component
+#+description: Initial task for: Build approval requests and notifications
+#+type: task
+#+level: s1
+#+filetags: :build_approvals_and_notifications:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-approvals-and-notifications
+#+pr: 2638
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ores.inbox component exists as a standard codegen composite with api, core
+and service parts, registered in the build and the codegen catalogue, so the
+models of the next tasks have a home.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- ores.inbox is a standard codegen component: overviews and generated CMake for
+  each part, and a shell adapter part.
+- The parts build and their test suites pass.
+- The placeholder stubs are gone once the first models land.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2638][#2638]] | [inbox] Model approval requests and notifications in a new ores.inbox component |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the inbox service has no database identity, service registry entry or registrar wiring, so it cannot run yet | projects/ores.inbox/service | Deferred | The serve task registers the service and wires the sub-registrar and event registrar, per the post-generation checklist. |
+| 2 | Local review: only the inbox, shell inbox and shell targets were rebuilt, not the whole tree | projects/ores.codegen | Accepted | The codegen changes alter no other component's output, which the drift sweep shows; the PR states the limitation. |
+| 3 | PR 2638: the four-eyes trigger lets a decision through when the request row is missing | inbox_approval_decision_rules_create.sql | Accepted | The trigger raises when there is no current request; the probe has the case. |
+| 4 | PR 2638: confirm no update can change a decision | inbox_approval_decision_rules_create.sql | Accepted | A before-update trigger refuses changing the request, decision or decider; the probe has the case. |
+| 5 | PR 2638: optional timestamps write with to_db_string, required ones with to_iso8601_utc | ores.cpp.repository.mapper_impl.org | Declined | The junction branch copies the entity mapper's optional-timestamp branch, which already writes to_db_string; timestamp_to_timepoint reads both. |
+| 6 | PR 2638: skipping seeds for an enforced key assumes an immutable lookup | core.py | Declined | Codegen already refuses :enforce: on a target that is not immutable, so the assumption is checked where the key is declared. |
+| 7 | PR 2638: plantuml_er_parse_sql.py rewritten whole | plantuml_er_parse_sql.py | Accepted | An edit turned its CRLF endings to LF; restored main's endings, leaving a one-line change. |
+| 8 | PR 2638: the handler permission registry comment does not mention inbox | check_handler_permissions.py | Accepted | Comment updated. |
+| 9 | CI: stale ER diagram, shell recipe inventory and tangled shell scripts | ores_schema.puml, shell.org, scripts/library | Accepted | Regenerated with the commands CI names; the schema PNG stays main's, since plantuml cannot render it at this size. |
+
+* Result
+
+Shipped the ores.inbox composite: api, core and service parts generated from
+their component overviews, registered in projects/CMakeLists.txt and the codegen
+catalogue, and an ores.shell.inbox adapter part wired into the shell. The
+placeholder stubs were removed in the same change as the first models.
+
+Building the first new component in a while exposed codegen defects, fixed in
+the templates and generator rather than in the output:
+
+- the api part template linked ores.eventing.lib, which no longer exists;
+- the service stub test declared an unused variable, an error under -Werror;
+- the junction mapper had no branch for optional timestamps;
+- the test seeding planner seeded the parents of a system-tenant reference,
+  which is only read from the catalogue, and seeded enforced enum lookups the
+  populate scripts already hold.
+
+The drift sweep shows none of these changes alters another component's output.
+

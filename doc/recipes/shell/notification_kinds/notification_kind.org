@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 46F23DD9-CE0E-5275-AF3D-E2611C83509B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the notification_kinds commands from the shell?
+#+description: Every command the notification_kinds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:notification_kinds:
+
+This file documents the notification_kinds resource at the shell, one section per command. Every command is a subcommand of =notification_kinds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 773493B6-D8F4-565C-AE1B-CE370699EFA9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.list=.
+
+#+name: notification_kinds-list
+#+begin_src ores-shell :tangle notification_kinds-list.ores :exports none
+notification_kinds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D2DEBBF1-ADA9-592E-9ADA-701E667D2B54
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds get <code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.get=.
+
+#+name: notification_kinds-get
+#+begin_src ores-shell :tangle notification_kinds-get.ores :exports none
+notification_kinds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 99D2DAA4-B36C-5211-B801-3C5D6212DB09
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds get-many <code>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.get_many=.
+
+#+name: notification_kinds-get-many
+#+begin_src ores-shell :tangle notification_kinds-get-many.ores :exports none
+notification_kinds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 99BBF516-25E0-5757-9D5A-182367ADE8B0
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds add <code> <name> <description> <message_key> <mail_optional> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.put=.
+
+#+name: notification_kinds-add
+#+begin_src ores-shell :tangle notification_kinds-add.ores :exports none
+notification_kinds add __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E254BFC7-7200-5A87-B7CC-715E863D444A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds set <code> <name> <description> <message_key> <mail_optional> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.put=.
+
+#+name: notification_kinds-set
+#+begin_src ores-shell :tangle notification_kinds-set.ores :exports none
+notification_kinds set __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: E7D30FAB-DBBC-5B1F-8EA7-ECF0CC9D182C
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds put-many --count <n> <code> <name> <description> <message_key> <mail_optional> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.put_many=.
+
+#+name: notification_kinds-put-many
+#+begin_src ores-shell :tangle notification_kinds-put-many.ores :exports none
+notification_kinds put-many --count 1 __none__ __none__ __none__ __none__ false 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: EED0C145-BFAF-5FAC-94BE-033075FA9599
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.delete=.
+
+#+name: notification_kinds-delete
+#+begin_src ores-shell :tangle notification_kinds-delete.ores :exports none
+notification_kinds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 253A0CE0-28F4-550A-AF81-8266C14B1905
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds.delete_many=.
+
+#+name: notification_kinds-delete-many
+#+begin_src ores-shell :tangle notification_kinds-delete-many.ores :exports none
+notification_kinds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1BE24B7C-EF01-5A1A-B2E0-FB3F5A6EE06C
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds_versions.list=.
+
+#+name: notification_kinds-versions
+#+begin_src ores-shell :tangle notification_kinds-versions.ores :exports none
+notification_kinds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 176ED87A-E965-58F5-86B2-8EAD34F390F5
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+notification_kinds version <code> --version <n>
+#+end_example
+
+It is addressed at =inbox.v1.notification_kinds_versions.get=.
+
+#+name: notification_kinds-version
+#+begin_src ores-shell :tangle notification_kinds-version.ores :exports none
+notification_kinds version __none__ --version 1
+#+end_src
+

@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: 2451E78F-269A-4C48-819F-F7F24E03B4D8
+:END:
+#+title: ores.inbox.notification_recipient
+#+description: Codegen junction model for notification_recipients: who receives a notification, and when they read or cleared it.
+#+type: ores.codegen.junction
+#+component: inbox
+#+filetags: :model:junction:inbox:
+#+name: notification_recipients
+#+name_singular: notification_recipient
+#+name_title: Notification Recipient
+#+name_singular_words: notification recipient
+#+brief: One person a notification reaches, with their read state.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Each person a notification reaches has their own row, kept until they read or
+clear it, and a person reads only their own. =read_at= and =cleared_at= are the
+person's read state: null until they read or clear it. The unread count on
+every screen counts a person's rows with no =read_at=.
+
+A row is identified by the notification and the account.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        notification_id
+:column_short:  notification
+:column_title:  Notification
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for reading the recipients of a notification
+:END:
+
+The notification the person receives.
+
+References ores_inbox_notifications_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        account_id
+:column_short:  account
+:column_title:  Account
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for reading a person's own notifications
+:list_by:       true
+:END:
+
+The account that receives the notification.
+
+References ores_iam_accounts_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Columns
+
+** read_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the person read it, or null while it is unread.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** cleared_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the person cleared it from their list, or null while it is shown.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_inbox_notification_recipients_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** notification_id
+:PROPERTIES:
+:table:         ores_inbox_notifications_tbl
+:error_message: Invalid notification_id: %. No notification found with this id.
+:END:
+
+The notification the person receives; must exist in
+ores_inbox_notifications_tbl.
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:error_message: Invalid account_id: %. No account found with this id.
+:END:
+
+The account that receives it; must exist in ores_iam_accounts_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: recipient
+:name_short:          recipients
+:name_singular_words: notification recipient
+:name_words:          notification recipients
+:order_column:        notification_id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: nr
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| notification_id | Notification |
+| account_id      | Account      |
+| read_at         | Read At      |
+| cleared_at      | Cleared At   |
+| version         | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name: notification_recipients
+:END:
+
+A recipient is identified by the pair it links, so the model declares no key
+field.
+
+* See also
+
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — durable, personal copies with read state.
+- [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] — the notification a recipient receives.
+- [[id:AEE6449A-FAE3-4FC2-994D-796A6EFF286C][ores.inbox.notification_delivery]] — each attempt to reach a recipient.

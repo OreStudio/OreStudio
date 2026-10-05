@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54
+:END:
+#+title: ores.inbox.approval_request_state
+#+description: Codegen entity model for the inbox =approval_request_state= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: inbox
+#+filetags: :model:entity:inbox:
+#+brief: Where an approval request is in its lifecycle.
+#+entity_singular: approval_request_state
+#+entity_plural: approval_request_states
+#+entity_title: Approval Request State
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-04
+#+updated: 2026-10-04
+
+Reference data table of the states of an approval request: 'waiting', 'held',
+'approved', 'refused', 'withdrawn', 'expired'.
+
+A final state has no exit but the ones the lifecycle names: =approved= can be
+reversed with a comment, and =refused=, =withdrawn= and =expired= cannot be left
+at all. The queue reads =is_final= to tell open requests from closed ones.
+
+States are managed by the system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: inbox
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique state code.
+
+Examples: 'waiting', 'approved'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the state.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " State"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the state means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** is_final
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether a request in this state is closed.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_inbox_approval_request_states_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:service_find_prefix: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: state
+:entity_plural_short:   states
+:entity_singular_words: approval request state
+:entity_plural_words:   approval request states
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: st
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| is_final      | Final       |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: approval_request_states
+:key_field:       code
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder         |
+|-------------+-------------+-----------------+-----------+--------+-------------+---------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter state code    |
+| name        | Name        | nameEdit        | line_edit |        | true        | Enter display name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description |
+
+*** Columns
+
+| enum_name    | field         | header      | type      | width |
+|--------------+---------------+-------------+-----------+-------|
+| Code         | code          | Code        | string    | 120   |
+| Name         | name          | Name        | string    | 200   |
+| Description  | description   | Description | string    | 300   |
+| DisplayOrder | display_order | Order       | int       | 80    |
+| Version      | version       | Version     | int       | 80    |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the lifecycle these states name.
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the record whose state this lookup names.

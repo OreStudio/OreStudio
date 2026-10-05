@@ -296,3 +296,44 @@ TEST_CASE("write_account_with_nonexistent_image_id_throws", tags) {
 
     CHECK_THROWS(repo.write(h.context(), acc));
 }
+
+TEST_CASE("write_account_with_itself_as_modified_by", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    account_repository repo;
+
+    auto first = generate_synthetic_account(ctx);
+    // The actor is looked up across every tenant, so the username must name
+    // this run's row alone: a username an earlier run still holds current
+    // would satisfy the lookup and hide the defect.
+    first.username += "-" + boost::uuids::to_string(boost::uuids::random_generator()());
+    // The tenant must still hold another current account when the write below
+    // retires the account it replaces. A tenant whose accounts all retire
+    // falls back to bootstrap, and bootstrap accepts any actor.
+    auto keeper = generate_synthetic_account(ctx);
+    BOOST_LOG_SEV(lg, debug) << "First version: " << first;
+    BOOST_LOG_SEV(lg, debug) << "Keeper account: " << keeper;
+    repo.write(h.context(), {first, keeper});
+
+    // The revision names the account written as its own actor, so the
+    // insert function must validate the actor before the version
+    // management retires the actor's current row.
+    auto second = first;
+    second.version = 1;
+    second.modified_by = first.username;
+    second.full_name = "Self write revision";
+    BOOST_LOG_SEV(lg, debug) << "Self write revision: " << second;
+    CHECK_NOTHROW(repo.write(h.context(), {second}));
+
+    auto read_accounts = repo.read_latest(h.context(),
+        boost::uuids::to_string(first.id));
+    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+
+    REQUIRE(read_accounts.size() == 1);
+    CHECK(read_accounts[0].version == 2);
+    CHECK(read_accounts[0].modified_by == first.username);
+    CHECK(read_accounts[0].full_name == second.full_name);
+}

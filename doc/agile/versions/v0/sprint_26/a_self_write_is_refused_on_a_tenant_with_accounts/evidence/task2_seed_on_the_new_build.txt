@@ -1,0 +1,40 @@
+Task 2, the member seeds on the rebuilt database. Each seed is one statement
+whose sibling inserts run under a fresh snapshot, so the account row the
+statement inserts is already visible to the account-parties and account-roles
+inserts that follow it. The tenant therefore turns strict part-way through the
+statement, and the actor must name a current account.
+
+Section 1 (the script's default actor): the account row grants no current
+account named sysadmin, so the account-parties insert is refused once the
+account row is visible. The statement rolls back whole.
+Section 2 (the member's own name as actor): the account insert passes through
+bootstrap, and the account-parties and account-roles inserts find the row the
+same statement inserted. This is a self write, and the new order lands it.
+Section 3 (the second member, acted by the first): the tenant is strict from
+the first insert on, and the actor names the current member.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 (working tree, the case and the task edits are not committed yet)
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 082f5666a7fd2039,
+          built from 4b000931b1-dirty at 2026/10/05 09:32:46
+Script: projects/ores.web/scripts/seed-test-account.sh
+Date: 2026-10-05T10:02:10+01:00
+
+--- Section 1: ores_web_member, the script's default actor sysadmin ---
+ERROR:  Invalid modified_by: sysadmin. Must be a valid account username or service role.
+CONTEXT:  PL/pgSQL function ores_iam_validate_account_username_fn(text) line 41 at RAISE
+PL/pgSQL function ores_iam_account_parties_insert_fn() line 11 at assignment
+exit code: 3
+
+--- Section 2: ores_web_member, acted by its own name ---
+
+0|1|1|1
+seeded ores_web_member in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_member tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+exit code: 0
+
+--- Section 3: ores_web_probe, acted by ores_web_member ---
+
+0|1|1|1
+seeded ores_web_probe in tenant ffffffff-ffff-ffff-ffff-ffffffffffff with password Secure-Password-123
+ores_web_probe tenant=ffffffff-ffff-ffff-ffff-ffffffffffff parties=1
+exit code: 0

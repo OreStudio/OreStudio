@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A test replaces an account as itself and the write lands, and the SQL reproducti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
-| Now          | Not yet started.                       |
+| Now          | Every run is measured and recorded; the task closes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Re-run the profile journeys end to end (task [[id:9007491B-B716-483C-B441-24E6F7B91A14][Re-run the profile journeys end to end]]). |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -42,9 +42,22 @@ A test replaces an account as itself and the write lands, and the SQL reproducti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =write_account_with_itself_as_modified_by= to
+   =repository_account_repository_tests.cpp=: write a first version,
+   then replace it with =modified_by= set to its own username, and
+   check that the write lands, the version moves to 2, and the changed
+   field reads back.
+2. Run the case against the current database, whose insert function
+   still validates the actor after the version management: the case
+   must fail, and the failure must name =Invalid modified_by= (23503).
+3. Recreate the database from the regenerated scripts
+   (=compass db recreate=), so the schema carries the new order.
+4. Run the case again: it must pass.
+5. Run the SQL reproduction against the rebuilt database, this time
+   with commits: the self write lands, the other-actor write lands, and
+   the actor that names no current account is refused. Record the
+   version the self write leaves and the field that reads back.
+6. Record every run with its commit and its database, and close.
 
 * Measurements
 
@@ -58,9 +71,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Schema fingerprint, pre-fix tree | =089d3deaaa9b2e12= | =cmake= over =projects/ores.sql/schema_fingerprint.cmake= with =SQL_DIR= and =PRINT=; refusal recorded in =evidence/task2_guard_on_the_new_build.txt= | =projects/ores.sql= and =projects/ores.codegen= at a6db8fe723 |
+| Schema fingerprint, fixed tree | =082f5666a7fd2039= | same command | 4b000931b1 |
+| The case on the old order | Refused: =Invalid modified_by: claude_gleason-0-f2b4cdc7-…= (=23503=), at =ores_iam_accounts_insert_fn() line 85=; 5 assertions, 1 passed, 4 failed; exit 42 | =build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests write_account_with_itself_as_modified_by=; output in =evidence/task2_case_on_the_old_order.txt= | 4b000931b1 with =projects/ores.sql= and =projects/ores.codegen= at a6db8fe723; database 089d3deaaa9b2e12 |
+| The case on the new order | All tests passed (5 assertions in 1 test case); exit 0 | same command; output in =evidence/task2_case_on_the_new_order.txt= | 4b000931b1 (working tree; the case itself is not committed yet); database 082f5666a7fd2039 |
+| The bootstrap fallback | Self write lands while the tenant holds one account (version 1 → 2, the =modified_by= names the account); the same write refused (=23503=) once a keeper account remains | =psql -f /tmp/selfwrite_mechanism.sql=; output in =evidence/task2_bootstrap_fallback.txt= | 4b000931b1 with =projects/ores.sql= and =projects/ores.codegen= at a6db8fe723; database 089d3deaaa9b2e12 |
+| Member seeds on the rebuilt database | =ores_web_member= inserted, acted by its own name (nothing retired, one account row, one party grant, one login-tracking row); =ores_web_probe= inserted, acted by =ores_web_member= | =bash projects/ores.web/scripts/seed-test-account.sh=; output in =evidence/task2_seed_on_the_new_build.txt= | 4b000931b1 (working tree); database 082f5666a7fd2039 |
+| The SQL reproduction, with commits | Self write LANDED: version 1 → 2, the =modified_by= names =ores_web_member=, the changed =full_name= reads back; control write LANDED (version 3); bogus actor REFUSED =23503= | =psql -f /tmp/selfwrite_commit_probe.sql= as =ores_brave_hopper_cli_user=; output in =evidence/task2_sql_reproduction_on_the_new_build.txt= | 4b000931b1 (working tree); database 082f5666a7fd2039 |
 
 * Notes
+
+- The seed script's default actor, =sysadmin=, names no account. The
+  account-parties insert of the seed statement is refused once the account
+  row the same statement inserted is visible, because the tenant turns
+  strict part-way through the statement. Seed with the member's own name as
+  =AUDIT_ACCOUNT=, as =evidence/task2_seed_on_the_new_build.txt= shows.
+  This behaviour belongs to the seed script's defaults, not to the fix: the
+  account-parties insert never retired the actor's row.
+- A terminated tenant refuses every write, including the demonstration
+  probes. The bootstrap-fallback demonstration therefore provisions its own
+  scratch tenant.
 
 * Test Scenarios
 
@@ -86,3 +116,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=write_account_with_itself_as_modified_by= joins
+=projects/ores.iam/core/tests/repository_account_repository_tests.cpp=. It
+writes a first account and a keeper account, then replaces the first with
+=modified_by= set to its own username. It checks that the write lands, that the
+version moves to 2, and that the changed field reads back.
+
+On the old order the case fails. The database carried the old-order function
+(fingerprint =089d3deaaa9b2e12=, built from 13e8b9e1ef-dirty), and the run
+reports =Invalid modified_by: claude_gleason-0-f2b4cdc7-…= (=23503=) raised at
+=ores_iam_accounts_insert_fn() line 85=: 5 assertions, 1 passed, 4 failed,
+exit 42 (=evidence/task2_case_on_the_old_order.txt=). The read-back shows
+version 1 and the service account as =modified_by=, so only the first write
+landed.
+
+The first version of the case passed on the old order. The reason is the
+validator's bootstrap branch: in a fresh suite tenant the account being written
+is the only non-service account, the retire empties the tenant, and bootstrap
+accepts any actor. A demonstration on a scratch tenant shows both halves on the
+old-order function: the self write lands while the tenant holds one account, and
+the same write is refused once a keeper account remains
+(=evidence/task2_bootstrap_fallback.txt=). The case now writes a keeper account
+and appends a per-run UUID to the username, so no twin from an earlier run
+satisfies the validator's lookup.
+
+The database was recreated from the regenerated scripts (=compass db recreate -y
+-k=; fingerprint =082f5666a7fd2039=, built from 4b000931b1-dirty), and the test
+binary was rebuilt against it. The two members were seeded
+(=evidence/task2_seed_on_the_new_build.txt=); the first seed is itself a self
+write, and the new order lands it.
+
+On the new order the case passes: all tests passed, 5 assertions, exit 0
+(=evidence/task2_case_on_the_new_order.txt=). The SQL reproduction with commits
+(=evidence/task2_sql_reproduction_on_the_new_build.txt=) lands the self write
+(version 1 to 2, the =modified_by= is =ores_web_member=, the changed
+=full_name= reads back), lands the control write with =ores_web_probe= as actor
+(version 3), and refuses the bogus actor with =23503 Invalid modified_by:
+no_such_actor_zzz=.
+
+Every acceptance item holds: the case fails on the old ordering and passes on
+the new, the SQL reproduction lands the self write and the other-actor write and
+still refuses an actor that names no current account, every run states its
+commit and its database, and the write moves the version forward with the
+written field reading back.

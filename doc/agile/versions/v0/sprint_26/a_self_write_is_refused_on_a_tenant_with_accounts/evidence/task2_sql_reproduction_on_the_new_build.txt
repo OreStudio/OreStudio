@@ -1,0 +1,36 @@
+Task 2, the SQL reproduction with commits on the rebuilt database. No
+transaction wrapper: psql autocommits every statement, so each probe lands for
+real. Probe 1 writes the member as its own actor; probe 2 writes it with
+another member as actor; probe 3 names an actor no current account holds.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 (working tree, the case and the task edits are not committed yet)
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 082f5666a7fd2039,
+          built from 4b000931b1-dirty at 2026/10/05 09:32:46
+Query user: ores_brave_hopper_cli_user
+Script: /tmp/selfwrite_commit_probe.sql
+Date: 2026-10-05T10:02:41+01:00
+
+SET
+ version_before |   modified_by   |          full_name          
+----------------+-----------------+-----------------------------
+              1 | ores_web_member | ORE Studio Web Test Account
+(1 row)
+
+psql:/tmp/selfwrite_commit_probe.sql:31: NOTICE:  probe 1 (self write): LANDED
+DO
+ version_after_self_write |   modified_by   |                   full_name                    
+--------------------------+-----------------+------------------------------------------------
+                        2 | ores_web_member | ORE Studio Web Test Account (self write probe)
+(1 row)
+
+psql:/tmp/selfwrite_commit_probe.sql:56: NOTICE:  probe 2 (another actor): LANDED
+DO
+psql:/tmp/selfwrite_commit_probe.sql:75: NOTICE:  probe 3 (bogus actor): REFUSED sqlstate=23503 message=Invalid modified_by: no_such_actor_zzz. Must be a valid account username or service role.
+DO
+ version_after_control |  modified_by   |                           full_name                            
+-----------------------+----------------+----------------------------------------------------------------
+                     3 | ores_web_probe | ORE Studio Web Test Account (self write probe) (control probe)
+(1 row)
+
+
+exit code: 0

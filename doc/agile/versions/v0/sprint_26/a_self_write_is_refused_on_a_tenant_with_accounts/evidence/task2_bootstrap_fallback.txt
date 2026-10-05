@@ -1,0 +1,41 @@
+Task 2, the bootstrap fallback: why the first version of the case passed on the
+old order even though the database carried the old-order function. A terminated
+tenant refuses every write, so the demonstration provisions its own scratch
+tenant. Probe 2 lands the self write while the tenant holds no other account:
+the retire empties the tenant and the validator falls back to bootstrap, which
+accepts any actor. Probe 3 adds a keeper account, and probe 4, the same self
+write, is then refused by the same function.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 with projects/ores.sql and projects/ores.codegen at a6db8fe723
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 089d3deaaa9b2e12,
+          built from 13e8b9e1ef-dirty at 2026/10/05 04:15:38
+Query user: ores_brave_hopper_test_ddl_user; the script sets the session tenant to the scratch tenant, which is what the row-level security policies key on
+Script: /tmp/selfwrite_mechanism.sql
+Date: 2026-10-05T09:59:14+01:00
+
+SET
+SELECT 1
+Scratch tenant: 8b0cb47f-13cb-428a-a606-74016b8185f6
+SET
+DELETE 0
+psql:/tmp/selfwrite_mechanism.sql:65: NOTICE:  1. first account in the empty tenant: LANDED
+DO
+psql:/tmp/selfwrite_mechanism.sql:85: NOTICE:  2. self write, the tenant holds no other account: LANDED
+DO
+     username      | version |    modified_by    |     full_name     
+-------------------+---------+-------------------+-------------------
+ mechanism_subject |       2 | mechanism_subject | Written by itself
+(1 row)
+
+psql:/tmp/selfwrite_mechanism.sql:113: NOTICE:  3. keeper account: LANDED
+DO
+psql:/tmp/selfwrite_mechanism.sql:131: NOTICE:  4. self write, the tenant keeps another account: REFUSED sqlstate=23503 message=Invalid modified_by: mechanism_subject. Must be a valid account username or service role.
+DO
+     username      | version |    modified_by    |                     full_name                      
+-------------------+---------+-------------------+----------------------------------------------------
+ mechanism_keeper  |       1 | mechanism_subject | The account that keeps the tenant out of bootstrap
+ mechanism_subject |       2 | mechanism_subject | Written by itself
+(2 rows)
+
+
+exit code: 0

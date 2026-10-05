@@ -1,0 +1,30 @@
+Task 2, the case on the old order: the database validates the actor after the
+version management. The build carries the fingerprint of the pre-fix SQL tree,
+so it matches the database; projects/ores.sql and projects/ores.codegen sit at
+a6db8fe723 for this run and are restored before the recreate.
+Commit: 4b000931b18cd9be46d2eb6d6fa38f73d02205b2 with projects/ores.sql and projects/ores.codegen at a6db8fe723
+        (working tree; the case itself is not committed yet)
+Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, schema fingerprint 089d3deaaa9b2e12,
+          built from 13e8b9e1ef-dirty at 2026/10/05 04:15:38
+Binary: build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests
+Case: write_account_with_itself_as_modified_by
+Date: 2026-10-05T09:54:57+01:00
+
+Filters: "write_account_with_itself_as_modified_by"
+RNG seed: 4110689739
+../../../../../../../projects/ores.iam/core/tests/repository_account_repository_tests.cpp:329: failed: unexpected exception with message: 'Repository error: Executing INSERT failed: ERROR:  Invalid modified_by: claude_gleason-0-f2b4cdc7-31df-4823-858e-b0ec65e875dc. Must be a valid account username or service role.
+CONTEXT:  PL/pgSQL function ores_iam_validate_account_username_fn(text) line 41 at RAISE
+PL/pgSQL function ores_iam_accounts_insert_fn() line 85 at assignment
+'; expression was: repo.write(h.context(), {second})
+../../../../../../../projects/ores.iam/core/tests/repository_account_repository_tests.cpp:336: failed: read_accounts[0].version == 2 for: 1 == 2
+../../../../../../../projects/ores.iam/core/tests/repository_account_repository_tests.cpp:337: failed: read_accounts[0].modified_by == first.username for: "ores_brave_hopper_test_dml_user"
+==
+"claude_gleason-0-f2b4cdc7-31df-4823-858e-b0ec65e875dc"
+../../../../../../../projects/ores.iam/core/tests/repository_account_repository_tests.cpp:338: failed: read_accounts[0].full_name == second.full_name for: "Sabrina Walsh" == "Self write revision"
+test cases: 1 | 1 failed
+assertions: 5 | 1 passed | 4 failed
+
+
+
+exit code: 42

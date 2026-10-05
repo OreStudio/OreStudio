@@ -26,11 +26,11 @@ Signed in as the super administrator, the system administration area reads the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ Signed in as the super administrator, the system administration area reads the s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One list, framed by the mode. The people list already reads the session's own
+tenant, and for a system administrator that tenant is the system tenant, so no
+new read was added. =PeoplePage= takes the session mode and, in system
+administration, names the list Accounts and leads with the accounts strings the
+catalogue already carries in the three locales. A kind column mirrors the mark
+=TenantPage= gives a service account. The system menu gains the Accounts entry
+between Home and Tenants, and the prototype records the revisited Tenants-only
+decision. Rejected: a new AccountsPage beside PeoplePage (the same list twice)
+and a menu entry alone (it would leave the service mark out).
 
 * Measurements
 
@@ -56,9 +62,12 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What       | Value                 | Command                                       | Commit     |
+|------------+-----------------------+-----------------------------------------------+------------|
+| Web tests  | 296 passed (30 files) | npm test --workspace @ores/web (from projects/ores.web) | 270f358f68 |
+| Typecheck  | clean                 | npm run typecheck --workspace @ores/web       | 270f358f68 |
+| Formatting | clean                 | npx prettier --check on the ten changed files | 270f358f68 |
+| Site check | 20 pages, 0 failures  | ./compass.sh site page                        | 270f358f68 |
 
 * Notes
 
@@ -107,6 +116,25 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review pass over origin/main...HEAD: no findings. | | n/a | Checklist applied to the diff; misspell check not run (not permitted in this environment). |
 
 * Result
+
+Delivered in =270f358f68=. The system administration menu offers Accounts, and
+it opens the people list at =/people=. In system administration the list is
+titled Accounts and led by the accounts description the catalogue already
+carries; the tenant administrator's framing is unchanged. A kind column shows
+each account as Person or Service, the mark the tenant screen already gives. The
+read is unchanged: =GET /api/accounts= of the session's own tenant.
+
+| Acceptance | Evidence |
+|------------+----------|
+| Reachable without opening a tenant | shells.test.tsx asserts =Accounts= and =href="/people"= in system mode, and the menu row lives in =SHELL_MENUS=. |
+| Services shown as services, with the tenant screen's mark | screens.test.tsx seeds a service account and asserts =Service=; the cell mirrors =TenantPage='s mark. |
+| Ordinary accounts read, no cross-tenant read | =PeoplePage= still reads through the shared =ListSource= and =api.accountsPage=; no new endpoint or parameter. |
+| Prototype records the entry and the revisited decision | navigation.org menu row is =Accounts, Tenants= and carries the new subsection; the site check published it with 0 failures. |
+
+Limitations. The screen was verified as server-rendered markup in the unit
+suite, not in a browser against a live deployment, because the environment
+remediations are still pending. The misspell check was not run: the fixer is
+not permitted in this environment.

@@ -124,6 +124,12 @@ currency_service::list_currencies(const messaging::list_currencies_request& requ
         response.result.message = "The filter lists more than 1000 values in iso_code_one_of.";
         return response;
     }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The search text is longer than 256 characters.";
+        return response;
+    }
     response.currencies =
         repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
     response.total = repo_.get_total_currency_count(ctx_, request.filter);

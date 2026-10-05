@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-currency-screen
+#+pr: 2644
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A tenant administrator corrects a currency in ores.web on one screen: the curren
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -77,12 +77,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2644][#2644]] | [web] Build the currency, desk group and currency pair screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: casts used only to satisfy the compiler | =web/src/refdata/records.tsx= | Accept | Removed; the types carry the shape |
+| 2 | Local review: duplicate text helpers in three screens | =web/src/refdata/*.tsx= | Accept | Replaced by the shared =show= |
+| 3 | Local review: optional chaining on rows that are never null | =web/src/refdata/currencyPairs.tsx= | Accept | Removed |
+| 4 | Local review: five comments that restate the code | =web/src/refdata/*.tsx=, =bff/src/records.ts= | Accept | Deleted |
+| 5 | Local review: misspell check | changed files | Accept | Clean, no hits |
+| 6 | PR review: =listRecords= reads one page of 1000 and drops the rest silently | =wire-protocol/src/records.ts= | Accept | Pages until a page comes back short; tested with 1500 rows |
+| 7 | PR review: =resourceName= returns an empty name if the subject layout changes | =wire-protocol/src/records.ts= | Accept | A test pins the permission name of every resource |
+| 8 | PR review: removals skip the version check | =wire-protocol/src/records.ts=, =bff/src/records.ts=, =web/src/refdata/records.tsx= | Accept | A removal names the version read; a stale one answers 409 (checked live). Junction rows and dependent rows removed first still use =any= |
+| 9 | PR review: the BFF does not check the pair code against its legs | =bff/src/records.ts= | Accept | Refused unless =BASE/QUOTE= with different legs, with the reason. The convention is not checked against its pair: that needs a read, and the server's insert checks the pair exists |
+| 10 | PR review: loose schema rules | =bff/src/records.ts= | Accept | Numeric code empty or three digits (CNH, GGP and others have none); junction currency codes are three characters; removal keys are trimmed codes |
+| 11 | PR review: the list-by parent is not validated | =bff/src/records.ts= | Accept | Checked as a code; Fastify already refuses one over 100 characters |
+| 12 | PR review: split the list request into a helper; comment the default version | =wire-protocol/src/records.ts= | Partly | Comment added. Helper declined: the request is one expression read in one place |
 
 * Result
+
+Add or correct a currency runs in ores.web against the real server: a currency
+list with labels and a filter, and a currency page with its fields, its
+countries, calendars and desk groups as link panels, and its history. The
+screens read and write through a new registry of refdata record resources
+(wire-protocol) and generic, allow-listed BFF routes; one field table per
+resource drives the edit form, the details and the revert. The ORE export is
+stated on the screen as missing, per the journey. Checked on the real server:
+every resource read, a stale write refused, a correction diffed in the
+history.

@@ -64,6 +64,15 @@ import { subjects as tenorResolutionAlgorithmSubjects } from './generated/refdat
 import { subjects as derivationKindSubjects } from './generated/refdata/protocol/derivation_kind_protocol.js';
 import { subjects as seriesSubclassCodeSubjects } from './generated/refdata/protocol/series_subclass_code_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
+import {
+    intentFor,
+    outcomeOf,
+    preconditionFor,
+    type WriteIntent as ClassificationIntent,
+    type WriteOutcome as ClassificationWrite,
+} from './records.js';
+
+export type { ClassificationIntent, ClassificationWrite };
 
 /**
  * One classification list: what the screen shows, and the subjects that read
@@ -635,20 +644,6 @@ export interface ClassificationRowInput {
     readonly version: number | null;
 }
 
-/** Why a write is made: the reason code and the person's commentary. */
-export interface ClassificationIntent {
-    readonly reasonCode: string;
-    readonly commentary: string;
-}
-
-/**
- * The outcome of a write: done, or refused with the server's outcome and
- * words, so the route can tell a stale version from a bad input.
- */
-export type ClassificationWrite =
-    | { readonly done: true }
-    | { readonly done: false; readonly outcome: string; readonly message: string };
-
 function writeFor(
     shape: ClassificationShape,
     row: ClassificationRowInput,
@@ -673,23 +668,7 @@ function writeFor(
 }
 
 function changeFor(shape: ClassificationShape, row: ClassificationRowInput): unknown {
-    return {
-        write: writeFor(shape, row),
-        precondition:
-            row.version === null
-                ? { kind: 'must_not_exist', version: null }
-                : { kind: 'must_match_version', version: row.version },
-    };
-}
-
-function intentFor(intent: ClassificationIntent): unknown {
-    return { reason_code: intent.reasonCode, commentary: intent.commentary };
-}
-
-function outcomeOf(result: z.infer<typeof resultEnvelopeSchema>): ClassificationWrite {
-    return result.outcome === 'ok'
-        ? { done: true }
-        : { done: false, outcome: result.outcome, message: result.message };
+    return { write: writeFor(shape, row), precondition: preconditionFor(row.version) };
 }
 
 /** Writes one row: a new row when no version is given, else a new version of it. */

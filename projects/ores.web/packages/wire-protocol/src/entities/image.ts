@@ -93,7 +93,7 @@ export async function readImages(
         offset: 0,
         limit: imageIds.length,
         order: { field: '', descending: false },
-        filter: { id_one_of: [...imageIds] },
+        filter: { id_one_of: [...imageIds], search: null },
     };
     const reply = await caller.callAuthenticated(
         SUBJECTS.listImages,
@@ -108,6 +108,53 @@ export async function readImages(
         mimeType: image.mime_type === '' ? 'image/svg+xml' : image.mime_type,
         bytes: toBuffer(image.data),
     }));
+}
+
+/** What a chooser shows of an image: its identifier, its code and its words, not its bytes. */
+export interface ImageSummary {
+    readonly imageId: string;
+    readonly code: string;
+    readonly description: string;
+}
+
+const imagePageReplySchema = z.looseObject({
+    result: resultEnvelopeSchema,
+    images: z
+        .array(z.looseObject({ id: z.string(), code: z.string(), description: z.string() }))
+        .default([]),
+    total: z.int().nonnegative().default(0),
+});
+
+/**
+ * One page of the caller's images, in code order, searched on the server by
+ * code and description. The bytes are left out of the answer: a chooser draws
+ * each image from its own address.
+ */
+export async function listImageSummaries(
+    caller: AuthenticatedCaller,
+    page: { readonly offset: number; readonly limit: number; readonly search: string },
+): Promise<{ readonly images: readonly ImageSummary[]; readonly total: number }> {
+    const reply = await caller.callAuthenticated(
+        SUBJECTS.listImages,
+        {
+            offset: page.offset,
+            limit: page.limit,
+            order: { field: '', descending: false },
+            filter: page.search === '' ? null : { id_one_of: null, search: page.search },
+        },
+        imagePageReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(SUBJECTS.listImages, reply.result.message);
+    }
+    return {
+        images: reply.images.map((image) => ({
+            imageId: image.id,
+            code: image.code,
+            description: image.description,
+        })),
+        total: reply.total,
+    };
 }
 
 /**

@@ -23,9 +23,9 @@ Every screen in ores.web that lists and maintains records has the same shape and
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Record screen standard written. |
+| Now           | Standard written; currency, desk group and pair screens conform (PR #2644). |
 | Waiting on    | Nothing.                               |
-| Next          | Page the record screens on the server. |
+| Next          | Bring the holiday calendar screen to the standard (PR #2646). |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ Every screen in ores.web that lists and maintains records has the same shape and
 |------+-------+-------+-----+-------------|
 | [[id:F730EC1E-5156-4E78-BDDC-E0BED5750EAA][Scaffold story: Standardise the record screens]] | DONE | 2026-10-05 | 2026-10-05 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:4A56D08C-0D66-45C7-8398-F67CFE138E7F][Write the record screen standard]] | DONE | 2026-10-05 | 2026-10-05 | Initial task for: Standardise the record screens |
-| [[id:EF0FFEFC-A8AD-4708-B656-FDEEF7DCBB9C][Page the record screens on the server]] | BACKLOG | | | Every record list reads one page with offset, limit and the total through the shared Pager, with First, Last and page size, and searches on the server. |
+| [[id:EF0FFEFC-A8AD-4708-B656-FDEEF7DCBB9C][Page the record screens on the server]] | DONE | 2026-10-05 | 2026-10-05 | Every record list reads one page with offset, limit and the total through the shared Pager, with First, Last and page size, and searches on the server. |
 | [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | BACKLOG | | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
 
 * Decisions

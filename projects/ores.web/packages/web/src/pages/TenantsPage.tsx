@@ -32,11 +32,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
-import { Pager, pageBounds } from '../ui/Pager.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Input, LinkButton, Notice, PageHeader, Select } from '../ui/Primitives.js';
-
-/** How many tenants one page of the roster shows. */
-export const TENANT_PAGE_SIZE = 25;
 
 /** How long the search waits after the last keystroke before it asks. */
 const SEARCH_PAUSE_MS = 300;
@@ -86,7 +83,7 @@ export function TenantsPage(): ReactNode {
     const roster = useQuery({
         queryKey: ['tenants', search, type, status, includeTest, offset],
         queryFn: () =>
-            api.tenants({ search, type, status, includeTest, offset, limit: TENANT_PAGE_SIZE }),
+            api.tenants({ search, type, status, includeTest, offset, limit: DEFAULT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
 
@@ -247,7 +244,7 @@ export function TenantsPage(): ReactNode {
                         offset={offset}
                         shown={tenants.length}
                         total={totalCount}
-                        pageSize={TENANT_PAGE_SIZE}
+                        pageSize={DEFAULT_PAGE_SIZE}
                         showing={plural(
                             'tenants.showing',
                             totalCount,

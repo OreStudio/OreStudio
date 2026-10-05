@@ -40,6 +40,7 @@ import {
     isLabelled,
     useLabelCatalogue,
     usePermissions,
+    ReasonFields,
     useReason,
 } from './shared.js';
 
@@ -243,47 +244,6 @@ function Details({
                 ))}
             </dl>
         </section>
-    );
-}
-
-/** A reason picker and its commentary, refusing an empty commentary the reason needs. */
-function ReasonFields({
-    reason,
-    commentary,
-    onCommentary,
-    missing,
-}: {
-    readonly reason: ReturnType<typeof useReason>;
-    readonly commentary: string;
-    readonly onCommentary: (value: string) => void;
-    readonly missing: boolean;
-}): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <>
-            <Field label={t('refdata.classifications.reason')}>
-                <Select
-                    value={reason.code}
-                    onChange={(event) => reason.setCode(event.target.value)}
-                >
-                    {reason.reasons.map((choice) => (
-                        <option key={choice.code} value={choice.code}>
-                            {choice.description}
-                        </option>
-                    ))}
-                </Select>
-            </Field>
-            <Field
-                label={t('refdata.classifications.commentary')}
-                {...(missing ? { error: t('refdata.classifications.commentaryRequired') } : {})}
-            >
-                <Input
-                    value={commentary}
-                    maxLength={2000}
-                    onChange={(event) => onCommentary(event.target.value)}
-                />
-            </Field>
-        </>
     );
 }
 

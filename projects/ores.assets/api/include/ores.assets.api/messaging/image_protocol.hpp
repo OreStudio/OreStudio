@@ -64,6 +64,7 @@ struct image_lookup {
 
 struct images_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::string> search;
 };
 
 struct image_event {

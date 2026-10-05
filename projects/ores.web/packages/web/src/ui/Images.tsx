@@ -85,36 +85,6 @@ export function Avatar({
 }
 
 /**
- * A business centre: its country's flag and its code.
- *
- * The code is always written, so the cell reads the same with or without the
- * flag, and a flag that fails to load is dropped rather than drawn broken.
- */
-export function CentreFlag({
-    code,
-    src,
-}: {
-    readonly code: string;
-    readonly src: string | null;
-}): ReactNode {
-    const [failedSrc, setFailedSrc] = useState<string | null>(null);
-    return (
-        <span className="inline-flex items-center gap-2">
-            {src !== null && src !== failedSrc && (
-                <img
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    onError={() => setFailedSrc(src)}
-                    className="h-3.5 w-5 rounded-[2px] object-cover ring-1 ring-line"
-                />
-            )}
-            <span className="font-mono text-xs">{code}</span>
-        </span>
-    );
-}
-
-/**
  * The picture of an account of the session's own tenant, named by username,
  * or its initials.
  *

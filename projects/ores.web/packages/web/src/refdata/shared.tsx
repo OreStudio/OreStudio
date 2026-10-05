@@ -20,12 +20,13 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { BadgePresentation, ClassificationList } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Label } from '../ui/Label.js';
+import { Field, Input, Select } from '../ui/Primitives.js';
 
 /** The topics of the classification lists, in screen order. A list's topic is one of these. */
 export const TOPICS = [
@@ -109,8 +110,38 @@ export function usePermissions(list: ClassificationList | undefined): {
     };
 }
 
-/** The reasons a correction or a removal may carry, and the chosen one. */
-export function useReason(kind: 'amend' | 'delete'): {
+/** The reason that says a record was touched but nothing in it changed. */
+export const NON_MATERIAL_REASON = 'common.non_material_update';
+
+/**
+ * The reasons a write may offer. A correction that changed a field cannot be a
+ * touch, and one that changed nothing can only be a touch; a removal, or a
+ * correction that does not say, offers every reason.
+ */
+export function reasonsFor<Reason extends { readonly code: string }>(
+    reasons: readonly Reason[],
+    kind: 'amend' | 'delete',
+    changed?: boolean,
+): readonly Reason[] {
+    return reasons.filter(
+        (reason) =>
+            kind !== 'amend' ||
+            changed === undefined ||
+            (reason.code === NON_MATERIAL_REASON) === !changed,
+    );
+}
+
+/**
+ * The reasons a correction or a removal may carry, and the chosen one.
+ *
+ * For a correction that says whether a field `changed`, the reasons follow the
+ * change: a changed record cannot be recorded as a touch, and a touch cannot be
+ * recorded as a change. The choice moves to an allowed reason when it falls out.
+ */
+export function useReason(
+    kind: 'amend' | 'delete',
+    changed?: boolean,
+): {
     readonly reasons: readonly {
         readonly code: string;
         readonly description: string;
@@ -124,13 +155,9 @@ export function useReason(kind: 'amend' | 'delete'): {
         queryKey: ['reference-data-reasons', kind],
         queryFn: () => api.referenceDataReasons(kind),
     });
-    const [code, setCode] = useState('');
-    useEffect(() => {
-        if (code === '' && reasons.data !== undefined && reasons.data.length > 0) {
-            setCode(reasons.data[0]?.code ?? '');
-        }
-    }, [code, reasons.data]);
-    const list = reasons.data ?? [];
+    const [chosen, setCode] = useState('');
+    const list = reasonsFor(reasons.data ?? [], kind, changed);
+    const code = list.some((reason) => reason.code === chosen) ? chosen : (list[0]?.code ?? '');
     return {
         reasons: list,
         code,
@@ -263,5 +290,46 @@ export function LabelPicker({
                 {t('refdata.classifications.labelOthers')}
             </label>
         </div>
+    );
+}
+
+/** A reason picker and its commentary, refusing an empty commentary the reason needs. */
+export function ReasonFields({
+    reason,
+    commentary,
+    onCommentary,
+    missing,
+}: {
+    readonly reason: ReturnType<typeof useReason>;
+    readonly commentary: string;
+    readonly onCommentary: (value: string) => void;
+    readonly missing: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <>
+            <Field label={t('refdata.classifications.reason')}>
+                <Select
+                    value={reason.code}
+                    onChange={(event) => reason.setCode(event.target.value)}
+                >
+                    {reason.reasons.map((choice) => (
+                        <option key={choice.code} value={choice.code}>
+                            {choice.description}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+            <Field
+                label={t('refdata.classifications.commentary')}
+                {...(missing ? { error: t('refdata.classifications.commentaryRequired') } : {})}
+            >
+                <Input
+                    value={commentary}
+                    maxLength={2000}
+                    onChange={(event) => onCommentary(event.target.value)}
+                />
+            </Field>
+        </>
     );
 }

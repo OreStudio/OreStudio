@@ -68,6 +68,7 @@ export interface CurrencyLookup {
 
 export interface CurrenciesFilter {
     iso_code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface CurrencyEvent {

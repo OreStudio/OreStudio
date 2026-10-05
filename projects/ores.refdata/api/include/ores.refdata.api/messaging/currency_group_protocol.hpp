@@ -63,6 +63,7 @@ struct currency_group_lookup {
 
 struct currency_groups_filter {
     std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::string> search;
 };
 
 struct currency_group_event {

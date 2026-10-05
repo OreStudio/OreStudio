@@ -19,6 +19,7 @@
  *
  */
 
+import { Icon, type IconName } from './Icon.js';
 import type {
     ButtonHTMLAttributes,
     InputHTMLAttributes,
@@ -75,6 +76,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     readonly pending?: boolean;
     /** Replaces the label while pending, so the control says what is happening. */
     readonly pendingLabel?: string;
+    /** The standard action's icon, drawn before the label. */
+    readonly icon?: IconName;
 }
 
 export function Button({
@@ -82,6 +85,7 @@ export function Button({
     size = 'md',
     pending = false,
     pendingLabel,
+    icon,
     className,
     children,
     disabled,
@@ -99,6 +103,7 @@ export function Button({
                     className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
                 />
             )}
+            {!pending && icon !== undefined && <Icon name={icon} size={size === 'sm' ? 16 : 20} />}
             {pending ? (pendingLabel ?? children) : children}
         </button>
     );
@@ -247,15 +252,21 @@ export function PageHeader({
     title,
     description,
     actions,
+    mark,
 }: {
     readonly title: string;
     readonly description?: string;
     readonly actions?: ReactNode;
+    /** A picture drawn before the title, such as a currency's flag. */
+    readonly mark?: ReactNode;
 }): ReactNode {
     return (
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+                <h1 className="flex items-center gap-3 text-xl font-semibold tracking-tight">
+                    {mark}
+                    {title}
+                </h1>
                 {description !== undefined && (
                     <p className="mt-1 text-sm text-ink-muted">{description}</p>
                 )}

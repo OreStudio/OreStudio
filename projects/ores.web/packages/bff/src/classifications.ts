@@ -23,6 +23,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     CLASSIFICATION_LISTS,
+    REFDATA_RECORDS,
     classificationCatalogue,
     classificationList,
     countClassificationRows,
@@ -88,8 +89,13 @@ const historyQuerySchema = z.object({
     entityId: z.string().min(1).max(200),
 });
 
-/** The entity types whose history the BFF serves: those of the lists it serves. */
-const HISTORY_TYPES = new Set(CLASSIFICATION_LISTS.map((list) => list.entityType));
+/** The entity types whose history the BFF serves: those of the lists and the versioned records it serves. */
+const HISTORY_TYPES = new Set([
+    ...CLASSIFICATION_LISTS.map((list) => list.entityType),
+    ...REFDATA_RECORDS.filter((resource) => resource.versioned).map(
+        (resource) => resource.entityType,
+    ),
+]);
 
 /**
  * The list the address names, or a 404.

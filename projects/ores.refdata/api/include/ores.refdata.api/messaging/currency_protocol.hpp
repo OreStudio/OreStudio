@@ -75,6 +75,7 @@ struct currency_lookup {
 
 struct currencies_filter {
     std::optional<std::vector<std::string>> iso_code_one_of;
+    std::optional<std::string> search;
 };
 
 struct currency_event {

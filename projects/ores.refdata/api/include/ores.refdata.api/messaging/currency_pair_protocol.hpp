@@ -63,6 +63,7 @@ struct currency_pair_lookup {
 
 struct currency_pairs_filter {
     std::optional<std::vector<std::string>> pair_code_one_of;
+    std::optional<std::string> search;
 };
 
 struct currency_pair_event {

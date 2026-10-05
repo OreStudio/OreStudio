@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-currency-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A tenant administrator keeps the desk groups in ores.web: the groups in order, e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -86,3 +86,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Group currencies for the desk runs in ores.web: groups in display order with
+member counts, and a group page with its details, its members and its history.
+Members are read from the whole membership junction, because it cannot be read
+by group (captured). Removing a group removes its members first. Checked on the
+real server: a group created, a member linked, a correction diffed, then the
+members and the group removed.

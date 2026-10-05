@@ -124,6 +124,46 @@ function pageQuery(page: { readonly offset: number; readonly limit: number }): s
     }).toString();
 }
 
+/** A reference data resource as the BFF describes it. */
+const recordResourceViewSchema = z.object({
+    key: z.string(),
+    entityType: z.string(),
+    keyFields: z.array(z.string()),
+    versioned: z.boolean(),
+    writable: z.boolean(),
+    search: z.boolean(),
+    sortable: z.array(z.string()),
+    writePermission: z.string(),
+    deletePermission: z.string(),
+});
+
+export type RecordResourceView = z.infer<typeof recordResourceViewSchema>;
+
+/** A reference data row, in the server's own field names, with its version. */
+const recordRowSchema = z.looseObject({ version: z.int().nonnegative() });
+
+export type RecordRow = z.infer<typeof recordRowSchema>;
+
+const codeImages = z.record(z.string(), z.string());
+
+const imageMapSchema = z.object({
+    currencies: codeImages,
+    countries: codeImages,
+    calendars: codeImages,
+    businessCentres: codeImages,
+    noFlag: z.string().nullable(),
+});
+
+export type ImageMap = z.infer<typeof imageMapSchema>;
+
+const imageSummarySchema = z.object({
+    imageId: z.string(),
+    code: z.string(),
+    description: z.string(),
+});
+
+export type ImageSummary = z.infer<typeof imageSummarySchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -385,6 +425,116 @@ export const api = {
                 ),
             })
             .parse(await request('/api/classifications', { method: 'GET' })).lists;
+    },
+
+    /** The reference data resources, with their key fields and the permissions each needs. */
+    async refdataRegistry(): Promise<readonly RecordResourceView[]> {
+        return z
+            .object({ resources: z.array(recordResourceViewSchema) })
+            .parse(await request('/api/refdata', { method: 'GET' })).resources;
+    },
+
+    /** Every row of a reference data resource, or one parent's rows of a junction. */
+    async records(resource: string, parent?: string): Promise<readonly RecordRow[]> {
+        const path =
+            parent === undefined
+                ? `/api/refdata/${encodeURIComponent(resource)}`
+                : `/api/refdata/${encodeURIComponent(resource)}/by/${encodeURIComponent(parent)}`;
+        return z
+            .object({ rows: z.array(recordRowSchema) })
+            .parse(await request(path, { method: 'GET' })).rows;
+    },
+
+    /** One page of a resource and the server's total, searched and ordered on the server. */
+    async recordPage(
+        resource: string,
+        page: {
+            readonly offset: number;
+            readonly limit: number;
+            readonly search: string;
+            readonly sort: string;
+            readonly descending: boolean;
+        },
+    ): Promise<{ readonly rows: readonly RecordRow[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+            sort: page.sort,
+            descending: String(page.descending),
+        });
+        return z.object({ rows: z.array(recordRowSchema), total: z.int().nonnegative() }).parse(
+            await request(`/api/refdata/${encodeURIComponent(resource)}?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** Which image each flagged code uses, for the whole tenant. */
+    async imageMap(): Promise<ImageMap> {
+        return imageMapSchema.parse(await request('/api/image-map', { method: 'GET' }));
+    },
+
+    /** One page of the tenant's images, for a chooser, searched on the server. */
+    async imageSummaries(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+    }): Promise<{ readonly images: readonly ImageSummary[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+        });
+        return z
+            .object({ images: z.array(imageSummarySchema), total: z.int().nonnegative() })
+            .parse(await request(`/api/images?${query.toString()}`, { method: 'GET' }));
+    },
+
+    /** One record, named by its key. */
+    async record(resource: string, key: string): Promise<RecordRow> {
+        return z
+            .object({ row: recordRowSchema })
+            .parse(
+                await request(
+                    `/api/refdata/${encodeURIComponent(resource)}/key/${encodeURIComponent(key)}`,
+                    { method: 'GET' },
+                ),
+            ).row;
+    },
+
+    /** Writes one row: a new row with no version, else a correction of the version read. */
+    async saveRecord(
+        resource: string,
+        input: {
+            readonly write: Readonly<Record<string, unknown>>;
+            readonly version: number | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/refdata/${encodeURIComponent(resource)}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Removes one row, named by its key fields. */
+    async removeRecord(
+        resource: string,
+        input: {
+            readonly key: Readonly<Record<string, string>>;
+            readonly version?: number | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/refdata/${encodeURIComponent(resource)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
     },
 
     /** The shared label catalogue: every label, and the labels each code domain uses. */

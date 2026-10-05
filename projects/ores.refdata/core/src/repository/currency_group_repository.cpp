@@ -48,7 +48,11 @@ std::string currency_group_repository::sql() {
 }
 
 bool currency_group_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "code",
+        "name",
+        "display_order",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -85,6 +89,8 @@ filter_condition(const std::optional<messaging::currency_groups_filter>& filter)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"code", "name"}, *filter->search));
     return all_of(std::move(r));
 }
 
@@ -281,7 +287,7 @@ std::vector<domain::currency_group> currency_group_repository::read_latest(
     return execute_ordered_read_query<currency_group_entity, domain::currency_group>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
+        list_order(order, {"display_order"}, false),
         filter_condition(filter),
         [](const auto& entities) { return currency_group_mapper::map(entities); },
         lg(),

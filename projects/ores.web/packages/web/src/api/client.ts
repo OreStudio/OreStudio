@@ -124,6 +124,24 @@ function pageQuery(page: { readonly offset: number; readonly limit: number }): s
     }).toString();
 }
 
+/** A reference data resource as the BFF describes it. */
+const recordResourceViewSchema = z.object({
+    key: z.string(),
+    entityType: z.string(),
+    keyFields: z.array(z.string()),
+    versioned: z.boolean(),
+    writable: z.boolean(),
+    writePermission: z.string(),
+    deletePermission: z.string(),
+});
+
+export type RecordResourceView = z.infer<typeof recordResourceViewSchema>;
+
+/** A reference data row, in the server's own field names, with its version. */
+const recordRowSchema = z.looseObject({ version: z.int().nonnegative() });
+
+export type RecordRow = z.infer<typeof recordRowSchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -385,6 +403,57 @@ export const api = {
                 ),
             })
             .parse(await request('/api/classifications', { method: 'GET' })).lists;
+    },
+
+    /** The reference data resources, with their key fields and the permissions each needs. */
+    async refdataRegistry(): Promise<readonly RecordResourceView[]> {
+        return z
+            .object({ resources: z.array(recordResourceViewSchema) })
+            .parse(await request('/api/refdata', { method: 'GET' })).resources;
+    },
+
+    /** Every row of a reference data resource, or one parent's rows of a junction. */
+    async records(resource: string, parent?: string): Promise<readonly RecordRow[]> {
+        const path =
+            parent === undefined
+                ? `/api/refdata/${encodeURIComponent(resource)}`
+                : `/api/refdata/${encodeURIComponent(resource)}/by/${encodeURIComponent(parent)}`;
+        return z
+            .object({ rows: z.array(recordRowSchema) })
+            .parse(await request(path, { method: 'GET' })).rows;
+    },
+
+    /** Writes one row: a new row with no version, else a correction of the version read. */
+    async saveRecord(
+        resource: string,
+        input: {
+            readonly write: Readonly<Record<string, unknown>>;
+            readonly version: number | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/refdata/${encodeURIComponent(resource)}`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Removes one row, named by its key fields. */
+    async removeRecord(
+        resource: string,
+        input: {
+            readonly key: Readonly<Record<string, string>>;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/refdata/${encodeURIComponent(resource)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
     },
 
     /** The shared label catalogue: every label, and the labels each code domain uses. */

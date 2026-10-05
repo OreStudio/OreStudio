@@ -26,6 +26,7 @@ import type { BadgePresentation, ClassificationList } from '@ores/wire-protocol/
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Label } from '../ui/Label.js';
+import { Field, Input, Select } from '../ui/Primitives.js';
 
 /** The topics of the classification lists, in screen order. A list's topic is one of these. */
 export const TOPICS = [
@@ -263,5 +264,46 @@ export function LabelPicker({
                 {t('refdata.classifications.labelOthers')}
             </label>
         </div>
+    );
+}
+
+/** A reason picker and its commentary, refusing an empty commentary the reason needs. */
+export function ReasonFields({
+    reason,
+    commentary,
+    onCommentary,
+    missing,
+}: {
+    readonly reason: ReturnType<typeof useReason>;
+    readonly commentary: string;
+    readonly onCommentary: (value: string) => void;
+    readonly missing: boolean;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <>
+            <Field label={t('refdata.classifications.reason')}>
+                <Select
+                    value={reason.code}
+                    onChange={(event) => reason.setCode(event.target.value)}
+                >
+                    {reason.reasons.map((choice) => (
+                        <option key={choice.code} value={choice.code}>
+                            {choice.description}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+            <Field
+                label={t('refdata.classifications.commentary')}
+                {...(missing ? { error: t('refdata.classifications.commentaryRequired') } : {})}
+            >
+                <Input
+                    value={commentary}
+                    maxLength={2000}
+                    onChange={(event) => onCommentary(event.target.value)}
+                />
+            </Field>
+        </>
     );
 }

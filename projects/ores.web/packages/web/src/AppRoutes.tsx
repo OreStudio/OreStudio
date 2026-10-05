@@ -47,6 +47,9 @@ import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
+import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
+import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
+import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage } from './pages/PartiesPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -384,6 +387,78 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ClassificationRowPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/currencies"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurrenciesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/currencies/:code"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurrencyPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/desk-groups"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DeskGroupsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/desk-groups/:code"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DeskGroupPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/currency-pairs"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurrencyPairsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/currency-pairs/:code"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurrencyPairPage />
                     ),
                     'workspace',
                 )}

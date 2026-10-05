@@ -25,8 +25,15 @@ import { PageHeader } from '../ui/Primitives.js';
 import { Tiles } from '../ui/Tiles.js';
 import { Crumbs, classificationsPath } from './shared.js';
 
-/** The screens reference data has, and the ones designed but not yet built. */
-const COMING = ['currencies', 'currencyPairs', 'deskGroups', 'calendars'] as const;
+/** The screens built, with their addresses. */
+const BUILT = [
+    { screen: 'currencies', to: '/refdata/currencies' },
+    { screen: 'currencyPairs', to: '/refdata/currency-pairs' },
+    { screen: 'deskGroups', to: '/refdata/desk-groups' },
+] as const;
+
+/** The screens designed but not built yet. */
+const COMING = ['calendars'] as const;
 
 /**
  * Reference data, the area: the data every trade, curve and report is built
@@ -43,6 +50,11 @@ export function RefdataPage(): ReactNode {
             </div>
             <Tiles
                 tiles={[
+                    ...BUILT.map(({ screen, to }) => ({
+                        title: t(`refdata.area.coming.${screen}`),
+                        body: t(`refdata.area.coming.${screen}Body`),
+                        to,
+                    })),
                     {
                         title: t('refdata.classifications.title'),
                         body: t('refdata.area.classificationsBody'),

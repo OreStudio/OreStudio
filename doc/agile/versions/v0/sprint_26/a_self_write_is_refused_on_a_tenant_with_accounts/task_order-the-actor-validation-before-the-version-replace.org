@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The three literate SQL create templates validate modified_by above their version
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
-| Now          | Not yet started.                       |
+| Now          | The reproduction on the current tree, then the template edit and the regeneration. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Capture the before record, edit the three templates, re-tangle, regenerate. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -42,9 +42,21 @@ The three literate SQL create templates validate modified_by above their version
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Capture the before record on the current tree: a self write on the seeded
+   tenant raises =Invalid modified_by=, rollback only. Every claim this task
+   makes about the fix is read against this record.
+2. Move the assignment in the three literate templates, with the reason beside
+   it. In =domain_entity_create.org= the assignment moves above both the
+   parent touch and the version management, so the actor is validated before
+   anything uses it.
+3. Re-tangle with =compass build --direct tangle_codegen_templates= and check
+   that the three =.mustache= diffs carry the relocation alone.
+4. Establish the drift baseline, then regenerate the SQL layer across the tree
+   and prove the diff carries the relocation alone: the count of changed files
+   matches the count of files that carry the assignment, and no drop script,
+   notify trigger or ER diagram moves.
+5. Run the drift gate again, record the measurements, and put the before and
+   after records under =* Result=.
 
 * Measurements
 

@@ -26,11 +26,11 @@ create script, and a regeneration carries it to every generated file.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing.                             |
+| Now           | Order the actor validation before the version replace. |
 | Waiting on    | Nothing.                             |
-| Next          | Order the actor validation before the version replace. |
+| Next          | Guard the self write in the suite.   |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ create script, and a regeneration carries it to every generated file.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4F0A15ED-E5ED-41D1-AE33-FA2192D36CAC][Order the actor validation before the version replace]] | BACKLOG | | | Move the modified_by validation above the version management in the three literate SQL create templates, re-tangle them, and regenerate every create script, so no generated file retires the actor row before the validator reads it. |
+| [[id:4F0A15ED-E5ED-41D1-AE33-FA2192D36CAC][Order the actor validation before the version replace]] | STARTED | 2026-10-05 | | Move the modified_by validation above the version management in the three literate SQL create templates, re-tangle them, and regenerate every create script, so no generated file retires the actor row before the validator reads it. |
 | [[id:B7D9DE83-DFCA-4CAD-ACEC-BCAFE3344C99][Guard the self write in the suite]] | BACKLOG | | | Prove the reordered function lands a write whose actor is the account written, and add the repository case that fails on the old order: an account written once and then replaced as itself on a tenant that holds accounts. |
 | [[id:9007491B-B716-483C-B441-24E6F7B91A14][Re-run the profile journeys end to end]] | BACKLOG | | | Recreate the deployment database from the regenerated scripts, provision and seed it, and re-run the profile journeys checker, so the member own saves and the administrator contact insert pass and only the upload defect stays red. |
 

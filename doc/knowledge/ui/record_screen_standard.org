@@ -67,6 +67,7 @@ One word per idea, in code, in the interface and in conversation.
 | /History/ | Every version of one record and the difference between them |
 | /Change reason/ | The code and commentary that say why a write was made |
 | /Provenance/ | Who wrote a version, for whom, when and why |
+| /Modified by/, /performed by/ | The account that wrote a version, and the account it acted for. They differ when a service acts for a person, and read "<modified by> for <performed by>" |
 | /Link/ | A row that joins two records and has no versions, such as a currency's country |
 | /Part/ | A record that belongs to one parent and has its own versions, such as a calendar's rule |
 | /Field table/ | The one list of a record kind's fields that drives its form, details, revert and write |
@@ -182,7 +183,10 @@ repeats.
 - The footer is the shared =Pager=: the count first ("1–100 of 168"), then
   /First/, /Previous/, /Next/, /Last/, then /Page size/ with 25, 50, 100, 200
   and 500, default 100.
-- /Load all/ is offered only when the total is 1000 or less.
+- /Load all/ is offered only when the server's total is 1000 or less, and then
+  reads that total in one page. It is the whole list by the server's count, never
+  a cap, so it keeps the rule in
+  [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
 - A new search, a new filter, a new order or a new page size returns to the
   first page. After a write the list returns to the first page, because the
   changed record may have moved.
@@ -204,7 +208,7 @@ repeats.
 
 When a change notification says a record of this kind changed, the list marks
 Refresh as stale. After a reload, rows whose =recorded_at= is newer than the
-previous load are marked for a few seconds, so a person sees what changed. The
+previous load are marked for three seconds, so a person sees what changed. The
 first load marks nothing. A person can turn the mark off. The notifications
 come from [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
 
@@ -220,7 +224,7 @@ come from [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
   │ EUR        Euro    978            €                                │
   │ …                                                                  │
   ├────────────────────────────────────────────────────────────────────┤
-  │ Last changed: version 4 · priya for priya · 2026-10-04 22:10 ·     │
+  │ Last changed: version 4 · priya · 2 hours ago ·                    │
   │ Rectification · "Corrected the symbol"                             │
   └────────────────────────────────────────────────────────────────────┘
 #+end_src
@@ -261,7 +265,9 @@ and its Add.
 The Details tab ends with the provenance of the current version, in this order:
 version, modified by, performed by, recorded at, change reason, commentary.
 When =modified_by= and =performed_by= are the same person, the line names them
-once. A record with no versions has no last-changed line.
+once; otherwise it reads "<modified by> for <performed by>". The time follows the
+timestamp rule in [[*Icons and cells][Icons and cells]]: relative, with the exact
+value on hover. A record with no versions has no last-changed line.
 
 ** Writes
 
@@ -333,6 +339,11 @@ The form is drawn from the field table. One control per field kind:
 - Parts that belong only to this record are deleted first, with the same
   reason, and the dialog says so. Links from other records are not deleted, and
   the dialog says so.
+- The parts and the record are deleted one after another, because the server
+  has no operation that deletes them together. If one fails, the dialog stays
+  open and says which failed; the record itself is not deleted, so a retry
+  finishes the work. A server operation that deletes a record with its parts in
+  one transaction replaces this.
 - After the delete the screen returns to the list.
 
 *** Read-only records
@@ -409,19 +420,21 @@ where its meaning is not plain.
 | Add | =add= | Add |
 | Edit | =edit= | Edit |
 | Delete | =delete= | Delete |
-| Remove a link | =dismiss= | Remove |
+| Remove a link | =link_dismiss= | Remove |
 | History | =history= | History |
 | Save | =save= | Save |
-| Close | =dismiss= | Cancel |
+| Cancel | =dismiss= | Cancel |
 | Revert | =arrow_rotate_counterclockwise= | Revert to this version |
 | Search | =search= | (the search box) |
 | Filter | =filter= | (the filter select) |
 | Copy | =copy= | Copy |
-| Import | =arrow_download= | Import |
-| Export | =arrow_upload= | Export |
 
-An action this table lacks is added to it and to the icon reference before it
-is used, so two screens never draw one idea with two icons.
+=arrow_clockwise= and =link_dismiss= are not in the asset set yet. They are added
+to the set and to the icon reference before a screen draws them, as the icon
+reference requires; Refresh does not borrow =arrow_rotate_counterclockwise=,
+which is Revert. An action this table lacks is added to it and to the icon
+reference before it is used, so two screens never draw one idea with two icons,
+and no icon carries two ideas.
 
 | Cell | How it is drawn |
 |------+-----------------|
@@ -440,7 +453,7 @@ is used, so two screens never draw one idea with two icons.
 
 | What happened | What the screen says |
 |---------------+----------------------|
-| A write succeeded | The dialog closes and the page shows the new values; Add opens the new record |
+| A write succeeded | The dialog closes and the page shows the new values |
 | A field is wrong | The message under the field, and the list of fields still to fill in |
 | The server refused | The server's own words, in the dialog, which stays open |
 | The record changed since it was read | That it changed, and an offer to reload |
@@ -519,13 +532,13 @@ component carries it today.
 | List table | =RecordTable= | Partial: no sorting, column menu, keyboard opening or recency |
 | Change reasons | =useReason=, =ReasonFields= | Partial: no filter by whether a field changed |
 | Unsaved changes | (none) | Missing |
-| Delete | =RemoveRecordDialog= | Exists; its word is still Remove |
+| Delete | =RemoveRecordDialog= | Exists; its word is still Remove; parts are deleted one after another |
 | Revert | =RevertDialog= | Exists |
 | History | =HistoryPanel= | Exists |
 | Links | =LinkPanel= | Exists |
 | Parts | =PartsPanel= in =refdata/calendars.tsx= | Exists; to move beside =LinkPanel= |
 | Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
-| Icons | the SVG set in =web/src/assets/icons= | Missing: no screen draws them yet |
+| Icons | the SVG set in =web/src/assets/icons= | Missing: no screen draws them yet; =arrow_clockwise= and =link_dismiss= to add |
 | Last-changed line | (none) | Missing |
 | Recency | (none) | Missing; needs the change notification consumer |
 | Permissions | =useRecordPermissions= | Exists |

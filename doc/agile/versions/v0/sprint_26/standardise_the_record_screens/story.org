@@ -45,6 +45,20 @@ Every screen in ores.web that lists and maintains records has the same shape and
 
 * Decisions
 
+- *Record screens, not entities.* The standard governs any screen whose subject
+  is the records of one kind. A journey decides which records; the standard
+  decides how each record screen looks and behaves.
+- *Same scope as the Qt standard.* The standard keeps every section of the
+  retired Qt-derived entity specification, and lists where it decides
+  differently and why.
+- *Rules live in shared components.* Each rule names the component that carries
+  it; a screen conforms by using the component. A missing rule is fixed in the
+  component, not in a screen.
+- *Server paging comes first.* It is the gap the user named, and it changes the
+  shared list read every record screen uses.
+
 * Out of scope
 
--
+- Server work beyond the list contract: new filters and orders come in only
+  where a record screen needs them.
+- Audit screens, wizards and dashboards, which are not record screens.

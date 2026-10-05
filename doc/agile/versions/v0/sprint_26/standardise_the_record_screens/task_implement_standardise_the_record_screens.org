@@ -82,7 +82,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR review: Refresh's icon is not in the asset set | =record_screen_standard.org= | Accept | Stated as a file to add before use; it does not borrow Revert's icon |
+| 2 | PR review: Import and Export icons look reversed | =record_screen_standard.org= | Accept | They match the web icon reference, but no rule uses them, so the rows are dropped |
+| 3 | PR review: Remove a link and Close share =dismiss=; Close is worded Cancel | =record_screen_standard.org= | Accept | Remove a link gets =link_dismiss= (=delete_dismiss= means purge); the row is Cancel |
+| 4 | PR review: Load all and the paging memory | =record_screen_standard.org= | Accept | Load all reads the server's whole total, at most 1000, so it is never a cap; the memory is cited |
+| 5 | PR review: recency duration and timestamp form | =record_screen_standard.org= | Accept | Three seconds; the last-changed time follows the timestamp rule |
+| 6 | PR review: Add opens the new record, twice | =record_screen_standard.org= | Accept | Kept in Create only |
+| 7 | PR review: is deleting the parts one transaction | =record_screen_standard.org= | Accept | A sequence; on a failure the dialog stays open, names it, and the record is not deleted |
+| 8 | PR review: modified by and performed by wording; empty story sections | =record_screen_standard.org=, =story.org= | Accept | Words table entry; story decisions and out of scope written |
 
 * Result
 

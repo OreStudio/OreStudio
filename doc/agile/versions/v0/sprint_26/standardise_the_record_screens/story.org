@@ -2,7 +2,7 @@
 :ID: 9281449A-FD88-4BED-AD86-0EFC7B4C14D2
 :END:
 #+title: Story: Standardise the record screens
-#+description: One standard for every screen that lists, reads, creates, amends and deletes records: paging, history, change reasons, related records, icons and states, built from shared components so no screen varies. Server paging landed before the close; applying the rest split to its own story at the sprint 26 close.
+#+description: One standard for every screen that lists, reads, creates, amends and deletes records: paging, history, change reasons, related records, icons and states, built from shared components so no screen varies. Server paging, the People screens and the holiday calendar screen landed before the close; applying the rest split to its own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :web:ux:standards:sprint_26:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-One standard defines the shape and behaviour of every screen in ores.web that lists and maintains records — lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions — with the same scope the retired Qt entity standard had. Server paging through the shared Pager landed with the currency, desk group and currency pair screens (PR #2644); applying the rest split to [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] at the sprint 26 close on 2026-10-05.
+One standard defines the shape and behaviour of every screen in ores.web that lists and maintains records — lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions — with the same scope the retired Qt entity standard had. Server paging through the shared Pager landed with the currency, desk group and currency pair screens (PR #2644), the People screens conformed with my profile split from them (PR #2655), and the holiday calendar screen arrived at the standard (PR #2646); applying the rest split to [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] at the sprint 26 close on 2026-10-05.
 
 * Status
 
@@ -30,8 +30,10 @@ One standard defines the shape and behaviour of every screen in ores.web that li
 
 On 2026-10-05, at the sprint 26 close, this story was reworded to the
 standard it delivered and closed DONE. Server paging through the shared
-Pager landed before the close (PR #2644); the task Bring the record screens
-to the standard moved to
+Pager landed with the currency, desk group and currency pair screens
+(PR #2644), the People screens conformed with my profile split from them
+(PR #2655), and the holiday calendar screen arrived at the standard
+(PR #2646); the task Bring the record screens to the standard moved to
 [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the
 standard]].
 
@@ -48,6 +50,7 @@ standard]].
 | [[id:F730EC1E-5156-4E78-BDDC-E0BED5750EAA][Scaffold story: Standardise the record screens]] | DONE | 2026-10-05 | 2026-10-05 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:4A56D08C-0D66-45C7-8398-F67CFE138E7F][Write the record screen standard]] | DONE | 2026-10-05 | 2026-10-05 | Initial task for: Standardise the record screens |
 | [[id:EF0FFEFC-A8AD-4708-B656-FDEEF7DCBB9C][Page the record screens on the server]] | DONE | 2026-10-05 | 2026-10-05 | Every record list reads one page with offset, limit and the total through the shared Pager, with First, Last and page size, and searches on the server. |
+| [[id:6EE87F8B-4E42-4ED6-A22A-DB8BF4F492A5][Split my profile from the people screens]] | DONE | 2026-10-05 | 2026-10-05 | My profile holds only the signed-in person's own data; managing other people moves to the People screens, a paged list and a page per person with details, contact, roles and sign-ins, reached from a Home card and the menu. |
 
 * Decisions
 

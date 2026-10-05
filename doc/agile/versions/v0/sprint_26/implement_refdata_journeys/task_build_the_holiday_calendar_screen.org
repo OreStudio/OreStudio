@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 978FEF55-DFCB-440B-A7DB-BB65C8C018C8
+:END:
+#+title: Task: Build the holiday calendar screen
+#+description: Build Keep a holiday calendar right in ores.web: the calendar by shape, rules, exceptions, events, rebuild and business days.
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_journeys:sprint_26:v0:
+#+owner: marco
+#+branch: feature/build-the-holiday-calendar-screen
+#+pr: 2646
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant administrator keeps a holiday calendar right in ores.web: the calendar by its shape, its rules, exceptions and events, the rebuild of the business days, and the business days they produce.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The journey [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] runs in ores.web against the real server.
+- It reuses the shared history panel and change-reason form.
+- Every gap the journey document records is stated on the screen as the document says, or closed.
+- Tests cover the BFF routes and the screen.
+
+* Plan
+
+1. Registry: calendars writable; rules, exceptions and events read by
+   =calendar_code= and keyed by =id=; the year read and the rebuild as two
+   calls beside the generic ones.
+2. BFF: write schemas that admit only user calendars; a days route that
+   pages to the year; a rebuild route.
+3. Screen: panels by calendar shape (QuantLib, derived, bespoke); a field
+   table with conditional fields so the rule form follows the rule kind; one
+   parts panel for rules, exceptions and events, each row with its history.
+4. Days panel: one year by month, with the cause of each holiday, a second
+   calendar beside it, and the rebuild.
+5. Live check on the real server, then correct the journey where the build
+   proved it wrong.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| wire-protocol tests | 106 pass | =npx vitest run= in =packages/wire-protocol= | 6d7ba3827d |
+| BFF tests | 191 pass | =npx vitest run= in =packages/bff= | 6d7ba3827d |
+| web tests | 273 pass | =npx vitest run= in =packages/web= | 6d7ba3827d |
+| Live ACME_LDN weekday holidays in 2026 | 2026-04-06, 2026-05-04, 2026-06-15, 2026-12-25 | =GET /api/refdata/calendars/ACME_LDN/days?year=2026= after a rebuild to 2027 | 6d7ba3827d |
+| Live rebuild after a new 2026 exception | 0 days written; 2026-03-02 stays a business day | =POST /api/refdata/calendars/ACME_LDN/rebuild= | 6d7ba3827d |
+| Live calendar derived from TARGET, 2026 | 0 weekday holidays | =GET /api/refdata/calendars/ACME_TGT/days?year=2026= | 6d7ba3827d |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2646][#2646]] | [web] Build the holiday calendar screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: tab strings landed in the classification tabs | =web/src/i18n/locales/*.ts= | Accept | Moved to =records.tabs=; the derived-calendar test caught it |
+| 2 | Local review: the area's unused "not built yet" string failed the catalogue check | =web/src/i18n/locales/en.ts= | Accept | Removed; the group is now =area.screens= |
+| 3 | Local review: a new part's id changed on every render | =web/src/refdata/calendars.tsx= | Accept | The id is set once, when Add is chosen |
+| 4 | Local review: misspell check | changed files | Accept | Clean |
+| 5 | PR review: the year read relies on an order it does not request | =wire-protocol/src/records.ts= | Decline | The store pages in key order (calendar, then date) and refuses a named order field (=calendar_date_service.cpp=); a comment now says so |
+| 6 | PR review: the rule schema does not check the fields each kind needs | =bff/src/records.ts= | Accept | A per-kind check refuses missing or extra fields and a first year after the last, with the reason |
+| 7 | PR review: the new range check applies to existing forms | =web/src/refdata/records.tsx= | No change | No existing field sets a bound |
+| 8 | PR review: an empty choice shows a missing label | =web/src/refdata/records.tsx= | No change | =DetailValue= shows a dash for an empty value before the choice branch |
+| 9 | PR review: =writeOf= does not check a choice is an option; a hidden field keeps its value | =web/src/refdata/records.tsx= | Decline | The select limits the values and the BFF enums refuse others; keeping a hidden value restores it when the person switches back |
+| 10 | PR review: rules and exceptions are not checked against a read-only calendar | =bff/src/records.ts= | Accept | The BFF refuses a rule or exception written to a calendar that is not editable (403); diary events stay allowed, as the screen offers them |
+| 11 | PR review: comment wrap; generic constant names; the 0-written case | several | Accept | Re-wrapped; renamed =isoDay= and =calendarYear=; the rebuild note already explains a rebuild that writes nothing |
+| 12 | PR review (rebuild): the read-only check reads every calendar | =bff/src/records.ts= | Accept | It reads the one calendar by key |
+| 13 | PR review (rebuild): stale comment on the read-only check, and its race | =bff/src/records.ts= | Accept | The comment says the BFF enforces it, the server does not yet, and the server's check is the real fix |
+| 14 | PR review (rebuild): the search length is counted in bytes | =calendar_service.cpp= | Decline | Generated by the shared codegen template for every entity; a change belongs there |
+| 15 | PR review (rebuild): type and country are free codes in the write | =bff/src/records.ts= | Decline | The picker offers only real codes and the server's insert checks both |
+| 16 | PR review (rebuild): the access mark's reason is in the title only | =web/src/ui/AccessMark.tsx= | Accept | It also carries an accessible label with the word and the reason |
+
+* Result
+
+Shipped the holiday calendar screen at =/refdata/calendars=, linked from the
+reference data area, which now shows all four journey screens and the
+classifications.
+
+- A QuantLib calendar is read only, explains that QuantLib holds its
+  holidays, and offers *Derive a calendar*. A derived calendar shows its
+  exceptions over its base. A bespoke calendar also has its rules, described
+  in words (=3rd Monday of January=, =+1 days from Easter=), with a form that
+  asks only for the fields the rule kind uses.
+- Rules, exceptions and diary events each keep their own history and revert.
+- The business days panel shows one year by month with the cause of each
+  holiday, lays a second calendar beside it, and rebuilds up to a year.
+- Checked live: a bespoke calendar built the right 2026 holidays; a stale rule
+  correction answered 409; the BFF refused a QuantLib write with 400.
+
+The build found two server defects, now stated on the screen and in the
+journey, and captured: a rebuild never rewrites a built day
+(=calendar_rebuild_never_rewrites_built_days=), and a QuantLib calendar
+builds without its holidays (=quantlib_calendars_build_without_holidays=).
+A third capture records that nothing enforces a QuantLib calendar is read
+only (=calendar_editability_not_enforced=). The ORE export stays unoffered,
+as the journey says.

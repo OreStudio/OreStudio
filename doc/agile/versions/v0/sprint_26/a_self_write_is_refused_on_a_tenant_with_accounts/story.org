@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168
+:END:
+#+title: Story: Fix the self write refusal on a tenant with accounts
+#+description: Every write where the actor is the account written is refused with 'Invalid modified_by' on a tenant that holds user accounts: the generated insert trigger retires the account's current row as part of the version replace before it validates modified_by, and the validator accepts an actor only while a current row with that username exists. The contact record's insert reaches it too, through the account version touch. The bootstrap branch hides it from unit tests. Found by the profile journeys end-to-end run; PUT /api/me/profile and PUT /api/me/contact-information cannot land.
+#+type: story
+#+level: s2
+#+filetags: :codegen:sql:v0:sprint_26:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every write lands on a tenant that holds accounts, including the write whose
+actor is the account written. The generated insert function validates
+=modified_by= before its version management retires the actor's current row,
+so the validator finds the row its rule requires. The validator's own rules do
+not change. The fix lives in the three literate templates that render every
+create script, and a regeneration carries it to every generated file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing.                             |
+| Waiting on    | Nothing.                             |
+| Next          | Order the actor validation before the version replace. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- A write lands on a tenant that holds accounts when the actor is the account
+  written: the generated insert function validates =modified_by= above its
+  version management, so the retire no longer removes the row the validator
+  reads.
+- The three literate create templates carry the new order, and a regeneration
+  carries it to every generated create script. No generated file is patched
+  by hand.
+- The two Profile journeys land their saves: =PUT /api/me/profile= and
+  =PUT /api/me/contact-information=, and an administrator's own contact
+  insert lands with them.
+- The order is guarded by a test that replaces an account as itself on a
+  tenant that holds accounts, so the validator's bootstrap branch can no
+  longer hide the defect.
+- Every other validation keeps its place: the tenant, the foreign keys, the
+  enums and the change reason keep the order they have, and the validator's
+  own rules do not change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4F0A15ED-E5ED-41D1-AE33-FA2192D36CAC][Order the actor validation before the version replace]] | BACKLOG | | | Move the modified_by validation above the version management in the three literate SQL create templates, re-tangle them, and regenerate every create script, so no generated file retires the actor row before the validator reads it. |
+| [[id:B7D9DE83-DFCA-4CAD-ACEC-BCAFE3344C99][Guard the self write in the suite]] | BACKLOG | | | Prove the reordered function lands a write whose actor is the account written, and add the repository case that fails on the old order: an account written once and then replaced as itself on a tenant that holds accounts. |
+| [[id:9007491B-B716-483C-B441-24E6F7B91A14][Re-run the profile journeys end to end]] | BACKLOG | | | Recreate the deployment database from the regenerated scripts, provision and seed it, and re-run the profile journeys checker, so the member own saves and the administrator contact insert pass and only the upload defect stays red. |
+
+* Decisions
+
+- *The validation moves; the validator does not weaken.* The other column
+  validations already run before the version management: the tenant, the
+  foreign keys, the enums and the change reason. Moving =modified_by= into
+  that group is the smallest change that meets the validator's rule.
+  Relaxing the validator instead, for example by accepting an actor whose row
+  was current at the start of the statement, would hide a real refusal for
+  every other caller.
+- *The fix belongs to the templates, and every generated file follows.* The
+  assignment sits in 338 generated create scripts, in three shapes (domain
+  entity, junction and table), and a patch of each output would drift from its
+  template at the next regeneration.
+- *The bootstrap branch stays.* A tenant's first account must be creatable
+  before any account row is current, so the branch that passes any actor
+  during bootstrap remains as it is.
+
+* Out of scope
+
+- The upload over the message fabric's payload cap (capture
+  [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload
+  cap cannot reach the validator]]), the other finding from the same run.
+- The hand-written create scripts that call the validator
+  (=iam_account_roles_create.sql=, =iam_role_permissions_create.sql=,
+  =refdata_party_categories_create.sql=, =dq_fsm_machines_create.sql= and
+  =dq_dataset_dependency_create.sql=). Their version management retires their
+  own row, never the actor's account row, so the rule the validator applies
+  still holds when it runs.
+- The validator's own rules: the bootstrap branch, the current-row lookup
+  across tenants, and the service roles it accepts.
+
+* Promoted from capture
+
+Captured 2026-10-05 in the product backlog; promoted preserving the UUID.
+
+** What
+
+On a tenant that holds user accounts, a write whose actor is the account
+written is refused. The generated insert function performs its version
+management first — it retires the account's current row with =valid_to =
+clock_timestamp()= — and only then assigns =NEW.modified_by :=
+ores_iam_validate_account_username_fn(NEW.modified_by)=. The validator accepts
+an actor only while a current row with that username exists, and the retirement
+just removed the actor's own row, so the write raises =Invalid modified_by:
+<username>= (=23503=). Every self write hits it: the member's own profile and
+contact saves, and an administrator's write to their own account. The contact
+record reaches it through the account version touch its insert performs
+(=ores_iam_account_contact_informations_insert_fn= calls
+=ores_iam_accounts_touch_version_fn= before its own validation).
+
+** Why
+
+Two of the three Profile journeys cannot land their save on any tenant that
+already holds accounts: =PUT /api/me/profile= and
+=PUT /api/me/contact-information= answer "The write failed.", while the
+administrator's write to a colleague's record passes, because retiring the
+colleague's row leaves the actor's own row current. The validator's bootstrap
+branch — a tenant with no current non-service accounts passes any actor — hides
+it from every unit test that seeds its own tenant. The ordering lives in the
+generator, not in one generated file: the assignment appears in 338 generated
+create scripts, in three template shapes, so the fix belongs to the templates
+and a regeneration, not to a patch of each output. Found by the profile journeys
+end-to-end run (task [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the
+profile screen]], 2026-10-05).
+
+** References
+
+- =projects/ores.codegen/library/templates/ores.sql.schema.domain_entity_create.org=,
+  =ores.sql.schema.junction_create.org= and =ores.sql.schema.table_create.org= —
+  the edit point; each tangles to its =sql_schema_*_create.mustache= twin. The
+  ordering to fix: the version management (the retire), then
+  =NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by)=.
+- =projects/ores.sql/create/iam/iam_accounts_create.sql= —
+  =ores_iam_accounts_insert_fn=, the generated shape.
+- =projects/ores.sql/create/iam/iam_tenant_functions_create.sql= —
+  =ores_iam_validate_account_username_fn=: the bootstrap branch (line 319), and
+  the current-row lookup that raises =23503= (line 348).
+- =projects/ores.sql/create/iam/iam_account_contact_informations_create.sql= —
+  the contact insert's account version touch (line 110).
+- Evidence: =doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_run.txt= —
+  the end-to-end run that found it; the SQL reproduction (a write with the self
+  actor fails, the same write with another actor passes, rollback only) is in
+  the task's =* Result=.
+
+** See also
+
+- [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Story: Implement the profile journeys in ores.web]] — the story whose end-to-end run found it.
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][User Journey: Present myself]]
+- [[id:71515FD0-8089-493F-9D9C-36877392DB33][User Journey: Keep my details current]]
+- [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload cap cannot reach the validator]] — the other finding from the same run.

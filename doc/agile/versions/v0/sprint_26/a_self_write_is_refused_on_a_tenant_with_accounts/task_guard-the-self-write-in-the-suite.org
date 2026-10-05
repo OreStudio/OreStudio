@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: B7D9DE83-DFCA-4CAD-ACEC-BCAFE3344C99
+:END:
+#+title: Task: Guard the self write in the suite
+#+description: Prove the reordered function lands a write whose actor is the account written, and add the repository case that fails on the old order: an account written once and then replaced as itself on a tenant that holds accounts.
+#+type: task
+#+level: s1
+#+filetags: :a_self_write_is_refused_on_a_tenant_with_accounts:sprint_26:v0:
+#+owner: marco
+#+branch: feature/fix-the-self-write
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A test replaces an account as itself and the write lands, and the SQL reproduction passes on a database built from the regenerated scripts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- repository_account_repository_tests.cpp gains a case that writes an account and then replaces it with modified_by set to the account username; the case fails on the old ordering and passes on the new.
+- The SQL reproduction lands on a database built from the regenerated scripts: the self write commits, the same write with another actor commits, and an actor that names no current account is still refused with Invalid modified_by (23503).
+- Each run states the commit and the database it stood on, and both results appear in the task Result.
+- The write moves the version forward, and the written field reads back.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

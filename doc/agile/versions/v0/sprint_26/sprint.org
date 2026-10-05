@@ -172,6 +172,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] | STARTED | 2026-10-04 | | Build the ores.refdata user journeys as ores.web screens on the journey runtime, starting with the classification list and the currency. |
 | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] | BACKLOG | | | A new ores.inbox component holds a generic approval record and queue and a notification subsystem any activity can use; the role request is the first approval kind and its first notifications. |
 | [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] | STARTED | 2026-10-05 | | One standard for every screen that lists, reads, creates, amends and deletes records: paging, history, change reasons, related records, icons and states, built from shared components so no screen varies. |
+| [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] | BACKLOG | | | Every write whose actor is the account written is refused with Invalid modified_by on a tenant that holds accounts: the generated insert function retires the actor's current row as part of the version replace before it validates modified_by. Found by the profile journeys end-to-end run, which cannot land PUT /api/me/profile and PUT /api/me/contact-information. |
 
 * Achievements
 

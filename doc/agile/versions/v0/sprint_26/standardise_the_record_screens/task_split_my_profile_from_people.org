@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -80,6 +80,22 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the identity tab read every account on each render, for every person | =web/src/access/PersonForms.tsx= | Accept | The manager list is read only by a person who may administer accounts, as before |
+| 2 | Local review: the people list read only the first 100 accounts | =web/src/access/PeoplePage.tsx= | Accept | It pages, searches and sorts on the server through the shared list |
+| 3 | Local review: the shell tests render without a query client now that the menu reads access | =web/src/components/shells.test.tsx=, =web/src/AppRoutes.test.tsx= | Accept | The tests provide one; the app already does |
+| 4 | Local review: misspell check | changed files | Accept | Clean |
 
 * Result
+
+My profile holds only the signed-in person's own account, in tabs: details,
+contact and the access they hold. Managing other people moved to People: the
+shared record list over the accounts, paged, searched (username, name, email)
+and sorted (username, name) on the server, and a page per person with the
+standard header and details, contact, roles and sign-ins as tabs. Both pages
+draw the same identity and contact forms from =access/PersonForms.tsx=. People
+has a Home card and a menu entry for a person who may read accounts.
+
+Along the way the tab bar became a shared part (=ui/Tabs.tsx=) and the record
+list takes a source, so any record kind lists the same way. Checked live: 59
+people page fifteen at a time, a search for "admin" finds the tenant
+administrator, and the person and profile tabs draw.

@@ -42,7 +42,7 @@ Every screen in ores.web that lists and maintains records has the same shape and
 | [[id:4A56D08C-0D66-45C7-8398-F67CFE138E7F][Write the record screen standard]] | DONE | 2026-10-05 | 2026-10-05 | Initial task for: Standardise the record screens |
 | [[id:EF0FFEFC-A8AD-4708-B656-FDEEF7DCBB9C][Page the record screens on the server]] | DONE | 2026-10-05 | 2026-10-05 | Every record list reads one page with offset, limit and the total through the shared Pager, with First, Last and page size, and searches on the server. |
 | [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | BACKLOG | | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
-| [[id:6EE87F8B-4E42-4ED6-A22A-DB8BF4F492A5][Split my profile from the people screens]] | STARTED | 2026-10-05 | | My profile holds only the signed-in person's own data; managing other people moves to the People screens, a paged list and a page per person with details, contact, roles and sign-ins, reached from a Home card and the menu. |
+| [[id:6EE87F8B-4E42-4ED6-A22A-DB8BF4F492A5][Split my profile from the people screens]] | DONE | 2026-10-05 | 2026-10-05 | My profile holds only the signed-in person's own data; managing other people moves to the People screens, a paged list and a page per person with details, contact, roles and sign-ins, reached from a Home card and the menu. |
 
 * Decisions
 

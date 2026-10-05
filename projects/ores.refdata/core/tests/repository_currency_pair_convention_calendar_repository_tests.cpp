@@ -17,7 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/calendar_generator.hpp"
@@ -35,10 +37,16 @@
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;

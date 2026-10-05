@@ -35,6 +35,9 @@
 // regenerating it against current codegen templates. counterparty's drift was
 // resolved incidentally while attaching a logo/image to it (see "Attach a
 // logo/image to a counterparty" task), so it moved here too.
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.service/messaging/asset_class_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_event_registrar.hpp"
 #include "ores.refdata.service/messaging/book_purpose_type_event_registrar.hpp"
@@ -76,6 +79,7 @@
 #include "ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_schedule_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_unit_event_registrar.hpp"
+#include <vector>
 
 namespace ores::refdata::service::messaging {
 

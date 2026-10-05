@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/monetary_nature_json_io.hpp" // IWYU pragma: keep.
@@ -26,10 +27,14 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <faker-cxx/string.h>
 #include <set>
+#include <string>
+#include <string_view>
 
 namespace {
 

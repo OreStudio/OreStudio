@@ -1,0 +1,150 @@
+Evidence: the profile journeys run end to end against the deployment, driven over HTTP.
+
+Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js
+Run from: the repository root, on branch feature/build-the-profile-screen.
+Environment: brave_hopper.
+
+The harness signs in against the BFF at http://127.0.0.1:20402 as the member
+and as the tenant administrator (ores_web_member and ores_web_probe on the
+seeded tenant), and walks Present myself, Keep my details current and Change
+someone's details: the grants the session carries, the read gap the journeys
+state, the member's own contact record, the self profile write, the self
+contact write, the round trip, the picker's rule read from the validator, the
+photo upload and a refusal, the administrator's route, the account read the
+member was refused, the administrator's profile write, the contact write with
+the claim the panel read, a stale claim, a claim of no record where one exists
+and where none exists, and the picture the account points at.
+
+The run exits non-zero: 67 checks ran and 29 failed. Every failure traces to
+the two platform defects that the story's Decisions record and that the two
+captures beside the story document — the self write refused on a tenant with
+accounts, and the upload over the message fabric's payload cap. The
+administrator's journey passes whole.
+
+--- output ---
+
+profile journeys over http://127.0.0.1:20402
+
+Present myself and keep my details current, as the member:
+  [PASS] ores_web_member signed in (http 200)
+
+the grants the session carries:
+  [PASS] the grants read answers (http 200)
+  [PASS] the session carries the Viewer role (Viewer)
+  [PASS] no held grant carries iam::accounts:read (refdata::currencies:read, variability::flags:read, workspace::workspaces:read)
+
+the read gap the journey documents state:
+  [PASS] the member's read of their own account is refused (http 403 forbidden)
+  [PASS] the refusal carries the server code
+
+the member's own contact record, which carries no guard:
+  [PASS] the own contact read answers (http 200)
+  [PASS] a record, when present, belongs to the session's account
+
+the self profile write:
+  [PASS] the self write answers (http 200)
+  [FAIL] the write was accepted (The write failed.)
+  [FAIL] the account carries the written name
+  [FAIL] the account carries the written job title
+  [FAIL] the account names the session's account
+
+the self contact write:
+  [PASS] the contact write answers (http 200)
+  [FAIL] the write was accepted (The write failed.)
+  [FAIL] the record names the session's account
+  [FAIL] the record carries the written street
+  [FAIL] the record carries the written contact address
+  [FAIL] the write bumped the record the read showed
+
+the round trip:
+  [FAIL] the record reads back with the city
+  [PASS] the record reads back unchanged
+
+the picker's rule, read from the validator:
+  [PASS] the policy read answers (http 200)
+  [PASS] the largest size is two megabytes (2097152)
+  [PASS] the smallest side is 128
+  [PASS] the formats are stated (image/png, image/jpeg, image/webp)
+
+the photo upload and a refusal:
+  [PASS] the upload answers (http 200)
+  [PASS] the upload was accepted
+  [PASS] the upload answers an identifier (01a10986-4b3d-71cc-85c2-b1d5f3eb31ba)
+  [PASS] the oversized image is over the limit (2431333 bytes)
+  [FAIL] the oversized upload answers rather than fails (http 503)
+  [FAIL] the refusal names the size rule
+  [FAIL] the photo write was accepted (The write failed.)
+  [FAIL] the account carries the uploaded picture
+
+the administrator's route refuses the member:
+  [PASS] the write is refused (http 403 forbidden)
+
+Change someone's details, as the tenant administrator:
+  [PASS] ores_web_probe signed in (http 200)
+
+the picker's read:
+  [PASS] the tenant list answers (http 200)
+  [PASS] the list holds the member
+
+the account read the member was refused:
+  [PASS] the administrator's account read answers (http 200)
+  [PASS] the read names the member's account
+  [FAIL] the read shows the member's picture
+
+the administrator's profile write, the unset fields echoed:
+  [PASS] the administrator write answers (http 200)
+  [PASS] the write succeeded
+  [PASS] the name moved
+  [PASS] the job title moved
+  [PASS] the sign-in address stayed (ores_web_member@ores.web.test)
+  [PASS] the default party stayed
+  [PASS] the reporting line stayed
+  [PASS] the version moved forward
+
+the contact write with the claim the panel read:
+  [PASS] the administrator's contact read answers (http 200)
+  [FAIL] the record the member wrote is the one read
+  [FAIL] the claimed write answers (http 400)
+  [FAIL] the claim held
+  [FAIL] the street moved
+  [FAIL] the version moved forward
+
+a claim that no longer holds:
+  [FAIL] the stale claim is answered, not failed (http 400)
+  [FAIL] the stale claim is a conflict
+  [FAIL] the conflict names the version
+  [FAIL] the conflict carries a message
+  [PASS] no record came back with the refusal
+  [FAIL] the refused write changed nothing
+
+a claim of no record where one exists:
+  [FAIL] the no-record claim is a conflict (ok)
+  [FAIL] the conflict names the existing row
+
+a claim of no record where none exists:
+  [FAIL] the no-record claim inserts one (Repository error: Executing INSERT failed: ERROR:  Invalid modified_by: ores_web_probe. Must be a valid account username or service role.
+CONTEXT:  PL/pgSQL function ores_iam_validate_account_username_fn(text) line 41 at RAISE
+PL/pgSQL function ores_iam_accounts_insert_fn() line 85 at assignment
+SQL statement "insert into "ores_iam_accounts_tbl"
+    select (rec).*"
+PL/pgSQL function ores_iam_accounts_touch_version_fn(uuid,uuid,text,text,text,text,text) line 30 at SQL statement
+SQL statement "SELECT ores_iam_accounts_touch_version_fn(
+        NEW.tenant_id,
+        NEW.account_id,
+        NEW.change_reason_code,
+        NEW.change_commentary,
+        NEW.modified_by,
+        NEW.performed_by,
+        'account_contact_information'
+    )"
+PL/pgSQL function ores_iam_account_contact_informations_insert_fn() line 27 at PERFORM
+)
+  [FAIL] the inserted record names the administrator's account
+
+the picture the account points at:
+  [PASS] the picture answers (http 200)
+  [PASS] the picture is a png (image/png)
+  [PASS] the picture is the uploaded bytes (37368 bytes)
+
+67 checks ran
+29 CHECK(S) FAILED

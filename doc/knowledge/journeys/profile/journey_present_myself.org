@@ -113,6 +113,20 @@ So =partial= here means the operation exists and the caller may not use it.
    shell trigger falls back to the username and the initials. The candidate is
    a self read of the caller's own account, or a *Viewer* grant that carries
    =iam::accounts:read=. (Reconnaissance, 2026-10-05.)
+6. *The self write is refused on a tenant with accounts.* Step 4's save cannot
+   land: the generated insert trigger validates =modified_by= only after the
+   version replace has retired the actor's own row, so every write whose actor
+   is the account written raises =Invalid modified_by= (23503). Captured at
+   [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][A self write is refused on a
+   tenant with accounts]]. (End-to-end run, 2026-10-05.)
+7. *An upload over the message fabric's payload cap.* Step 2's photo replace
+   cannot carry an image over roughly three quarters of a megabyte: the
+   deployment's NATS takes the default 1 MB cap, the base64 body grows by a
+   third, and the transport raises =MAX_PAYLOAD_EXCEEDED= (http 503) before
+   the validator's own =image_too_large= answer can be reached. Captured at
+   [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload
+   cap cannot reach the validator]]; the direction is HTTP storage for an
+   upload larger than 1 MB. (End-to-end run, 2026-10-05.)
 
 * Related journeys
 

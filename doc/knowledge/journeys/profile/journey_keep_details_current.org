@@ -120,6 +120,13 @@ operation exists and the caller may not use it.
    account is refused. The identity panel beside this one draws the refusal
    instead of fields. The contact record needs no such permission, so this
    journey's own panel is unaffected. (Reconnaissance, 2026-10-05.)
+5. *The self write is refused on a tenant with accounts.* Step 5's save cannot
+   land: the contact insert performs the account version touch, and the
+   generated insert trigger validates =modified_by= only after the version
+   replace has retired the actor's own row, so a member writing their own
+   record raises =Invalid modified_by= (23503). Captured at
+   [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][A self write is refused on a
+   tenant with accounts]]. (End-to-end run, 2026-10-05.)
 
 * Related journeys
 

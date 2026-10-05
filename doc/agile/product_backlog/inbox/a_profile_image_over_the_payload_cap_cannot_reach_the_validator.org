@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 820AC660-C3FC-4A45-998D-A65818FA4BB8
+:END:
+#+title: A profile image over the payload cap cannot reach the validator
+#+description: The deployment's NATS takes the default 1 MB max_payload, and the upload body carries the image base64 so it grows by a third: an image over roughly three quarters of a megabyte fails in the transport with MAX_PAYLOAD_EXCEEDED and the caller gets a 503, so the validator's own image_too_large answer is unreachable while the picker and the validator both state 2 MB. Direction (product owner, 2026-10-05): an upload larger than 1 MB travels over HTTP storage, not the message fabric.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The deployment's NATS takes the default payload cap: =/varz= answers
+=max_payload: 1048576=, and no =max_payload= line sits in
+=build/config/nats-brave_hopper.conf=. The upload body carries the image as
+base64, so the bytes on the wire grow by a third, and an image over roughly
+three quarters of a megabyte exceeds the cap. The transport raises
+=TransportError: MAX_PAYLOAD_EXCEEDED=, the BFF answers 503, and the file never
+reaches =ores.assets= — so the validator's own =image_too_large= answer, the
+one the picker and the validator both state at 2 MB, cannot be reached.
+
+* Why
+
+The photo replace states a rule the transport cannot honour: every image over
+roughly three quarters of a megabyte — including the ones the validator would
+refuse anyway — dies in the transport before anybody can judge it, and the 503
+names no rule the person can act on. The 1 MB cap silently narrows a stated
+2 MB limit for every upload path over the fabric, not only the profile picker.
+Direction (product owner, 2026-10-05): *an upload larger than 1 MB travels over
+HTTP storage, not the message fabric.* Found by the profile journeys end-to-end
+run (task [[id:6CDA40DF-EBED-4F62-9804-525EEAB0282C][Build the profile
+screen]], 2026-10-05).
+
+* References
+
+- =build/config/nats-brave_hopper.conf= (and =build/config/nats.conf.template=,
+  read by =projects/ores.compass/src/nats_init.py=) — the deployment's NATS
+  configuration; no =max_payload= is set, so the default cap stands.
+- NATS =/varz=: =max_payload: 1048576= on NATS 2.14.6.
+- The BFF log: the upload answer carries =TransportError:
+  MAX_PAYLOAD_EXCEEDED= from the subject publish.
+- The upload body: =POST /api/images= (=assets.v1.images.upload=), the bytes
+  base64 in the message.
+- Candidate surface: =projects/ores.storage/= (api, core, modeling, service)
+  and =projects/ores.http/core/include/ores.http.core/routes/storage_routes.hpp= —
+  where the direction points.
+- Evidence: =doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_run.txt= —
+  "the oversized upload answers rather than fails (http 503)" against a
+  2,431,333-byte image.
+
+* See also
+
+- [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Story: Implement the profile journeys in ores.web]] — the story whose end-to-end run found it.
+- [[id:0381B3BF-EFB1-4F26-A6E9-E74A18A9233D][User Journey: Present myself]] — the photo replace.
+- [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][A self write is refused on a tenant with accounts]] — the other finding from the same run.

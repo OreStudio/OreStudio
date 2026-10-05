@@ -184,13 +184,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Web suite | 26 files, 252 tests, all passed | npm --prefix projects/ores.web test | 4f4b91c336 |
-| Wire-protocol suite | 12 files, 92 tests, all passed | npm --prefix projects/ores.web test | 4f4b91c336 |
-| BFF suite | 29 files, 170 tests, all passed | npm --prefix projects/ores.web test | 4f4b91c336 |
-| Typecheck | Clean, exit 0 | npm --prefix projects/ores.web run typecheck | 4f4b91c336 |
-| Profile journeys, end to end | 67 checks ran, 29 failed; every failure traced to the two platform defects the captures document | node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js (raw output: evidence/profile_journeys_run.txt) | 4f4b91c336 |
-| Drift gate, whole tree | One finding, =trade_service.cpp=, outside this branch: local clang-format 21 against CI's 18, the same version artifact the sibling task recorded. The file was restored, not committed. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all | 4f4b91c336 |
-| Drift gate, sweep | Sweep clean: no file this branch touched would change. 67 files elsewhere in the catalogue would change, which belongs to those components' own clean-up. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --sweep | 4f4b91c336 |
+| Web suite | 27 files, 260 tests, all passed | npm --prefix projects/ores.web test | 13e8b9e1ef |
+| Wire-protocol suite | 13 files, 114 tests, all passed | npm --prefix projects/ores.web test | 13e8b9e1ef |
+| BFF suite | 30 files, 192 tests, all passed | npm --prefix projects/ores.web test | 13e8b9e1ef |
+| Typecheck | Clean, exit 0 | npm --prefix projects/ores.web run typecheck | 13e8b9e1ef |
+| Format gate | Clean, exit 0 ("All matched files use Prettier code style!") | npm --prefix projects/ores.web run format:check | 13e8b9e1ef |
+| Profile journeys, end to end | 67 checks ran, 29 failed; every failure traced to the two platform defects the captures document | node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js (raw output: evidence/profile_journeys_run.txt) | 13e8b9e1ef |
+| Drift gate, whole tree | Clean: the regenerated tree matches the checked-in tree. An earlier run, before the branch merged =main= forward, reported one finding outside this branch, =trade_service.cpp=, a local clang-format 21-against-18 version artifact; the file was restored, not committed. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all | 13e8b9e1ef |
+| Drift gate, sweep | Sweep clean: no file this branch touched would change. 67 files elsewhere in the catalogue would change, which belongs to those components' own clean-up. | projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --sweep | 13e8b9e1ef |
 
 * Notes
 
@@ -242,9 +243,10 @@ two with no action are recorded, and neither is in the diff's own text.
 Closed 2026-10-05, with the verification the plan set, in that order.
 
 The suites and the type checker pass: =npm --prefix projects/ores.web test=
-runs the three packages (web 26 files and 252 tests, wire-protocol 12 files and
-92 tests, BFF 29 files and 170 tests, all passed), and =npm --prefix
-projects/ores.web run typecheck= exits 0.
+runs the three packages (web 27 files and 260 tests, wire-protocol 13 files and
+114 tests, BFF 30 files and 192 tests, all passed), =npm --prefix
+projects/ores.web run typecheck= exits 0, and =npm --prefix projects/ores.web
+run format:check= reports every file in the style.
 
 The deployment carried the branch under a fresh database: the services were
 rebuilt and restarted, =./compass.sh db recreate -y -k= recreated the database,

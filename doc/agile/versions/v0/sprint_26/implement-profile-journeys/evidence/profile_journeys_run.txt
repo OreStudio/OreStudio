@@ -1,7 +1,8 @@
 Evidence: the profile journeys run end to end against the deployment, driven over HTTP.
 
 Command: node doc/agile/versions/v0/sprint_26/implement-profile-journeys/evidence/profile_journeys_check.js
-Run from: the repository root, on branch feature/build-the-profile-screen.
+Run from: the repository root, on branch feature/build-the-profile-screen, at
+commit 13e8b9e1ef.
 Environment: brave_hopper.
 
 The harness signs in against the BFF at http://127.0.0.1:20402 as the member
@@ -18,8 +19,11 @@ and where none exists, and the picture the account points at.
 The run exits non-zero: 67 checks ran and 29 failed. Every failure traces to
 the two platform defects that the story's Decisions record and that the two
 captures beside the story document — the self write refused on a tenant with
-accounts, and the upload over the message fabric's payload cap. The
-administrator's journey passes whole.
+accounts, and the upload over the message fabric's payload cap. The member's
+own saves are refused, so the records they were to write never land, and the
+administrator's checks that read those records cannot pass; the one direct
+administrator failure is the same self-write defect, the administrator
+writing their own contact record.
 
 --- output ---
 
@@ -69,7 +73,7 @@ the picker's rule, read from the validator:
 the photo upload and a refusal:
   [PASS] the upload answers (http 200)
   [PASS] the upload was accepted
-  [PASS] the upload answers an identifier (01a10986-4b3d-71cc-85c2-b1d5f3eb31ba)
+  [PASS] the upload answers an identifier (01a10a25-8ce6-7c99-b36d-bbe7db22e4a4)
   [PASS] the oversized image is over the limit (2431333 bytes)
   [FAIL] the oversized upload answers rather than fails (http 503)
   [FAIL] the refusal names the size rule

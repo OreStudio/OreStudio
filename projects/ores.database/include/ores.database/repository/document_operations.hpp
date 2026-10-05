@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -68,6 +69,18 @@ auto read_one(const database::context& ctx,
         throw std::invalid_argument(std::format(
             "No {} with id {} is visible to the session.", what, boost::uuids::to_string(id)));
     return rows.front();
+}
+
+/**
+ * @brief The ids of rows, as the repositories' remove takes them.
+ */
+template <typename Rows>
+std::vector<std::string> ids_of(const Rows& rows) {
+    std::vector<std::string> out;
+    out.reserve(rows.size());
+    for (const auto& r : rows)
+        out.push_back(boost::uuids::to_string(r.id));
+    return out;
 }
 
 }

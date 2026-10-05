@@ -30,9 +30,11 @@
 #include "ores.security/authorization/grants.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 
 namespace ores::service::messaging {
@@ -184,6 +186,26 @@ void reply(ores::nats::service::client& nats, const ores::nats::message& msg, co
         return;
     const auto bytes = ores::nats::default_wire_codec().encode(resp);
     nats.publish(msg.reply_subject, std::span<const std::byte>(bytes));
+}
+
+/**
+ * @brief The context a read acts in, for a party the request names.
+ *
+ * A session that acts for a party reads as that party, whatever the request
+ * names. A session that acts for none, as a workflow step's service session
+ * does, sees every party's rows, so a request that names a party narrows the
+ * read to it. An empty or unparseable party leaves the context unchanged.
+ */
+inline ores::database::context for_requested_party(const ores::database::context& ctx,
+                                                   const std::string& party_id) {
+    if (ctx.party_id() || party_id.empty())
+        return ctx;
+    try {
+        const auto party = boost::uuids::string_generator()(party_id);
+        return ctx.with_party(ctx.tenant_id(), party, {party}, ctx.actor());
+    } catch (const std::exception&) {
+        return ctx;
+    }
 }
 
 /**

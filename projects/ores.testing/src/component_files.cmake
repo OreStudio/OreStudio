@@ -34,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/database_lifecycle_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/handler_test_support.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/logging_listener.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/make_generation_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/nats_options_helper.hpp"

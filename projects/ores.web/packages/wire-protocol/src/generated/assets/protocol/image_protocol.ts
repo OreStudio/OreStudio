@@ -57,6 +57,7 @@ export interface ImageLookup {
 
 export interface ImagesFilter {
     id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface ImageEvent {

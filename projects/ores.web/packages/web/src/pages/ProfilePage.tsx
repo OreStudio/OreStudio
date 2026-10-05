@@ -123,6 +123,16 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
             me ? api.myContactInformation() : api.accountContactInformation(shownAccountId),
         enabled: contactKey !== '',
     });
+    /*
+     * The contact read waits for the account read to learn whose record to
+     * read. A failed account read leaves no record to ask for, so the panel
+     * states that failure rather than waiting on a read that cannot start.
+     */
+    const contactKeyMissing = contactKey === '';
+    const contactPending = contactKeyMissing ? account.isPending : contact.isPending;
+    const contactRefused = contactKeyMissing
+        ? (account.error?.message ?? null)
+        : (contact.error?.message ?? null);
     const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
 
     if (access.isPending) {
@@ -176,8 +186,8 @@ export function ProfilePage({ session }: { readonly session: SessionView }): Rea
             />
             <ContactPanel
                 contact={contact.data ?? null}
-                pending={contact.isPending || account.isPending}
-                refused={contact.isError ? contact.error.message : null}
+                pending={contactPending}
+                refused={contactRefused}
                 accountRead={account.data !== null && account.data !== undefined}
                 canWrite={me || mayWriteContacts}
                 me={me}
@@ -698,9 +708,16 @@ function ruleSentence(
     const formats = policy.formats
         .map((format) => format.replace('image/', '').toUpperCase())
         .join(', ');
+    /*
+     * The limit is stated as the validator holds it: a whole number of
+     * megabytes reads as one, and anything else keeps its tenth. The tenth
+     * is taken down, never up, so the picker never states a larger limit
+     * than the server enforces.
+     */
+    const tenths = Math.floor((policy.maxSizeBytes * 10) / (1024 * 1024)) / 10;
     return t('profile.photo.rule', {
         formats,
-        size: String(Math.round(policy.maxSizeBytes / (1024 * 1024))),
+        size: Number.isInteger(tenths) ? String(tenths) : tenths.toFixed(1),
         width: String(policy.minWidth),
         height: String(policy.minHeight),
     });
@@ -808,9 +825,16 @@ function ContactPanel({
             } else {
                 setOutcome({
                     ok: false,
-                    message: !me
-                        ? `${view.result.message} ${t('profile.refused.recordChanged')}`
-                        : view.result.message,
+                    /*
+                     * The sentence about a moved record belongs to the
+                     * server's conflict answer alone. Any other refusal --
+                     * a permission, a field it would not take -- travels
+                     * with its own words and nothing added.
+                     */
+                    message:
+                        !me && view.result.outcome === 'conflict'
+                            ? `${view.result.message} ${t('profile.refused.recordChanged')}`
+                            : view.result.message,
                     fields: view.result.fields,
                 });
                 if (!me) await onSaved();

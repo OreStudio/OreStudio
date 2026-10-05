@@ -1144,8 +1144,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.put('/api/accounts/:accountId/contact-information', async (request) => {
         const session = requireSession(request);
         const { accountId } = request.params as { accountId: string };
+        if (!isUuid(accountId)) {
+            throw notFound('No account has this identifier.');
+        }
         const body = claimedContactWriteSchema.safeParse(request.body);
-        if (!isUuid(accountId) || !body.success) {
+        if (!body.success) {
             throw invalidRequest('Send the contact fields and the version the panel read.');
         }
         const current = await readContactInformation(session.client, accountId);

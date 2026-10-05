@@ -188,6 +188,14 @@ task and name that file in the Command column.
 
 * Notes
 
+The reconnaissance found a read gap: =iam.v1.accounts.get= needs
+=iam::accounts:read=, which the default *Viewer* role does not hold, so a plain
+member cannot read their own account. The screen states the refusal, the
+identity panel offers no save it cannot ground (an empty field would clear the
+value on the self write), and the shell trigger falls back to the username and
+the initials. The gap is recorded in the three journey documents beside their
+gap lists.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -207,8 +215,20 @@ via its "Verifies task" field.
 
 * Review
 
+The local review pass over the diff, per the runbook's step 5a: the
+=compass-code-review-pr= checklist against =origin/main...HEAD=, and the
+misspell check with it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An administrator who picks a person whose account read fails leaves the contact panel waiting forever: the contact read is held back until the account names the record, and a failed read never names one. | =ProfilePage.tsx= | Accepted | The panel now takes its waiting state from the account read while the record id is unknown, and states that read's failure. A member's own record is unaffected: the self route needs no account id. |
+| 2 | The contact panel appends "The record may have changed since this panel read it" to every refused write, including one that is not about a moved record. | =ProfilePage.tsx= | Accepted | The sentence is drawn from the server's =conflict= outcome alone, which is the =version_conflict= and =already_exists= answer =prepare_change= sends. Any other refusal travels with its own words and nothing added. |
+| 3 | The administrator's contact route answers an identifier in the path that is not one with the body's message, where the read route beside it answers 404. | =server.ts= | Accepted | The path identifier is answered with =notFound= as the read route does, and the body keeps its own message. A route test pins the 404 and that no subject is called. |
+| 4 | The picker states the size limit as a whole number of megabytes, so a limit that is not whole is rounded and may read as larger than the server enforces. | =ProfilePage.tsx= | Accepted | The limit keeps its tenth, taken down rather than up. The rule still comes from the validator's own =max_size_bytes=, which is two megabytes today. |
+| 5 | =misspell-fixer .= exits 1 on the tree. | the sprint 25 and 26 task pages | No action | Every hit is pre-existing and outside this diff: those pages quote an upstream load-profile identifier misspelled in the portfolio, in review tables that already decline the correction. A run over this diff's files reports "nothing to replace" and exits 0. |
+| 6 | =amendReasons= keeps the =common= category alone, so a reason another category marked for amendments would never reach the panel. | =client.ts= | No action | The profile write corrects identity or contact data, and the generic reasons are the =common= catalogue. A category-specific reason belongs to the journey that owns that record, and none applies here today. |
+
+Verdict: ready to merge. The four accepted points are fixed in this pass; the
+two with no action are recorded, and neither is in the diff's own text.
 
 * Result

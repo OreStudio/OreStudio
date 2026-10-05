@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member shows who they are: photo, name, job title and reporting line.
@@ -106,6 +106,13 @@ So =partial= here means the operation exists and the caller may not use it.
    labelled apart: the first is the address a person signs in with and the
    second is the address colleagues use, and neither reads as the other.
    (Product owner, 2026-09-30.)
+5. *No self read.* The account read needs =iam::accounts:read=, which the
+   default *Viewer* role does not hold, so a plain member's read of their own
+   account is refused. The screen states the refusal and its consequence: the
+   identity panel draws no fields it cannot ground and offers no save, and the
+   shell trigger falls back to the username and the initials. The candidate is
+   a self read of the caller's own account, or a *Viewer* grant that carries
+   =iam::accounts:read=. (Reconnaissance, 2026-10-05.)
 
 * Related journeys
 

@@ -525,6 +525,21 @@ describe('PUT /api/accounts/:accountId/contact-information', () => {
         expect(response.json().result.message).toContain('Version conflict');
         expect(response.json().contact).toBeNull();
     });
+
+    it('answers 404 for an identifier that is not one', async () => {
+        const { server, cookies, calls } = buildTestServer(profileAnswers());
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/api/accounts/not-an-identifier/contact-information',
+            cookies,
+            payload: { ...contactWrite, version: 4 },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(404);
+        expect(calls).toEqual([]);
+    });
 });
 
 describe('POST /api/images', () => {

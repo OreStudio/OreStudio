@@ -352,7 +352,7 @@ export function RecordList<Row>({
  */
 export function RecordTable<Row>({
     source,
-    plural: title,
+    plural,
     columns,
     pathOf,
     keyOf,
@@ -373,7 +373,7 @@ export function RecordTable<Row>({
     const filters = source.filters ?? [];
     const state = useListState(filters);
     const sortable = new Set(source.sortable);
-    const plural = title.toLocaleLowerCase(language);
+    const named = plural.toLocaleLowerCase(language);
     const all = [...columns, ...(source.audit === undefined ? [] : auditColumns(t, source.audit))];
     const { visible, isShown, toggle } = useColumnChoice(source.key, all);
     const [typed, setTyped] = useState(state.search);
@@ -564,14 +564,14 @@ export function RecordTable<Row>({
                                 <td colSpan={visible.length} className="px-4 py-3 text-ink-muted">
                                     {narrowed ? (
                                         <span className="flex items-center gap-3">
-                                            {t('refdata.records.noMatchSearch', { plural })}
+                                            {t('refdata.records.noMatchSearch', { plural: named })}
                                             <Button size="sm" variant="ghost" onClick={clear}>
                                                 {t('refdata.records.clearSearch')}
                                             </Button>
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-3">
-                                            {t('refdata.records.noRecords', { plural })}
+                                            {t('refdata.records.noRecords', { plural: named })}
                                             {add !== undefined && (
                                                 <Button size="sm" icon="add" onClick={add.onAdd}>
                                                     {add.label}

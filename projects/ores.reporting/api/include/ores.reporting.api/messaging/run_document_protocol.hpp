@@ -25,13 +25,52 @@
 #ifndef ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_RUN_DOCUMENT_PROTOCOL_HPP
 
+#include "ores.reporting.api/domain/report_analytic.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
-#include "ores.reporting.api/domain/run_document.hpp"
+#include "ores.reporting.api/domain/report_market_binding.hpp"
+#include "ores.reporting.api/domain/report_run_setup.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::reporting::messaging {
+
+/**
+ * @brief One parameter of an analytic, by the name the run document uses.
+ *
+ * The stored parameter holds a definition id and a value, and the id is a
+ * database concern. The document is one step earlier, where the parameter is
+ * still the name ORE wrote, so the name rides beside the value and the store
+ * resolves it.
+ */
+struct run_parameter {
+    std::string name;
+    std::string value;
+    int position = 0;
+};
+
+/**
+ * @brief An analytic of the run and the parameters it sets.
+ *
+ * The active flag is a parameter in ORE's schema and a column on the analytic,
+ * so it lives on the analytic; the remaining parameters stay beside it, in the
+ * order the document wrote them.
+ */
+struct run_analytic {
+    ores::reporting::domain::report_analytic analytic;
+    std::vector<run_parameter> parameters;
+};
+
+/**
+ * @brief One ORE run document as reporting stores it against a report
+ * definition: the setup, the analytics with their parameters, and the market
+ * bindings.
+ */
+struct run_document {
+    ores::reporting::domain::report_run_setup setup;
+    std::vector<run_analytic> analytics;
+    std::vector<ores::reporting::domain::report_market_binding> market_bindings;
+};
 
 /**
  * @brief Stores a run document against a report definition.
@@ -50,7 +89,7 @@ struct save_run_document_request {
      */
     static constexpr bool requires_session = true;
     std::string report_definition_id;
-    domain::run_document document;
+    run_document document;
 };
 
 /**
@@ -111,7 +150,7 @@ struct get_run_document_request {
 struct get_run_document_response {
     bool success = false;
     std::string message;
-    domain::run_document document;
+    run_document document;
     std::vector<domain::report_configuration> bindings;
     /** The party that owns the definition, whose configuration documents the run reads. */
     std::string party_id;

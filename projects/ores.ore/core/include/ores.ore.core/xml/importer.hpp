@@ -120,10 +120,10 @@ public:
      * skipped.
      *
      * @param path Path to the conventions.xml file
-     * @return @c ores::refdata::domain::conventions_document struct containing one vector per
+     * @return @c ores::refdata::messaging::conventions_document struct containing one vector per
      * convention type
      */
-    static ores::refdata::domain::conventions_document
+    static ores::refdata::messaging::conventions_document
     import_conventions(const std::filesystem::path& path);
 
     /**

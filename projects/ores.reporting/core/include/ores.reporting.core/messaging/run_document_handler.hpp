@@ -36,8 +36,9 @@ namespace ores::reporting::messaging {
  * bindings.
  *
  * A run's configuration belongs to the party that owns its definition. A
- * session that acts for a party may act only on that party's definitions; a
- * session that acts for none, as a workflow step's does, acts as the owner.
+ * session may change a run only when it acts for the party that owns the
+ * definition. A session that acts for no party, as a workflow step's does, may
+ * read a run, as the owner, but never change one.
  */
 class ORES_REPORTING_CORE_EXPORT run_document_handler {
 public:
@@ -51,9 +52,6 @@ public:
     void delete_run_document(ores::nats::message msg);
 
 private:
-    std::optional<ores::database::context> authorise(const ores::nats::message& msg,
-                                                     std::string_view permission);
-
     inline static std::string_view logger_name = "ores.reporting.messaging.run_document_handler";
 
     [[nodiscard]] static auto& lg() {

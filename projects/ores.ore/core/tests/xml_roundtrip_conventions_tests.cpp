@@ -64,7 +64,7 @@ conventions load(const std::filesystem::path& path) {
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions,
-                                               ores::refdata::domain::conventions_document>(
+                                               ores::refdata::messaging::conventions_document>(
         "conventions",
         "conventions",
         &conventions_mapper::map,

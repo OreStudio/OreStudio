@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 17EFB01A-199E-4A3F-B14D-07B923F0E867
-:ores.ts.protocol.enabled: nil
 :END:
 #+title: ores.analytics.configuration_document_messages
 #+description: Codegen operation model for the configuration documents analytics owns: save, get and delete pricing engines and today's market documents.
@@ -22,14 +21,76 @@ it stores.
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.analytics.api/domain/pricing_engines_document.hpp"
-#include "ores.analytics.api/domain/todays_market_document.hpp"
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/domain/todays_market_collection.hpp"
+#include "ores.analytics.api/domain/todays_market_config.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
+#include "ores.analytics.api/domain/todays_market_entry.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 #+end_src
 
 * Messages
+
+** pricing_engines_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE pricing engines document as the rows analytics stores.
+ */
+#+end_src
+
+*** config
+:PROPERTIES:
+:cpp_type: ores::analytics::domain::pricing_model_config
+:END:
+
+*** products
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::pricing_model_product>
+:END:
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::pricing_model_product_parameter>
+:END:
+
+** todays_market_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE today's market document as the rows analytics stores.
+ */
+#+end_src
+
+*** config
+:PROPERTIES:
+:cpp_type: ores::analytics::domain::todays_market_config
+:END:
+
+*** collections
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_collection>
+:END:
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_entry>
+:END:
+
+*** configurations
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_configuration>
+:END:
+
+*** bindings
+:PROPERTIES:
+:cpp_type: std::vector<ores::analytics::domain::todays_market_configuration_binding>
+:END:
 
 ** save_pricing_engines_document_request
 :PROPERTIES:
@@ -41,14 +102,14 @@ it stores.
 /**
  * @brief Stores a pricing engines document.
  *
- * The session's party owns every row. The header carries the reporting
+ * The session must act for a party, which owns every row. The header carries the reporting
  * configuration it fills, which is what a get finds it by.
  */
 #+end_src
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::pricing_engines_document
+:cpp_type: pricing_engines_document
 :END:
 
 ** save_pricing_engines_document_response
@@ -122,7 +183,7 @@ it stores.
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::pricing_engines_document
+:cpp_type: pricing_engines_document
 :END:
 
 ** delete_pricing_engines_document_request
@@ -135,7 +196,8 @@ it stores.
 /**
  * @brief Deletes a pricing engines document that fills a reporting configuration.
  *
- * A run import's compensation sends it, to undo a save.
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
  */
 #+end_src
 
@@ -173,14 +235,14 @@ it stores.
 /**
  * @brief Stores a today's market document.
  *
- * The session's party owns every row. The header carries the reporting
+ * The session must act for a party, which owns every row. The header carries the reporting
  * configuration it fills, which is what a get finds it by.
  */
 #+end_src
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::todays_market_document
+:cpp_type: todays_market_document
 :END:
 
 ** save_todays_market_document_response
@@ -254,7 +316,7 @@ it stores.
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::todays_market_document
+:cpp_type: todays_market_document
 :END:
 
 ** delete_todays_market_document_request
@@ -267,7 +329,8 @@ it stores.
 /**
  * @brief Deletes a today's market document that fills a reporting configuration.
  *
- * A run import's compensation sends it, to undo a save.
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
  */
 #+end_src
 

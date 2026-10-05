@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.reporting.api/domain/configuration.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
-#include "ores.reporting.api/domain/run_document.hpp"
+#include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
@@ -54,12 +54,12 @@ public:
      * analytic sets a parameter no definition describes; nothing is written
      * then.
      */
-    void save(const boost::uuids::uuid& report_definition_id, domain::run_document v);
+    void save(const boost::uuids::uuid& report_definition_id, messaging::run_document v);
 
     /**
      * @brief The definition's run document, if it holds one.
      */
-    std::optional<domain::run_document> get(const boost::uuids::uuid& report_definition_id);
+    std::optional<messaging::run_document> get(const boost::uuids::uuid& report_definition_id);
 
     /**
      * @brief Creates a configuration of a type and binds it to the definition
@@ -74,7 +74,8 @@ public:
     /**
      * @brief Deletes the definition's run document, its bindings and the
      * configuration rows they name. The documents those configurations name
-     * belong to their own components, which delete them.
+     * belong to their own components, which delete them. Each table is its
+     * own write, not one transaction.
      */
     void remove(const boost::uuids::uuid& report_definition_id);
 

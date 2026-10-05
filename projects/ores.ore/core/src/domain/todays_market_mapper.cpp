@@ -81,7 +81,7 @@ const std::string& required_key(const todays_market_entry& r) {
     return *r.key_value;
 }
 
-boost::uuids::uuid add_collection(ores::analytics::domain::todays_market_document& out,
+boost::uuids::uuid add_collection(ores::analytics::messaging::todays_market_document& out,
                                   const boost::uuids::uuid& config_id,
                                   const char* name,
                                   std::optional<std::string> collection_id,
@@ -99,7 +99,7 @@ boost::uuids::uuid add_collection(ores::analytics::domain::todays_market_documen
 
 // One collection element becomes a collection row and one entry row per entry.
 template <typename Wrapper, typename EntryT, typename K1, typename K2, typename Tg>
-void map_collection(ores::analytics::domain::todays_market_document& out,
+void map_collection(ores::analytics::messaging::todays_market_document& out,
                     const boost::uuids::uuid& config_id,
                     const char* name,
                     int& collection_position,
@@ -146,8 +146,9 @@ void build_collection(todaysmarket& doc,
 
 }
 
-ores::analytics::domain::todays_market_document todays_market_mapper::map(const todaysmarket& v) {
-    ores::analytics::domain::todays_market_document mapped;
+ores::analytics::messaging::todays_market_document
+todays_market_mapper::map(const todaysmarket& v) {
+    ores::analytics::messaging::todays_market_document mapped;
 
     auto& config = mapped.config;
     config.id = new_uuid();
@@ -456,7 +457,7 @@ ores::analytics::domain::todays_market_document todays_market_mapper::map(const 
 }
 
 todaysmarket
-todays_market_mapper::reverse(const ores::analytics::domain::todays_market_document& v) {
+todays_market_mapper::reverse(const ores::analytics::messaging::todays_market_document& v) {
     todaysmarket doc;
 
     auto collections = v.collections;

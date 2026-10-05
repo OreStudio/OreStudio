@@ -57,7 +57,7 @@ run_document_service::run_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void run_document_service::save(const boost::uuids::uuid& report_definition_id,
-                                domain::run_document v) {
+                                messaging::run_document v) {
     const auto of_definition = [&](const auto& row) {
         return row.report_definition_id == report_definition_id;
     };
@@ -112,7 +112,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
     report_analytic_parameter_repository().write(ctx_, parameters);
 }
 
-std::optional<domain::run_document>
+std::optional<messaging::run_document>
 run_document_service::get(const boost::uuids::uuid& report_definition_id) {
     const auto of_definition = [&](const auto& row) {
         return row.report_definition_id == report_definition_id;
@@ -121,7 +121,7 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
     if (setups.empty())
         return std::nullopt;
 
-    domain::run_document r;
+    messaging::run_document r;
     r.setup = setups.front();
 
     auto analytics = read_where(ctx_, report_analytic_repository(), of_definition);
@@ -144,7 +144,7 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
                       [](const auto& l, const auto& r) { return l.position < r.position; });
 
     for (const auto& a : analytics) {
-        domain::run_analytic ra{a, {}};
+        messaging::run_analytic ra{a, {}};
         for (const auto& p : parameters) {
             if (p.report_analytic_id != a.id)
                 continue;

@@ -70,6 +70,21 @@ struct handler_test_keys {
         claims.roles = permissions;
         return *verifier().create_token(claims);
     }
+
+    /**
+     * @brief A token for a tenant that acts for no party, as a workflow step's
+     * service session does.
+     */
+    std::string token_without_party(const std::string& tenant_id,
+                                    const std::vector<std::string>& permissions) const {
+        auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
+        claims.subject = "handler-test";
+        claims.issuer = issuer;
+        claims.audience = audience;
+        claims.tenant_id = tenant_id;
+        claims.roles = permissions;
+        return *verifier().create_token(claims);
+    }
 };
 
 /**

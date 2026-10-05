@@ -20,7 +20,7 @@
 #ifndef ORES_ANALYTICS_CORE_SERVICE_PRICING_ENGINES_DOCUMENT_SERVICE_HPP
 #define ORES_ANALYTICS_CORE_SERVICE_PRICING_ENGINES_DOCUMENT_SERVICE_HPP
 
-#include "ores.analytics.api/domain/pricing_engines_document.hpp"
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -41,15 +41,18 @@ public:
 
     explicit pricing_engines_document_service(context ctx);
 
-    void save(domain::pricing_engines_document v);
+    void save(messaging::pricing_engines_document v);
 
     /**
      * @brief The document whose header has @p id.
      */
-    domain::pricing_engines_document get(const boost::uuids::uuid& id);
+    messaging::pricing_engines_document get(const boost::uuids::uuid& id);
 
     /**
      * @brief Deletes the document whose header has @p id, its children first.
+     *
+     * Each table is its own write, not one transaction, so a failure part way
+     * leaves the rows not yet deleted.
      */
     void remove(const boost::uuids::uuid& id);
 

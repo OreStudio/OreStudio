@@ -21,6 +21,7 @@
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
+#include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -53,23 +54,9 @@ configuration_document_handler::configuration_document_handler(
     , ctx_(std::move(ctx))
     , verifier_(std::move(verifier)) {}
 
-std::optional<ores::database::context>
-configuration_document_handler::authorise(const ores::nats::message& msg,
-                                          std::string_view permission) {
-    auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
-    if (!ctx) {
-        error_reply(nats_, msg, ctx.error());
-        return std::nullopt;
-    }
-    if (!has_permission(*ctx, permission)) {
-        error_reply(nats_, msg, ores::service::error_code::forbidden);
-        return std::nullopt;
-    }
-    return *ctx;
-}
 
 void configuration_document_handler::save_curve_configuration_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "refdata::curve_configurations:write");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::curve_configurations:write");
     if (!ctx)
         return;
     const auto req = decode<save_curve_configuration_document_request>(msg);
@@ -78,6 +65,7 @@ void configuration_document_handler::save_curve_configuration_document(ores::nat
         return;
     }
     try {
+        require_party(*ctx);
         service::curve_configuration_document_service(*ctx).save(req->document);
         reply(nats_,
               msg,
@@ -90,7 +78,7 @@ void configuration_document_handler::save_curve_configuration_document(ores::nat
 }
 
 void configuration_document_handler::get_curve_configuration_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "refdata::curve_configurations:read");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::curve_configurations:read");
     if (!ctx)
         return;
     const auto req = decode<get_curve_configuration_document_request>(msg);
@@ -119,7 +107,7 @@ void configuration_document_handler::get_curve_configuration_document(ores::nats
 }
 
 void configuration_document_handler::delete_curve_configuration_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "refdata::curve_configurations:delete");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::curve_configurations:delete");
     if (!ctx)
         return;
     const auto req = decode<delete_curve_configuration_document_request>(msg);
@@ -128,6 +116,7 @@ void configuration_document_handler::delete_curve_configuration_document(ores::n
         return;
     }
     try {
+        require_party(*ctx);
         service::curve_configuration_document_service svc(*ctx);
         if (const auto id = svc.find_by_configuration(parse_id(req->configuration_id)))
             svc.remove(*id);
@@ -139,7 +128,7 @@ void configuration_document_handler::delete_curve_configuration_document(ores::n
 }
 
 void configuration_document_handler::save_conventions_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "refdata::conventions:write");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::conventions:write");
     if (!ctx)
         return;
     const auto req = decode<save_conventions_document_request>(msg);
@@ -148,6 +137,7 @@ void configuration_document_handler::save_conventions_document(ores::nats::messa
         return;
     }
     try {
+        require_party(*ctx);
         const auto saved = service::conventions_document_service(*ctx).save(req->document);
         reply(nats_,
               msg,
@@ -160,7 +150,7 @@ void configuration_document_handler::save_conventions_document(ores::nats::messa
 }
 
 void configuration_document_handler::get_conventions_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "refdata::conventions:read");
+    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::conventions:read");
     if (!ctx)
         return;
     const auto req = decode<get_conventions_document_request>(msg);

@@ -100,10 +100,10 @@ std::string make_definition(fixture& f, const boost::uuids::uuid& party) {
     return boost::uuids::to_string(d.id);
 }
 
-ores::reporting::domain::run_document npv_run() {
-    ores::reporting::domain::run_document doc;
+ores::reporting::messaging::run_document npv_run() {
+    ores::reporting::messaging::run_document doc;
     doc.setup.curve_config_file = "curveconfig.xml";
-    ores::reporting::domain::run_analytic npv;
+    ores::reporting::messaging::run_analytic npv;
     npv.analytic.analytic_type_code = "npv";
     npv.analytic.display_order = 1;
     npv.analytic.active = "Y";
@@ -194,4 +194,36 @@ TEST_CASE("a party cannot store a run on another party's definition", tags) {
         save_run_document_request{.report_definition_id = definition, .document = npv_run()}));
     REQUIRE(saved);
     CHECK_FALSE(saved->success);
+}
+
+TEST_CASE("a session that acts for no party cannot change a run, but can read it", tags) {
+    fixture f;
+    const auto definition = make_definition(f, f.party);
+    const auto party_token = f.token(all_permissions);
+    const auto saved = decode_reply<save_run_document_response>(request(
+        f.nats,
+        subject("save_run_document"),
+        party_token,
+        save_run_document_request{.report_definition_id = definition, .document = npv_run()}));
+    REQUIRE(saved);
+    REQUIRE(saved->success);
+
+    const auto partyless =
+        f.keys.token_without_party(f.db.tenant_id().to_string(), all_permissions);
+    const auto deleted = decode_reply<delete_run_document_response>(
+        request(f.nats,
+                subject("delete_run_document"),
+                partyless,
+                delete_run_document_request{.report_definition_id = definition}));
+    REQUIRE(deleted);
+    CHECK_FALSE(deleted->success);
+
+    const auto got = decode_reply<get_run_document_response>(
+        request(f.nats,
+                subject("get_run_document"),
+                partyless,
+                get_run_document_request{.report_definition_id = definition}));
+    REQUIRE(got);
+    CHECK(got->success);
+    CHECK(got->party_id == boost::uuids::to_string(f.party));
 }

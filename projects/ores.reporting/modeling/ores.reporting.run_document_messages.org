@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: F90ED5C2-46F7-4FFE-A38B-40F40A604623
-:ores.ts.protocol.enabled: nil
 :END:
 #+title: ores.reporting.run_document_messages
 #+description: Codegen operation model for a report definition's run document and its configuration bindings: save, bind, get and delete.
@@ -17,20 +16,98 @@
 A report definition's run document and its configuration bindings, as
 operations. The ORE service imports a run through these and the owning
 components' document operations, and exports it the same way; it never touches
-reporting's tables. A session acting for a party may only act on a definition
-its party owns.
+reporting's tables. A session changes a run only when it acts for the party
+that owns the definition; a session that acts for no party may only read.
 
 * Includes
 
 #+begin_src cpp :name includes
 #include "ores.reporting.api/domain/report_configuration.hpp"
-#include "ores.reporting.api/domain/run_document.hpp"
+#include "ores.reporting.api/domain/report_analytic.hpp"
+#include "ores.reporting.api/domain/report_market_binding.hpp"
+#include "ores.reporting.api/domain/report_run_setup.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
 #+end_src
 
 * Messages
+
+** run_parameter
+
+#+begin_src cpp :name comment
+/**
+ * @brief One parameter of an analytic, by the name the run document uses.
+ *
+ * The stored parameter holds a definition id and a value, and the id is a
+ * database concern. The document is one step earlier, where the parameter is
+ * still the name ORE wrote, so the name rides beside the value and the store
+ * resolves it.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** position
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** run_analytic
+
+#+begin_src cpp :name comment
+/**
+ * @brief An analytic of the run and the parameters it sets.
+ *
+ * The active flag is a parameter in ORE's schema and a column on the analytic,
+ * so it lives on the analytic; the remaining parameters stay beside it, in the
+ * order the document wrote them.
+ */
+#+end_src
+
+*** analytic
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::report_analytic
+:END:
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::vector<run_parameter>
+:END:
+
+** run_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE run document as reporting stores it against a report
+ * definition: the setup, the analytics with their parameters, and the market
+ * bindings.
+ */
+#+end_src
+
+*** setup
+:PROPERTIES:
+:cpp_type: ores::reporting::domain::report_run_setup
+:END:
+
+*** analytics
+:PROPERTIES:
+:cpp_type: std::vector<run_analytic>
+:END:
+
+*** market_bindings
+:PROPERTIES:
+:cpp_type: std::vector<ores::reporting::domain::report_market_binding>
+:END:
 
 ** save_run_document_request
 :PROPERTIES:
@@ -54,7 +131,7 @@ its party owns.
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::run_document
+:cpp_type: run_document
 :END:
 
 ** save_run_document_response
@@ -166,7 +243,7 @@ its party owns.
 
 *** document
 :PROPERTIES:
-:cpp_type: domain::run_document
+:cpp_type: run_document
 :END:
 
 *** bindings

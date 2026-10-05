@@ -89,9 +89,9 @@ conventions load_conventions() {
  * aggregate reverse() (individual reverse_fx is not exposed publicly).
  */
 ores::ore::domain::fxType roundtrip_single(const ores::ore::domain::fxType& original) {
-    const ores::refdata::domain::fx_convention mapped = conventions_mapper::map_fx(original);
+    const ores::refdata::messaging::fx_convention mapped = conventions_mapper::map_fx(original);
 
-    ores::refdata::domain::conventions_document wrapper;
+    ores::refdata::messaging::conventions_document wrapper;
     wrapper.fx.push_back(mapped);
     const conventions reversed = conventions_mapper::reverse(wrapper);
 

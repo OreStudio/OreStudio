@@ -1341,7 +1341,7 @@ std::string fx_convention_id(const std::string& base_currency, const std::string
     return base_currency + "-" + quote_currency + "-FX-CONVENTIONS";
 }
 
-fxType reverse_fx(const ores::refdata::domain::fx_convention& v) {
+fxType reverse_fx(const ores::refdata::messaging::fx_convention& v) {
     fxType r;
     static_cast<std::string&>(r.Id) = fx_convention_id(v.pair.base_currency, v.pair.quote_currency);
     r.SpotDays = static_cast<int64_t>(v.spot_days);
@@ -2514,10 +2514,10 @@ conventions_mapper::map_overnight_index(const overnightIndexType& v) {
     return r;
 }
 
-ores::refdata::domain::fx_convention conventions_mapper::map_fx(const fxType& v) {
+ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const fxType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << std::string(v.Id);
 
-    ores::refdata::domain::fx_convention r;
+    ores::refdata::messaging::fx_convention r;
     r.spot_days = static_cast<int>(v.SpotDays);
 
     auto& pair = r.pair;
@@ -2614,7 +2614,7 @@ std::map<std::string, std::size_t> conventions_mapper::unmodelled(const conventi
     return r;
 }
 
-ores::refdata::domain::conventions_document conventions_mapper::map(const conventions& v) {
+ores::refdata::messaging::conventions_document conventions_mapper::map(const conventions& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping ORE conventions. " << "Zero=" << v.Zero.size()
                                << " Deposit=" << v.Deposit.size() << " Swap=" << v.Swap.size()
                                << " OIS=" << v.OIS.size() << " FRA=" << v.FRA.size()
@@ -2622,7 +2622,7 @@ ores::refdata::domain::conventions_document conventions_mapper::map(const conven
                                << " OvernightIndex=" << v.OvernightIndex.size()
                                << " FX=" << v.FX.size() << " CDS=" << v.CDS.size();
 
-    ores::refdata::domain::conventions_document r;
+    ores::refdata::messaging::conventions_document r;
 
     r.zero.reserve(v.Zero.size());
     std::ranges::transform(
@@ -2757,10 +2757,10 @@ ores::refdata::domain::conventions_document conventions_mapper::map(const conven
 }
 
 // ---------------------------------------------------------------------------
-// Reverse — ores::refdata::domain::conventions_document → ORE XML conventions
+// Reverse — ores::refdata::messaging::conventions_document → ORE XML conventions
 // ---------------------------------------------------------------------------
 
-conventions conventions_mapper::reverse(const ores::refdata::domain::conventions_document& v) {
+conventions conventions_mapper::reverse(const ores::refdata::messaging::conventions_document& v) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. " << "Zero=" << v.zero.size()
                                << " Deposit=" << v.deposit.size() << " Swap=" << v.swap.size()
                                << " OIS=" << v.ois.size() << " FRA=" << v.fra.size()

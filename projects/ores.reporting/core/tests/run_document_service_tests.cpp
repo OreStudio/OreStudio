@@ -59,11 +59,11 @@ boost::uuids::uuid make_definition(ores::testing::scoped_database_helper& h,
 }
 
 // An npv analytic with one parameter, both of which the seeded vocabulary holds.
-ores::reporting::domain::run_document npv_run() {
-    ores::reporting::domain::run_document doc;
+ores::reporting::messaging::run_document npv_run() {
+    ores::reporting::messaging::run_document doc;
     doc.setup.asof_date = "2016-02-05";
     doc.setup.curve_config_file = "curveconfig.xml";
-    ores::reporting::domain::run_analytic npv;
+    ores::reporting::messaging::run_analytic npv;
     npv.analytic.analytic_type_code = "npv";
     npv.analytic.display_order = 1;
     npv.analytic.active = "Y";

@@ -50,13 +50,6 @@ public:
     void get_conventions_document(ores::nats::message msg);
 
 private:
-    /**
-     * @brief The caller's context when the caller holds @p permission;
-     * otherwise replies with the error and returns nothing.
-     */
-    std::optional<ores::database::context> authorise(const ores::nats::message& msg,
-                                                     std::string_view permission);
-
     inline static std::string_view logger_name =
         "ores.refdata.messaging.configuration_document_handler";
 

@@ -111,7 +111,7 @@ TEST_CASE("a pricing engines document saves, reads back and deletes by its confi
                                 "analytics::pricing_model_configs:write",
                                 "analytics::pricing_model_configs:delete"});
     auto gen = ores::testing::make_generation_context(f.db);
-    ores::analytics::domain::pricing_engines_document doc;
+    ores::analytics::messaging::pricing_engines_document doc;
     doc.config = ores::analytics::generators::generate_synthetic_pricing_model_config(gen);
     doc.config.change_reason_code = "system.test";
     doc.config.configuration_id = boost::uuids::random_generator()();
@@ -157,7 +157,7 @@ TEST_CASE("a today's market document saves and reads back by its configuration",
     const auto token = f.token(
         {"analytics::todays_market_configs:read", "analytics::todays_market_configs:write"});
     auto gen = ores::testing::make_generation_context(f.db);
-    ores::analytics::domain::todays_market_document doc;
+    ores::analytics::messaging::todays_market_document doc;
     doc.config = ores::analytics::generators::generate_synthetic_todays_market_config(gen);
     doc.config.change_reason_code = "system.test";
     doc.config.configuration_id = boost::uuids::random_generator()();

@@ -51,7 +51,7 @@ std::filesystem::path corpus_root() {
 
 ores::ore::xml::roundtrip_kind todays_market_kind() {
     return ores::ore::xml::make_roundtrip_kind<ores::ore::domain::todaysmarket,
-                                               ores::analytics::domain::todays_market_document>(
+                                               ores::analytics::messaging::todays_market_document>(
         "today's market",
         "todaysmarket",
         &ores::ore::domain::todays_market_mapper::map,

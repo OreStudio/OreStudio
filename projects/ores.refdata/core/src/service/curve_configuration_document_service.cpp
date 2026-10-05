@@ -64,7 +64,7 @@ using ores::database::repository::stamp_party;
 curve_configuration_document_service::curve_configuration_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void curve_configuration_document_service::save(domain::curve_configuration_document v) {
+void curve_configuration_document_service::save(messaging::curve_configuration_document v) {
     stamp_party(ctx_, v);
     curve_configuration_repository().write(ctx_, v.config);
 
@@ -101,9 +101,9 @@ void curve_configuration_document_service::save(domain::curve_configuration_docu
     curve_quote_repository().write(ctx_, v.quotes);
 }
 
-domain::curve_configuration_document
+messaging::curve_configuration_document
 curve_configuration_document_service::get(const boost::uuids::uuid& config_id) {
-    domain::curve_configuration_document r;
+    messaging::curve_configuration_document r;
     r.config = read_one(ctx_, curve_configuration_repository(), "curve configuration", config_id);
     const auto of_config = [&](const auto& row) {
         return row.curve_configuration_id == config_id;

@@ -57,7 +57,7 @@ TEST_CASE("saving a party's convention again replaces it", tags) {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     auto gen = ores::testing::make_generation_context(h);
-    ores::refdata::domain::conventions_document doc;
+    ores::refdata::messaging::conventions_document doc;
     doc.deposit.push_back(ores::refdata::generators::generate_synthetic_deposit_convention(gen));
     doc.deposit[0].change_reason_code = "system.test";
 
@@ -76,7 +76,7 @@ TEST_CASE("a world convention the tenant holds is left as it is", tags) {
     auto gen = ores::testing::make_generation_context(h);
     auto index = ores::refdata::generators::generate_synthetic_ibor_index_convention(gen);
     index.change_reason_code = "system.test";
-    ores::refdata::domain::conventions_document doc;
+    ores::refdata::messaging::conventions_document doc;
     doc.ibor_index.push_back(index);
 
     conventions_document_service conventions(ctx);

@@ -73,7 +73,8 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     pricingengines original;
     ores::ore::domain::load_data(content, original);
 
-    ores::analytics::domain::pricing_engines_document mapped = pricing_engine_mapper::map(original);
+    ores::analytics::messaging::pricing_engines_document mapped =
+        pricing_engine_mapper::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.products.size() == original.Product.size());
     REQUIRE(!mapped.parameters.empty());

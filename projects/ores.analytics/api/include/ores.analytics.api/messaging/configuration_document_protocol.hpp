@@ -25,8 +25,14 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_CONFIGURATION_DOCUMENT_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_CONFIGURATION_DOCUMENT_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/pricing_engines_document.hpp"
-#include "ores.analytics.api/domain/todays_market_document.hpp"
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/domain/todays_market_collection.hpp"
+#include "ores.analytics.api/domain/todays_market_config.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration.hpp"
+#include "ores.analytics.api/domain/todays_market_configuration_binding.hpp"
+#include "ores.analytics.api/domain/todays_market_entry.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -34,9 +40,29 @@
 namespace ores::analytics::messaging {
 
 /**
+ * @brief One ORE pricing engines document as the rows analytics stores.
+ */
+struct pricing_engines_document {
+    ores::analytics::domain::pricing_model_config config;
+    std::vector<ores::analytics::domain::pricing_model_product> products;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
+};
+
+/**
+ * @brief One ORE today's market document as the rows analytics stores.
+ */
+struct todays_market_document {
+    ores::analytics::domain::todays_market_config config;
+    std::vector<ores::analytics::domain::todays_market_collection> collections;
+    std::vector<ores::analytics::domain::todays_market_entry> entries;
+    std::vector<ores::analytics::domain::todays_market_configuration> configurations;
+    std::vector<ores::analytics::domain::todays_market_configuration_binding> bindings;
+};
+
+/**
  * @brief Stores a pricing engines document.
  *
- * The session's party owns every row. The header carries the reporting
+ * The session must act for a party, which owns every row. The header carries the reporting
  * configuration it fills, which is what a get finds it by.
  */
 struct save_pricing_engines_document_request {
@@ -49,7 +75,7 @@ struct save_pricing_engines_document_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    domain::pricing_engines_document document;
+    pricing_engines_document document;
 };
 
 /**
@@ -86,13 +112,14 @@ struct get_pricing_engines_document_request {
 struct get_pricing_engines_document_response {
     bool success = false;
     std::string message;
-    domain::pricing_engines_document document;
+    pricing_engines_document document;
 };
 
 /**
  * @brief Deletes a pricing engines document that fills a reporting configuration.
  *
- * A run import's compensation sends it, to undo a save.
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
  */
 struct delete_pricing_engines_document_request {
     using response_type = struct delete_pricing_engines_document_response;
@@ -119,7 +146,7 @@ struct delete_pricing_engines_document_response {
 /**
  * @brief Stores a today's market document.
  *
- * The session's party owns every row. The header carries the reporting
+ * The session must act for a party, which owns every row. The header carries the reporting
  * configuration it fills, which is what a get finds it by.
  */
 struct save_todays_market_document_request {
@@ -132,7 +159,7 @@ struct save_todays_market_document_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    domain::todays_market_document document;
+    todays_market_document document;
 };
 
 /**
@@ -169,13 +196,14 @@ struct get_todays_market_document_request {
 struct get_todays_market_document_response {
     bool success = false;
     std::string message;
-    domain::todays_market_document document;
+    todays_market_document document;
 };
 
 /**
  * @brief Deletes a today's market document that fills a reporting configuration.
  *
- * A run import's compensation sends it, to undo a save.
+ * A run import's compensation sends it, to undo a save. Deleting a
+ * configuration no document fills succeeds, so a compensation can run twice.
  */
 struct delete_todays_market_document_request {
     using response_type = struct delete_todays_market_document_response;

@@ -104,6 +104,7 @@ documents are not modelled as entities.
 | [[id:DC22A0F6-FB41-43DC-AC07-2A0F948F85BA][Expose the configuration document operations from each owning service]] | DONE | 2026-10-04 | 2026-10-05 | Give refdata, analytics and reporting NATS operations to save, get and delete their configuration documents, so other services reach them without touching their tables. |
 | [[id:2355DF78-E4AC-404E-8053-B8AE464538D6][Package the run input through the owners' operations]] | BACKLOG | | | The package step reads the run's documents through the owning services' operations instead of their tables, and ores.ore.core/store, which wrote other components' tables, is removed. |
 | [[id:8EB87FC5-302A-4027-8F05-338B27E89F2F][Refuse a second build in the same worktree]] | DONE | 2026-10-04 | 2026-10-04 | The build lock caps builds per host, not per worktree, so two compass builds of one worktree took both slots and raced in one build tree for over an hour; compass now refuses a build or test run while another holds the worktree. |
+| [[id:185B84CB-6C5C-4D9D-9D2D-FEB562D1D330][Generate the handlers of an operation model]] | BACKLOG | | | Codegen renders an operation model's protocol but not its handler or registrar, so every operation handler is hand-written; give operation models a handler and registrar facet driven by each operation's service call and permission. |
 
 * Decisions
 

@@ -130,15 +130,15 @@ void write_input_conventions(const ores::database::context& ctx) {
 // A curve configuration belongs to a party, so every document a case writes is
 // stamped with one; the cases that need two parties make their own.
 void write(const ores::database::context& ctx,
-           ores::refdata::domain::curve_configuration_document m) {
+           ores::refdata::messaging::curve_configuration_document m) {
     static const auto owner = boost::uuids::random_generator()();
     ores::database::domain::assign_party(m, owner);
     ores::refdata::service::curve_configuration_document_service(ctx).save(std::move(m));
 }
 
-ores::refdata::domain::curve_configuration_document
+ores::refdata::messaging::curve_configuration_document
 read_back(const ores::database::context& ctx,
-          const ores::refdata::domain::curve_configuration_document& written) {
+          const ores::refdata::messaging::curve_configuration_document& written) {
     return ores::refdata::service::curve_configuration_document_service(ctx).get(written.config.id);
 }
 

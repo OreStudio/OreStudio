@@ -36,16 +36,16 @@ using ores::database::repository::stamp_party;
 pricing_engines_document_service::pricing_engines_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void pricing_engines_document_service::save(domain::pricing_engines_document v) {
+void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
     stamp_party(ctx_, v);
     pricing_model_config_repository().write(ctx_, v.config);
     pricing_model_product_repository().write(ctx_, v.products);
     pricing_model_product_parameter_repository().write(ctx_, v.parameters);
 }
 
-domain::pricing_engines_document
+messaging::pricing_engines_document
 pricing_engines_document_service::get(const boost::uuids::uuid& config_id) {
-    domain::pricing_engines_document r;
+    messaging::pricing_engines_document r;
     r.config =
         read_one(ctx_, pricing_model_config_repository(), "pricing engines document", config_id);
     const auto of_config = [&](const auto& row) {

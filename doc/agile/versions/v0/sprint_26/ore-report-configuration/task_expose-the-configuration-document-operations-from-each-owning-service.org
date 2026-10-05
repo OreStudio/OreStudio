@@ -84,7 +84,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Reporting writes as the owner for a party-less session, which a user token without a party could reach | run_document_handler.cpp | Accept | Every write requires a session that acts for a party (require_party); a party-less session may only read, as the owner. A test proves a party-less delete is refused and a party-less get succeeds. |
+| 2 | Refdata and analytics save and delete have no party guard | configuration_document_handler.cpp | Accept | The same rule on every write; a test proves a party-less save is refused. |
+| 3 | remove is not atomic; deleting a missing document succeeds | document services | Accept, in part | Each remove and the protocol say so; the delete is idempotent for compensation, with a test. Atomicity stays with Import a run's configuration in one transaction. |
+| 4 | Save returns the id the client sent | configuration_document_handler.cpp | Decline | The store writes the given id; only the party is stamped. |
+| 5 | for_requested_party reads every party on a bad id | handler_helpers.hpp | Accept | A non-empty id that does not parse is refused, with a test. |
+| 6 | authorise is copied into three handlers | handlers | Accept | One authorise in ores.service/messaging/authorise.hpp. |
+| 7 | A dangling configuration_id is no longer caught | models | Decline | The saga creates the configuration through reporting before it saves the document, so the id is real by construction. |
+| 8 | Missing tests | tests | Accept, in part | Added party-less writes refused, a missing delete and a bad party id; the cross-party refusal already exists; a partial-failure remove is not tested, since remove is not atomic by design. |
 
 * Result
 

@@ -110,7 +110,7 @@ TEST_CASE("a curve configuration document saves, reads back and deletes by its c
                                 "refdata::curve_configurations:write",
                                 "refdata::curve_configurations:delete"});
     auto gen = ores::testing::make_generation_context(f.db);
-    ores::refdata::domain::curve_configuration_document doc;
+    ores::refdata::messaging::curve_configuration_document doc;
     doc.config = ores::refdata::generators::generate_synthetic_curve_configuration(gen);
     doc.config.change_reason_code = "system.test";
     doc.config.configuration_id = boost::uuids::random_generator()();
@@ -157,7 +157,7 @@ TEST_CASE("a conventions document saves and reads back through the operations", 
     fixture f;
     const auto token = f.token({"refdata::conventions:read", "refdata::conventions:write"});
     auto gen = ores::testing::make_generation_context(f.db);
-    ores::refdata::domain::conventions_document doc;
+    ores::refdata::messaging::conventions_document doc;
     doc.deposit.push_back(ores::refdata::generators::generate_synthetic_deposit_convention(gen));
     doc.deposit[0].change_reason_code = "system.test";
 
@@ -186,4 +186,49 @@ TEST_CASE("a caller without the permission is refused", tags) {
                                token,
                                save_curve_configuration_document_request{});
     CHECK(error_of(reply) == "forbidden");
+}
+
+TEST_CASE("a session that acts for no party cannot save a document", tags) {
+    fixture f;
+    const auto token = f.keys.token_without_party(f.db.tenant_id().to_string(),
+                                                  {"refdata::curve_configurations:write"});
+    auto gen = ores::testing::make_generation_context(f.db);
+    ores::refdata::messaging::curve_configuration_document doc;
+    doc.config = ores::refdata::generators::generate_synthetic_curve_configuration(gen);
+    doc.config.change_reason_code = "system.test";
+    const auto saved = decode_reply<save_curve_configuration_document_response>(
+        request(f.nats,
+                subject("save_curve_configuration_document"),
+                token,
+                save_curve_configuration_document_request{.document = doc}));
+    REQUIRE(saved);
+    CHECK_FALSE(saved->success);
+    CHECK(saved->message.find("acts for no party") != std::string::npos);
+}
+
+TEST_CASE("deleting a configuration no document fills succeeds", tags) {
+    fixture f;
+    const auto token = f.token({"refdata::curve_configurations:delete"});
+    const auto deleted = decode_reply<delete_curve_configuration_document_response>(request(
+        f.nats,
+        subject("delete_curve_configuration_document"),
+        token,
+        delete_curve_configuration_document_request{
+            .configuration_id = boost::uuids::to_string(boost::uuids::random_generator()())}));
+    REQUIRE(deleted);
+    CHECK(deleted->success);
+}
+
+TEST_CASE("a read naming a party that does not parse is refused", tags) {
+    fixture f;
+    const auto token =
+        f.keys.token_without_party(f.db.tenant_id().to_string(), {"refdata::conventions:read"});
+    const auto got = decode_reply<get_conventions_document_response>(
+        request(f.nats,
+                subject("get_conventions_document"),
+                token,
+                get_conventions_document_request{.party_id = "not-a-party"}));
+    REQUIRE(got);
+    CHECK_FALSE(got->success);
+    CHECK(got->message.find("Not a party id") != std::string::npos);
 }

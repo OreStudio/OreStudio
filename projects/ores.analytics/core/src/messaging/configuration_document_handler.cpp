@@ -21,6 +21,7 @@
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
+#include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -53,23 +54,10 @@ configuration_document_handler::configuration_document_handler(
     , ctx_(std::move(ctx))
     , verifier_(std::move(verifier)) {}
 
-std::optional<ores::database::context>
-configuration_document_handler::authorise(const ores::nats::message& msg,
-                                          std::string_view permission) {
-    auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
-    if (!ctx) {
-        error_reply(nats_, msg, ctx.error());
-        return std::nullopt;
-    }
-    if (!has_permission(*ctx, permission)) {
-        error_reply(nats_, msg, ores::service::error_code::forbidden);
-        return std::nullopt;
-    }
-    return *ctx;
-}
 
 void configuration_document_handler::save_pricing_engines_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::pricing_model_configs:write");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::pricing_model_configs:write");
     if (!ctx)
         return;
     const auto req = decode<save_pricing_engines_document_request>(msg);
@@ -78,6 +66,7 @@ void configuration_document_handler::save_pricing_engines_document(ores::nats::m
         return;
     }
     try {
+        require_party(*ctx);
         service::pricing_engines_document_service(*ctx).save(req->document);
         reply(nats_,
               msg,
@@ -90,7 +79,8 @@ void configuration_document_handler::save_pricing_engines_document(ores::nats::m
 }
 
 void configuration_document_handler::get_pricing_engines_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::pricing_model_configs:read");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::pricing_model_configs:read");
     if (!ctx)
         return;
     const auto req = decode<get_pricing_engines_document_request>(msg);
@@ -119,7 +109,8 @@ void configuration_document_handler::get_pricing_engines_document(ores::nats::me
 }
 
 void configuration_document_handler::delete_pricing_engines_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::pricing_model_configs:delete");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::pricing_model_configs:delete");
     if (!ctx)
         return;
     const auto req = decode<delete_pricing_engines_document_request>(msg);
@@ -128,6 +119,7 @@ void configuration_document_handler::delete_pricing_engines_document(ores::nats:
         return;
     }
     try {
+        require_party(*ctx);
         service::pricing_engines_document_service svc(*ctx);
         if (const auto id = svc.find_by_configuration(parse_id(req->configuration_id)))
             svc.remove(*id);
@@ -139,7 +131,8 @@ void configuration_document_handler::delete_pricing_engines_document(ores::nats:
 }
 
 void configuration_document_handler::save_todays_market_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::todays_market_configs:write");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::todays_market_configs:write");
     if (!ctx)
         return;
     const auto req = decode<save_todays_market_document_request>(msg);
@@ -148,6 +141,7 @@ void configuration_document_handler::save_todays_market_document(ores::nats::mes
         return;
     }
     try {
+        require_party(*ctx);
         service::todays_market_document_service(*ctx).save(req->document);
         reply(nats_,
               msg,
@@ -160,7 +154,8 @@ void configuration_document_handler::save_todays_market_document(ores::nats::mes
 }
 
 void configuration_document_handler::get_todays_market_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::todays_market_configs:read");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::todays_market_configs:read");
     if (!ctx)
         return;
     const auto req = decode<get_todays_market_document_request>(msg);
@@ -189,7 +184,8 @@ void configuration_document_handler::get_todays_market_document(ores::nats::mess
 }
 
 void configuration_document_handler::delete_todays_market_document(ores::nats::message msg) {
-    const auto ctx = authorise(msg, "analytics::todays_market_configs:delete");
+    const auto ctx =
+        authorise(nats_, ctx_, msg, verifier_, "analytics::todays_market_configs:delete");
     if (!ctx)
         return;
     const auto req = decode<delete_todays_market_document_request>(msg);
@@ -198,6 +194,7 @@ void configuration_document_handler::delete_todays_market_document(ores::nats::m
         return;
     }
     try {
+        require_party(*ctx);
         service::todays_market_document_service svc(*ctx);
         if (const auto id = svc.find_by_configuration(parse_id(req->configuration_id)))
             svc.remove(*id);

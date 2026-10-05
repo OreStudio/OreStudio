@@ -328,6 +328,11 @@ same branch. What the close changed, read against the review above:
   =Nothing.=. =compass sprint audit= reports no findings.
 - =release_notes.org= was generated from the 519 merged PRs and edited
   into the sprint's record; =version.org= records the sprint as closed.
+- Two pull requests merged while the close branch was open: #2652, the
+  approvals and notifications service, and #2644, the currency, desk group
+  and currency pair screens. The close absorbed their five closed tasks
+  back into the sprint's stories and reworded those stories and their
+  successors to record the completions.
 
 The verdict stands: the sprint was RED on load and velocity, and the
 close does not change that. It records it honestly instead.

@@ -35,7 +35,7 @@ Sprint 26 ran the three-pass mission in order: sync codegen and clear the drift,
 -   **Make the oresmd URI grammar explicit and typed**: Every oresmd URI states what it means without the reader knowing a default or a family's coordinate convention: each coordinate dimension is a named query key, every key the grammar defines is present, and every key is declared identity or coordinate so the series identity is a declaration rather than a special case.
 -   **Rewrite the oresmd grammar as a hand-written codec checked against ORE**: An ORE market data key read into ORE Studio means what ORE means by it, and it comes back out as the same key.
 -   **Hotfix: the marketdata core suite times out in CI**: `ores.marketdata.core.tests` passes inside the 600-second ctest limit on every CI platform again, with the whole-corpus import walk still in the default test set.
--   **Implement the refdata journeys in ores.web**: The written ores.refdata journeys run in ores.web against the real server: a reference data administrator can maintain the classification lists from the generic screen the journey documents describe, instead of the deleted per-entity screens.
+-   **Implement the refdata journeys in ores.web**: The written ores.refdata journeys run in ores.web against the real server: a reference data administrator can maintain the classification lists, currencies, currency pairs and desk groups from the screens the journey documents describe, instead of the deleted per-entity screens (PR #2644).
 
 
 ## Service Architecture
@@ -89,7 +89,7 @@ Sprint 26 ran the three-pass mission in order: sync codegen and clear the drift,
 -   **Implement order and filter in the generated list contract**: Finish the list contract the protocol specification already states, in the code generator, so every entity gets it from its model: 1.
 -   **Give a person's token the permissions they hold**: Make a person's token carry the permissions they hold, and stop the token check from passing an empty list.
 -   **See an account's sign-ins**: An administrator who opens an account reads what kind of account it is, whether it can sign in, and the sessions it has had, newest first.
--   **Build approval requests and notifications**: One component, ores.inbox, holds the approval requests and the notifications as designed: a relational schema generated from codegen models, with the rules the schema can carry — the one-approval-per-person index, the failed-delivery reason check and the four-eyes trigger — and the notification models generated with it.
+-   **Build approval requests and notifications**: One component, ores.inbox, holds the approval requests and the notifications as designed: a relational schema generated from codegen models, with the rules the schema can carry — the one-approval-per-person index, the failed-delivery reason check and the four-eyes trigger — and the notification models generated with it. The service answers the approval lifecycle and the notifications (PR #2652).
 -   **Fix the self write refusal on a tenant with accounts**: Every write lands on a tenant that holds accounts, including the write whose actor is the account written.
 
 
@@ -145,7 +145,7 @@ Sprint 26 ran the three-pass mission in order: sync codegen and clear the drift,
 -   **Send the filter with every web list request**: Every list request the web client builds by hand states the filter, and its schema is held to the generated request type so a member the protocol adds fails the typecheck instead of the live read.
 -   **Document the operations journeys**: Five journeys document the operator's view of a running installation: See the running services, Watch the compute grid, Watch the message bus, Read the telemetry logs, and Check the versions and the database.
 -   **Hotfix: Linux and Windows CI builds on main**: Bring the Linux and Windows continuous builds on main back to green.
--   **Standardise the record screens**: One standard defines the shape and behaviour of every screen in ores.web that lists and maintains records — lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions — with the same scope the retired Qt entity standard had.
+-   **Standardise the record screens**: One standard defines the shape and behaviour of every screen in ores.web that lists and maintains records — lists and paging, the detail page, create, amend and delete, change reasons, history and revert, related records, icons, states, feedback, access and safety, naming, and exceptions — with the same scope the retired Qt entity standard had. Server paging through the shared Pager landed with the currency, desk group and currency pair screens (PR #2644).
 -   **A pattern language for service interaction**: A person who designs a service interaction can say "use pattern X" and point at one page.
 
 

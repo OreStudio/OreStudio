@@ -43,6 +43,9 @@ struct activity_type_write {
     std::string code;
     std::string category;
     bool requires_confirmation;
+    bool is_economic;
+    bool is_real;
+    int priority;
     std::string description;
     std::string fpml_event_type_code;
     std::optional<boost::uuids::uuid> fsm_transition_id;

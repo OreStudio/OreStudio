@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 47247685-9C95-4B7C-86D0-CD596C3A3247
+:END:
+#+title: Story: Record trade activities, their participants and trade links
+#+description: Add trade_activity with its type and participants, the act detail tables, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Add trade_activity with its type and participants, the act detail tables, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Give the activity type its axes and priority. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Every component version carries a foreign key to the trade_activity that caused it; the activity type states the economic, confirmable and real axes and the priority.
+- trade_activity_participant names each trade and its role; compression, merge, allocation, runs, bulk book move and import have detail tables keyed by the activity.
+- trade_link joins two trades with a type from trade_link_type, which names both roles and the economic effect; successor_trade_id is gone.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:765E9672-E777-48F6-A4A1-1AE08284FB9A][Give the activity type its axes and priority]] | DONE | 2026-10-05 | 2026-10-05 | Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is. |
+| [[id:FCB5F73B-986F-4EAA-9251-0E3D72F9EE0E][Record each business event as a trade activity]] | BACKLOG | | | Add trade_activity, an append-only record of each business event with its type, actor, time, comment and operational-error flag, and make booking a trade write one. |
+| [[id:831583EA-B294-48DB-88AD-53E7534E5658][Point every component version at its activity]] | BACKLOG | | | Give the booking, state, identifier, party role, additional field, portfolio and instrument tables a foreign key to the trade_activity that wrote each version, replacing the bare activity type code. |
+| [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Name each trade an activity touches]] | BACKLOG | | | Add trade_activity_participant (activity, trade, role), so an act that touches several trades names each one and the part it plays, replacing the activity's single unit. |
+| [[id:6165BF44-FAB9-4B94-B9FA-71292E0853AC][Record an ORE import as one activity]] | BACKLOG | | | Make an ORE import one activity with every imported trade as a participant and an import detail table keyed by the activity, so the import is an act with an identity rather than a run of unrelated bookings. |
+| [[id:610BCC5C-073D-4FF0-86D3-0EAA4727306A][Add the act detail tables]] | BACKLOG | | | Add one detail table per kind of act, keyed by the activity: compression (provider, cycle reference), allocation (block, source, template), merge (policy, expiry-netting style), runs (process, run date) and bulk book move (books, cash flows moved). |
+| [[id:CF865781-BE15-42F7-BB13-7107BF06F97C][Join trades with typed links]] | BACKLOG | | | Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-02 in the product backlog; promoted preserving the UUID.
+
+** Goal
+
+Implement sections 4, 8 and 12 of the trade shape investigation: one activity per business event, acts as activities with participants, and pairwise typed links.
+
+** Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-02                               |
+
+** Acceptance
+
+- Every component version carries a foreign key to the trade_activity that caused it; the activity type states the economic, confirmable and real axes and the priority.
+- trade_activity_participant names each trade and its role; compression, merge, allocation, runs, bulk book move and import have detail tables keyed by the activity.
+- trade_link joins two trades with a type from trade_link_type, which names both roles and the economic effect; successor_trade_id is gone.
+
+** Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |

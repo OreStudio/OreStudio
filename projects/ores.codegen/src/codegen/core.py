@@ -1,6 +1,7 @@
 """
 Simple code generator that loads data and applies templates.
 """
+import base64
 import copy
 import functools
 import json
@@ -1634,6 +1635,12 @@ def _projects_dir_from(model_path: Path) -> Path:
 
 
 IMAGE_ARTEFACT_TYPE = 'images'
+IMAGE_ARTEFACT_MIME_TYPES = {
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+}
 IP2COUNTRY_ARTEFACT_TYPE = 'ip2country'
 
 
@@ -1699,11 +1706,11 @@ def _build_image_artefact(items, manifest: dict, manifest_path) -> dict | None:
     """The image artefact an image payload and its manifest describe.
 
     ``items`` is the image payload: one ``{"key", "description"}`` entry per
-    image, in the order the payload lists them. The SVG documents stay in the
+    image, in the order the payload lists them. The image files stay in the
     source tree and are read from it here, because the generated script inlines
-    them and so cannot read them at run time. The manifest names their
-    directory through the ``data_dir`` of the source the dataset claims as its
-    methodology, relative to the manifest itself. Returns None when the
+    them base64-encoded and so cannot read them at run time. The manifest names
+    their directory through the ``data_dir`` of the source the dataset claims
+    as its methodology, relative to the manifest itself. Returns None when the
     manifest declares no image dataset, so a manifest without images renders
     no artefact.
     """
@@ -1723,15 +1730,25 @@ def _build_image_artefact(items, manifest: dict, manifest_path) -> dict | None:
             f"(declared by dataset '{dataset.get('name')}')")
     built = []
     for item in items:
-        svg_path = source_dir / f"{item['key']}.svg"
-        if not svg_path.is_file():
+        matches = [source_dir / f"{item['key']}{extension}"
+                   for extension in IMAGE_ARTEFACT_MIME_TYPES
+                   if (source_dir / f"{item['key']}{extension}").is_file()]
+        if not matches:
             raise FileNotFoundError(
-                f"Image artefact SVG not found: {svg_path} "
+                f"Image artefact not found: {source_dir}/{item['key']} with any "
+                f"of {', '.join(IMAGE_ARTEFACT_MIME_TYPES)} "
                 f"(listed by dataset '{dataset.get('name')}')")
+        if len(matches) > 1:
+            raise ValueError(
+                f"Image artefact key '{item['key']}' matches more than one file: "
+                f"{', '.join(str(path) for path in matches)} "
+                f"(listed by dataset '{dataset.get('name')}')")
+        image_path = matches[0]
         built.append({
             'key': _sql_literal(item['key']),
             'description': _sql_literal(item['description']),
-            'svg': svg_path.read_text(encoding='utf-8').strip(),
+            'mime_type': IMAGE_ARTEFACT_MIME_TYPES[image_path.suffix],
+            'data': base64.b64encode(image_path.read_bytes()).decode('ascii'),
         })
     return {
         'dataset': _dataset_names(dataset),

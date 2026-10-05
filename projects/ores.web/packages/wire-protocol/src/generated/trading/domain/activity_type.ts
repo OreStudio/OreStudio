@@ -36,6 +36,9 @@ export interface ActivityType {
     code: string;
     category: string;
     requires_confirmation: boolean;
+    is_economic: boolean;
+    is_real: boolean;
+    priority: number;
     description: string;
     fpml_event_type_code: string;
     fsm_transition_id: string | null;

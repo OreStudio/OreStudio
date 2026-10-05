@@ -42,6 +42,9 @@ domain::activity_type activity_type_mapper::map(const activity_type_entity& v) {
     r.code = v.code.value();
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
+    r.is_economic = v.is_economic;
+    r.is_real = v.is_real;
+    r.priority = v.priority;
     r.description = v.description.value_or("");
     r.fpml_event_type_code = v.fpml_event_type_code.value_or("");
     r.fsm_transition_id =
@@ -67,6 +70,9 @@ activity_type_entity activity_type_mapper::map(const domain::activity_type& v) {
     r.version = v.version;
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
+    r.is_economic = v.is_economic;
+    r.is_real = v.is_real;
+    r.priority = v.priority;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.fpml_event_type_code =
         v.fpml_event_type_code.empty() ? std::nullopt : std::optional(v.fpml_event_type_code);

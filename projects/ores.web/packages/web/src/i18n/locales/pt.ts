@@ -74,6 +74,7 @@ const pt: SourceCatalogue = {
         },
         menu: {
             home: 'Início',
+            accounts: 'Contas',
             tenants: 'Inquilinos',
             parties: 'Partes',
             rescue: 'Recuperar acesso',
@@ -442,7 +443,7 @@ const pt: SourceCatalogue = {
 
     accounts: {
         title: 'Contas',
-        description: 'Identidades que podem iniciar sessão ou atuar como serviço, neste inquilino.',
+        description: 'Identidades que podem iniciar sessão ou atuar como serviço.',
         search: 'Pesquisar',
         searchPlaceholder: 'Nome de utilizador, nome ou email',
         filterByType: 'Tipo',

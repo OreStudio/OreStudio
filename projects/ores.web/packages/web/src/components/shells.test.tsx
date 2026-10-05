@@ -233,6 +233,8 @@ describe('the application shell', () => {
     it('offers the areas of its mode, and no area of another', () => {
         const system = renderAppShell('Acme Operations', 'system-administration');
         expect(system).toContain('Tenants');
+        expect(system).toContain('>Accounts<');
+        expect(system).toContain('href="/people"');
 
         const application = renderAppShell('Acme Operations', 'application');
         expect(application).not.toContain('Tenants');

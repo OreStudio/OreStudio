@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/show-the-accounts-the-deployment-runs-on
+#+pr: 2667
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Signed in as the super administrator, the system administration area reads the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ Signed in as the super administrator, the system administration area reads the s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One list, framed by the mode. The people list already reads the session's own
+tenant, and for a system administrator that tenant is the system tenant, so no
+new read was added. =PeoplePage= takes the session mode and, in system
+administration, names the list Accounts and leads with the accounts strings the
+catalogue already carries in the three locales. A kind column mirrors the mark
+=TenantPage= gives a service account. The system menu gains the Accounts entry
+between Home and Tenants, and the prototype records the revisited Tenants-only
+decision. Rejected: a new AccountsPage beside PeoplePage (the same list twice)
+and a menu entry alone (it would leave the service mark out).
 
 * Measurements
 
@@ -56,9 +62,12 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What       | Value                 | Command                                       | Commit     |
+|------------+-----------------------+-----------------------------------------------+------------|
+| Web tests  | 296 passed (30 files) | npm test --workspace @ores/web (from projects/ores.web) | 270f358f68 |
+| Typecheck  | clean                 | npm run typecheck --workspace @ores/web       | 270f358f68 |
+| Formatting | clean                 | npx prettier --check on the ten changed files | 270f358f68 |
+| Site check | 20 pages, 0 failures  | ./compass.sh site page                        | 270f358f68 |
 
 * Notes
 
@@ -101,12 +110,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2667][#2667]] | [web] Show the deployment's own accounts in system administration |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review pass over origin/main...HEAD: no findings. | | n/a | Checklist applied to the diff; misspell check not run (not permitted in this environment). |
+| 2 | The accounts description reads oddly in system administration ("scoped to this tenant"). | en/fr/pt locales | accept | The clause is dropped. The string serves the system-administration lead alone, so the sentence is the deployment's own. |
+| 3 | The person page keeps its tenant framing and gets no mode. | PersonPage.tsx, AppRoutes.tsx | decline | Verified: the crumbs read Home / People / name, and the People crumb returns to the list, which in system mode is the Accounts-framed list. The page is the one access screen for both modes and carries no tenant wording of its own. |
+| 4 | The kind check treats every non-user account as a service. | PeoplePage.tsx | decline | The four types are user, service, algorithm and llm (wire-protocol/src/domain.ts:38); the kind vocabulary is Person against the non-person mark, and the tenant screen applies the same rule. Comparing against 'service' would mislabel algorithm and llm accounts as people. |
+| 5 | The kind column shows in both modes, but the PR text implies a system-mode addition. | PR body | accept | The PR body now says both modes. |
+| 6 | No live browser run and no misspell pass. | n/a | no action | Disclosed in the task and the PR. The fixer is not permitted here; the browser run waits on the environment remediations. |
+
+Rows 2 to 6 answer the GitHub review posted on PR #2667. For row 2 the fix
+re-ran =npm test --workspace @ores/web= (296 passed, 30 files), =npm run
+typecheck --workspace @ores/web= and =npx prettier --check= on the changed
+files, all green at the fix commit.
 
 * Result
+
+Delivered in =270f358f68=. The system administration menu offers Accounts, and
+it opens the people list at =/people=. In system administration the list is
+titled Accounts and led by the accounts description the catalogue already
+carries; the tenant administrator's framing is unchanged. A kind column shows
+each account as Person or Service, the mark the tenant screen already gives. The
+read is unchanged: =GET /api/accounts= of the session's own tenant.
+
+| Acceptance | Evidence |
+|------------+----------|
+| Reachable without opening a tenant | shells.test.tsx asserts =Accounts= and =href="/people"= in system mode, and the menu row lives in =SHELL_MENUS=. |
+| Services shown as services, with the tenant screen's mark | screens.test.tsx seeds a service account and asserts =Service=; the cell mirrors =TenantPage='s mark. |
+| Ordinary accounts read, no cross-tenant read | =PeoplePage= still reads through the shared =ListSource= and =api.accountsPage=; no new endpoint or parameter. |
+| Prototype records the entry and the revisited decision | navigation.org menu row is =Accounts, Tenants= and carries the new subsection; the site check published it with 0 failures. |
+
+Limitations. The screen was verified as server-rendered markup in the unit
+suite, not in a browser against a live deployment, because the environment
+remediations are still pending. The misspell check was not run: the fixer is
+not permitted in this environment.

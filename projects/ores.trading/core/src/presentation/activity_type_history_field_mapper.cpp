@@ -38,6 +38,9 @@ render_activity_type_fields(const domain::activity_type& v) {
     fields.push_back({.name = "Category", .value = v.category});
     fields.push_back(
         {.name = "Requires Confirmation", .value = v.requires_confirmation ? "true" : "false"});
+    fields.push_back({.name = "Is Economic", .value = v.is_economic ? "true" : "false"});
+    fields.push_back({.name = "Is Real", .value = v.is_real ? "true" : "false"});
+    fields.push_back({.name = "Priority", .value = std::to_string(v.priority)});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Fpml Event Type Code", .value = v.fpml_event_type_code});
     fields.push_back({.name = "Fsm Transition ID",

@@ -87,7 +87,7 @@ menu bar already had right. It changes with the mode:
 
 | Mode | The menu |
 |------+----------|
-| System administration | Tenants |
+| System administration | Accounts, Tenants |
 | Tenant administration | Parties, Access, Tenant |
 | Application | Reference Data, Market Data, Trading, Analytics, Compute, Reporting, People |
 
@@ -110,6 +110,20 @@ area is the whole of the system administration menu, and it holds the tenant
 journeys the catalogue has: reading the roster, creating a tenant, and retiring
 or resetting one. *Tune the tenant* is not among them — the tenant
 administrator maintains their own tenant's details, from inside it.
+
+*** The deployment's own accounts are an area
+
+The Qt menu bar kept the deployment's own accounts on a first-class screen,
+under its *User Accounts* area, and the audit of the super administrator's
+journeys found that the web had lost that door: with the Tenants area as the
+whole of the menu, the services the installation runs on are reachable only by
+opening the system tenant from the roster. The area gains *Accounts*, and the
+"the Tenants area is the whole of the system administration menu" decision
+above is revisited with it. Nothing new is read: the accounts read is the
+session's own tenant, and the session's tenant for a system administrator is
+the system tenant. The story
+[[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator
+UX journeys]] carries the change.
 
 *** The roster is its own journey
 

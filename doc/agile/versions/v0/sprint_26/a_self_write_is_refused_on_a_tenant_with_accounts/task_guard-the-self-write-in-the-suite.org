@@ -26,11 +26,11 @@ A test replaces an account as itself and the write lands, and the SQL reproducti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
-| Now          | Every run is measured and recorded; the task closes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run the profile journeys end to end (task [[id:9007491B-B716-483C-B441-24E6F7B91A14][Re-run the profile journeys end to end]]). |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance

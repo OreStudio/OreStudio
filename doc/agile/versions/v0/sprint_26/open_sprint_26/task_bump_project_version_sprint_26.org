@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: D4982A26-4303-4923-8924-3D295AD86E25
+:END:
+#+title: Task: Bump project version to 0.0.26 for sprint 26
+#+description: Missed as part of the sprint-opening process: bump the project version across CMakeLists.txt, vcpkg.json, and the GitHub workflow files (currently all still at 0.0.25, sprint 25's version).
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_26:sprint_26:v0:
+#+owner: marco
+#+branch: feature/bump-project-version-sprint-26
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump the project version from =0.0.25= (sprint 25's version) to
+=0.0.26= for sprint 26, following
+[[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]].
+This is normally part of opening a sprint (see
+[[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] itself) but
+was missed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] |
+| Now          | Working the bump on the branch. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR; tag =v0.0.26= after the merge. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =CMakeLists.txt= =project(OreStudio VERSION 0.0.26 ...)=.
+- =vcpkg.json= =version-string= updated to =0.0.26=.
+- =.github/workflows/continuous-linux.yml=,
+  =continuous-windows.yml=, =continuous-macos.yml= package-path
+  references updated to =0.0.26=.
+- The recipe's verification grep shows no stray =0.0.25= reference
+  in the six files, other than the commits-since badge the recipe
+  itself mandates.
+
+* Plan
+
+Followed [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
+exactly: CMakeLists.txt, vcpkg.json, the three GitHub workflow
+package filenames, and readme.org's badges (sprint, PRs-since,
+commits-since). Sprint 26 started 2026-09-23, so PRs-since moved to
+that date with label v0.0.26; commits-since moved to v0.0.25 (the
+just-bumped-from version). The screenshot reference stays at
+v0.0.24: sprint 25's capture was never taken, v0.0.25.png does not
+exist, and v0.0.26.png is the sprint 26 release-notes capture —
+readme.org and index.org both point at it when sprint 27 opens.
+index.org carries only a screenshot copy and needs no version edit;
+it was checked. The bump lands as a quick PR (PR #2136 opened
+sprint 26 without it) and is force-merged; the =v0.0.26= tag and the
+draft GitHub release follow the merge.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

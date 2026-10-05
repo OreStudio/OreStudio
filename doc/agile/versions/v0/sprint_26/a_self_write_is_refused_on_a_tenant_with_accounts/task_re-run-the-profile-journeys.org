@@ -8,7 +8,7 @@
 #+filetags: :a_self_write_is_refused_on_a_tenant_with_accounts:sprint_26:v0:
 #+owner: marco
 #+branch: feature/fix-the-self-write
-#+pr:
+#+pr: 2653
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2653][#2653]] | [codegen,sql] Fix the self write refusal on a tenant with accounts |
 
 * Review
 

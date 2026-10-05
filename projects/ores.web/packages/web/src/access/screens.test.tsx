@@ -94,6 +94,16 @@ const daniel = {
     recordedAt: '2026-10-04 09:00:00Z',
 } as unknown as Account;
 
+/** A service account of the deployment, with no picture of its own. */
+const batch = {
+    ...daniel,
+    id: '66666666-6666-6666-6666-666666666666',
+    username: 'batch_runner',
+    fullName: 'Batch Runner',
+    accountType: 'service',
+    imageId: null,
+} as unknown as Account;
+
 function render(seed: (client: QueryClient) => void, path: string, routes: ReactNode): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['permissions'], CATALOGUE);
@@ -240,12 +250,36 @@ describe('The people list', () => {
                 );
             },
             '/people',
-            <Route path="/people" element={<PeoplePage />} />,
+            <Route path="/people" element={<PeoplePage mode="tenant-administration" />} />,
         );
 
+        expect(html).toContain('Who can sign in to this tenant');
         expect(html).toContain('Daniel Okafor');
         expect(html).toContain('1–1 of 31');
         expect(html).toContain('Search…');
         expect(html).toContain('href="/"');
+    });
+
+    it("names the same list as the deployment's own accounts for a system administrator", () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    [
+                        'records',
+                        'people',
+                        'page',
+                        { offset: 0, limit: 15, search: '', sort: '', descending: false },
+                    ],
+                    { rows: [daniel, batch], total: 2 },
+                );
+            },
+            '/people',
+            <Route path="/people" element={<PeoplePage mode="system-administration" />} />,
+        );
+
+        expect(html).toContain('Identities that can sign in or act as a service');
+        expect(html).toContain('Service');
+        expect(html).toContain('src="/api/images/55555555-5555-5555-5555-555555555555"');
+        expect(html).not.toContain('Who can sign in to this tenant');
     });
 });

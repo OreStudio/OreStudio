@@ -41,6 +41,7 @@ export interface MenuItem {
 export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
     'system-administration': [
         { nameKey: 'shell.menu.home', to: '/' },
+        { nameKey: 'shell.menu.accounts', to: '/people' },
         { nameKey: 'shell.menu.tenants', to: '/tenants' },
     ],
     'tenant-administration': [

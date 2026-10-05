@@ -21,7 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import type { Account } from '@ores/wire-protocol/browser';
+import type { Account, SessionMode } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
@@ -49,18 +49,24 @@ const PEOPLE: ListSource<Account> = {
 };
 
 /**
- * Who can sign in to the tenant, and the roles each one holds: the shared
- * record list, so it pages, searches and sorts like every other list. Opening
- * a person is where their details, contact, roles and sign-ins are kept.
+ * Who can sign in, and the roles each one holds: the shared record list, so it
+ * pages, searches and sorts like every other list. Opening a person is where
+ * their details, contact, roles and sign-ins are kept.
+ *
+ * The session's own tenant decides the framing. For a system administrator
+ * that tenant is the system tenant, so the same list is the deployment's own
+ * accounts and the screen is named for them.
  */
-export function PeoplePage(): ReactNode {
+export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
+    const system = mode === 'system-administration';
+    const title = system ? t('accounts.title') : t('access.people.title');
     return (
         <RecordList
             source={PEOPLE}
-            title={t('access.people.title')}
-            lead={t('access.people.lead')}
-            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('access.people.title') }]}
+            title={title}
+            lead={system ? t('accounts.description') : t('access.people.lead')}
+            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: title }]}
             pathOf={(account) => personPath(account.username)}
             columns={[
                 {
@@ -84,6 +90,16 @@ export function PeoplePage(): ReactNode {
                     sort: 'username',
                     mono: true,
                     cell: (account) => account.username,
+                },
+                {
+                    id: 'kind',
+                    header: t('signIns.kind'),
+                    cell: (account) =>
+                        account.accountType === 'user' ? (
+                            <span className="text-ink-muted">{t('signIns.person')}</span>
+                        ) : (
+                            <Tag tone="accent">{t('signIns.service')}</Tag>
+                        ),
                 },
                 {
                     id: 'job_title',

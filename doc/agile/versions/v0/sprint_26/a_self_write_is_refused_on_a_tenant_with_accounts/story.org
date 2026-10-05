@@ -81,6 +81,14 @@ create script, and a regeneration carries it to every generated file.
   and creating the initial administrator expects a system tenant with no
   current accounts, because the insert names an actor that does not exist
   until the insert lands. The cycle is recreate, bootstrap, seed, check.
+- *The moved validation changes one error precedence.* A write that is stale
+  and also carries a bad =modified_by= is now refused for the actor,
+  =Invalid modified_by= (23503), where it was refused for the version. The
+  write was refused either way. The conflict path answers =outcome=conflict=
+  with its code and the panel composes the record-changed sentence itself,
+  and the open question the same run found about that message is captured at
+  [[id:25870CC8-06CF-4921-8804-878F2CF62401][A version conflict carries no
+  message]].
 
 * Result
 

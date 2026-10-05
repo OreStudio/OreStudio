@@ -111,16 +111,22 @@ via its "Verifies task" field.
 
 The local review pass over the diff, per the runbook's step 5a: the
 =compass-code-review-pr= checklist against =origin/main...HEAD=, and the
-misspell check with it.
+misspell check with it. The on-demand review on PR #2653 adds four notes,
+none blocking, in rows 3 to 6.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =misspell-fixer .= exits 1 on the tree. | the sprint 25 and 26 task pages, and the local pnpm store | No action | Every hit is outside this diff: the task pages quote an upstream load-profile identifier misspelled in the portfolio, in review tables that already decline the correction, and the store is a gitignored local artifact. A run over this diff's files reports "nothing to replace" and exits 0. |
 | 2 | The site export aborts on the moved-assignment page: the command cell splits at its pipes, and the POSIX class in the fragment before the first split reads as a link to =:space:=. | task_order-the-actor-validation-before-the-version-replace.org:73 | Fixed | The command moves to a =sh= block below the Measurements table, exact as it ran. The emacs link check (=ores-check-org-links.el=) and =compass site page= then pass. |
+| 3 | The moved validation changes an error precedence: a write that is stale and carries a bad actor now answers the actor error where it answered the version conflict. | the three literate create templates | Recorded | Accepted as a note, not a change: the write was refused either way, the conflict message and its open question are captured at 25870CC8, and the story's Decisions now carry the new precedence. |
+| 4 | Only =iam_accounts= is guarded in the suite; the junction and table shapes rest on the drift gate. | repository_account_repository_tests.cpp | No action | Accepted as reviewed: the relocation is mechanical and identical in the three shapes, every generated file follows its template, and a per-shape case would assert the same order three times. |
+| 5 | The evidence dumps carry most of the added lines, =drift_gate_after.txt= alone at 26k lines. | the tasks' =evidence/= directories | No action | The raw record beside the task is the repository convention: the Measurements preamble asks for the raw output where it matters, and a summary would replace the record rather than trim it. |
+| 6 | The journeys evidence was not re-run after the rebase. | task_re-run-the-profile-journeys.org | No action | The caveat is the PR body's own Limitations paragraph, stated per run; the three failures are captured and none traces to the self write. |
 
 Verdict: ready to merge. The delta is the three templates' reorder, its
 regeneration across the create scripts, the repository case that guards the
-order, and the records; the one finding in it is fixed and re-checked.
+order, and the records; the one finding in it is fixed and re-checked, and
+the on-demand review on PR #2653 found no blocking issue.
 
 * Result
 

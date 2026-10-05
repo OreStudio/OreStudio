@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-the-administrators-their-pictures
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ super_admin_avatar.png and tenant_admin_avatar.png are part of the images the se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Complete at 3785b6356a; the PR follows. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR, then address its review. The full build and ctest run when the host build lock frees. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -42,9 +42,39 @@ super_admin_avatar.png and tenant_admin_avatar.png are part of the images the se
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work has three parts: vendor the pictures, seed them, attach them.
+
+** Vendoring. The super administrator's source picture is a single badge, so it
+copies as it is. The tenant administrator's source is a sheet that carries both
+badges, so the vendored file is the tenant badge cropped to its circle
+(=convert tenant_admin_avatar.png -crop 480x480+530+10 +repage=). Both land
+beside =external/acme/Acme-corp.png=.
+
+** Seeding. Two populate scripts mirror =acme_party_logo_populate.sql=: one
+system-tenant template row in =ores_assets_images_tbl= per script, keyed
+=super_admin_avatar= and =tenant_admin_avatar=, with the PNG data base64 and an
+idempotent guard. =populate.sql= runs them after the ACME logo seeds.
+
+** Attaching. The =attach_photos= step gains =attach_administrator_photos=,
+which runs at the top of the step, before the parties loop:
+
+- The tenant administrator is the account the run acts as
+  (=command.admin_account_id=), read through =account_service=.
+- The super administrators are the system tenant's SuperAdmin holders, the
+  same rule =bootstrap_mode_service= uses. Each picture is written through a
+  token minted for that account (=internal_impersonation_service=), so the
+  write takes the real request pipeline with its tenant checks and audit.
+- The template keys are code constants, not step arguments: these pictures
+  are the product's own, while the parties and datasets stay the profile's
+  data.
+
+** Idempotence. =copy_template_image= returns the tenant's existing copy by
+code, and the new =attach_account_photo= skips an account that already carries
+a picture, so a second run changes nothing.
+
+** Refactor. =attach_account_photo= carries the read-echo-write block the staff
+photos used, and =resolve_step_actor= delegates to the new =actor_of=, which
+the super administrator path reuses.
 
 * Measurements
 
@@ -58,7 +88,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Syntax check of the edited header | SYNTAX_OK | =clang++ -fsyntax-only= on =ores.iam/core/src/messaging/registrar.cpp= with the =linux-clang-debug-make= flags from =compile_commands.json= | 3785b6356a |
+| Populate reference check | exit 0, "populate references resolve." | =python3 projects/ores.codegen/scripts/check_populate_references.py= | 3785b6356a |
+| Handler permission seeding | exit 0, 10 component(s), 620 distinct code(s) | =python3 projects/ores.codegen/scripts/check_handler_permissions.py= | 3785b6356a |
+| Pasted block symbols | exit 0, 21 names in 121 blocks across 28 models | =python3 projects/ores.codegen/scripts/check_paste_block_symbols.py= | 3785b6356a |
+| CMake source drift | exit 0, "All component_files.cmake up to date." | =projects/ores.codegen/venv/bin/python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check= | 3785b6356a |
+| Catalogue drift sweep | exit 0, no file this branch touched would change | =projects/ores.codegen/venv/bin/python3 projects/ores.codegen/scripts/check_component_drift.py --sweep= | 3785b6356a |
+| Full build and ctest | pending the host build lock | =./compass.sh build --preset linux-clang-debug-make= (queued as the session's background task) | 3785b6356a |
 
 * Notes
 
@@ -105,6 +141,60 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =attach_staff_photos= header still described the read-echo-write block after the block moved into =attach_account_photo= | =tenant_provisioning_handler.hpp= | accept | Header now points at the helper |
+| 2 | =resolve_step_actor='s party-link fallback read as duplicated once =actor_of= carried it | =tenant_provisioning_handler.hpp= | accept | The fallback moved into =actor_of= whole; the missing-account branch drops its lookup because links for a missing account are empty either way |
+
+The =misspell-fixer= pass was not run: the command is denied in this
+environment. The disclosure repeats in the PR body.
 
 * Result
+
+Delivered on branch =feature/give-the-administrators-their-pictures=, commit
+=3785b6356a=.
+
+** What shipped
+
+- =external/acme/super_admin_avatar.png= and
+  =external/acme/tenant_admin_avatar.png=. The tenant source carried both
+  badges, so the vendored file is the tenant badge cropped to its circle
+  (=480x480+530+10=).
+- =projects/ores.sql/populate/acme/super_admin_avatar_populate.sql= and
+  =tenant_admin_avatar_populate.sql=: two system-tenant template rows in
+  =ores_assets_images_tbl=, keyed =super_admin_avatar= and
+  =tenant_admin_avatar=, wired into =populate.sql= after the ACME logo seeds.
+- The =attach_photos= step attaches both administrators' pictures before the
+  parties loop. The tenant administrator is the account the run acts as
+  (=command.admin_account_id=); the super administrators are the system
+  tenant's SuperAdmin holders, each written through a token minted for that
+  account so the write takes the real request pipeline.
+- =attach_account_photo=, shared with the staff photos, returns early when the
+  account already carries a picture, and =copy_template_image= returns the
+  tenant's existing copy by code. A repeated run therefore changes nothing.
+
+** Acceptance
+
+- Vendored and seeded, keyed like =acme_party_logo=. Yes: the seed scripts
+  mirror =acme_party_logo_populate.sql= structure for structure, and the
+  populate reference check passes.
+- The step attaches both pictures. Yes in the code. The live run needs a
+  rebuild, a deploy and a destructive database recreate, all paused for the
+  operator, so the end-to-end proof is still outstanding.
+- A second run leaves one picture per account, unchanged. Yes by
+  construction: the account's =image_id= is the idempotence gate, and the
+  tenant copy is looked up by code before any write.
+- An account without a picture still falls back to initials. Unchanged:
+  =Avatar= (=projects/ores.web/packages/web/src/ui/Images.tsx:53=) renders
+  =initialsOf(name)= when =src= is null or the picture fails to load.
+
+** Verification
+
+The edited header compiles under the preset's exact flags (=SYNTAX_OK=, see
+Measurements). Every class check this change touches passes: populate
+references, handler permissions, pasted block symbols, CMake sources and the
+catalogue drift sweep, each exit 0 at =3785b6356a=. The full build and ctest
+were still queued on the host build lock when this task closed; they run
+before the PR merges and their result lands in the PR conversation.
+
+The live flow was not run. Proving the pictures land needs
+=compass build=, a service deploy and =compass db recreate=, which deletes
+the development database; both environment remediations sit with the operator.

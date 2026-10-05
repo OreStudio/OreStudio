@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/import-a-run-configuration-through-a-service-operation-and-the-shell
-#+pr:
+#+pr: 2647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2647][#2647]] | [ore,shell] Import a run's configuration through a saga over its owners |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/expose-the-configuration-document-operations-from-each-owning-service
-#+pr:
+#+pr: 2639
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2639][#2639]] | [refdata,analytics,reporting] Serve configuration documents over NATS |
 
 * Review
 

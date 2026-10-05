@@ -210,6 +210,8 @@ missing):
   =X-Error=.
 - [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — every
   service subscribes its subjects in a queue group named for the service.
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — the service client retries
+  =token_expired= once, after a forced token refresh.
 
 * See also
 

@@ -69,7 +69,9 @@ Source: =[[./pattern_retry.puml][pattern_retry.puml]]=. Regenerate with
 - *Retrying a refusal.* =forbidden= will not change by asking again.
 - *Retries at every layer.* Three layers of three attempts make 27 calls.
 - *No jitter.* Clients that failed together retry together.
-- *Retrying an expired token with the same token.* Renew first; the first internal impersonation retried until its wait timed out.
+- *Retrying an expired token with the same token.* Renew first; the first version of
+  [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][internal actor impersonation]]
+  retried until its wait timed out.
 
 * Security
 
@@ -83,6 +85,7 @@ identity to get round it.
 
 * In ORE Studio
 
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the service client retries only =token_expired=, once, after a forced token refresh.
 - [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the retry verb resumes a failed run at its failed step, under the same step identity.
 - [[id:A47C612B-9CAB-4656-B4FC-E9DA1D414F83][Job actions]] — the scheduler deliberately does not retry a failed action; the next occurrence is the next firing.
 

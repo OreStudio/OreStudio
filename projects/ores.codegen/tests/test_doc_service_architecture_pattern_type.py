@@ -25,6 +25,7 @@ import doc_generate  # noqa: E402
 
 TEMPLATE_DIR = REPO_ROOT / "projects" / "ores.codegen" / "library" / "templates"
 GLOSSARY = REPO_ROOT / "doc" / "meta" / "glossary.org"
+CONTRACT = REPO_ROOT / "doc" / "meta" / "document_type_service_architecture_pattern.org"
 HUB = REPO_ROOT / "doc" / "knowledge" / "service_architecture_patterns" / "service_architecture_patterns_hub.org"
 
 # The contract's required sections, in the order the contract states them,
@@ -126,3 +127,9 @@ def test_the_hub_reads_the_groups_in_order():
     positions = [text.find(f"\n** The {g} group") for g in doc_generate.PATTERN_GROUPS]
     assert -1 not in positions, positions
     assert positions == sorted(positions)
+
+
+def test_the_contract_names_every_group():
+    text = CONTRACT.read_text(encoding="utf-8")
+    for group in doc_generate.PATTERN_GROUPS:
+        assert f"={group}=" in text, group

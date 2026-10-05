@@ -97,6 +97,13 @@ via its "Verifies task" field.
 | 1 | A page path outside the project root made the image step raise after a successful publish | projects/ores.compass/src/compass.py | Accept | Skip the page; local review before the PR. |
 | 2 | Two new lines in the generator ran past the file's line width | projects/ores.codegen/src/doc_generate.py | Accept | Rewrapped; local review before the PR. |
 | 3 | Report execution at scale states a four-step chain that the report execution workflow page does not yet list | doc/knowledge/architecture/report_execution_at_scale.org | Decline | The design states the target; the workflow page changes when the chain is built. |
+| 4 | PR #2651, Claude: =choices= with an empty default and a later check | projects/ores.codegen/src/doc_generate.py | Decline | The empty default lets other types omit the flag; the check names the groups. |
+| 5 | PR #2651, Claude: =--pattern-group= is ignored for other types | projects/ores.codegen/src/doc_generate.py | Decline | Every type-specific flag in the generator behaves this way. |
+| 6 | PR #2651, Claude: the groups are listed in three places | projects/ores.codegen/tests/test_doc_service_architecture_pattern_type.py | Accept | A test now checks the contract names every group; one already checked the hub. |
+| 7 | PR #2651, Claude: a reverted image keeps a stale copy | projects/ores.compass/src/compass.py | Accept | Compare content with =filecmp=; a test covers the revert. |
+| 8 | PR #2651, Claude: a page outside the project gets no images silently | projects/ores.compass/src/compass.py | Decline | =site page= only publishes files in the repository. |
+| 9 | PR #2651, Claude: the emoji has a variation selector | projects/ores.compass/src/compass.py | Decline | 43 other status lines use the same form. |
+| 10 | PR #2651, Claude: say near the top that a design page states a target | report_execution_at_scale.org, run_grants_and_run_tokens.org | Accept | One sentence at the top of each summary. |
 
 * Result
 

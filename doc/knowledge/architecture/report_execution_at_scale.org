@@ -12,6 +12,8 @@
 
 * Summary
 
+This page states the target design. It does not describe what is built.
+
 A report belongs to a tenant and a party. Row-level security uses the same
 pair. A scheduled run has no caller, so it has no token to forward. The
 scheduler and the step services act as themselves, and a service identity has

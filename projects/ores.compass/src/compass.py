@@ -6421,13 +6421,13 @@ def _site_page_images(html: Path, out_root: Path):
 
 def _publish_page_images(html: Path, out_root: Path) -> int:
     """Copy the images a published page shows, when the copy is missing or
-    older than its source. org-publish publishes images in a separate project,
+    differs from its source. org-publish publishes images in a separate project,
     so a single-page publish would otherwise leave them out."""
     if not html.is_file():
         return 0
     copied = 0
     for src, dest in _site_page_images(html, out_root):
-        if dest.exists() and dest.stat().st_mtime >= src.stat().st_mtime:
+        if dest.exists() and filecmp.cmp(src, dest, shallow=False):
             continue
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dest)

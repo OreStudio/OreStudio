@@ -66,6 +66,20 @@ def test_recopies_an_image_whose_source_changed(site):
     assert (page_dir / "a.png").read_bytes() == b"new"
 
 
+def test_recopies_an_image_reverted_to_an_older_version(site):
+    root, out_root, page_dir, src_dir = site
+    src = src_dir / "a.png"
+    src.write_bytes(b"new")
+    html = write_page(page_dir, "a.png")
+    compass._publish_page_images(html, out_root)
+    src.write_bytes(b"old")
+    stamp = (page_dir / "a.png").stat().st_mtime - 100
+    os.utime(src, (stamp, stamp))
+
+    assert compass._publish_page_images(html, out_root) == 1
+    assert (page_dir / "a.png").read_bytes() == b"old"
+
+
 def test_ignores_external_missing_and_escaping_references(site):
     root, out_root, page_dir, src_dir = site
     (root / "secret.png").write_bytes(b"S")

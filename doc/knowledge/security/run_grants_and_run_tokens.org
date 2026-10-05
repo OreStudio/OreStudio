@@ -12,6 +12,8 @@
 
 * Summary
 
+This page states the target design. It does not describe what is built.
+
 This page is IAM's implementation of the
 [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]]
 pattern. It is the same for every component that uses the pattern. A *run

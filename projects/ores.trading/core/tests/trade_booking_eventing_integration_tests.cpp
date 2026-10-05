@@ -41,11 +41,11 @@
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/service/trade_booking_service.hpp"
-// Parent-seed snippet includes (ores_trading_trade_anchors_tbl): the parent table is
+// Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 // Parent-seed snippet includes (ores_refdata_books_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
@@ -150,9 +150,9 @@ TEST_CASE("write_trade_booking_publishes_an_event", tags) {
     v.change_reason_code = "system.test";
     v.party_id = *party_ctx.party_id();
     {
-        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = *party_ctx.party_id();
-        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
         v.party_id = anchor.party_id;

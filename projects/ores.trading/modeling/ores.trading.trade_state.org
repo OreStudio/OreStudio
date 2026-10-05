@@ -105,7 +105,7 @@ boost::uuids::uuid{}
 
 | name         | columns            | table                          | target_columns | error_message                                                |
 |--------------+--------------------+--------------------------------+----------------+--------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trade_anchors_tbl | id, party_id   | Invalid trade_id: %. The state's party must be the trade's. |
+| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The state's party must be the trade's. |
 
 ** Status transition
 :PROPERTIES:
@@ -198,7 +198,7 @@ status read here cannot race another writer.
 
 ** trade_id
 :PROPERTIES:
-:table:    ores_trading_trade_anchors_tbl
+:table:    ores_trading_trades_tbl
 :enforce:  true
 :nullable: false
 :END:
@@ -206,17 +206,17 @@ status read here cannot race another writer.
 A database foreign key: the anchor is immutable.
 
 #+begin_src cpp :name parent_seed_includes
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #+end_src
 
 #+begin_src cpp :name parent_seed
     {
         const auto party_id = *party_ctx.party_id();
 
-        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = party_id;
-        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
         v.party_id = party_id;
@@ -290,4 +290,4 @@ caller.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
-- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] — the anchor this state belongs to.
+- [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] — the anchor this state belongs to.

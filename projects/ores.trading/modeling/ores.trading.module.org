@@ -15,7 +15,7 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 
 | Entity | Brief |
 |--------+-------|
-| [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] | The immutable anchor of a trade. |
+| [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] | The immutable anchor of a trade. |
 | [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][ores.trading.trade_booking]] | Where a trade is booked and the netting set it is filed in. |
 | [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][ores.trading.trade_state]] | A trade's lifecycle status. |
 | [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][ores.trading.trade_identifier]] | An identifier of a trade under one scheme (UTI, USI, Internal, ORE). |

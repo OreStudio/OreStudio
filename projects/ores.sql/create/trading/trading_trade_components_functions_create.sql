@@ -78,7 +78,7 @@ returns boolean as $$
 begin
     return ores_trading_status_is_draft_fn(p_status_id)
         or exists (
-            select 1 from ores_trading_trade_anchors_tbl
+            select 1 from ores_trading_trades_tbl
             where tenant_id = p_tenant_id
               and id = p_trade_id
               and booking_nature in ('test', 'hypothetical')
@@ -165,7 +165,7 @@ returns boolean as $$
 declare
     v_tenant_id uuid := ores_iam_current_tenant_id_fn();
 begin
-    insert into ores_trading_trade_anchors_tbl (id, tenant_id, party_id, counterparty_id,
+    insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
         trade_type, counterparty_scope, booking_nature, entry_channel)
     values (p_id, v_tenant_id, p_party_id, p_counterparty_id, p_trade_type,
         p_counterparty_scope, p_booking_nature, p_entry_channel)
@@ -245,7 +245,7 @@ begin
              where ns.tenant_id = a.tenant_id
                and ns.id = b.netting_set_id
                and ns.valid_to = ores_utility_infinity_timestamp_fn())) end
-    from ores_trading_trade_anchors_tbl a
+    from ores_trading_trades_tbl a
     join ores_trading_trade_bookings_tbl b
       on b.tenant_id = a.tenant_id
      and b.trade_id = a.id

@@ -24,8 +24,8 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::trading::tests {
@@ -55,9 +55,9 @@ inline boost::uuids::uuid write_parent_trade(ores::testing::database_helper& h) 
     party_repo.write(h.context(), party);
     auto ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 
-    auto anchor = generators::generate_synthetic_trade_anchor(gen);
+    auto anchor = generators::generate_synthetic_trade(gen);
     anchor.party_id = party.id;
-    repository::trade_anchor_repository().write(ctx, anchor);
+    repository::trade_repository().write(ctx, anchor);
     return anchor.id;
 }
 

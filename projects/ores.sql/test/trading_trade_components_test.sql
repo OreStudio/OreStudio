@@ -91,7 +91,7 @@ $$ language sql;
 create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scope text,
     p_nature text)
 returns void as $$
-    insert into ores_trading_trade_anchors_tbl (id, tenant_id, party_id, counterparty_id,
+    insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
         trade_type, counterparty_scope, booking_nature, entry_channel)
     select p_id, ores_utility_system_tenant_id_fn(), party_id, p_counterparty, 'Swap',
         p_scope, p_nature, 'manual'

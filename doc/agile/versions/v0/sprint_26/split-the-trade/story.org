@@ -21,11 +21,11 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The wide trade is gone; the anchor and its components are the only trade. |
+| Now           | Done: the trade is an immutable row with temporal components, and the wide trade is gone. |
 | Waiting on    | Nothing.                               |
-| Next          | Rename the anchor to trade, then close the story. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-05 |
 
 * Acceptance
@@ -63,6 +63,7 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
 | [[id:DE7982C5-7363-4C53-AF54-6A74D0B5051D][Move the trade export onto the anchor]] | DONE | 2026-10-04 | 2026-10-04 | Move the portfolio export, the export to storage and the instrument lookup out of the wide trade's model into the trade operations, reading anchors through their bookings. |
 | [[id:A966F3BF-42E9-4CB2-A6FF-4064BD50A27D][Import ORE trades onto the anchor alone]] | DONE | 2026-10-04 | 2026-10-05 | Carry an imported trade as its anchor, its booking and its ORE id instead of the wide trade, stop writing the wide trade, and roll back an import by closing the bookings it wrote. |
 | [[id:34BC6E18-F563-4F9A-A9A3-72E605F1A5A8][Remove the wide trade]] | DONE | 2026-10-05 | 2026-10-05 | Delete the wide trade model, its five field groups, the three envelope tables and their generated code, the wide-trade SQL functions, populate and tests, and make the tenant purge delete instruments and the anchor's components. |
+| [[id:1178D040-F5CD-440F-BCD6-871F112D948F][Rename the trade anchor to trade]] | DONE | 2026-10-05 | 2026-10-05 | Now that the wide trade is gone, the immutable anchor takes the name trade: model, table, SQL functions and policies, C++ types, protocol subjects, permissions, TypeScript, shell and docs. |
 
 * Decisions
 
@@ -101,6 +102,15 @@ Implement sections 1 to 3, 6, 9, 10 and 13 of the trade shape investigation: the
   writes all three in one transaction; identifiers, party roles and
   additional fields; catalogue-generated trade-type checks and routing; ORE
   import and export; the remaining consumers; removal of the wide trade.
+- An import rollback closes the bookings it wrote rather than deleting
+  trades: the trade row is immutable, and a trade with no live booking is in
+  no book and no export. A trade whose later writes fail has its booking
+  closed the same way.
+- The tenant purge deletes every tenant-scoped trading table in a loop that
+  retries a table its referrers still hold, disabling each table's delete
+  rules from the catalogue, and passes the trade's guard only through the
+  immutable purge switch.
+- pgTAP runs under a role row-level security binds; the owner bypasses it.
 
 * Out of scope
 

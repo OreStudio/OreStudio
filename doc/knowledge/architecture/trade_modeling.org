@@ -125,7 +125,7 @@ data for a later task to supply.
 
 Wikipedia defines a financial transaction as "an agreement, or communication,
 between a buyer and seller to exchange goods, services, or assets for payment".
-A trade is that agreement recorded. We model it as an immutable [[id:4304A441-E532-45FB-837A-378F13693CAE][=trade_anchor=]], and the trade id
+A trade is that agreement recorded. We model it as an immutable [[id:4304A441-E532-45FB-837A-378F13693CAE][=trade=]], and the trade id
 identifies it. That id names the trade inside this firm only, and [[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade
 identifiers]] covers the regulatory codes two counterparties share.
 

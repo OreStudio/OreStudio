@@ -46,11 +46,11 @@
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/trade_state_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-// Parent-seed snippet includes (ores_trading_trade_anchors_tbl): the parent table is
+// Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
-#include "ores.trading.api/generators/trade_anchor_generator.hpp"
-#include "ores.trading.core/repository/trade_anchor_repository.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
 // Soft-FK parent seeding (ores_dq_fsm_states_tbl): the parent may live in another
 // component, so its own component names the headers.
 #include "ores.dq.api/generators/fsm_state_generator.hpp"
@@ -152,9 +152,9 @@ TEST_CASE("write_trade_state_publishes_an_event", tags) {
     {
         const auto party_id = *party_ctx.party_id();
 
-        auto anchor = ores::trading::generators::generate_synthetic_trade_anchor(ctx);
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
         anchor.party_id = party_id;
-        ores::trading::repository::trade_anchor_repository().write(party_ctx, anchor);
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
         v.party_id = party_id;

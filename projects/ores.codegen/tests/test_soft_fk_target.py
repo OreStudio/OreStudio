@@ -46,7 +46,7 @@ def test_a_check_against_an_immutable_target_reads_its_row_as_it_is(tmp_path):
 
     table, body = _check(sql, "trade_id")
 
-    assert table == "ores_trading_trade_anchors_tbl"
+    assert table == "ores_trading_trades_tbl"
     assert "valid_to" not in body
 
 

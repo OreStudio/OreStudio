@@ -51,7 +51,7 @@ select (select id from ores_refdata_parties_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as counterparty_id;
 
-insert into ores_trading_trade_anchors_tbl (id, tenant_id, party_id, counterparty_id,
+insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
     trade_type, counterparty_scope, booking_nature, entry_channel)
 select '00000000-0000-0000-0000-0000000ca001', ores_utility_system_tenant_id_fn(), party_id,
     counterparty_id, 'Swap', 'external', 'actual', 'manual'

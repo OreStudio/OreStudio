@@ -22,7 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { TradeAnchor } from '../domain/trade_anchor.js';
+import type { Trade } from '../domain/trade.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
 import type { InstrumentPayload } from '../../../trading/payload.js';
 import type { Result } from '../../../utility/protocol.js';
@@ -39,7 +39,7 @@ export interface BookTradeRequest {
     /**
      * @brief The trade's immutable facts.
      */
-    anchor: TradeAnchor;
+    anchor: Trade;
     /**
      * @brief Where the trade is booked. Its trade id, party and counterparty
      * are replaced by the anchor's.
@@ -77,7 +77,7 @@ export interface TradeExportItem {
     /**
      * @brief The trade's immutable facts.
      */
-    anchor: TradeAnchor;
+    anchor: Trade;
     /**
      * @brief The trade's ORE identifier, or its id when it has none.
      */

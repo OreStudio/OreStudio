@@ -23,7 +23,7 @@ ores.service meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done. The task's record carries the item-by-item evidence. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing here; the registry gap is the standard's own recorded exception. |
 | Last touched  | 2026-09-26                             |
@@ -80,3 +80,7 @@ ores.service meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clea
 * Out of scope
 
 -
+
+* Result
+
+Done. The task's record carries the item-by-item evidence.

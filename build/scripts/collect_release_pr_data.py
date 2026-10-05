@@ -62,8 +62,11 @@ def list_prs_since(since_iso: str) -> list[dict]:
         "--state", "merged",
         "--search", search,
         "--json", fields,
-        "--limit", "500",
+        "--limit", "1000",
     ]) or []
+    if len(prs) >= 1000:
+        print("[warn] The PR list hit the 1000 limit — the notes will "
+              "under-count; raise the limit.", file=sys.stderr)
     prs.sort(key=lambda p: p.get("mergedAt") or "")
     return prs
 

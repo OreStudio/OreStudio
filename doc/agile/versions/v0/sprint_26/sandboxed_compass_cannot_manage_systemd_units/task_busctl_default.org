@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :sandboxed_compass_cannot_manage_systemd_units:sprint_26:v0:
 #+owner: marco
-#+branch: feature/systemd-busctl-transport
-#+pr:
+#+branch: fix/busctl-env-transport
+#+pr: 2153
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26

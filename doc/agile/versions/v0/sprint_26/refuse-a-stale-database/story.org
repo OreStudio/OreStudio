@@ -23,7 +23,7 @@ The code knows the schema it was built for and the database records the schema i
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Every service, test run and compass services start compares the schema fingerprint compiled into the code with the one the database records, logs both, and refuses to start on a mismatch. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-03                               |
@@ -45,3 +45,7 @@ The code knows the schema it was built for and the database records the schema i
 * Out of scope
 
 -
+
+* Result
+
+Every service, test run and compass services start compares the schema fingerprint compiled into the code with the one the database records, logs both, and refuses to start on a mismatch.

@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: A93B2CA2-66AB-4AD2-84EB-B41964980C57
+:END:
+#+title: Story: Complete the ORE report configuration
+#+description: The remainder of the ORE report configuration: the round trips still missing, the classification that selects a report kind's workflow, the run-input packaging, and the hand-written tables that need models. Split from Model the ORE report configuration as entities at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :reporting:ore:model:v0:product_backlog:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+This story delivers the remainder of the ORE report configuration entity
+model: the document kinds still to round trip — simulation, sensitivity,
+SIMM calibration, historical return and Basel traffic light — the report-kind
+classification that replaces the workflow-shaped columns, the packaging of a
+run's engine input through the owning services, and entity models for the
+hand-written tables.
+
+This story was split from
+[[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report
+configuration as entities]] when that story was reworded to its delivered
+scope and closed DONE at the sprint 26 close on 2026-10-05; its twenty-two
+tasks moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Take the remaining round trips and the report-kind classification when the story is picked up. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- Simulation, sensitivity, SIMM calibration, historical return and Basel
+  traffic light round trip end to end: entities, both mappers, and a round
+  trip over every corpus file of the kind, or a fixture built from the
+  schema where the corpus holds none.
+- A report kind is a classification: the definition carries its kind by
+  foreign key, and the kind selects the registered workflow and the
+  parameter block a run of that kind reads.
+- A run's engine input is packaged through the owning services' operations,
+  whose handlers are code generated, and the store that wrote other
+  components' tables is removed; the input travels through object storage
+  rather than one inline message.
+- An import writes a run's configuration in one transaction, and an export
+  reproduces a run's configuration as of when the run started.
+- The hand-written tables the census found carry entity models where a
+  codegen shape covers them, and each component's SQL aggregate lists its
+  generated entity files rather than holding them by hand.
+- The values the entities flatten — the stress shift extras and the FX
+  conventions' ORE ids — are held as typed rows and columns.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F17348AD-67DB-4844-94B3-F612C638488B][Model the analytics configuration libraries]] | BACKLOG | | | Entity models for the configuration the analytics in a run reference: simulation and cross-asset model, sensitivity, stress, SIMM calibration, historical return, Basel traffic light, and credit simulation. |
+| [[id:C1EEE20C-6B2D-488F-9256-0596C8C8D38E][Model the shared reference configuration]] | BACKLOG | | | The ORE configuration the reference and trading components own: conventions, calendars and adjustments, currencies, counterparties, netting set definitions and IBOR fallback, referenced by a run rather than copied into reporting. |
+| [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]] | BACKLOG | | | Replace the workflow-shaped columns on the report definition with a classification that selects the registered workflow and the parameter block it reads. |
+| [[id:3064DDA0-67AD-43B0-B57D-5AC5926E4C4E][Write the portfolio and market data files into the engine input]] | BACKLOG | | | The package carries trades and market data as msgpack files, but the run document names portfolio.xml, market.txt and fixings.txt; write those files so the engine can run the archive. |
+| [[id:10A702D1-3E98-48A4-A76A-356439A0DD73][Store the stress test and credit simulation documents]] | BACKLOG | | | Stress test and credit simulation are modelled but have no store, so a run cannot import or export them; add them to the document store and the run store. |
+| [[id:0110E33D-717B-4FEF-9E00-77BE30DAF027][Export a run's configuration as of its run time]] | BACKLOG | | | An export reads the current version of every document, so a run cannot be reproduced once its configuration changes; read each document as it stood when the run started. |
+| [[id:DC534776-F087-43AD-831E-AE0E6994ED4D][Import a run's configuration in one transaction]] | BACKLOG | | | An import writes through each repository in its own transaction, so a database error part way leaves what was written; make the import all or nothing. |
+| [[id:46D695CA-40F6-418F-9961-81F9B7914F48][Read each document's rows by its parent]] | BACKLOG | | | The document store reads every latest row of a table and filters in C++; read each child table by its parent's id instead. |
+| [[id:A766897B-B26A-44DA-AEA0-749A594A6B68][Link today's market bindings to their collections]] | BACKLOG | | | A today's market binding names its collection by text, and nothing checks the name; decide whether the binding carries a foreign key to the collection or whether resolution by name at export is enough. |
+| [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the sensitivity configuration]] | BACKLOG | | | sensitivity.xml end to end: the twenty-six shift families, the par conversion conventions and the shift grids, with both mappers and a round trip over every file in the corpus. |
+| [[id:96A01259-5B24-4CDC-B8AD-D9E435C7FCB1][Round trip the simulation configuration]] | BACKLOG | | | simulation.xml end to end: the Monte Carlo settings, the cross-asset model, its calibrations and the correlation pairs, with both mappers and a round trip over every file in the corpus. |
+| [[id:6B09C09B-818E-40AF-BD36-78C3B52A4A11][Round trip the SIMM calibration configuration]] | BACKLOG | | | simmcalibration.xml end to end: risk weights, correlations, concentration thresholds and currency lists per risk class, with both mappers and a round trip over every file in the corpus. |
+| [[id:1E32AD44-F4D6-4275-9630-4B41840EFE29][Round trip the historical return configuration]] | BACKLOG | | | historicalreturnconfig.xml end to end: the return convention per risk factor key and its displacement, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
+| [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
+| [[id:3460236B-747A-4081-B3E6-9CE98CCE709D][Generate the entity part of each component's SQL aggregates]] | BACKLOG | | | Every component's create and drop aggregate lists its generated entity files by hand, so a new entity misses a recreate until someone adds two lines. The census showed creation order does not depend on soft foreign keys, so codegen can emit one fragment per component listing its entity tables and notify triggers, which the hand-written aggregate includes; hand-written files stay listed by hand. |
+| [[id:08B98A2C-5123-45B0-B536-8421AB99EC0E][Model the FpML coded-scheme tables so codegen owns them]] | BACKLOG | | | Fifteen refdata coded-scheme tables (account types, asset classes, business centres and the rest), their DQ artefact tables and their notify triggers say do not edit, but the legacy JSON models that generated them no longer exist, so nothing can regenerate them and they have been edited by hand since. Write entity models for them so codegen produces the same SQL. |
+| [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | BACKLOG | | | Twenty-five tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and seven DQ artefact staging tables. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written. |
+| [[id:4C7C8ED1-5B25-46B5-85C8-4E0A73D7A12A][Replace the stress shift extras with typed rows]] | BACKLOG | | | stress_test_shift keeps the elements its columns do not cover, including every shift type after the first and its key, in an extras column of semicolon and pipe encoded name and value pairs. The story rules out name and value pairs. Hold each element as a typed column or a child row, so every value the document carries is a queryable, checked column. |
+| [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]] | BACKLOG | | | FX conventions are stored one per currency pair and their ORE id is rebuilt from the pair as BASE-QUOTE-FX-CONVENTIONS on export, so ids such as EUR-USD-FX are lost and a pair cannot hold two conventions. Store each FX convention by its own id, so curve segments and today's market can refer to it. |
+| [[id:2355DF78-E4AC-404E-8053-B8AE464538D6][Package the run input through the owners' operations]] | BACKLOG | | | The package step reads the run's documents through the owning services' operations instead of their tables, and ores.ore.core/store, which wrote other components' tables, is removed. |
+| [[id:185B84CB-6C5C-4D9D-9D2D-FEB562D1D330][Generate the handlers of an operation model]] | BACKLOG | | | Codegen renders an operation model's protocol but not its handler or registrar, so every operation handler is hand-written; give operation models a handler and registrar facet driven by each operation's service call and permission. |
+| [[id:D0E47AF2-6948-4E2C-97A6-2824C60D8F66][Carry a run's input through object storage]] | BACKLOG | | | A run configuration import carries its files inline in one NATS message, whose server limit is 1 MB, so a large input such as the Products example cannot be imported; upload the input to object storage first, as the ORE trade import does. |
+
+* Decisions
+
+* Out of scope
+
+-

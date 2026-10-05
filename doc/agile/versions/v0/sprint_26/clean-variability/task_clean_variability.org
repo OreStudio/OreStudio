@@ -29,7 +29,7 @@ ores.variability passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component
 | State        | DONE                              |
 | Parent story | [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing for the scaffold. D2 (the two domain operations) and D4 (the never-published event) carry recommendations and no confirmation yet. |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 

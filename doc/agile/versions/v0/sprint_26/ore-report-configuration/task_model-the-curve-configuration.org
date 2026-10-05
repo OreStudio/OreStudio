@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-the-curve-configuration
-#+pr:
+#+pr: 2450
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -75,8 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2450][#2450]] | [refdata] Model the curve sections and definitions |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

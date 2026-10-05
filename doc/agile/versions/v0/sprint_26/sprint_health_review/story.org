@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 253405EA-39FA-439E-AC7E-6E33275D2C23
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 26, covering goal alignment, load, PR velocity, story/task balance, focus signal, and bookkeeping hygiene.
+#+type: story
+#+level: s2
+#+filetags: :sprint_health_review:sprint_26:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A System 2 review of sprint 26 at its close. Each review measures the six
+dimensions the skill names, challenges its own readings, repairs the agile
+bookkeeping it finds, and writes one verdict with the evidence behind it.
+The review tasks carry the analysis; the sprint's =* Health Review= table
+carries one summary row per review.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The review measures the six dimensions the skill names: goal alignment,
+  sprint load, PR velocity, story and task balance, focus signal and the
+  overall verdict.
+- Every number in the review is a measurement with the command that produced
+  it and the commit it was taken at, or is marked as an estimate with its
+  basis.
+- The findings, the split decisions and the repairs are written into the
+  review task's =* Result=, and the sprint's =* Health Review= table carries
+  the review's summary row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7AFA2636-71EC-4DB2-88F5-BA4D393C177E][Health review 1 — sprint 26 close analysis]] | DONE | 2026-10-05 | 2026-10-05 | System 2 health review 1 of sprint 26. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 8D182BD4-8C65-4974-B0AC-EDBC94FD1120
+:END:
+#+title: Story: Make ores.database a composite and host the generated entity
+#+description: The remainder of the read-only entity profile work: make ores.database a composite that hosts the generated entity without the foundation library linking the layers above it. Split from Add a read-only entity profile and make ores.database hostable at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :codegen:database:product_backlog:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.database= is a composite that hosts the generated read-only
+entity: =api=, =core= and =service= parts, with the foundation library in
+a part rather than the composite root, and no part of the component
+linking a layer that links the component. The read-only entity profile
+shipped with the source story.
+
+This story was split from
+[[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile
+and make ores.database hostable]] when that story was reworded to the
+profile it delivered and closed DONE at the sprint 26 close on
+2026-10-05; the task Make ores.database a composite and host the
+generated entity moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Make ores.database a composite and migrate its consumers. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- =ores.database= carries =api=, =core= and =service= parts, and the
+  foundation library lives in a part rather than the composite root.
+- The generated =database.api= link closure stays inside =ores.utility=
+  and =ores.platform=, both of which sit below =ores.database=. No part
+  of the component links a layer that links the component.
+- The whole tree builds and the component's suites pass, with every
+  consumer of =ores.database= migrated in the same change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:841EA68A-0490-421D-83E4-8C9D01D148EF][Make ores.database a composite and host the generated entity]] | BACKLOG | | | Prototype the api/core emission under one modelling directory, move the foundation library into a part, and add database.api, database.core and database.service so database_info can be a generated read-only entity without inverting the layering. |
+
+* Decisions
+
+* Out of scope
+
+-

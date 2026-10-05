@@ -30,7 +30,7 @@ generated with. The capture =shell-recipes-no-longer-run= is what asked for it.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] |
-| Now          | Merged. Every gate passed on the branch, and the merge commit's tree is identical to the branch head that was verified, so nothing needed re-running. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-09-28                               |

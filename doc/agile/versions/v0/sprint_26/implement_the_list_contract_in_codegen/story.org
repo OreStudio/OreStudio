@@ -45,7 +45,7 @@ uses a one-of member in place of a single read capped at 1000.
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done.                                  |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
@@ -140,3 +140,7 @@ fixed cap.
 
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] -- the list contract
 - =projects/ores.codegen/library/templates/ores.cpp.service.service_impl.org= -- where order and filter are refused
+
+* Result
+
+Done.

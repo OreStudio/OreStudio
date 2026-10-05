@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: A89A0010-E2BC-410B-967A-76D032017CD7
+:END:
+#+title: Task: Return marketdata to the clean-standard registry
+#+description: Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST.
+#+type: task
+#+level: s1
+#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-04
+#+updated: 2026-10-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+marketdata passes every item of the component clean standard, or holds an exception the owner accepted, and is back in COMPONENTS_UNDER_TEST so the drift and protocol twin gates cover it again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-04                               |
+
+* Acceptance
+
+- P01: every marketdata list request carries the canonical as_of read, or the owner accepts P01 as an exception with the reason backlog story F15A8480 records.
+- H01: the composite root diagram modeling/ores.marketdata.puml carries the two-pass sentinel, or the reason it cannot is accepted as an exception.
+- W02, P02, G02, G04, H03, S01, S02, V04 and V08 pass, each closed by the task in this story that owns it.
+- Every one of the 49 items is re-measured at one commit and recorded in Measurements.
+- marketdata is back in COMPONENTS_UNDER_TEST, and check_component_drift.py --all and check_protocol_twin_coverage.py pass with it listed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+marketdata left =COMPONENTS_UNDER_TEST= on 2026-10-04, when
+[[id:8B193823-0382-4FE3-A95B-A34799B5972D][Correct the marketdata clean-standard record]]
+found eleven items that fail at =ec37b05f77=. The owner chose removal over
+eleven accepted exceptions. The table there names the task that owns each
+failure:
+
+| Item | Owner |
+|------+-------|
+| W02 | [[id:0666E3FB-11E1-4595-A430-018D2FC2A1C4][Gate and seed the marketdata permissions]] |
+| G02, H03 | [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] |
+| P02 | [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] |
+| S01, S02, V04 | [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]] |
+| G04, V08 | [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] |
+| P01, H01 | This task |
+
+Start this task after the four owning tasks close. P01 is the canonical
+=as_of= read, which backlog story =F15A8480= scopes across components; if it is
+still open then, P01 is the one item to put to the owner as an exception.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

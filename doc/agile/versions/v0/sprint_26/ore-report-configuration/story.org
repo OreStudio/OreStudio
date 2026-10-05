@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :reporting:ore:model:sprint_26:v0:
 #+created: 2026-09-27
-#+updated: 2026-09-28
+#+updated: 2026-10-05
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,32 +15,39 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A report definition's configuration is a set of strongly typed entities rather than a flat row of switches, and every entity in the ORE configuration vocabulary is identified, owned, and reachable from the definition.
+A report definition's configuration is a set of strongly typed entities
+rather than a flat row of switches: every one of the seventeen ORE
+configuration document kinds is identified, mapped to an owning component,
+seeded as a configuration type, and round tripped, import and export,
+through the entities over the vendored corpus. A report type is a foreign
+key from the definition, seeded with a stable code, and it names the
+workflow it selects and the configuration types a run of that type
+requires.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Eight of the seventeen document kinds round trip through entities: the run document, credit simulation, stress test, today's market, pricing engines, the curve configuration, and the conventions, currencies and calendar adjustments in refdata. Credit simulation, stress test, today's market and pricing engines reach their reporting configuration by =configuration_id=. The =risk= report type names its workflow and the four configuration types a run requires, and a trigger refuses a definition that binds fewer. |
-| Waiting on    | Nothing.                               |
-| Next          | Discuss the _config suffix for the curve configuration tables with the operator, then simulation, sensitivity, SIMM calibration, historical return and Basel traffic light. |
-| Last touched  | 2026-10-03                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
 
-The seventeen configuration types are seeded, so a configuration can be
-registered. What a report still cannot do: no definition points at a
-configuration yet, so the trigger refuses every seeded definition until it binds
-the four configurations a risk run requires, and no run is built from the
-entities. Counterparty, netting set, reference data and IBOR fallback
-documents are not modelled as entities.
+On 2026-10-05, at the sprint 26 close, this story was reworded to the scope
+it delivered and closed DONE. The remainder — the round trips still
+missing, the report-kind classification, the run-input packaging, and the
+entity models the hand-written tables still need — is
+[[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report
+configuration]], and its twenty-two tasks moved there.
 
 * Acceptance
 
 - Every entity in the seventeen ORE configuration documents is identified and mapped to an owning component.
 - A report definition reaches its configuration through typed entities and foreign keys, never through a flat table of switches or an XML or JSON blob.
-- A new kind of report adds a workflow and a parameter block, not a column on the report definition.
 - Every report type is seeded with a stable code, and each one names the workflow it selects and the configuration types a run of that type requires. The report definition reaches its type by foreign key, not by a text code.
+- Every configuration kind whose entities are modelled round trips end to end over the vendored corpus: the run document, the stress test, the credit simulation, the curve configuration, the shared reference configuration, the conventions, the pricing engines and today's market.
 
 * Tasks
 
@@ -49,30 +56,16 @@ documents are not modelled as entities.
 | [[id:ABCCD68D-D07A-4DA6-AF44-61B16F56D26E][Scaffold story: Model the ORE report configuration as entities]] | DONE | 2026-09-27 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:5ED86EEE-6090-4321-A8E4-BF80D418BA32][Design the ORE report configuration entity model]] | DONE | 2026-09-27 | 2026-10-04 | Initial task for: Model the ORE report configuration as entities |
 | [[id:8F6B8D02-2951-4A7C-918F-F6F5D936B1E0][Model the run document and the analytic list]] | DONE | 2026-09-29 | 2026-09-29 | Typed entities for the ORE run document: the setup block, the market bindings, and the ordered analytic list with a lookup of the analytic types. |
-| [[id:F17348AD-67DB-4844-94B3-F612C638488B][Model the analytics configuration libraries]] | BACKLOG | | | Entity models for the configuration the analytics in a run reference: simulation and cross-asset model, sensitivity, stress, SIMM calibration, historical return, Basel traffic light, and credit simulation. |
 | [[id:DB247C1C-038E-4C39-ACA2-09C687EB2244][Model the curve configuration entities]] | DONE | 2026-10-01 | 2026-10-03 | The curve recipes ORE builds from, currently only partly held as ir_curve_bootstrap_config: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes. |
-| [[id:C1EEE20C-6B2D-488F-9256-0596C8C8D38E][Model the shared reference configuration]] | BACKLOG | | | The ORE configuration the reference and trading components own: conventions, calendars and adjustments, currencies, counterparties, netting set definitions and IBOR fallback, referenced by a run rather than copied into reporting. |
-| [[id:3B54C916-DA12-41F3-BD9C-DC8968821435][Classify report kinds and bind each to a workflow]] | BACKLOG | | | Replace the workflow-shaped columns on the report definition with a classification that selects the registered workflow and the parameter block it reads. |
 | [[id:0170DEC3-FA2E-410E-99BF-7B4029FC9478][Import a run's configuration from an ORE input directory]] | DONE | 2026-10-04 | 2026-10-04 | Store a run document and the configuration documents it names against a report definition, and load them back as the files ORE reads, through one store per document kind. |
 | [[id:6EAC8082-4827-43A2-909F-EC2DF663A67E][Produce the engine's input from the entities]] | DONE | 2026-10-04 | 2026-10-04 | Build the ORE run document and the configuration documents it names from the entities, replacing the current package step that emits trades.msgpack and market_data.msgpack. |
-| [[id:3064DDA0-67AD-43B0-B57D-5AC5926E4C4E][Write the portfolio and market data files into the engine input]] | BACKLOG | | | The package carries trades and market data as msgpack files, but the run document names portfolio.xml, market.txt and fixings.txt; write those files so the engine can run the archive. |
 | [[id:D57B7839-DCA9-4450-AE06-BB8923746A56][Import a run's configuration through a service operation and the shell]] | DONE | 2026-10-04 | 2026-10-05 | Only code can call the run store today; add a service operation and a shell command that import an ORE input directory against a report definition and export it back. |
-| [[id:10A702D1-3E98-48A4-A76A-356439A0DD73][Store the stress test and credit simulation documents]] | BACKLOG | | | Stress test and credit simulation are modelled but have no store, so a run cannot import or export them; add them to the document store and the run store. |
-| [[id:0110E33D-717B-4FEF-9E00-77BE30DAF027][Export a run's configuration as of its run time]] | BACKLOG | | | An export reads the current version of every document, so a run cannot be reproduced once its configuration changes; read each document as it stood when the run started. |
-| [[id:DC534776-F087-43AD-831E-AE0E6994ED4D][Import a run's configuration in one transaction]] | BACKLOG | | | An import writes through each repository in its own transaction, so a database error part way leaves what was written; make the import all or nothing. |
-| [[id:46D695CA-40F6-418F-9961-81F9B7914F48][Read each document's rows by its parent]] | BACKLOG | | | The document store reads every latest row of a table and filters in C++; read each child table by its parent's id instead. |
-| [[id:A766897B-B26A-44DA-AEA0-749A594A6B68][Link today's market bindings to their collections]] | BACKLOG | | | A today's market binding names its collection by text, and nothing checks the name; decide whether the binding carries a foreign key to the collection or whether resolution by name at export is enough. |
 | [[id:D7968725-7267-44B7-A423-7E3AD5BC06A5][Implement the report configuration registry]] | DONE | | 2026-09-28 | The reporting half as real tables: the definition, its slots, the configuration sets, the parameters and the value domains, with every discriminator a foreign key to a seeded lookup. |
 | [[id:1D039664-0DA4-40D5-BF7C-510BD11711F3][Seed the configuration lookups]] | DONE | 2026-10-02 | 2026-10-02 | The domain vocabularies every configuration file discriminates on: configuration and report kinds, analytic types, value domains, shift families, shift types and shift schemes, risk classes, and the ORE element each maps to. |
 | [[id:30240D14-4488-4BE8-A386-BAB3D4018C49][Build the round-trip harness]] | DONE | 2026-09-28 | 2026-09-28 | One test rig that takes an ORE configuration file of a given type, imports it into the entities, exports it back, and reports the diff, so each file type can be proven as soon as its mapper lands. |
 | [[id:69EC520A-4DC8-4FCA-AB34-4EA2233E72CA][Round trip the ORE run document]] | DONE | | 2026-10-01 | ore.xml end to end: the Setup parameters, the Markets bindings and the ordered analytic list as entities, with an import mapper, an export mapper and a round trip over every ore.xml in the corpus. |
 | [[id:C7D9DDD4-CE84-4D3E-8645-1B8DFFB02B76][Round trip the stress test configuration]] | DONE | 2026-09-29 | 2026-10-01 | stresstest.xml end to end: the named stress library, its scenarios, and the shift families each scenario applies, with both mappers and a round trip over every file in the corpus. |
-| [[id:190620B4-2F86-44C0-B4B7-31EE2C07D3F9][Round trip the sensitivity configuration]] | BACKLOG | | | sensitivity.xml end to end: the twenty-six shift families, the par conversion conventions and the shift grids, with both mappers and a round trip over every file in the corpus. |
-| [[id:96A01259-5B24-4CDC-B8AD-D9E435C7FCB1][Round trip the simulation configuration]] | BACKLOG | | | simulation.xml end to end: the Monte Carlo settings, the cross-asset model, its calibrations and the correlation pairs, with both mappers and a round trip over every file in the corpus. |
-| [[id:6B09C09B-818E-40AF-BD36-78C3B52A4A11][Round trip the SIMM calibration configuration]] | BACKLOG | | | simmcalibration.xml end to end: risk weights, correlations, concentration thresholds and currency lists per risk class, with both mappers and a round trip over every file in the corpus. |
 | [[id:B626FA36-9088-42E7-B348-39F201D86B38][Round trip the credit simulation configuration]] | DONE | | 2026-09-28 | creditsimulation.xml end to end: the entities that migrate, the transition matrices and their cells, and the run settings, with both mappers and a round trip over every file in the corpus. |
-| [[id:1E32AD44-F4D6-4275-9630-4B41840EFE29][Round trip the historical return configuration]] | BACKLOG | | | historicalreturnconfig.xml end to end: the return convention per risk factor key and its displacement, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
-| [[id:4AC5DEB0-FCE5-485C-BECB-DEDA62C7913B][Round trip the Basel traffic light configuration]] | BACKLOG | | | baselTrafficLightconfig.xml end to end: the MPOR observation buckets and the amber and red limits that classify them, with both mappers and a round trip. The corpus holds no file of this type, so the fixture is built from the schema. |
 | [[id:E13E6DCD-0C54-4476-AA0C-18F2E2C8622B][Round trip the curve configuration]] | DONE | 2026-10-03 | 2026-10-03 | curveconfig.xml end to end: yield, credit, FX, equity, commodity, inflation, volatility and correlation curves with their segments and quotes, with both mappers and a round trip over every file in the corpus. |
 | [[id:C88DD91B-E85E-4483-A02B-B45170165A8E][Round trip the shared reference configuration]] | DONE | 2026-09-28 | 2026-09-28 | conventions, currencies, calendaradjustment and the other reference documents end to end, with both mappers and a round trip over every file in the corpus. |
 | [[id:5E3B1611-302A-4EFE-98ED-44F46B1D9809][Bind the report types and their taxonomy]] | DONE | 2026-10-03 | 2026-10-03 | Make the report type a foreign key from the report definition, replace the generated sample codes with the real taxonomy, and record for each type the workflow it selects and the configuration types it requires. |
@@ -85,16 +78,11 @@ documents are not modelled as entities.
 | [[id:0D7AA741-C938-4C63-B074-9A134067A658][Round trip today's market configuration]] | DONE | 2026-10-01 | 2026-10-02 | todaysmarket*.xml end to end: an ordered set of 24 optional collection kinds — yield, discounting, index-forwarding, swap index, inflation, fx, equity, commodity, correlation, default and volatility curves and spots — each kind written once or more under its own id, plus Configuration blocks that select one collection of each kind by that id. Five tables, both mappers, all 98 corpus files and a database round trip. |
 | [[id:5C637F0C-6266-4774-8E11-6721E6F59B13][Fix text escaping in the ORE bindings and the SQL codegen]] | DONE | 2026-10-02 | 2026-10-02 | The ORE XML binding decodes entities in attributes but not in element text, so an imported ampersand is stored as &amp; and the export double-escapes it; the round-trip harness was changed to stop seeing this rather than fixed. The SQL codegen emits a foreign key error_message into a string literal unescaped, so an apostrophe aborts a database recreate. Fix both at their generators and restore the harness check. |
 | [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]] | DONE | 2026-10-02 | 2026-10-02 | Every component's create and drop aggregate is hand-curated, and 144 of the 754 create scripts carry no generated marker, so a new entity silently misses a recreate until someone lists it by hand. Measure what is hand-written and why, decide what codegen can own, and turn the wiring check that exists today into a gate. |
-| [[id:3460236B-747A-4081-B3E6-9CE98CCE709D][Generate the entity part of each component's SQL aggregates]] | BACKLOG | | | Every component's create and drop aggregate lists its generated entity files by hand, so a new entity misses a recreate until someone adds two lines. The census showed creation order does not depend on soft foreign keys, so codegen can emit one fragment per component listing its entity tables and notify triggers, which the hand-written aggregate includes; hand-written files stay listed by hand. |
-| [[id:08B98A2C-5123-45B0-B536-8421AB99EC0E][Model the FpML coded-scheme tables so codegen owns them]] | BACKLOG | | | Fifteen refdata coded-scheme tables (account types, asset classes, business centres and the rest), their DQ artefact tables and their notify triggers say do not edit, but the legacy JSON models that generated them no longer exist, so nothing can regenerate them and they have been edited by hand since. Write entity models for them so codegen produces the same SQL. |
 | [[id:AE86A142-B734-44F1-9647-0F37A551DA83][Generate the hand-written RLS policies from model flags]] | DONE | 2026-10-04 | 2026-10-04 | Fourteen hand-written policy files hold 251 row-level security policies, about 129 of them plain tenant isolation on tables whose model exists but does not set the flag. A policy calls a function defined in iam, and dq, workspace, refdata and trading are created before iam, so codegen must write these policies to a late per-component file rather than inline. Prove each generated policy is identical to the hand-written one it replaces. |
-| [[id:F59B6C8F-B487-4C8C-82FF-E6DB21EFF6F1][Model the hand-written tables that have a codegen shape]] | BACKLOG | | | Twenty-five tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, DQ publication logs and seven DQ artefact staging tables. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written. |
 | [[id:029066C2-C9FE-4A69-BCB1-9AB84E73AFE4][Link the pricing engine configuration to its report configuration]] | DONE | 2026-10-02 | 2026-10-02 | The credit simulation, stress test and today's market configurations each carry a configuration_id to the reporting configuration they are registered as, which is how a report reaches them. The pricing engine configuration does not, so a report cannot reach the engines it prices with. Add the nullable link, as the other three have it, with a migration for existing databases. |
 | [[id:D84EB1E6-0D62-47A1-BAED-6B5444310726][Seed the today's market collection kinds]] | DONE | 2026-10-03 | 2026-10-03 | Today's market collections and configuration bindings hold their collection kind as free text, and every entry row repeats the kind's key attribute. Seed a lookup of the twenty-four kinds with their ORE element and key attributes, make both collection columns refer to it, and take key_attribute off the entry table. |
 | [[id:0166CCF3-B25E-4BEC-8759-19C2C4AB34E5][Seed the stress shift families and shift types]] | DONE | 2026-10-03 | 2026-10-03 | Stress test shifts hold their family and shift type as free text. Seed lookups of the families and shift types the stress schema defines, and make both columns refer to them, so the database refuses a kind ORE does not have. |
 | [[id:077FEE5D-28FD-4691-BF79-95FEF1A9F816][Write floating point values to the database without rounding]] | DONE | 2026-10-03 | 2026-10-03 | sqlgen writes every float and double with std::to_string, which keeps six decimal places, so a curve tolerance of 1e-12 is stored as 0 and every double column is rounded to six decimals. Patch the sqlgen overlay port to write the shortest text that reads back as the same value. |
-| [[id:4C7C8ED1-5B25-46B5-85C8-4E0A73D7A12A][Replace the stress shift extras with typed rows]] | BACKLOG | | | stress_test_shift keeps the elements its columns do not cover, including every shift type after the first and its key, in an extras column of semicolon and pipe encoded name and value pairs. The story rules out name and value pairs. Hold each element as a typed column or a child row, so every value the document carries is a queryable, checked column. |
-| [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]] | BACKLOG | | | FX conventions are stored one per currency pair and their ORE id is rebuilt from the pair as BASE-QUOTE-FX-CONVENTIONS on export, so ids such as EUR-USD-FX are lost and a pair cannot hold two conventions. Store each FX convention by its own id, so curve segments and today's market can refer to it. |
 | [[id:1027E041-1B39-4150-8725-3C0C78F0F1D1][Discuss the _config suffix for the curve configuration tables]] | DONE | | 2026-10-03 | Talk through renaming the curve configuration tables so their names say they hold configuration, not curve data: yield_curve to yield_curve_config, fx_volatility to fx_volatility_config, and the rest. |
 | [[id:57EE13B8-4975-4919-A8E7-747B7EE931C0][Rename the curve configuration tables with a _config suffix]] | DONE | 2026-10-03 | 2026-10-03 | Give every per-entry curve configuration table a _config suffix, so its name says it holds a curve's recipe, not its data; curve_definition keeps its name. |
 | [[id:77F9CB76-497E-4790-AF07-5D86D2C517E5][Remove the migration scripts]] | DONE | 2026-10-03 | 2026-10-03 | Delete the one-shot migration scripts under projects/ores.sql/migration and the policy that allowed them: the database is trashed and recreated, never migrated. |
@@ -102,10 +90,7 @@ documents are not modelled as entities.
 | [[id:E3E2C583-E982-4185-9D36-7F76D76B7780][Generate the schema fingerprint grant from its template]] | DONE | 2026-10-04 | 2026-10-04 | The grant that lets every service read the schema fingerprint was added to the generated grants file by hand, so the next regeneration deletes it and every service refuses to start; move it into the template. |
 | [[id:1446C9CA-DCE8-4DEC-B407-C5C79E647498][Give each owning component its configuration document store]] | DONE | 2026-10-04 | 2026-10-04 | Move each configuration document's type and its store out of ores.ore into the component that owns its tables, so ores.ore maps XML without touching another component's repositories. |
 | [[id:DC22A0F6-FB41-43DC-AC07-2A0F948F85BA][Expose the configuration document operations from each owning service]] | DONE | 2026-10-04 | 2026-10-05 | Give refdata, analytics and reporting NATS operations to save, get and delete their configuration documents, so other services reach them without touching their tables. |
-| [[id:2355DF78-E4AC-404E-8053-B8AE464538D6][Package the run input through the owners' operations]] | BACKLOG | | | The package step reads the run's documents through the owning services' operations instead of their tables, and ores.ore.core/store, which wrote other components' tables, is removed. |
 | [[id:8EB87FC5-302A-4027-8F05-338B27E89F2F][Refuse a second build in the same worktree]] | DONE | 2026-10-04 | 2026-10-04 | The build lock caps builds per host, not per worktree, so two compass builds of one worktree took both slots and raced in one build tree for over an hour; compass now refuses a build or test run while another holds the worktree. |
-| [[id:185B84CB-6C5C-4D9D-9D2D-FEB562D1D330][Generate the handlers of an operation model]] | BACKLOG | | | Codegen renders an operation model's protocol but not its handler or registrar, so every operation handler is hand-written; give operation models a handler and registrar facet driven by each operation's service call and permission. |
-| [[id:D0E47AF2-6948-4E2C-97A6-2824C60D8F66][Carry a run's input through object storage]] | BACKLOG | | | A run configuration import carries its files inline in one NATS message, whose server limit is 1 MB, so a large input such as the Products example cannot be imported; upload the input to object storage first, as the ORE trade import does. |
 
 * Decisions
 

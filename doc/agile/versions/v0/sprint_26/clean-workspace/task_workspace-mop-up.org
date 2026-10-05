@@ -28,7 +28,7 @@ Everything the [[id:2B99EBE4-6153-43E4-AF72-37E6FFFF768C][clean-standard pass]] 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] |
-| Now          | Complete, and merged as #2337. Every item below is done or handed over with its measurement. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-09-28                               |

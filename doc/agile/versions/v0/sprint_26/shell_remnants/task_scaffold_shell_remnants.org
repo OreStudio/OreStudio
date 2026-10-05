@@ -8,7 +8,7 @@
 #+filetags: :shell_remnants:sprint_26:v0:
 #+owner: marco
 #+branch: feature/shell-remnants
-#+pr:
+#+pr: 2281
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -74,8 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2281][#2281]] | [shell] Retire the shell remnants the clean-standard pass left |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

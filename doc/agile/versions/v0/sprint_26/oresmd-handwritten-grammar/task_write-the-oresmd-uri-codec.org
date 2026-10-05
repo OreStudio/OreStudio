@@ -30,7 +30,7 @@ with no code per family.
 | State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 

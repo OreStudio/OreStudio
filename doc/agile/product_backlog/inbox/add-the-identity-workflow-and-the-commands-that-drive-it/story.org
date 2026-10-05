@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: B123459E-1C34-4EA7-82B0-58F3654CE555
+:END:
+#+title: Story: Add the identity workflow and the commands that drive it
+#+description: The remainder of the workflow story: the identity workflow as a registered definition whose steps are declared by the request, and the commands that drive it from ores.shell. Split from Exercise the workflow engine end to end at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :workflow:shell:product_backlog:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The identity workflow is a registered definition whose steps are
+declared by the request, so one fixture covers many workflow
+configurations that emulate real ones, and =ores.shell= drives it end to
+end. The fixture and the cross-tenant engine shipped with the source
+story; this story is the identity workflow and its commands.
+
+This story was split from
+[[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine
+end to end]] when that story was reworded to the fixture it delivered and
+closed DONE at the sprint 26 close on 2026-10-05; the task Add the
+identity workflow and the commands that drive it moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Build the identity workflow, then the commands that drive it. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- The identity workflow is a registered definition whose steps are
+  declared by the request.
+- Each configuration is a runnable script whose expected terminal state
+  makes it a regression test for the engine rather than a
+  demonstration.
+- No assertion is vacuous: each one fails when the path it covers does
+  nothing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0442FD13-1833-427F-B6CA-C4B5877C452B][Add the identity workflow and the commands that drive it]] | BACKLOG | | | Give the workflow component a fixture it can run against itself: an identity workflow whose steps the request declares, plus the shell commands that start it and read the engine back. |
+
+* Decisions
+
+* Out of scope
+
+-

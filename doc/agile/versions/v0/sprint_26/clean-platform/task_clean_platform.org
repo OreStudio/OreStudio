@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :clean-platform:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clean-platform
 #+pr: 2148
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ ores.platform passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C9C01FAC-E281-46DF-9C3C-C718E7B6C003][Clean ores.platform to the component clean standard]] |
-| Now          | Nothing. The work is done and verified. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-09-25                               |

@@ -8,7 +8,7 @@
 #+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
 #+owner: marco
 #+branch: feature/add-the-pattern-document-type-and-hub
-#+pr:
+#+pr: 2651
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -81,8 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2651][#2651]] | [doc,codegen,compass] Design report execution at scale and add service architecture patterns |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

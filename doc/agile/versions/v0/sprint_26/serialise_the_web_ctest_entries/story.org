@@ -23,7 +23,7 @@ The two ores.web ctest entries never run at the same time, so the BFF tests neve
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Done.                                  |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-03                               |
@@ -46,3 +46,7 @@ The two ores.web ctest entries never run at the same time, so the BFF tests neve
 * Out of scope
 
 -
+
+* Result
+
+Done.

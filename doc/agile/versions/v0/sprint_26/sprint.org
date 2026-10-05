@@ -8,8 +8,8 @@
 #+filetags: :v0:
 #+created: 2026-09-23
 #+start_date: 2026-09-23
-#+end_date: 2026-09-30
-#+updated: 2026-09-28
+#+end_date: 2026-10-05
+#+updated: 2026-10-05
 #+todo: STARTED | DONE
 
 This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 26*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
@@ -27,16 +27,42 @@ the other approaches are closed and are not reopened here.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                                 |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Start          | 2026-09-23                               |
 | End (expected) | 2026-09-30                           |
-| Now            | Sprint in flight.                      |
+| Now            | Nothing.                             |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
-| Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-09-23                               |
+| Next           | Nothing.                             |
+| Release Notes  | [[id:A7197188-9472-40BD-A9F0-2A3641B19AD5][Sprint 26 release notes]] |
+| Last touched   | 2026-10-05                               |
+
+** Achievements
+
+- The Component Clean Standard pass came within five of its target: 27
+  components brought fully to the standard, ores.reporting and ores.dq
+  closed at the work they delivered with the remainder split out, and
+  ores.cli decommissioned. ores.diff, ores.eventing, ores.history,
+  ores.scheduler and ores.synthetic carried to the backlog.
+- The trade was redesigned on data-oriented principles: an immutable
+  anchor with component tables keyed by the trade, generated composite
+  keys, netting agreements and sets, sandboxes and virtual books.
+- The journey extraction standard was written, the ores.refdata
+  journeys were extracted, and five journey groups — setup, entry,
+  profile, credentials and access — run as ores.web screens on one
+  shared journey runtime.
+- The HTTP surface became generated end to end: per-component route
+  units, literate org recipes that tangle to Hurl, and a runner that
+  replays them against the live gateway.
+- The shell surface of fifteen components is code generated, or is a
+  hand-crafted command signed off with a reason.
+- The marketdata grammar was rewritten as a hand-written, typed codec
+  checked field by field against ORE's own parser, and quote identities
+  moved onto the new codecs.
+- A hotfix line held the continuous builds: Apple's libc++ gaps, the
+  Windows clang-cl export attributes, the RLS gaps and the CI timeouts,
+  each restored on the day it appeared.
 
 * Stories
 
@@ -50,41 +76,41 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25. |
 | [[id:6893E1EC-9F09-4185-897B-B7818473B3D9][Make compass site page the site check]] | DONE | 2026-09-23 | 2026-09-23 | The skills and recipes run compass site page as the site check; the full site build is for the first build in a checkout. |
 | [[id:231347B8-D537-4742-8D7E-5296DAE9A070][Make first-generation component scaffolding opt-in]] | DONE | 2026-09-26 | 2026-09-26 | A default-disabled codegen scaffold facet, so a normal regeneration can never recreate stub files or the umbrella header for an existing component. |
-| [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] | BACKLOG | | | Finish the skills catalogue sprint 25 started: the dispatcher, the verification ladder, the eval harness, the writing standards, the duplicate reconciliation and the end-to-end check, plus the codegen findings the catalogue work surfaced. Split from Lay the foundation of the LLM skills catalogue at sprint 25 close. |
+| [[id:8F98FCB8-BF23-478C-ABE0-C92B67200719][Complete the LLM skills catalogue]] | ABANDONED |  | 2026-10-05 | Finish the skills catalogue sprint 25 started: the dispatcher, the verification ladder, the eval harness, the writing standards, the duplicate reconciliation and the end-to-end check, plus the codegen findings the catalogue work surfaced. Split from Lay the foundation of the LLM skills catalogue at sprint 25 close. |
 | [[id:640F2DD7-5FE1-44B0-B7D5-5316334B95E5][Bring every component to the component clean standard]] | DONE | 2026-09-23 | 2026-09-23 | Program story for the codegen pass: the Component Clean Standard, and the 35 component stories below in order. |
 | [[id:09FA0936-289A-4016-A0A2-88C0A5F05870][Harden the gates the component clean standard rests on]] | DONE | 2026-09-27 | 2026-09-27 | Replace the three manual checks the ores.service verification rounds exposed with gates: generated output outside the registry, a test case compiled away to green, and a record whose numbers went stale on rebase. |
 | [[id:C9C01FAC-E281-46DF-9C3C-C718E7B6C003][Clean ores.platform to the component clean standard]] | DONE | 2026-09-25 | 2026-09-25 | Bring ores.platform to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:A6D32783-BE66-4FE3-99A8-227BE7C7DE63][Clean ores.logging to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.logging to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA][Clean ores.utility to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.utility to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:CCFD90A3-A138-4744-8D99-217919BC13E5][Clean ores.orgmode to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.orgmode to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
-| [[id:0C33F2AE-49D2-4181-89F7-38B35F3A402E][Clean ores.diff to the component clean standard]] | BACKLOG | | | Bring ores.diff to the Component Clean Standard (Entity items): tier 1, foundation infrastructure. |
+| [[id:0C33F2AE-49D2-4181-89F7-38B35F3A402E][Clean ores.diff to the component clean standard]] | ABANDONED |  | 2026-10-05 | Bring ores.diff to the Component Clean Standard (Entity items): tier 1, foundation infrastructure. |
 | [[id:1AF1672B-C21F-4337-A9F3-4253008DB80D][Clean ores.storage to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.storage to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:7EF62300-3026-49F9-A663-A1F3705C70A1][Clean ores.security to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.security to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:E7AA802C-7052-4AF3-8DCF-17075DE9E96A][Clean ores.database to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.database to the Component Clean Standard (Entity items): tier 1, foundation infrastructure. |
 | [[id:B214CE7D-52DB-4873-AB38-3D6A18B6DB5F][Clean ores.nats to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.nats to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
 | [[id:78C2A5C6-20C8-4422-B74C-0182BC60D350][Clean ores.connections to the component clean standard]] | DONE | | 2026-09-23 | Bring ores.connections to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
-| [[id:D8184684-9E77-4B7C-87E2-3596731EE427][Clean ores.eventing to the component clean standard]] | BACKLOG | | | Bring ores.eventing to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
-| [[id:FE7D0893-B457-47B8-AE36-6D1C26445A46][Clean ores.history to the component clean standard]] | BACKLOG | | | Bring ores.history to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
-| [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] | BACKLOG | | | Bring ores.service to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:D8184684-9E77-4B7C-87E2-3596731EE427][Clean ores.eventing to the component clean standard]] | ABANDONED |  | 2026-10-05 | Bring ores.eventing to the Component Clean Standard (All items): tier 1, foundation infrastructure. |
+| [[id:FE7D0893-B457-47B8-AE36-6D1C26445A46][Clean ores.history to the component clean standard]] | ABANDONED |  | 2026-10-05 | Bring ores.history to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
+| [[id:C649F853-C3F9-47E1-AF47-EB84DD27EC2F][Clean ores.service to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.service to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:90EC913A-72AB-4D39-B432-B351C1FC965C][Clean ores.telemetry to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.telemetry to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:3EF24442-FC51-4024-8E3C-70C814C71BCA][Clean ores.geo to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.geo to the Component Clean Standard (All items): tier 2, higher infrastructure. |
 | [[id:BE43B02A-BBD7-426E-8803-722506B0D51B][Clean ores.variability to the component clean standard]] | DONE | | | Bring ores.variability to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
 | [[id:E3A24286-B923-4DAB-9F18-6555217004BB][Clean ores.fpml to the component clean standard]] | DONE | | 2026-09-26 | Bring ores.fpml to the Component Clean Standard (All items): tier 2, higher infrastructure. |
 | [[id:28A846EC-8222-4941-8B29-F8F2C0CF231A][Clean ores.assets to the component clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Bring ores.assets to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:94270E62-3F0F-42BB-B421-735A1D9966CC][Clean ores.http to the component clean standard]] | DONE | | 2026-09-27 | Bring ores.http to the Component Clean Standard (Protocol items): tier 2, higher infrastructure. |
-| [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] | BACKLOG | | | Bring ores.scheduler to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
-| [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] | BACKLOG | | | Bring ores.workspace to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:C4D6F313-B475-4E81-B743-268050B25430][Clean ores.scheduler to the component clean standard]] | ABANDONED |  | 2026-10-05 | Bring ores.scheduler to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
+| [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] | DONE | 2026-09-28 | 2026-09-28 | Bring ores.workspace to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
 | [[id:FA417812-A645-4BC5-A929-A2CC6B92A726][Clean ores.workflow to the component clean standard]] | DONE | | 2026-10-02 | Bring ores.workflow to the Component Clean Standard (Entity items): tier 2, higher infrastructure. |
-| [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Exercise the workflow engine end to end]] | BACKLOG | | | Give the workflow component a fixture it can run against itself, so every engine path is drivable and assertable from ores.shell without another component's data. |
+| [[id:60EAC63C-327B-41A9-882A-65590CB7D3D5][Give the workflow component a fixture it can run against itself]] | DONE | 2026-09-26 | 2026-10-05 | Make the workflow component exercisable from ores.shell against a live fleet, without another component's data: the fixture and the cross-tenant engine. The remainder continues in Add the identity workflow and the commands that drive it. |
 | [[id:D65BA4A2-8FBD-429D-B2AD-697D4F66C20A][Clean ores.iam to the component clean standard]] | DONE | 2026-09-23 | 2026-09-27 | Bring ores.iam to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:70CC87FB-BA24-4B22-827F-F4F42C1F5A1B][Clean ores.refdata to the component clean standard]] | DONE | 2026-09-23 | 2026-09-28 | Bring ores.refdata to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:2525D39D-91BB-49A7-B6FE-3276D253F86E][Clean ores.analytics to the component clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Bring ores.analytics to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:543DE51B-B9D8-4261-9DB1-9B97D4C9F187][Clean ores.compute to the component clean standard]] | DONE | 2026-09-23 | 2026-09-26 | Bring ores.compute to the Component Clean Standard (Entity items): tier 3, domain component. |
-| [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] | STARTED | | | Bring ores.reporting to the Component Clean Standard (Entity items): tier 3, domain component. |
-| [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | BACKLOG | | | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:32055CB5-7CA1-4204-8A8E-88DCAC7CB585][Clean ores.reporting to the component clean standard]] | DONE |  | 2026-10-05 | Bring ores.reporting to the Component Clean Standard (Entity items): tier 3, domain component. The defects and gaps the pass recorded continue in Complete the ores.reporting clean-up. |
+| [[id:45455A9E-2DED-4101-8CF4-A520D7C3D364][Clean ores.synthetic to the component clean standard]] | ABANDONED | 2026-09-23 | 2026-10-05 | Bring ores.synthetic to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] | DONE | | 2026-10-01 | Bring ores.marketdata to the Component Clean Standard (Entity items): tier 3, domain component. |
-| [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] | BACKLOG | | | Give a curve identity, provenance and a consumer, so it is not a derived series nothing reads back. Blocked on the clean-up closing. |
-| [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | STARTED | 2026-09-26 | | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. |
+| [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] | ABANDONED |  | 2026-10-05 | Give a curve identity, provenance and a consumer, so it is not a derived series nothing reads back. Blocked on the clean-up closing. |
+| [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | DONE | 2026-09-26 | 2026-10-05 | Bring ores.dq to the Component Clean Standard (Entity items): tier 3, domain component. Pass 1's artefact tail continues in Model the handcrafted ores.dq code and generate the artefact tables. |
 | [[id:873B0E5C-BDDE-40DE-9729-F0278D0F8EC2][Clean ores.ore to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.ore to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] | DONE | | 2026-10-02 | Bring ores.trading to the Component Clean Standard (Entity items): tier 3, domain component. |
 | [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Design the trade shape on data-oriented principles]] | DONE | 2026-10-02 | 2026-10-03 | Split the trade into an immutable anchor and component tables keyed by the trade, one per access pattern; model sets, groups, links, activities and the client-facing version as entities. |
@@ -92,45 +118,51 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:09DE4B5B-A87D-48C1-B8B5-03761D966D0F][Model netting agreements, netting sets and CSAs]] | DONE | | 2026-10-03 | Three entities in ores.refdata, tying each trade to a set of its own counterparty and legal entity. |
 | [[id:3724EAAA-A905-4D1E-AF24-42A047CD7276][Add sandboxes and virtual books]] | DONE | | 2026-10-03 | Sandboxes anchored to the official portfolio tree, with virtual books that hold only trades that are never live. |
 | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] | DONE | 2026-10-03 | 2026-10-05 | An immutable anchor and component tables per access pattern; identifiers and the envelope as entities; no workspaces in trading. |
-| [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] | BACKLOG | | | One activity per business event, acts with participants, and typed directed links. |
-| [[id:0A473EFE-3E52-461D-8035-18247C9A853A][Model operational authorisation and the client-facing agreement]] | BACKLOG | | | Append-only authorisation decisions with a derived status, and the agreement that carries the external version. |
-| [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] | BACKLOG | | | The structure anchor, kind and template, temporal membership and one level of nesting. |
+| [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] | ABANDONED |  | 2026-10-05 | One activity per business event, acts with participants, and typed directed links. |
+| [[id:0A473EFE-3E52-461D-8035-18247C9A853A][Model operational authorisation and the client-facing agreement]] | ABANDONED |  | 2026-10-05 | Append-only authorisation decisions with a derived status, and the agreement that carries the external version. |
+| [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] | ABANDONED |  | 2026-10-05 | The structure anchor, kind and template, temporal membership and one level of nesting. |
 | [[id:2EF0EF31-6FED-48C7-BA6F-7006D29EFE60][Clean ores.testing to the component clean standard]] | DONE | 2026-09-26 | 2026-09-26 | Bring ores.testing to the Component Clean Standard (All items): tier 4, client or test support. |
 | [[id:534EAFC1-37CC-4A0D-A508-C10272612F23][Clean ores.cli to the component clean standard]] | ABANDONED | | | Bring ores.cli to the Component Clean Standard (All items): tier 4, client or test support. |
 | [[id:6B32DFC7-06B6-4B3C-B49D-7779EDF43B3F][Clean ores.shell to the component clean standard]] | DONE | | 2026-09-27 | Bring ores.shell to the Component Clean Standard (All items): tier 4, client or test support. |
 | [[id:32606E40-CCC2-4FFF-9CE4-2516CCC086B2][Decommission ores.cli]] | DONE | 2026-09-23 | 2026-09-26 | Remove the ores.cli component, its round-trip dataset and its recipes. A clean-standard review found no capability the shell or the service layer does not already provide. The directory round trip was kept and covered by a test, which found a 17-document export defect. |
-| [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] | STARTED | 2026-09-23 | | Second pass of the sprint 26 mission: document the user journeys of every component that had a UX, including its legacy ores.qt screens. |
+| [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Write the journey extraction standard and the ores.refdata journeys]] | DONE | 2026-09-23 | 2026-10-05 | Second pass of the sprint 26 mission: the User Journey Extraction Standard, written from the sprint 25 IAM journey work, and its first run — the ores.refdata journeys, with every Qt action covered by a journey or recorded as dropped. The remaining components continue in Extract the remaining component user journeys. |
 | [[id:3085B911-3030-4AB8-976F-0F037D4332E7][Show the current agile work item inside DSH]] | DONE | 2026-09-23 | 2026-09-23 | A DSH plugin that renders the sprint's stories and tasks as a kanban board, read from the org tree, with the work tree properties visible on every card. |
 | [[id:83339FFC-6314-443F-893D-BA053EEC9379][Reach systemd from a sandboxed compass session]] | DONE | | 2026-09-26 | Make the busctl transport the default so a sandboxed compass session can see and change the systemd fleet, give the systemd pillar the flag the services pillar has, and stop the deploy hiding a failed daemon-reload. |
 | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] | DONE | 2026-09-26 | 2026-09-27 | Model the storage operation set so that put, get, delete, exists and list are reachable over both NATS and HTTP, authenticated on both, and exercisable from the shell and the test suite. |
-| [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | BACKLOG | | | Programme story for the third pass of the sprint 26 mission: one story per journey group in ores.web, built on one shared journey runtime, in dependency order. |
+| [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]] | ABANDONED |  | 2026-10-05 | Programme story for the third pass of the sprint 26 mission: one story per journey group in ores.web, built on one shared journey runtime, in dependency order. |
 | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] | DONE | 2026-09-27 | 2026-09-30 | The first steps: first run, new tenant and new party run in ores.web, on the accepted seed-profile and provisioning contracts. |
 | [[id:E156DD8A-327F-4B7E-B7FE-A2DE8559002F][Implement the entry journeys in ores.web]] | DONE | 2026-09-29 | 2026-09-30 | The door: sign in and sign up run in ores.web, on the refusals, the defaults and the registration state the platform needs. |
 | [[id:E6783F0A-3095-4452-B430-0521E549CEBF][Implement the profile journeys in ores.web]] | DONE | 2026-09-30 | 2026-10-05 | The profile: present myself, keep my details current and change someone's details run in ores.web, on the self-service and administrator profile contract. |
 | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] | DONE | 2026-09-30 | 2026-10-01 | The fourth group: the member's own security screen, the administrator's rescue actions and the sign-in audit. Prototypes first, on the journey runtime the Setup group landed. |
-| [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] | STARTED | 2026-09-30 | | The fifth group: the member's own access, the administrator's grants, the role catalogue and the request for more. The documents are re-verified before anything is built from them. |
-| [[id:B5A7DE1E-CD0F-4676-A23B-9E9F38BFFA6C][Observe a run while it works]] | BACKLOG | | | A run states what each step is, how far into it the work has come, and what it has done so far: a step's presentation context, a live progress register and an append-only journal, in the workflow component that every workflow needs. |
+| [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]] | DONE | 2026-09-30 | 2026-10-04 | The fifth group: the member's own access, the administrator's grants, and the role catalogue. The documents are re-verified before anything is built from them. The fourth journey continues in Land the role request journey. |
+| [[id:B5A7DE1E-CD0F-4676-A23B-9E9F38BFFA6C][Observe a run while it works]] | ABANDONED |  | 2026-10-05 | A run states what each step is, how far into it the work has come, and what it has done so far: a step's presentation context, a live progress register and an append-only journal, in the workflow component that every workflow needs. |
 | [[id:5663FE34-8F23-40F6-B1BC-4E97B3290030][Roll the generator fixes out to the components outside the test list]] | DONE | 2026-09-28 | 2026-09-28 | Regenerate history, scheduler, storage, marketdata and synthetic against the four generator fixes the refdata clean-standard pass landed, so the tree carries one response shape and one recipe family rather than two of each. |
 | [[id:4A771CA8-1640-4AC4-AB36-B7C64B6C38AA][Keep the ores.iam eventing tests idempotent]] | DONE | 2026-09-30 | 2026-09-30 | Three generated ores.iam eventing tests failed on the second run against the same database: they seed a system-tenant parent seed profile and never remove it, and its synthetic code was unique only within one process. |
-| [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] | STARTED | 2026-10-01 | | Every ores.shell command a component at the clean standard answers is code generated, or is a hand-crafted command signed off with a reason. The seven components are done; the profile default is blocked until every component is clean. |
+| [[id:407D66D4-EB37-4B79-967D-5019B9899A42][Generate the shell surface of the clean components]] | DONE | 2026-10-01 | 2026-10-01 | Every ores.shell command a component at the clean standard answers is code generated, or is a hand-crafted command signed off with a reason. The seven components are done; the facet's profile-level default continues in Default the shell facet on at the profile level. |
 | [[id:A75FE105-5A36-4C60-B511-9908FADB441D][Generate the shell surface of the remaining components]] | DONE | 2026-10-01 | 2026-10-01 | The eight components outside the first seven that still hold shell-surface gaps: every command they answer is generated or their model states why it renders none, and every hand-crafted command keeps a recorded reason. |
+| [[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report configuration]] | ABANDONED |  | 2026-10-05 | The remainder of the ORE report configuration: the round trips still missing, the report-kind classification, the run-input packaging, and the hand-written tables that need models. Split from Model the ORE report configuration as entities at sprint 26 close. |
+| [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] | ABANDONED |  | 2026-10-05 | The remainder of the oresmd rewrite: take the marketdata registry entry once P01 and H01 close, and remove the namespace closer comments H03 forbids from the templates and the files they generate. Split from Rewrite the oresmd grammar as a hand-written codec checked against ORE at sprint 26 close. |
+| [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] | ABANDONED |  | 2026-10-05 | The fourth access journey: the member asks for a role beyond the one registration gave them, and the tenant administrator answers. Split from Implement the access journeys in ores.web at sprint 26 close. |
+| [[id:8C88DD48-2C49-4DD6-87FB-882FE9E1BCA0][Default the shell facet on at the profile level]] | ABANDONED |  | 2026-10-05 | The last lever of the shell surface story: make ores.cpp.shell-command default on at the profile level once no component would gain an unintended unit. Split from Generate the shell surface of the clean components at sprint 26 close. |
+| [[id:909DE3B6-4D3D-4202-BDC1-498AD8EA9B0B][Sprint 26 closure: story cleanup and reset for sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Close out sprint 26: resolve every story at the sprint close, rework and split the eleven stories that delivered part of their scope, carry the nineteen unfinished stories to the product backlog inbox, and write the release notes, the charts and the retrospective. |
+| [[id:253405EA-39FA-439E-AC7E-6E33275D2C23][Sprint health review — System 2 analysis]] | DONE | 2026-10-05 | 2026-10-05 | The System 2 health review of sprint 26 at its close: the six dimensions measured and challenged, the bookkeeping repaired, and one overall RED verdict with the evidence behind it. |
 
 ** Hotfixes
 
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] | BACKLOG | | | Remove the weight the Qt retirement left behind: the presentation keys no template or render path reads, the helpers that exist only to compute them, and the pages that still describe a Qt layer as live. |
+| [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the unused packages, extensions and Qt-named keys]] | DONE | 2026-09-23 | 2026-10-05 | Remove the weight the Qt retirement left behind: the X11 and GL packages and the pg_cron and pgmq extensions nothing uses, the Qt-named presentation keys and their helpers, and the first documentation corrections. The remaining presentation keys continue in Remove the presentation keys no template reads. |
 | [[id:EC13D00B-F711-42C6-B4A8-449D7D57C15E][Hotfix: The site build aborts on a read-only HOME]] | DONE | | 2026-09-26 | compass build --direct site aborts before publishing: the batch Emacs bootstrap deletes the user's quickstart cache on a read-only HOME, and two pages write an org link in Markdown backticks. |
-| [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile and make ores.database hostable]] | BACKLOG | | | A named profile that generates list, get and get_many and no writes, then the ores.database composite that can host such an entity without the foundation library linking the layers above it. |
+| [[id:AD2B4B61-306D-48A7-9F71-7D9B014F87B9][Add a read-only entity profile]] | DONE |  | 2026-10-05 | A named variability profile that generates read-only entities: list, get and get_many, no writes, no versions. Making ores.database a composite continues in Make ores.database a composite and host the generated entity. |
 | [[id:39AA071A-E7EC-4684-86F8-1B2CECF9076B][Generate HTTP routes from the models]] | DONE | | 2026-09-27 | Decompose the HTTP gateway the way ores.shell decomposes its command surface: one sub-component per exposed component, each holding generated per-entity route units, so no route is hand-crafted. The gateway stops calling component services in process and speaks the canonical NATS protocol instead, which is what lets one generator serve both surfaces from the same models. |
 | [[id:A2DCE17E-03DE-4C3B-A9A7-E5F3605A1FE0][Generate literate HTTP recipes that tangle to runnable Hurl]] | DONE | | 2026-09-27 | Give the HTTP surface the treatment the shell surface already has. A codegen facet emits one literate org recipe per model that renders an HTTP route, and each endpoint's block tangles to a Hurl file in a committed library, so the same document is the page a reader browses and the test the fleet runs. A runner replays a recipe group against the live gateway behind a sign-in preamble and reports a verdict for each, and the inventory is generated and gated. |
 | [[id:42C0752B-BB0E-4D26-982D-0BC89DB8EB24][Stop ores.shell menus from silently shadowing each other]] | DONE | | 2026-09-27 | Five shell menus are registered twice, and the CLI resolves a duplicate by registration order in repl.cpp. Where both sides define a verb, the loser's implementation is dead: accounts list, roles and permissions get/list, and tenants add/delete/get. The dq side of the same class is fixed in the generator, which no longer renders a shell-command unit for an artefact-staging-only entity. |
 | [[id:FE1F205A-BD1F-4C02-A1AE-45E4917EA3CB][Close the object storage interface leftovers]] | DONE | 2026-09-27 | 2026-09-27 | Give the shell a raw storage surface whose verbs take a bucket, a key and a local path, and make the schema setup re-runnable so a second setup_schema.sql run completes. |
 | [[id:1FC10A19-DF36-44D1-BABF-454C9981F39C][Move reporting's write path onto the storage protocol]] | DONE | 2026-09-27 | 2026-09-27 | Point the reporting storage plan at the protocol bucket and key shape, so the writer and the reader of a report blob agree, and re-verify the compute and ORE consumers on the current tree. |
 | [[id:5DC80342-B211-4CF5-B879-0706B83BFBAF][Mop up the storage leftovers the goal surfaced]] | DONE | 2026-09-27 | 2026-09-27 | Assign the tenant admin role the provisioner forgot, clear the retired bucket directories, and record the instrument-audit defect the ORE import exposes. |
-| [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] | STARTED | 2026-09-27 | | Give ACME corporation a report type and a report definition whose run does no preprocessing: it takes an existing example bundle, submits it to the compute grid and retrieves the results. The point is to prove the report definition and report instance machinery works end to end, not to analyse anything. |
-| [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]] | STARTED | 2026-09-27 | | Integrate scheduling, reporting and compute so that one report definition runs end to end: the trades and market data are read, the engine's input is produced, the compute grid runs it, and the results are recorded. Two phases — pre-processing and post-processing — can be replaced by prepared substitutes, so the pipeline and the workflow around it can be exercised before the trade and market data components are ready. |
+| [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] | ABANDONED | 2026-09-27 | 2026-10-05 | Give ACME corporation a report type and a report definition whose run does no preprocessing: it takes an existing example bundle, submits it to the compute grid and retrieves the results. The point is to prove the report definition and report instance machinery works end to end, not to analyse anything. |
+| [[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Design the report pipeline and the run configuration]] | DONE | 2026-09-27 | 2026-10-05 | The design for one report definition running end to end from the scheduler through the workflow to the compute grid: the run configuration that selects the phases, the target state, the decisions and the documentation. The implementation continues in Implement the full report pipeline. |
 | [[id:01551B0C-F1E8-4E88-8A6E-D2DA65DD5AB9][Clean up the ores.shell remnants]] | DONE | | 2026-09-27 | The ores.shell clean-standard pass closed the component and recorded what it did not close. This story closes those four: the fourteen hand-written trading instrument units that generation supersedes, the three defects the pass found and only recorded in commit messages, and the iam S01 accepted exception whose reason the menu-ownership change made untrue. |
 | [[id:79F4B8F4-04AF-49DC-84E6-9D93F6A14C1B][Hotfix: Restore every red build on main]] | DONE | 2026-09-27 | 2026-09-27 | Four independent defects put the continuous builds in the red: the Linux jobs stop in validate_schemas.sh on four regenerated workspace SQL files that duplicate the wired hand-written schema and belong to no aggregator; the macOS jobs cannot compile the iam handlers, because libc++ has no std::atomic<std::shared_ptr<T>> specialisation; the Windows and nightly jobs stop in the database recreation on an undefined storage_service_user psql variable; and the site build aborts on a file: link to a Python line number. The last two were fixed on main before this story started; the PR carries the first two. |
 | [[id:CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9][Remove the ores.web fleet workaround]] | DONE | 2026-09-27 | 2026-09-27 | The component carries its own way to start a subset of the fleet because compass services start could not reach systemd from a sandboxed session. busctl removed that constraint, so the scripts are a second way to start the same services. This story deletes them and everything that offers them. |
@@ -148,12 +180,12 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:3F0B9A5C-4D2E-41B7-9C63-5A8E0D4F1B27][Hotfix: a library exports a type none of its units compiles]] | DONE | 2026-09-30 | 2026-09-30 | The Windows clang-cl build fails at the link step of every consumer of ores.workflow.api: the two hand-written service headers put the export macro on header-only types that no translation unit of the library includes, so the library exports nothing for them while every consumer imports them, and clang-cl cannot generate the implicit constructors locally. The attribute is removed from the six declarations, and a scan now fails on a pull request when any sublibrary exports a type none of its units compiles. |
 | [[id:C6FA1B77-DA25-4878-9819-5091E8932312][Hotfix: the nightly Valgrind run reports uninitialised members and library leaks]] | DONE | 2026-09-29 | 2026-09-29 | The nightly dynamic analysis reports defects in four suites: trading.api 4, refdata.core 3329, ore.core 99 and analytics.core 214. The uninitialised-value defects are generated struct members with no in-class initialiser -- the analytics matrix bounds and row probabilities, bond_future's dates, bond_trs::funding_rate -- read by the write path that stringifies an entity for its INSERT; the 3329 are still-reachable allocations in the coverage runtime, glibc's atexit registration, libpq's connection state and the Catch2 reporter. The models declare the defaults, org_loader now refuses the nullable shape, and the suppressions carry the library allocations. |
 | [[id:8E4C1A72-3B5D-4F19-A0C6-7D2E9B4F0A18][Hotfix: the macOS parser refuses the smallest subnormal]] | DONE | 2026-09-30 | 2026-09-30 | The macOS test phase fails one round trip in ores.platform.tests: parse_double answers nullopt for 5e-324, the shortest decimal that rounds to the smallest denormal a double has, because libc++ turns the range error a subnormal result carries into a stream failure and the shim parsed through a stream. The parse now checks the grammar itself and converts in a C locale of its own, so a subnormal is accepted and only a value that rounds to zero or to infinity is refused. |
-| [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] | BACKLOG | | | Give the ORE report configuration vocabulary a typed entity model: the seventeen XML documents an ORE run is configured with, owned by or referenced from a report definition, so the engine's input is produced from entities rather than assembled by hand. |
+| [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] | DONE | 2026-09-27 | 2026-10-05 | Give the ORE report configuration vocabulary a typed entity model: the seventeen XML documents an ORE run is configured with, owned by or referenced from a report definition, so the engine's input is produced from entities rather than assembled by hand. The remainder continues in Complete the ORE report configuration. |
 | [[id:CE43B622-22B4-4185-A774-989D45848D89][Show the environment inside DSH]] | DONE | | 2026-09-30 | A DSH plugin that shows this checkout as a live environment: its name, when the database was last restored and how long ago, the schema drift, and the state of every service. It starts and stops services, and it restores the database behind a guard. It reads compass, so the readiness and drift rules have one home. |
 | [[id:DD8E47AC-6566-43C6-A98E-989BFD0D5A3E][Log the fleet to the journal]] | DONE | | 2026-09-30 | Every service writes its log to the console, systemd captures it into the user journal, and nobody writes a log file. compass reads readiness and log tails from the journal, so one interface serves every service including nats-server. The environment plugin gains a log overview for one service. |
 | [[id:12DAAEC7-2E9D-4487-80E5-E690737071B3][Make the oresmd URI grammar explicit and typed]] | DONE | 2026-10-01 | 2026-10-02 | Rewrite the oresmd URI grammar so that no key's absence carries meaning and no coordinate is an untyped string, then move the stored series identity and coordinate onto it. |
 | [[id:E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790][Make the tenant roster a working list]] | DONE | 2026-10-02 | 2026-10-02 | The tenant roster reads the tenants but cannot search, filter, page or act on one. Bring it to the design the See the tenants journey and the proposed layout describe: search and paging, type and status filters, a per-row actions menu, and a tenant detail screen. |
-| [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | BACKLOG | | | Replace the generated oresmd grammar with a hand-written, typed codec checked field by field against ORE's own parser, model every ORE type, and close the clean-standard findings of the 2026-10-02 review. |
+| [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | DONE | 2026-10-02 | 2026-10-05 | Replace the generated oresmd grammar with a hand-written, typed codec checked field by field against ORE's own parser, and model every ORE type. The remaining clean-standard items continue in Return marketdata to the clean-standard registry. |
 | [[id:BFC0B81D-9DAB-421F-B199-68188E1BD64C][Hotfix: the marketdata core suite times out in CI]] | DONE | 2026-10-02 | 2026-10-02 | ores.marketdata.core.tests is killed at the 600-second ctest limit on every Linux CI job, because the whole-corpus import walk now runs by default and its per-file check reads the whole tenant back after every file. |
 | [[id:CB941293-1DBD-4FC3-B291-78374B10AC4D][Hotfix: the workflow deadline pass reads an entry it has freed]] | DONE | 2026-10-02 | 2026-10-02 | expire_overdue_steps() erases a step's awaiting entry and then reads the run id through a reference into it, so on macOS the run is never failed and two deadline tests fail. |
 | [[id:D745C35C-B206-4585-A112-01B16B10063D][Hotfix: a service listener falls behind a burst of notifications]] | DONE | 2026-10-02 | 2026-10-02 | postgres_listener_service sleeps 100 ms after every poll even with notifications waiting, so a bulk import's per-row notifications back up for hours, its backend sits in ClientWrite, and every DROP DATABASE on the shared server stalls. |
@@ -165,15 +197,15 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:94DE38EB-1544-4BBE-84B6-C7957CEC691B][Send the filter with every web list request]] | DONE | | | The generated list requests gained an optional filter member, and the server's decoder requires every member, so every web route whose hand-written request leaves it out is refused as a bad request. |
 | [[id:4F510088-2ABB-4204-A5E1-90B1C112BAA7][Make the shell speak to people plainly]] | DONE | 2026-10-04 | 2026-10-04 | The shell names journeys and asks the administrator to enter a tenant, which are implementation terms. Reprototype the home screen, then show tenant management as a list with add and remove, and open a tenant's details with the tenant session held behind the scenes. |
 | [[id:39F741A5-53E6-45B7-B05A-BDFC9C90C0B1][Document the operations journeys]] | DONE | 2026-10-04 | 2026-10-04 | The super-user's view of a running installation: the services that are up, the compute grid, the message bus, the logs, and the versions and database fingerprint. Five journeys written to the User Journey Extraction Standard, then proven with a prototype. |
-| [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] | BACKLOG | | | Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system. |
+| [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] | ABANDONED |  | 2026-10-05 | Workspaces are replaced by sandboxes and virtual books: remove the workspace column, the workspace context and the ores.workspace component across the system. |
 | [[id:8D47C644-5253-4476-9597-8BD4DEDD0ADB][Hotfix: Linux and Windows CI builds on main]] | DONE | 2026-10-04 | 2026-10-04 | The Linux debug builds time out because the sccache entry is never refreshed, and the Windows clang builds fail on a deprecated getenv call in the ores.platform tests. |
-| [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] | STARTED | 2026-10-04 | | The ninth group: the installation's own life — the services running, the compute grid, the message bus, the logs, and the versions and database under them. |
+| [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] | ABANDONED | 2026-10-04 | 2026-10-05 | The ninth group: the installation's own life — the services running, the compute grid, the message bus, the logs, and the versions and database under them. |
 | [[id:B43E22C1-DBFA-4A7A-BB71-D613F588DD41][See an account's sign-ins]] | DONE | 2026-10-04 | 2026-10-04 | An administrator opens any account, a platform service's included, and reads its type, its sign-in state and its sessions; the system administrator does so for the system tenant's accounts. |
-| [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-05 | Build the ores.refdata user journeys as ores.web screens on the journey runtime, starting with the classification list and the currency. |
-| [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] | BACKLOG | | | A new ores.inbox component holds a generic approval record and queue and a notification subsystem any activity can use; the role request is the first approval kind and its first notifications. |
-| [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] | STARTED | 2026-10-05 | | One standard for every screen that lists, reads, creates, amends and deletes records: paging, history, change reasons, related records, icons and states, built from shared components so no screen varies. |
+| [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-05 | Build the ores.refdata user journeys as ores.web screens on the journey runtime: the classification list, currency, desk group, currency pair and holiday calendar screens run on the real server (PR #2644 and PR #2646). |
+| [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] | DONE | 2026-10-04 | 2026-10-05 | A new ores.inbox component holds a generic approval record and queue and a notification subsystem any activity can use, with the approval and notification models generated, the rules the schema can carry, and the service operations serving them (PR #2652). The role request kind and the screens continue in Complete the ores.inbox approvals and notifications. |
+| [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] | DONE | 2026-10-05 | 2026-10-05 | One standard for every screen that lists, reads, creates, amends and deletes records: paging, history, change reasons, related records, icons and states, built from shared components so no screen varies. Server paging through the shared Pager landed with the currency, desk group and currency pair screens (PR #2644), the People screens conformed with my profile split from them (PR #2655), and the holiday calendar screen arrived at the standard (PR #2646); applying the rest continues in Bring the record screens to the standard. |
 | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] | DONE | 2026-10-05 | 2026-10-05 | Every write whose actor is the account written is refused with Invalid modified_by on a tenant that holds accounts: the generated insert function retires the actor's current row as part of the version replace before it validates modified_by. Found by the profile journeys end-to-end run, which cannot land PUT /api/me/profile and PUT /api/me/contact-information. |
-| [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] | STARTED | 2026-10-05 | | Name the established microservice patterns the platform uses, in one pattern language with a hub, so a design can say use pattern X and inherit its pitfalls, failure handling and sources. |
+| [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] | DONE | 2026-10-05 | 2026-10-05 | Name the established microservice patterns the platform uses, in one pattern language with a hub, so a design can say use pattern X and inherit its pitfalls, failure handling and sources. The five remaining groups and the rule that a design names its patterns continue in Complete the pattern language. |
 
 * Achievements
 
@@ -202,11 +234,16 @@ health review (promote to a story, move to =next=, or discard).
 #+ATTR_HTML: :class hug-leading
 | Capture | Tags | Description |
 |---------+------+-------------|
-|         |      |             |
+| |      | |
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+#+ATTR_HTML: :class hug-leading
+| # | Date       | Day    | Overall | Task |
+|---+------------+--------+---------+------|
+| 1 | 2026-10-05 | day 13 | RED     | [[id:7AFA2636-71EC-4DB2-88F5-BA4D393C177E][Health review 1 — sprint 26 close analysis]] |
+
+(Run =sprint-reviewer= to add more rows.)
 
 * Charts
 
@@ -248,4 +285,41 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+The [[id:A7197188-9472-40BD-A9F0-2A3641B19AD5][release notes]] carry the full narrative.
+
+** What worked
+
+- The Component Clean Standard gave the codegen pass one measuring stick,
+  and the passes applied it component by component with the drift gate
+  as the authority rather than a reader.
+- The split-at-close discipline: eleven stories closed at the scope they
+  actually delivered, with the remainder named in a successor, so the
+  sprint's record does not claim work that did not ship and does not
+  hide work that did.
+- The hotfix line answered every red build with a check where the class
+  allowed one, so the same defect could not return quietly.
+- The journey work documented the target before building it, and the
+  prototypes settled the runtime the later groups reused.
+
+** What didn't work
+
+- The sprint ran thirteen days against a seven-day window, and the
+  mission's three passes did not all close: the clean standard and the
+  journey extraction each left remainders large enough to carry.
+- Five components never reached the clean standard at all, and the
+  health review rated the sprint RED.
+- The story count grew mid-flight as splits landed, so the sprint table
+  needed a close-time pass to tell delivered scope from carried scope.
+- The web journey groups landed close together at the end, which put
+  review pressure on the last days.
+
+** Improve next sprint
+
+- Size the mission to the window: one pass per sprint, not three.
+- Split a story when its scope grows, not at the close.
+- Keep the carry list visible in the sprint document from the first
+  week, so the close is a confirmation rather than a discovery.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

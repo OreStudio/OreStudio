@@ -38,7 +38,7 @@ the standalone path, and nothing keeps it in step with the fleet.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Nothing. The scripts are gone and the paths that offered them are updated. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Merge PR #2288.                        |
 | Last touched  | 2026-09-27                               |

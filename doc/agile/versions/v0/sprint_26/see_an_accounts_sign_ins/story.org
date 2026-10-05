@@ -23,7 +23,7 @@ An administrator who opens an account reads what kind of account it is, whether 
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | An administrator opens any account to its kind, sign-in state and sessions, newest first; the system administrator reads the system tenant's service accounts this way. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-10-04                               |
@@ -47,3 +47,7 @@ An administrator who opens an account reads what kind of account it is, whether 
 * Out of scope
 
 -
+
+* Result
+
+An administrator opens any account to its kind, sign-in state and sessions, newest first; the system administrator reads the system tenant's service accounts this way.

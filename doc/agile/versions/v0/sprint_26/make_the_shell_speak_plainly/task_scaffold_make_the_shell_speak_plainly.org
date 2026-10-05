@@ -8,7 +8,7 @@
 #+filetags: :make_the_shell_speak_plainly:sprint_26:v0:
 #+owner: marco
 #+branch: feature/make-the-shell-speak-plainly
-#+pr:
+#+pr: 2596
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -74,8 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2596][#2596]] | [agile] Prototype the home screen in plain words |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

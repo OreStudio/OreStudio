@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:refdata:user_journey:sprint_26:v0:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,16 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | All five journey screens built: classifications, currencies, desk groups, currency pairs and holiday calendars. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.     |
 | Last touched  | 2026-10-05                               |
+
+On 2026-10-05 this story closed DONE with all five journey screens built on
+the real server. The holiday calendar screen landed last (PR #2646): the
+sprint close had split it to a successor story, and when the screen shipped
+before the close record merged, its task returned here and the successor
+retired.
 
 * Acceptance
 

@@ -30,7 +30,7 @@ matches its header. The work is captured in the next bucket as
 |---------------+----------------------------------------|
 | State         | DONE |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Merged as =17fa9f47fd= through PR #2334, with 14 checks green. Five of the seven components are regenerated and the shell's scheduler command reads the optional definition the new shape carries. The merge tree is identical to the verified branch head. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
 | Next          | Nothing in this story. =trading= and =workspace-cpp= stay in =shell-recipes-no-longer-run= in the next bucket. |
 | Last touched  | 2026-09-28 |
@@ -66,3 +66,7 @@ matches its header. The work is captured in the next bucket as
 
 - =trading= and =workspace-cpp=, for the reasons above. Both stay in
   =shell-recipes-no-longer-run= so the next pass picks them up.
+
+* Result
+
+Merged as =17fa9f47fd= through PR #2334, with 14 checks green. Five of the seven components are regenerated and the shell's scheduler command reads the optional definition the new shape carries. The merge tree is identical to the verified branch head.

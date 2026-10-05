@@ -8,7 +8,7 @@
 #+filetags: :hotfix:platform:macos:numeric:sprint_26:v0:macos-subnormal-parse-hotfix:
 #+owner: marco
 #+branch: hotfix/macos-subnormal-parse
-#+pr:
+#+pr: 2412
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -87,8 +87,7 @@ range check the header documents true on every platform.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2412][#2412]] | Fix the macOS parse failure: accept a subnormal, which carries a range error |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

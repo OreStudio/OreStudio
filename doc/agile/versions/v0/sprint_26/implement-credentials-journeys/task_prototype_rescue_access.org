@@ -38,7 +38,7 @@ perform.
 | State        | DONE                              |
 | Parent story | [[id:EF81A497-5C91-45D8-9A90-5D6E0357BAD8][Implement the credentials journeys in ores.web]] |
 | Now          | Nothing. |
-| Waiting on   | The product owner's choice of variant. |
+| Waiting on | Nothing. |
 | Next          | Nothing. |
 | Last touched | 2026-09-30                               |
 

@@ -30,7 +30,7 @@ Abandoned: the rule does not hold. See the Result.
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:DBF5FE8D-6B25-492E-8DEB-B6A0931F6835][Teach the code generator the trade shape]] |
-| Now          | Abandoned: the premise does not hold.  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-03                               |

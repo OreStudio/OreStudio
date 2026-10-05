@@ -5,16 +5,16 @@
 #+description: Give the portable thread its own stop source built on a shared atomic flag, move the engine's callable onto it, correct the earlier story, and verify with the workflow and platform suites and a macOS run.
 #+type: task
 #+level: s1
-+#+filetags: :hotfix:platform:macos:concurrency:sprint_26:v0:macos-stoppable-thread-atomic-hotfix:
-+#+owner: marco
-+#+branch: hotfix/macos-stoppable-thread-atomic
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-09-30
-+#+updated: 2026-09-30
-+#+environment: clever_dijkstra
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+filetags: :hotfix:platform:macos:concurrency:sprint_26:v0:macos-stoppable-thread-atomic-hotfix:
+#+owner: marco
+#+branch: hotfix/macos-stoppable-thread-atomic
+#+pr: 2447
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9C4A1F27-6B38-4E52-8D71-3A5F0C9B2E64][Hotfix: Apple's libc++ has no C++20 stop machinery at all]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -75,8 +75,7 @@ Make the portable thread depend on nothing Apple's libc++ can be missing.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2447][#2447]] | Fix the macOS build: the portable thread needs its own stop source |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

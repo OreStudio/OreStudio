@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 06147DF3-FDC9-4EDD-8F77-1B165BB316E7
+:END:
+#+title: Task: Let a definition select its step chain
+#+description: Task for: Run an example bundle through the compute grid from a report definition
+#+type: task
+#+level: s1
+#+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
+#+owner: marco
+#+branch: feature/execution-mode-and-result-roles
+#+pr: 2289
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-09-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A definition cannot choose what it runs: the chain is fixed in report_execution_workflow.hpp and the trigger hard-codes its type, so every definition gathers and assembles before it submits. Give the definition a carrier and register a shorter chain that starts from a bundle that already exists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-28                               |
+
+* Acceptance
+
+- The chain a definition selects is the one that runs.
+- A definition on the shorter chain completes without gathering trades or
+  market data and without assembling a bundle.
+- A step result is addressed by the name of the step that produced it, and a
+  builder that cannot find or read what it consumes stops the run rather than
+  yielding an empty field.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| #2289 | [reporting] Select a report's phases from its run configuration |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2289][#2289]] | [reporting] Select a report's phases from its run configuration |
+* Result
+
+Closed without its own change, because PR #2289 delivered the whole of its goal
+under the sibling story
+[[id:AB57C960-7E15-4D02-88AE-CEA931B6F9A3][Run a full report: scheduling, reporting and compute]],
+as task
+[[id:395C3931-12CF-457B-ABFC-D89CDADCE35A][Add the run configuration and address phase results by role]].
+
+What that change put in place, against this task's acceptance:
+
+- =report_definition= carries =pre_processing=, =prepared_input_key= and
+  =post_processing=, and the trigger validates the codes and copies them into
+  the run request, so the chain a definition selects is the one that runs.
+- One registered definition builds either chain. =execute= is the seven steps
+  this story's analysis recorded; =substitute= replaces the four pre-processing
+  steps with =resolve_prepared_input=, so a run starts from an archive that
+  already exists and gathers nothing.
+- Step results moved from positions to names. That went further than this task
+  asked: it removed the positional remap this task's acceptance was written
+  around, and a builder that cannot find or read what it consumes now throws
+  instead of yielding an empty field.
+
+The premise this task was written on, that shortening the chain is a positional
+remap, is therefore obsolete rather than wrong. The work remaining on the story
+is the reporting to compute handoff, retrieval, and the ACME fixture; the
+analysis that established which of those are still needed is
+[[id:9FCFFA0C-3272-42AF-BEF7-BA793048903A][Does reporting use what the workflow engine guarantees?]].

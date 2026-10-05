@@ -28,9 +28,9 @@ The setup form asks for an identity almost everyone will want the same value for
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The form proposes the administrator's identity and leaves the password to the person. The workspace typechecks, passes the format check, tests green and builds. |
-| Waiting on   | The review round on the change. |
-| Next          | The rest of plan step 4: the seed profile read, provision, progress and retry. |
+| Now          | Nothing. |
+| Waiting on | Nothing. |
+| Next | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

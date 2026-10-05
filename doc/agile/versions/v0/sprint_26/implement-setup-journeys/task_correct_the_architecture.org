@@ -39,9 +39,9 @@ written out in the audit's =* Decisions signed off= section.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | Units 1 to 3 are written, in three commits. =compass lint= is clean, and the site renders every page the change touches. |
-| Waiting on   | The review round on the change. |
-| Next          | The story's first implementation task, after this change lands. |
+| Now          | Nothing. |
+| Waiting on | Nothing. |
+| Next | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

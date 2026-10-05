@@ -2,12 +2,12 @@
 :ID: D5A29471-B0E3-4C69-B7CE-3477752C8ED7
 :END:
 #+title: Story: Implement the access journeys in ores.web
-#+description: The fifth group: the member's own access, the administrator's grants, the role catalogue, and the request for more.
+#+description: The fifth group: the member's own access, the administrator's grants, and the role catalogue. The request for more split to its own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :web:ux:journeys:access:v0:sprint_26:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-05
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,8 +15,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The four [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] journeys run in
-=ores.web= against the real server:
+The first three [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] journeys
+run in =ores.web= against the real server:
 
 - [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — the
   member reads the roles they hold and the permissions those roles carry.
@@ -24,9 +24,10 @@ The four [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] journeys run in
   tenant administrator grants and revokes a colleague's roles.
 - [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — the
   tenant administrator defines roles and the permissions each one bundles.
-- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the member
-  asks for a role beyond the one registration gave them, and the tenant
-  administrator answers.
+
+The fourth journey, [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more
+access]], is [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request
+journey]], split out at the sprint 26 close on 2026-10-05.
 
 This is the fifth group of
 [[id:961BE2F3-3FE2-4140-BB18-EBDC89DF0913][Implement the user journeys in ores.web]].
@@ -45,12 +46,17 @@ from the survey rather than from the documents as they stand.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The three original access journeys run in =ores.web=: My access, People with give and take away for a reason, and Roles with a permission grid by area. Every account shows its picture. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]], prototyped first. |
-| Last touched  | 2026-10-04                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the three
+journeys it delivered and closed DONE. The fourth journey, the role request,
+is [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request
+journey]], and the task Land the role request moved there.
 
 * Acceptance
 
@@ -64,11 +70,8 @@ from the survey rather than from the documents as they stand.
   what it composes rather than reading it back unchanged.
 - An assignment read exists, so who granted a role, when, and why is visible
   to the member and to the administrator from the same answer.
-- The four journeys run in =ores.web= against the real server, and the shell
+- The three journeys run in =ores.web= against the real server, and the shell
   reaches the same subjects for the operations it carries today.
-- The role request's gaps are either closed or stated on the screen, and the
-  waiting state it needs in =ores.workflow= is recorded as its own decision
-  rather than assumed.
 
 * Tasks
 
@@ -78,7 +81,6 @@ from the survey rather than from the documents as they stand.
 | [[id:50DCCBD8-ED31-4225-8164-E042A1B18FCE][Close the access reads]] | DONE | 2026-09-30 | 2026-10-01 | Make the role reads self-scoped or permission-gated, add the read that pairs a permission with the role that grants it, and add the assignment read that carries who granted a role, when and why. |
 | [[id:D8305768-6F61-4A67-99DE-DE837E2026A2][Let a role's permission bundle be written]] | DONE | 2026-10-01 | 2026-10-01 | Add the write the catalogue journey has never had: a role's permission list can be composed and saved, permission-gated, with the change reason every other write carries. |
 | [[id:B4F02275-33F8-4C7E-828C-5EA1649E7851][Build the access screen in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | The three original journeys as screens against the real server: the member's own access, the administrator's grant and revoke with its audit, and the role catalogue with its permission picker. |
-| [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |
 | [[id:130C4375-6B3A-4BA6-8C85-A4873FEBF7A3][Prototype the access screens]] | DONE | 2026-10-04 | 2026-10-04 | Prototype the member's own access, the administrator's grant and revoke, and the role catalogue against the real roles and permission catalogue, before the screens are built. |
 | [[id:49701581-4597-4CC8-BCDD-2CE60084037D][Give a role for a reason]] | DONE | 2026-10-04 | 2026-10-04 | Giving a role carries the reason and the note the administrator chose, from an access reason category, and nobody takes a role away from themselves. |
 | [[id:7822F25D-E5A3-4AB4-B822-373E7605CC5D][Prototype the role request]] | DONE | 2026-10-04 | 2026-10-04 | Add asking for a role and answering the ask to the access screens prototype, before the request is built. |

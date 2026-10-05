@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 16E56982-F716-4214-AA09-E438C1E46DC2
 :END:
-#+title: Story: Remove the legacy Qt remnants
-#+description: Remove the weight the Qt retirement left behind: the presentation keys no template or render path reads, the helpers that exist only to compute them, and the pages that still describe a Qt layer as live.
+#+title: Story: Remove the unused packages, extensions and Qt-named keys
+#+description: Remove the weight the Qt retirement left behind: the X11 and GL packages and the pg_cron and pgmq extensions nothing uses, the Qt-named presentation keys and their helpers, and the first documentation corrections. The remaining presentation keys split to their own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :sprint_26:v0:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-05
 #+environment: goedel
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,32 +15,36 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Nothing in the tree computes, documents or names a Qt concept that no longer exists. The generator produces byte-identical output for every component, and every page that described the Qt layer states it as history or is gone.
+The first passes took the weight the Qt retirement left behind: the setup no longer installs the X11 and GL headers the Qt client needed nor the =pg_cron= and =pgmq= extensions, the Qt-named presentation keys and their helpers are gone, the removal is proved output-neutral — =iam= regenerates byte-identically — and the README, the icon inventory and the manual carry their corrections. The remaining presentation keys, the 44 the =presentation= dict carries with no reader, split to [[id:A987BBAA-C749-4FB6-B6E6-03665563AADE][Remove the presentation keys no template reads]] at the sprint 26 close on 2026-10-05.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-23                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the
+removals it delivered and closed DONE. The remaining presentation keys are
+[[id:A987BBAA-C749-4FB6-B6E6-03665563AADE][Remove the presentation keys no
+template reads]], and the task Remove the presentation keys no template
+reads moved there.
 
 * Acceptance
 
-- No presentation key is written that no template, render path or validator reads.
-- The helpers that existed only to compute unread keys are gone, with their tests.
-- Regenerating a component produces no diff, so the removal is proved output-neutral.
-- Every document that named the Qt layer as live is corrected or marked historical.
+- The unused X11 and GL packages and the =pg_cron= and =pgmq= extensions are gone from the package installer, the Postgres setup, the SQL and CI, with =timescaledb= kept.
+- The Qt-named presentation keys and the helpers that served only them are gone, with their tests, and =iam= regenerates byte-identically, so the removal is proved output-neutral.
+- The README, the icon inventory and the user manual carry the corrections the retirement required.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BEBB4056-11B2-4CA8-BBC8-EE322B45AE6D][Scaffold story: Remove the legacy Qt remnants]] | DONE | 2026-09-23 | 2026-09-23 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:54AEFA10-CE27-4878-B692-4CD1A109FF84][Remove the presentation keys no template reads]] | STARTED | 2026-09-23 | | Initial task for: Remove the legacy Qt remnants |
 | [[id:4B4FE8E7-BACE-499E-87F9-463B59D816A1][Remove the system packages and Postgres extensions nothing uses]] | DONE | 2026-10-01 | 2026-10-03 | Remove the X11 and GL headers the Qt client needed, and pg_cron and pgmq, from the package installer, the Postgres setup, the SQL and CI. Keep timescaledb. |
 
 * Decisions

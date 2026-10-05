@@ -7,14 +7,14 @@
 #+level: s1
 #+filetags: :hotfix:reporting:sql:security:sprint_26:v0:reporting-rls-tenant-isolation-hotfix:
 #+owner: marco
-+#+branch: hotfix/reporting-rls-tenant-isolation
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-09-30
-+#+updated: 2026-09-30
-+#+environment: clever_dijkstra
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+branch: hotfix/reporting-rls-tenant-isolation
+#+pr: 2413
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:199C3BFB-275D-482A-ADE7-546C3DA5E1E8][Hotfix: three reporting tables carry a tenant and no row-level security]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -74,8 +74,7 @@ pull-request verifier stop failing before they build anything.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2413][#2413]] | Fix the schema validation: enable row-level security on three reporting tables |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

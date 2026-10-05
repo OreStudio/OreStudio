@@ -28,9 +28,9 @@ ores.workspace passes the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component C
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:86ECC459-36B7-4521-91EB-DDD83534CFA3][Clean ores.workspace to the component clean standard]] |
-| Now          | Complete. Every item is recorded in the table below, the component is generated and listed in =COMPONENTS_UNDER_TEST=, and the review round is what remains. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The review round, then the merge. The shell part and the namespace documentation headers the record leaves open are the story's next task. |
+| Next | Nothing. |
 | Last touched | 2026-09-28                               |
 
 * Acceptance

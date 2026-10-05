@@ -28,9 +28,9 @@ The story has a rail model and no page that renders it. Restore the UI primitive
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
-| Now          | The primitives are restored and the rail renders from =journeys/runtime.ts=. The workspace typechecks, builds and tests green. |
-| Waiting on   | The review round on the change. |
-| Next          | The story's next plan step, the application shell and the bootstrap gate. |
+| Now          | Nothing. |
+| Waiting on | Nothing. |
+| Next | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

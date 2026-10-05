@@ -2,12 +2,12 @@
 :ID: 92415927-9D6F-4C3D-8C4C-6E282B73FA28
 :END:
 #+title: Story: Rewrite the oresmd grammar as a hand-written codec checked against ORE
-#+description: Replace the generated oresmd grammar with a hand-written, typed codec that reads ORE keys the way ORE does, round-trips through the stored URI, and is checked field by field against ORE's own parser; then close the clean-standard findings the 2026-10-02 review recorded.
+#+description: Replace the generated oresmd grammar with a hand-written, typed codec that reads ORE keys the way ORE does, round-trips through the stored URI, and is checked field by field against ORE's own parser; then close the clean-standard findings the 2026-10-02 review recorded, except the three its successor holds.
 #+type: story
 #+level: s2
 #+filetags: :marketdata:oresmd:sprint_26:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-05
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,18 +21,27 @@ C++ codec. It reads every key form ORE's own parser accepts, and it puts each
 token in the field ORE puts it in. The proof is a field-by-field comparison with
 ORE's =parseMarketDatum=, and a round trip through the URI that the database
 stores. The same story closes the clean-standard findings that
-[[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]] recorded.
+[[id:6D60C52C-26B9-416B-A453-478EE5CA33C5][the 2026-10-02 review]] recorded,
+except P01, H01 and H03, which
+[[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the
+clean-standard registry]] holds.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The typed model, both ORE codecs and the URI codec ship; every consumer uses them; the generated grammar and the key shape registry are deleted; the design record describes the shipped grammar. |
-| Waiting on    | Nothing.                               |
-| Next          | Correct the marketdata clean-standard record. |
-| Last touched  | 2026-10-04                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the scope
+it delivered and closed DONE. The remainder — the point-in-time read P01,
+the composite root diagram H01, and the namespace closer comments H03 — is
+[[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the
+clean-standard registry]], and its two tasks moved there.
 
 * Acceptance
 
@@ -50,9 +59,11 @@ stores. The same story closes the clean-standard findings that
 - The export builds each key from the stored URI. No row stores the raw key.
   The corpus tests compare each value under its own key.
 - =market_data_urn.org= describes the grammar that ships.
-- The marketdata clean-standard record matches the tree. W02, P02, G08, S01,
-  S02, V04, V08 and H03 pass, or each is an accepted exception in
-  =component_registry.py= with its reason.
+- The marketdata clean-standard record matches the tree for the items this
+  story closed: W02, P02, G02, G04, S01, S02, V04 and V08 pass. P01, H01
+  and H03 are open, and
+  [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the
+  clean-standard registry]] holds them.
 
 * Tasks
 
@@ -74,9 +85,7 @@ stores. The same story closes the clean-standard findings that
 | [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] | DONE | 2026-10-05 | 2026-10-05 | Survey every source file against the test run, add the missing tests, and record the generated-code review and the items no one has checked. |
 | [[id:C34E1985-B327-494E-B814-8586DDFF8EDE][Scaffold story: Rewrite the oresmd grammar as a hand-written codec checked against ORE]] | DONE | 2026-10-02 | 2026-10-02 | The review, the story, its thirteen tasks and the agreed design ride this task and its PR. Close it before merging that PR. |
 | [[id:3C4F3CDD-F5DF-4AEF-94E4-96ECE3F4A969][Replace the asset-specific ticks with one market tick]] | DONE | 2026-10-04 | 2026-10-04 | One tick type for every feed and asset class: the oresmd quote URI, the value, the observation time and the source, with the owner from the feed binding. Declares marketdata.v1.tick in a model, which closes P02. |
-| [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | BACKLOG | | | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
 | [[id:D54611B9-5719-4FBD-9FEB-472F6F4363C1][Provision the FOMC meeting schedule into every tenant]] | DONE | 2026-10-04 | 2026-10-04 | Copy the schedule columns of the tenor convention resolutions and the central bank meeting dates into a new tenant, so FOMC pillars resolve to meeting dates and the FOMC curve feed publishes. |
-| [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]] | BACKLOG | | | Fourteen shared C++ templates end each namespace with an end-of-line comment, which H03 forbids; remove it from the templates and from the 2,873 files they generated, in one mechanical PR. |
 
 * Decisions
 

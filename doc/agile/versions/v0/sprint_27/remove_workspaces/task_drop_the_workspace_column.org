@@ -26,11 +26,11 @@ No table, domain type, repository or generated TypeScript type carries a workspa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -79,9 +79,20 @@ task and name that file in the Command column.
 | Model drift | 0 bindings disagree with their profile; the report_definition exception is gone | =check_model_drift.py= | branch head before commit |
 | Codegen tests | 1139 pass | =pytest projects/ores.codegen/tests= | branch head before commit |
 | ores.web typecheck and tests | Typecheck clean; 222, 295 and 136 tests pass | =npm run typecheck=, =npm test= in =projects/ores.web= | branch head before commit |
+| ORE portfolio round trip, Acme Corporation provisioned on a recreated database | Provisioning: 7 of 7 steps; round trip: 2 trades exported, in scope lost 0 and unexplained 0, out of scope lost 0, worst relative error 2.247e-8 | =how_do_i_round_trip_an_ore_document_through_the_database.ores= on =Cash_BondRepo_and_Bond.xml=, then =scripts/ore_mapper_roundtrip_diff.py= | branch head before commit |
 | ctest suites | 93/94 pass. =ores.scheduler.api.tests= fails one case: croncpp accepts =* * * * * *= since main's vcpkg bump (978e1e098d) updated the port. Not this change; filed as its own capture. | =compass test run --preset linux-clang-debug-make= | branch head before commit |
 
 * Notes
+
+- Component audit: the change removes a column and its reads from
+  refdata, analytics, reporting and marketdata. It adds or moves no part,
+  facet or dependency, so the components' shape is the one their last
+  audit recorded. =validate_docs.sh= passes for all 42 components.
+- =ores_schema.puml= still shows the dropped columns. It already lagged
+  its generator before this change, and two inbox captures track
+  regenerating it.
+- The registrar comments that list the workspace among the context a
+  handler sees are the request context's, and go with that task.
 
 * Test Scenarios
 

@@ -4,12 +4,12 @@ select r.name, ar.assigned_by, ar.change_reason_code, ar.change_commentary
 from ores_iam_account_roles_tbl ar
 join ores_iam_roles_tbl r on r.id = ar.role_id and r.tenant_id = ar.tenant_id
  and r.valid_to = ores_utility_infinity_timestamp_fn()
-where ar.account_id = 'debc5e01-f251-4fcb-accd-b3d5fb5b022c'
+where ar.account_id = '3862114e-b7e4-41d0-8986-c85e91dbca62'
   and ar.valid_to = ores_utility_infinity_timestamp_fn()
 order by r.name;
 
 \echo '--- the request detail IAM recorded'
-select g.request_id, g.account_id, r.role_id
+select g.request_id, g.account_id, r.role_id, r.applied_at is not null as applied
 from ores_iam_role_grant_requests_tbl g
 join ores_iam_role_grant_request_roles_tbl r on r.request_id = g.request_id
  and r.valid_to = ores_utility_infinity_timestamp_fn()

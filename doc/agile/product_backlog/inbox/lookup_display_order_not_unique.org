@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 0E9A8C85-BD5E-48BF-BE30-1F6A2893E2B1
+:END:
+#+title: A lookup's display order is not unique
+#+description: display_order is a free integer, so two rows may share it and the list order is undefined.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:iam:sql:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The refdata and IAM lookups carry =display_order= with a default of zero and no uniqueness. Two rows with the same order read in an undefined order. Add a unique index per list, or state a tie-break by code. The web screen sorts by order then code as a stopgap.
+
+* Why
+
+Lists reorder themselves between reads when two rows share an order.
+
+* References
+
+- Journey: [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]], gap 3
+- Journey: [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]], gap 2
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

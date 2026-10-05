@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data from the Acme seed, no backend, no build step.
+
+  Reference data's classification lists as an area: the area, the index of
+  lists, one list, and one row with Details and History tabs. The bar at the
+  bottom switches who is signed in; "Show what changed" lists what differs from
+  the screen first built.
+-->
+<title>ORE Studio Reference data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Layout: the product's own shell — a header with the areas, one working column, and a prototype bar pinned below.
+   Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css), so the prototype is judged
+   on its words and structure rather than on a new look. The product is dark only, and so is this. */
+:root {
+  color-scheme: dark;
+  --bg: #121214;
+  --raised: #1a1a1e;
+  --overlay: #26262b;
+  --line-subtle: #21262d;
+  --line: #30363d;
+  --line-strong: #4a5568;
+  --ink: #e3e3e6;
+  --ink-muted: #a1a1aa;
+  --ink-faint: #71717a;
+  --ink-inverse: #0d1117;
+  --accent: #58a6ff;
+  --accent-bright: #8ab4f8;
+  --accent-dim: #1b2a3d;
+  --up: #3fb950;
+  --up-strong: #238636;
+  --down-strong: #da3633;
+  --purple: #8957e5;
+  --down: #f85149;
+  --warn: #d29922;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 7rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-bright); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; }
+h2 { font-size: 1rem; }
+h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); }
+.faint { color: var(--ink-faint); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button:hover { background: var(--overlay); color: var(--ink); }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.menu button.soon { color: var(--ink-faint); }
+.me { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.125rem 0.625rem 0.125rem 0.125rem; cursor: pointer; }
+.me:hover { border-color: var(--line); }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+.me-menu { position: absolute; right: 1rem; top: 3.25rem; width: 16rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); }
+.me-menu .who { padding: 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.25rem; }
+.me-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0.4rem 0.5rem; border-radius: 6px; cursor: pointer; }
+.me-menu button:hover { background: var(--raised); }
+
+/* Page */
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.5rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.crumbs button { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.4375rem 0.875rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+.btn.primary:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
+.btn.danger { color: var(--down); }
+.btn.danger.solid { background: #b62324; border-color: #b62324; color: #fff; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: 1.25rem; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.stat { display: grid; gap: 0.25rem; }
+.stat .big { font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .label { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.list { display: grid; }
+.row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; border-top: 1px solid var(--line-subtle); }
+.row:first-child { border-top: 0; }
+.row > .grow { flex: 1; min-width: 0; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none; }
+.dot.ok { background: var(--up); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--down); } .dot.idle { background: var(--ink-faint); }
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.0625rem 0.5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip { font-weight: 600; }
+.chip.production { color: #0d1117; border-color: var(--accent); background: var(--accent); }
+.chip.evaluation { color: #fff; border-color: var(--purple); background: var(--purple); }
+.chip.automation { color: var(--ink-muted); border-color: var(--line-strong); background: var(--overlay); }
+.chip.active { color: #fff; border-color: var(--up-strong); background: var(--up-strong); }
+.chip.suspended { color: #1a1300; border-color: var(--warn); background: var(--warn); }
+.chip.setting-up { color: #0d1117; border-color: var(--accent-bright); background: var(--accent-bright); }
+.chip.failed { color: #fff; border-color: var(--down-strong); background: var(--down-strong); }
+.chip.view { color: var(--ink-muted); font-weight: 500; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+.tiles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+.tile { text-align: left; background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; cursor: pointer; display: grid; gap: 0.375rem; align-content: start; }
+.tile:hover { border-color: var(--line-strong); }
+.tile.soon { cursor: default; opacity: 0.7; }
+.tile.soon:hover { border-color: var(--line); }
+.tile .t { font-weight: 600; }
+
+/* Health */
+.health { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: start; }
+.verdict { display: flex; gap: 0.75rem; align-items: center; }
+.verdict .mark { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; }
+.verdict.ok .mark { background: #12361d; color: var(--up); border: 1px solid #1f5d2b; }
+.verdict.warn .mark { background: #3a2a0a; color: var(--warn); border: 1px solid #6b4e12; }
+.activity { border-left: 2px solid var(--up-strong); padding-left: 0.75rem; display: grid; gap: 0.5rem; font-size: 13px; }
+.activity .when { font-size: 12px; color: var(--ink-faint); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--ink-muted); font-size: 12px; padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #1f1f24; }
+tbody tr[aria-selected="true"] { background: var(--accent-dim); }
+td.code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--line); }
+.toolbar input[type=search], .toolbar select, .field input, .field select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.375rem 0.625rem; }
+.toolbar input[type=search] { flex: 1; min-width: 10rem; }
+.toolbar label { display: inline-flex; gap: 0.375rem; align-items: center; color: var(--ink-muted); font-size: 13px; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; font-size: 12px; color: var(--ink-muted); flex-wrap: wrap; }
+.progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; width: 6rem; }
+.progress > span { display: block; height: 100%; background: var(--accent); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; margin: 0; }
+dt { font-size: 12px; color: var(--ink-faint); }
+dd { margin: 0.125rem 0 0; }
+
+/* Dialog */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: grid; place-items: center; padding: 1rem; z-index: 20; }
+.dialog { width: min(32rem, 100%); background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; display: grid; gap: 1rem; }
+.field { display: grid; gap: 0.375rem; }
+.field label { font-size: 13px; color: var(--ink-muted); }
+.field input, .field select { width: 100%; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.warnbox { border: 1px solid #7a2a28; background: #2a1414; border-radius: 6px; padding: 0.75rem; color: #ffb4ad; font-size: 13px; }
+.note { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 0.75rem; font-size: 13px; color: var(--ink-muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 6.5rem; background: var(--overlay); border: 1px solid var(--line); padding: 0.5rem 1rem; border-radius: 6px; z-index: 30; }
+
+/* Prototype bar */
+.proto { position: fixed; left: 0; right: 0; bottom: 0; background: #0b0b0d; border-top: 1px dashed var(--line-strong); padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); z-index: 10; }
+.proto-inner { max-width: 72rem; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; font-size: 12px; color: var(--ink-faint); }
+.proto strong { color: var(--warn); letter-spacing: 0.06em; }
+.proto .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.proto .seg button { background: none; border: 0; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .seg button[aria-pressed="true"] { background: var(--overlay); color: var(--ink); }
+.proto .why { margin-left: auto; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.625rem; color: var(--ink-muted); cursor: pointer; }
+.proto .why[aria-pressed="true"] { background: var(--overlay); color: var(--ink); border-color: var(--line-strong); }
+.why-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.why-close { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 0.125rem 0.5rem; color: var(--ink-muted); cursor: pointer; }
+.why-panel { position: fixed; right: 1rem; bottom: 4.5rem; width: min(26rem, calc(100% - 2rem)); max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; z-index: 15; font-size: 13px; display: grid; gap: 0.625rem; }
+.why-panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.375rem; color: var(--ink-muted); }
+@media (prefers-reduced-motion: no-preference) { .tile, .btn, tbody tr { transition: border-color .15s, background .15s; } }
+@media (max-width: 40rem) { .place { display: none; } .hide-sm { display: none; } }
+
+.head > .actions { display: flex; align-items: center; }
+.toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.toggle button { background: none; border: 0; padding: 0.375rem 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--overlay); color: var(--ink); }
+/* Classifications */
+.topics { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); align-items: start; }
+.topic h2 { padding: 0.875rem 1.25rem 0.25rem; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); font-weight: 600; }
+.topic .row { cursor: pointer; padding: 0.5rem 1.25rem; }
+.topic .row:hover { background: #1f1f24; }
+.count { color: var(--ink-faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+mark.hit { background: var(--accent-dim); color: var(--accent-bright); border-radius: 2px; }
+.reorder td.grip { color: var(--ink-faint); width: 5.5rem; white-space: nowrap; }
+.reorder .mv { background: none; border: 1px solid var(--line); border-radius: 4px; padding: 0 0.4rem; cursor: pointer; color: var(--ink-muted); }
+.reorder .mv[disabled] { opacity: 0.3; cursor: default; }
+.reorder tbody tr { cursor: default; }
+.banner { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1px solid #6b4e12; background: #2a2008; color: #f2cc60; border-radius: 6px; padding: 0.625rem 0.875rem; font-size: 13px; }
+.ro { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 0.625rem 0.875rem; font-size: 13px; color: var(--ink-muted); }
+/* History */
+.history { display: grid; grid-template-columns: minmax(14rem, 18rem) 1fr; gap: 0; }
+@media (max-width: 48rem) { .history { grid-template-columns: 1fr; } }
+.versions { border-right: 1px solid var(--line); }
+.version { display: grid; gap: 0.125rem; padding: 0.625rem 1rem; border-top: 1px solid var(--line-subtle); cursor: pointer; text-align: left; background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100%; }
+.version:first-child { border-top: 0; }
+.version:hover { background: #1f1f24; }
+.version[aria-selected="true"] { background: var(--accent-dim); }
+.version .v { font-weight: 600; display: flex; gap: 0.5rem; align-items: center; }
+.compare { padding: 1rem 1.25rem; display: grid; gap: 0.875rem; align-content: start; }
+.compare-head { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; align-items: flex-start; }
+.why-line { font-size: 13px; color: var(--ink-muted); }
+.diff { display: grid; gap: 1px; font-size: 13px; }
+.diff .line { display: grid; grid-template-columns: 1.25rem 1fr; padding: 0.125rem 0.5rem; border-radius: 3px; }
+.diff .line .sign { color: var(--ink-faint); user-select: none; }
+.diff .old { background: rgba(248, 81, 73, 0.15); }
+.diff .new { background: rgba(46, 160, 67, 0.15); }
+.diff .old mark { background: rgba(248, 81, 73, 0.45); color: inherit; border-radius: 2px; }
+.diff .new mark { background: rgba(46, 160, 67, 0.45); color: inherit; border-radius: 2px; }
+tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.reason-chip { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 0.0625rem 0.5rem; border-radius: 4px; background: #3a2a0a; color: #f2cc60; border: 1px solid #6b4e12; }
+.note-line { font-style: italic; color: #b3a6e6; font-size: 12px; }
+.compare-pick { display: inline-flex; gap: 0.375rem; align-items: center; font-size: 13px; color: var(--ink-muted); }
+.compare-pick select { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.25rem 0.5rem; }
+.check { display: flex; gap: 0.375rem; align-items: center; font-size: 12px; color: var(--ink-faint); }
+td.unchanged { color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</div>
+    <div class="place" id="place"></div>
+    <nav class="menu" id="menu" aria-label="Main"></nav>
+    <button class="me" id="me" aria-haspopup="false"></button>
+  </div>
+</header>
+<main id="app"></main>
+<div id="dialog-host"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<aside id="why" class="why-panel" hidden></aside>
+
+<div class="proto">
+  <div class="proto-inner">
+    <strong>PROTOTYPE</strong><span>Mock data from the Acme seed. Signed in as</span>
+    <span class="seg" id="persona-seg"></span>
+    <button class="why" id="why-btn" aria-expanded="false" aria-pressed="false" aria-controls="why">Show what changed</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const LISTS = [{"key": "monetary-nature", "topic": "currencies", "shape": "named", "editable": true, "total": 4, "rows": [{"code": "fiat", "name": "Fiat Currency", "description": "Government-issued currency not backed by a commodity2", "displayOrder": 1}, {"code": "commodity", "name": "Commodity Currency", "description": "Currency backed by or representing a physical commodity (e.g. XAU, XAG)", "displayOrder": 2}, {"code": "synthetic", "name": "Synthetic Currency", "description": "Artificially constructed currency or index", "displayOrder": 3}, {"code": "supranational", "name": "Supranational Currency", "description": "Currency issued by a multi-national authority (e.g. XDR)", "displayOrder": 4}], "label": "Monetary natures", "brief": "Monetary nature of the currency."}, {"key": "rounding-type", "topic": "currencies", "shape": "named", "editable": true, "total": 5, "rows": [{"code": "Up", "name": "Round Up", "description": "Rounds away from zero. 2.341→2.35, 2.349→2.35. Negative: -2.341→-2.35. Used when amounts must never be understated.", "displayOrder": 1}, {"code": "Down", "name": "Round Down", "description": "Truncates toward zero. 2.349→2.34, -2.341→-2.34. Never overstates amounts; used in conservative contexts.", "displayOrder": 2}, {"code": "Closest", "name": "Round to Nearest", "description": "Round half up to nearest. 2.344→2.34, 2.345→2.35. Default rounding; most common for financial amounts.", "displayOrder": 3}, {"code": "Floor", "name": "Floor", "description": "Always rounds to next lower value. 2.349→2.34, -2.341→-2.35. Used when rounding must never produce a higher value.", "displayOrder": 4}, {"code": "Ceiling", "name": "Ceiling", "description": "Always rounds to next higher value. 2.341→2.35, -2.349→-2.34. Used when rounding must never produce a lower value.", "displayOrder": 5}], "label": "Rounding types", "brief": "Valid rounding methods per ORE XML schema."}, {"key": "currency-market-tier", "topic": "currencies", "shape": "named", "editable": true, "total": 5, "rows": [{"code": "g10", "name": "G10 / Majors", "description": "Major currencies with deep liquidity and tight spreads", "displayOrder": 1}, {"code": "emerging", "name": "Emerging", "description": "Currencies from developing economies with moderate liquidity", "displayOrder": 2}, {"code": "exotic", "name": "Exotic", "description": "Thinly traded currencies with wide spreads", "displayOrder": 3}, {"code": "frontier", "name": "Frontier", "description": "Currencies from frontier markets with limited convertibility", "displayOrder": 4}, {"code": "historical", "name": "Historical", "description": "Currencies no longer in active use", "displayOrder": 5}], "label": "Currency market tiers", "brief": "Classification of currency by market tier."}, {"key": "currency-pair-classification", "topic": "currencies", "shape": "named", "editable": true, "total": 0, "rows": [], "label": "Currency pair classifications", "brief": "Liquidity classification of a currency pair (major, minor, exotic)."}, {"key": "calendar-type", "topic": "calendars", "shape": "named", "editable": true, "total": 5, "rows": [{"code": "public_holiday", "name": "Public Holiday", "description": "A business-day/holiday calendar for a country, currency, or supranational region", "displayOrder": 1}, {"code": "central_bank_meeting", "name": "Central Bank Meeting", "description": "A calendar of a central bank's scheduled policy-meeting dates", "displayOrder": 2}, {"code": "financial_centre", "name": "Financial Centre", "description": "A business-day calendar for a specific financial centre or exchange (e.g. NYSE, TSX)", "displayOrder": 3}, {"code": "data_release", "name": "Data Release", "description": "A calendar of scheduled macroeconomic data release dates", "displayOrder": 4}, {"code": "other", "name": "Other", "description": "A calendar not classified under any other calendar type", "displayOrder": 5}], "label": "Calendar types", "brief": "Classification of a calendar's purpose."}, {"key": "diary-entry-type", "topic": "calendars", "shape": "named", "editable": true, "total": 0, "rows": [], "label": "Diary entry types", "brief": "Classification of a calendar_event entry's kind."}, {"key": "calendar-name", "topic": "calendars", "shape": "plain", "editable": false, "total": 471, "rows": [{"code": "AE", "name": "", "description": "", "displayOrder": null}, {"code": "AED", "name": "", "description": "", "displayOrder": null}, {"code": "AFN", "name": "", "description": "", "displayOrder": null}, {"code": "ALL", "name": "", "description": "", "displayOrder": null}, {"code": "AMD", "name": "", "description": "", "displayOrder": null}, {"code": "ANG", "name": "", "description": "", "displayOrder": null}, {"code": "AOA", "name": "", "description": "", "displayOrder": null}, {"code": "AR", "name": "", "description": "", "displayOrder": null}, {"code": "ARE", "name": "", "description": "", "displayOrder": null}, {"code": "ARG", "name": "", "description": "", "displayOrder": null}, {"code": "ARS", "name": "", "description": "", "displayOrder": null}, {"code": "AT", "name": "", "description": "", "displayOrder": null}, {"code": "ATS", "name": "", "description": "", "displayOrder": null}, {"code": "AU", "name": "", "description": "", "displayOrder": null}, {"code": "AUD", "name": "", "description": "", "displayOrder": null}, {"code": "AUS", "name": "", "description": "", "displayOrder": null}, {"code": "Australia", "name": "", "description": "", "displayOrder": null}, {"code": "Australia exchange", "name": "", "description": "", "displayOrder": null}, {"code": "Australia settlement", "name": "", "description": "", "displayOrder": null}, {"code": "Austria", "name": "", "description": "", "displayOrder": null}, {"code": "Austrian settlement", "name": "", "description": "", "displayOrder": null}, {"code": "AUT", "name": "", "description": "", "displayOrder": null}, {"code": "AWG", "name": "", "description": "", "displayOrder": null}, {"code": "AZN", "name": "", "description": "", "displayOrder": null}, {"code": "BAM", "name": "", "description": "", "displayOrder": null}, {"code": "BBD", "name": "", "description": "", "displayOrder": null}, {"code": "BCH", "name": "", "description": "", "displayOrder": null}, {"code": "BDT", "name": "", "description": "", "displayOrder": null}, {"code": "BE", "name": "", "description": "", "displayOrder": null}, {"code": "BEBR", "name": "", "description": "", "displayOrder": null}, {"code": "BEF", "name": "", "description": "", "displayOrder": null}, {"code": "BEL", "name": "", "description": "", "displayOrder": null}, {"code": "Belgian settlement", "name": "", "description": "", "displayOrder": null}, {"code": "Belgium", "name": "", "description": "", "displayOrder": null}, {"code": "BGN", "name": "", "description": "", "displayOrder": null}, {"code": "BHD", "name": "", "description": "", "displayOrder": null}, {"code": "BIF", "name": "", "description": "", "displayOrder": null}, {"code": "BMD", "name": "", "description": "", "displayOrder": null}, {"code": "BND", "name": "", "description": "", "displayOrder": null}, {"code": "BOB", "name": "", "description": "", "displayOrder": null}], "label": "Calendar names", "brief": "One calendar name that an ORE document may write."}, {"key": "business-day-convention-type", "topic": "calendars", "shape": "named", "editable": false, "total": 7, "rows": [{"code": "Following", "name": "Following", "description": "Adjust to the next good business day", "displayOrder": 1}, {"code": "ModifiedFollowing", "name": "Modified Following", "description": "Next good business day unless it crosses a month end, in which case the previous good day", "displayOrder": 2}, {"code": "Preceding", "name": "Preceding", "description": "Adjust to the previous good business day", "displayOrder": 3}, {"code": "ModifiedPreceding", "name": "Modified Preceding", "description": "Previous good business day unless it crosses a month start, in which case the next good day", "displayOrder": 4}, {"code": "Unadjusted", "name": "Unadjusted", "description": "No business day adjustment applied", "displayOrder": 5}, {"code": "HalfMonthModifiedFollowing", "name": "Half-Month Modified Following", "description": "Modified Following, additionally rolled back within the same half-month period", "displayOrder": 6}, {"code": "Nearest", "name": "Nearest", "description": "Adjust to the nearest good business day, forward or backward", "displayOrder": 7}], "label": "Business day conventions", "brief": "ORE business day convention code (e.g. Following, ModifiedFollowing, Unadjusted)."}, {"key": "party-type", "topic": "parties", "shape": "named", "editable": true, "total": 8, "rows": [{"code": "Internal", "name": "Internal", "description": "Internal entity for platform administration and organisational purposes. Auto-created system parties use this type; also available for user-created internal entities.", "displayOrder": 0}, {"code": "Bank", "name": "Bank", "description": "A licensed financial institution that accepts deposits, makes loans, and provides other financial services.", "displayOrder": 1}, {"code": "CorporateGroup", "name": "Corporate Group", "description": "A parent entity comprising multiple subsidiaries or divisions operating as a single economic unit.", "displayOrder": 2}, {"code": "HedgeFund", "name": "Hedge Fund", "description": "An alternative investment vehicle using pooled funds and various strategies to earn returns for investors.", "displayOrder": 3}, {"code": "Corporate", "name": "Corporate", "description": "A non-financial corporation that may engage in hedging or treasury operations.", "displayOrder": 4}, {"code": "CentralBank", "name": "Central Bank", "description": "A national monetary authority responsible for monetary policy, currency issuance, and financial system stability.", "displayOrder": 5}, {"code": "Exchange", "name": "Exchange", "description": "A regulated marketplace for trading securities, derivatives, or other financial instruments.", "displayOrder": 6}, {"code": "Individual", "name": "Individual", "description": "A natural person acting as a counterparty in financial transactions.", "displayOrder": 7}], "label": "Party types", "brief": "Classification of legal entities participating in financial transactions."}, {"key": "party-status", "topic": "parties", "shape": "named", "editable": true, "total": 3, "rows": [{"code": "Active", "name": "Active", "description": "The party is currently active and available for use in transactions and reporting.", "displayOrder": 1}, {"code": "Inactive", "name": "Inactive", "description": "The party is no longer active. Existing references are preserved but no new transactions should reference this party.", "displayOrder": 2}, {"code": "Suspended", "name": "Suspended", "description": "The party is temporarily suspended pending review or investigation. May be reactivated.", "displayOrder": 3}], "label": "Party statuses", "brief": "Lifecycle states for party and counterparty records."}, {"key": "contact-type", "topic": "parties", "shape": "named", "editable": true, "total": 4, "rows": [{"code": "Legal", "name": "Legal", "description": "Registered legal address and contact details for regulatory and compliance purposes.", "displayOrder": 1}, {"code": "Operations", "name": "Operations", "description": "Day-to-day operational contact details for trade confirmations and general business communication.", "displayOrder": 2}, {"code": "Settlement", "name": "Settlement", "description": "Contact details for settlement instructions, payment processing, and reconciliation.", "displayOrder": 3}, {"code": "Billing", "name": "Billing", "description": "Contact details for invoicing, fee collection, and billing-related correspondence.", "displayOrder": 4}], "label": "Contact types", "brief": "Classification of contact information purpose."}, {"key": "book-status", "topic": "books", "shape": "named", "editable": true, "total": 3, "rows": [{"code": "Active", "name": "Active", "description": "Book is open and accepting new trades.", "displayOrder": 1}, {"code": "Closed", "name": "Closed", "description": "Book is closed. Existing trades remain but no new trades are allowed.", "displayOrder": 2}, {"code": "Frozen", "name": "Frozen", "description": "Book is frozen. No modifications allowed including new trades or amendments.", "displayOrder": 3}], "label": "Book statuses", "brief": "Lifecycle states for book records."}, {"key": "book-purpose-type", "topic": "books", "shape": "named", "editable": true, "total": 9, "rows": [{"code": "Trading", "name": "Trading", "description": "Ordinary trading book: market-making, arbitrage, and client-facing risk-taking. The default purpose for a book that does not play one of the specialised roles below.", "displayOrder": 1}, {"code": "Reserve", "name": "Reserve", "description": "Holds risk retained by the desk rather than passed on -- e.g. residual risk after a hedge, or a deliberate risk-warehousing position.", "displayOrder": 2}, {"code": "Funding", "name": "Funding", "description": "Books the short-term funding/liquidity trades (e.g. the funding process) that keep the desk's cash and collateral positions square.", "displayOrder": 3}, {"code": "Wash", "name": "Wash", "description": "Routes offsetting back-to-back trades to a designated risk book so client-facing books stay flat; see the paired risk-book link.", "displayOrder": 4}, {"code": "WriteOff", "name": "Write-off", "description": "Holds positions/balances that have been written off and no longer represent live risk, kept for audit trail rather than active management.", "displayOrder": 5}, {"code": "Test", "name": "Test", "description": "Non-production book used for testing booking flows, integrations, or training -- never carries real risk.", "displayOrder": 6}, {"code": "Sales", "name": "Sales", "description": "Books sales-credit or client-relationship-tracking entries that are not themselves risk-bearing trading activity.", "displayOrder": 7}, {"code": "SweepTarget", "name": "Sweep target", "description": "The single central book that receives spot-sweep transfers from sweepable books; owned by Treasury, realises trading P&L. Not combinable with Remittance target.", "displayOrder": 8}, {"code": "RemittanceTarget", "name": "Remittance target", "description": "The single central book that receives central-remittance transfers; owned by Finance, balance-sheet-only (no trading P&L). Not combinable with Sweep target.", "displayOrder": 9}], "label": "Book purposes", "brief": "The risk role a book plays: what kind of trading/operational activity happens in it."}, {"key": "ledger-feed-type", "topic": "books", "shape": "named", "editable": true, "total": 3, "rows": [{"code": "None", "name": "None", "description": "The book's ledger balance is not fed from any source book -- the default for a book with no ledger connection.", "displayOrder": 1}, {"code": "Automatic", "name": "Automatic", "description": "The book's ledger balance is fed by an automated ledger process.", "displayOrder": 2}, {"code": "Manual", "name": "Manual", "description": "The book's ledger balance is fed by manual entry.", "displayOrder": 3}], "label": "Ledger feed types", "brief": "How a book's ledger balance is fed: not fed, automatically, or manually."}, {"key": "regulatory-book-type", "topic": "books", "shape": "named", "editable": true, "total": 2, "rows": [{"code": "Trading", "name": "Trading Book", "description": "Held with trading intent (market-making, arbitrage, hedging other trading book positions). Marked to market daily; subject to FRTB market risk capital.", "displayOrder": 1}, {"code": "Banking", "name": "Banking Book", "description": "Held to maturity or for balance-sheet management. Accrual-accounted; subject to credit risk capital (plus a market risk charge on FX/commodity exposure).", "displayOrder": 2}], "label": "Regulatory book types", "brief": "Basel III/IV FRTB trading book / banking book classification."}, {"key": "purpose-type", "topic": "books", "shape": "named", "editable": true, "total": 4, "rows": [{"code": "Risk", "name": "Risk", "description": "Portfolio used for risk aggregation and risk management reporting.", "displayOrder": 1}, {"code": "Regulatory", "name": "Regulatory", "description": "Portfolio used for regulatory capital and compliance reporting.", "displayOrder": 2}, {"code": "ClientReporting", "name": "Client Reporting", "description": "Portfolio used for client-facing reporting and statements.", "displayOrder": 3}, {"code": "Internal", "name": "Internal", "description": "Portfolio used for internal management reporting and P&L attribution.", "displayOrder": 4}], "label": "Portfolio purposes", "brief": "Classification of portfolio purpose."}, {"key": "asset-class-code", "topic": "products", "shape": "named", "editable": true, "total": 7, "rows": [{"code": "fx", "name": "FX", "description": "Foreign exchange: instruments whose value derives from the exchange rate between two currencies. Covers FX spot, forwards, swaps, and vanilla/exotic options, along with the market data that prices them -- spot rates, forward points, and volatility surfaces quoted by currency pair. FX is unique among asset classes in that every trade inherently involves two currencies rather than one underlying, which is why FX risk shows up as a cross-cutting concern in every other asset class (a USD-denominated equity option still carries FX risk for a EUR-based book).", "displayOrder": 1}, {"code": "interest_rates", "name": "Interest Rate", "description": "Interest rate products: instruments whose value derives from the level or shape of a yield curve for a given currency and index (e.g. USD SOFR, EUR ESTR). Covers deposits, forward rate agreements, interest rate swaps and swaptions, caps/floors, and cross-currency swaps, together with the curve-construction market data -- discount factors, zero rates, and forward rates bootstrapped from quoted instruments at standard tenors. Interest rates is typically the first curve built in any pricing pipeline, since discounting and forward-rate projection for every other asset class ultimately depends on it.", "displayOrder": 2}, {"code": "credit", "name": "Credit", "description": "Credit risk products: instruments whose value derives from the likelihood and severity of an issuer or reference entity defaulting on its obligations. Covers credit default swaps (single-name and index), credit-linked notes, and the underlying market data -- CDS spreads, hazard rate curves bootstrapped from those spreads, and assumed recovery rates. Credit curves are quoted per reference entity (or index series) and are combined with a rates curve to produce risky discount factors for defaultable cashflows.", "displayOrder": 3}, {"code": "equity", "name": "Equity", "description": "Equity products: instruments whose value derives from the price of a single stock, a basket of stocks, or an equity index. Covers equity spot and forward positions, vanilla and exotic equity options (including barrier, Asian, and variance-swap structures), and the associated market data -- spot prices, dividend yield curves, and implied volatility surfaces quoted by strike and expiry. Equity derivatives pricing typically layers a dividend/borrow-cost forward curve and a volatility surface on top of the rates discount curve.", "displayOrder": 4}, {"code": "commodity", "name": "Commodity", "description": "Commodity products: instruments whose value derives from the price of a physical commodity (energy, metals, agriculturals) or a commodity index/future. Covers commodity forwards, swaps, and options (including Asian and spread structures), and the associated market data -- forward curves (which, unlike FX or rates, are often in backwardation or contango driven by storage cost and convenience yield rather than pure interest-rate parity) and volatility surfaces per delivery point/contract month.", "displayOrder": 5}, {"code": "inflation", "name": "Inflation", "description": "Inflation-linked products: instruments whose value derives from a published price index (e.g. US CPI, UK RPI/CPI, EU HICP). Covers zero-coupon and year-on-year inflation swaps, inflation caps/floors, and inflation-linked bonds, together with the associated market data -- the inflation fixing/index curve (historical and forward-projected, with a seasonality adjustment for the index's known within-year pattern) and inflation volatility surfaces. Inflation curves are built and discounted against the nominal rates curve for the same currency.", "displayOrder": 6}, {"code": "bond", "name": "Bond", "description": "Bond products: fixed-income securities that pay a defined schedule of coupons and a principal redemption, whose value derives from a discount curve plus an issuer-specific credit/liquidity spread. Covers vanilla fixed and floating-rate bonds, callable/convertible bonds, and bond futures/options, together with the associated market data -- clean/dirty prices, yield-to-maturity, and issuer spread curves quoted over the risk-free (or asset-swap) curve. Government bonds are also a primary source instrument for bootstrapping the risk-free rates curve itself.", "displayOrder": 7}], "label": "Asset classes", "brief": "The top-level product asset class taxonomy."}, {"key": "leg-type", "topic": "products", "shape": "plain", "editable": false, "total": 0, "rows": [], "label": "Leg types", "brief": "ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI)."}, {"key": "floating-index-type", "topic": "products", "shape": "plain", "editable": false, "total": 32, "rows": [{"code": "AUD-AONIA", "name": "", "description": "AONIA (RBA Cash Rate overnight index)", "displayOrder": null}, {"code": "CAD-CORRA", "name": "", "description": "Canadian Overnight Repo Rate Average (CORRA)", "displayOrder": null}, {"code": "CHF-SARON", "name": "", "description": "Swiss Average Rate Overnight (SARON)", "displayOrder": null}, {"code": "CNY-SHIBOR-ON", "name": "", "description": "Shanghai Interbank Offered Rate, Overnight", "displayOrder": null}, {"code": "DKK-DESTR", "name": "", "description": "Denmark Short-Term Rate (DESTR)", "displayOrder": null}, {"code": "EUR-EONIA", "name": "", "description": "Euro Overnight Index Average (legacy)", "displayOrder": null}, {"code": "EUR-ESTER", "name": "", "description": "Euro Short-Term Rate, as ORE also spells it", "displayOrder": null}, {"code": "EUR-ESTR", "name": "", "description": "Euro Short-Term Rate (ESTR)", "displayOrder": null}, {"code": "EUR-EURIBOR-1M", "name": "", "description": "EURIBOR 1 Month", "displayOrder": null}, {"code": "EUR-EURIBOR-3M", "name": "", "description": "EURIBOR 3 Month", "displayOrder": null}, {"code": "EUR-EURIBOR-6M", "name": "", "description": "EURIBOR 6 Month", "displayOrder": null}, {"code": "GBP-LIBOR-3M", "name": "", "description": "GBP LIBOR 3 Month (legacy)", "displayOrder": null}, {"code": "GBP-LIBOR-6M", "name": "", "description": "GBP LIBOR 6 Month (legacy)", "displayOrder": null}, {"code": "GBP-SONIA", "name": "", "description": "Sterling Overnight Index Average (SONIA)", "displayOrder": null}, {"code": "HKD-HONIA", "name": "", "description": "Hong Kong Overnight Index Average (HONIA)", "displayOrder": null}, {"code": "INR-MIBOR", "name": "", "description": "Mumbai Interbank Overnight Rate (MIBOR)", "displayOrder": null}, {"code": "JPY-LIBOR-6M", "name": "", "description": "JPY LIBOR 6 Month (legacy)", "displayOrder": null}, {"code": "JPY-TONAR", "name": "", "description": "Tokyo Overnight Average Rate (TONAR)", "displayOrder": null}, {"code": "KRW-KOFR", "name": "", "description": "Korea Overnight Financing Repo Rate (KOFR)", "displayOrder": null}, {"code": "MXN-TIIE-ON", "name": "", "description": "TIIE de Fondeo a 1 Dia (Mexican overnight rate)", "displayOrder": null}, {"code": "NOK-NOWA", "name": "", "description": "Norwegian Overnight Weighted Average (NOWA)", "displayOrder": null}, {"code": "NZD-NZIONA", "name": "", "description": "New Zealand Interbank Overnight Cash Rate Average (NZIONA)", "displayOrder": null}, {"code": "PLN-POLONIA", "name": "", "description": "Polish Overnight Index Average (POLONIA)", "displayOrder": null}, {"code": "SEK-SWESTR", "name": "", "description": "Swedish Krona Short-Term Rate (SWESTR)", "displayOrder": null}, {"code": "SGD-SORA", "name": "", "description": "Singapore Overnight Rate Average (SORA)", "displayOrder": null}, {"code": "TWD-TAIBOR-ON", "name": "", "description": "Taipei Interbank Offered Rate, Overnight", "displayOrder": null}, {"code": "USD-LIBOR-1M", "name": "", "description": "USD LIBOR 1 Month (legacy)", "displayOrder": null}, {"code": "USD-LIBOR-3M", "name": "", "description": "USD LIBOR 3 Month (legacy)", "displayOrder": null}, {"code": "USD-LIBOR-6M", "name": "", "description": "USD LIBOR 6 Month (legacy)", "displayOrder": null}, {"code": "USD-SOFR", "name": "", "description": "Secured Overnight Financing Rate (SOFR)", "displayOrder": null}, {"code": "USD-SOFR-3M", "name": "", "description": "SOFR 3 Month Term Rate", "displayOrder": null}, {"code": "ZAR-ZARONIA", "name": "", "description": "South African Rand Overnight Index Average (ZARONIA)", "displayOrder": null}], "label": "Floating index types", "brief": "ORE floating rate index code (e.g. EUR-EURIBOR-6M, USD-SOFR, GBP-SONIA)."}, {"key": "day-counter", "topic": "products", "shape": "plain", "editable": false, "total": 71, "rows": [{"code": "1/1", "name": "", "description": "", "displayOrder": null}, {"code": "30/360", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 (Bond Basis)", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 (German)", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 (Italian)", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 (US)", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 AIBD (Euro)", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 German", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 Italian", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 NASD", "name": "", "description": "", "displayOrder": null}, {"code": "30/360 US", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360 (Eurobond Basis)", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360 ICMA", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360 ISDA", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360.ICMA", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360.ISDA", "name": "", "description": "", "displayOrder": null}, {"code": "30E/360E", "name": "", "description": "", "displayOrder": null}, {"code": "30U/360", "name": "", "description": "", "displayOrder": null}, {"code": "30US/360", "name": "", "description": "", "displayOrder": null}, {"code": "A360", "name": "", "description": "", "displayOrder": null}, {"code": "A360 (Incl Last)", "name": "", "description": "", "displayOrder": null}, {"code": "A364", "name": "", "description": "", "displayOrder": null}, {"code": "A365", "name": "", "description": "", "displayOrder": null}, {"code": "A365F", "name": "", "description": "", "displayOrder": null}, {"code": "ACT", "name": "", "description": "", "displayOrder": null}, {"code": "Act/360", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/360", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/360 (Incl Last)", "name": "", "description": "", "displayOrder": null}, {"code": "Act/364", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/364", "name": "", "description": "", "displayOrder": null}, {"code": "Act/365", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/365", "name": "", "description": "", "displayOrder": null}, {"code": "Act/365 (Canadian Bond)", "name": "", "description": "", "displayOrder": null}, {"code": "Act/365 (NL)", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/365.FIXED", "name": "", "description": "", "displayOrder": null}, {"code": "Act/365L", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/365L", "name": "", "description": "", "displayOrder": null}, {"code": "Act/Act", "name": "", "description": "", "displayOrder": null}, {"code": "ACT/ACT", "name": "", "description": "", "displayOrder": null}], "label": "Day counters", "brief": "One spelling of a day counter that an ORE document may write."}, {"key": "day-count-fraction-type", "topic": "products", "shape": "named", "editable": true, "total": 12, "rows": [{"code": "A360", "name": "Actual/360", "description": "Actual/360", "displayOrder": 1}, {"code": "A365F", "name": "Actual/365 (Fixed)", "description": "Actual/365 (Fixed)", "displayOrder": 2}, {"code": "A365", "name": "Actual/365", "description": "Actual/365", "displayOrder": 3}, {"code": "ActAct(ISDA)", "name": "Actual/Actual (ISDA)", "description": "Actual/Actual (ISDA)", "displayOrder": 4}, {"code": "ActAct(ISMA)", "name": "Actual/Actual (ISMA)", "description": "Actual/Actual (ISMA)", "displayOrder": 5}, {"code": "ActAct(AFB)", "name": "Actual/Actual (AFB)", "description": "Actual/Actual (AFB)", "displayOrder": 6}, {"code": "30/360", "name": "30/360 (Bond Basis)", "description": "30/360 (Bond Basis)", "displayOrder": 7}, {"code": "30E/360", "name": "30E/360 (Eurobond Basis)", "description": "30E/360 (Eurobond Basis)", "displayOrder": 8}, {"code": "30E/360(ISDA)", "name": "30E/360 (ISDA)", "description": "30E/360 (ISDA)", "displayOrder": 9}, {"code": "Business252", "name": "Business/252", "description": "Business/252 (Brazilian convention)", "displayOrder": 10}, {"code": "1/1", "name": "1/1", "description": "1/1 (unit day count)", "displayOrder": 11}, {"code": "Simple", "name": "Simple", "description": "Simple day count", "displayOrder": 12}], "label": "Day count fractions", "brief": "Day count fraction convention code (e.g. Actual/360, Actual/365, 30/360)."}, {"key": "curve-role", "topic": "products", "shape": "named", "editable": true, "total": 0, "rows": [], "label": "Curve roles", "brief": "Instrument classification for curve-role derivation: deposit, fra, swap, or none."}, {"key": "tenor-kind", "topic": "tenors", "shape": "named", "editable": true, "total": 2, "rows": [{"code": "PERIOD", "name": "Period", "description": "Regular nD/nW/nM/nY duration with a fixed offset from the convention's anchor.", "displayOrder": 1}, {"code": "SPECIAL", "name": "Special", "description": "Label with no fixed offset (e.g. O/N, SPOT, TODAY), resolved by rule per convention.", "displayOrder": 2}], "label": "Tenor kinds", "brief": "Whether a tenor's duration is a fixed period or resolved by special, convention-specific rule."}, {"key": "tenor-unit", "topic": "tenors", "shape": "named", "editable": true, "total": 5, "rows": [{"code": "DAY", "name": "Day", "description": "Period unit measured in days.", "displayOrder": 1}, {"code": "WEEK", "name": "Week", "description": "Period unit measured in weeks.", "displayOrder": 2}, {"code": "MONTH", "name": "Month", "description": "Period unit measured in months.", "displayOrder": 3}, {"code": "YEAR", "name": "Year", "description": "Period unit measured in years.", "displayOrder": 4}, {"code": "NONE", "name": "None", "description": "Sentinel for SPECIAL tenors, which have no fixed unit/multiplier of their own.", "displayOrder": 5}], "label": "Tenor units", "brief": "Period unit for a PERIOD tenor's nD/nW/nM/nY duration, or NONE for a SPECIAL tenor with no fixed offset."}, {"key": "tenor-anchor", "topic": "tenors", "shape": "ordered", "editable": true, "total": 6, "rows": [{"code": "SPOT", "name": "", "description": "Horizon date plus spot days (currency-pair specific).", "displayOrder": 10}, {"code": "TODAY", "name": "", "description": "The horizon date itself.", "displayOrder": 20}, {"code": "TOMORROW", "name": "", "description": "Horizon date plus one calendar day.", "displayOrder": 30}, {"code": "NEAR_LEG", "name": "", "description": "The near-leg date of a short-dated FX swap; not a fixed offset from the horizon date.", "displayOrder": 40}, {"code": "IMM_ROLL", "name": "", "description": "The nearest IMM quarterly roll date; used by the IMM_ROLL resolution algorithm, not a fixed-offset anchor.", "displayOrder": 50}, {"code": "NONE", "name": "", "description": "Sentinel for a tenor convention with no default anchor (every tenor under it carries its own anchor_override, or its resolution_algorithm does not use a fixed anchor at all).", "displayOrder": 60}], "label": "Tenor anchors", "brief": "Reference point (spot, today, tomorrow, near leg, IMM roll) a tenor convention resolves tenors from."}, {"key": "tenor-resolution-algorithm", "topic": "tenors", "shape": "named", "editable": true, "total": 2, "rows": [{"code": "ANCHOR_OFFSET", "name": "Anchor Offset", "description": "Anchor date plus a fixed day/week/month/year offset.", "displayOrder": 1}, {"code": "SCHEDULE_STEP", "name": "Schedule Step", "description": "Anchor plus a calendar offset, then n steps along a named tenor_schedule axis (story Decision D2).", "displayOrder": 2}], "label": "Tenor resolution algorithms", "brief": "How a tenor convention resolves a tenor's anchor/offset — fixed anchor offset vs IMM-quarter roll."}, {"key": "derivation-kind", "topic": "market-data", "shape": "named", "editable": true, "total": 0, "rows": [], "label": "Derivation kinds", "brief": "Classifies a market_series as directly observed or derived by a named mechanism."}, {"key": "series-subclass-code", "topic": "market-data", "shape": "named", "editable": true, "total": 18, "rows": [{"code": "spot", "name": "Spot", "description": "Price of the underlying for immediate or near-immediate delivery: an FX rate, an equity price, a commodity price. The series has no tenor dimension of its own, so each observation names the single point SPOT. FX spot is the canonical case (FX/RATE/EUR/USD), and it is the series that the forward and option series in the same book ultimately reference.", "displayOrder": 1}, {"code": "forward", "name": "Forward", "description": "Price or rate for delivery on a future date. Covers FX forwards and forward points, equity forwards and dividend curves, and commodity forward curves. Unlike spot, a forward series is a curve: each observation names its tenor in point_id, and the value is only meaningful together with that tenor.", "displayOrder": 2}, {"code": "volatility", "name": "Volatility", "description": "Implied volatility quoted on a curve or surface. Covers FX option surfaces, swaption and cap/floor surfaces, and equity and commodity option surfaces. This is the widest subclass: a surface has two coordinates (expiry and strike) where a curve has one, and the point_id encoding is not shared across the asset classes that use it.", "displayOrder": 3}, {"code": "yield", "name": "Yield", "description": "Yield, zero rate, or discount factor curve. The rates-side workhorse: money-market and deposit curves, zero curves, discount curves, and bootstrapped swap curves all land here. Always curve-shaped, always per currency or per currency and index, with point_id naming the pillar. A published index fixing is not a curve and does not belong here; it is an index_fixing.", "displayOrder": 4}, {"code": "basis", "name": "Basis", "description": "Basis spread curve: the difference between two otherwise comparable curves. Covers basis swaps and BMA/SIFMA swaps. A basis quote is meaningful only relative to the two legs it spans, so the qualifier carries both reference names rather than one currency.", "displayOrder": 5}, {"code": "fra", "name": "FRA", "description": "Forward rate agreement and money-market futures curve: the short end of the rates market, quoted as a rate over a forward period rather than as a discount factor.", "displayOrder": 6}, {"code": "xccy", "name": "Cross-Currency Basis", "description": "Cross-currency basis swap curve: the spread paid on one currency leg of a currency swap against that currency's own floating index. It is the curve that makes cross-currency discounting differ from single-currency discounting.", "displayOrder": 7}, {"code": "spread", "name": "Spread", "description": "Credit spread or hazard rate curve per reference entity, and the bond spread quoted over a risk-free or asset-swap curve. Values are quotes in basis points rather than prices.", "displayOrder": 8}, {"code": "index_credit", "name": "Index Credit", "description": "Credit default swap index series and index options: a basket of single-name credit risk traded as one instrument.", "displayOrder": 9}, {"code": "recovery", "name": "Recovery Rate", "description": "Recovery rate assumed on a reference entity in the event of default, per seniority and currency. Scalar per entity, and an input to the hazard-rate bootstrap rather than a traded quote in its own right.", "displayOrder": 10}, {"code": "swap", "name": "Inflation Swap", "description": "Inflation swap curve: zero-coupon or year-on-year, quoted per inflation index. Meaningful only alongside a nominal discounting curve and the index's own fixing history.", "displayOrder": 11}, {"code": "capfloor", "name": "Cap/Floor", "description": "Inflation cap and floor volatility surface: implied volatility on an option on an inflation index, zero-coupon or year-on-year, quoted by strike and expiry. The inflation counterpart of swap; the nominal rates cap/floor and swaption surfaces belong to volatility.", "displayOrder": 12}, {"code": "seasonality", "name": "Seasonality", "description": "Seasonality adjustment factor: the within-year multiplicative pattern that a headline annual figure does not show. Covers inflation seasonality, the monthly adjustment applied to a price index, and commodity shape profiles, which spread an annual power or gas forward price across the delivery period's peak and off-peak hours. A per-period adjustment rather than a traded quote.", "displayOrder": 13}, {"code": "price", "name": "Price", "description": "Bond price, clean or dirty, quoted per bond or per benchmark issue. The bond asset class's primary observed market data, alongside yield-to-maturity.", "displayOrder": 14}, {"code": "correlation", "name": "Correlation", "description": "Correlation matrix entry across underlyings, currencies, or credit names. Referenced by multi-asset and cross-currency structures whose payoff depends on the joint behaviour of two or more underlyings. Kept in the taxonomy even though no single asset class owns it, because ORE emits correlation market data and an import carrying it must have a home.", "displayOrder": 15}, {"code": "prepayment", "name": "Prepayment", "description": "Conditional prepayment rate: the rate at which borrowers repay a mortgage or callable debt ahead of schedule. Quoted per pool or per instrument, and a primary input to the valuation of mortgage-backed and callable structures, where the timing of the cashflows is uncertain rather than their amount. Unlike recovery, which is a loss given default, prepayment is an assumption about early redemption.", "displayOrder": 16}, {"code": "transition_probability", "name": "Transition Probability", "description": "Probability that a rated entity moves between two credit ratings, or defaults, over a stated horizon. Quoted per rating provider and per pair of ratings, and read as a matrix rather than a single curve. It is the ratings-basis alternative to a hazard rate curve: both describe the likelihood of default, but a transition matrix also models migration between the non-default states.", "displayOrder": 17}, {"code": "index_fixing", "name": "Index Fixing", "description": "Published reference rate for one index on one date, such as a money-market fixing or an inflation print. One value per date and no pillars, which is what separates it from yield: an index fixing is observed, not bootstrapped, and a curve is built from a history of them rather than the other way round. The index is named in the qualifier.", "displayOrder": 18}], "label": "Series subclasses", "brief": "Fine-grained market series subclass taxonomy (spot, forward, volatility, yield, basis, fra, xccy, spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation)."}];
+
+  /* The shared label system: the badge catalogue and the mappings from a code domain and a code to a badge, as
+     the dq component holds them. The code domain of a classification list is its entity name. */
+  const BADGES = {"__unmapped__": {"name": "Unmapped", "bg": "#f97316", "fg": "#ffffff"}, "active": {"name": "Active", "bg": "#22c55e", "fg": "#ffffff"}, "inactive": {"name": "Inactive", "bg": "#6b7280", "fg": "#ffffff"}, "frozen": {"name": "Frozen", "bg": "#eab308", "fg": "#ffffff"}, "pending": {"name": "Pending", "bg": "#3b82f6", "fg": "#ffffff"}, "type_virtual": {"name": "Virtual", "bg": "#7c3aed", "fg": "#ffffff"}, "type_physical": {"name": "Physical", "bg": "#3b82f6", "fg": "#ffffff"}, "login_online": {"name": "Online", "bg": "#22c55e", "fg": "#ffffff"}, "login_recent": {"name": "Recent", "bg": "#3b82f6", "fg": "#ffffff"}, "login_old": {"name": "Old", "bg": "#eab308", "fg": "#ffffff"}, "login_never": {"name": "Never", "bg": "#6b7280", "fg": "#ffffff"}, "account_locked": {"name": "Locked", "bg": "#ef4444", "fg": "#ffffff"}, "account_unlocked": {"name": "Unlocked", "bg": "#22c55e", "fg": "#ffffff"}, "outcome_success": {"name": "Success", "bg": "#22c55e", "fg": "#ffffff"}, "outcome_failed": {"name": "Failed", "bg": "#ef4444", "fg": "#ffffff"}, "outcome_no_reply": {"name": "No Reply", "bg": "#eab308", "fg": "#ffffff"}, "state_running": {"name": "Running", "bg": "#0ea5e9", "fg": "#ffffff"}, "state_done": {"name": "Done", "bg": "#22c55e", "fg": "#ffffff"}, "policy_skip": {"name": "Skip", "bg": "#eab308", "fg": "#ffffff"}, "policy_queue": {"name": "Queue", "bg": "#3b82f6", "fg": "#ffffff"}, "policy_fail": {"name": "Fail", "bg": "#ef4444", "fg": "#ffffff"}, "fsm_draft": {"name": "Draft", "bg": "#6b7280", "fg": "#ffffff"}, "fsm_suspended": {"name": "Suspended", "bg": "#eab308", "fg": "#ffffff"}, "archived": {"name": "Archived", "bg": "#ef4444", "fg": "#ffffff"}, "origin_primary": {"name": "Primary", "bg": "#3b82f6", "fg": "#ffffff"}, "origin_derived": {"name": "Derived", "bg": "#8b5cf6", "fg": "#ffffff"}, "nature_actual": {"name": "Actual", "bg": "#22c55e", "fg": "#ffffff"}, "nature_estimated": {"name": "Estimated", "bg": "#eab308", "fg": "#ffffff"}, "nature_simulated": {"name": "Simulated", "bg": "#ec4899", "fg": "#ffffff"}, "treatment_raw": {"name": "Raw", "bg": "#6b7280", "fg": "#ffffff"}, "treatment_cleaned": {"name": "Cleaned", "bg": "#0ea5e9", "fg": "#ffffff"}, "treatment_enriched": {"name": "Enriched", "bg": "#a855f7", "fg": "#ffffff"}, "tenant_bootstrapping": {"name": "Bootstrapping", "bg": "#0ea5e9", "fg": "#ffffff"}, "account_type_user": {"name": "User", "bg": "#3b82f6", "fg": "#ffffff"}, "account_type_service": {"name": "Service", "bg": "#14b8a6", "fg": "#ffffff"}, "account_type_algorithm": {"name": "Algorithm", "bg": "#eab308", "fg": "#ffffff"}, "account_type_llm": {"name": "LLM", "bg": "#7c3aed", "fg": "#ffffff"}, "classification_major": {"name": "Major", "bg": "#3b82f6", "fg": "#ffffff"}, "classification_minor": {"name": "Minor", "bg": "#14b8a6", "fg": "#ffffff"}, "classification_exotic": {"name": "Exotic", "bg": "#7c3aed", "fg": "#ffffff"}, "classification_commodity": {"name": "Commodity", "bg": "#0ea5e9", "fg": "#ffffff"}, "nature_fiat": {"name": "Fiat", "bg": "#3b82f6", "fg": "#ffffff"}, "nature_commodity_currency": {"name": "Commodity Currency", "bg": "#eab308", "fg": "#ffffff"}, "nature_synthetic": {"name": "Synthetic", "bg": "#8b5cf6", "fg": "#ffffff"}, "nature_supranational": {"name": "Supranational", "bg": "#14b8a6", "fg": "#ffffff"}, "tier_g10": {"name": "G10", "bg": "#22c55e", "fg": "#ffffff"}, "tier_emerging": {"name": "Emerging", "bg": "#3b82f6", "fg": "#ffffff"}, "tier_exotic": {"name": "Exotic Tier", "bg": "#7c3aed", "fg": "#ffffff"}, "tier_frontier": {"name": "Frontier", "bg": "#eab308", "fg": "#ffffff"}, "tier_historical": {"name": "Historical", "bg": "#6b7280", "fg": "#ffffff"}, "asset_class_fx": {"name": "FX", "bg": "#3b82f6", "fg": "#ffffff"}, "asset_class_interest_rates": {"name": "Interest Rate", "bg": "#14b8a6", "fg": "#ffffff"}, "asset_class_credit": {"name": "Credit", "bg": "#7c3aed", "fg": "#ffffff"}, "asset_class_equity": {"name": "Equity", "bg": "#0ea5e9", "fg": "#ffffff"}, "asset_class_commodity": {"name": "Commodity AC", "bg": "#f97316", "fg": "#ffffff"}, "asset_class_inflation": {"name": "Inflation", "bg": "#ec4899", "fg": "#ffffff"}, "asset_class_bond": {"name": "Bond", "bg": "#6366f1", "fg": "#ffffff"}, "calendar_type_public_holiday": {"name": "Public Holiday", "bg": "#3b82f6", "fg": "#ffffff"}, "calendar_type_central_bank_meeting": {"name": "Central Bank Meeting", "bg": "#8b5cf6", "fg": "#ffffff"}, "calendar_type_financial_centre": {"name": "Financial Centre", "bg": "#22c55e", "fg": "#ffffff"}, "calendar_type_data_release": {"name": "Data Release", "bg": "#eab308", "fg": "#ffffff"}, "calendar_type_other": {"name": "Other", "bg": "#6b7280", "fg": "#ffffff"}, "book_purpose_type_funding": {"name": "Funding", "bg": "#3b82f6", "fg": "#ffffff"}, "book_purpose_type_remittance_target": {"name": "Remittance Target", "bg": "#14b8a6", "fg": "#ffffff"}, "book_purpose_type_reserve": {"name": "Reserve", "bg": "#7c3aed", "fg": "#ffffff"}, "book_purpose_type_sales": {"name": "Sales", "bg": "#8b5cf6", "fg": "#ffffff"}, "book_purpose_type_sweep_target": {"name": "Sweep Target", "bg": "#a855f7", "fg": "#ffffff"}, "book_purpose_type_test": {"name": "Test", "bg": "#6b7280", "fg": "#ffffff"}, "book_purpose_type_trading": {"name": "Trading", "bg": "#ec4899", "fg": "#ffffff"}, "book_purpose_type_wash": {"name": "Wash", "bg": "#6366f1", "fg": "#ffffff"}, "book_purpose_type_write_off": {"name": "Write-off", "bg": "#0ea5e9", "fg": "#ffffff"}, "business_unit_type_branch": {"name": "Branch", "bg": "#3b82f6", "fg": "#ffffff"}, "business_unit_type_business_area": {"name": "Business Area", "bg": "#14b8a6", "fg": "#ffffff"}, "business_unit_type_cost_centre": {"name": "Cost Centre", "bg": "#7c3aed", "fg": "#ffffff"}, "business_unit_type_desk": {"name": "Desk", "bg": "#8b5cf6", "fg": "#ffffff"}, "business_unit_type_division": {"name": "Division", "bg": "#a855f7", "fg": "#ffffff"}, "contact_type_billing": {"name": "Billing", "bg": "#3b82f6", "fg": "#ffffff"}, "contact_type_legal": {"name": "Legal", "bg": "#14b8a6", "fg": "#ffffff"}, "contact_type_operations": {"name": "Operations", "bg": "#7c3aed", "fg": "#ffffff"}, "contact_type_settlement": {"name": "Settlement", "bg": "#8b5cf6", "fg": "#ffffff"}, "ledger_feed_type_automatic": {"name": "Automatic", "bg": "#3b82f6", "fg": "#ffffff"}, "ledger_feed_type_manual": {"name": "Manual", "bg": "#14b8a6", "fg": "#ffffff"}, "ledger_feed_type_none": {"name": "No Feed", "bg": "#6b7280", "fg": "#ffffff"}, "leg_type_asset_swap": {"name": "Asset Swap", "bg": "#3b82f6", "fg": "#ffffff"}, "leg_type_cms": {"name": "CMS", "bg": "#14b8a6", "fg": "#ffffff"}, "leg_type_cms_spread": {"name": "CMS Spread", "bg": "#7c3aed", "fg": "#ffffff"}, "leg_type_cpi": {"name": "CPI", "bg": "#8b5cf6", "fg": "#ffffff"}, "leg_type_digital_cms": {"name": "Digital CMS", "bg": "#a855f7", "fg": "#ffffff"}, "leg_type_fixed": {"name": "Fixed", "bg": "#ec4899", "fg": "#ffffff"}, "leg_type_floating": {"name": "Floating", "bg": "#6366f1", "fg": "#ffffff"}, "leg_type_ois": {"name": "OIS", "bg": "#0ea5e9", "fg": "#ffffff"}, "leg_type_yoy": {"name": "YoY", "bg": "#64748b", "fg": "#ffffff"}, "leg_type_zero_coupon": {"name": "Zero Coupon", "bg": "#14b8a6", "fg": "#ffffff"}, "purpose_type_client_reporting": {"name": "Client Reporting", "bg": "#3b82f6", "fg": "#ffffff"}, "purpose_type_internal": {"name": "Internal", "bg": "#14b8a6", "fg": "#ffffff"}, "purpose_type_regulatory": {"name": "Regulatory", "bg": "#7c3aed", "fg": "#ffffff"}, "purpose_type_risk": {"name": "Risk", "bg": "#8b5cf6", "fg": "#ffffff"}, "rounding_type_ceiling": {"name": "Ceiling", "bg": "#3b82f6", "fg": "#ffffff"}, "rounding_type_closest": {"name": "Closest", "bg": "#14b8a6", "fg": "#ffffff"}, "rounding_type_down": {"name": "Down", "bg": "#7c3aed", "fg": "#ffffff"}, "rounding_type_floor": {"name": "Floor", "bg": "#8b5cf6", "fg": "#ffffff"}, "rounding_type_up": {"name": "Up", "bg": "#a855f7", "fg": "#ffffff"}, "tenor_anchor_imm_roll": {"name": "IMM Roll", "bg": "#3b82f6", "fg": "#ffffff"}, "tenor_anchor_near_leg": {"name": "Near Leg", "bg": "#14b8a6", "fg": "#ffffff"}, "tenor_anchor_none": {"name": "No Anchor", "bg": "#6b7280", "fg": "#ffffff"}, "tenor_anchor_spot": {"name": "Spot", "bg": "#7c3aed", "fg": "#ffffff"}, "tenor_anchor_today": {"name": "Today", "bg": "#8b5cf6", "fg": "#ffffff"}, "tenor_anchor_tomorrow": {"name": "Tomorrow", "bg": "#a855f7", "fg": "#ffffff"}, "tenant_type_system": {"name": "System", "bg": "#475569", "fg": "#ffffff"}, "tenant_type_production": {"name": "Production", "bg": "#2563eb", "fg": "#ffffff"}, "tenant_type_evaluation": {"name": "Evaluation", "bg": "#7c3aed", "fg": "#ffffff"}, "tenant_type_automation": {"name": "Automation", "bg": "#9ca3af", "fg": "#ffffff"}};
+  const BADGE_MAPS = {"party_status": {"Active": "active", "Inactive": "inactive", "Suspended": "frozen"}, "party_type": {"Internal": "account_type_service", "Bank": "classification_major", "CorporateGroup": "origin_primary", "HedgeFund": "classification_exotic", "Corporate": "classification_minor", "CentralBank": "treatment_enriched", "Exchange": "state_running", "Individual": "nature_simulated"}, "book_status": {"Active": "active", "Closed": "inactive", "Frozen": "frozen"}, "regulatory_book_type": {"Trading": "pending", "Banking": "inactive"}, "is_sweepable": {"true": "active", "false": "inactive"}, "portfolio_status": {"Active": "active", "Inactive": "inactive", "Closed": "inactive", "Frozen": "frozen", "Pending": "pending"}, "portfolio_type": {"Virtual": "type_virtual", "Physical": "type_physical"}, "book_type": {"Trading": "type_virtual", "Banking": "type_physical"}, "login_status": {"Online": "login_online", "Recent": "login_recent", "Old": "login_old", "Never": "login_never"}, "account_locked": {"Locked": "account_locked", "Unlocked": "account_unlocked"}, "account_online": {"Yes": "login_online", "No": "inactive"}, "currency_pair_classification": {"major": "classification_major", "minor": "classification_minor", "exotic": "classification_exotic", "commodity": "classification_commodity"}, "tenant_status": {"bootstrapping": "tenant_bootstrapping", "active": "active", "suspended": "frozen", "terminated": "archived"}, "currency_pair_convention_business_day_convention": {"Following": "active", "ModifiedFollowing": "origin_primary", "Preceding": "nature_simulated", "ModifiedPreceding": "account_type_service", "Unadjusted": "inactive", "HalfMonthModifiedFollowing": "tenant_bootstrapping", "Nearest": "treatment_enriched"}, "currency_pair_convention_spot_relative": {"Yes": "login_online", "No": "inactive"}, "currency_pair_convention_end_of_month": {"Yes": "login_online", "No": "inactive"}, "compute_task_outcome": {"Success": "outcome_success", "Failed": "outcome_failed", "No Reply": "outcome_no_reply", "Pending": "pending"}, "compute_task_state": {"Running": "state_running", "Unsent": "pending", "Done": "state_done", "Inactive": "inactive"}, "report_concurrency_policy": {"Skip": "policy_skip", "Queue": "policy_queue", "Fail": "policy_fail"}, "report_fsm_state": {"Active": "active", "Draft": "fsm_draft", "Suspended": "fsm_suspended", "Archived": "archived"}, "dq_origin": {"Primary": "origin_primary", "Derived": "origin_derived"}, "dq_nature": {"Actual": "nature_actual", "Estimated": "nature_estimated", "Simulated": "nature_simulated"}, "workspace_status": {"active": "active", "archived": "archived"}, "dq_treatment": {"Raw": "treatment_raw", "Cleaned": "treatment_cleaned", "Enriched": "treatment_enriched"}, "account_type": {"user": "account_type_user", "service": "account_type_service", "algorithm": "account_type_algorithm", "llm": "account_type_llm"}, "monetary_nature": {"fiat": "nature_fiat", "commodity": "nature_commodity_currency", "synthetic": "nature_synthetic", "supranational": "nature_supranational"}, "currency_market_tier": {"g10": "tier_g10", "emerging": "tier_emerging", "exotic": "tier_exotic", "frontier": "tier_frontier", "historical": "tier_historical"}, "tenor_kind": {"PERIOD": "type_physical", "SPECIAL": "type_virtual"}, "tenor_unit": {"DAY": "origin_primary", "WEEK": "nature_simulated", "MONTH": "treatment_enriched", "YEAR": "state_running", "NONE": "inactive"}, "crm_enabled": {"true": "active", "false": "inactive"}, "calendar_type": {"public_holiday": "calendar_type_public_holiday", "central_bank_meeting": "calendar_type_central_bank_meeting", "financial_centre": "calendar_type_financial_centre", "data_release": "calendar_type_data_release", "other": "calendar_type_other"}, "book_purpose_type": {"Funding": "book_purpose_type_funding", "RemittanceTarget": "book_purpose_type_remittance_target", "Reserve": "book_purpose_type_reserve", "Sales": "book_purpose_type_sales", "SweepTarget": "book_purpose_type_sweep_target", "Test": "book_purpose_type_test", "Trading": "book_purpose_type_trading", "Wash": "book_purpose_type_wash", "WriteOff": "book_purpose_type_write_off"}, "business_unit_type": {"BRANCH": "business_unit_type_branch", "BUSINESS_AREA": "business_unit_type_business_area", "COST_CENTRE": "business_unit_type_cost_centre", "DESK": "business_unit_type_desk", "DIVISION": "business_unit_type_division"}, "contact_type": {"Billing": "contact_type_billing", "Legal": "contact_type_legal", "Operations": "contact_type_operations", "Settlement": "contact_type_settlement"}, "ledger_feed_type": {"Automatic": "ledger_feed_type_automatic", "Manual": "ledger_feed_type_manual", "None": "ledger_feed_type_none"}, "leg_type": {"AssetSwap": "leg_type_asset_swap", "CMS": "leg_type_cms", "CMSSpread": "leg_type_cms_spread", "CPI": "leg_type_cpi", "DigitalCMS": "leg_type_digital_cms", "Fixed": "leg_type_fixed", "Floating": "leg_type_floating", "OIS": "leg_type_ois", "YoY": "leg_type_yoy", "ZeroCoupon": "leg_type_zero_coupon"}, "purpose_type": {"ClientReporting": "purpose_type_client_reporting", "Internal": "purpose_type_internal", "Regulatory": "purpose_type_regulatory", "Risk": "purpose_type_risk"}, "rounding_type": {"Ceiling": "rounding_type_ceiling", "Closest": "rounding_type_closest", "Down": "rounding_type_down", "Floor": "rounding_type_floor", "Up": "rounding_type_up"}, "tenor_anchor": {"IMM_ROLL": "tenor_anchor_imm_roll", "NEAR_LEG": "tenor_anchor_near_leg", "NONE": "tenor_anchor_none", "SPOT": "tenor_anchor_spot", "TODAY": "tenor_anchor_today", "TOMORROW": "tenor_anchor_tomorrow"}, "asset_class": {"fx": "asset_class_fx", "interest_rates": "asset_class_interest_rates", "credit": "asset_class_credit", "equity": "asset_class_equity", "commodity": "asset_class_commodity", "inflation": "asset_class_inflation", "bond": "asset_class_bond"}, "is_virtual": {"true": "active", "false": "inactive"}};
+
+  const TOPICS = [
+    ['currencies', 'Currencies'], ['calendars', 'Calendars'], ['parties', 'Parties'],
+    ['books', 'Books and portfolios'], ['products', 'Products and ORE codes'],
+    ['tenors', 'Tenors'], ['market-data', 'Market data'],
+  ];
+
+  const PEOPLE = {
+    writer: { name: 'Priya Natarajan', initials: 'PN', place: 'Acme Corporation · Acme Corporation Plc', label: 'Can change reference data', canWrite: true },
+    reader: { name: 'Daniel Okafor', initials: 'DO', place: 'Acme Corporation · Acme London', label: 'Reads reference data', canWrite: false },
+  };
+
+  const MENU = [
+    { id: 'home', label: 'Home' }, { id: 'refdata', label: 'Reference data' },
+    { id: 'marketdata', label: 'Market data', soon: true }, { id: 'trading', label: 'Trading', soon: true },
+    { id: 'reporting', label: 'Reporting', soon: true },
+  ];
+
+  const AMEND_REASONS = [
+    ['common.non_material_update', 'Non-material update (Touch)', false],
+    ['common.rectification', 'User/Booking Error', false],
+    ['common.stale_data', 'Data not updated within required liquidity horizon', false],
+    ['common.regulatory', 'Mandatory compliance adjustment', true],
+    ['common.other', 'Exceptional (requires audit note)', true],
+  ];
+  const DELETE_REASONS = [
+    ['common.rectification', 'User/Booking Error', false],
+    ['common.duplicate', 'Duplicate Record', false],
+    ['common.other', 'Exceptional (requires audit note)', true],
+  ];
+  const REASON_TEXT = Object.fromEntries([...AMEND_REASONS, ...DELETE_REASONS, ['system.new_record', 'New record created during normal operations']].map((r) => [r[0], r[1]]));
+
+  const state = { persona: 'writer', screen: 'home', list: null, code: null, tab: 'details', filter: '', search: '', reordering: null, version: null, from: null, onlyChanges: false };
+
+  /* History lives here: every row starts at version 1, written by the seed. A few rows carry later versions so the
+     History tab has something to compare on first open; any edit made in the prototype adds another. */
+  const history = {};
+  function fieldsOf(list, row) {
+    const f = [['Code', row.code]];
+    if (list.shape === 'named') f.push(['Name', row.name]);
+    f.push(['Description', row.description]);
+    if (list.shape !== 'plain') f.push(['Display order', row.displayOrder == null ? '' : String(row.displayOrder)]);
+    return f;
+  }
+  function historyOf(list, row) {
+    const key = list.key + '/' + row.code;
+    if (!history[key]) {
+      history[key] = [{ version: 1, by: 'ores_iam_service', performed: 'ores_refdata_service', at: '2026-10-04 22:48', reason: 'system.new_record', note: 'Seeded with the tenant', fields: fieldsOf(list, row) }];
+    }
+    return history[key];
+  }
+  function seedHistory() {
+    const fiat = find('monetary-nature', 'fiat');
+    if (fiat) {
+      const h = historyOf(list('monetary-nature'), fiat);
+      const before = { ...fiat, description: 'Government-issued currency not backed by a commodity' };
+      h[0].fields = fieldsOf(list('monetary-nature'), before);
+      h.push({ version: 2, by: 'tenant_admin', at: '2026-10-04 23:12', reason: 'common.non_material_update', note: 'Clarified the wording', fields: fieldsOf(list('monetary-nature'), fiat) });
+    }
+    const up = find('rounding-type', LISTS.find((l) => l.key === 'rounding-type').rows[0]?.code);
+    if (up) {
+      const l = list('rounding-type');
+      const h = historyOf(l, up);
+      h[0].fields = fieldsOf(l, { ...up, name: up.name.toUpperCase(), displayOrder: 5 });
+      h.push({ version: 2, by: 'priya', at: '2026-10-03 16:20', reason: 'common.rectification', note: 'Name was in capitals', fields: fieldsOf(l, { ...up, displayOrder: 5 }) });
+      h.push({ version: 3, by: 'priya', at: '2026-10-04 09:05', reason: 'common.non_material_update', note: 'Moved to the top', fields: fieldsOf(l, up) });
+    }
+  }
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const list = (key) => LISTS.find((l) => l.key === key);
+  const find = (key, code) => list(key)?.rows.find((r) => r.code === code);
+  const canWrite = (l) => PEOPLE[state.persona].canWrite && l.editable;
+  const domainOf = (l) => l.key.replace(/-/g, '_');
+  const labelled = (l) => BADGE_MAPS[domainOf(l)] !== undefined;
+  function badgeOf(l, code) { const m = BADGE_MAPS[domainOf(l)]; return m && m[code] ? m[code] : '__unmapped__'; }
+  function badge(code) {
+    const d = BADGES[code] || BADGES.__unmapped__;
+    return '<span class="chip" style="background:' + esc(d.bg) + ';border-color:' + esc(d.bg) + ';color:' + esc(d.fg) + '">' + esc(d.name) + '</span>';
+  }
+
+  function go(screen, extra) {
+    Object.assign(state, { screen, filter: '', reordering: null, version: null }, extra || {});
+    writeHash();
+    render();
+    window.scrollTo({ top: 0 });
+  }
+  function writeHash() {
+    const p = new URLSearchParams({ persona: state.persona, screen: state.screen });
+    if (state.list) p.set('list', state.list);
+    if (state.code) p.set('code', state.code);
+    if (state.screen === 'row') p.set('tab', state.tab);
+    history_replace('#' + p.toString());
+  }
+  function history_replace(h) { try { window.history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers */ } }
+  function readHash() {
+    const p = new URLSearchParams(location.hash.slice(1));
+    if (p.get('persona') in PEOPLE) state.persona = p.get('persona');
+    const s = p.get('screen');
+    if (['home', 'refdata', 'classifications', 'list', 'row'].includes(s)) state.screen = s;
+    if (p.get('list') && list(p.get('list'))) state.list = p.get('list');
+    if (p.get('code')) state.code = p.get('code');
+    if (p.get('tab') === 'history') state.tab = 'history';
+    if ((state.screen === 'list' || state.screen === 'row') && !state.list) state.screen = 'classifications';
+    if (state.screen === 'row' && !find(state.list, state.code)) state.screen = 'list';
+  }
+
+  function toast(text) {
+    const t = $('toast'); t.textContent = text; t.hidden = false;
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+
+  /* Shell */
+  function renderShell() {
+    const me = PEOPLE[state.persona];
+    $('place').textContent = me.place;
+    $('me').innerHTML = '<span class="avatar">' + esc(me.initials) + '</span><span class="hide-sm">' + esc(me.name) + '</span>';
+    const area = state.screen === 'home' ? 'home' : 'refdata';
+    $('menu').innerHTML = MENU.map((m) => '<button data-menu="' + m.id + '"' + (m.soon ? ' class="soon" title="Not in this release yet"' : '') + (m.id === area ? ' aria-current="page"' : '') + '>' + esc(m.label) + '</button>').join('');
+    $('persona-seg').innerHTML = Object.entries(PEOPLE).map(([id, p]) => '<button data-persona="' + id + '" aria-pressed="' + (id === state.persona) + '">' + esc(p.label) + '</button>').join('');
+  }
+
+  function crumbs(parts) {
+    return '<nav class="crumbs" aria-label="Breadcrumb">' + parts.map((p, i) => (p.go ? '<button data-go="' + p.go + '"' + (p.list ? ' data-list="' + esc(p.list) + '"' : '') + '>' + esc(p.label) + '</button>' : '<span>' + esc(p.label) + '</span>') + (i < parts.length - 1 ? '<span>›</span>' : '')).join('') + '</nav>';
+  }
+
+  /* Home */
+  function renderHome() {
+    const me = PEOPLE[state.persona];
+    return '<div class="head"><div><h1>Welcome back, ' + esc(me.name.split(' ')[0]) + '</h1><p class="muted">You are working for ' + esc(me.place.split(' · ')[1]) + '.</p></div></div>' +
+      '<div class="tiles">' +
+        tile('Reference data', 'Currencies, calendars, conventions and the code lists that classify them.', 'refdata') +
+        tile('Security', 'Your password and where you are signed in.') +
+        tile('My access', 'The roles you hold and what they let you do.') +
+      '</div>' +
+      '<p class="section-title">Coming later</p>' +
+      '<div class="tiles">' + ['Market data', 'Trading', 'Reporting'].map((t) => '<div class="tile soon"><span class="t">' + t + '</span><span class="muted">Not in this release yet.</span></div>').join('') + '</div>';
+  }
+  function tile(title, body, to) {
+    return '<button class="tile"' + (to ? ' data-go="' + to + '"' : ' data-noop') + '><span class="t">' + esc(title) + '</span><span class="muted">' + esc(body) + '</span></button>';
+  }
+
+  /* Reference data, the area */
+  function renderArea() {
+    const n = LISTS.length;
+    return crumbs([{ label: 'Reference data' }]) +
+      '<div class="head"><div><h1>Reference data</h1><p class="muted">The data every trade, curve and report is built on.</p></div></div>' +
+      '<div class="tiles">' +
+        '<button class="tile" data-go="classifications"><span class="t">Classifications</span><span class="muted">The ' + n + ' short code lists that classify reference data: types, statuses and ORE codes.</span></button>' +
+        ['Currencies', 'Currency pairs', 'Desk groups', 'Holiday calendars'].map((t) => '<div class="tile soon"><span class="t">' + t + '</span><span class="muted">Designed; not built yet.</span></div>').join('') +
+      '</div>';
+  }
+
+  /* Classifications, the index of lists */
+  function highlight(text, q) {
+    if (!q) return esc(text);
+    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    return i < 0 ? esc(text) : esc(text.slice(0, i)) + '<mark class="hit">' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+  function renderIndex() {
+    const q = state.search.trim();
+    const cards = TOPICS.map(([id, title]) => {
+      const lists = LISTS.filter((l) => l.topic === id && (!q || l.label.toLowerCase().includes(q.toLowerCase())));
+      if (!lists.length) return '';
+      return '<section class="card topic"><h2>' + esc(title) + '</h2><div class="list">' + lists.map((l) =>
+        '<div class="row" role="link" tabindex="0" data-go="list" data-list="' + l.key + '"><span class="grow">' + highlight(l.label, q) + '</span>' +
+        (l.editable ? '' : '<span class="chip view" title="ORE writes these spellings exactly">Read-only</span>') +
+        '<span class="count">' + l.total + '</span></div>').join('') + '</div></section>';
+    }).join('');
+    return crumbs([{ label: 'Reference data', go: 'refdata' }, { label: 'Classifications' }]) +
+      '<div class="head"><div><h1>Classifications</h1><p class="muted">The short code lists that classify reference data. Open one to keep its rows correct.</p></div></div>' +
+      '<div class="card toolbar" style="border-bottom:1px solid var(--line)"><input type="search" id="search" placeholder="Find a list…" value="' + esc(state.search) + '" aria-label="Find a list"></div>' +
+      (cards || '<p class="muted">No list is called that.</p>').replace(/^/, '<div class="topics">') + '</div>';
+  }
+
+  /* One list */
+  function renderList() {
+    const l = list(state.list);
+    const ordered = l.shape !== 'plain';
+    const writer = canWrite(l);
+    const rows = state.reordering || l.rows;
+    const q = state.filter.trim().toLowerCase();
+    const shown = state.reordering ? rows : rows.filter((r) => !q || (r.code + ' ' + r.name + ' ' + r.description).toLowerCase().includes(q));
+    const head = '<tr><th>Code</th>' + (l.shape === 'named' ? '<th>Name</th>' : '') + (labelled(l) ? '<th>Label</th>' : '') + '<th>Description</th>' + (ordered ? '<th class="num">Order</th>' : '') + (state.reordering ? '<th></th>' : '') + '</tr>';
+    const body = shown.map((r, i) => '<tr data-row="' + esc(r.code) + '"><td class="code">' + highlight(r.code, state.filter.trim()) + '</td>' +
+      (l.shape === 'named' ? '<td>' + highlight(r.name, state.filter.trim()) + '</td>' : '') +
+      (labelled(l) ? '<td>' + badge(badgeOf(l, r.code)) + '</td>' : '') +
+      '<td class="muted">' + highlight(r.description, state.filter.trim()) + '</td>' +
+      (ordered ? '<td class="num">' + (state.reordering ? (i + 1) * 10 : esc(r.displayOrder ?? '')) + '</td>' : '') +
+      (state.reordering ? '<td class="grip"><button class="mv" data-mv="-1" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move up">↑</button> <button class="mv" data-mv="1" data-i="' + i + '"' + (i === shown.length - 1 ? ' disabled' : '') + ' aria-label="Move down">↓</button></td>' : '') + '</tr>').join('');
+    const actions = writer && !state.reordering ? '<div class="actions">' + (ordered ? '<button class="btn" data-act="reorder">Reorder</button>' : '') + '<button class="btn primary" data-act="add">Add row</button></div>' : '';
+    return crumbs([{ label: 'Reference data', go: 'refdata' }, { label: 'Classifications', go: 'classifications' }, { label: l.label }]) +
+      '<div class="head"><div><h1>' + esc(l.label) + '</h1><p class="muted">' + esc(l.brief) + '</p></div>' + actions + '</div>' +
+      (l.editable ? '' : '<div class="ro">ORE documents write these spellings exactly, so this list is read-only here.</div>') +
+      (l.editable && !PEOPLE[state.persona].canWrite ? '<div class="ro">You can read this list. Changing it needs the reference data permissions.</div>' : '') +
+      (state.reordering ? '<div class="banner"><span>Move the rows into the order people should see them. Nothing is saved until you choose Save order.</span><span class="actions"><button class="btn" data-act="cancel-order">Cancel</button><button class="btn primary" data-act="save-order">Save order</button></span></div>' : '') +
+      '<section class="card' + (state.reordering ? ' reorder' : '') + '">' +
+        (state.reordering ? '' : '<div class="toolbar"><input type="search" id="filter" placeholder="Filter rows…" value="' + esc(state.filter) + '" aria-label="Filter rows"></div>') +
+        '<div class="table-wrap"><table><thead>' + head + '</thead><tbody>' + (body || '<tr><td colspan="5" class="muted">' + (l.rows.length ? 'No row matches.' : 'This list has no rows yet.') + '</td></tr>') + '</tbody></table></div>' +
+        '<div class="foot"><span>' + (l.total > l.rows.length ? 'Showing the first ' + l.rows.length + ' of ' + l.total + ' rows' : shown.length + ' of ' + l.rows.length + ' rows') + '</span>' + (state.reordering ? '' : '<span>Click a row to open it</span>') + '</div>' +
+      '</section>';
+  }
+
+  /* One row */
+  function renderRow() {
+    const l = list(state.list);
+    const r = find(state.list, state.code);
+    const h = historyOf(l, r);
+    const writer = canWrite(l);
+    const tabs = '<div class="tabs" role="tablist">' + [['details', 'Details'], ['history', 'History (' + h.length + ')']].map(([id, label]) => '<button role="tab" data-tab="' + id + '" aria-selected="' + (state.tab === id) + '">' + label + '</button>').join('') + '</div>';
+    const actions = writer ? '<div class="actions"><button class="btn" data-act="edit">Edit</button><button class="btn danger" data-act="remove">Remove</button></div>' : '';
+    const last = h[h.length - 1];
+    const details = '<section class="card pad"><dl>' + fieldsOf(l, r).map(([k, v]) => '<div><dt>' + esc(k) + '</dt><dd' + (k === 'Code' ? ' class="code"' : '') + '>' + esc(v || '—') + '</dd></div>').join('') +
+      (labelled(l) ? '<div><dt>Label</dt><dd>' + badge(badgeOf(l, r.code)) + '</dd></div>' : '') +
+      '<div><dt>Last changed</dt><dd>' + esc(last.at) + ' by ' + esc(last.by) + '</dd></div><div><dt>Why</dt><dd>' + esc(REASON_TEXT[last.reason] || last.reason) + (last.note ? ' — ' + esc(last.note) : '') + '</dd></div></dl></section>';
+    return crumbs([{ label: 'Reference data', go: 'refdata' }, { label: 'Classifications', go: 'classifications' }, { label: l.label, go: 'list', list: l.key }, { label: r.code }]) +
+      '<div class="head"><div><h1>' + esc(r.name || r.code) + (labelled(l) ? ' ' + badge(badgeOf(l, r.code)) : '') + '</h1><p class="muted">' + esc(l.label) + ' · <span class="code">' + esc(r.code) + '</span> · version ' + last.version + '</p></div>' + actions + '</div>' +
+      tabs + (state.tab === 'history' ? renderHistory(l, r, h, writer) : details);
+  }
+
+  /* The changed characters of a value, the way the server's diff spans mark them: the common prefix and suffix
+     stay plain, the middle is marked on the old line and on the new one. */
+  function spans(before, after) {
+    let p = 0; while (p < before.length && p < after.length && before[p] === after[p]) p++;
+    let s = 0; while (s < before.length - p && s < after.length - p && before[before.length - 1 - s] === after[after.length - 1 - s]) s++;
+    const mark = (t) => esc(t.slice(0, p)) + (t.slice(p, t.length - s) ? '<mark>' + esc(t.slice(p, t.length - s)) + '</mark>' : '') + esc(t.slice(t.length - s));
+    return { before: mark(before), after: mark(after) };
+  }
+  function ago(at) { return at === 'Just now' ? 'just now' : at; }
+  function renderHistory(l, r, h, writer) {
+    const newest = h[h.length - 1].version;
+    const to = h.find((v) => v.version === state.version) || h[h.length - 1];
+    const fromVersion = state.from !== null && state.from < to.version ? state.from : to.version - 1;
+    const from = h.find((v) => v.version === fromVersion);
+    const timeline = [...h].reverse().map((v) =>
+      '<button class="version" data-version="' + v.version + '" aria-selected="' + (v.version === to.version) + '">' +
+        '<span class="v">v' + v.version + ' · ' + esc(ago(v.at)) + (v.version === newest ? ' <span class="chip active">current</span>' : '') + '</span>' +
+        '<span class="muted">Modified by ' + esc(v.by) + '</span>' +
+        '<span class="faint">Performed by ' + esc(v.performed || 'ores_refdata_service') + '</span>' +
+        '<span><span class="reason-chip" title="' + esc(REASON_TEXT[v.reason] || '') + '">' + esc(v.reason) + '</span></span>' +
+        (v.note ? '<span class="note-line">“' + esc(v.note) + '”</span>' : '') +
+      '</button>').join('');
+    let table;
+    if (!from) {
+      table = '<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>' + to.fields.map(([k, v]) => '<tr><td class="muted">' + esc(k) + '</td><td>' + esc(v) + '</td></tr>').join('') + '</tbody></table>';
+    } else {
+      const rows = to.fields.map(([k, v], i) => {
+        const before = from.fields[i] ? from.fields[i][1] : '';
+        if (before === v) return state.onlyChanges ? '' : '<tr><td class="muted">' + esc(k) + '</td><td>' + esc(v) + '</td></tr>';
+        const d = spans(before, v);
+        return '<tr class="changed"><td class="muted">' + esc(k) + '</td><td><div class="diff">' +
+          '<div class="line old"><span class="sign">−</span><span>' + d.before + '</span></div>' +
+          '<div class="line new"><span class="sign">+</span><span>' + d.after + '</span></div></div></td></tr>';
+      }).join('');
+      table = '<table><thead><tr><th style="width:12rem">Field</th><th>Value diff</th></tr></thead><tbody>' + (rows || '<tr><td colspan="2" class="muted">No field changed between these versions.</td></tr>') + '</tbody></table>';
+    }
+    const pick = (id, value, max) => '<select id="' + id + '">' + h.filter((v) => v.version <= max).map((v) => '<option value="' + v.version + '"' + (v.version === value ? ' selected' : '') + '>v' + v.version + '</option>').join('') + '</select>';
+    const compare = from ? '<span class="compare-pick">Compare ' + pick('cmp-from', from.version, to.version - 1) + ' → ' + pick('cmp-to', to.version, newest) + '</span>' : '<span class="compare-pick">v' + to.version + ', as created</span>';
+    const toggle = from ? '<span class="toggle">' + [['0', 'All fields'], ['1', 'Only changes']].map(([v, t]) => '<button data-only="' + v + '" aria-pressed="' + (state.onlyChanges === (v === '1')) + '">' + t + '</button>').join('') + '</span>' : '';
+    const revert = writer && to.version !== newest ? '<button class="btn" data-act="revert" data-v="' + to.version + '">Revert to v' + to.version + '</button>' : '';
+    return '<section class="card history"><div class="versions" role="listbox" aria-label="History timeline">' + timeline + '</div>' +
+      '<div class="compare"><div class="compare-head">' + compare + '<div class="actions">' + toggle + revert + '</div></div><div class="table-wrap">' + table + '</div></div></section>';
+  }
+
+  /* Dialogs */
+  function reasonField(reasons, id) {
+    return '<div class="field"><label for="' + id + '">Why</label><select id="' + id + '">' + reasons.map(([c, t, need]) => '<option value="' + c + '" data-need="' + need + '">' + esc(t) + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label for="' + id + '-note">Commentary <span class="faint" id="' + id + '-need">optional</span></label><input id="' + id + '-note" maxlength="2000"></div>';
+  }
+  function dialog(title, body, okLabel, okClass, onOk) {
+    $('dialog-host').innerHTML = '<div class="scrim"><div class="dialog" role="dialog" aria-modal="true" aria-label="' + esc(title) + '"><h2>' + esc(title) + '</h2>' + body +
+      '<p class="warnbox" id="dlg-err" hidden></p><div class="actions" style="justify-content:flex-end"><button class="btn" data-dlg="cancel">Cancel</button><button class="btn ' + okClass + '" data-dlg="ok">' + esc(okLabel) + '</button></div></div></div>';
+    const sel = $('dialog-host').querySelector('select[id^="r-"]');
+    const sync = () => { if (!sel) return; const need = sel.selectedOptions[0].dataset.need === 'true'; const tag = $(sel.id + '-need'); if (tag) tag.textContent = need ? 'required for this reason' : 'optional'; };
+    if (sel) { sel.addEventListener('change', sync); sync(); }
+    const pick = $('f-badge');
+    if (pick) {
+      const l = list(state.list);
+      pick.addEventListener('change', () => { $('f-badge-preview').innerHTML = badge(pick.value); });
+      $('f-badge-all').addEventListener('change', (e) => { const v = pick.value; pick.innerHTML = labelOptions(l, v, e.target.checked); pick.value = v; });
+    }
+    $('dialog-host').querySelector('[data-dlg="cancel"]').onclick = closeDialog;
+    $('dialog-host').querySelector('[data-dlg="ok"]').onclick = () => {
+      if (sel && sel.selectedOptions[0].dataset.need === 'true' && !$(sel.id + '-note').value.trim()) { const e = $('dlg-err'); e.textContent = 'This reason needs a commentary.'; e.hidden = false; return; }
+      const err = onOk(); if (err) { const e = $('dlg-err'); e.textContent = err; e.hidden = false; return; }
+      closeDialog();
+    };
+    const first = $('dialog-host').querySelector('input, select'); if (first) first.focus();
+  }
+  function closeDialog() { $('dialog-host').innerHTML = ''; }
+
+  function rowFields(l, r) {
+    return (r ? '' : '<div class="field"><label for="f-code">Code</label><input id="f-code" maxlength="100"></div>') +
+      (l.shape === 'named' ? '<div class="field"><label for="f-name">Name</label><input id="f-name" value="' + esc(r?.name) + '"></div>' : '') +
+      '<div class="field"><label for="f-desc">Description</label><input id="f-desc" value="' + esc(r?.description) + '"></div>' +
+      (labelled(l) ? labelField(l, r) : '');
+  }
+  /* The labels a picker offers: the ones this list's code domain already uses, then, only when asked, the rest of
+     the catalogue grouped by the domain that uses them. A label belongs to the catalogue, so a list may borrow
+     another's, but the default choice is its own. */
+  function domainBadges(domain) { return [...new Set(Object.values(BADGE_MAPS[domain] || {}))]; }
+  function labelOptions(l, current, all) {
+    const own = domainBadges(domainOf(l));
+    const opt = (code) => '<option value="' + esc(code) + '"' + (code === current ? ' selected' : '') + '>' + esc((BADGES[code] || BADGES.__unmapped__).name) + '</option>';
+    let html = '<optgroup label="' + esc(l.label) + '">' + ['__unmapped__', ...own].map(opt).join('') + '</optgroup>';
+    if (all) {
+      const seen = new Set(['__unmapped__', ...own]);
+      const groups = {};
+      for (const [domain, m] of Object.entries(BADGE_MAPS)) {
+        if (domain === domainOf(l)) continue;
+        for (const code of new Set(Object.values(m))) { if (!seen.has(code) && BADGES[code]) { (groups[domain] = groups[domain] || []).push(code); seen.add(code); } }
+      }
+      const unused = Object.keys(BADGES).filter((code) => !seen.has(code));
+      html += Object.entries(groups).sort().map(([domain, codes]) => '<optgroup label="' + esc(domain.replace(/_/g, ' ')) + '">' + codes.map(opt).join('') + '</optgroup>').join('');
+      if (unused.length) html += '<optgroup label="Not used by any list">' + unused.map(opt).join('') + '</optgroup>';
+    } else if (current !== '__unmapped__' && !own.includes(current)) {
+      html += '<optgroup label="Current">' + opt(current) + '</optgroup>';
+    }
+    return html;
+  }
+  function labelField(l, r) {
+    const current = r ? badgeOf(l, r.code) : '__unmapped__';
+    return '<div class="field"><label for="f-badge">Label <span class="faint">from the shared label catalogue</span></label>' +
+      '<select id="f-badge">' + labelOptions(l, current, false) + '</select>' +
+      '<div class="check"><input type="checkbox" id="f-badge-all"><label for="f-badge-all">Show labels from other lists</label></div>' +
+      '<span id="f-badge-preview">' + badge(current) + '</span></div>';
+  }
+  function setLabel(l, code, badgeCode) {
+    const m = BADGE_MAPS[domainOf(l)] || (BADGE_MAPS[domainOf(l)] = {});
+    if (badgeCode === '__unmapped__') delete m[code]; else m[code] = badgeCode;
+  }
+  function record(l, r, reason, note) {
+    const h = historyOf(l, r);
+    h.push({ version: h[h.length - 1].version + 1, by: PEOPLE[state.persona].name.split(' ')[0].toLowerCase(), performed: 'ores_refdata_service', at: 'Just now', reason, note, fields: fieldsOf(l, r) });
+  }
+  function addRow(l) {
+    dialog('Add a row to ' + l.label, rowFields(l, null) + '<p class="faint">The row is recorded as a new record; no reason is needed.</p>', 'Add row', 'primary', () => {
+      const code = $('f-code').value.trim();
+      if (!code) return 'A row needs a code.';
+      if (l.rows.some((r) => r.code === code)) return 'This list already has the code ' + code + '.';
+      const row = { code, name: l.shape === 'named' ? $('f-name').value.trim() : '', description: $('f-desc').value.trim(), displayOrder: l.shape === 'plain' ? null : (l.rows.length + 1) * 10 };
+      l.rows.push(row); l.total++;
+      if ($('f-badge')) setLabel(l, code, $('f-badge').value);
+      historyOf(l, row)[0] = { version: 1, by: PEOPLE[state.persona].name.split(' ')[0].toLowerCase(), at: 'Just now', reason: 'system.new_record', note: '', fields: fieldsOf(l, row) };
+      toast('Added ' + code + '.');
+      go('row', { list: l.key, code, tab: 'details' });
+    });
+  }
+  function editRow(l, r) {
+    dialog('Edit ' + r.code, rowFields(l, r) + reasonField(AMEND_REASONS, 'r-amend'), 'Save', 'primary', () => {
+      const name = l.shape === 'named' ? $('f-name').value.trim() : r.name;
+      const description = $('f-desc').value.trim();
+      const newBadge = $('f-badge') ? $('f-badge').value : null;
+      const labelChanged = newBadge !== null && newBadge !== badgeOf(l, r.code);
+      if (name === r.name && description === r.description && !labelChanged) return 'Nothing has changed.';
+      if (labelChanged) setLabel(l, r.code, newBadge);
+      if (name === r.name && description === r.description) { toast('Label changed. The label is kept by the label catalogue, so the row keeps its version.'); render(); return; }
+      Object.assign(r, { name, description });
+      record(l, r, $('r-amend').value, $('r-amend-note').value.trim());
+      toast('Saved. Version ' + historyOf(l, r).length + ' is recorded.');
+      render();
+    });
+  }
+  function removeRow(l, r) {
+    dialog('Remove ' + r.code + '?', '<p class="warnbox">Nothing checks whether records still use this code. A currency, book or party that still names it will fail its next save.</p>' + reasonField(DELETE_REASONS, 'r-del'), 'Remove', 'danger solid', () => {
+      l.rows = l.rows.filter((x) => x !== r); l.total--;
+      toast('Removed ' + r.code + '. Its versions stay in the history.');
+      go('list', { list: l.key, code: null });
+    });
+  }
+  function revertRow(l, r, version) {
+    const h = historyOf(l, r);
+    const target = h.find((v) => v.version === version);
+    dialog('Revert ' + r.code + ' to version ' + version + '?', '<p class="muted">This writes the values of version ' + version + ' back as version ' + (h.length + 1) + '. Nothing in the history is lost.</p>' + reasonField(AMEND_REASONS, 'r-rev'), 'Revert', 'primary', () => {
+      const get = (k) => (target.fields.find(([n]) => n === k) || [, ''])[1];
+      if (l.shape === 'named') r.name = get('Name');
+      r.description = get('Description');
+      if (l.shape !== 'plain') r.displayOrder = Number(get('Display order')) || 0;
+      record(l, r, $('r-rev').value, ($('r-rev-note').value.trim() || 'Reverted to version ' + version));
+      state.version = null;
+      toast('Reverted. Version ' + h.length + ' holds the values of version ' + version + '.');
+      render();
+    });
+  }
+
+  /* Why panel */
+  const CHANGES = [
+    'Reference data is an area of the application menu and a live tile on Home, as the accepted navigation design places it. The first build was reachable only by its address.',
+    'Three levels instead of one page: the area, the index of lists, and one list. The 28-item sidebar is gone; lists are found by topic or by name.',
+    'A row opens on its own page with Details and History tabs, the way a tenant opens with its tabs. Its address names the list, the row and the tab.',
+    'Edit and Remove are dialogs with the reason and commentary, the way a role is renamed. The always-open form under the table is gone.',
+    'Reorder is a mode with Save order and Cancel. The arrows no longer sit on every row.',
+    'History follows the desktop history dialog: a timeline of versions with who modified and performed each, the reason code and the commentary; Compare picks any two versions; each changed field shows a red old line and a green new line, the changed characters marked, as a code review does.',
+    'All fields or Only changes; Revert on an older version.',
+    'A person who may only read sees no Edit, Remove, Add or Reorder, and is told why.',
+    'Labels come from the shared label catalogue, the badge definitions and mappings the tenant screens already paint with. Seventeen of the lists have seeded labels; a row with none shows Unmapped. Edit offers the labels this list already uses; the rest of the catalogue only on request, grouped by the list that uses them.',
+    'Assumed, to confirm: a row opens on a page rather than a drawer, and a tenant administrator sees Reference data too.',
+  ];
+  function renderWhy(open) {
+    $('why').hidden = !open; $('why-btn').setAttribute('aria-pressed', String(open)); $('why-btn').setAttribute('aria-expanded', String(open));
+    if (open) $('why').innerHTML = '<div class="why-head"><strong>What changed from the first build</strong><button class="why-close" data-why-close>Close</button></div><ul>' + CHANGES.map((c) => '<li>' + esc(c) + '</li>').join('') + '</ul>';
+  }
+
+  /* Render and events */
+  function render() {
+    renderShell();
+    const view = { home: renderHome, refdata: renderArea, classifications: renderIndex, list: renderList, row: renderRow }[state.screen];
+    $('app').innerHTML = view();
+    const s = $('search'); if (s) { s.oninput = () => { state.search = s.value; const pos = s.selectionStart; render(); const n = $('search'); n.focus(); n.setSelectionRange(pos, pos); }; }
+    const cf = $('cmp-from'), ct = $('cmp-to');
+    if (cf) cf.onchange = () => { state.from = Number(cf.value); render(); };
+    if (ct) ct.onchange = () => { state.version = Number(ct.value); if (state.from !== null && state.from >= state.version) state.from = null; render(); };
+    const f = $('filter'); if (f) { f.oninput = () => { state.filter = f.value; const pos = f.selectionStart; render(); const n = $('filter'); n.focus(); n.setSelectionRange(pos, pos); }; }
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button, [data-go], tr[data-row]');
+    if (!t) return;
+    if (t.dataset.persona) { state.persona = t.dataset.persona; writeHash(); render(); return; }
+    if (t.dataset.menu) { const m = MENU.find((x) => x.id === t.dataset.menu); if (m.soon) { toast(m.label + ' is not in this release yet.'); return; } go(m.id === 'home' ? 'home' : 'refdata', { list: null, code: null }); return; }
+    if (t.id === 'why-btn') { renderWhy($('why').hidden); return; }
+    if (t.dataset.whyClose !== undefined) { renderWhy(false); return; }
+    if (t.dataset.go) { go(t.dataset.go, { list: t.dataset.list || state.list, code: null, tab: 'details' }); return; }
+    if (t.dataset.noop !== undefined) { toast('Already built: open it from the menu under your name.'); return; }
+    const l = state.list && list(state.list);
+    if (t.matches('tr[data-row]') && !state.reordering) { go('row', { code: t.dataset.row, tab: 'details' }); return; }
+    if (t.dataset.tab) { state.tab = t.dataset.tab; state.version = null; writeHash(); render(); return; }
+    if (t.dataset.version) { state.version = Number(t.dataset.version); state.from = null; render(); return; }
+    if (t.dataset.only) { state.onlyChanges = t.dataset.only === '1'; render(); return; }
+    if (t.dataset.mv) { const i = Number(t.dataset.i), d = Number(t.dataset.mv); const rows = [...state.reordering]; [rows[i], rows[i + d]] = [rows[i + d], rows[i]]; state.reordering = rows; render(); return; }
+    switch (t.dataset.act) {
+      case 'add': addRow(l); break;
+      case 'reorder': state.reordering = [...l.rows]; render(); break;
+      case 'cancel-order': state.reordering = null; render(); break;
+      case 'save-order': {
+        const moved = state.reordering.filter((r, i) => r.displayOrder !== (i + 1) * 10);
+        state.reordering.forEach((r, i) => { const o = (i + 1) * 10; if (r.displayOrder !== o) { r.displayOrder = o; record(l, r, 'common.non_material_update', 'Reordered'); } });
+        l.rows = state.reordering; state.reordering = null;
+        toast(moved.length ? 'Saved the new order of ' + moved.length + ' rows.' : 'The order did not change.'); render(); break;
+      }
+      case 'edit': editRow(l, find(state.list, state.code)); break;
+      case 'remove': removeRow(l, find(state.list, state.code)); break;
+      case 'revert': revertRow(l, find(state.list, state.code), Number(t.dataset.v)); break;
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeDialog(); renderWhy(false); }
+    if (e.key === 'Enter' && e.target.matches('[role="link"]')) e.target.click();
+  });
+
+  seedHistory();
+  readHash();
+  render();
+})();
+</script>
+</body>
+</html>

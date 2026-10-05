@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 6D169FF1-4965-49A4-BDEB-51F71DDAA184
+:END:
+#+title: The macOS debug CI job runs out of disk
+#+description: The continuous macOS debug job fails linking with errno 28, and another run's log stops mid-test before the step fails.
+#+type: capture
+#+level: cross
+#+filetags: :ci:macos:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Run 37173272838 failed with =ld: write() failed, errno=28= linking =ores.http.assets.tests=. Run 37144014409's log stops in =ores.shell.refdata.tests= and the step fails eight minutes later with no further output. Free disk before the build (the Linux workflow has a step for it) or prune intermediate objects after linking; the coverage flags make the debug build larger.
+
+* Why
+
+macOS debug has not been green since the first of these runs.
+
+* References
+
+- =.github/workflows/continuous-macos.yml=
+- =.github/workflows/continuous-linux.yml= — the Free disk space step
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

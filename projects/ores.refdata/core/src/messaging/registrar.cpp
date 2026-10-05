@@ -35,6 +35,7 @@
 #include "ores.refdata.core/messaging/calendar_event_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_materialisation_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_name_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
@@ -58,6 +59,7 @@
 #include "ores.refdata.core/messaging/currency_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_role_registrar.hpp"
+#include "ores.refdata.core/messaging/day_counter_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/diary_entry_type_registrar.hpp"
@@ -131,6 +133,7 @@
 #include "ores.refdata.core/messaging/calendar_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_rule_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_rule_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_name_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_history_provider_registrar.hpp"
@@ -150,6 +153,7 @@
 #include "ores.refdata.core/messaging/currency_pair_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_role_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/day_counter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/derivation_kind_history_provider_registrar.hpp"
@@ -241,6 +245,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
     append(register_calendar_adjustment_handlers(nats, ctx, verifier));
     append(register_calendar_event_handlers(nats, ctx, verifier));
+    append(register_calendar_name_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
@@ -263,6 +268,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_currency_pair_convention_calendar_handlers(nats, ctx, verifier));
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));
     append(register_currency_pair_handlers(nats, ctx, verifier));
+    append(register_day_counter_handlers(nats, ctx, verifier));
     append(register_day_count_fraction_type_handlers(nats, ctx, verifier));
     append(register_diary_entry_type_handlers(nats, ctx, verifier));
     append(register_instrument_code_handlers(nats, ctx, verifier));
@@ -411,6 +417,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_currency_pair_classification_history_provider(hist_registry);
         register_currency_pair_convention_history_provider(hist_registry);
         register_curve_role_history_provider(hist_registry);
+        register_day_counter_history_provider(hist_registry);
         register_day_count_fraction_type_history_provider(hist_registry);
         register_deposit_convention_history_provider(hist_registry);
         register_diary_entry_type_history_provider(hist_registry);
@@ -449,6 +456,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_zero_convention_history_provider(hist_registry);
         register_calendar_exception_history_provider(hist_registry);
         register_calendar_rule_history_provider(hist_registry);
+        register_calendar_name_history_provider(hist_registry);
         register_calendar_type_history_provider(hist_registry);
         register_counterparty_contact_information_history_provider(hist_registry);
         register_counterparty_identifier_history_provider(hist_registry);

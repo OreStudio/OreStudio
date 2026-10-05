@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 6FDB0B4D-CD20-4FDC-B1C6-F1F9EDD2DE30
+:END:
+#+title: The ORE vocabularies need a read-only marker
+#+description: Day counters, calendar names, floating index types, leg types and business day conventions hold spellings ORE must read exactly, but nothing marks them read-only.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:ore:modeling:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Calendars mark the rows ORE defines with =is_editable=. The five code lists of ORE spellings have no such marker, so the server accepts a change or a removal that would make an ORE document invalid. The web screen keeps a list of the five and refuses to edit them itself. Model the marker on these lists, enforce it on write, and let the screen read it instead of keeping its own list.
+
+* Why
+
+A rule that lives only in one client is a rule every other writer ignores.
+
+* References
+
+- =projects/ores.web/packages/wire-protocol/src/classifications.ts= — the client-side read-only list
+- Journey: [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]], gap 2
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

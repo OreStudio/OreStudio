@@ -34,6 +34,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { LinkButton, Notice, PageHeader } from '../ui/Primitives.js';
 import { PaintedValue } from './TenantParts.js';
+import { Tiles, type Tile } from '../ui/Tiles.js';
 
 /**
  * Where a signed-in person lands.
@@ -334,44 +335,6 @@ function FirstTenants({
     );
 }
 
-interface Tile {
-    readonly title: string;
-    readonly body: string;
-    readonly to?: string;
-}
-
-function Tiles({ tiles, later }: { readonly tiles: readonly Tile[]; readonly later?: string }) {
-    return (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tiles.map((tile) =>
-                tile.to === undefined ? (
-                    <div
-                        key={tile.title}
-                        className="card grid content-start gap-1.5 p-4 opacity-70"
-                    >
-                        <span className="text-sm font-semibold text-ink">{tile.title}</span>
-                        <span className="text-sm text-ink-muted">{tile.body}</span>
-                        {later !== undefined && (
-                            <span className="mt-1 justify-self-start rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-faint">
-                                {later}
-                            </span>
-                        )}
-                    </div>
-                ) : (
-                    <Link
-                        key={tile.title}
-                        to={tile.to}
-                        className="card grid content-start gap-1.5 p-4 hover:border-line-strong focus-visible:outline-accent"
-                    >
-                        <span className="text-sm font-semibold text-ink">{tile.title}</span>
-                        <span className="text-sm text-ink-muted">{tile.body}</span>
-                    </Link>
-                ),
-            )}
-        </div>
-    );
-}
-
 function TenantHome({
     username,
     tenantName,
@@ -384,6 +347,7 @@ function TenantHome({
         { title: t('home.tenant.parties'), body: t('home.tenant.partiesBody'), to: '/parties' },
         { title: t('home.tenant.people'), body: t('home.tenant.peopleBody'), to: '/people' },
         { title: t('home.tenant.roles'), body: t('home.tenant.rolesBody'), to: '/roles' },
+        { title: t('home.party.refdata'), body: t('home.party.refdataBody'), to: '/refdata' },
         {
             title: t('home.tenant.newParty'),
             body: t('home.tenant.newPartyBody'),
@@ -413,9 +377,10 @@ function PartyHome({
     readonly partyName: string;
 }): ReactNode {
     const { t } = useTranslation();
-    const coming: Tile[] = (['refdata', 'marketdata', 'trading', 'reporting'] as const).map(
-        (area) => ({ title: t(`home.party.${area}`), body: t(`home.party.${area}Body`) }),
-    );
+    const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
+        title: t(`home.party.${area}`),
+        body: t(`home.party.${area}Body`),
+    }));
 
     return (
         <div className="space-y-6">
@@ -425,6 +390,11 @@ function PartyHome({
             />
             <Tiles
                 tiles={[
+                    {
+                        title: t('home.party.refdata'),
+                        body: t('home.party.refdataBody'),
+                        to: '/refdata',
+                    },
                     {
                         title: t('home.party.security'),
                         body: t('home.party.securityBody'),

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-implement-refdata-journeys
+#+pr: 2640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -80,12 +80,47 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2640][#2640]] | [web,refdata] Build the classification screens in ores.web |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: adding a row with a label is two writes, so a failed label leaves the row unlabelled | =ClassificationListPage.tsx= | Accepted as Minor | The label lives in the catalogue, not on the row; the dialog shows the error and the label can be set from the row |
+| 2 | Local review: the label route accepts a read-only list | =bff/src/classifications.ts= | Kept | A label is how a code is drawn, not how ORE spells it; the server checks =dq::badge_mappings:write= |
+| 3 | Local review: the history route takes an entity type from the browser | =bff/src/classifications.ts= | Kept | Served only for the catalogue's entity types; any other type answers 404 |
+| 4 | Local review: headers, comments, debug leftovers, misspell | changed files | Clean | The two =} // namespace= closers in =registrar.cpp= predate this change |
+| 5 | PR #2640 round 1: the label route does not check the code is in the list | =bff/src/classifications.ts= | Accepted | The catalogue maps any code, so the BFF reads the list and answers 404 for a code it lacks |
+| 6 | PR #2640 round 1: a reorder may name a row twice | =bff/src/classifications.ts= | Accepted | The schema refuses duplicate codes |
+| 7 | PR #2640 round 1: the counts are 28 sequential calls | =bff/src/classifications.ts= | Declined | About 0.2 s; the comment says why, and the slow concurrent client is a filed capture |
+| 8 | PR #2640 round 1: a type cast on the labels fallback | =bff/src/classifications.ts= | Accepted | The fallback is typed; the cast is gone |
+| 9 | PR #2640 round 1: a failed label read is silent | =bff/src/classifications.ts= | Accepted | Logged at warn with the list key |
+| 10 | PR #2640 round 1: DELETE carries a JSON body | =bff/src/classifications.ts= | Declined | The BFF and the browser are the only clients; the tenant removal route already does the same |
+| 11 | PR #2640 round 1: confirm the site build | — | Noted | Reported on the PR when it finishes |
 
 * Result
+
+Maintain a classification list runs in ores.web against the real server, built
+from the accepted [[id:CB72DF9A-ED51-4E92-8A1E-FA03230FC077][reference data prototype]]:
+
+- Reference data is an area of the application and tenant menus and a live tile
+  on Home. Classifications is an index of the 28 lists by topic with row counts;
+  a list has Add row and Reorder on it, a filter and a Label column; a row opens
+  on its own page with Details and History tabs and is edited, removed and
+  reverted in dialogs.
+- Rows are painted from the shared label catalogue (badge definitions and
+  mappings), with a new shared =ui/Label.tsx= the tenant screens now use too; a
+  label is chosen from the list's own labels first and written as a badge
+  mapping.
+- History shows a timeline with each version's provenance, compares any two
+  versions, and draws each changed field as an old and a new line with the
+  changed characters marked.
+- Edit actions follow the person's permissions; the ORE vocabularies are
+  read-only.
+
+Found and fixed on the real server: lists refuse ordering by display order;
+two lists require =as_of= in their list request; conflicts arrive with no
+words; the calendar name and day counter handlers were never wired into the
+refdata service. Found and captured: the broker client is slow under
+concurrent calls, and tenant sessions never reach tenant administration, with
+sixteen more captures from the journeys.

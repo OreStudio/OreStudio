@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C2B69FB1-77F1-4A3F-939D-25BFC5EF3773
+:END:
+#+title: Rebuild business days when their inputs change, and read them by date range
+#+description: Business days are regenerated only on request with no record of when, and they cannot be read for one year.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Writing a calendar rule, exception or base does not regenerate =calendar_date=; only =refdata.v1.calendar_dates.regenerate= does, and nothing records when a calendar was last rebuilt. The =calendar_dates_filter= takes calendar codes only, so a screen showing one year pages through every materialised date, and a side-by-side view of two calendars doubles that. Rebuild on input change (or record a rebuilt-at time), and add a date range to the filter.
+
+* Why
+
+Every consumer of business days reads stale dates after an edit until someone rebuilds, and the calendar screen cannot show a year cheaply.
+
+* References
+
+- Journey: [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]], gaps 1 and 2
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

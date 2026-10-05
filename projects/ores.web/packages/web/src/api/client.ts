@@ -26,6 +26,14 @@ import {
     type AccountSignIns,
     permissionEntrySchema,
     roleSummarySchema,
+    badgePresentationSchema,
+    classificationListSchema,
+    classificationRowSchema,
+    historyVersionSchema,
+    type BadgePresentation,
+    type ClassificationList,
+    type ClassificationRow,
+    type HistoryVersion,
     type AccountAccess,
     type PermissionEntry,
     type RoleSummary,
@@ -211,6 +219,47 @@ export const api = {
             .map(({ code, description }) => ({ code, description }));
     },
 
+    /**
+     * The reasons a correction or a removal of reference data may carry: the
+     * common category, those that apply to the kind of write, in display
+     * order. A new record needs no choice; it is written as a new record.
+     */
+    async referenceDataReasons(kind: 'amend' | 'delete'): Promise<
+        readonly {
+            readonly code: string;
+            readonly description: string;
+            readonly requiresCommentary: boolean;
+        }[]
+    > {
+        const answer = z
+            .object({
+                reasons: z.array(
+                    z.object({
+                        code: z.string(),
+                        description: z.string(),
+                        categoryCode: z.string(),
+                        appliesToAmend: z.boolean(),
+                        appliesToDelete: z.boolean(),
+                        requiresCommentary: z.boolean(),
+                        displayOrder: z.number(),
+                    }),
+                ),
+            })
+            .parse(await request('/api/change-reasons', { method: 'GET' }));
+        return answer.reasons
+            .filter(
+                (reason) =>
+                    reason.categoryCode === 'common' &&
+                    (kind === 'amend' ? reason.appliesToAmend : reason.appliesToDelete),
+            )
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(({ code, description, requiresCommentary }) => ({
+                code,
+                description,
+                requiresCommentary,
+            }));
+    },
+
     /** One account of the session's own tenant and a page of its sign-ins. */
     async accountSignIns(
         username: string,
@@ -270,6 +319,137 @@ export const api = {
             `/api/accounts/${encodeURIComponent(accountId)}/roles/${encodeURIComponent(roleId)}`,
             { method: 'DELETE' },
         );
+    },
+
+    /** The classification lists, by topic, with each list's columns and row count. */
+    async classificationLists(): Promise<
+        readonly (ClassificationList & { readonly count: number | null })[]
+    > {
+        return z
+            .object({
+                lists: z.array(
+                    classificationListSchema.extend({ count: z.int().nonnegative().nullable() }),
+                ),
+            })
+            .parse(await request('/api/classifications', { method: 'GET' })).lists;
+    },
+
+    /** The shared label catalogue: every label, and the labels each code domain uses. */
+    async labels(): Promise<{
+        readonly labels: readonly BadgePresentation[];
+        readonly domains: Readonly<Record<string, readonly string[]>>;
+    }> {
+        return z
+            .object({
+                labels: z.array(badgePresentationSchema),
+                domains: z.record(z.string(), z.array(z.string())),
+            })
+            .parse(await request('/api/labels', { method: 'GET' }));
+    },
+
+    /** Gives a row a label from the catalogue, or takes it away with null. */
+    async setClassificationLabel(
+        list: string,
+        code: string,
+        input: {
+            readonly badgeCode: string | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(
+            `/api/classifications/${encodeURIComponent(list)}/rows/${encodeURIComponent(code)}/label`,
+            { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(input) },
+        );
+    },
+
+    /** Every row of one classification list. */
+    async classificationRows(list: string): Promise<readonly ClassificationRow[]> {
+        return z.object({ rows: z.array(classificationRowSchema) }).parse(
+            await request(`/api/classifications/${encodeURIComponent(list)}`, {
+                method: 'GET',
+            }),
+        ).rows;
+    },
+
+    /** Adds a row to a classification list. */
+    async addClassificationRow(
+        list: string,
+        input: {
+            readonly code: string;
+            readonly name: string;
+            readonly description: string;
+            readonly displayOrder: number | null;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/classifications/${encodeURIComponent(list)}/rows`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Corrects a row, against the version the screen read. */
+    async correctClassificationRow(
+        list: string,
+        code: string,
+        input: {
+            readonly name: string;
+            readonly description: string;
+            readonly displayOrder: number | null;
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(
+            `/api/classifications/${encodeURIComponent(list)}/rows/${encodeURIComponent(code)}`,
+            { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(input) },
+        );
+    },
+
+    /** Writes the new display order of the rows that moved. */
+    async reorderClassificationRows(
+        list: string,
+        input: {
+            readonly rows: readonly {
+                readonly code: string;
+                readonly name: string;
+                readonly description: string;
+                readonly displayOrder: number;
+                readonly version: number;
+            }[];
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/classifications/${encodeURIComponent(list)}/order`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Removes a row. Its versions stay in the history. */
+    async removeClassificationRow(
+        list: string,
+        code: string,
+        input: { readonly reasonCode: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(
+            `/api/classifications/${encodeURIComponent(list)}/rows/${encodeURIComponent(code)}`,
+            { method: 'DELETE', headers: JSON_HEADERS, body: JSON.stringify(input) },
+        );
+    },
+
+    /** Every version of one record, newest first, with what changed in each. */
+    async history(entityType: string, entityId: string): Promise<readonly HistoryVersion[]> {
+        const query = new URLSearchParams({ entityType, entityId });
+        return z
+            .object({ versions: z.array(historyVersionSchema) })
+            .parse(await request(`/api/history?${query.toString()}`, { method: 'GET' })).versions;
     },
 
     /** The tenant's roles, each with the permissions it grants. */

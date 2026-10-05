@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 80640F1E-2C78-4BA4-8934-BB44BB577DE3
+:END:
+#+title: Link each day counter spelling to its day count fraction
+#+description: A day counter row is one of about seventy spellings ORE accepts and carries no description, because which canonical day count fraction it means is not recorded.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:conventions:ore:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=day_counter= holds the spellings ORE's schema accepts (=A365=, =A365F=, =Actual/365 (Fixed)=, =ACT/365.FIXED= and so on), and its description is empty on purpose: the model says a wrong mapping would be worse than none. Record, for each spelling, the =day_count_fraction_type= it means, and draw the description from that row.
+
+* Why
+
+The classification screen shows seventy day counters with no words beside them, so a person cannot tell what a spelling means. The canonical list already has descriptions; the link is the missing piece, and conventions and curves would read it too.
+
+* References
+
+- =projects/ores.refdata/modeling/ores.refdata.day_counter.org=
+- =projects/ores.sql/populate/refdata/refdata_day_counters_populate.sql=
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

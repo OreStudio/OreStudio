@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 12923A78-CF06-47D3-B8AA-1030639E5017
+:END:
+#+title: The pr-raise skill names a script that no longer exists
+#+description: compass-pr-raise asks for scripts/ore_domain_roundtrip_check.py, which is gone, and runs the cmake-sources check with the system python, which lacks the codegen dependencies.
+#+type: capture
+#+level: cross
+#+filetags: :skills:process:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The skill's check list calls =python3 scripts/ore_domain_roundtrip_check.py= (missing) and =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py= with the system interpreter, which fails on =pystache=; the codegen venv works. Remove or replace the roundtrip step and run the codegen scripts through the venv.
+
+* Why
+
+Every PR raised by the skill hits both, and a step that cannot run is a step that gets skipped.
+
+* References
+
+- =doc/llm/skills/compass-pr-raise/= — the skill source
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

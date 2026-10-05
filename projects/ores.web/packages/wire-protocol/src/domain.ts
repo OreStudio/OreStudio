@@ -498,3 +498,81 @@ export const accountSignInsSchema = z.object({
 });
 
 export type AccountSignIns = z.infer<typeof accountSignInsSchema>;
+
+/**
+ * Which columns a classification list carries.
+ *
+ * Every list is keyed by its code. A named list also carries a name and a
+ * display order; a plain list carries only a description; an ordered list
+ * carries a description and a display order, but no name.
+ */
+export const classificationShapeSchema = z.enum(['named', 'plain', 'ordered']);
+
+export type ClassificationShape = z.infer<typeof classificationShapeSchema>;
+
+/**
+ * One classification list as a screen offers it.
+ *
+ * A list that is not editable holds spellings an ORE document must write
+ * exactly, so the screen shows it and refuses to change it.
+ */
+export const classificationListSchema = z.object({
+    key: z.string(),
+    entityType: z.string(),
+    topic: z.string(),
+    shape: classificationShapeSchema,
+    editable: z.boolean(),
+    /** The permissions the server checks to write and to remove a row. */
+    writePermission: z.string(),
+    deletePermission: z.string(),
+});
+
+export type ClassificationList = z.infer<typeof classificationListSchema>;
+
+/**
+ * One row of a classification list.
+ *
+ * The name is empty and the order absent on a list whose shape lacks them.
+ */
+export const classificationRowSchema = z.object({
+    code: z.string(),
+    name: z.string(),
+    description: z.string(),
+    displayOrder: z.int().nullable(),
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    recordedAt: z.string(),
+    reasonCode: z.string(),
+    commentary: z.string(),
+    /** The badge code of the row's label in the shared catalogue, or null when it has none. */
+    labelCode: z.string().nullable(),
+});
+
+export type ClassificationRow = z.infer<typeof classificationRowSchema>;
+
+/** A field's value in one version of a record, as the history renders it. */
+export const historyFieldSchema = z.object({
+    name: z.string(),
+    value: z.string(),
+});
+
+/** One field that differs from the version before. */
+export const historyChangeSchema = z.object({
+    field: z.string(),
+    before: z.string(),
+    after: z.string(),
+});
+
+/**
+ * One version of a record: who wrote it, when, every field it held, and what
+ * changed from the version before. The oldest version has no changes.
+ */
+export const historyVersionSchema = z.object({
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    recordedAt: z.string(),
+    fields: z.array(historyFieldSchema),
+    changes: z.array(historyChangeSchema),
+});
+
+export type HistoryVersion = z.infer<typeof historyVersionSchema>;

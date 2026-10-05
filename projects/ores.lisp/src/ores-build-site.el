@@ -316,6 +316,11 @@ with the site chrome."
   ;; administrator's grants and the role catalogue, on the real seed data.
   (ores-deploy-web-app
    "./doc/prototypes/access" site-dir "doc/prototypes/access"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Reference data prototype: the same body reset. The classification lists as
+  ;; an area, a list and a row with history, on the Acme seed and its labels.
+  (ores-deploy-web-app
+   "./doc/prototypes/refdata" site-dir "doc/prototypes/refdata"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

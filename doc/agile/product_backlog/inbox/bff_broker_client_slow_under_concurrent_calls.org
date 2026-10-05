@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 0EC36793-106F-45B8-9DF8-B2291728A876
+:END:
+#+title: The BFF broker client is slow under concurrent calls
+#+description: Twenty-eight concurrent requests on one session take about eight seconds; the same requests in sequence take about 0.2 seconds.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:nats:performance:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The ores.web BFF sends every request of a session through that session's broker client. Twenty-eight concurrent requests on one session, the row counts of the classification catalogue, took about eight seconds; the same twenty-eight requests sent one after another took about 0.2 seconds. Each request alone answers in about ten milliseconds. Find what serialises or stalls concurrent requests on one client (the reply inbox, the token refresh, or a lock) and make concurrent calls cost what they should.
+
+* Why
+
+Every screen that reads several things at once pays for it today. The classification catalogue route works around it by reading its counts in sequence, with a comment that names this capture's cause; the workaround should go once the client is fixed.
+
+* References
+
+- =projects/ores.web/packages/bff/src/classifications.ts= — the sequential counts and their comment
+- =projects/ores.web/packages/wire-protocol/src/client.ts= — the client every session holds
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

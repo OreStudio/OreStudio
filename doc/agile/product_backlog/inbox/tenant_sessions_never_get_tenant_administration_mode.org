@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 8AB4895B-C987-4A09-8C8F-2C7B812F8135
+:END:
+#+title: Tenant sessions never get the tenant administration mode
+#+description: The BFF gives every tenant session the application mode, so no real session sees the tenant administration menu the design and the screens expect.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:session:iam:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=sessionModeFor= in the BFF returns =system-administration= for the system tenant and =application= for every other tenant. The navigation design says an account of a tenant that holds its administrative role works in tenant administration, and the shell's tenant administration menu (Parties, People, Roles, Rescue, Sign-ins, Reference data) is only shown in that mode. No production code sets it; only tests do.
+
+* Why
+
+A tenant administrator lands in the application menu and reaches People, Roles and the rest only by typing their addresses. The mode belongs to the session work on the access and profile stories; this capture records the gap found while building the reference data screens.
+
+* References
+
+- =projects/ores.web/packages/bff/src/session-mode.ts=
+- =projects/ores.web/packages/web/src/shell/areas.ts=
+- =doc/knowledge/security/session-modes-and-capabilities.org=
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]

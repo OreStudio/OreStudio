@@ -64,6 +64,17 @@ expires.
 Source: =[[./pattern_token_exchange.puml][pattern_token_exchange.puml]]=. Regenerate with
 =plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_exchange.puml=.
 
+RFC 8693 defines two semantics, and they produce different tokens. With
+impersonation the new token names only the subject, so the target cannot tell a
+service asked. With delegation it also names the actor in =act=.
+
+#+caption: Token Exchange: an impersonation token names only the subject; a delegation token also names the service that asked, in the act claim.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_token_exchange_semantics.png]]
+
+Source: =[[./pattern_token_exchange_semantics.puml][pattern_token_exchange_semantics.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_exchange_semantics.puml=.
+
 * Failure handling
 
 #+ATTR_HTML: :class hug-leading

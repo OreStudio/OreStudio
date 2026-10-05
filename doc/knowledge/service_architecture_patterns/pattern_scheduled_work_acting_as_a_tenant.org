@@ -63,6 +63,17 @@ The composite combines three patterns in a fixed order:
    grant id for a run token that lasts minutes. It calls the data owners with
    the run token in =Authorization=, and they act as the tenant and the party.
 
+The composite is easiest to read as a map: each boundary between two
+participants uses one pattern, and the start message and the step command carry
+ids, never a token.
+
+#+caption: Scheduled Work Acting as a Tenant: the pattern each boundary uses, from the person's session to the store that row-level security guards.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant_boundaries.png]]
+
+Source: =[[./pattern_scheduled_work_acting_as_a_tenant_boundaries.puml][pattern_scheduled_work_acting_as_a_tenant_boundaries.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant_boundaries.puml=.
+
 The combination adds three rules of its own:
 
 - *No token in durable state.* The run's messages, rows and logs carry the grant

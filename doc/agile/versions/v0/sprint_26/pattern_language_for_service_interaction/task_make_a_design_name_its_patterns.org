@@ -59,6 +59,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- A use is described on the architecture page that owns it, and the pattern
+  page's =* In ORE Studio= names and links it. The link must go both ways. On
+  2026-10-05 a manual check found two use pages that did not link back,
+  Multi-Tenancy Architecture and Scheduling and workflows, and both were fixed.
+  Make this a check: every page a pattern lists as a use links the pattern back,
+  except point-in-time plans and external reference pages.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

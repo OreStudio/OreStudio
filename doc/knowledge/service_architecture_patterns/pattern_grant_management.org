@@ -66,6 +66,17 @@ the work ends.
 Source: =[[./pattern_grant_management.puml][pattern_grant_management.puml]]=. Regenerate with
 =plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_grant_management.puml=.
 
+A grant has a lifecycle of its own. It ends by revocation, by its last permitted
+use or by its time limit. A grantor who left or lost the scope does not end the
+grant: each use is refused until the owning service revokes it.
+
+#+caption: Grant Management: a grant is created active, is used through exchanges, and ends revoked, exhausted or expired. A lapsed grantor refuses each use and leaves the grant active.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_grant_management_states.png]]
+
+Source: =[[./pattern_grant_management_states.puml][pattern_grant_management_states.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_grant_management_states.puml=.
+
 * Failure handling
 
 #+ATTR_HTML: :class hug-leading

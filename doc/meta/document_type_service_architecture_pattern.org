@@ -71,6 +71,13 @@ because they have other sources and other readers:
   - =* Solution=: the pattern, with a diagram embedded with a =#+caption:= line
     and a =[[proj:...png]]= image, followed by the =.puml= source link and the
     =plantuml -tpng= regenerate line.
+    The interaction diagram is the minimum. Add the diagram that shows the
+    pattern's point when the interaction does not: a state machine when the
+    pattern has a lifecycle, a class or object diagram when its point is a
+    structure such as a token's claims, an activity diagram when its point is an
+    order of decisions, a second sequence when its point is a contrast with a
+    pitfall, and a component diagram when it is a composite. Place each one in
+    the section whose point it makes.
   - =* Failure handling=: a table with one row each for errors, timeouts,
     retries, idempotency and observability. A row that does not apply says so
     and gives the reason.

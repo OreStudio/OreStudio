@@ -85,6 +85,16 @@ Source: =[[./pattern_token_relay.puml][pattern_token_relay.puml]]=. Regenerate w
   such as a long import, outlives the caller's token. Such work needs its own
   identity.
 
+The first pitfall is the reason the pattern exists, and the two calls below differ
+only in one header:
+
+#+caption: Token Relay: the same read made with the service's own identity returns no rows and no error; made with the relayed caller's token it returns the party's rows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_token_relay_pitfall.png]]
+
+Source: =[[./pattern_token_relay_pitfall.puml][pattern_token_relay_pitfall.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_relay_pitfall.puml=.
+
 * Security
 
 B trusts A to forward only the token of A's own caller. A cannot forge a token,

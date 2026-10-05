@@ -60,7 +60,28 @@ operation needs, and sets the tenant and the party on the database session.
 Source: =[[./pattern_access_token.puml][pattern_access_token.puml]]=. Regenerate with
 =plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token.puml=.
 
+The claims decide everything downstream. The request context takes them, the
+database session takes the tenant and the party, and the audit columns take the
+username.
+
+#+caption: Access Token: the claims the token states, and where each one goes: the request context, the database session that row-level security reads, and the audit columns.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token_claims.png]]
+
+Source: =[[./pattern_access_token_claims.puml][pattern_access_token_claims.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token_claims.puml=.
+
 * Failure handling
+
+A service refuses in a fixed order, and each refusal has its own code. Only
+=token_expired= is worth a retry, and only after a renewal.
+
+#+caption: Access Token: the checks a service makes in order, the code each refusal carries, and the point where row-level security takes over.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token_verification.png]]
+
+Source: =[[./pattern_access_token_verification.puml][pattern_access_token_verification.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token_verification.puml=.
 
 #+ATTR_HTML: :class hug-leading
 | Concern | What the pattern does |

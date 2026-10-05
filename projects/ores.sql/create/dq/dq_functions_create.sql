@@ -127,16 +127,16 @@ begin
     delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    -- 3. Insert data from assets_images_tbl.
-    -- DQ artefact staging is SVG-only text; only sync SVG rows, decoding
-    -- the live table's base64 (mime_type, data) back to plain SVG text.
+    -- 3. Insert data from assets_images_tbl. The staging table carries the
+    -- live table's own (mime_type, data) shape, so the rows copy unchanged.
     insert into ores_dq_images_artefact_tbl (
         dataset_id,
         image_id,
         version,
         key,
         description,
-        svg_data
+        mime_type,
+        data
     )
     select
         v_dataset_id,
@@ -144,10 +144,10 @@ begin
         version,
         code,
         description,
-        convert_from(decode(data, 'base64'), 'UTF8')
+        mime_type,
+        data
     from ores_assets_images_tbl
-    where valid_to = ores_utility_infinity_timestamp_fn()
-      and mime_type = 'image/svg+xml';
+    where valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_count = row_count;
     raise debug 'Inserted % records into dq_images_artefact_tbl for dataset %', v_count, p_dataset_name;

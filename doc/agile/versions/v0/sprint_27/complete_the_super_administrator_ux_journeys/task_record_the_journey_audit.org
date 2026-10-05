@@ -8,7 +8,7 @@
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2663
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2663][#2663]] | [agile] Add the super administrator UX journeys story |
 
 * Review
 

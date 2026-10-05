@@ -86,9 +86,9 @@ and destroys nothing.
 * Prototype
 
 Accepted by the user on 2026-10-04. The prototype is merged into =main= and
-kept there as the record; the branch names the accepted state.
+kept there as the record; the accepted commit names the state.
 
-- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Accepted commit :: =285519db99=, the tip of =prototype/operations-journeys=, merged into =main=
 - Route :: =/prototype/bus=
 - Source :: =projects/ores.web/packages/web/src/prototype/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]

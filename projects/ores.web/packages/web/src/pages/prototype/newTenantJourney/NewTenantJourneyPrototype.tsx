@@ -35,8 +35,8 @@ import { PASSWORD_POLICY } from './stub.js';
 
 /**
  * PROTOTYPE ONLY -- the design record. The two journeys built on the chosen
- * stepper layout (variant A; the rejected variants are in the history of the
- * prototype/new-tenant-journey branch). All data is stubbed; nothing is sent
+ * stepper layout (variant A; the rejected variants are in the history of
+ * commit 9dee57ccee). All data is stubbed; nothing is sent
  * to the server.
  */
 

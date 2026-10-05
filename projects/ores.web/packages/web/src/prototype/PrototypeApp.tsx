@@ -186,7 +186,8 @@ export function isPrototypePath(pathname: string): boolean {
 }
 
 export function PrototypeApp({ pathname }: { readonly pathname: string }): ReactNode {
-    const route = ROUTES.find((candidate) => pathname === `${PREFIX}/${candidate.path}`);
+    const path = pathname.replace(/\/+$/, '');
+    const route = ROUTES.find((candidate) => path === `${PREFIX}/${candidate.path}`);
     if (route === undefined) {
         return (
             <PublicShell wide serverVersion="prototype">

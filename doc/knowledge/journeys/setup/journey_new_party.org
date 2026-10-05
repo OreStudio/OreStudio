@@ -92,11 +92,11 @@ every step after the legal entity is chosen.
 * Prototype
 
 Accepted by the user on 2026-09-22. The prototype is merged into =main= and
-kept there as the record; the branch names the accepted state. The built journey keeps its
+kept there as the record; the accepted commit names the state. The built journey keeps its
 five steps, its two ways of naming a party and its three exits; what it does not
 carry is the accounts picker, which the prototype showed and nothing writes.
 
-- Branch :: =prototype/new-party-journey=
+- Accepted commit :: =97d63a01f2=, the tip of =prototype/new-party-journey=, merged into =main=
 - Route :: =/prototype/party= (the branch served it at =/refdata/party/new=)
 - Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Task: Prototype the new party journey]]

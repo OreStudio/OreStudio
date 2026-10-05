@@ -102,9 +102,9 @@ fails on the dark theme.
 * Prototype
 
 Accepted by the user on 2026-09-22. The prototype is merged into =main= and
-kept there as the record; the branch names the accepted state.
+kept there as the record; the accepted commit names the state.
 
-- Branch :: =prototype/new-tenant-journey=
+- Accepted commit :: =9dee57ccee=, the tip of =prototype/new-tenant-journey=, merged into =main=
 - Route :: =/prototype/tenant= (the branch served it at =/iam/tenant/onboard=)
 - Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:7C655052-D82F-485A-A506-6F0C496546C6][Task: Prototype the new tenant journey]]

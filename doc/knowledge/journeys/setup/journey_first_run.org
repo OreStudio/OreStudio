@@ -121,9 +121,9 @@ journey, so the page needs no separate progress display.
 * Prototype
 
 Accepted by the user on 2026-09-22. The prototype is merged into =main= and
-kept there as the record; the branch names the accepted state.
+kept there as the record; the accepted commit names the state.
 
-- Branch :: =prototype/first-run-journey=
+- Accepted commit :: =414b253586=, the tip of =prototype/first-run-journey=, merged into =main=
 - Route :: =/prototype/setup= (the branch served it at =/setup=)
 - Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Task: Prototype the first run journey]]

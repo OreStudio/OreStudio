@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 607BFAB1-48A1-486E-84B9-CF23C603AE7A
+:END:
+#+title: Name the event-filled cache in the pattern language
+#+description: Entity-mirror caches are filled by reading the owner back on its change events, which the Cache-Aside page calls a different technique. The pattern language names no pattern for it. Find the established name, such as Event Notification with a read back, or Event-Carried State Transfer if events come to carry the rows, and write its page in the data or communication group, linking the entity-mirror cache page as its use.
+#+type: capture
+#+level: cross
+#+filetags: :patterns:data:caching:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:data:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+pattern_group: data
 #+startup: inlineimages
 
@@ -87,6 +87,16 @@ only in memory.
 The service token provider of [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] keeps and renews its own token the same way.
 
 - [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — the run token cache exchanges on a miss and keeps the token until shortly before it expires.
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the partition token cache
+  (=partition_token_cache= in =ores.eventing.core=) holds one token per tenant
+  partition of an entity-mirror cache. On a miss, near expiry, or when a target
+  answers =token_expired=, it exchanges for a token that acts inside that
+  tenant. The key is the tenant, so a token never serves another tenant.
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the partition token cache
+  (=partition_token_cache= in =ores.eventing.core=) holds one token per tenant
+  partition of an entity-mirror cache. On a miss, near expiry, or when a target
+  answers =token_expired=, it exchanges for a token that acts inside that
+  tenant. The key is the tenant, so a token never serves another tenant.
 
 * Related patterns
 

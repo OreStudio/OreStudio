@@ -59,6 +59,31 @@ whichever UI happened to need it first.
    =ores.iam.client=; a cache is one concrete shape that role can
    take, not a reason to invent a separate =.cache= suffix.
 
+** Reading a partition: inside its own tenant
+
+A partition is one tenant's copy of the producer's rows, so the cache reads
+it inside that tenant. Row-level security then returns exactly the rows that
+tenant may see, and the cache files every row it reads without a tenant check.
+The consumer's own identity sees no tenant data, by the rule in
+[[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], so a cache must
+never load with it, and no policy may be widened to let it.
+
+The generated cache takes a =partition_token_provider=: a callable from the
+partition's tenant id to a token that acts inside that tenant. The provider is
+a =partition_token_cache=, which is
+[[id:9FBA60F9-F0D4-425D-9BED-A34601CBACD6][Cache-Aside]] over a
+[[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] minter: one token per
+tenant, reused until shortly before it expires. A reply whose =X-Error= is
+=token_expired= gets one renewed token and one retry.
+
+=party_cache= in IAM is the first use. IAM is the issuer, so its minter is
+in-process: =tenant_session_service::read_inside= issues a token for the
+tenant, its system party and the parties that party sees, with IAM's service
+account as the subject, =acting_from_tenant_id= naming the system tenant, only
+=refdata::parties:read=, and a lifetime of five minutes. These are the claims a
+system administrator gets on entering a tenant, narrowed to the read. A consumer
+outside IAM needs an exchange that IAM serves on the bus; none exists yet.
+
 ** Targeting a non-=.core= subcomponent: =cached_by='s dotted form
 
 The facet's generated output path is

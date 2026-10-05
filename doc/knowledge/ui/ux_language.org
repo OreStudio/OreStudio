@@ -102,6 +102,25 @@ badges, with gray reserved for disabled actions. The live set is 68
 Fluent regular SVG files in
 =projects/ores.web/packages/web/src/assets/icons/=.
 
+** Access: editable or read only
+
+A screen tells a person whether they may change what they see with one
+mark, never with a permission code. The access mark (=AccessMark= in
+=web/src/ui/AccessMark.tsx=) is a pill with an icon and one word:
+
+| Mark | Icon | Means |
+|------+------+-------|
+| /Editable/ | =edit= | The person may change this |
+| /Read only/ | =lock_closed= | The person may read this but not change it |
+
+Hovering the mark says why in plain words, such as "A tenant administrator
+can change it." Codes such as =iam::accounts:update= are the server's
+vocabulary and never appear on a screen. The mark is shared: a record page's
+header draws it from whether Edit is offered (=RecordHeader=), and a form
+panel draws it beside its title. A page whose parts carry their own marks
+draws none in its header. The server still decides every write; the mark only
+says what it will allow.
+
 ** Journey screen anatomy
 
 A journey is one screen, organised around a goal. The screen carries an

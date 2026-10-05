@@ -103,6 +103,7 @@ function Person({
                 title={name}
                 recordKey={account.username}
                 version={account.version}
+                access={null}
                 mark={
                     <Avatar
                         name={name}

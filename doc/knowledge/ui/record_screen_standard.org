@@ -504,6 +504,10 @@ message.
 
 - An action a person may not take is not drawn, rather than drawn disabled.
   =useRecordPermissions= decides from the registry and the person's roles.
+- Whether the person may change a record is shown by the access mark, Editable
+  or Read only, in the record header and beside a form panel's title, as
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] sets it. A screen
+  never shows a permission code.
 - The server decides; the screen only hides what the server would refuse. A
   refusal is shown as a refusal, not as a failure.
 
@@ -583,6 +587,7 @@ component carries it today.
 | Timestamps | =RelativeTime= in =ui/Time.tsx= | Exists |
 | Recency | (none) | Missing; needs the change notification consumer |
 | Permissions | =useRecordPermissions= | Exists |
+| Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
 
 ** How today's record screens conform
 

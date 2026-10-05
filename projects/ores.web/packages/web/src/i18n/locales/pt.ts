@@ -510,9 +510,6 @@ const pt: SourceCatalogue = {
         },
         identity: {
             title: 'Fotografia e identidade',
-            whySelf: 'Pode alterar o seu nome, o seu cargo e a sua fotografia.',
-            whyAdmin: 'Tem iam::accounts:update neste inquilino.',
-            whyReadOnly: 'Apenas leitura para si: não tem iam::accounts:update neste inquilino.',
             fullName: 'Nome completo',
             jobTitle: 'Cargo',
             username: 'Nome de utilizador',
@@ -551,10 +548,6 @@ const pt: SourceCatalogue = {
         },
         contact: {
             title: 'Contactos',
-            whySelf: 'Pode alterar o seu próprio registo de contactos.',
-            whyAdmin: 'Tem iam::account_contact_informations:write neste inquilino.',
-            whyReadOnly:
-                'Apenas leitura para si: não tem iam::account_contact_informations:write neste inquilino.',
             noRecord: 'Esta conta ainda não tem registo de contactos. A primeira gravação cria-o.',
             noRecordShort: 'Ainda sem registo',
             streetLine1: 'Rua',
@@ -642,6 +635,14 @@ const pt: SourceCatalogue = {
         select: 'Escolher',
         choose: 'Escolher uma imagem',
         none: 'Nenhuma',
+    },
+
+    accessMark: {
+        editable: 'Editável',
+        editableWhy: 'Pode alterar isto.',
+        readOnly: 'Só leitura',
+        readOnlyWhy:
+            'Pode ler isto, mas não alterar. Um administrador do inquilino pode alterá-lo.',
     },
 
     audit: {

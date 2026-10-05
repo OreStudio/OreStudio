@@ -19,6 +19,7 @@
  *
  */
 
+import { AccessMark } from '../ui/AccessMark.js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Navigate, useNavigate } from 'react-router';
@@ -1082,6 +1083,7 @@ export function RecordHeader({
     onDelete,
     flag,
     mark,
+    access,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1094,6 +1096,12 @@ export function RecordHeader({
     readonly flag?: FlagSource;
     /** A picture drawn before the name when the record has no flag, such as a person's. */
     readonly mark?: ReactNode;
+    /**
+     * Whether the person may change the record, shown as the access mark.
+     * By default it follows whether Edit is offered; `null` draws no mark, for
+     * a page whose parts carry their own.
+     */
+    readonly access?: boolean | null;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1111,7 +1119,10 @@ export function RecordHeader({
                     version: String(version),
                 })}
                 actions={
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                        {access !== null && (
+                            <AccessMark canWrite={access ?? onEdit !== undefined} />
+                        )}
                         {own}
                         {onEdit !== undefined && (
                             <Button icon="edit" onClick={onEdit}>

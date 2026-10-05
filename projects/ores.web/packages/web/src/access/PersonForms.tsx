@@ -19,6 +19,7 @@
  *
  */
 
+import { AccessMark } from '../ui/AccessMark.js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ChangeEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -218,15 +219,9 @@ export function IdentityPanel({
 
     return (
         <section className="card space-y-4 p-6">
-            <header className="space-y-1">
+            <header className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-medium">{t('profile.identity.title')}</h2>
-                <p className="text-sm text-ink-muted">
-                    {canWrite
-                        ? me
-                            ? t('profile.identity.whySelf')
-                            : t('profile.identity.whyAdmin')
-                        : t('profile.identity.whyReadOnly')}
-                </p>
+                <AccessMark canWrite={canWrite} />
             </header>
 
             <div className="flex flex-wrap items-start gap-5">
@@ -643,15 +638,9 @@ export function ContactPanel({
 
     return (
         <section className="card space-y-4 p-6">
-            <header className="space-y-1">
+            <header className="flex items-center justify-between gap-3">
                 <h2 className="text-lg font-medium">{t('profile.contact.title')}</h2>
-                <p className="text-sm text-ink-muted">
-                    {canWrite
-                        ? me
-                            ? t('profile.contact.whySelf')
-                            : t('profile.contact.whyAdmin')
-                        : t('profile.contact.whyReadOnly')}
-                </p>
+                <AccessMark canWrite={canWrite} />
             </header>
 
             {refused !== null && <Notice tone="error">{refused}</Notice>}

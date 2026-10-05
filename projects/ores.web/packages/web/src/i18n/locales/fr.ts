@@ -510,10 +510,6 @@ const fr: SourceCatalogue = {
         },
         identity: {
             title: 'Photo et identité',
-            whySelf: 'Vous pouvez modifier votre nom, votre intitulé de poste et votre photo.',
-            whyAdmin: 'Vous détenez iam::accounts:update dans ce locataire.',
-            whyReadOnly:
-                'Lecture seule pour vous : vous ne détenez pas iam::accounts:update dans ce locataire.',
             fullName: 'Nom complet',
             jobTitle: 'Intitulé du poste',
             username: "Nom d'utilisateur",
@@ -554,10 +550,6 @@ const fr: SourceCatalogue = {
         },
         contact: {
             title: 'Coordonnées',
-            whySelf: 'Vous pouvez modifier votre propre fiche de coordonnées.',
-            whyAdmin: 'Vous détenez iam::account_contact_informations:write dans ce locataire.',
-            whyReadOnly:
-                'Lecture seule pour vous : vous ne détenez pas iam::account_contact_informations:write dans ce locataire.',
             noRecord:
                 "Ce compte n'a pas encore de fiche de coordonnées. Le premier enregistrement la crée.",
             noRecordShort: 'Pas encore de fiche',
@@ -647,6 +639,14 @@ const fr: SourceCatalogue = {
         select: 'Choisir',
         choose: 'Choisir une image',
         none: 'Aucune',
+    },
+
+    accessMark: {
+        editable: 'Modifiable',
+        editableWhy: 'Vous pouvez le modifier.',
+        readOnly: 'Lecture seule',
+        readOnlyWhy:
+            'Vous pouvez le lire, mais pas le modifier. Un administrateur du locataire peut le modifier.',
     },
 
     audit: {

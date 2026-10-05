@@ -509,9 +509,6 @@ export const en: SourceCatalogue = {
         },
         identity: {
             title: 'Photo and identity',
-            whySelf: 'You may change your own name, job title and photo.',
-            whyAdmin: 'You hold iam::accounts:update in this tenant.',
-            whyReadOnly: 'Read-only for you: you do not hold iam::accounts:update in this tenant.',
             fullName: 'Full name',
             jobTitle: 'Job title',
             username: 'Username',
@@ -549,10 +546,6 @@ export const en: SourceCatalogue = {
         },
         contact: {
             title: 'Contact details',
-            whySelf: 'You may change your own contact record.',
-            whyAdmin: 'You hold iam::account_contact_informations:write in this tenant.',
-            whyReadOnly:
-                'Read-only for you: you do not hold iam::account_contact_informations:write in this tenant.',
             noRecord: 'This account has no contact record yet. The first save creates it.',
             noRecordShort: 'No record yet',
             streetLine1: 'Street',
@@ -640,6 +633,13 @@ export const en: SourceCatalogue = {
         select: 'Select',
         choose: 'Choose an image',
         none: 'None',
+    },
+
+    accessMark: {
+        editable: 'Editable',
+        editableWhy: 'You may change this.',
+        readOnly: 'Read only',
+        readOnlyWhy: 'You may read this, but not change it. A tenant administrator can change it.',
     },
 
     audit: {

@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_26:sprint_26:v0:
 #+owner: marco
 #+branch: feature/bump-project-version-sprint-26
-#+pr:
+#+pr: 2657
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2657][#2657]] | [build] Bump version to 0.0.26 |
 
 * Review
 

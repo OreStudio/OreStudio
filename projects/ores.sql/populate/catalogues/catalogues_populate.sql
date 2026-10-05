@@ -33,6 +33,7 @@
  *
  * Data sources:
  * - Flag Icons: Visual assets for countries
+ * - System Avatars: Default pictures for platform administrators
  * - ISO Standards: Countries, currencies (ISO 3166, ISO 4217)
  * - IP to Country: IP geolocation mappings
  * - FPML: Financial products markup language reference data
@@ -58,6 +59,15 @@
 
 \echo '--- Flag Icons ---'
 \ir ../flags/flags_populate.sql
+
+-- =============================================================================
+-- System Avatars (Visual Assets catalog, default administrator pictures,
+-- published to the system tenant at the end of the include)
+-- =============================================================================
+
+\echo ''
+\echo '--- System Avatars ---'
+\ir ../assets/system_avatars_populate.sql
 
 -- =============================================================================
 -- ISO Standards (catalog, datasets, countries, currencies)

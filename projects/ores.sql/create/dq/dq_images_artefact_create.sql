@@ -34,7 +34,8 @@ create table if not exists "ores_dq_images_artefact_tbl" (
     "version" integer not null,
     "key" text not null,
     "description" text not null,
-    "svg_data" text not null
+    "mime_type" text not null,
+    "data" text not null
 );
 
 create index if not exists dq_images_artefact_dataset_idx

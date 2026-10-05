@@ -28,6 +28,7 @@
 #include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
+#include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
@@ -657,36 +658,56 @@ private:
      */
     static constexpr std::chrono::seconds step_publish_timeout{7200};
 
+    /// The image codes of the default administrator pictures. The
+    /// assets.system_avatars dataset publishes rows under these codes, and
+    /// the attach_photos step binds each picture by code.
+    static constexpr std::string_view super_admin_avatar_key{"super_admin_avatar"};
+    static constexpr std::string_view tenant_admin_avatar_key{"tenant_admin_avatar"};
+
     /**
      * @brief Resolves the administrator a step acts as.
      *
      * The command names the account; its username and its party go into the
      * minted token, because a token's party is what scopes the visible set a
-     * request runs under. The provisioner links the administrator to the
-     * tenant's system party, so that link is the fallback when no default
-     * party is set yet.
+     * request runs under. A step whose administrator is gone still acts as
+     * the account the command names, with the tenant's code as the username.
      */
     step_actor
     resolve_step_actor(const ores::iam::workflow::provision_tenant_step_command& command) {
         boost::uuids::string_generator parse;
-        step_actor actor;
-        actor.account_id = parse(command.admin_account_id);
-
+        const auto account_id = parse(command.admin_account_id);
         auto tenant_ctx = tenant_context::with_tenant(ctx_, command.tenant_id);
         ores::iam::service::account_service accounts(tenant_ctx);
-        if (const auto account = accounts.get_account(actor.account_id)) {
-            actor.username = account->username;
-            if (account->default_party_id)
-                actor.party_id = *account->default_party_id;
-        }
-        if (actor.party_id.is_nil()) {
-            ores::iam::service::account_party_service links(tenant_ctx);
-            const auto parties = links.list_account_parties_by_account(actor.account_id);
+        const auto account = accounts.get_account(account_id);
+
+        step_actor actor;
+        if (account)
+            actor = actor_of(tenant_ctx, *account);
+        else
+            actor.account_id = account_id;
+        if (actor.username.empty())
+            actor.username = command.tenant_code;
+        return actor;
+    }
+
+    /// The acting identity of an account the caller read: the username and
+    /// the default party, falling back to the account's first party link.
+    /// The bootstrap administrator carries no default party, only the link
+    /// the initial admin function writes, so the fallback is what scopes its
+    /// token.
+    static step_actor actor_of(ores::database::context& ctx,
+                               const ores::iam::domain::account& account) {
+        step_actor actor;
+        actor.account_id = account.id;
+        actor.username = account.username;
+        if (account.default_party_id) {
+            actor.party_id = *account.default_party_id;
+        } else {
+            ores::iam::service::account_party_service links(ctx);
+            const auto parties = links.list_account_parties_by_account(account.id);
             if (!parties.empty())
                 actor.party_id = parties.front().party_id;
         }
-        if (actor.username.empty())
-            actor.username = command.tenant_code;
         return actor;
     }
 
@@ -937,6 +958,11 @@ private:
 
         std::vector<std::string> images;
         std::vector<std::string> parties;
+
+        // The administrators' pictures are the product's own, so they are
+        // attached every time the kind runs, not from the profile's data.
+        attach_administrator_photos(discover, tenant_ctx, command, actor, images);
+
         for (const auto& assignment : arguments.parties) {
             auto party = find_party(discover, assignment.party_name);
             if (!party)
@@ -1544,13 +1570,11 @@ private:
     }
 
     // Attaches a profile picture to every staff account the named dataset
-    // carries a photo_key for and that doesn't already have an image_id. Reads
-    // (username, photo_key) directly from the DQ artefact table (not modeled in
-    // the account NATS API, same reason grant_cross_entity_access's
-    // account_ids_for does the same for business_unit_code/role), then copies
-    // each account's own template image and re-saves the account with every
-    // other field echoed back unchanged (update_account_request has no
-    // partial-update semantics -- omitting a field would clear it).
+    // carries a photo_key for. Reads (username, photo_key) directly from the
+    // DQ artefact table (not modeled in the account NATS API, same reason
+    // grant_cross_entity_access's account_ids_for does the same for
+    // business_unit_code/role); each picture goes on through
+    // attach_account_photo.
     void attach_staff_photos(internal_request_client& client,
                              ores::database::context& ctx,
                              const std::string& tenant_id,
@@ -1589,32 +1613,124 @@ private:
         auto accounts_resp = client.request(accounts_req);
         for (const auto& a : accounts_resp.accounts) {
             const auto it = photo_key_by_username.find(a.username);
-            if (it == photo_key_by_username.end() || a.image_id.has_value())
+            if (it == photo_key_by_username.end())
                 continue;
-
-            auto image_id = copy_template_image(client, ctx, tenant_id, it->second);
-            if (!image_id)
-                throw std::runtime_error("The template image '" + it->second +
-                                         "' was not copied into the tenant.");
-
-            iam::messaging::update_account_request update_req;
-            update_req.account_id = boost::uuids::to_string(a.id);
-            update_req.email = a.email;
-            update_req.full_name = a.full_name;
-            update_req.default_party_id =
-                a.default_party_id ? boost::uuids::to_string(*a.default_party_id) : "";
-            update_req.job_title = a.job_title;
-            update_req.reports_to_account_id =
-                a.reports_to_account_id ? boost::uuids::to_string(*a.reports_to_account_id) : "";
-            update_req.image_id = boost::uuids::to_string(*image_id);
-            update_req.change_reason_code = "system.external_data_import";
-            update_req.change_commentary = "Attached staff photo during provisioning";
-            const auto resp = client.request(update_req);
-            if (!resp.success)
-                throw std::runtime_error("The photo was not attached to the account '" +
-                                         a.username + "': " + resp.message);
-            images.push_back(boost::uuids::to_string(*image_id));
+            attach_account_photo(client,
+                                 ctx,
+                                 tenant_id,
+                                 a,
+                                 it->second,
+                                 "Attached staff photo during provisioning",
+                                 images);
         }
+    }
+
+    /// Copies the named template image into the tenant and saves it on the
+    /// account, which the caller read first. An account that already carries
+    /// a picture is left untouched, which is what makes a repeated run leave
+    /// it unchanged.
+    void attach_account_photo(internal_request_client& client,
+                              ores::database::context& ctx,
+                              const std::string& tenant_id,
+                              const ores::iam::domain::account& account,
+                              const std::string& template_key,
+                              const std::string& commentary,
+                              std::vector<std::string>& images) {
+        if (account.image_id)
+            return;
+
+        auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        if (!image_id)
+            throw std::runtime_error("The template image '" + template_key +
+                                     "' was not copied into the tenant.");
+
+        iam::messaging::update_account_request update_req;
+        update_req.account_id = boost::uuids::to_string(account.id);
+        update_req.email = account.email;
+        update_req.full_name = account.full_name;
+        update_req.default_party_id =
+            account.default_party_id ? boost::uuids::to_string(*account.default_party_id) : "";
+        update_req.job_title = account.job_title;
+        update_req.reports_to_account_id =
+            account.reports_to_account_id ?
+                boost::uuids::to_string(*account.reports_to_account_id) :
+                "";
+        update_req.image_id = boost::uuids::to_string(*image_id);
+        update_req.change_reason_code = "system.external_data_import";
+        update_req.change_commentary = commentary;
+        const auto resp = client.request(update_req);
+        if (!resp.success)
+            throw std::runtime_error("The picture was not attached to the account '" +
+                                     account.username + "': " + resp.message);
+        images.push_back(boost::uuids::to_string(*image_id));
+    }
+
+    /// Attaches the two administrators' pictures: the tenant administrator
+    /// the run acts as, and every super administrator of the system tenant,
+    /// each written through a token minted for that account. The template
+    /// keys are constants here rather than step arguments because these
+    /// pictures are the product's own; the parties' datasets stay arguments
+    /// because those are the profile's data.
+    void
+    attach_administrator_photos(internal_request_client& client,
+                                ores::database::context& tenant_ctx,
+                                const ores::iam::workflow::provision_tenant_step_command& command,
+                                const step_actor& actor,
+                                std::vector<std::string>& images) {
+        ores::iam::service::account_service tenant_accounts(tenant_ctx);
+        if (const auto admin = tenant_accounts.get_account(actor.account_id))
+            attach_account_photo(client,
+                                 tenant_ctx,
+                                 command.tenant_id,
+                                 *admin,
+                                 std::string(tenant_admin_avatar_key),
+                                 "Attached the tenant administrator's picture during provisioning",
+                                 images);
+
+        // The system tenant needs no copy: its published row is the tenant's
+        // own picture, and copy_template_image finds it by code, so the
+        // super administrators share that one row deliberately.
+        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        boost::uuids::string_generator parse;
+        for (const auto& id : super_admin_account_ids(sys_ctx)) {
+            const auto account = system_accounts.get_account(parse(id));
+            if (!account)
+                continue;
+            const auto super_actor = actor_of(sys_ctx, *account);
+            auto super_client = make_step_client(tenant_context::system_tenant_id,
+                                                 super_actor.account_id,
+                                                 super_actor.party_id,
+                                                 super_actor.username);
+            attach_account_photo(super_client,
+                                 sys_ctx,
+                                 tenant_context::system_tenant_id,
+                                 *account,
+                                 std::string(super_admin_avatar_key),
+                                 "Attached the super administrator's picture during provisioning",
+                                 images);
+        }
+    }
+
+    /// The accounts of the system tenant that hold the SuperAdmin role, which
+    /// is the rule the bootstrap service uses to find the deployment's
+    /// administrators.
+    static std::vector<std::string>
+    super_admin_account_ids(ores::database::context& sys_ctx) {
+        return execute_parameterized_string_query(
+            sys_ctx,
+            "SELECT DISTINCT a.id::text FROM ores_iam_accounts_tbl a "
+            "JOIN ores_iam_account_roles_tbl ar ON ar.account_id = a.id "
+            "AND ar.tenant_id = a.tenant_id "
+            "AND ar.valid_to = ores_utility_infinity_timestamp_fn() "
+            "JOIN ores_iam_roles_tbl r ON r.id = ar.role_id "
+            "AND r.tenant_id = ar.tenant_id "
+            "AND r.valid_to = ores_utility_infinity_timestamp_fn() "
+            "WHERE a.tenant_id = $1::uuid "
+            "AND a.valid_to = ores_utility_infinity_timestamp_fn() AND r.name = $2",
+            {tenant_context::system_tenant_id, ores::iam::domain::roles::super_admin},
+            tenant_provisioning_handler_lg(),
+            "attach_administrator_photos");
     }
 
     /// Copies the named template image into the tenant and saves it on the

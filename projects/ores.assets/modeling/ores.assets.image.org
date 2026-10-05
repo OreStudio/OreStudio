@@ -13,7 +13,7 @@
 #+entity_plural: images
 #+entity_title: Image
 #+created: 2026-09-23
-#+updated: 2026-09-26
+#+updated: 2026-10-05
 
 An image is a named document the platform renders, such as a currency flag
 or a commodity icon. The bytes are format-agnostic: an SVG document, a
@@ -111,7 +111,7 @@ base64 hop in both directions.
 
 * Artefact columns
 
-The import renames the store's =id= to =image_id= and =code= to =key=, and it carries the image as plain SVG text in =svg_data= rather than the store's base64 =data= beside a =mime_type=. =ores_assets_publish_images_from_dq_fn= reads all three and re-encodes.
+The import renames the store's =id= to =image_id= and =code= to =key=, and it carries the image in the store's own shape: a =mime_type= beside base64 =data=, so an SVG document and a JPEG travel the same staging pipeline. =ores_assets_publish_images_from_dq_fn= copies both into the live row unchanged.
 
 ** image_id
 :PROPERTIES:
@@ -133,10 +133,19 @@ The import renames the store's =id= to =image_id= and =code= to =key=, and it ca
 :type: text
 :END:
 
-** svg_data
+** mime_type
 :PROPERTIES:
 :type: text
 :END:
+
+Media type the staged image carries, copied to the live row as it stands.
+
+** data
+:PROPERTIES:
+:type: text
+:END:
+
+The staged image, base64-encoded as the live column carries it.
 
 * SQL
 

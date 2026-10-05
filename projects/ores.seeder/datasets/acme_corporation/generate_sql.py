@@ -639,10 +639,12 @@ def generate_staff_photos_populate(accounts):
     """Embeds every distinct facestudio face actually used (across all
     offices) as a system-tenant template row in ores_assets_images_tbl,
     keyed by photo_key -- copied per-tenant and attached to the matching
-    account by tenant_handler::provision_acme, mirroring how
-    acme_party_logo_populate.sql seeds the party logo template (JPEGs
-    can't go through the SVG-only ores_dq_images_artefact_tbl staging
-    pipeline, see that script's own comment for why)."""
+    account by attach_staff_photos
+    (ores.iam.core/messaging/tenant_provisioning_handler.hpp), mirroring how
+    acme_party_logo_populate.sql seeds the party logo template. The photos
+    are this generator's own output rather than a staged DQ dataset
+    artefact; the staging pipeline accepts their JPEGs, so moving them onto
+    that route is open work, not a limitation."""
     seen = {}
     for a in accounts:
         photo_key = a["photo_key"]

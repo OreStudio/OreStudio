@@ -36,6 +36,8 @@ BEGIN
 
     -- Visual assets
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'assets.country_flags', 1);
+    -- Default administrator pictures; the attach step binds them by code.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'assets.system_avatars', 3);
 
     -- Geolocation
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'geo.ip2country', 2);

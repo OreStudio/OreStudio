@@ -103,7 +103,7 @@ to_domain(const messaging::fx_spot_generation_config_write& write) {
     return v;
 }
 
-}
+} // namespace
 
 messaging::list_fx_spot_generation_configs_response
 fx_spot_generation_config_service::list_fx_spot_generation_configs(

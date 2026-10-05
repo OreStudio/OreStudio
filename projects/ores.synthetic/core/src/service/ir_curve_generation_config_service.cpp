@@ -106,7 +106,7 @@ to_domain(const messaging::ir_curve_generation_config_write& write) {
     return v;
 }
 
-}
+} // namespace
 
 messaging::list_ir_curve_generation_configs_response
 ir_curve_generation_config_service::list_ir_curve_generation_configs(

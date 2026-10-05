@@ -93,7 +93,7 @@ domain::job_definition to_domain(const messaging::job_definition_write& write) {
     return v;
 }
 
-}
+} // namespace
 
 messaging::list_job_definitions_response job_definition_service::list_job_definitions(
     const messaging::list_job_definitions_request& request) {

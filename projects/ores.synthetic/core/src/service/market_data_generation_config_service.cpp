@@ -95,7 +95,7 @@ to_domain(const messaging::market_data_generation_config_write& write) {
     return v;
 }
 
-}
+} // namespace
 
 messaging::list_market_data_generation_configs_response
 market_data_generation_config_service::list_market_data_generation_configs(

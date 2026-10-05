@@ -93,7 +93,7 @@ domain::gmm_component to_domain(const messaging::gmm_component_write& write) {
     return v;
 }
 
-}
+} // namespace
 
 messaging::list_gmm_components_response
 gmm_component_service::list_gmm_components(const messaging::list_gmm_components_request& request) {

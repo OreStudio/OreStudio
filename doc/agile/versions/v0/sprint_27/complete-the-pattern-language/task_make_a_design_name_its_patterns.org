@@ -8,7 +8,7 @@
 #+filetags: :complete-the-pattern-language:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/make-a-design-name-its-patterns
-#+pr:
+#+pr: 2664
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2664][#2664]] | [doc,codegen] Make a design name its service architecture patterns |
 
 * Review
 

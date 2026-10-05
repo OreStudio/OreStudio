@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-05T16:29:37.753067Z
+' Generated: 2026-10-05T20:06:47.929131Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -355,6 +355,59 @@ package "iam" #E8F4FD {
     the four audit columns while keeping the transaction-time window. The
     :skip_uuid_check: suppression on id drops the nil-UUID check the
     hand-written table never had.
+    end note
+
+    entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * role_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_role_grant_request_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Role Grant Request Role Table
+    The roles an iam.role_grant approval request asks for, one row each. A row is
+    identified by the request and the role. When the request is approved, IAM
+    grants each role the account does not already hold.
+    end note
+
+    entity ores_iam_role_grant_requests_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * account_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_role_grant_requests_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Role Grant Request Table
+    The IAM detail of an iam.role_grant approval request. The request itself, who
+    asked, when, why and where it stands, is the inbox's record; this row names
+    the account that would hold the roles, keyed by the request it details. The
+    roles asked for are rows of [[id:E07B21AB-F875-4549-BDFC-04EE98C246D0][ores.iam.role_grant_request_role]], one each, so a
+    request may ask for many.
+    The account is usually the person who asked, but a system may ask on a
+    person's behalf, so it is a column of its own rather than the request's
+    requested_by.
     end note
 
     entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {

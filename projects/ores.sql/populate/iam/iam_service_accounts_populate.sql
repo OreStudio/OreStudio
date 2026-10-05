@@ -57,6 +57,7 @@
 \set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
 \set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
 \set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
+\set inbox_service_pw    `echo "$ORES_INBOX_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -212,6 +213,13 @@ select ores_iam_service_accounts_upsert_fn(
     'storage_service@system.ores',
     'System service account for Object Storage NATS domain service',
     :'storage_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'inbox_service_user',
+    'inbox_service@system.ores',
+    'System service account for Inbox NATS domain service',
+    :'inbox_service_pw'
 );
 
 -- Summary

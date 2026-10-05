@@ -42,4 +42,5 @@ SERVICE_NAMES=(
     marketdata
     analytics
     storage
+    inbox
 )

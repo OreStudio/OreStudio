@@ -83,6 +83,9 @@ select ores_iam_account_role_assign_fn(
 select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'storage_service_user', 'StorageService');
 
+select ores_iam_account_role_assign_fn(
+    ores_utility_system_tenant_id_fn(), :'inbox_service_user', 'InboxService');
+
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count
 from ores_iam_account_roles_tbl ar

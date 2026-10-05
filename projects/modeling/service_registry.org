@@ -414,6 +414,32 @@ reads back as "... and nothing else. domain service".
 
 - --storage-dir ../storage
 
+* ores.inbox.service
+:PROPERTIES:
+:psql_var:    inbox_service
+:env_key:     INBOX_SERVICE
+:iam_role:    InboxService
+:description: Inbox
+:email:       inbox_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
+Answers the approval request and notification operations. It owns the inbox
+tables, and reads IAM to resolve a permission audience into the accounts that
+hold the permission.
+
+** DML prefixes
+
+- ores_inbox_
+
+** Select prefixes
+
+# A notification raised to a permission resolves its recipients from the
+# accounts, roles and permissions IAM holds.
+- ores_iam_
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

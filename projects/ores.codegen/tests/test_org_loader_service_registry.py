@@ -63,8 +63,8 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_twenty_fleet_processes(services):
-    assert len(services) == 20
+def test_twenty_one_fleet_processes(services):
+    assert len(services) == 21
 
 
 def test_storage_service_shares_the_http_server_storage_root(services):

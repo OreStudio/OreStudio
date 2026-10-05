@@ -68,7 +68,7 @@ export function partyColumns(
             header: t('parties.parent'),
             cell: (party) =>
                 party.parentId === null ? (
-                    ''
+                    <span className="text-ink-faint">{t('parties.topOfGroup')}</span>
                 ) : party.parentName !== null ? (
                     party.parentName
                 ) : (

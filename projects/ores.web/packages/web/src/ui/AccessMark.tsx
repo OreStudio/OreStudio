@@ -34,6 +34,12 @@ export function AccessMark({ canWrite }: { readonly canWrite: boolean }): ReactN
         <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${canWrite ? 'border-accent/40 text-accent' : 'border-line text-ink-muted'}`}
             title={canWrite ? t('accessMark.editableWhy') : t('accessMark.readOnlyWhy')}
+            role="note"
+            aria-label={
+                canWrite
+                    ? `${t('accessMark.editable')}. ${t('accessMark.editableWhy')}`
+                    : `${t('accessMark.readOnly')}. ${t('accessMark.readOnlyWhy')}`
+            }
         >
             <Icon name={canWrite ? 'edit' : 'locked'} size={16} />
             {canWrite ? t('accessMark.editable') : t('accessMark.readOnly')}

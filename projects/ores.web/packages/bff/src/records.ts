@@ -78,24 +78,25 @@ const RULE_NEEDS: Readonly<
 };
 
 /**
- * Rules and exceptions make a calendar's business days, so they are written
- * only to a calendar that is editable. Nothing on the server checks this yet.
+ * Rules and exceptions make a calendar's business days, so the BFF writes them
+ * only to a calendar that is editable. The server does not check this yet, and
+ * a calendar that stops being editable between this read and the write is not
+ * caught; the server's own check is the real fix.
  */
 const EDITABLE_PARENT = new Set(['calendar-rules', 'calendar-exceptions']);
 
-async function refuseReadOnlyCalendar(
-    session: LiveSession,
-    write: Record<string, unknown>,
-): Promise<void> {
+async function refuseReadOnlyCalendar(session: LiveSession, calendarCode: string): Promise<void> {
     const calendars = recordResource('calendars');
-    const rows = calendars === undefined ? [] : await listRecords(session.client, calendars);
-    const calendar = rows.find((row) => row['code'] === write['calendar_code']);
+    const calendar =
+        calendars === undefined
+            ? undefined
+            : await readRecord(session.client, calendars, calendarCode);
     if (calendar === undefined) {
-        throw invalidRequest(`There is no calendar ${String(write['calendar_code'])}.`);
+        throw invalidRequest(`There is no calendar ${calendarCode}.`);
     }
     if (calendar['is_editable'] !== true) {
         throw notPermitted(
-            `${String(write['calendar_code'])} takes its holidays from QuantLib and is read only. Derive a calendar to change them.`,
+            `${calendarCode} takes its holidays from QuantLib and is read only. Derive a calendar to change them.`,
         );
     }
 }
@@ -438,7 +439,7 @@ export function registerRecordRoutes(
             throw invalidRequest(rule?.message ?? `The row is not a valid ${resource.key} row.`);
         }
         if (EDITABLE_PARENT.has(resource.key)) {
-            await refuseReadOnlyCalendar(session, write.data);
+            await refuseReadOnlyCalendar(session, String(write.data['calendar_code']));
         }
         answer(
             await saveRecord(session.client, resource, write.data, body.data.version, {

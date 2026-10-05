@@ -620,16 +620,12 @@ describe('the calendar routes', () => {
 });
 
 describe('a calendar rule write', () => {
-    const calendars = {
-        'refdata.v1.calendars.list': {
-            result: ok,
-            calendars: [
-                { code: 'ACME', is_editable: true, version: 1 },
-                { code: 'TARGET', is_editable: false, version: 1 },
-            ],
-        },
+    /** The server answers a read by key with that one calendar. */
+    const only = (calendar: { code: string; is_editable: boolean }) => ({
+        'refdata.v1.calendars.list': { result: ok, calendars: [{ ...calendar, version: 1 }] },
         'refdata.v1.calendar_rules.put': { result: ok },
-    };
+    });
+    const calendars = only({ code: 'ACME', is_editable: true });
     const christmas = {
         id: '55555555-5555-4555-8555-555555555555',
         calendar_code: 'ACME',
@@ -678,9 +674,12 @@ describe('a calendar rule write', () => {
     });
 
     it('refuses a rule on a calendar that is not editable', async () => {
-        const { server, sessionId, calls } = buildTestServer(calendars);
+        const { server, sessionId, calls } = buildTestServer(
+            only({ code: 'TARGET', is_editable: false }),
+        );
         const response = await put(server, sessionId, { ...christmas, calendar_code: 'TARGET' });
         expect(response.statusCode).toBe(403);
         expect(calls.map((call) => call.subject)).not.toContain('refdata.v1.calendar_rules.put');
+        expect(calls[0]?.body).toMatchObject({ limit: 1, filter: { code_one_of: ['TARGET'] } });
     });
 });

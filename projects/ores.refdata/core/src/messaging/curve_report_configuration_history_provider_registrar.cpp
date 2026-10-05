@@ -33,6 +33,7 @@ void register_curve_report_configuration_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_report_configuration",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_report_configuration_service svc(scoped_ctx);
             auto versions = svc.get_report_configuration_history(entity_id);

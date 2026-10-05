@@ -32,6 +32,7 @@ namespace ores::synthetic::messaging {
 void register_folder_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.synthetic.folder",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::folder_service svc(scoped_ctx);
             auto versions = svc.get_folder_history(entity_id);

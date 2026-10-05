@@ -33,6 +33,7 @@ void register_approval_request_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.inbox.approval_request",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::approval_request_service svc(scoped_ctx);
             auto versions = svc.get_request_history(entity_id);

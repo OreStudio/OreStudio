@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_tenor_unit_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.tenor_unit",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tenor_unit_service svc(scoped_ctx);
             auto versions = svc.get_unit_history(entity_id);

@@ -33,6 +33,7 @@ void register_amortization_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.amortization_type",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::amortization_type_service svc(scoped_ctx);
             auto versions = svc.get_amortization_type_history(entity_id);

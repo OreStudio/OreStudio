@@ -32,6 +32,7 @@ namespace ores::synthetic::messaging {
 void register_gmm_component_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.synthetic.gmm_component",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::gmm_component_service svc(scoped_ctx);
             auto versions = svc.get_gmm_component_history(entity_id);

@@ -32,6 +32,7 @@ namespace ores::workspace::messaging {
 void register_workspace_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.workspace.workspace",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::workspace_service svc(scoped_ctx);
             auto versions = svc.get_workspace_history(entity_id);

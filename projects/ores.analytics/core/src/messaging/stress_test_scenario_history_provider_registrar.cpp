@@ -33,6 +33,7 @@ void register_stress_test_scenario_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.stress_test_scenario",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::stress_test_scenario_service svc(scoped_ctx);
             auto versions = svc.get_stress_test_scenario_history(entity_id);

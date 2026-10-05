@@ -33,6 +33,7 @@ void register_deposit_convention_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.deposit_convention",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::deposit_convention_service svc(scoped_ctx);
             auto versions = svc.get_deposit_convention_history(entity_id);

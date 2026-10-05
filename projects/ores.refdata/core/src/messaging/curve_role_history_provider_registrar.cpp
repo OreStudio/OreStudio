@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_curve_role_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_role",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_role_service svc(scoped_ctx);
             auto versions = svc.get_role_history(entity_id);

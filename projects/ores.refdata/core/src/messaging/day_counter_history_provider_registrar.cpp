@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_day_counter_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.day_counter",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::day_counter_service svc(scoped_ctx);
             auto versions = svc.get_day_counter_history(entity_id);

@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_sandbox_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.sandbox",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::sandbox_service svc(scoped_ctx);
             auto versions = svc.get_sandbox_history(entity_id);

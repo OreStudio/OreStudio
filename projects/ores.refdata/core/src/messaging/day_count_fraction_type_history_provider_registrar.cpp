@@ -33,6 +33,7 @@ void register_day_count_fraction_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.day_count_fraction_type",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::day_count_fraction_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

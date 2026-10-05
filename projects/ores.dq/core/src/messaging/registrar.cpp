@@ -469,6 +469,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         // compound key, so this bridge is hand-written.
         hist_registry.register_history_provider(
             "ores.dq.subject_area",
+            "dq::subject_areas:read",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
                 service::subject_area_service svc(scoped_ctx);
                 const auto sep = entity_id.find('|');

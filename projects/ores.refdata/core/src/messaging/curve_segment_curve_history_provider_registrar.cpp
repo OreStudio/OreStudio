@@ -33,6 +33,7 @@ void register_curve_segment_curve_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_segment_curve",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_segment_curve_service svc(scoped_ctx);
             auto versions = svc.get_segment_curve_history(entity_id);

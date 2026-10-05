@@ -33,6 +33,7 @@ void register_account_contact_information_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.account_contact_information",
+        "iam::account_contact_informations:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::account_contact_information_service svc(scoped_ctx);
             auto versions = svc.get_account_contact_information_history(entity_id);

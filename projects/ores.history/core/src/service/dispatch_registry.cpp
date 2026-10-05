@@ -18,13 +18,16 @@
  *
  */
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <exception>
 
 namespace ores::history::service {
 
 void dispatch_registry::register_history_provider(std::string entity_type,
+                                                  std::string read_permission,
                                                   history_provider provider) {
-    providers_[std::move(entity_type)] = std::move(provider);
+    providers_[std::move(entity_type)] = {.read_permission = std::move(read_permission),
+                                          .provider = std::move(provider)};
 }
 
 bool dispatch_registry::has_provider(const std::string& entity_type) const {
@@ -46,8 +49,18 @@ dispatch_registry::dispatch(const messaging::get_entity_history_request& request
                     "No history provider registered for entity_type: " + request.entity_type};
     }
 
+    const auto& registered = it->second;
+    if (!registered.read_permission.empty() &&
+        !ores::service::messaging::has_permission(ctx, registered.read_permission)) {
+        return {.versions = {},
+                .success = false,
+                .message = "Reading this history needs " + registered.read_permission + "."};
+    }
+
     try {
-        return {.versions = it->second(ctx, request.entity_id), .success = true, .message = {}};
+        return {.versions = registered.provider(ctx, request.entity_id),
+                .success = true,
+                .message = {}};
     } catch (const std::exception& e) {
         return {.versions = {},
                 .success = false,

@@ -32,6 +32,7 @@ namespace ores::scheduler::messaging {
 void register_job_definition_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.scheduler.job_definition",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::job_definition_service svc(scoped_ctx);
             auto versions = svc.get_definition_history(entity_id);

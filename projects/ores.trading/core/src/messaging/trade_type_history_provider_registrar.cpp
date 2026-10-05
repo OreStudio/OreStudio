@@ -32,6 +32,7 @@ namespace ores::trading::messaging {
 void register_trade_type_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.trade_type",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::trade_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

@@ -33,6 +33,7 @@ void register_observation_lineage_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.marketdata.observation_lineage",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::observation_lineage_service svc(scoped_ctx);
             auto versions = svc.get_observation_lineage_history(entity_id);

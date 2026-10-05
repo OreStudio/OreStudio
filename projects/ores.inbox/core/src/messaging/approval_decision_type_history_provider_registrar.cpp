@@ -33,6 +33,7 @@ void register_approval_decision_type_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.inbox.approval_decision_type",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::approval_decision_type_service svc(scoped_ctx);
             auto versions = svc.get_decision_type_history(entity_id);

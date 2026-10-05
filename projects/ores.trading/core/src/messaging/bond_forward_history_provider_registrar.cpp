@@ -32,6 +32,7 @@ namespace ores::trading::messaging {
 void register_bond_forward_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.bond_forward",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::bond_forward_service svc(scoped_ctx);
             auto versions = svc.get_bond_forward_history(entity_id);

@@ -33,6 +33,7 @@ void register_commodity_price_segment_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.commodity_price_segment",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::commodity_price_segment_service svc(scoped_ctx);
             auto versions = svc.get_price_segment_history(entity_id);

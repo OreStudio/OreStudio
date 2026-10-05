@@ -33,6 +33,7 @@ void register_nature_dimension_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.nature_dimension",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::nature_dimension_service svc(scoped_ctx);
             auto versions = svc.get_dimension_history(entity_id);

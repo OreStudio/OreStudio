@@ -33,6 +33,7 @@ void register_ir_curve_template_entry_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.synthetic.ir_curve_template_entry",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::ir_curve_template_entry_service svc(scoped_ctx);
             auto versions = svc.get_ir_curve_template_entry_history(entity_id);

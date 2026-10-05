@@ -33,6 +33,7 @@ void register_notification_channel_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.inbox.notification_channel",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::notification_channel_service svc(scoped_ctx);
             auto versions = svc.get_channel_history(entity_id);

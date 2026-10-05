@@ -32,6 +32,7 @@ namespace ores::dq::messaging {
 void register_methodology_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.methodology",
+        "",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::methodology_service svc(scoped_ctx);
             auto versions = svc.get_methodology_history(entity_id);

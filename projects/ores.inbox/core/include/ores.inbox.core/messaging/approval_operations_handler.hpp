@@ -24,8 +24,6 @@
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include <algorithm>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -33,7 +31,10 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <optional>
+#include <string_view>
 #include <string>
 #include <vector>
 
@@ -64,6 +65,29 @@ inline ores::utility::domain::outcome outcome_named(const std::string& name) {
     if (name == "invalid")
         return outcome::invalid;
     return outcome::failed;
+}
+
+/**
+ * @brief The words for a rule the decisions table refused, if it was one.
+ *
+ * The database states a broken lifecycle rule as an error. These are the rules
+ * a person can break by acting, so their refusal is a conflict in the person's
+ * words; any other error is a failure, and its text stays in the log.
+ */
+inline std::optional<ores::utility::domain::result> rule_refusal(const std::exception& e) {
+    using ores::utility::domain::outcome;
+    const std::string_view what = e.what();
+    if (what.find("cannot decide request") != std::string_view::npos)
+        return approval_result(outcome::conflict,
+                               "four_eyes",
+                               "You asked for this request, so someone else decides it.");
+    if (what.find("one_approval_per_person") != std::string_view::npos)
+        return approval_result(
+            outcome::conflict, "already_approved", "You have already approved this request.");
+    if (what.find("Only the person who asked can withdraw") != std::string_view::npos)
+        return approval_result(
+            outcome::denied, "not_the_asker", "Only the person who asked can withdraw a request.");
+    return std::nullopt;
 }
 
 } // namespace
@@ -176,21 +200,45 @@ public:
                                                     "The signed-in account was not found.")});
                 return;
             }
+            const auto current = lifecycle.request(req->request_id);
+            if (!current) {
+                reply(nats_,
+                      msg,
+                      withdraw_approval_request_response{
+                          .result =
+                              approval_result(outcome::missing, "missing", "No such request.")});
+                return;
+            }
+            // The decisions table refuses a withdrawal by anyone else too; this
+            // answers the person plainly before the database has to.
+            if (current->requested_by != *me) {
+                reply(nats_,
+                      msg,
+                      withdraw_approval_request_response{
+                          .result =
+                              approval_result(outcome::denied,
+                                              "not_the_asker",
+                                              "Only the person who asked can withdraw a request."),
+                          .request = *current});
+                return;
+            }
             const auto r =
                 lifecycle.decide(req->request_id, req->version, "withdraw", *me, req->comment);
             reply(nats_,
                   msg,
                   withdraw_approval_request_response{
                       .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
-                      .request =
-                          lifecycle.request(req->request_id).value_or(domain::approval_request{})});
+                      .request = lifecycle.request(req->request_id).value_or(*current)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error withdrawing request " << req->request_id << ": " << e.what();
             reply(nats_,
                   msg,
                   withdraw_approval_request_response{
-                      .result = approval_result(outcome::failed, "withdraw_failed", e.what())});
+                      .result = rule_refusal(e).value_or(
+                          approval_result(outcome::failed,
+                                          "withdraw_failed",
+                                          "The withdrawal could not be recorded."))});
         }
     }
 
@@ -252,7 +300,7 @@ public:
             const auto r = lifecycle.decide(
                 req->request_id, req->version, req->decision_code, *me, req->comment);
             const auto after = lifecycle.request(req->request_id).value_or(*current);
-            if (r.outcome == "ok" && after.state_code != current->state_code)
+            if (after.state_code != current->state_code)
                 tell_asker(*ctx, *kind, after, req->comment);
             reply(nats_,
                   msg,
@@ -260,15 +308,15 @@ public:
                       .result = approval_result(outcome_named(r.outcome), r.outcome, r.message),
                       .request = after});
         } catch (const std::exception& e) {
-            // The database states a broken rule -- four-eyes, a second
-            // approval by one person -- as an error, and its words are the
-            // ones the decider should read.
-            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
-                << "Decision on request " << req->request_id << " refused: " << e.what();
-            reply(nats_,
-                  msg,
-                  decide_approval_request_response{
-                      .result = approval_result(outcome::conflict, "refused", e.what())});
+            const auto refusal = rule_refusal(e);
+            BOOST_LOG_SEV(approval_operations_handler_lg(), refusal ? warn : error)
+                << "Decision on request " << req->request_id << " not recorded: " << e.what();
+            reply(
+                nats_,
+                msg,
+                decide_approval_request_response{
+                    .result = refusal.value_or(approval_result(
+                        outcome::failed, "decide_failed", "The decision could not be recorded."))});
         }
     }
 
@@ -376,15 +424,14 @@ private:
             std::erase(deciders, boost::uuids::to_string(raised.requested_by));
             if (deciders.empty())
                 return;
-            raise_notification_request n{
-                .kind_code = "inbox.approval_waiting",
-                .link_route = "requests",
-                .link_id = boost::uuids::to_string(raised.id),
-                .arguments = {{.name = "kind", .value = kind.name},
-                              {.name = "requester", .value = ctx.actor()},
-                              {.name = "reason", .value = raised.reason}},
-                .account_ids = {},
-                .audience_permission_code = kind.decide_permission_code};
+            raise_notification_request n{.kind_code = "inbox.approval_waiting",
+                                         .link_route = "requests",
+                                         .link_id = boost::uuids::to_string(raised.id),
+                                         .arguments = {{.name = "kind", .value = kind.name},
+                                                       {.name = "requester", .value = ctx.actor()},
+                                                       {.name = "reason", .value = raised.reason}},
+                                         .account_ids = {},
+                                         .audience_permission_code = kind.decide_permission_code};
             center.raise(n, deciders, raised.requested_by);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), warn)

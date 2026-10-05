@@ -103,7 +103,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Anyone can withdraw anyone's request | approval_operations_handler.hpp | Accepted in part | The decisions table's rules trigger already refuses a withdrawal by anyone but the asker, and only_the_person_who_asked_withdraws_a_request covers it; the handler now checks ownership first and answers denied plainly, with the trigger as the backstop. |
+| 2 | The decide catch reports every failure as a conflict with the raw error | approval_operations_handler.hpp | Accepted | rule_refusal maps the three rules a person can break to their own words; any other error is a failure with a generic message, and its text stays in the log. Four tests pin the mapping. |
+| 3 | Queue paging reads more rows as the offset grows | approval_lifecycle.cpp | Declined | The generated filter has no not-equal condition, and the read is capped at 500; a queue deep enough to matter is a reason to add one. |
+| 4 | An expired request's asker is never told | approval_operations_handler.hpp | Accepted | The asker is told whenever a decision moves the request, an expiry included. |
+| 5 | Notification arguments carry free text | approval_operations_handler.hpp | Declined | The screen renders arguments as text, never markup; that belongs to the screens task. |
+| 6 | Mark read and clear copy the version | inbox_notification_fn_create.sql | No change | The recipient trigger replaces a row whose stated version matches and increments it; the test marking a notification read twice proves the second write finds nothing. |
 
 * Result
 

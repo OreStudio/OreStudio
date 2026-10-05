@@ -51,6 +51,7 @@ target_link_libraries(${tests_target_name}
         ores.iam.api.lib
         ores.iam.core.lib
         ores.nats.lib
+        ores.service.lib
         ores.utility.lib)
 
 add_custom_target(test_${tests_target_name}

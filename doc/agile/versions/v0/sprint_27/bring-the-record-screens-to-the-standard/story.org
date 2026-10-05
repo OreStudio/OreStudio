@@ -51,6 +51,7 @@ moved here.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:FBD721CE-F97F-4F40-BBE3-908781628425][Bring the record screens to the standard]] | STARTED | 2026-10-05 | | Close the remaining gaps the standard lists: related records as tabs, Delete and Remove words, icons, the last-changed line, reasons filtered by change, unsaved changes, sorting, the column menu, and shared parts for the tenant and party screens. |
+| [[id:BB15DD97-53FF-47AE-AAA1-8675BCFB9882][Bring the role screens to the standard]] | BACKLOG | | | Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role. |
 
 * Decisions
 

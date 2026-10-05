@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 3D7260FA-A224-4657-A128-7FC186808065
+:END:
+#+title: Task: Bump project version to 0.0.27 for sprint 27
+#+description: Bump the project version from 0.0.26 to 0.0.27 across CMakeLists.txt, vcpkg.json, the three GitHub workflow package filenames, the readme badges and the readme and index screenshots, and update the vcpkg submodule to latest.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_27:sprint_27:v0:
+#+owner: marco
+#+branch: feature/open-sprint-27
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3377D9CE-F74C-4D9C-ACB8-FA94940DAB1D][Open sprint 27]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The project version is 0.0.27 in every file the version recipe names,
+the readme and index screenshots show the just-closed sprint's
+capture, and the vcpkg submodule is at latest. This is normally part
+of opening a sprint; sprint 26 missed it and patched it at the close,
+so it is an explicit task here.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3377D9CE-F74C-4D9C-ACB8-FA94940DAB1D][Open sprint 27]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =CMakeLists.txt= =project(OreStudio VERSION 0.0.27 ...)=.
+- =vcpkg.json= =version-string= updated to =0.0.27=.
+- =.github/workflows/continuous-linux.yml=,
+  =continuous-windows.yml=, =continuous-macos.yml= package-path
+  references updated to =0.0.27=.
+- =readme.org= badges: sprint badge at =Sprint-27=, PRs-since at
+  =v0.0.27= with the 2026-10-05 filter, commits-since at =v0.0.26=.
+- =readme.org= and =index.org= screenshots point at
+  =assets/images/ore_studio-v0.0.26.png=.
+- The recipe's verification grep shows no stray =0.0.26= reference
+  in the six files, other than the references the recipe itself
+  mandates: the commits-since badge and the two screenshot paths.
+- =git submodule update --remote= leaves the vcpkg submodule at the
+  latest commit on its tracked branch.
+
+* Plan
+
+Followed [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
+exactly: CMakeLists.txt, vcpkg.json, the three GitHub workflow
+package filenames, and readme.org's badges (sprint, PRs-since,
+commits-since) and screenshot. The screenshot reference moved from
+v0.0.24 to v0.0.26 — the just-closed sprint's release-notes capture,
+and the first capture since v0.0.24, so the reference had stayed two
+releases behind. index.org carries the same screenshot near its top
+and moved identically. The vcpkg submodule followed
+[[id:2A8F0D61-B3F9-4C20-9E76-1D92C8A47FB5][How do I update submodules to latest?]]
+as a separate commit on this branch.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stray =0.0.26= references in the six recipe files | 3 matches, every one mandated by the recipe: the readme commits-since badge (step 5c) and the readme and index screenshot paths (steps 5d and 6). No unexpected match. | =grep -rn "0\.0\.26" CMakeLists.txt vcpkg.json .github/workflows readme.org index.org= | =e7aa5eafc7= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Bumped 0.0.26 → 0.0.27 across CMakeLists.txt, vcpkg.json, the three
+CI workflow package filenames, and the readme badges (sprint,
+PRs-since, commits-since). The readme and index screenshots moved to
+v0.0.26.png, the just-closed sprint's release-notes capture. The
+recipe's verification grep leaves three 0.0.26 references, all
+mandated by the recipe: the commits-since badge (step 5c) and the
+readme and index screenshot paths (steps 5d and 6). The vcpkg submodule is
+updated to latest. No local build ran: no code changed, and the
+recipe's own test is the next package build, which fails its upload
+step if the workflow paths and the package name disagree.

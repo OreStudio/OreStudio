@@ -418,7 +418,8 @@ compass add service_architecture_pattern \
 #+end_src
 
 This writes =doc/knowledge/service_architecture_patterns/pattern_token_exchange.org=. Fill in every
-section, cite at least one source, then add the page to its group in the hub.
+section, cite at least one source, then add the page to its group in
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]].
 
 ** New capture
 :PROPERTIES:

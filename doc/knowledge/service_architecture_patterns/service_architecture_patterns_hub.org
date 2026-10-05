@@ -158,7 +158,7 @@ To add a pattern, run =compass add service_architecture_pattern= with its group,
 section, cite its source, and add it to its group above. See
 [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]].
 
-* What this hub does not cover
+* What this cluster does not cover
 
 [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] owns the IAM
 model: accounts, roles, permissions and row-level security. The identity group

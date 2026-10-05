@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: B67FD4A0-4C84-45C7-A1AA-54FDE9967790
+:END:
+#+title: clang-tidy infrastructure
+#+description: What clang-tidy is for in ORE Studio, how to run it on demand, and why it runs through run-clang-tidy rather than the regular build.
+#+type: knowledge
+#+level: cross
+#+filetags: :cpp:tooling:clang-tidy:build:cmake:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+* Summary
+
+clang-tidy is the static analyser of the LLVM toolchain. clang-format sets
+the layout of the code; clang-tidy reads its meaning. The one check the
+project runs today is =misc-include-cleaner=: every file includes the header
+for each symbol it uses, and no header it does not use. A run is on demand,
+outside the regular build: the =clang_tidy= target calls LLVM's
+=run-clang-tidy= over the compile database, so a normal build never pays for
+it. A finding in a generated file is fixed in its codegen template, never in
+the file. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Detail
+
+** What it is for
+
+A file that uses a symbol without its header compiles only while some other
+header brings that symbol in. When that other header changes, the file stops
+compiling. The compilers do not agree on which headers they pull in, so the
+fault shows on one platform only: =std::to_string= without =<string>= builds
+with libstdc++ and fails with MSVC. An unused include costs build time and
+hides the real dependencies of a file.
+
+=misc-include-cleaner= finds both faults. It reports a symbol with no direct
+include ("no header providing X is directly included") and an include that
+provides no symbol ("included header X is not used directly").
+
+The broader check set in =.clang-tidy= at the repository root (=bugprone-*=,
+=modernize-*= and others) is not run yet. A run with that set produces
+thousands of findings, so it needs a curated introduction of its own.
+
+** How to run it
+
+The =clang_tidy= target runs the include check over every translation unit
+in the compile database of the configured preset:
+
+#+begin_src sh
+./compass.sh build clang_tidy
+#+end_src
+
+=compass build= takes one of the two host-wide build slots, so a run queues
+behind the other builds on the machine like any other target. The target
+gives =run-clang-tidy= a small job count of its own (the
+=ORES_CLANG_TIDY_JOBS= cache variable), because the target is one node in the
+build graph and the =-j= of the build does not reach the processes it starts.
+
+The configure step must have run first: =run-clang-tidy= reads
+=compile_commands.json= from the build directory, and it compiles nothing.
+
+To fix the findings rather than report them, =run-clang-tidy -fix= collects
+every fix and applies them once through =clang-apply-replacements=. That
+removes the race between parallel fixes to one shared header. The nightly
+include workflow uses this mode and opens a pull request with the result.
+
+** Generated code
+
+Most C++ in the tree is generated, and the drift gate fails on any edit to a
+generated file. A finding in a file with the =AUTO-GENERATED= marker is
+therefore a defect in its template:
+
+- An include that every file of a template needs goes into the template
+  unconditionally.
+- An include that some files need goes behind a context flag that
+  =core.py= computes. The flag mirrors the template branches that spell the
+  symbol, so the include appears exactly when one of them is rendered.
+- A header the check cannot see as used, such as one that only specialises a
+  trait the file instantiates, keeps its include with
+  =// IWYU pragma: keep.= and a comment that says why.
+
+After a template change, regenerate the components and run the check again;
+it is the test of the change.
+
+** Known noise
+
+A component with a precompiled header confuses the check: it suggests
+=cmake_pch.hxx= as an include and reports used headers as unused.
+=ores.workflow= is one. Ignore its findings, or check it with the
+precompiled header turned off.
+
+** CMake integration: the options considered
+
+Three ways to run clang-tidy from CMake were weighed.
+
+1. *=CMAKE_CXX_CLANG_TIDY=.* CMake runs clang-tidy beside the compile of each
+   translation unit. The build graph schedules the work, so the =-j= of the
+   build applies and only changed files are checked again. The cost decided
+   against it: clang-tidy becomes part of each compile rule, so turning it
+   on, or changing the checks, recompiles the whole tree, and every
+   following compile is slower. It is the tool for a build that always
+   lints, such as a dedicated CI preset, not for a run on request.
+
+2. *A tidy target per CMake target.* Each library gets a
+   =<target>_clang-tidy= target with one command per source file, and an
+   aggregate =clang-tidy= target depends on all of them. Qt's
+   =<target>_qmllint= targets and the [[https://github.com/Xaymar/cmake-clang][cmake-clang]] module take this
+   shape. The build graph schedules the targets, so the =-j= of the build
+   applies across them, but the files inside one target run one after
+   another, and every run checks every file again. =ores.refdata.core= has
+   about a thousand files, so its target would hold up the end of each run.
+   The CMake maintainers state that CMake has no built-in separate analysis
+   target ([[https://discourse.cmake.org/t/static-analyzers-as-seperate-targets/4074][CMake Discourse]]).
+
+3. *One target that calls =run-clang-tidy=.* Chosen. =run-clang-tidy= ships
+   with clang-tidy and is what LLVM and most CMake projects use for a run on
+   request. It reads the compile database, runs clang-tidy over the files in
+   parallel, filters files with =-source-filter=, and applies fixes safely.
+   Nothing compiles, and a normal build is unchanged. Its one gap is the job
+   count, covered under [[*How to run it][How to run it]].
+
+The earlier =build/scripts/check_includes.sh= was a hand-written version of
+the third option over =xargs=. It is replaced by =run-clang-tidy=, so the
+project has one way to run clang-tidy.
+
+* See also
+
+- [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — the layout half of the same
+  toolchain.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — presets, the build directory and =compass build=.
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — the nightly include workflow among the
+  other checks.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator whose templates own the generated files.
+- [[https://clang.llvm.org/extra/clang-tidy/][clang-tidy documentation]] and the [[https://clang.llvm.org/extra/clang-tidy/checks/misc/include-cleaner.html][misc-include-cleaner check]].

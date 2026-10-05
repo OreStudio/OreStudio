@@ -124,6 +124,7 @@ features. Each component's own page carries its script inventory.
 | [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] | Schema, migrations, role provisioning, database lifecycle |
 | [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] | Inventory of the standalone scripts in [[proj:scripts][=scripts/=]] |
 | [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] | Every gating check, its fate, and the change-classification rules |
+| [[id:B67FD4A0-4C84-45C7-A1AA-54FDE9967790][clang-tidy infrastructure]] | Static analysis on demand: the include check, how to run it, and why it stays out of the regular build |
 
 * UI
 

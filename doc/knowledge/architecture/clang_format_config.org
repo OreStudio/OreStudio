@@ -397,4 +397,5 @@ To change a setting:
 - [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] — the format and check-format recipe.
 - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — nightly-format CI workflow and other build dashboards.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and build directory layout.
+- [[id:B67FD4A0-4C84-45C7-A1AA-54FDE9967790][clang-tidy infrastructure]] — the static analysis half of the same toolchain.
 - [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the analogous literate source for [[proj:.claude/settings.json][=.claude/settings.json=]].

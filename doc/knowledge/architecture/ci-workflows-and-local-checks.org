@@ -78,6 +78,7 @@ export attribute, which Windows reports and no other platform can.
 | continuous-* (linux/macos/windows) | stays | Every 2/3/12h + tags: full build matrix + ctest, submitted to CDash as continuous. |
 | nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
 | nightly-format        | stays        | Daily clang-format drift → auto-fix PR; local =tangle_clang_format= exists. |
+| nightly-includes      | stays        | Daily =misc-include-cleaner= → auto-fix PR; local =clang_tidy= target exists. A raised PR runs no checks, and its fixes to generated files belong in the templates. |
 | shell-script-drift / template-drift | stays | Cheap checks on both a PR and a main push; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
 | codeql-analysis, stale | stays       | Manual security scan; housekeeping bot. |
 
@@ -141,4 +142,5 @@ reviewer is already looking.
 
 - [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] — the story this analysis feeds.
 - [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] — the driving task.
+- [[id:B67FD4A0-4C84-45C7-A1AA-54FDE9967790][clang-tidy infrastructure]] — the include check behind nightly-includes, and how to run it locally.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.

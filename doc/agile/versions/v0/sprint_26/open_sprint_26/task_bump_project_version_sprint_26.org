@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: D4982A26-4303-4923-8924-3D295AD86E25
+:END:
+#+title: Task: Bump project version to 0.0.26 for sprint 26
+#+description: Missed as part of the sprint-opening process: bump the project version across CMakeLists.txt, vcpkg.json, and the GitHub workflow files (currently all still at 0.0.25, sprint 25's version).
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_26:sprint_26:v0:
+#+owner: marco
+#+branch: feature/bump-project-version-sprint-26
+#+pr: 2657
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bump the project version from =0.0.25= (sprint 25's version) to
+=0.0.26= for sprint 26, following
+[[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]].
+This is normally part of opening a sprint (see
+[[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] itself) but
+was missed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB732761-11D9-4E2F-AFF3-7646D43B8A36][Open sprint 26]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =CMakeLists.txt= =project(OreStudio VERSION 0.0.26 ...)=.
+- =vcpkg.json= =version-string= updated to =0.0.26=.
+- =.github/workflows/continuous-linux.yml=,
+  =continuous-windows.yml=, =continuous-macos.yml= package-path
+  references updated to =0.0.26=.
+- The recipe's verification grep shows no stray =0.0.25= reference
+  in the six files, other than the commits-since badge the recipe
+  itself mandates.
+
+* Plan
+
+Followed [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
+exactly: CMakeLists.txt, vcpkg.json, the three GitHub workflow
+package filenames, and readme.org's badges (sprint, PRs-since,
+commits-since). Sprint 26 started 2026-09-23, so PRs-since moved to
+that date with label v0.0.26; commits-since moved to v0.0.25 (the
+just-bumped-from version). The screenshot reference stays at
+v0.0.24: sprint 25's capture was never taken, v0.0.25.png does not
+exist, and v0.0.26.png is the sprint 26 release-notes capture —
+readme.org and index.org both point at it when sprint 27 opens.
+index.org carries only a screenshot copy and needs no version edit;
+it was checked. The bump lands as a quick PR (PR #2136 opened
+sprint 26 without it) and is force-merged; the =v0.0.26= tag and the
+draft GitHub release follow the merge.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stray =0.0.25= references in the six recipe files | 1 match — the readme commits-since badge, which step 5c mandates | =grep -rn "0\.0\.25" CMakeLists.txt vcpkg.json .github/workflows readme.org index.org= | 926fef421d |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2657][#2657]] | [build] Bump version to 0.0.26 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Self-review of the bump delta: version strings, badges and the release screenshot; no findings | — | Note | No code changed; the recipe grep passes; no comments touched. |
+
+* Result
+
+Bumped 0.0.25 → 0.0.26 across CMakeLists.txt, vcpkg.json, the
+three CI workflow package filenames, and the readme badges
+(sprint, PRs-since, commits-since). The recipe's verification grep
+leaves one 0.0.25 reference: the commits-since badge, which step 5c
+mandates. readme.org and index.org screenshots stay at v0.0.24 — no
+v0.0.25 capture exists, and v0.0.26.png is wired in when sprint 27
+opens. The site check published the four changed pages with no
+failures. No local build ran: the change is a version string, and
+the recipe's own test is the tag-push CI build that uploads the
+renamed packages. Landed as PR #2657; the v0.0.26 tag and the draft
+GitHub release follow the merge.

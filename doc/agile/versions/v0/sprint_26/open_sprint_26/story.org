@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :open_sprint_26:sprint_26:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-05
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -28,7 +28,7 @@ closed.
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-09-23                               |
+| Last touched  | 2026-10-05                               |
 
 * Acceptance
 
@@ -42,6 +42,7 @@ closed.
 |------+-------+-------+-----+-------------|
 | [[id:98441E1A-3359-46C0-8131-31D95A6067EF][Open sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Scaffold sprint 26, set its mission, wire the version manifest and the agile index, and close sprint 25. |
 | [[id:FB9F3A98-7F57-4462-8120-85B5E61DE6CC][Pull the skills catalogue story into sprint 26]] | DONE | 2026-09-23 | 2026-09-23 | Move Complete the LLM skills catalogue from the product backlog inbox into sprint 26, where sprint 25's close split it for. |
+| [[id:D4982A26-4303-4923-8924-3D295AD86E25][Bump project version to 0.0.26 for sprint 26]] | DONE | 2026-10-05 | 2026-10-05 | Missed as part of the sprint-opening process: bump the project version across CMakeLists.txt, vcpkg.json, and the GitHub workflow files (currently all still at 0.0.25, sprint 25's version). |
 
 * Decisions
 

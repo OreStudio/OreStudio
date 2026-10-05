@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: F67E9099-8BBB-5747-9342-114FB26F0B12
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the market_series_asset_classes commands from the shell?
+#+description: Every command the market_series_asset_classes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:market_series_asset_classes:
+
+This file documents the market_series_asset_classes resource at the shell, one section per command. Every command is a subcommand of =market_series_asset_classes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C5BC35D4-282A-5CD2-8035-0590CE744021
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.list=.
+
+#+name: market_series_asset_classes-list
+#+begin_src ores-shell :tangle market_series_asset_classes-list.ores :exports none
+market_series_asset_classes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 1E9EF8C6-D5E0-5854-9C93-177B65226372
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes get <market_series_id> <asset_class_code>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.get=.
+
+#+name: market_series_asset_classes-get
+#+begin_src ores-shell :tangle market_series_asset_classes-get.ores :exports none
+market_series_asset_classes get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3D504E62-3374-5469-936F-EA0FEAB71AF8
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes get-many <market_series_id> <asset_class_code>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.get_many=.
+
+#+name: market_series_asset_classes-get-many
+#+begin_src ores-shell :tangle market_series_asset_classes-get-many.ores :exports none
+market_series_asset_classes get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 8D7FF3E7-C2E3-58C3-839C-97245CC9A710
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes add <market_series_id> <asset_class_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.put=.
+
+#+name: market_series_asset_classes-add
+#+begin_src ores-shell :tangle market_series_asset_classes-add.ores :exports none
+market_series_asset_classes add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 6C21EDF0-888F-5692-A38E-04F68981FBD0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes set <market_series_id> <asset_class_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.put=.
+
+#+name: market_series_asset_classes-set
+#+begin_src ores-shell :tangle market_series_asset_classes-set.ores :exports none
+market_series_asset_classes set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 9288779A-0F28-527E-8E8D-CA78C1B2350D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes put-many --count <n> <market_series_id> <asset_class_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.put_many=.
+
+#+name: market_series_asset_classes-put-many
+#+begin_src ores-shell :tangle market_series_asset_classes-put-many.ores :exports none
+market_series_asset_classes put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4398A1D2-36F9-569A-932F-DD45F535EC62
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes delete <market_series_id> <asset_class_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.delete=.
+
+#+name: market_series_asset_classes-delete
+#+begin_src ores-shell :tangle market_series_asset_classes-delete.ores :exports none
+market_series_asset_classes delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 864A6476-310E-5A1C-A3B2-9FF21A763714
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes delete-many <market_series_id> <asset_class_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.delete_many=.
+
+#+name: market_series_asset_classes-delete-many
+#+begin_src ores-shell :tangle market_series_asset_classes-delete-many.ores :exports none
+market_series_asset_classes delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-market-series-id=
+:PROPERTIES:
+:ID: 7D2A1D7F-5567-5769-8669-AD723841EB15
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+market_series_asset_classes by-market-series-id <market_series_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.market_series_asset_classes.list_by_market_series_id=.
+
+#+name: market_series_asset_classes-by-market-series-id
+#+begin_src ores-shell :tangle market_series_asset_classes-by-market-series-id.ores :exports none
+market_series_asset_classes by-market-series-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

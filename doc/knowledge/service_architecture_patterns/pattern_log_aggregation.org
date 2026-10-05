@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: EC792BCB-EB4B-47E8-B279-9929A83C8949
+:END:
+#+title: Log Aggregation
+#+description: Every service's logs are collected in one place where they can be searched together.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:observability:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: observability
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Log Aggregation in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Every service's logs are collected where they can be searched together. In ORE
+Studio the services log to the console, systemd keeps it in the journal, and
+the telemetry log store holds the records the logs screen reads.
+
+* Also known as
+
+- /Centralised logging/.
+
+* Context
+
+Many services on several hosts each write their own logs. A failure's cause and
+its symptom are in different services.
+
+* Problem
+
+How does a person search the logs of every service at once?
+
+* Forces
+
+- Logs on each host are read one host at a time.
+- Files written by each service need rotation and collection.
+- A search across services needs a common key.
+
+* Solution
+
+Each service writes to standard output, and the host's supervisor collects it.
+Records also go to a central store with their time, level, source and identifiers.
+A person searches the store, and a [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] joins the lines
+of one request.
+
+#+caption: Log Aggregation: services log to the console and to the telemetry log store, and an operator searches both.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_log_aggregation.png]]
+
+Source: =[[./pattern_log_aggregation.puml][pattern_log_aggregation.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_log_aggregation.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | An ingest that fails does not fail the service that logged. |
+| Timeouts | Does not apply. |
+| Retries | Ingest retries; a record may be delivered twice. |
+| Idempotency | Duplicate records are tolerated, or keyed by their source and time. |
+| Observability | This is the pattern's purpose. |
+
+* Pitfalls
+
+- *No common key.* The lines of one request cannot be joined; see [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]].
+- *Secrets in log lines.* A central store spreads them; never log tokens or passwords.
+- *A log file as a readiness signal.* Removing the file then breaks the start-up; the journal story removed this dependency.
+
+* Security
+
+The store holds every service's lines, so reading it is a privileged act: the logs screen is for the system administrator. Lines must not carry credentials.
+
+* Resulting context
+
+- Benefits :: One search across services, and one place to read a failure's whole story.
+- Liabilities :: A store to run, and volume to retain.
+
+* In ORE Studio
+
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the operator filters the telemetry log store by time, level, source and session.
+
+* Related patterns
+
+- [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the key that joins lines.
+- [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] — adds the call tree.
+
+* Sources
+
+- Chris Richardson, [[https://microservices.io/patterns/observability/application-logging.html][Pattern: Log aggregation]], microservices.io.
+- Sam Newman, /Building Microservices/, second edition, O'Reilly, 2021, chapter 10, "From Monitoring to Observability".
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

@@ -49,6 +49,9 @@ generate_synthetic_activity_type(utility::generation::generation_context& ctx) {
     r.code = std::string(faker::word::noun()) + "_activity" + "-" + std::to_string(idx);
     r.category = std::string("new_activity");
     r.requires_confirmation = false;
+    r.is_economic = false;
+    r.is_real = true;
+    r.priority = 9;
     r.description = std::string(faker::lorem::sentence());
     r.fpml_event_type_code = std::string("");
     r.fsm_transition_id = std::nullopt;

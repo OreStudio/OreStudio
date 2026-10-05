@@ -11,6 +11,7 @@ unit, and the artefact enrichments that join an archetype's own payload to the
 manifest describing its dataset. The fixtures are written to a tmp directory,
 so the tests do not depend on any dataset shipped in the tree.
 """
+import base64
 import json
 import sys
 from pathlib import Path
@@ -87,18 +88,19 @@ def test_resolve_targets_threads_data_source_and_master_name(tmp_path):
     assert by_output["demo_populate.sql"]["data_source"] == "model.json"
 
 
-def make_image_dataset(tmp_path, items, svgs, data_dir="icons"):
-    """Write a dataset directory: the image payload, its manifest, and the SVGs.
+def make_image_dataset(tmp_path, items, images, data_dir="icons"):
+    """Write a dataset directory: the image payload, its manifest, and the images.
 
     The layout mirrors a real dataset, where the model and its payloads sit
     together, so the archetype reaches its own payload and the manifest that
-    describes the dataset from one directory.
+    describes the dataset from one directory. ``images`` maps each filename,
+    extension included, to its bytes.
     """
     dataset_dir = tmp_path / "projects" / "ores.seeder" / "datasets" / "demo"
-    svg_dir = dataset_dir / data_dir
-    svg_dir.mkdir(parents=True)
-    for key, body in svgs.items():
-        (svg_dir / f"{key}.svg").write_text(body, encoding="utf-8")
+    image_dir = dataset_dir / data_dir
+    image_dir.mkdir(parents=True)
+    for filename, body in images.items():
+        (image_dir / filename).write_bytes(body)
 
     manifest = {
         "name": "Demo",
@@ -119,11 +121,13 @@ def make_image_dataset(tmp_path, items, svgs, data_dir="icons"):
     return dataset_dir
 
 
-def test_image_artefact_reads_svgs_in_key_order_and_translates_names(tmp_path):
+def test_image_artefact_reads_images_in_key_order_and_translates_names(tmp_path):
     dataset_dir = make_image_dataset(
         tmp_path,
-        items=[("ad", "Flag of ad"), ("gb", "Flag of gb")],
-        svgs={"ad": "<svg id='ad'/>", "gb": "  <svg id='gb'/>\n"},
+        items=[("ad", "Flag of ad"), ("gb", "Flag of gb"), ("logo", "Demo logo")],
+        images={"ad.svg": b"<svg id='ad'/>",
+                "gb.svg": b"  <svg id='gb'/>\n",
+                "logo.png": b"\x89PNG\r\n\x1a\n"},
     )
     items = json.loads((dataset_dir / "images.json").read_text())
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
@@ -137,20 +141,23 @@ def test_image_artefact_reads_svgs_in_key_order_and_translates_names(tmp_path):
         "subject_area_name": "Demo Subject Area",
         "domain_name": "Reference Data",
     }
-    assert artefact["count"] == 2
+    assert artefact["count"] == 3
     # The payload's order is the insert order, and the descriptions come from
     # it rather than from a template the manifest would have to carry.
-    assert [i["key"] for i in artefact["items"]] == ["ad", "gb"]
+    assert [i["key"] for i in artefact["items"]] == ["ad", "gb", "logo"]
     assert [i["description"] for i in artefact["items"]] == [
-        "Flag of ad", "Flag of gb"]
-    # The whitespace around an SVG document is stripped, matching the SQL the
-    # legacy generator emitted.
-    assert artefact["items"][1]["svg"] == "<svg id='gb'/>"
+        "Flag of ad", "Flag of gb", "Demo logo"]
+    # Each file is inlined as stored, base64-encoded, under the media type
+    # its extension names.
+    assert artefact["items"][0]["mime_type"] == "image/svg+xml"
+    assert base64.b64decode(artefact["items"][1]["data"]) == b"  <svg id='gb'/>\n"
+    assert artefact["items"][2]["mime_type"] == "image/png"
+    assert base64.b64decode(artefact["items"][2]["data"]) == b"\x89PNG\r\n\x1a\n"
 
 
 def test_image_artefact_is_absent_when_no_dataset_declares_images(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+        tmp_path, items=[("ad", "Flag of ad")], images={"ad.svg": b"<svg/>"})
     items = json.loads((dataset_dir / "images.json").read_text())
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     manifest["datasets"][0]["artefact_type"] = "coding_schemes"
@@ -160,7 +167,7 @@ def test_image_artefact_is_absent_when_no_dataset_declares_images(tmp_path):
 
 def test_image_artefact_rejects_a_missing_source_dir(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+        tmp_path, items=[("ad", "Flag of ad")], images={"ad.svg": b"<svg/>"})
     items = json.loads((dataset_dir / "images.json").read_text())
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     manifest["sources"][0]["data_dir"] = "absent"
@@ -168,13 +175,25 @@ def test_image_artefact_rejects_a_missing_source_dir(tmp_path):
         _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
 
 
-def test_image_artefact_rejects_a_payload_entry_with_no_svg(tmp_path):
+def test_image_artefact_rejects_a_payload_entry_with_no_image_file(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+        tmp_path, items=[("ad", "Flag of ad")], images={"ad.svg": b"<svg/>"})
     items = json.loads((dataset_dir / "images.json").read_text())
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     items.append({"key": "zz", "description": "Flag of zz"})
-    with pytest.raises(FileNotFoundError, match="zz.svg"):
+    with pytest.raises(FileNotFoundError, match="zz"):
+        _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
+
+
+def test_image_artefact_rejects_a_key_matching_more_than_one_file(tmp_path):
+    dataset_dir = make_image_dataset(
+        tmp_path,
+        items=[("ad", "Flag of ad")],
+        images={"ad.svg": b"<svg/>", "ad.png": b"\x89PNG\r\n\x1a\n"},
+    )
+    items = json.loads((dataset_dir / "images.json").read_text())
+    manifest = json.loads((dataset_dir / "manifest.json").read_text())
+    with pytest.raises(ValueError, match="more than one file"):
         _build_image_artefact(items, manifest, dataset_dir / "manifest.json")
 
 
@@ -250,7 +269,8 @@ def test_resolve_targets_wires_the_ip2country_artefact_to_the_manifest(tmp_path)
 
 def test_image_artefact_escapes_the_values_the_template_quotes(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ci", "Flag of Cote d'Ivoire")], svgs={"ci": "<svg/>"})
+        tmp_path, items=[("ci", "Flag of Cote d'Ivoire")],
+        images={"ci.svg": b"<svg/>"})
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     manifest["datasets"][0]["name"] = "Cote d'Ivoire Flags"
     artefact = _build_image_artefact(
@@ -265,10 +285,11 @@ def test_image_artefact_escapes_the_values_the_template_quotes(tmp_path):
 
 def test_image_artefact_reads_the_source_its_dataset_names(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg id='named'/>"})
+        tmp_path, items=[("ad", "Flag of ad")],
+        images={"ad.svg": b"<svg id='named'/>"})
     other = dataset_dir / "other"
     other.mkdir()
-    (other / "ad.svg").write_text("<svg id='first'/>", encoding="utf-8")
+    (other / "ad.svg").write_bytes(b"<svg id='first'/>")
 
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     # Both sources carry a data_dir and the one listed first is not the one the
@@ -278,12 +299,12 @@ def test_image_artefact_reads_the_source_its_dataset_names(tmp_path):
         json.loads((dataset_dir / "images.json").read_text()),
         manifest, dataset_dir / "manifest.json")
 
-    assert artefact["items"][0]["svg"] == "<svg id='named'/>"
+    assert base64.b64decode(artefact["items"][0]["data"]) == b"<svg id='named'/>"
 
 
 def test_image_artefact_rejects_a_dataset_naming_no_source(tmp_path):
     dataset_dir = make_image_dataset(
-        tmp_path, items=[("ad", "Flag of ad")], svgs={"ad": "<svg/>"})
+        tmp_path, items=[("ad", "Flag of ad")], images={"ad.svg": b"<svg/>"})
     manifest = json.loads((dataset_dir / "manifest.json").read_text())
     manifest["datasets"][0]["methodology"] = "Absent Source"
     with pytest.raises(ValueError, match="Absent Source"):

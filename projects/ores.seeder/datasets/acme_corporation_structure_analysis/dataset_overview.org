@@ -253,7 +253,7 @@ than a monoculture per office).
 | Staff login accounts                          | =account=                                    | Yes (accounts already exist) |
 | Desk-scoped RBAC roles                        | RBAC roles (tenant/party-scoped today)       | Partial — no desk-level granularity |
 | Locale-matched staff names                    | *none* — =ores.synthetic= has GB/US contact locales but no person-name/HK locale | *No — needs generator extension* |
-| Account profile pictures                      | *none* — accounts have no image field, and =ores_assets_images_tbl= stores SVG only (JPEGs don't fit) | *No — needs schema work* |
+| Account profile pictures                      | =account= carries =image_id=, and the images tables carry any media type | Partial — administrators are pictured; staff JPEGs still seed through the dataset's own generator |
 | Tracking the generated party/account data as a first-class DQ dataset | =ores_dq_datasets_tbl= / =ores_dq_artefact_types_tbl= | Partial — no artefact type yet for "generated organisation" or "generated accounts" data |
 
 * Gaps
@@ -263,14 +263,14 @@ than a monoculture per office).
   Kong/Cantonese-appropriate names for Hong Kong, etc.) needs a
   Python-side generator (Faker locales, or an equivalent), not a DB
   entity — this is a build-time data-generation gap, not a schema gap.
-- *No account profile-picture support.* =ores_iam_accounts_tbl= has no
-  image reference, and the only existing image table
-  (=ores_assets_images_tbl=) stores SVG =svg_data=, not binary/JPEG —
-  it was built for country flags, not photos. Decision: generalise
-  =ores_assets_images_tbl= to a binary-agnostic asset blob (rather than
-  add a parallel face-images table), plus an =image_id= FK on accounts.
-  This touches every existing SVG consumer (flags, etc.) to migrate
-  onto the generalised column — schema design work, not just data.
+- *Staff profile pictures seed outside the DQ route.*
+  =ores_assets_images_tbl= now carries any media type and
+  =ores_iam_accounts_tbl= carries an =image_id=, so the schema gap this
+  bullet recorded is closed and the administrators are pictured at
+  provisioning. The staff photos still seed through this dataset's own
+  generator (=generate_sql.py=) rather than a staged DQ dataset
+  artefact, so a regenerated face assignment means rerunning that
+  generator.
 - *Only 1 business centre seeded.* =GBLO=/=USNY=/=HKHK= are standard
   FpML codes but the =business_centre= table only has one row
   populated in this environment today; London/New York/Hong Kong need

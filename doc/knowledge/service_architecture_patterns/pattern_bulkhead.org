@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 3D3813ED-73C6-4537-AB34-3F93EC60E29E
+:END:
+#+title: Bulkhead
+#+description: Resources are split into isolated pools, so one overloaded caller, tenant or dependency cannot take all of them.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:resilience:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: resilience
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Bulkhead in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Resources are split into isolated pools, so one overloaded caller, tenant or
+dependency cannot take all of them. In ORE Studio the reporting design gives
+each tenant its own share of a step service, and compute routes work by platform.
+
+* Also known as
+
+- /Isolation pools/.
+- /Partitioned capacity/.
+
+* Context
+
+A service shares threads, connections and workers between many callers and many
+dependencies. One of them can become slow or demanding.
+
+* Problem
+
+How does a service stop one source of load from exhausting what every other
+source needs?
+
+* Forces
+
+- Shared pools use capacity well until one user takes all of it.
+- Fixed pools waste capacity when idle.
+- A slow dependency holds its callers' resources while it waits.
+
+* Solution
+
+Divide the resources into pools and bound each one: per tenant, per dependency,
+per platform. A call takes a slot from its own pool, and waits or is refused when
+the pool is full. A slow dependency then holds only its own pool, and a busy
+tenant only its own share.
+
+#+caption: Bulkhead: tenant A's pool waits on a slow owner while tenants B and C keep their capacity.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_bulkhead.png]]
+
+Source: =[[./pattern_bulkhead.puml][pattern_bulkhead.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_bulkhead.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A full pool refuses or queues a call; the error names the pool. |
+| Timeouts | A slot held past its timeout is released by the timeout. |
+| Retries | A refused call may be retried later, within the caller's budget. |
+| Idempotency | Does not apply: the pool decides capacity, not repetition. |
+| Observability | Each pool's use and queue length are measured. |
+
+* Pitfalls
+
+- *Pools too small.* A tenant waits while capacity sits idle.
+- *One pool for everything.* The bulkhead does not exist.
+- *A wait that counts against a deadline.* A step queued for its pool can expire before it runs; size pools inside the budget.
+
+* Security
+
+Availability: one tenant cannot deny service to another by load.
+
+* Resulting context
+
+- Benefits :: One slow dependency or busy tenant cannot take down the rest.
+- Liabilities :: Idle capacity in quiet pools, and limits to size and tune.
+
+* In ORE Studio
+
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — per-tenant step limits in each replica, and dedicated compute pools.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — assignments are routed per platform, so one platform's backlog does not hold another's.
+
+* Related patterns
+
+- [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] — how capacity is divided.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — the limit at the door.
+- [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] — releases a held slot.
+
+* Sources
+
+- Michael T. Nygard, /Release It!/, second edition, Pragmatic Bookshelf, 2018, chapter 5, "Stability Patterns" — Bulkheads.
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead][Bulkhead pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

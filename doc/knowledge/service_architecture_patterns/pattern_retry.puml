@@ -1,0 +1,41 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Retry: try again only when the failure is transient and repeating is safe
+
+start
+repeat
+  :call (after token_expired, renew the token first);
+  if (succeeded?) then (yes)
+    stop
+  endif
+  if (the failure is transient:\ntimeout, unavailable, token_expired?) then (no)
+    :fail now with the error;
+    note right: forbidden and bad_request\nwill not change by asking again
+    stop
+  endif
+  if (is the operation safe to repeat?) then (no)
+    :fail; a person decides;
+    stop
+  endif
+  :wait: exponential back-off with jitter;
+repeat while (attempts left and budget left?) is (yes) not (no)
+:fail with the last error;
+stop
+@enduml

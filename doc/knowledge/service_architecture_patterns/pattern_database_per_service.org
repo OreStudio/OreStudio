@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0
+:END:
+#+title: Database per Service
+#+description: Each service owns its data and other services reach it only through its operations.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:data:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: data
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Database per Service in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Each service owns its data, and other services reach it only through the owner's
+operations. In ORE Studio components share one PostgreSQL instance, and still no
+service reads or writes another component's tables.
+
+* Also known as
+
+- /Private data per service/.
+
+* Context
+
+Services are deployed separately and owned separately. The deployment happens to
+put their tables in one database.
+
+* Problem
+
+Where does a service's data live, and how does another service read it?
+
+* Forces
+
+- A direct read is one query and no round trip.
+- A direct read skips the owner's authorisation and couples two schemas.
+- Owners must be free to change their tables.
+- Some reads span owners.
+
+* Solution
+
+Each service owns its tables and serves them through operations on the bus. Any
+other service reads and writes them only through those operations, with the
+identity the call needs, and RLS applies as for any caller. A read that spans
+owners calls each owner, or a composer calls them and joins the answers.
+
+#+caption: Database per Service: ORE reads refdata's and analytics' documents through their operations, never their tables.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_database_per_service.png]]
+
+Source: =[[./pattern_database_per_service.puml][pattern_database_per_service.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_database_per_service.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | An owner's refusal reaches the caller as an error, not as missing rows. |
+| Timeouts | Each owner call has its own timeout. |
+| Retries | Reads are safe to retry. |
+| Idempotency | Writes across owners need a [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]]. |
+| Observability | Each owner logs the read it served. |
+
+* Pitfalls
+
+- *A shortcut through a shared connection.* It compiles and returns rows, with no authorisation and no contract.
+- *An owner linked as a library.* Linking another component's core library is the same shortcut in code.
+- *Many small calls.* A per-row read across owners is slow; owners offer bulk reads.
+
+* Security
+
+The owner's handler authorises every read, and RLS applies with the caller's
+tenant and party. A direct read would bypass both.
+
+* Resulting context
+
+- Benefits :: Owners change their tables freely, and access control applies everywhere.
+- Liabilities :: Round trips, and cross-owner reads need composition.
+
+* In ORE Studio
+
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]] — the rule as a memory.
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] — the reasons a service must not reach into another's repository.
+
+* Related patterns
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — how the owner is asked.
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — writes across owners.
+- [[id:9FBA60F9-F0D4-425D-9BED-A34601CBACD6][Cache-Aside]] — a reader's copy that the owner still owns.
+
+* Sources
+
+- Chris Richardson, [[https://microservices.io/patterns/data/database-per-service.html][Pattern: Database per service]], microservices.io.
+- Sam Newman, /Building Microservices/, second edition, O'Reilly, 2021 — the case against sharing a database between services.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

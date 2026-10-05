@@ -148,10 +148,10 @@ same table.
 * Patterns used
 
 - [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the start message carries the run's correlation id.
-- Process Manager, Saga in its orchestrated form, and Idempotent Receiver —
-  the engine dispatches the steps, and every step compensates through the
-  same fail message. Their pages belong to the coordination group and are
-  not yet written.
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — every step compensates
+  through =reporting.v1.report.fail=, which marks the instance failed.
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the engine runs
+  the report chain the run configuration selects.
 
 * Related
 

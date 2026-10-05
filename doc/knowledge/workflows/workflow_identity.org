@@ -143,10 +143,10 @@ can reach all of them from a request.
 
 * Patterns used
 
-- Process Manager, Saga in its orchestrated form, and Idempotent Receiver —
-  the engine dispatches the steps the request declares, and compensates the
-  steps that declared a compensation. Their pages belong to the coordination
-  group and are not yet written.
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — the fixture compensates
+  the steps that declared a compensation.
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the engine runs
+  the steps the request declares.
 
 * Related
 

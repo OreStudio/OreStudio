@@ -80,10 +80,10 @@ request, how bulk data travels, and how several replicas share the work.
 
 | Pattern | Source |
 |---------+--------|
-| Request-Reply | Hohpe and Woolf, /Enterprise Integration Patterns/ |
+| [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] | Hohpe and Woolf, /Enterprise Integration Patterns/ |
 | [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] | Hohpe and Woolf; Newman |
-| Claim Check | Hohpe and Woolf |
-| Competing Consumers | Hohpe and Woolf; Azure Architecture Center |
+| [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] | Hohpe and Woolf |
+| [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] | Hohpe and Woolf; Azure Architecture Center |
 
 ** The coordination group
 
@@ -93,9 +93,9 @@ undone, and how a step survives being delivered twice.
 
 | Pattern | Source |
 |---------+--------|
-| Saga | Garcia-Molina and Salem; microservices.io |
-| Process Manager | Hohpe and Woolf |
-| Idempotent Receiver | Hohpe and Woolf |
+| [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] | Garcia-Molina and Salem; microservices.io |
+| [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] | Hohpe and Woolf |
+| [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] | Hohpe and Woolf |
 
 ** The resilience group
 
@@ -105,10 +105,9 @@ failure from spreading.
 
 | Pattern | Source |
 |---------+--------|
-| Timeout | Nygard, /Release It!/ |
-| Retry | Azure Architecture Center; Nygard |
-| Bulkhead | Nygard; Azure Architecture Center |
-| Circuit Breaker | Nygard; Azure Architecture Center |
+| [[id:1C419534-33BC-423E-8503-9D3945AF8648][Timeout]] | Nygard, /Release It!/ |
+| [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] | Azure Architecture Center; Nygard |
+| [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] | Nygard; Azure Architecture Center |
 
 ** The load group
 
@@ -118,9 +117,9 @@ can take, and share capacity fairly.
 
 | Pattern | Source |
 |---------+--------|
-| Queue-Based Load Leveling | Azure Architecture Center |
-| Throttling | Azure Architecture Center |
-| Fair Share | Azure Architecture Center, Priority Queue; fair-share scheduling |
+| [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] | Azure Architecture Center |
+| [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] | Azure Architecture Center |
+| [[id:6E7979E9-8065-49D1-97AF-27375013A795][Fair Share]] | Azure Architecture Center, Priority Queue; fair-share scheduling |
 
 ** The data group
 
@@ -130,8 +129,8 @@ reader keeps a copy without owning it.
 
 | Pattern | Source |
 |---------+--------|
-| Database per Service | microservices.io |
-| Cache-Aside | Azure Architecture Center |
+| [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] | microservices.io |
+| [[id:9FBA60F9-F0D4-425D-9BED-A34601CBACD6][Cache-Aside]] | Azure Architecture Center |
 
 ** The observability group
 
@@ -144,7 +143,7 @@ patterns here build on it.
 | Pattern | Source |
 |---------+--------|
 | [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] | microservices.io; W3C Trace Context; OpenTelemetry |
-| Log Aggregation | microservices.io |
+| [[id:EC792BCB-EB4B-47E8-B279-9929A83C8949][Log Aggregation]] | microservices.io |
 
 * Choosing a pattern
 

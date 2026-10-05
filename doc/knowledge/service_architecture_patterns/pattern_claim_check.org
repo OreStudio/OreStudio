@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637
+:END:
+#+title: Claim Check
+#+description: A large payload goes to a store and the message carries only a key to it, so bulk data does not travel through the bus.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:communication:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: communication
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Claim Check in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A large payload goes to a store and the message carries only a key to it. In
+ORE Studio the trade and market data exports, the engine input and the engine
+output travel this way, through object storage.
+
+* Also known as
+
+- /Reference-based messaging/.
+
+* Context
+
+Some data is large: a portfolio of trades, a market data set, an engine archive.
+The bus limits message size and is a poor place for bulk bytes.
+
+* Problem
+
+How does a service hand another a large payload without sending it through the
+bus?
+
+* Forces
+
+- Messages have a size limit, and large messages slow every other message.
+- The receiver may need the payload later, or more than once.
+- The payload must be complete before anyone reads it.
+- Access to the payload must follow the same tenancy rules as the message.
+
+* Solution
+
+The producer writes the payload to object storage under a key that names exactly
+one object, then sends a small message with the key, the size and a count. The
+consumer fetches the bytes by key, with the caller's token, and streams them.
+
+#+caption: Claim Check: the producer stores the payload, the message carries the key, and the consumer fetches the bytes.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_claim_check.png]]
+
+Source: =[[./pattern_claim_check.puml][pattern_claim_check.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_claim_check.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A missing or unreadable object fails the consumer's step with the key in the error. |
+| Timeouts | A large transfer has its own timeout, longer than a request's. |
+| Retries | Writing the same key twice replaces the object, so a retried producer converges. |
+| Idempotency | Writing to a temporary key and renaming it means a reader never sees a partial object. |
+| Observability | The key is logged by the producer and the consumer. |
+
+* Pitfalls
+
+- *A partial object read as complete.* A reader that starts before the write ends reads a truncated archive. Write, then rename.
+- *A key that is not unique.* Two runs that share a key overwrite each other. Put the run or the digest in the key.
+- *Objects nobody deletes.* A claim check with no lifecycle fills the store. Each purpose states its retention.
+- *The payload fetched with the service's identity.* Storage authorises the caller; use the relayed or run token.
+
+* Security
+
+Storage authorises every read and write against the token presented. The key
+grants nothing by itself.
+
+* Resulting context
+
+- Benefits :: Messages stay small, bulk data streams, and a payload can be read again.
+- Liabilities :: Two systems must agree on the key, and objects need a retention policy.
+
+* In ORE Studio
+
+- [[id:8DAB4D55-9D53-48FA-96B0-2EA432B4B42C][Report processing interfaces]] — the trades and market data exports write to storage and answer with the key.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the bucket and key protocol every claim check names.
+
+* Related patterns
+
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — carries the key.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — a repeated write of the same key converges.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html][Claim Check]].
+- Microsoft, Azure Architecture Center, Cloud design patterns, [[https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check][Claim-Check pattern]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

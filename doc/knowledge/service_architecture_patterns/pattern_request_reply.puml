@@ -1,0 +1,42 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Request-Reply: the reply finds its requester by the inbox the request names
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "requester" as rq
+queue "NATS" as bus
+participant "replier\n(one of a queue group)" as rp
+
+rq -> rq : create a private inbox
+rq -> bus : request on subject S\n(reply-to: inbox; headers: token, correlation id)
+bus -> rp : deliver to one member
+rp -> rp : verify, check permission, act
+alt success
+  rp -> bus : reply to inbox (body)
+else refused
+  rp -> bus : reply to inbox (empty body, X-Error)
+end
+bus -> rq : the reply
+rq -> rq : read X-Error first, then decode the body
+note over rq : no reply within the timeout:\nthe request fails; it is never assumed to have done nothing
+@enduml

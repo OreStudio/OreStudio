@@ -85,6 +85,9 @@ domain::activity_type to_domain(const messaging::activity_type_write& write) {
     v.code = write.code;
     v.category = write.category;
     v.requires_confirmation = write.requires_confirmation;
+    v.is_economic = write.is_economic;
+    v.is_real = write.is_real;
+    v.priority = write.priority;
     v.description = write.description;
     v.fpml_event_type_code = write.fpml_event_type_code;
     v.fsm_transition_id = write.fsm_transition_id;

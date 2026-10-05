@@ -357,6 +357,16 @@ batch drains, and asserts that every online host was exercised and
 every result has outcome Success. See
 [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]].
 
+
+* Patterns used
+
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — worker
+  nodes share a durable, queue-grouped consumer per platform.
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — assignments are routed
+  per platform, so one platform's backlog does not hold another's.
+- [[id:282FC5B3-5DB7-49DE-800D-6F9FBF3E5224][Queue-Based Load Leveling]] —
+  JetStream holds each assignment until a node acknowledges it.
+
 * See also
 
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and where to read this page in it.

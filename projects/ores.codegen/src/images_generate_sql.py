@@ -3,25 +3,38 @@
 Generates SQL populate scripts for DQ image artefacts.
 
 This is a generalized script that can be used for any image dataset
-(flags, crypto icons, etc.). It reads SVG files from a source directory
-and generates a SQL script to populate the dq_images_artefact_tbl.
+(flags, crypto icons, system avatars, etc.). It reads image files (SVG,
+PNG, JPEG) from a source directory and generates a SQL script that
+populates the dq_images_artefact_tbl with each file's MIME type and
+base64-encoded data.
 
 Usage:
-    python3 generate_dq_images_sql.py --config flags
-    python3 generate_dq_images_sql.py --config crypto
-    python3 generate_dq_images_sql.py \\
+    python3 images_generate_sql.py --config flags
+    python3 images_generate_sql.py --config crypto
+    python3 images_generate_sql.py --config system_avatars
+    python3 images_generate_sql.py \\
         --dataset-name "My Dataset" \\
         --subject-area "My Subject Area" \\
         --domain "Reference Data" \\
-        --source-dir "path/to/svgs" \\
+        --source-dir "path/to/images" \\
         --output-file "output.sql" \\
         --description-template "Icon for {key}"
 """
 
 import argparse
+import base64
 import os
 import glob
 import sys
+
+# Media types by file extension. The staging table carries the live
+# table's own (mime_type, data) shape, so all of these travel one pipeline.
+MIME_TYPES = {
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+}
 
 # Predefined configurations for common datasets
 CONFIGS = {
@@ -40,6 +53,14 @@ CONFIGS = {
         'source_dir': 'external/crypto/cryptocurrency-icons',
         'output_file': 'projects/ores.sql/populate/crypto/crypto_images_artefact_populate.sql',
         'description_template': 'Icon for {key}',
+    },
+    'system_avatars': {
+        'dataset_name': 'System Avatar Images',
+        'subject_area_name': 'System Avatars',
+        'domain_name': 'Reference Data',
+        'source_dir': 'external/avatars',
+        'output_file': 'projects/ores.sql/populate/assets/system_avatars_images_artefact_populate.sql',
+        'description_template': 'Avatar of {key}',
     },
 }
 
@@ -66,12 +87,12 @@ def get_header(dataset_name: str, subject_area_name: str, domain_name: str,
  *
  */
 
--- Script to populate DQ SVG images into the database
+-- Script to populate DQ images into the database
 -- Dataset: {dataset_name}
 -- Subject Area: {subject_area_name}
 -- Domain: {domain_name}
 --
--- This file was auto-generated from the SVG files in {source_dir}
+-- This file was auto-generated from the image files in {source_dir}
 -- by {script_name}
 --
 -- To regenerate, run:
@@ -79,7 +100,6 @@ def get_header(dataset_name: str, subject_area_name: str, domain_name: str,
 -- or with explicit parameters:
 --   python3 {script_name} --dataset-name "..." --subject-area "..." --domain "..." ...
 
-set schema 'ores';
 
 DO $$
 declare
@@ -87,21 +107,21 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from metadata.dq_datasets_tbl
+    from ores_dq_datasets_tbl
     where name = '{dataset_name}'
       and subject_area_name = '{subject_area_name}'
       and domain_name = '{domain_name}'
-      and valid_to = public.utility_infinity_timestamp_fn();
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: name="{dataset_name}", subject_area="{subject_area_name}", domain="{domain_name}"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
-    delete from metadata.dq_images_artefact_tbl
+    delete from ores_dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating images for dataset: %', '{dataset_name}';
+    raise debug 'Populating images for dataset: %', '{dataset_name}';
 
     -- Insert images
 """
@@ -109,19 +129,20 @@ begin
 
 def get_footer(dataset_name: str, count: int) -> str:
     return f"""
-    raise notice 'Successfully populated % images for dataset: %', {count}, '{dataset_name}';
+    raise debug 'Successfully populated % images for dataset: %', {count}, '{dataset_name}';
 end $$;
 """
 
 
-def generate_insert(key: str, description: str, svg_content: str) -> str:
+def generate_insert(key: str, description: str, mime_type: str,
+                    data_base64: str) -> str:
     # Escape single quotes in description
     safe_description = description.replace("'", "''")
-    # Use dollar quoting for SVG content to avoid escaping issues
-    return f"""    insert into metadata.dq_images_artefact_tbl (
-        dataset_id, image_id, version, key, description, svg_data
+    # Dollar-quote the base64 payload; its alphabet holds no dollar sign
+    return f"""    insert into ores_dq_images_artefact_tbl (
+        dataset_id, tenant_id, image_id, version, key, description, mime_type, data
     ) values (
-        v_dataset_id, gen_random_uuid(), 0, '{key}', '{safe_description}', $svg${svg_content}$svg$
+        v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0, '{key}', '{safe_description}', '{mime_type}', $b64${data_base64}$b64$
     );
 """
 
@@ -132,12 +153,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Predefined configurations:
-  flags   - Country flags from lipis/flag-icons
-  crypto  - Cryptocurrency icons
+  flags          - Country flags from lipis/flag-icons
+  crypto         - Cryptocurrency icons
+  system_avatars - Default system avatars (PNG)
 
 Examples:
   %(prog)s --config flags
-  %(prog)s --config crypto
+  %(prog)s --config system_avatars
   %(prog)s --dataset-name "My Icons" --subject-area "Icons" --domain "Reference Data" \\
            --source-dir "./icons" --output-file "icons.sql"
         """
@@ -152,7 +174,7 @@ Examples:
     parser.add_argument('--domain', '-d',
                         help='Domain name')
     parser.add_argument('--source-dir', '-i',
-                        help='Directory containing SVG files')
+                        help='Directory containing image files')
     parser.add_argument('--output-file', '-o',
                         help='Output SQL file path')
     parser.add_argument('--description-template', '-t',
@@ -188,11 +210,14 @@ Examples:
         print(f"Error: Source directory '{source_dir}' does not exist.", file=sys.stderr)
         sys.exit(1)
 
-    # Find SVG files
-    svg_files = sorted(glob.glob(os.path.join(source_dir, '*.svg')))
+    # Find image files
+    image_files = sorted(
+        path for path in glob.glob(os.path.join(source_dir, '*'))
+        if os.path.splitext(path)[1].lower() in MIME_TYPES
+    )
 
-    if not svg_files:
-        print(f"Error: No SVG files found in '{source_dir}'.", file=sys.stderr)
+    if not image_files:
+        print(f"Error: No image files found in '{source_dir}'.", file=sys.stderr)
         sys.exit(1)
 
     print(f"Configuration:")
@@ -201,7 +226,7 @@ Examples:
     print(f"  Domain:       {domain_name}")
     print(f"  Source:       {source_dir}")
     print(f"  Output:       {output_file}")
-    print(f"  Found {len(svg_files)} SVG files.")
+    print(f"  Found {len(image_files)} image files.")
     print()
 
     # Generate SQL
@@ -210,20 +235,21 @@ Examples:
         f.write(get_header(dataset_name, subject_area_name, domain_name,
                            source_dir, script_name))
 
-        for file_path in svg_files:
+        for file_path in image_files:
             filename = os.path.basename(file_path)
-            key = os.path.splitext(filename)[0]
+            key, extension = os.path.splitext(filename)
             description = description_template.format(key=key)
 
-            with open(file_path, 'r') as svg_file:
-                svg_content = svg_file.read().strip()
+            with open(file_path, 'rb') as image_file:
+                data_base64 = base64.b64encode(image_file.read()).decode('ascii')
 
-            f.write(generate_insert(key, description, svg_content))
+            f.write(generate_insert(key, description,
+                                    MIME_TYPES[extension.lower()], data_base64))
 
-        f.write(get_footer(dataset_name, len(svg_files)))
+        f.write(get_footer(dataset_name, len(image_files)))
 
     print(f"Successfully generated {output_file}")
-    print(f"  Total images: {len(svg_files)}")
+    print(f"  Total images: {len(image_files)}")
 
 
 if __name__ == '__main__':

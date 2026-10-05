@@ -31,11 +31,11 @@ tasks moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Done: every group of the pattern language is written, and a design names its patterns by rule. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the five pattern groups, then make a design name its patterns. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -50,9 +50,17 @@ tasks moved here.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5C1D296F-2F31-471E-A40A-7C23465B1049][Make a design name its patterns]] | DONE | 2026-10-05 | 2026-10-05 | A memory that a design names its patterns from the hub, and a patterns-used section in the knowledge and workflow types. |
-| [[id:8D66F1DA-9566-45C0-B410-69D27B483318][Write the communication, coordination, resilience, load and data patterns]] | BACKLOG | | | Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside. |
+| [[id:8D66F1DA-9566-45C0-B410-69D27B483318][Write the communication, coordination, resilience, load and data patterns]] | DONE | 2026-10-05 | 2026-10-05 | Request-reply, correlation identifier, claim check, competing consumers, saga, process manager, idempotent receiver, timeout, retry, bulkhead, circuit breaker, load levelling, throttling, fair share, database per service and cache-aside. |
 
 * Decisions
+
+- *Circuit Breaker is not in the language.* The hub lists a pattern only when ORE
+  Studio uses it or a design has chosen it, and no service or design uses a
+  circuit breaker. A design that chooses one adds its page first, as the memory
+  on naming patterns requires.
+- *Uses and patterns come from one table.* The pages and the back-links on their
+  use pages were generated together, so the two directions start in agreement,
+  and =build/scripts/check_pattern_uses.py= keeps them so.
 
 * Out of scope
 

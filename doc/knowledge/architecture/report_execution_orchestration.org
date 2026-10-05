@@ -146,6 +146,12 @@ One failure mode is not covered by this and must be designed for:
   mis-selected chain looks like a success. A run must fail when its chain cannot
   be built.
 
+
+* Patterns used
+
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the
+  convergence each report phase owes the engine.
+
 * See also
 
 - [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.

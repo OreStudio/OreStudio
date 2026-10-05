@@ -8,7 +8,7 @@
 #+filetags: :bring-the-record-screens-to-the-standard:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/bring-the-record-screens-to-the-standard
-#+pr:
+#+pr: 2670
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2670][#2670]] | [web] Bring the classification, tenant and party screens to the record screen standard |
 
 * Review
 

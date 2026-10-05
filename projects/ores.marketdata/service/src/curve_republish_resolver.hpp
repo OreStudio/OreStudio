@@ -44,7 +44,8 @@ struct curve_republish_refdata_context final {
     ores::refdata::domain::tenor_convention convention;
     std::unordered_map<std::string, ores::refdata::domain::tenor_convention_resolution>
         resolutions_by_tenor;
-    std::chrono::year_month_day horizon; // == value_date == spot: T+0, see resolve's doc.
+    // Equal to value_date and spot, T+0; see resolve's doc.
+    std::chrono::year_month_day horizon;
     // The event-lookup schedule's date set (FOMC meeting dates), sorted
     // ascending -- the requirement of the SCHEDULE_STEP walk's
     // nth_on_or_after. Only SCHEDULE_STEP conventions consult it; the

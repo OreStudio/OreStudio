@@ -48,7 +48,7 @@ namespace {
 constexpr auto default_staleness_stale_after = std::chrono::minutes(15);
 constexpr auto default_staleness_disconnected_after = std::chrono::minutes(60);
 
-} // namespace
+}
 
 crm_ingest_bridge::crm_ingest_bridge(ores::database::context ctx)
     : ctx_(std::move(ctx))
@@ -318,4 +318,4 @@ std::vector<named_rate_view> crm_ingest_bridge::resolved_rates(const std::string
     return result;
 }
 
-} // namespace ores::marketdata::service::app
+}

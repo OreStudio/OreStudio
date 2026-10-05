@@ -54,11 +54,10 @@
 // is a measurement rather than an assumption.
 //
 // Both cases run by default. The sampled case is the quick signal a developer
-// wants while iterating; the corpus-wide case is the acceptance the story was
-// written for, and it takes long enough that a full suite run is a meal rather
-// than a pause. Hiding it was the older arrangement, and it hid the acceptance
-// with it: a change that broke the corpus walk merged green because no run
-// looked at it.
+// wants while iterating; the corpus-wide case is the acceptance, and it takes
+// long enough that a full suite run is a meal rather than a pause. It still
+// runs by default, because a hidden case lets a change that breaks the corpus
+// walk pass with no run looking at it.
 
 namespace {
 
@@ -315,7 +314,7 @@ std::size_t import_fixings_and_verify(const std::filesystem::path& path,
     return data.size() + report.warnings.size();
 }
 
-} // namespace
+}
 
 using namespace ores::logging;
 using ores::marketdata::service::import_service;

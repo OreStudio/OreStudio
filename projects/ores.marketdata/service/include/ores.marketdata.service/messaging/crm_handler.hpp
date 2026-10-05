@@ -89,7 +89,7 @@ inline crm_rate_item to_item(const std::string& crm_name,
                          .reciprocal = v.reciprocal,
                          .delta_pct = v.delta_pct};
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -101,8 +101,7 @@ using namespace ores::logging;
 /**
  * @brief Handles the two CRM request/reply endpoints -- both pull-only,
  * computed on demand from crm_ingest_bridge's live per-party rate_engine.
- * See the CRM story's architecture decision to never broadcast the full
- * derived set as ticks.
+ * The full derived set is never broadcast as ticks.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT crm_handler {
 public:
@@ -207,5 +206,5 @@ private:
     std::shared_ptr<service::app::crm_ingest_bridge> bridge_;
 };
 
-} // namespace ores::marketdata::messaging
+}
 #endif

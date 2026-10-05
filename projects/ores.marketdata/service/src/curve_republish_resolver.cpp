@@ -58,7 +58,7 @@ double find_observed_rate(const std::unordered_map<std::string, double>& raw_rat
     return it->second;
 }
 
-} // namespace
+}
 
 std::chrono::year_month_day resolve_tenor_date(const curve_republish_refdata_context& ctx,
                                                const std::string& code) {

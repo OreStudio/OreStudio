@@ -74,6 +74,11 @@ behaviours: a tick from an unbound source is dropped, a tick whose URI names no
 datum is dropped, a tick whose value is not a number is dropped, and a tick from
 a source with several bindings is stored and republished once for each binding.
 
+The review of PR 2630 found no test for the as-of reads' refusals: a short row,
+a missing bucket ordinal, an ordinal that is not a number, and an ordinal outside
+the requested buckets. The row mapping sits inside the query call, so a test
+needs it split out first.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

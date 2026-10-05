@@ -177,7 +177,7 @@ std::expected<named_key, std::string> name_key(const std::string& key,
     return result;
 }
 
-} // namespace
+}
 
 import_service::import_service(context ctx,
                                ores::nats::service::nats_client& auth_nats,

@@ -198,7 +198,7 @@ TEST_CASE("read_as_of_staggered_timestamps", tags) {
     }
 
     // As-of t1 + 1s: spot-1m has advanced to its t1 tick, spot-3m is still stale at t0,
-    // spot-2y has now started ticking -- exactly the "one row per datum, latest
+    // spot-2y has started ticking -- exactly the "one row per datum, latest
     // observation_datetime <= as_of" semantics, per coordinate independently.
     {
         auto snap = obs_repo.read_as_of(h.context(), s.id, t1 + std::chrono::seconds(1));

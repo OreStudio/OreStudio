@@ -105,7 +105,7 @@ struct fixture {
     }
 };
 
-} // namespace
+}
 
 TEST_CASE("refresh builds an engine from persisted config and driver pairs, update/rate work",
           tags) {
@@ -146,7 +146,8 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
 TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, party)", tags) {
     fixture f;
     crm_ingest_bridge bridge(f.h.context());
-    bridge.refresh(); // nothing persisted -- engines map stays empty
+    // Nothing is persisted, so the engines map stays empty.
+    bridge.refresh();
 
     const auto result = bridge.rate(
         f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id), "test", "EUR", "USD");
@@ -356,12 +357,14 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     bridge.update(tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
     const auto first = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(first.size() == 1);
-    CHECK_FALSE(first[0].delta_pct.has_value()); // first observation
+    // The first observation has no delta.
+    CHECK_FALSE(first[0].delta_pct.has_value());
 
     bridge.update(tenant_id_str, "EUR", "USD", 1.20, std::chrono::system_clock::now());
     const auto second = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(second.size() == 1);
-    REQUIRE(second[0].delta_pct.has_value()); // baseline established by `first`
+    // `first` set the baseline.
+    REQUIRE(second[0].delta_pct.has_value());
 
     // refresh() rebuilds every named engine (and its delta_tracker) from
     // scratch -- even with the exact same config/driver pairs still
@@ -375,8 +378,8 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
 }
 
 TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine", tags) {
-    // A tick's own feed_binding.party_id no longer scopes which party's
-    // CRM engines get fed -- update() only takes tenant_id_str now. Two
+    // A tick's feed_binding.party_id does not scope which party's CRM
+    // engines get fed: update() takes only tenant_id_str. Two
     // parties in the same tenant, each with their own "majors" config and
     // an EUR/USD driver edge: a single update() call for that pair must
     // feed both, not just whichever party happened to own the originating
@@ -432,7 +435,8 @@ TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's 
     auto first = f.make_config("USD", "majors");
     config_repo.write(f.h.context(), first);
 
-    auto second = f.make_config("USD", "majors"); // same party, same name
+    // The same party and the same name.
+    auto second = f.make_config("USD", "majors");
     second.id = boost::uuids::random_generator{}();
     CHECK_THROWS(config_repo.write(f.h.context(), second));
 }

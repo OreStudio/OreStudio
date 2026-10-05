@@ -88,7 +88,7 @@ public:
      * @brief Find an existing market series by its identity.
      *
      * The canonical key for this resource is the surrogate UUID, and the natural
-     * key is now the series' oresmd identity, which the list request does not
+     * key is the series' oresmd identity, which the list request does not
      * filter on, so the identity is matched client-side against a generous page of
      * marketdata.v1.market_series.list (limit 10000).
      *

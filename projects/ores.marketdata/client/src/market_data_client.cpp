@@ -117,7 +117,7 @@ std::expected<boost::uuids::uuid, std::string> parse_series_id(const std::string
     }
 }
 
-} // namespace
+}
 
 market_data_client::market_data_client(ores::nats::service::nats_client& nats)
     : nats_(nats) {}

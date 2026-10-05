@@ -166,10 +166,8 @@ read_output_series(ores::database::context ctx,
     return series.front();
 }
 
-// Stamps the config's output market_series IR_CURVE_BOOTSTRAP -- the config-creation
-// task's own doc comment describes this as happening at config-creation time, but no
-// service code does it yet (see this task's own * Plan for why re-opening that task is
-// out of scope here).
+// Stamps the config's output market_series IR_CURVE_BOOTSTRAP on its first republish,
+// because nothing stamps it when the config is created.
 void stamp_output_series(ores::database::context ctx,
                          const ores::refdata::domain::ir_curve_bootstrap_config& config,
                          domain::market_series s) {
@@ -273,7 +271,7 @@ std::string source_series_ids_json(const std::vector<std::string>& ids) {
     return out + "]";
 }
 
-} // namespace
+}
 
 std::vector<ores::analytics::quant::service::bootstrapped_point>
 curve_republish_service::compute(context ctx,

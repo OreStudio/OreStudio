@@ -75,7 +75,7 @@ bool is_known_fn(std::string_view fn_name) {
     return std::find(known.begin(), known.end(), fn_name) != known.end();
 }
 
-} // namespace
+}
 
 publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& nats,
                                                  ores::database::context ctx)

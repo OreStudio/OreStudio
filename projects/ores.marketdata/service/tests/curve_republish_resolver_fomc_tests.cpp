@@ -147,7 +147,8 @@ curve_republish_refdata_context make_fomc_context() {
     ctx.horizon = 2026y / January / 2d;
 
     const auto meetings = fomc_2026_meeting_dates();
-    ctx.schedule_dates = meetings; // already ascending, as the walk requires.
+    // Already ascending, as the walk requires.
+    ctx.schedule_dates = meetings;
     ctx.tenors_by_code.emplace("SPOT", make_tenor("SPOT", "PERIOD", "DAY", 0));
     ctx.tenors_by_code.emplace(split_code, make_tenor(split_code, "PERIOD", "YEAR", 1));
     for (int n = 1; n <= meeting_count; ++n) {
@@ -238,14 +239,16 @@ TEST_CASE("resolve_bootstrap_pillars looks up every FOMC point id in the raw gri
     // point id == end tenor code, and the observed rate comes through.
     for (int n = 1; n <= meeting_count; ++n)
         CHECK(resolved[n - 1].observed_rate == 0.03 + 0.001 * n);
-    CHECK(resolved[meeting_count].observed_rate == 0.04); // the 1Y split pillar
+    // The 1Y split pillar.
+    CHECK(resolved[meeting_count].observed_rate == 0.04);
 }
 
 TEST_CASE("resolve_bootstrap_pillars fails loudly when a FOMC point id has no raw-grid quote",
           tags) {
     const auto ctx = make_fomc_context();
     auto raw_rates = make_fomc_raw_rates();
-    raw_rates.erase("8F"); // the last FOMC point id is missing
+    // The last FOMC point id is missing.
+    raw_rates.erase("8F");
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(make_fomc_pillars(), ctx, raw_rates),
                     std::invalid_argument);

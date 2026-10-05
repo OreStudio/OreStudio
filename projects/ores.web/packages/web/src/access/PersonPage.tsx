@@ -30,6 +30,7 @@ import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.j
 import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
 import { SignInsPanel } from './SignIns.js';
+import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab } from './PersonForms.js';
 import { RecordHeader } from '../refdata/records.js';
@@ -81,7 +82,7 @@ function Person({
     });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
-    const name = account.fullName === '' ? account.username : account.fullName;
+    const name = displayName(account, account.username);
     const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
 
     const { tab, bar } = useTabs({

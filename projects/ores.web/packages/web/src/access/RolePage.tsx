@@ -29,6 +29,7 @@ import { Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader } from '../ui/Primitives.js';
 import { areasOf, parseCode } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
+import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 
 /** How many added or removed permissions the save dialog lists before it counts the rest. */
@@ -168,8 +169,7 @@ function Role({
                 ) : (
                     <div className="flex flex-wrap gap-2">
                         {holders.map((account) => {
-                            const name =
-                                account.fullName === '' ? account.username : account.fullName;
+                            const name = displayName(account, account.username);
                             return (
                                 <Link
                                     key={account.id}
@@ -353,9 +353,7 @@ function SaveDialog({
                     <p className="text-sm text-ink-muted">
                         {t('access.roles.reaches', {
                             people: holders
-                                .map((account) =>
-                                    account.fullName === '' ? account.username : account.fullName,
-                                )
+                                .map((account) => displayName(account, account.username))
                                 .join(', '),
                         })}
                     </p>

@@ -27,16 +27,12 @@ import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
+import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 
 /** The address of one person's page. */
 export function personPath(username: string): string {
     return `/people/${encodeURIComponent(username)}`;
-}
-
-/** What a person is called: their name, or their username when they have none. */
-export function nameOf(account: Account): string {
-    return account.fullName === '' ? account.username : account.fullName;
 }
 
 /** The tenant's people, one page at a time, searched and ordered on the server. */
@@ -76,11 +72,11 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
                     cell: (account) => (
                         <span className="flex items-center gap-3">
                             <Avatar
-                                name={nameOf(account)}
+                                name={displayName(account, account.username)}
                                 size="sm"
                                 src={account.imageId === null ? null : imageUrl(account.imageId)}
                             />
-                            {nameOf(account)}
+                            {displayName(account, account.username)}
                         </span>
                     ),
                 },

@@ -25,6 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { PageHeader } from '../ui/Primitives.js';
+import { displayName } from './names.js';
 import { SignInsPanel } from './SignIns.js';
 
 /**
@@ -57,7 +58,7 @@ export function TenantAccountPage(): ReactNode {
                 queryKey={['tenant-account-sign-ins', code, username]}
                 read={(page) => api.tenantAccountSignIns(code, username, page)}
                 header={(account) => {
-                    const name = account.fullName === '' ? account.username : account.fullName;
+                    const name = displayName(account, account.username);
                     return (
                         <div className="flex items-center gap-4">
                             <Avatar

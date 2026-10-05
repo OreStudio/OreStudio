@@ -18,3 +18,4 @@
  */
 
 drop function if exists ores_iam_create_initial_admin_fn(text, text, text, text);
+drop function if exists ores_iam_create_initial_admin_fn(text, text, text, text, text);

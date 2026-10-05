@@ -23,7 +23,12 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { DeploymentOverview, SessionMode, TenantSummary } from '@ores/wire-protocol/browser';
+import type {
+    Account,
+    DeploymentOverview,
+    SessionMode,
+    TenantSummary,
+} from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { HomePage } from './HomePage.js';
 
@@ -93,7 +98,27 @@ const quiet: DeploymentOverview = {
     activityUnavailable: true,
 };
 
-function home(mode: SessionMode, overview?: DeploymentOverview): string {
+/** The signed-in person's own account, as the wiring reads it. */
+const signedInAccount: Account = {
+    version: 1,
+    id: '11111111-1111-4111-8111-111111111111',
+    tenantId: '22222222-2222-4222-8222-222222222222',
+    username: 'marco',
+    fullName: 'Marco Craveiro',
+    email: 'marco@example.com',
+    accountType: 'user',
+    jobTitle: 'Head of Desk',
+    reportsToAccountId: null,
+    defaultPartyId: null,
+    imageId: null,
+    modifiedBy: 'marco',
+    changeReasonCode: 'common.non_material_update',
+    changeCommentary: '',
+    performedBy: 'marco',
+    recordedAt: '2026-10-05 09:30:00Z',
+};
+
+function home(mode: SessionMode, overview?: DeploymentOverview, self?: Account | null): string {
     const client = new QueryClient();
     if (overview !== undefined) {
         client.setQueryData(['overview'], overview);
@@ -110,6 +135,7 @@ function home(mode: SessionMode, overview?: DeploymentOverview): string {
                         tenantName="Acme Corporation"
                         partyName="Acme London"
                         mode={mode}
+                        {...(self !== undefined && { self })}
                     />
                 </MemoryRouter>
             </TranslationProvider>
@@ -181,6 +207,24 @@ describe("the system administrator's home", () => {
         expect(html).toContain('href="/tenants/acme"');
         expect(html).toContain('Showing 2 of 9 tenants');
         expect(html).toContain('>See all<');
+    });
+});
+
+describe('the greeting', () => {
+    it("shows the name the signed-in person's own account holds", () => {
+        expect(home('system-administration', busy, signedInAccount)).toContain(
+            'Welcome, Marco Craveiro',
+        );
+    });
+
+    it('falls back to the username when the account holds no name', () => {
+        expect(home('application', undefined, { ...signedInAccount, fullName: '' })).toContain(
+            'Welcome, marco',
+        );
+    });
+
+    it('falls back to the username until the shell has read the account', () => {
+        expect(home('system-administration', busy, null)).toContain('Welcome, marco');
     });
 });
 

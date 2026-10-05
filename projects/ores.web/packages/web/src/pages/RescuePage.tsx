@@ -19,6 +19,7 @@
  *
  */
 
+import { displayName } from '../access/names.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
@@ -230,7 +231,7 @@ function Finder(): ReactNode {
                                     onClick={() => choose(row)}
                                 >
                                     <Avatar
-                                        name={row.fullName === '' ? row.username : row.fullName}
+                                        name={displayName(row, row.username)}
                                         src={row.imageId === null ? null : imageUrl(row.imageId)}
                                     />
                                     <span className="font-mono text-sm">{row.username}</span>
@@ -284,13 +285,13 @@ function AccountHeader({
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-start justify-between gap-3">
                 <Avatar
-                    name={account.fullName === '' ? account.username : account.fullName}
+                    name={displayName(account, account.username)}
                     size="lg"
                     src={account.imageId === null ? null : imageUrl(account.imageId)}
                 />
                 <div className="min-w-0 flex-1 space-y-1">
                     <h2 className="text-lg font-medium">
-                        {account.fullName === '' ? account.username : account.fullName}
+                        {displayName(account, account.username)}
                     </h2>
                     <p className="font-mono text-sm text-ink-muted">
                         {account.username} · {account.email === '' ? 'no address' : account.email} ·{' '}

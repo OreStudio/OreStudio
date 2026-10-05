@@ -23,6 +23,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
+import type { Account } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { AppShell } from './AppShell.js';
 import { PublicShell } from './PublicShell.js';
@@ -97,6 +98,7 @@ describe('the application shell', () => {
         mode: 'system-administration' | 'tenant-administration' | 'application' = 'application',
         width?: 'column' | 'workspace',
         permissionCodes: readonly string[] = [],
+        self?: Account | null,
     ): string {
         const client = new QueryClient();
         client.setQueryData(['my-access'], {
@@ -123,6 +125,7 @@ describe('the application shell', () => {
                             partyName={partyName}
                             mode={mode}
                             {...(width !== undefined && { width })}
+                            {...(self !== undefined && { self })}
                             onSignOut={() => undefined}
                         >
                             <p>the screen</p>
@@ -157,6 +160,35 @@ describe('the application shell', () => {
         expect(html).toContain('href="/access"');
         expect(html).toContain('href="/security"');
         expect(html).not.toContain('admin · Acme Corporation');
+    });
+
+    /*
+     * The header names the person from their own account once the shell has
+     * read it, so an administrator is not listed by a handle; the username
+     * stays under the name as the handle it is.
+     */
+    it('names the person from their own account once the shell has read it', () => {
+        const html = renderAppShell('Acme Operations', 'application', undefined, [], {
+            version: 1,
+            id: '33333333-3333-4333-8333-333333333333',
+            tenantId: '22222222-2222-4222-8222-222222222222',
+            username: 'admin',
+            fullName: 'Super Admin',
+            email: 'admin@example.com',
+            accountType: 'user',
+            jobTitle: '',
+            reportsToAccountId: null,
+            defaultPartyId: null,
+            imageId: null,
+            modifiedBy: 'admin',
+            changeReasonCode: 'common.non_material_update',
+            changeCommentary: '',
+            performedBy: 'admin',
+            recordedAt: '2026-10-05 09:30:00Z',
+        });
+
+        expect(html).toContain('Super Admin');
+        expect(html).toContain('@admin');
     });
 
     it('names the party it is working in', () => {

@@ -31,6 +31,7 @@ import { FlaggedCode } from '../images/flags.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { displayName } from '../access/names.js';
 import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 
 /** The tabs of a tenant's screen, in the order they are drawn. */
@@ -355,20 +356,14 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
                                 <td className="py-2 pr-4 text-ink">
                                     <span className="flex items-center gap-3">
                                         <Avatar
-                                            name={
-                                                account.fullName === ''
-                                                    ? account.username
-                                                    : account.fullName
-                                            }
+                                            name={displayName(account, account.username)}
                                             src={
                                                 account.imageId === null
                                                     ? null
                                                     : imageUrl(account.imageId, code)
                                             }
                                         />
-                                        {account.fullName === ''
-                                            ? account.username
-                                            : account.fullName}
+                                        {displayName(account, account.username)}
                                     </span>
                                 </td>
                                 <td className="py-2 pr-4 font-mono text-xs text-ink-muted">

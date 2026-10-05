@@ -56,7 +56,8 @@ domain::account account_operations_service::create_account(const std::string& us
                                                            const std::string& email,
                                                            const std::string& password,
                                                            const std::string& modified_by,
-                                                           const std::string& change_commentary) {
+                                                           const std::string& change_commentary,
+                                                           const std::string& full_name) {
 
     throw_if_empty("Username", username);
     throw_if_empty("Email", email);
@@ -78,6 +79,7 @@ domain::account account_operations_service::create_account(const std::string& us
     new_account.version = 0;
     new_account.id = id;
     new_account.username = username;
+    new_account.full_name = full_name;
     new_account.account_type = "user";
     new_account.password_hash = password_hash;
     // FIXME remove

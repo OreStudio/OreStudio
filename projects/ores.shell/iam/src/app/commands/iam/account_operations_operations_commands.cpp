@@ -174,6 +174,14 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         "<country_code> <postal_code> <phone> <email> <web_page> <change_reason_code> "
         "<change_commentary>");
 
+    menu->Insert(
+        "get-my-account-contact-information",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_my_account_contact_information(
+                std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-my-account-contact-information");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -878,6 +886,57 @@ void account_operations_operations_commands::process_update_self_account_contact
                 out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::iam::messaging::update_self_account_contact_information_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void account_operations_operations_commands::process_get_my_account_contact_information(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-my-account-contact-information request.";
+
+    using request_type = ores::iam::messaging::get_my_account_contact_information_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-my-account-contact-information."
+                      << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::iam::messaging::get_my_account_contact_information_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::iam::messaging::get_my_account_contact_information_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::iam::messaging::get_my_account_contact_information_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

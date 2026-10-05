@@ -285,3 +285,24 @@ It is addressed at =iam.v1.account_contact_informations.update-self=.
 account_operations update-self-account-contact-information __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
+** =get-my-account-contact-information=
+:PROPERTIES:
+:ID: 8D0CC79E-64F2-570D-ACEC-892CD279625F
+:END:
+
+Sends =get_my_account_contact_information_request= and prints =get_my_account_contact_information_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations get-my-account-contact-information
+#+end_example
+
+It is addressed at =iam.v1.account_contact_informations.mine=.
+
+#+name: account_operations-get-my-account-contact-information
+#+begin_src ores-shell :tangle account_operations-get-my-account-contact-information.ores :exports none
+account_operations get-my-account-contact-information
+#+end_src
+

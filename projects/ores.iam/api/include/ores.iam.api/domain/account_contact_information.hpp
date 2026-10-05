@@ -42,6 +42,15 @@ namespace ores::iam::domain {
  * contact record per account (unlike party contact information, which
  * allows several by contact_type — a person doesn't need a Legal/
  * Operations/Settlement/Billing split).
+ *
+ * The record is personal data, so the generated reads are not open to every
+ * signed-in caller: the model sets :guard_reads: true, and
+ * iam.v1.account_contact_informations.list, get and list_by_account_id
+ * require iam::account_contact_informations:read. A person reads their own
+ * record through iam.v1.account_contact_informations.mine, which takes no
+ * account id, and writes it through update-self; both are in
+ * [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See
+ * [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
  */
 struct account_contact_information final {
     /**

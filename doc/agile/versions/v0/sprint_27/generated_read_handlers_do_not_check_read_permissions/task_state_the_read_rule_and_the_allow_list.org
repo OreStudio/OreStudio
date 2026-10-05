@@ -29,11 +29,11 @@ meant to be open today.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -94,3 +94,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule in
+its Summary and in "Guarded unless allowed": a read checks its resource's
+=:read= code unless the allow-list names its subject and the reason. A read may
+be open as a self read, or because a member needs it before holding any role
+that grants it. The allow-list holds eight subjects, each checked against the
+generated protocol, and a planned row for the contact information self read.
+"Where the code is today" records that 363 of 367 generated read handlers were
+open on 2026-10-06. The page's permission-check table said the token check
+allows an empty permission list; the code denies it, and the row is corrected.
+The security hub states the rule in its entry for the page. Reviewed and
+accepted on 2026-10-06.

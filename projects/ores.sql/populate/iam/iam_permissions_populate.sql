@@ -107,6 +107,13 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:write', 'Create and modify the parameters a seed profile declares');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:delete', 'Delete a parameter from a seed profile');
 
+    -- Account contact information: personal data. A person reads and writes
+    -- their own record through the self operations, which need no code of
+    -- these; they guard reading and writing somebody else's.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_contact_informations:read', 'Read the contact information of other accounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_contact_informations:write', 'Create and modify the contact information of other accounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_contact_informations:delete', 'Delete the contact information of other accounts');
+
     -- Role grant requests: the IAM detail of an iam.role_grant approval
     -- request. A person asks through the ask operation, which needs no code of
     -- these; they guard the generated administrator surface.

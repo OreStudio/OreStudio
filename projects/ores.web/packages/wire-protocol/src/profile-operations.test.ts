@@ -26,6 +26,7 @@ import { OperationFailedError } from './errors.js';
 import {
     putContactInformation,
     readContactInformation,
+    readMyContactInformation,
     updateAccount,
     updateSelfAccount,
     updateSelfContactInformation,
@@ -311,6 +312,36 @@ describe('updateAccount', () => {
         await expect(updateAccount(caller, account, profileWrite)).rejects.toThrow(
             'reports_to_account_id is not yours',
         );
+    });
+});
+
+describe('readMyContactInformation', () => {
+    it('reads the self subject and names no account', async () => {
+        const sent: Recorded[] = [];
+        const contact = await readMyContactInformation(
+            callerAnswering({ result: okResult, account_contact_information: contactRow }, sent),
+        );
+
+        expect(sent[0]?.subject).toBe('iam.v1.account_contact_informations.mine');
+        expect(sent[0]?.body).toEqual({});
+        expect(contact?.id).toBe(RECORD_ID);
+        expect(contact?.city).toBe('London');
+    });
+
+    it('answers nothing when the person has no record', async () => {
+        const contact = await readMyContactInformation(
+            callerAnswering({ result: okResult, account_contact_information: null }),
+        );
+
+        expect(contact).toBeNull();
+    });
+
+    it('raises when the read was not answered ok', async () => {
+        const caller = callerAnswering({
+            result: { outcome: 'failed', code: 'internal_error', message: 'The read failed.' },
+            account_contact_information: null,
+        });
+        await expect(readMyContactInformation(caller)).rejects.toThrow(OperationFailedError);
     });
 });
 

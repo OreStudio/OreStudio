@@ -103,8 +103,10 @@ using namespace ores::logging;
  *
  * The associations are a resource like any other, so the handler serves the
  * canonical verbs and decides nothing: it proves the request, checks the
- * permission a write needs, decodes the canonical request, calls the service
- * and replies with the response it filled. The outcome a caller reads is the
+ * permission the operation needs, decodes the canonical request, calls the
+ * service and replies with the response it filled. Which party an account
+ * works in is part of the account's record, so a read needs
+ * iam::accounts:read and a write needs iam::accounts:update. The outcome a caller reads is the
  * service's answer.
  *
  * @note Two things are specific to this resource and must stay that way. Its
@@ -126,6 +128,8 @@ public:
     void list_account_parties(ores::nats::message msg) {
         auto ctx_expected = begin_request(msg);
         if (!ctx_expected)
+            return;
+        if (!may_read(msg, *ctx_expected))
             return;
         auto req = decode<list_account_parties_request>(msg);
         if (!req) {
@@ -151,6 +155,8 @@ public:
     void list_by_account_id_account_parties(ores::nats::message msg) {
         auto ctx_expected = begin_request(msg);
         if (!ctx_expected)
+            return;
+        if (!may_read(msg, *ctx_expected))
             return;
         auto req = decode<list_by_account_id_account_parties_request>(msg);
         if (!req) {
@@ -180,6 +186,8 @@ public:
         auto ctx_expected = begin_request(msg);
         if (!ctx_expected)
             return;
+        if (!may_read(msg, *ctx_expected))
+            return;
         auto req = decode<get_account_party_request>(msg);
         if (!req) {
             bad_request(msg);
@@ -204,6 +212,8 @@ public:
     void get_many_account_parties(ores::nats::message msg) {
         auto ctx_expected = begin_request(msg);
         if (!ctx_expected)
+            return;
+        if (!may_read(msg, *ctx_expected))
             return;
         auto req = decode<get_many_account_parties_request>(msg);
         if (!req) {
@@ -377,6 +387,14 @@ private:
             return std::nullopt;
         }
         return *ctx_expected;
+    }
+
+    /** @return true when the caller holds the permission a read needs. */
+    bool may_read(const ores::nats::message& msg, const ores::database::context& ctx) {
+        if (has_permission(ctx, "iam::accounts:read"))
+            return true;
+        error_reply(nats_, msg, ores::service::error_code::forbidden);
+        return false;
     }
 
     /** @return true when the caller holds the permission the write needs. */

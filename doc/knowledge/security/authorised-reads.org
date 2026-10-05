@@ -136,13 +136,7 @@ is not in this table checks its read permission.
 | =inbox.v1.approval-requests.mine= | The requests the caller raised, and their decisions | Self read |
 | =inbox.v1.notifications.mine= | The notifications addressed to the caller | Self read |
 | =inbox.v1.notifications.unread-count= | How many of those are unread | Self read |
-
-Planned, by [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the
-security documentation does not allow]]:
-
-| Subject | Answers | Why it will be open |
-|---------+---------+---------------------|
-| =iam.v1.account_contact_informations.mine= | The caller's own contact record | Self read; the profile reads it today through the guarded =list_by_account_id= |
+| =iam.v1.account_contact_informations.mine= | The caller's own contact record | Self read; the profile reads it, and =list_by_account_id= needs =iam::account_contact_informations:read= |
 
 A row is added to this table in the same change that opens the read, with its
 reason. Removing a row closes the read.

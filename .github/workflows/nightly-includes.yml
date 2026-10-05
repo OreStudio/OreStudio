@@ -73,7 +73,13 @@ jobs:
         run: cmake --preset linux-clang-debug-ninja
 
       - name: Run clang-tidy misc-include-cleaner in-place
-        run: ./build/scripts/check_includes.sh linux-clang-debug-ninja --fix
+        # run-clang-tidy collects every fix and applies them once through
+        # clang-apply-replacements, so parallel runs cannot race on a shared
+        # header. A translation unit that fails to parse makes it exit
+        # non-zero; that must not block the pull request.
+        run: |
+          run-clang-tidy -quiet -p build/output/linux-clang-debug-ninja -j 4 \
+            -checks='-*,misc-include-cleaner' -header-filter=projects/ -fix || true
 
       - name: Create pull request if files changed
         uses: peter-evans/create-pull-request@v8
@@ -105,7 +111,8 @@ jobs:
 
             ```sh
             cmake --preset linux-clang-debug-ninja
-            ./build/scripts/check_includes.sh linux-clang-debug-ninja --fix
+            run-clang-tidy -p build/output/linux-clang-debug-ninja \
+              -checks='-*,misc-include-cleaner' -header-filter=projects/ -fix
             ```
           labels: formatting,automated
           delete-branch: true

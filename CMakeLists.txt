@@ -293,11 +293,25 @@ add_custom_target(sprint_charts
     COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-get_filename_component(ORES_PRESET_NAME ${CMAKE_BINARY_DIR} NAME)
-add_custom_target(check_includes
-    COMMENT "Checking include hygiene with clang-tidy misc-include-cleaner" VERBATIM
-    COMMAND ${CMAKE_SOURCE_DIR}/build/scripts/check_includes.sh ${ORES_PRESET_NAME}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+#
+# clang-tidy, on request only: run-clang-tidy reads compile_commands.json and
+# compiles nothing, so the regular build never pays for it. The target is one
+# node in the build graph, so the build's -j does not reach the processes it
+# starts; ORES_CLANG_TIDY_JOBS sets them. See doc/knowledge/architecture/
+# clang_tidy.org.
+#
+find_program(RUN_CLANG_TIDY_PROGRAM NAMES run-clang-tidy run-clang-tidy-21 run-clang-tidy-19)
+set(ORES_CLANG_TIDY_JOBS 2 CACHE STRING "Parallel clang-tidy processes of the clang_tidy target")
+if(RUN_CLANG_TIDY_PROGRAM)
+    add_custom_target(clang_tidy
+        COMMENT "Running clang-tidy misc-include-cleaner over compile_commands.json" VERBATIM
+        COMMAND ${RUN_CLANG_TIDY_PROGRAM} -quiet
+            -p ${CMAKE_BINARY_DIR}
+            -j ${ORES_CLANG_TIDY_JOBS}
+            -checks=-*,misc-include-cleaner
+            -header-filter=projects/
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+endif()
 
 add_custom_target(make_all_diagrams)
 add_custom_target(mad)

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:security:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 
 The installation has a life of its own, and somebody has to be able to look at
 it: which services are up, what the compute grid is doing, whether the message
@@ -60,7 +60,7 @@ planned here; *dropped* means a web client does not need it.
 
 * Related
 
-- [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]] — the clickable prototype on a throwaway branch that proves these screens
+- [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]] — the clickable prototype, kept on =main=, that proves these screens
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist that read the legacy screens and agreed this catalogue
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
 - [[id:28844DEF-E9AD-45B9-A6E0-CFF51CA1A064][Extract the user journeys that replace the ores.qt screens]] — the parent extraction this group belongs to

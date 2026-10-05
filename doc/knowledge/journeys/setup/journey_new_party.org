@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-27
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator adds a party and links the accounts that work in it.
@@ -91,14 +91,14 @@ every step after the legal entity is chosen.
 
 * Prototype
 
-Accepted by the user on 2026-09-22. The prototype is on a throwaway branch and
-is not merged; the branch is kept as the record. The built journey keeps its
+Accepted by the user on 2026-09-22. The prototype is merged into =main= and
+kept there as the record; the branch names the accepted state. The built journey keeps its
 five steps, its two ways of naming a party and its three exits; what it does not
 carry is the accounts picker, which the prototype showed and nothing writes.
 
 - Branch :: =prototype/new-party-journey=
-- Route :: =/refdata/party/new=
-- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =prototype/new-party-journey= only; the path does not exist on =main=
+- Route :: =/prototype/party= (the branch served it at =/refdata/party/new=)
+- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Task: Prototype the new party journey]]
 
 The party journey was the first built on the shared journey page, and it proved

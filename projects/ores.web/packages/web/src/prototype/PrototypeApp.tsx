@@ -117,7 +117,7 @@ const ROUTES: readonly PrototypeRoute[] = [
     },
     {
         path: 'security',
-        query: '?variant=a',
+        query: '?variant=b',
         group: 'Credentials',
         journey: 'Protect my account',
         audience: MEMBER,
@@ -130,7 +130,7 @@ const ROUTES: readonly PrototypeRoute[] = [
     },
     {
         path: 'rescue',
-        query: '?variant=a',
+        query: '?variant=b',
         group: 'Credentials',
         journey: 'Rescue access',
         audience: TENANT_ADMINISTRATOR,
@@ -138,7 +138,7 @@ const ROUTES: readonly PrototypeRoute[] = [
     },
     {
         path: 'audit',
-        query: '?variant=a',
+        query: '?variant=b',
         group: 'Credentials',
         journey: 'Audit sign-ins',
         audience: TENANT_ADMINISTRATOR,

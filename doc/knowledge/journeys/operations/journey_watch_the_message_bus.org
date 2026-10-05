@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator watches the message bus: the NATS server's health and each stream's stored messages over time.
@@ -85,12 +85,12 @@ and destroys nothing.
 
 * Prototype
 
-Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
-is not merged; the branch is kept as the record.
+Accepted by the user on 2026-10-04. The prototype is merged into =main= and
+kept there as the record; the branch names the accepted state.
 
 - Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
 - Route :: =/prototype/bus=
-- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
 
 The prototype settled the reading of a sample. The vitals keep the running

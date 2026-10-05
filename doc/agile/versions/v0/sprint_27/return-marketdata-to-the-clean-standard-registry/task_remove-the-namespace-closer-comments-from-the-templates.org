@@ -8,7 +8,7 @@
 #+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_26:v0:
 #+owner: marco
 #+branch: feature/remove-the-namespace-closer-comments-from-the-templates
-#+pr:
+#+pr: 2678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -134,7 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2678][#2678]] | [codegen] Remove the namespace closer comments from the templates |
 
 * Review
 

@@ -110,13 +110,15 @@ public:
      * @param password The plaintext password (will be hashed)
      * @param modified_by The username of the person creating the account
      * @param change_commentary Optional commentary explaining account creation
+     * @param full_name The name the account is shown by, empty when it has none
      * @return The created account with computed fields
      */
     domain::account create_account(const std::string& username,
                                    const std::string& email,
                                    const std::string& password,
                                    const std::string& modified_by,
-                                   const std::string& change_commentary = "Account created");
+                                   const std::string& change_commentary = "Account created",
+                                   const std::string& full_name = "");
 
     /**
      * @brief Creates a new service account for non-human entities.

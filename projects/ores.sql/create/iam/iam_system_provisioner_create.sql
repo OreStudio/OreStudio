@@ -52,7 +52,8 @@ create or replace function ores_iam_create_initial_admin_fn(
     p_principal text,
     p_email text,
     p_password_hash text,
-    p_actor text default null
+    p_actor text default null,
+    p_full_name text default 'Super Admin'
 ) returns uuid as $$
 declare
     v_actor text;
@@ -86,12 +87,12 @@ begin
     -- Create user account
     -- =========================================================================
     insert into ores_iam_accounts_tbl (
-        id, tenant_id, version, account_type, username,
+        id, tenant_id, version, account_type, username, full_name,
         password_hash, password_salt, totp_secret, email,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     ) values (
-        v_account_id, v_system_tenant_id, 0, 'user', p_principal,
+        v_account_id, v_system_tenant_id, 0, 'user', p_principal, p_full_name,
         p_password_hash, '', '', p_email,
         v_actor, v_actor,
         'system.initial_load', 'Initial system admin created during bootstrap',

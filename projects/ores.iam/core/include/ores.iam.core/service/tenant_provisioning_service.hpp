@@ -46,6 +46,9 @@ namespace ores::iam::service {
 /// holds the platform-level tenant verbs.
 inline constexpr std::string_view tenant_admin_role = "TenantAdmin";
 
+/// The name a provisioned tenant's own administrator is shown by.
+inline constexpr std::string_view tenant_admin_name = "Tenant Admin";
+
 /**
  * @brief Creates a tenant and its first administrator.
  *
@@ -160,8 +163,12 @@ public:
 
         auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id);
         account_operations_service accounts(tenant_ctx);
-        auto account = accounts.create_account(
-            admin_username, admin_email, admin_password, ctx_.service_account());
+        auto account = accounts.create_account(admin_username,
+                                               admin_email,
+                                               admin_password,
+                                               ctx_.service_account(),
+                                               "Provision tenant: create the administrator",
+                                               std::string(tenant_admin_name));
 
         // The starting point's choice reaches the account's own record, which
         // is what the login path reads and answers with.

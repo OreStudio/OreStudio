@@ -27,6 +27,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.core/repository/as_of_rows.hpp"
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -420,24 +421,8 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
 
     std::vector<domain::market_observation> result;
     result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() < 10)
-            throw std::runtime_error("read_as_of: a row has " + std::to_string(row.size()) +
-                                     " columns, expected 10");
-
-        market_observation_entity e;
-        e.id = row[0].value_or("");
-        e.tenant_id = row[1].value_or("");
-        e.party_id = row[2].value_or("");
-        e.series_id = row[3].value_or("");
-        e.observation_datetime = row[4].value_or("");
-        e.oresmd_uri = row[5].value_or("");
-        e.value = row[6].value_or("");
-        e.source = row[7];
-        e.valid_from = row[8].value_or("");
-        e.valid_to = row[9].value_or("");
-        result.push_back(market_observation_mapper::map(e));
-    }
+    for (const auto& row : rows)
+        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
     return result;
 }
 
@@ -499,36 +484,9 @@ market_observation_repository::read_as_of_buckets(
 
     std::vector<std::vector<domain::market_observation>> result(bucket_count);
     for (const auto& row : rows) {
-        if (row.size() < 11)
-            throw std::runtime_error("read_as_of_buckets: a row has " + std::to_string(row.size()) +
-                                     " columns, expected 11");
-        if (!row[0])
-            throw std::runtime_error("read_as_of_buckets: a row has no bucket ordinal");
-
-        std::size_t ordinal = 0;
-        try {
-            ordinal = std::stoul(*row[0]);
-        } catch (const std::logic_error&) {
-            throw std::runtime_error("read_as_of_buckets: bucket ordinal '" + *row[0] +
-                                     "' is not a number");
-        }
-        if (ordinal >= result.size())
-            throw std::runtime_error("read_as_of_buckets: bucket ordinal " + *row[0] +
-                                     " is outside the " + std::to_string(result.size()) +
-                                     " buckets requested");
-
-        market_observation_entity e;
-        e.id = row[1].value_or("");
-        e.tenant_id = row[2].value_or("");
-        e.party_id = row[3].value_or("");
-        e.series_id = row[4].value_or("");
-        e.observation_datetime = row[5].value_or("");
-        e.oresmd_uri = row[6].value_or("");
-        e.value = row[7].value_or("");
-        e.source = row[8];
-        e.valid_from = row[9].value_or("");
-        e.valid_to = row[10].value_or("");
-        result[ordinal].push_back(market_observation_mapper::map(e));
+        const auto ordinal = as_of_bucket_ordinal(row, result.size());
+        result[ordinal].push_back(
+            market_observation_mapper::map(as_of_observation(row, 1, "read_as_of_buckets")));
     }
     return result;
 }

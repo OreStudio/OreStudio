@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/close-the-marketdata-test-coverage
+#+pr: 2650
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
 #+updated: 2026-10-02
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ reason, and the review items no one checked are recorded.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 
 * Acceptance
@@ -47,6 +47,21 @@ reason, and the review items no one checked are recorded.
 Run the survey after the grammar cut-over, so the deleted files drop out of
 it.
 
+Decided with the owner on 2026-10-05: the V08 survey is static. A script
+follows each test's includes through marketdata's headers and sources, and
+reports every =src/= file with the tests that reach it. It measures reach, not
+line coverage; the instrumented build that would measure lines does not exist.
+
+1. Turn on the generated eventing integration test for every entity that can
+   take one.
+2. Write repository tests for =feed_binding=, =observation_lineage=,
+   =series_classification_rule= and the junction's list by series.
+3. Move the as-of row mapping into =as_of_rows= and test its refusals.
+4. Move =on_tick='s decision into =plan_tick= and test it.
+5. Test the service's config parser.
+6. Record the G04 review and the V08 survey, with a reason for every file no
+   test reaches.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -59,7 +74,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Source files reached by a test, at the start | 43 of 114 by headers alone; 65 once sources are followed | =evidence/marketdata_test_reach.py= | =04640bfe8c= |
+| Source files reached by a test, at the end | 65 of 114 | =evidence/marketdata_test_reach.py=, output in =evidence/marketdata_test_reach.txt= | =04640bfe8c= |
+| Entities with an eventing integration test | 1 of 6 before, 4 of 6 after; the other 2 cannot compile it | =ls projects/ores.marketdata/core/tests/*eventing*= | =04640bfe8c= |
 
 * Notes
 
@@ -79,6 +96,81 @@ a missing bucket ordinal, an ordinal that is not a number, and an ordinal outsid
 the requested buckets. The row mapping sits inside the query call, so a test
 needs it split out first.
 
+** What the task added
+
+- Generated eventing integration tests for =market_series=, =feed_binding= and
+  =observation_lineage=, joining =series_classification_rule='s. The template
+  sets audit columns that =market_fixing= and =market_observation= do not have,
+  so their test does not compile; it is the fifth finding in the capture
+  below. Turning it on also needs the core tests to link refdata, for the
+  entities that take their party from the session.
+- =repository_entity_repository_tests.cpp=: read back by key and remove for
+  =feed_binding= (by id and by source), =observation_lineage= and
+  =series_classification_rule=; and the junction's paged list by series, with
+  its total and its order.
+- =as_of_rows=: the as-of row mapping, moved out of the model's two reads so a
+  test reaches it. The move is not quite pure: the bucket ordinal must now be
+  all digits, so =1x=, =-1= and = 1= are refused as not a number, where
+  =std::stoul= took the leading digits, a sign or a space. A row that is both
+  short and missing its ordinal now reports the missing ordinal first. =repository_as_of_rows_tests.cpp= covers a good row, a short
+  row, a missing ordinal, an ordinal that is not a number (=two=, =2x=) and an
+  ordinal outside the buckets.
+- =tick_plan=: =on_tick='s decision, moved out of the loop. =app_tick_plan_tests.cpp=
+  covers an unbound source, a URI that names no datum, a value that is not a
+  number, and a source with two bindings, which gets two targets with their own
+  republish subjects. The loop keeps the store, the stats, the CRM bridge and
+  the republish, which need NATS and a database.
+- =config_parser_tests.cpp=: the service's defaults, its =--http-base-url=,
+  NATS and database options, and =--help=.
+- The =observation_lineage= generator wrote =source_series_ids= as =[]=, which
+  the table's check refuses, so no generated lineage row could be stored. The
+  model's generator block now writes a one-element array, and the repository
+  and eventing tests store generated rows.
+
+** V08: the files no test reaches
+
+49 source files are not reached by any test. Each group has its reason:
+
+| Files | Count | Reason |
+|-------+-------+--------|
+| =api/src/domain/*_table.cpp=, =*_table_io.cpp= | 14 generated | Shell and REPL display. No template generates a test for them; capture [[id:DB762ADC-37BA-4234-9AF8-0515798F63C0][Defects in the generated C++ templates]]. |
+| =core/src/messaging/*_registrar.cpp=, =*_history_provider_registrar.cpp= | 11 generated | Subscription wiring that needs NATS and the running service. The live run of every marketdata shell command in [[id:2D0DA355-69A5-4574-B7C2-DD78564F2AFB][Give every marketdata entity its shell commands]] reached each one. |
+| =service/src/messaging/*_event_registrar.cpp= | 6 generated | Service eventing wiring. The eventing integration tests assemble the same chain directly, not through these registrars. |
+| =core/src/presentation/*_history_field_mapper.cpp= | 6 generated | Version history display, reached by the =versions= and =version= commands in the live run; no template generates a test for them. |
+| =core/src/service/market_series_asset_class_service.cpp= | 1 generated | Reached by the live run. Its repository is tested. |
+| =core/src/service/market_fixing_service.cpp=, =market_observation_service.cpp= | 2 generated | Reached by the live run. Their repositories are tested; their eventing test does not compile, the fifth template finding. |
+| =api/src/generators/market_series_asset_class_generator.cpp= | 1 generated | Unused: it fills =market_series_id= with a random UUID, which fails the foreign key, so the junction test builds its rows by hand. Same capture. |
+| =service/src/app/application.cpp=, =host.cpp=, =feed_ingest_loop.cpp= | 3 hand-written | Service start-up and the subscription loop, reached by every live ACME run. The loop's decision is tested through =tick_plan=. |
+| =core/src/messaging/registrar.cpp= | 1 hand-written | Handler wiring, reached by the live run. |
+| =core/src/messaging/publish_from_dq_handler.cpp= | 1 hand-written | The workflow step that publishes marketdata datasets; it needs the workflow service. |
+| =service/src/app/curve_republish_service.cpp= | 1 hand-written | Needs a bootstrap config and a live curve feed. Its resolver and pillar reader are tested. |
+| =client/src/market_data_client.cpp= | 1 hand-written | A NATS client for other services; it needs a running marketdata service. |
+| =api/src/domain/i_feed.cpp= | 1 hand-written | The out-of-line destructor of an interface; there is no behaviour to test. |
+
+** G04: the generated code review
+
+Read on 2026-10-05: the junction's generated service, handler, repository and
+protocol, which this story generated first, against the entities that had them
+already, and the eventing tests generated for the other entities. The code
+reads like the component's hand-written code. Six findings, all in shared
+templates:
+
+- Namespace closers carry an end-of-line comment, which H03 forbids. Task
+  [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]].
+- A claim lost between the service's check and its write reports as
+  =internal_error=, not =conflict=: every handler catches any repository
+  exception the same way.
+- =put_many= reads each written row back with its own query.
+- No template generates a test for the =table=, =table_io= or
+  =history_field_mapper= output.
+- Generators fill foreign keys with random UUIDs, so their rows fail the
+  foreign-key checks.
+- The eventing integration test sets audit columns, so it does not compile for
+  the time-series entities.
+
+The last five are capture
+[[id:DB762ADC-37BA-4234-9AF8-0515798F63C0][Defects in the generated C++ templates]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -94,12 +186,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2650][#2650]] | [marketdata] Close the marketdata test coverage |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 2650: the ordinal parse is stricter than before; say so. | =as_of_rows.cpp= | Accepted | Noted under the task's notes. |
+| 2 | PR 2650: a short row with no ordinal now reports the ordinal first. | =as_of_rows.cpp= | Not changed | Both refusals still fire; no test depends on the order. Noted. |
+| 3 | PR 2650: =-1= wraps in =std::stoul= and reports as outside the buckets. | =as_of_rows.cpp= | Accepted | The ordinal must be all digits; =-1= and = 1= are tested. |
+| 4 | PR 2650: confirm =bindings_by_source_= never holds an empty vector. | =feed_ingest_loop.cpp= | Not changed | =refresh()= creates an entry only by pushing an enabled binding. |
+| 5 | PR 2650: would a foreign key refuse the generator's fixed source id? | =observation_lineage= model | Not changed | =source_series_ids= is =jsonb= with one check, a non-empty array; no foreign key. |
 
 * Result
+
+Every marketdata entity with audit columns has an eventing integration test,
+and the two time-series entities are recorded with the template defect that
+stops theirs. The three
+repositories and the junction that had no repository test have one. The as-of
+reads' refusals and =on_tick='s decision moved into small functions that unit
+tests reach. The V08 survey is a script on the task: 65 of 114 source files are
+reached by a test, and each of the other 49 is recorded with its reason. The G04
+review found six template defects, one a task and five a capture.

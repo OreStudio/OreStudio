@@ -17,20 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_service_app_application.cpp.mustache
- * To modify, update the template and regenerate.
- */
 #include "ores.inbox.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
+#include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_request_event_registrar.hpp"
+#include "ores.inbox.service/messaging/approval_request_state_event_registrar.hpp"
+#include "ores.inbox.service/messaging/delivery_outcome_type_event_registrar.hpp"
+#include "ores.inbox.service/messaging/notification_channel_event_registrar.hpp"
+#include "ores.inbox.service/messaging/notification_delivery_event_registrar.hpp"
+#include "ores.inbox.service/messaging/notification_event_registrar.hpp"
+#include "ores.inbox.service/messaging/notification_kind_event_registrar.hpp"
+#include "ores.inbox.service/messaging/notification_preference_event_registrar.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
-#include <boost/throw_exception.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <vector>
 
 namespace ores::inbox::service::app {
 
 using namespace ores::logging;
+namespace ev = ores::eventing;
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -46,17 +62,64 @@ ores::database::context application::make_context(const ores::database::database
 
 application::application() = default;
 
-boost::asio::awaitable<void> application::run(boost::asio::io_context& /*io_ctx*/,
+namespace {
+
+constexpr std::string_view service_name = "ores.inbox.service";
+constexpr std::string_view service_version = ORES_VERSION;
+
+} // namespace
+
+boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.inbox.service", 0, 1);
 
-    auto ctx = make_context(cfg.database);
-    (void)ctx;
+    ores::nats::service::client nats(cfg.nats);
+    nats.connect();
 
-    // TODO: register domain handlers and run NATS server
-    BOOST_LOG_SEV(lg(), warn) << "ores.inbox.service service is not yet implemented.";
+    // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY to NATS publish.
+    // Each generated registrar owns one entity's mapping and its publication.
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
+    namespace msg = ores::inbox::service::messaging;
+    std::vector<ev::service::subscription> events;
+    events.push_back(msg::register_approval_decision_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_approval_decision_type_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_approval_kind_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_approval_request_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_approval_request_state_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_delivery_outcome_type_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_notification_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_notification_channel_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_notification_delivery_event_mapping(event_source, event_bus, nats));
+    events.push_back(msg::register_notification_kind_event_mapping(event_source, event_bus, nats));
+    events.push_back(
+        msg::register_notification_preference_event_mapping(event_source, event_bus, nats));
+    event_source.start();
+    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+
+    co_await ores::service::service::run(
+        io_ctx,
+        nats,
+        make_context(cfg.database),
+        "ores.inbox.service",
+        [](auto& n, auto c, auto v) {
+            return ores::inbox::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v));
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+        });
+
+    event_source.stop();
     co_return;
 }
 

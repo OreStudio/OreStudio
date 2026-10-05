@@ -1,0 +1,321 @@
+:PROPERTIES:
+:ID: 353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23
+:END:
+#+title: ores.inbox.approval_operations
+#+description: Codegen operation model for the approval request lifecycle -- raising, withdrawing and deciding a request, and the two reads a person works from -- rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: inbox
+#+subcomponent: api
+#+entity_singular: approval_operations
+#+namespace: ores::inbox::messaging
+#+brief: Approval request lifecycle operations.
+#+filetags: :model:operation:inbox:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+The operations a person takes on an approval request. They are not entity
+verbs: raising a request fills in who asked, when it expires and where it
+starts; deciding one writes a decision and moves the request to the state the
+decisions reach, in one transaction. The entity protocols of
+[[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] and [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] stay the
+administrator's surface; these are the member's.
+
+The handler is hand-written beside this model, because each operation applies
+the lifecycle rules of [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]].
+
+* Physical space
+
+The shell commands are switched off. These operations act as the signed-in
+person, and the shell reaches the request and decision entities through their
+own units.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.inbox.api/domain/approval_request.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** raise_approval_request_request
+:PROPERTIES:
+:subject:  inbox.v1.approval-requests.raise
+:response: raise_approval_request_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for something that a person who may decide it must approve.
+ *
+ * The request is raised for the signed-in person, waiting, and expiring when
+ * its kind says. The component that owns the kind writes the detail that names
+ * what is asked for, keyed by the request's id.
+ */
+#+end_src
+
+*** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The kind of request, such as iam.role_grant.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the person asks, in their words.
+ */
+#+end_src
+
+** raise_approval_request_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request
+:PROPERTIES:
+:cpp_type: ores::inbox::domain::approval_request
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The request as raised, when the outcome is ok.
+ */
+#+end_src
+
+** withdraw_approval_request_request
+:PROPERTIES:
+:subject:  inbox.v1.approval-requests.withdraw
+:response: withdraw_approval_request_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Takes back a request the signed-in person raised.
+ *
+ * Only an open request can be withdrawn, and only by the person who asked.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the request the person saw.
+ */
+#+end_src
+
+*** comment
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** withdraw_approval_request_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request
+:PROPERTIES:
+:cpp_type: ores::inbox::domain::approval_request
+:END:
+
+** decide_approval_request_request
+:PROPERTIES:
+:subject:  inbox.v1.approval-requests.decide
+:response: decide_approval_request_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Approves, refuses, holds or resumes a request.
+ *
+ * The decider needs the permission the request's kind names, and is not the
+ * person who asked. The request moves to the state the decisions reach: an
+ * approval closes it only once the kind's approvals_required approvals stand.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the request the decider saw, so a second decision
+ * on a request someone else has just decided is refused.
+ */
+#+end_src
+
+*** decision_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief approve, refuse, hold or resume.
+ */
+#+end_src
+
+*** comment
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** decide_approval_request_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** request
+:PROPERTIES:
+:cpp_type: ores::inbox::domain::approval_request
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The request after the decision, when the outcome is ok.
+ */
+#+end_src
+
+** list_approval_queue_request
+:PROPERTIES:
+:subject:  inbox.v1.approval-requests.queue
+:response: list_approval_queue_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the open requests the signed-in person may decide.
+ *
+ * Open means waiting or held. A request is in the queue when the person holds
+ * its kind's decide permission and did not raise it. Oldest first.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  100
+:END:
+
+** list_approval_queue_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** requests
+:PROPERTIES:
+:cpp_type: std::vector<ores::inbox::domain::approval_request>
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many requests the whole queue holds, for paging.
+ */
+#+end_src
+
+** list_my_approval_requests_request
+:PROPERTIES:
+:subject:  inbox.v1.approval-requests.mine
+:response: list_my_approval_requests_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the requests the signed-in person raised, newest first.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  100
+:END:
+
+** list_my_approval_requests_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** requests
+:PROPERTIES:
+:cpp_type: std::vector<ores::inbox::domain::approval_request>
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] -- the lifecycle these operations apply.
+- [[id:5D8A2C64-3E19-4B7F-A6D0-1C9E4F7B2A83][ores.inbox]] -- the module these operations belong to.

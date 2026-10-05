@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,30 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_INBOX_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
-#define ORES_INBOX_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <boost/exception/info.hpp>
-#include <string>
-
-namespace ores::inbox::service::config {
-
-/**
- * @brief A fatal error has occurred during option parsing.
- */
-class parser_exception : public virtual std::exception, public virtual boost::exception {
-public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
-
-}
-
-#endif
+drop function if exists ores_inbox_clear_notifications_fn;
+drop function if exists ores_inbox_mark_notifications_read_fn;
+drop function if exists ores_inbox_raise_notification_fn;

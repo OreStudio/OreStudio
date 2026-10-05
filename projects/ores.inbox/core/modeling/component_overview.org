@@ -51,17 +51,22 @@ notification's audience, and the NATS handlers that serve them.
 What the shared component profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced into its
 generated file after the profile's baseline. The history provider registrars
-need the history dispatch registry and the diff types it carries.
+need the history dispatch registry and the diff types it carries. The
+approval lifecycle reads the signed-in account from IAM, and the operation
+handlers use the shared request and reply helpers.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PRIVATE
         ores.history.core.lib
-        ores.diff.lib)
+        ores.diff.lib
+        ores.iam.core.lib
+        ores.service.lib)
 #+end_src
 
 The generated eventing tests assemble the database-to-NATS chain by hand and
-seed the IAM accounts and permissions the inbox rows reference.
+seed the IAM accounts and permissions the inbox rows reference, and the
+handler tests use the shared request and reply helpers.
 
 #+begin_src cmake :name extra_test_dependencies
 target_link_libraries(${tests_target_name}
@@ -71,6 +76,7 @@ target_link_libraries(${tests_target_name}
         ores.iam.api.lib
         ores.iam.core.lib
         ores.nats.lib
+        ores.service.lib
         ores.utility.lib)
 #+end_src
 

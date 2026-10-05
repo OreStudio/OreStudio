@@ -183,3 +183,12 @@ alter  user :storage_service_user with password :'storage_service_password';
 grant :service_role to :storage_service_user;
 alter  role :storage_service_user set search_path to public;
 
+-- Inbox domain service
+select set_config('ores.cur_user', :'inbox_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :inbox_service_user with password :'inbox_service_password';
+grant :service_role to :inbox_service_user;
+alter  role :inbox_service_user set search_path to public;
+

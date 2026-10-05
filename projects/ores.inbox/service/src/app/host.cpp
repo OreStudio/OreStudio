@@ -17,11 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_service_app_host.cpp.mustache
- * To modify, update the template and regenerate.
- */
 #include "ores.inbox.service/app/host.hpp"
 #include "ores.inbox.service/app/application.hpp"
 #include "ores.inbox.service/config/parser.hpp"

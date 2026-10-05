@@ -42,6 +42,7 @@
 \ir ./inbox_approval_decisions_create.sql
 \ir ./inbox_approval_decisions_notify_trigger_create.sql
 \ir ./inbox_approval_decision_rules_create.sql
+\ir ./inbox_approval_decide_fn_create.sql
 
 -- =============================================================================
 -- Notifications
@@ -68,3 +69,6 @@
 \ir ./inbox_notification_deliveries_notify_trigger_create.sql
 \ir ./inbox_notification_preferences_create.sql
 \ir ./inbox_notification_preferences_notify_trigger_create.sql
+
+-- Raising a notification and a person's read state, each in one statement
+\ir ./inbox_notification_fn_create.sql

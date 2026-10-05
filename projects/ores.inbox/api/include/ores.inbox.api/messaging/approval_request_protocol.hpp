@@ -66,8 +66,12 @@ struct approval_request_lookup {
 
 struct approval_requests_filter {
     std::optional<std::string> kind_code;
+    std::optional<std::string> state_code;
+    std::optional<boost::uuids::uuid> requested_by;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> kind_code_one_of;
+    std::optional<std::vector<std::string>> state_code_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> requested_by_one_of;
 };
 
 struct approval_request_event {

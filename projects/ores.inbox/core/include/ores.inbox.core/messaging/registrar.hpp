@@ -17,28 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_INBOX_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
-#define ORES_INBOX_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
+#ifndef ORES_INBOX_CORE_MESSAGING_REGISTRAR_HPP
+#define ORES_INBOX_CORE_MESSAGING_REGISTRAR_HPP
 
-#include <boost/exception/info.hpp>
-#include <string>
+#include "ores.database/domain/context.hpp"
+#include "ores.inbox.core/export.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace ores::inbox::service::config {
+namespace ores::inbox::messaging {
 
 /**
- * @brief A fatal error has occurred during option parsing.
+ * @brief Registers every inbox NATS handler the service answers.
  */
-class parser_exception : public virtual std::exception, public virtual boost::exception {
+class ORES_INBOX_CORE_EXPORT registrar {
 public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+    static std::vector<ores::nats::service::subscription> register_handlers(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 
 }

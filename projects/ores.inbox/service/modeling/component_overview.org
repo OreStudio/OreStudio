@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 1C966173-16C3-4B5D-A396-AD73DB80B7F8
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.inbox.service
 #+description: NATS service entrypoint for approval requests and notifications.
@@ -42,6 +43,13 @@ the core's handlers.
 
 - =ores.inbox.core= — the handlers.
 - =ores.service= — the service host.
+
+* Hand-owned files
+
+=src/app/application.cpp= wires the change-event pipeline and the domain
+service runner, which the generated service-app template does not, so the
+service-app facet is switched off and the part owns its host, configuration and
+entry point from here, as =ores.workspace.service= does.
 
 * Build dependencies
 

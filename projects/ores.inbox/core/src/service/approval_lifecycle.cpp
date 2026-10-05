@@ -1,0 +1,192 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <chrono>
+#include <stdexcept>
+
+namespace ores::inbox::service {
+
+using namespace ores::logging;
+
+namespace {
+
+constexpr int max_page = 500;
+
+int clamp_limit(int limit) {
+    return std::clamp(limit, 1, max_page);
+}
+
+}
+
+approval_lifecycle::approval_lifecycle(ores::database::context ctx)
+    : ctx_(std::move(ctx)) {}
+
+std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
+    ores::iam::repository::account_repository accounts;
+    const auto found = accounts.read_latest_by_username(ctx_, ctx_.actor());
+    if (found.empty())
+        return std::nullopt;
+    return found.front().id;
+}
+
+std::optional<domain::approval_kind> approval_lifecycle::kind(const std::string& code) {
+    repository::approval_kind_repository repo;
+    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
+    const auto found = repo.read_latest(system_ctx, code);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
+}
+
+std::vector<domain::approval_kind> approval_lifecycle::kinds() {
+    repository::approval_kind_repository repo;
+    return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+}
+
+std::optional<domain::approval_request> approval_lifecycle::request(const std::string& id) {
+    repository::approval_request_repository repo;
+    const auto found = repo.read_latest(ctx_, id);
+    if (found.empty())
+        return std::nullopt;
+    return found.front();
+}
+
+domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
+                                                   const std::string& reason,
+                                                   const boost::uuids::uuid& requested_by) {
+    const auto now = std::chrono::system_clock::now();
+
+    domain::approval_request r;
+    r.tenant_id = ctx_.tenant_id();
+    r.id = utility::uuid::uuid_v7_generator{}();
+    r.kind_code = kind.code;
+    r.state_code = "waiting";
+    r.requested_by = requested_by;
+    r.requested_at = now;
+    r.reason = reason;
+    if (kind.expires_after_days)
+        r.expires_at = now + std::chrono::days(*kind.expires_after_days);
+    r.modified_by = ctx_.actor();
+    r.change_reason_code = "system.new_record";
+
+    BOOST_LOG_SEV(lg(), info) << "Raising a " << kind.code << " request for "
+                              << boost::uuids::to_string(requested_by);
+    repository::approval_request_repository repo;
+    repo.write(ctx_, r, ores::utility::domain::precondition{});
+
+    const auto written = request(boost::uuids::to_string(r.id));
+    if (!written)
+        throw std::runtime_error("The raised request could not be read back.");
+    return *written;
+}
+
+decision_result approval_lifecycle::decide(const std::string& request_id,
+                                           int version,
+                                           const std::string& decision_code,
+                                           const boost::uuids::uuid& decided_by,
+                                           const std::string& comment) {
+    BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select outcome, message, state_code, version::text "
+        "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6)",
+        {request_id,
+         std::to_string(version),
+         decision_code,
+         boost::uuids::to_string(decided_by),
+         comment,
+         ctx_.actor()},
+        lg(),
+        "Deciding an approval request");
+
+    if (rows.empty() || rows.front().size() != 4)
+        throw std::runtime_error("The decision returned no result.");
+
+    const auto& row = rows.front();
+    return decision_result{.outcome = row[0].value_or(""),
+                           .message = row[1].value_or(""),
+                           .state_code = row[2].value_or(""),
+                           .version = row[3] ? std::stoi(*row[3]) : 0};
+}
+
+request_page approval_lifecycle::queue(const std::vector<std::string>& kind_codes,
+                                       const boost::uuids::uuid& excluding,
+                                       int offset,
+                                       int limit) {
+    if (kind_codes.empty())
+        return {};
+
+    messaging::approval_requests_filter open;
+    open.kind_code_one_of = kind_codes;
+    open.state_code_one_of = std::vector<std::string>{"waiting", "held"};
+
+    auto own = open;
+    own.requested_by = excluding;
+
+    repository::approval_request_repository repo;
+    const auto all = static_cast<int>(repo.get_total_request_count(ctx_, open));
+    const auto mine = static_cast<int>(repo.get_total_request_count(ctx_, own));
+
+    // A person never decides their own request, so theirs are left out. The
+    // read covers the page plus every request of their own that could fall
+    // inside it, and the page is cut after they are removed.
+    const auto page_limit = clamp_limit(limit);
+    const auto first = std::max(offset, 0);
+    auto rows = repo.read_latest(ctx_,
+                                 0,
+                                 static_cast<std::uint32_t>(first + page_limit + mine),
+                                 ores::utility::domain::order{.field = "requested_at"},
+                                 open);
+    std::erase_if(rows, [&](const auto& r) { return r.requested_by == excluding; });
+
+    request_page page;
+    page.total = all - mine;
+    if (first < static_cast<int>(rows.size())) {
+        const auto last = std::min(static_cast<int>(rows.size()), first + page_limit);
+        page.requests.assign(rows.begin() + first, rows.begin() + last);
+    }
+    return page;
+}
+
+request_page
+approval_lifecycle::raised_by(const boost::uuids::uuid& account_id, int offset, int limit) {
+    messaging::approval_requests_filter mine;
+    mine.requested_by = account_id;
+
+    repository::approval_request_repository repo;
+    request_page page;
+    page.total = static_cast<int>(repo.get_total_request_count(ctx_, mine));
+    page.requests =
+        repo.read_latest(ctx_,
+                         static_cast<std::uint32_t>(std::max(offset, 0)),
+                         static_cast<std::uint32_t>(clamp_limit(limit)),
+                         ores::utility::domain::order{.field = "requested_at", .descending = true},
+                         mine);
+    return page;
+}
+
+}

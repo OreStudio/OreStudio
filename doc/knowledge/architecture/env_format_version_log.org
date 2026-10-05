@@ -55,6 +55,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 24 | 2026-09-26 | Added ORES_USE_BUSCTL, defaulting on, so compass reaches the systemd user manager through busctl where systemctl --user cannot (the DSH sandbox); compass env configure --no-use-busctl selects plain systemctl |
 | 25 | 2026-09-26 | Added the ORES_STORAGE_SERVICE_DB_* block; ores.storage.service is a new service and needs a database identity for the request context the shared runner hands to a handler, though it holds no tables |
 | 26 | 2026-09-27 | Removed ORES_HTTP_SERVER_JWT_SECRET; the gateway verifies sessions with IAM's key alone, so the variable has no reader and the unregistered name stops ores.http.server at startup |
+| 27 | 2026-10-05 | Added the ORES_INBOX_SERVICE_DB_* block; ores.inbox.service is a new service that owns the approval request and notification tables and needs a database identity |
 
 * See also
 

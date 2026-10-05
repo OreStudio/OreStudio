@@ -440,7 +440,7 @@ export const en: SourceCatalogue = {
 
     accounts: {
         title: 'Accounts',
-        description: 'Identities that can sign in or act as a service, scoped to this tenant.',
+        description: 'Identities that can sign in or act as a service.',
         search: 'Search',
         searchPlaceholder: 'Username, name, or email',
         filterByType: 'Type',

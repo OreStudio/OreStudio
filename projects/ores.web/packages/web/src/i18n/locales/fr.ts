@@ -442,8 +442,7 @@ const fr: SourceCatalogue = {
 
     accounts: {
         title: 'Comptes',
-        description:
-            'Identités pouvant se connecter ou agir en tant que service, dans ce locataire.',
+        description: 'Identités pouvant se connecter ou agir en tant que service.',
         search: 'Rechercher',
         searchPlaceholder: "Nom d'utilisateur, nom ou email",
         filterByType: 'Type',

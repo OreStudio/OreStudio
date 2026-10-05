@@ -101,12 +101,6 @@
 \ir ./trading_bond_issues_drop.sql
 
 -- Shared instrument-keyed tables and the trade envelope (task B753AD00)
-\ir ./trading_trade_envelope_additional_fields_notify_trigger_drop.sql
-\ir ./trading_trade_envelope_additional_fields_drop.sql
-\ir ./trading_trade_envelope_portfolio_ids_notify_trigger_drop.sql
-\ir ./trading_trade_envelope_portfolio_ids_drop.sql
-\ir ./trading_trade_envelopes_notify_trigger_drop.sql
-\ir ./trading_trade_envelopes_drop.sql
 \ir ./trading_instrument_strikes_notify_trigger_drop.sql
 \ir ./trading_instrument_strikes_drop.sql
 \ir ./trading_instrument_option_payment_dates_notify_trigger_drop.sql
@@ -191,8 +185,6 @@
 \ir ./trading_trades_functions_drop.sql
 
 -- Trades (depends on reference data, drop after junction tables)
-\ir ./trading_trades_notify_trigger_drop.sql
-\ir ./trading_trades_drop.sql
 
 -- Trade components (drop before the anchor they reference)
 \ir ./trading_trade_states_notify_trigger_drop.sql

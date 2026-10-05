@@ -20,6 +20,9 @@ swap and a novation as demonstration data. No root script includes either one,
 so no database has ever run them. The scheduler file arrived with the move from
 pgmq to the scheduler (=11168b35ba=).
 
+The trading file is settled: it booked wide trades, so it was deleted with the
+wide trade. The scheduler file is the one decision left.
+
 * Why
 
 Each file is either a feature someone expected and does not have, or dead

@@ -36,8 +36,9 @@ Confirmation is not part of this machine. A trade's confirmation status is its
 own lifecycle, described in [[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]], and the activity that confirms a
 trade names no transition here.
 
-The =ores_trading_trades_tbl= carries a =status_id= column (soft foreign key to
-=ores_dq_fsm_states_tbl=) representing the trade's current status.
+A trade's state, =ores_trading_trade_states_tbl=, carries a =status_id= column
+(soft foreign key to =ores_dq_fsm_states_tbl=) representing the trade's current
+status.
 
 * Activity types
 
@@ -55,7 +56,7 @@ record includes:
 
 * Transition enforcement
 
-The insert trigger on =ores_trading_trades_tbl= resolves and guards the
+The insert trigger on =ores_trading_trade_states_tbl= resolves and guards the
 transition. The activity names the event; =ores_trading_activity_types_tbl=
 maps it to a transition, or to none; and the trigger requires the trade's
 current status to match the transition's =from_state_id= before setting
@@ -80,7 +81,7 @@ trade live.
 | sql       | =ores_dq_fsm_machines_tbl=                                            | FSM machine definitions                 |
 | sql       | =ores_dq_fsm_states_tbl=                                              | FSM state definitions                   |
 | sql       | =ores_dq_fsm_transitions_tbl=                                         | FSM transition rules                    |
-| sql       | =ores_trading_trades_tbl=                                             | Trade records with =status_id= column   |
+| sql       | =ores_trading_trade_states_tbl=                                       | Trade states with =status_id= column    |
 | sql       | =ores_trading_activity_types_tbl=                                     | Activity type reference data            |
 
 * See also

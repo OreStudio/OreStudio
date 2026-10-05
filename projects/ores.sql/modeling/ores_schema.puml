@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-04T21:14:18.841887Z
+' Generated: 2026-10-05T00:19:16.041510Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -10987,112 +10987,6 @@ package "trading" #E8F5E9 {
     that takes the trade live, in the same transaction.
     end note
 
-    entity ores_trading_trade_envelope_additional_fields_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        * sequence_number : integer <<PK>>
-        --
-        * version : integer
-        * name : text
-        * value : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_trade_envelope_additional_fields_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Trade Envelope Additional Field Table
-    One row per additional field a document stated in a trade's envelope,
-    keyed to the envelope and the field's ordinal.
-    The schema states the member as open content: any element name, in any
-    namespace, with any content. A row here keeps the name and the text of
-    one such element. The list is where a document carries the fields ORE
-    Studio does not model, so nothing here is decoded.
-    The name and the value are both text and neither is constrained. A
-    document may state an empty name or an empty value, and both round trip
-    because the columns hold the document's own text rather than a decoded
-    form.
-    The list order is the document's order and the ordinal preserves it.
-    end note
-
-    entity ores_trading_trade_envelope_portfolio_ids_tbl <<junction>> #ECECEC {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        * sequence_number : integer <<PK>>
-        * valid_from : timestamptz <<PK>>
-        --
-        * version : integer
-        * portfolio_id : text <<FK>>
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_trade_envelope_portfolio_ids_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Trade Envelope Portfolio Identifier Table
-    One row per portfolio identifier a document stated in a trade's
-    envelope, keyed to the envelope and the identifier's ordinal.
-    The schema declares the list unbounded and a document's order is the
-    order it stated. The ordinal preserves that order, so export re-emits
-    the identifiers as the document held them.
-    The identifier is text because the document states a name, not a
-    reference to a portfolio row.
-    A list the document omitted and a list it stated empty both write no
-    row here. The envelope row's has_portfolio_ids flag tells the two
-    apart.
-    end note
-
-    entity ores_trading_trade_envelopes_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        --
-        * version : integer
-          counter_party : text
-          netting_set_id : text <<FK>>
-        * has_portfolio_ids : boolean
-        * has_additional_fields : boolean
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_trade_envelopes_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Trade Envelope Table
-    One row per trade whose document stated an envelope, keyed to the
-    trade.
-    The envelope is the block a document wraps around a trade. It names a
-    counterparty, a netting set, a list of portfolios and a list of further
-    fields the document states in its own vocabulary. The schema states all
-    four as optional and the last as open content.
-    The trade row already carries a counterparty and a netting set, but
-    those are the trade's own attributes and the trade states them
-    unconditionally. The envelope is the document's statement and may omit
-    either. A row here holds what the document said, so a reader
-    distinguishes an omitted member from a stated one.
-    A scalar member needs no flag of its own: a null column says the
-    document omitted it and an empty string says the document stated it
-    empty. The two list members are not like that, because an omitted list
-    and a stated empty list both write no child row. Each therefore carries
-    a flag on this row that says the document stated it.
-    end note
-
     entity ores_trading_trade_id_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -11242,49 +11136,6 @@ package "trading" #E8F5E9 {
     Trade Type Table
     Reference data table defining valid trade type classifications used to
     categorise trades in the system.
-    end note
-
-    entity ores_trading_trades_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-        * external_id : text <<FK>>
-        * book_id : uuid <<FK>>
-        * portfolio_id : uuid <<FK>>
-          successor_trade_id : uuid <<FK>>
-        * trade_type : text
-          counterparty_id : uuid <<FK>>
-          product_type : product_type_t
-          asset_class : text
-        * netting_set_id : text <<FK>>
-        * activity_type_code : text
-        * status_id : uuid <<FK>>
-          trade_date : date
-          execution_timestamp : timestamptz
-          effective_date : date
-          termination_date : date
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_trades_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Trade Table
-    Temporal trade record. Each lifecycle event (New, Amendment, Novation,
-    etc.) creates a new temporal row for the same trade id. The internal party
-    is derived from book_id via books.party_id.
-    Composed of five sub-structs to keep each reflected struct small and avoid
-    MSVC C1202 (recursive template dependency context too complex) in rfl's
-    O(n²) field-uniqueness check.  The JSON wire format is nested:
-    {"identity":{...}, "parties":{...}, ...}.
     end note
 
     entity ores_trading_vanilla_swap_instruments_tbl <<temporal>> #C6F0D8 {

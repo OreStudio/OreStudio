@@ -106,36 +106,6 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
--- Trades
--- -----------------------------------------------------------------------------
-alter table ores_trading_trades_tbl enable row level security;
-
-drop policy if exists trades_tenant_isolation_policy
-    on ores_trading_trades_tbl;
-
-create policy trades_tenant_isolation_policy on ores_trading_trades_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
--- Party isolation: strict enforcement — no party context means no rows visible.
--- party_id is denormalised from book_id by the insert trigger.
--- FOR SELECT only: party_id is auto-populated by trigger; WITH CHECK would
--- block inserts from the publisher where the new party is not yet in the session.
-drop policy if exists trades_party_isolation_policy
-    on ores_trading_trades_tbl;
-
-create policy trades_party_isolation_policy
-on ores_trading_trades_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
 -- Trade Identifiers
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trade_identifiers_tbl enable row level security;

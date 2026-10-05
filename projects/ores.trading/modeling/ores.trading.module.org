@@ -15,7 +15,6 @@ The =ores.trading= module groups all logical entities in the =ores.trading= name
 
 | Entity | Brief |
 |--------+-------|
-| [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][ores.trading.trade]] | Trade capturing FpML Trade Header properties. |
 | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade_anchor]] | The immutable anchor of a trade. |
 | [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][ores.trading.trade_booking]] | Where a trade is booked and the netting set it is filed in. |
 | [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][ores.trading.trade_state]] | A trade's lifecycle status. |

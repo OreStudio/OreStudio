@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C452D105-7E15-4C43-81A2-EFCFA2E5A8B1
+:END:
+#+title: The tenant purge has no pgTAP test
+#+description: ores_iam_purge_tenant_fn now deletes every tenant-scoped trading table, instruments included, and passes the anchor's guard through the immutable purge switch. It was proved only by hand against the provisioned ACME tenant in a rolled-back transaction (103 rows in 9 tables to 0 in 90). A pgTAP test that books a trade with an instrument for a test tenant, purges it and asserts no trading row is left would lock the behaviour in.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

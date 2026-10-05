@@ -31,17 +31,13 @@
 namespace ores::trading::service {
 
 /**
- * @brief Rebuilds the trade envelope container from the tables that hold it.
- *
- * An envelope is one row plus two child lists, and a reader that walked
- * the trade table one trade at a time would pay three queries per trade.
- * This reader takes the trades as a set and issues one query per table.
+ * @brief Rebuilds the trade envelope container from a trade's components.
  *
  * A booked trade's envelope comes from its anchor and components: the
  * counterparty and netting set names the booking recorded, the names of the
- * portfolios it is reported in and its additional fields. A trade with no
- * anchor keeps the envelope its own tables hold, and a trade with neither is
- * absent from the result.
+ * portfolios it is reported in and its additional fields. The reader takes
+ * the trades as a set and issues one query per source rather than three per
+ * trade. A trade with no live booking is absent from the result.
  */
 class ORES_TRADING_CORE_EXPORT trade_envelope_reader {
 private:
@@ -62,16 +58,12 @@ public:
      * @brief Reads the envelopes of a set of trades, keyed by trade id.
      *
      * @param trade_ids UUIDs of the trades to read, as text.
-     * @return One container per trade that has an envelope row.
+     * @return One container per trade with a live booking.
      */
     std::unordered_map<std::string, domain::trade_envelope_data>
     read_envelopes(const std::vector<std::string>& trade_ids) const;
 
 private:
-    void read_booked_envelopes(
-        const std::vector<std::string>& trade_ids,
-        std::unordered_map<std::string, domain::trade_envelope_data>& envelopes) const;
-
     context ctx_;
 };
 

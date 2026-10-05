@@ -24,8 +24,8 @@
 -- Promotes Acme's staged DQ artefacts into the refdata tables the rest of the
 -- system reads. Without this step the artefact tables hold Acme's parties,
 -- business units, portfolios and books, and ores_refdata_books_tbl is empty,
--- so no trade can be booked: ores_trading_trades_insert_fn validates book_id
--- against ores_refdata_books_tbl and rejects every row.
+-- so no trade can be booked: the trade booking's insert trigger validates
+-- book_id against ores_refdata_books_tbl and rejects every row.
 --
 -- This calls the same ores_refdata_publish_*_from_dq_fn functions that
 -- ores.iam.core's Acme provisioner drives over dq.v1.bundles.publish. It is a

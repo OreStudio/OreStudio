@@ -13,7 +13,7 @@ The database's insert trigger refuses an empty name after bootstrap, so every
 trade and every bond instrument written through a ``put`` failed with
 ``modified_by cannot be null or empty``, and the ORE round trip could not run.
 
-The three models are live ones -- one of each shape -- so the test stays about
+The two models are live ones -- one of each shape -- so the test stays about
 the shapes rather than about whichever names an org happens to carry today.
 """
 import sys
@@ -29,9 +29,8 @@ DATA_DIR = CODEGEN_BASE / "library" / "data"
 TEMPLATES_DIR = CODEGEN_BASE / "library" / "templates"
 TRADING_MODELING = REPO_ROOT / "projects/ores.trading/modeling"
 
-# One of each shape: five field groups, an identity slot beside a flat body,
-# and a flat entity end to end.
-GROUPED = ("ores.trading.trade.org", "trade_service.cpp")
+# One of each shape: an identity slot beside a flat body, and a flat entity
+# end to end.
 IDENTITY_GROUPED = ("ores.trading.bond_instrument.org", "bond_instrument_service.cpp")
 FLAT = ("ores.trading.bond_issue.org", "bond_issue_service.cpp")
 
@@ -56,15 +55,6 @@ def _prepare_change(rendered):
     start = rendered.index("::prepare_change(")
     end = rendered.index("\n}\n", start)
     return rendered[start:end]
-
-
-def test_a_grouped_entity_stamps_every_member_that_carries_an_audit(tmp_path):
-    body = _prepare_change(_render(*GROUPED, tmp_path=tmp_path))
-    assert "stamp(out.audit," in body
-    # The party block carries a column the audit stamp does not reach.
-    assert "stamp(out.parties," in body
-    # Stamping the whole struct would find no column of its own.
-    assert "stamp(out, ctx_," not in body
 
 
 def test_an_identity_grouped_entity_stamps_its_identity_and_audit(tmp_path):

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: BA740C1B-8307-47D1-B359-AF20D0B2CBF0
+:END:
+#+title: Run pgTAP under a role that row-level security binds
+#+description: pgTAP runs as the test DDL role, never as the owner DDL role, which bypasses row-level security.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+Run pg_prove as ORES_TEST_DB_DDL_USER (or ORES_TEST_DB_USER), never as ORES_DB_DDL_USER. The owner role has BYPASSRLS and no table forces row-level security, so a test run as the owner sees every tenant's rows and a test that relies on RLS for tenant isolation reports false failures.
+
+*Why:* The ORE sample netting tests failed under the owner role once ACME was provisioned: their queries saw the system tenant's rows and ACME's copies. The same tests pass under both test roles. The user's direction: make sure we are filtering by RLS, rather than adding tenant predicates to the tests.
+
+*How to apply:* Whenever running pgTAP or a probe whose result depends on tenant isolation. Use the owner role only for what RLS-bound roles cannot do, such as replacing a function, and filter by tenant explicitly in that probe.

@@ -450,10 +450,8 @@ WIRE_001 ip2country_import.sql
 # Written and run by projects/ores.codegen/src/fpml_parser.py.
 WIRE_001 populate_fpml.sql
 
-# Never wired since they were added. Wiring either changes what a recreate
-# seeds: scheduler_populate.sql adds a job that scrapes MQ statistics every
-# minute, and trading_sample_data_populate.sql books demonstration trades.
-# Whether to wire or delete them is a decision of its own, recorded as a
+# Never wired since it was added. Wiring it changes what a recreate seeds:
+# scheduler_populate.sql adds a job that scrapes MQ statistics every minute.
+# Whether to wire or delete it is a decision of its own, recorded as a
 # backlog capture.
 WIRE_001 scheduler_populate.sql
-WIRE_001 trading_sample_data_populate.sql

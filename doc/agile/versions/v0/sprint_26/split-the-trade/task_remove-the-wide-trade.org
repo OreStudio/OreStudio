@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 34BC6E18-F563-4F9A-A9A3-72E605F1A5A8
+:END:
+#+title: Task: Remove the wide trade
+#+description: Delete the wide trade model, its five field groups, the three envelope tables and their generated code, the wide-trade SQL functions, populate and tests, and make the tenant purge delete instruments and the anchor's components.
+#+type: task
+#+level: s1
+#+filetags: :split-the-trade:sprint_26:v0:
+#+owner: marco
+#+branch: feature/remove-the-wide-trade
+#+pr: 2641
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No code, table or test of the wide trade remains; the anchor and its components are the only trade, and a tenant purge removes everything a trade owns.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The trade model, the five trade field groups and the three envelope models are deleted with every file they generated.
+- The wide-trade SQL functions, trading_sample_data_populate and trade_trades_test are gone; the drop scripts and grants no longer name the wide tables.
+- The tenant purge deletes instrument rows and the anchor's components before the anchor, through the sanctioned immutability path.
+- The round trip stays at in-scope lost 0 with every envelope as stated; build, ctest, pgTAP and the local check set pass.
+
+* Plan
+
+- List every file the nine models generate with =codegen generate
+  --dry-run=, delete those files and the models, and regenerate the trade
+  component so the shared command table drops them.
+- Remove the hand-written wiring: the SQL create and drop includes, the
+  wide trade's row-level security, its one SQL function
+  (=ores_trading_get_trade_ids_by_books_fn=, which nothing called), the
+  envelope readers in =parent_scoped_queries=, the registrars, the event
+  mappings and the envelope permission seeds.
+- The envelope reader keeps only the booked path, which reads the anchor's
+  components.
+- Delete the tests of deleted behaviour: the envelope reader test against
+  the old tables, the wide trade domain test and generator cases, the
+  wide trade pgTAP test, and the never-wired sample trades populate.
+- Retire the trading-record profile, whose only binding was the wide
+  trade, and repoint the knowledge docs at the anchor and its components.
+- Make the tenant purge delete every tenant-scoped trading table in a loop
+  that retries a table still referenced by an enforced foreign key, with
+  the immutable purge switch on for the anchor. The old purge deleted the
+  components and the anchor only, and left every instrument row behind.
+- Leave the anchor's name for the next task, which renames it to =trade=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files the nine models generated, deleted | 151 (plus 2 shared files regenerated) | =codegen generate --dry-run= per model | ec7c5bdff4 + working tree |
+| Round trip, merged portfolio: trades saved and exported | 16 and 16 | =reset_and_roundtrip.sh rtx= | ec7c5bdff4 + working tree |
+| Round trip, in scope | lost 0, unexplained 0 | =scripts/ore_mapper_roundtrip_diff.py= | ec7c5bdff4 + working tree |
+| Round trip, out of scope | lost 314, unexplained 3 (unchanged) | =scripts/ore_mapper_roundtrip_diff.py= | ec7c5bdff4 + working tree |
+| Envelopes as stated, empty elements ignored | 16 of 16 | per-trade compare of type and envelope | ec7c5bdff4 + working tree |
+| Wide tables left after recreate | 0 of 4 | =pg_tables= lookup | ec7c5bdff4 + working tree |
+| Tenant purge of ACME, trading rows before and after | 103 rows in 9 tables, then 0 in 90 tables | purge probe in a rolled-back transaction | ec7c5bdff4 + working tree |
+| pgTAP under the test DDL role | 16 of 20 files pass; 4 fail before their first test (captured) | =pg_prove= as =ORES_TEST_DB_DDL_USER= | ec7c5bdff4 + working tree |
+| codegen pytest | 1130 passed | =pytest projects/ores.codegen/tests= | ec7c5bdff4 + working tree |
+| ctest | 90 of 90 | =compass test run= | ec7c5bdff4 + working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2641][#2641]] | [trading] Remove the wide trade |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local: two ORE netting pgTAP tests failed when run as the owner role. | =refdata_ore_sample_netting_test.sql= | decline | The owner bypasses row-level security; under the test roles they pass. Recorded as a memory: run pgTAP under RLS. |
+| 2 | Local: four pgTAP files fail before their first test. | =test/= | decline | Pre-existing fixture drift outside trading; captured in the inbox. |
+| 3 | Local: five codegen tests used the deleted trade models as fixtures. | =projects/ores.codegen/tests= | accept | The field group TypeScript test moved to the instrument identity group; the cases that only exercised the trade's five-group shape went. The now unused N-way group path is captured. |
+| 4 | PR review: the purge found a table's soft-delete rule by naming convention. | =iam_tenant_purger_create.sql= | accept | It now disables every ON DELETE rule the catalogue lists for the table; the ACME probe still purges 103 rows to 0. |
+| 5 | PR review: the purge hard-codes the public schema. | =iam_tenant_purger_create.sql= | decline | Every other purge statement and the schema itself use public. |
+| 6 | PR review: the purge has no pgTAP test. | =iam_tenant_purger_create.sql= | decline | Needs a booked trade and instrument for a test tenant; captured in the inbox. |
+
+* Result
+
+The wide trade, its five field groups and the three envelope tables are gone
+with the 151 files they generated, their SQL wiring, their one SQL function,
+their permissions, their registrars and their tests. The anchor and its
+components are the only trade: the export's envelope comes from them alone.
+The tenant purge now deletes every tenant-scoped trading table, instruments
+included, retrying a table its referrers still hold and passing the anchor's
+guard only through the purge switch. The round trip is unchanged at in-scope
+lost 0 with every envelope as stated, and ctest is 90 of 90.

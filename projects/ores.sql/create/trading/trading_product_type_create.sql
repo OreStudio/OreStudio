@@ -21,9 +21,8 @@
 -- =============================================================================
 -- Product Type Enum
 --
--- Discriminator used by ores_trading_trades_tbl.product_type to route a trade
--- to its product-specific extension table without requiring application-layer
--- decoding of the trade_type string.
+-- Discriminator the trade type catalogue records for each trade type, naming
+-- the product-specific table a trade of that type is routed to.
 --
 -- This is a structural/routing classification, not a risk taxonomy. It answers
 -- "what kind of financial product is this?" (FpML: productType), not "what

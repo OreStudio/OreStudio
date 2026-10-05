@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/messaging/registrar_detail.hpp"
-#include "ores.trading.core/messaging/trade_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -27,18 +26,10 @@ std::vector<ores::nats::service::subscription>
 register_trade_handlers(ores::nats::service::client& nats,
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier) {
-    // The trade entity's own verbs come from its generated registrar.
-    auto subs = ores::trading::messaging::register_trade_handlers(nats, ctx, verifier);
-
     // Instrument reference data — floating index types and leg types moved
     // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); trade
     // types are handled by the entity-shaped trade_type handler stack.
-    auto trade_type_subs = register_trade_type_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(trade_type_subs.begin()),
-                std::make_move_iterator(trade_type_subs.end()));
-
-    return subs;
+    return register_trade_type_handlers(nats, ctx, verifier);
 }
 
 }

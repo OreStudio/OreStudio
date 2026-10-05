@@ -125,7 +125,7 @@ data for a later task to supply.
 
 Wikipedia defines a financial transaction as "an agreement, or communication,
 between a buyer and seller to exchange goods, services, or assets for payment".
-A trade is that agreement recorded. We model it as a [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]], and the trade id
+A trade is that agreement recorded. We model it as an immutable [[id:4304A441-E532-45FB-837A-378F13693CAE][=trade_anchor=]], and the trade id
 identifies it. That id names the trade inside this firm only, and [[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade
 identifiers]] covers the regulatory codes two counterparties share.
 
@@ -136,8 +136,9 @@ agreement.
 
 The trade's properties can be grouped into two:
 
-- *Envelope*: the [[id:ae3884f8-f6b1-465c-bf24-ef072a70c9d7][=trade_envelope=]] models administrative properties such as the
-  counterparty, the netting set, portfolios, book and desk, and any further
+- *Envelope*: the [[id:40B71C6F-6E04-4679-BF7E-A2CE936C2515][=trade_booking=]], the [[id:FC9528F7-7469-4D0A-87A8-C5FCE558CA52][=trade_portfolio=]] rows and the
+  [[id:EDEBBAAB-C045-4D67-957C-C7F18497A8E6][=trade_additional_field=]] rows model administrative properties such as
+  the counterparty, the netting set, portfolios, book and desk, and any further
   fields the firm may attach. It places a trade in the organisation. These have
   limited variability by product type, if any.
 - *Economics*: The economic terms determine what the trade pays, to whom, and

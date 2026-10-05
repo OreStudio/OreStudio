@@ -1,6 +1,0 @@
-# =list=
-#
-# GENERATED from doc/recipes/shell/trades/trade.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-trades list --limit 1

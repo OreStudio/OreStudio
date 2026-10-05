@@ -157,7 +157,7 @@ released into the book, whatever its confirmation status.
 The machinery runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its
 transitions carry a guard function, and a
-[[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] already holds a state in one of those machines. The model
+trade already holds a state in one of those machines, in its [[id:85F71403-ACE4-4032-B3D4-EA5A61DC6812][=trade_state=]]. The model
 lacks the two dimensions, and the rule that they pick the machine.
 
 * What the machine cannot decide on its own

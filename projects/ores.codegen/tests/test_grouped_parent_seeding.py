@@ -2,8 +2,8 @@
 
 The generated eventing integration test writes a child row whose mandatory
 soft FK references a parent, and seeds that parent first. A parent reached
-through field groups -- the trading trade, whose columns live in identity,
-parties, classification, lifecycle and audit -- must be written and patched
+through field groups -- an instrument, whose key lives in its identity group
+and whose audit columns live in its audit group -- must be written and patched
 member by member, or the template emits ``book_id`` for ``parties.book_id``
 and the file does not compile.
 
@@ -20,26 +20,10 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 from codegen.core import (  # noqa: E402
     _column_member_prefixes,
     _plan_required_seeds,
-    load_model,
 )
 
-TRADE_ORG = REPO_ROOT / "projects/ores.trading/modeling/ores.trading.trade.org"
 TEMPLATE = (REPO_ROOT / "projects/ores.codegen/library/templates"
             / "cpp_nats_integration_test.cpp.mustache")
-
-
-def test_trade_columns_are_reached_through_their_group_members():
-    """The trade nests every column the seed block writes."""
-    de = load_model(str(TRADE_ORG))["domain_entity"]
-    prefixes = _column_member_prefixes(de)
-
-    assert prefixes["book_id"] == "parties."
-    assert prefixes["portfolio_id"] == "parties."
-    assert prefixes["status_id"] == "classification."
-    assert prefixes["change_reason_code"] == "audit."
-    assert prefixes["id"] == "identity."
-    assert prefixes["party_id"] == "identity."
-    assert prefixes["tenant_id"] == "identity."
 
 
 def test_a_flat_entity_takes_no_prefix():

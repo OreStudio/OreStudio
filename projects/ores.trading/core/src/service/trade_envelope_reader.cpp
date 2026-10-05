@@ -19,9 +19,6 @@
  */
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.trading.core/repository/parent_scoped_queries.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <unordered_set>
 #include <utility>
 
 namespace ores::trading::service {
@@ -47,48 +44,13 @@ trade_envelope_reader::trade_envelope_reader(context ctx)
 
 std::unordered_map<std::string, domain::trade_envelope_data>
 trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids) const {
+    using database::repository::execute_parameterized_multi_column_query;
+
     std::unordered_map<std::string, domain::trade_envelope_data> result;
     if (trade_ids.empty())
         return result;
 
-    for (const auto& row : repository::read_envelopes_by_trade_ids(ctx_, trade_ids)) {
-        domain::trade_envelope_data data;
-        data.counter_party = row.counter_party;
-        data.netting_set_id = row.netting_set_id;
-        if (row.has_portfolio_ids)
-            data.portfolio_ids = std::vector<std::string>{};
-        if (row.has_additional_fields)
-            data.additional_fields = std::vector<domain::trade_envelope_field>{};
-        result.emplace(boost::uuids::to_string(row.trade_id), std::move(data));
-    }
-    for (auto& child : repository::read_portfolio_ids_by_trade_ids(ctx_, trade_ids)) {
-        auto it = result.find(boost::uuids::to_string(child.trade_id));
-        if (it == result.end() || !it->second.portfolio_ids)
-            continue;
-        it->second.portfolio_ids->push_back(std::move(child.portfolio_id));
-    }
-
-    for (auto& child : repository::read_additional_fields_by_trade_ids(ctx_, trade_ids)) {
-        auto it = result.find(boost::uuids::to_string(child.trade_id));
-        if (it == result.end() || !it->second.additional_fields)
-            continue;
-        it->second.additional_fields->push_back(
-            {.name = std::move(child.name), .value = std::move(child.value)});
-    }
-
-    read_booked_envelopes(trade_ids, result);
-
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";
-    return result;
-}
-
-void trade_envelope_reader::read_booked_envelopes(
-    const std::vector<std::string>& trade_ids,
-    std::unordered_map<std::string, domain::trade_envelope_data>& envelopes) const {
-    using database::repository::execute_parameterized_multi_column_query;
-
     const auto ids = to_uuid_array(trade_ids);
-    std::unordered_set<std::string> booked;
     for (const auto& row : execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, counter_party, netting_set_id "
@@ -96,15 +58,12 @@ void trade_envelope_reader::read_booked_envelopes(
              {ids},
              lg(),
              "Reading the envelope names of booked trades.")) {
-        auto& data = envelopes[*row[0]];
+        auto& data = result[*row[0]];
         data.counter_party = row[1];
         data.netting_set_id = row[2];
-        data.portfolio_ids.reset();
-        data.additional_fields.reset();
-        booked.insert(*row[0]);
     }
-    if (booked.empty())
-        return;
+    if (result.empty())
+        return result;
 
     for (const auto& row : execute_parameterized_multi_column_query(
              ctx_,
@@ -113,9 +72,10 @@ void trade_envelope_reader::read_booked_envelopes(
              {ids},
              lg(),
              "Reading the portfolio names of booked trades.")) {
-        if (!booked.contains(*row[0]))
+        const auto it = result.find(*row[0]);
+        if (it == result.end())
             continue;
-        auto& portfolios = envelopes[*row[0]].portfolio_ids;
+        auto& portfolios = it->second.portfolio_ids;
         if (!portfolios)
             portfolios.emplace();
         portfolios->push_back(row[1].value_or(""));
@@ -130,13 +90,17 @@ void trade_envelope_reader::read_booked_envelopes(
              {ids},
              lg(),
              "Reading the additional fields of booked trades.")) {
-        if (!booked.contains(*row[0]))
+        const auto it = result.find(*row[0]);
+        if (it == result.end())
             continue;
-        auto& fields = envelopes[*row[0]].additional_fields;
+        auto& fields = it->second.additional_fields;
         if (!fields)
             fields.emplace();
         fields->push_back({.name = row[1].value_or(""), .value = row[2].value_or("")});
     }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";
+    return result;
 }
 
 }

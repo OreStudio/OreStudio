@@ -27,9 +27,7 @@
 --
 -- Walks the BU hierarchy recursively via parent_business_unit_id and returns
 -- the UUID of every active book whose owner_unit_id falls within that subtree.
--- The C++ repository calls this to obtain the book_id set, then queries
--- ores_trading_trades_tbl directly using sqlgen for type-safe, schema-coupled
--- trade retrieval.
+-- The node resolver calls this to expand a business unit to its books.
 create or replace function ores_trading_get_book_ids_by_business_unit_fn(
     p_tenant_id        uuid,
     p_business_unit_id uuid

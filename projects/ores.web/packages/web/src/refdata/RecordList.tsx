@@ -56,7 +56,7 @@ export interface ListColumn<Row = RecordRow> {
  * Where a list's rows come from: one page at a time from the server, with the
  * search and the orders the server supports. `key` names the list, for its
  * cache and for the columns a person chose. Every record list, refdata or not,
- * draws through =RecordList= from a source.
+ * draws through `RecordList` from a source.
  */
 export interface ListSource<Row> {
     readonly key: string;

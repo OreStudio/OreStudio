@@ -19,14 +19,15 @@
  *
  */
 
-
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 
 /**
  * The tabs of a page, held in the address so a link reopens the same tab. The
- * first tab is the page's own address; the others add =?tab=. Every page with
- * tabs draws them through this, so they look and behave the same everywhere.
+ * first tab is the page's own address; the others add `?tab=`, keeping any
+ * other parameter. A tab change replaces the history entry, so Back leaves the
+ * page rather than walking back through its tabs. Every page with tabs draws
+ * them through this, so they look and behave the same everywhere.
  */
 export function useTabs({
     label,
@@ -53,7 +54,15 @@ export function useTabs({
                             ? 'border-b-2 border-accent px-3 py-2 text-sm text-ink'
                             : 'border-b-2 border-transparent px-3 py-2 text-sm text-ink-muted hover:text-ink'
                     }
-                    onClick={() => setSearch(candidate === tabs[0] ? {} : { tab: candidate })}
+                    onClick={() => {
+                        const next = new URLSearchParams(search);
+                        if (candidate === tabs[0]) {
+                            next.delete('tab');
+                        } else {
+                            next.set('tab', candidate);
+                        }
+                        setSearch(next, { replace: true });
+                    }}
                 >
                     {titleOf(candidate)}
                 </button>

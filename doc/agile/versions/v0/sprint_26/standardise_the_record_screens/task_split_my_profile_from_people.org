@@ -84,6 +84,13 @@ via its "Verifies task" field.
 | 2 | Local review: the people list read only the first 100 accounts | =web/src/access/PeoplePage.tsx= | Accept | It pages, searches and sorts on the server through the shared list |
 | 3 | Local review: the shell tests render without a query client now that the menu reads access | =web/src/components/shells.test.tsx=, =web/src/AppRoutes.test.tsx= | Accept | The tests provide one; the app already does |
 | 4 | Local review: misspell check | changed files | Accept | Clean |
+| 5 | PR review: paging by full name may not be stable | =iam/core/src/repository/account_repository.cpp= | No change | The stated order always ends in the key (=stated_order.hpp=), so ties page reproducibly |
+| 6 | PR review: LIKE wildcards in the search | =ores.database/repository/list_filter.hpp= | No change | The search compares lowercased text with replace and length, not LIKE, so no character is a wildcard |
+| 7 | PR review: the people list's cache key could collide with a refdata key | =web/src/refdata/RecordList.tsx= | Decline | Refdata keys are the registry's kebab names and =people= is not one; the shared =records= prefix is what a write refreshes |
+| 8 | PR review: a tab change drops other parameters and adds history | =web/src/ui/Tabs.tsx= | Accept | Other parameters are kept and a tab change replaces the history entry |
+| 9 | PR review: one role read per person | =web/src/access/PeoplePage.tsx= | Decline | Fifteen per page by default and each read is cached; the joined read is captured as =read_accounts_with_their_roles= |
+| 10 | PR review: permission wildcards beyond two levels | =web/src/access/holds.ts= | No change | Permission codes are =component::resource:action=, so the area wildcard is the only one |
+| 11 | PR review: style (blank lines, Org markup in a TS comment, the old accounts call) | =ui/Tabs.tsx=, =RecordList.tsx= | Partly | Blank line and backticks fixed; =api.accounts= stays, as the manager name and the role page still read it |
 
 * Result
 

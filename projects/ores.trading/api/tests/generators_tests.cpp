@@ -22,7 +22,6 @@
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
 #include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generators/party_role_type_generator.hpp"
-#include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_id_type_generator.hpp"
 #include "ores.trading.api/generators/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
@@ -217,35 +216,6 @@ TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
 }
 
 // --- trade ---
-
-TEST_CASE("trade_generator_produces_valid_instance", tags) {
-    auto lg(make_logger(test_suite));
-    generation_context ctx;
-    auto sut = generate_synthetic_trade(ctx);
-
-    BOOST_LOG_SEV(lg, info) << "Generated trade id: " << sut.identity.id;
-
-    CHECK(sut.identity.version == 0);
-    CHECK(!sut.identity.id.is_nil());
-    CHECK(!sut.audit.modified_by.empty());
-    CHECK(!sut.audit.performed_by.empty());
-    CHECK(sut.audit.change_reason_code == "system.test");
-}
-
-TEST_CASE("trade_generator_produces_multiple_instances", tags) {
-    auto lg(make_logger(test_suite));
-    generation_context ctx;
-    const std::size_t count = 5;
-    auto items = generate_synthetic_trades(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        CHECK(!item.identity.id.is_nil());
-        CHECK(item.identity.version == 0);
-    }
-}
-
-// --- trade_identifier ---
 
 TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
     auto lg(make_logger(test_suite));

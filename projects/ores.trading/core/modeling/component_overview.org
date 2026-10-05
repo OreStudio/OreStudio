@@ -50,8 +50,10 @@ component also ships synthetic-data generators for test and development use.
   public API headers.
 - =include/ores.trading.core/messaging/registrar.hpp= — registers all NATS
   handlers with the service host.
-- =include/ores.trading.core/service/trade_service.hpp= — top-level trade
-  business-logic entry point.
+- =include/ores.trading.core/service/trade_operations_service.hpp= — books a
+  trade: its anchor, booking and first state in one write.
+- =include/ores.trading.core/service/trade_export_service.hpp= — reads a
+  portfolio's trades back from their anchors and components for export.
 
 * Dependencies
 

@@ -41,6 +41,12 @@ declare
     v_system_tenant_id uuid;
     v_tenant_code text;
     v_deleted_count integer;
+    v_pending text[];
+    v_blocked text[];
+    v_table text;
+    v_rule text;
+    v_has_rule boolean;
+    v_pass integer;
 begin
     v_system_tenant_id := ores_utility_system_tenant_id_fn();
 
@@ -161,32 +167,55 @@ begin
     -- Variability: System settings
     delete from ores_variability_system_settings_tbl where tenant_id = p_tenant_id;
 
-    -- Trading: trade components, then trade anchors. A component references
-    -- its anchor with a foreign key, so every version of it must be gone
-    -- first: the soft-delete rule would only close the current one, so it is
-    -- disabled around the delete. An anchor is immutable, so the purge turns
-    -- on the purge signal for this transaction before it deletes them.
-    alter table ores_trading_trade_identifiers_tbl disable rule ores_trading_trade_identifiers_delete_rule;
-    delete from ores_trading_trade_identifiers_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_trade_identifiers_tbl enable rule ores_trading_trade_identifiers_delete_rule;
-    alter table ores_trading_party_roles_tbl disable rule ores_trading_party_roles_delete_rule;
-    delete from ores_trading_party_roles_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_party_roles_tbl enable rule ores_trading_party_roles_delete_rule;
-    alter table ores_trading_trade_additional_fields_tbl disable rule ores_trading_trade_additional_fields_delete_rule;
-    delete from ores_trading_trade_additional_fields_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_trade_additional_fields_tbl enable rule ores_trading_trade_additional_fields_delete_rule;
-    alter table ores_trading_trade_portfolios_tbl disable rule ores_trading_trade_portfolios_delete_rule;
-    delete from ores_trading_trade_portfolios_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_trade_portfolios_tbl enable rule ores_trading_trade_portfolios_delete_rule;
-    alter table ores_trading_trade_states_tbl disable rule ores_trading_trade_states_delete_rule;
-    delete from ores_trading_trade_states_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_trade_states_tbl enable rule ores_trading_trade_states_delete_rule;
-    alter table ores_trading_trade_bookings_tbl disable rule ores_trading_trade_bookings_delete_rule;
-    delete from ores_trading_trade_bookings_tbl where tenant_id = p_tenant_id;
-    alter table ores_trading_trade_bookings_tbl enable rule ores_trading_trade_bookings_delete_rule;
+    -- Trading: every tenant-scoped trading table, the instruments and the
+    -- trade's anchor and components alike. Every version goes, so each
+    -- table's soft-delete rule, which would only close the current one, is
+    -- disabled around its delete. A component references its anchor with an
+    -- enforced foreign key, so a table whose rows are still referenced is
+    -- retried in a later pass once its referrers are gone. An anchor is
+    -- immutable, so the purge turns on the purge signal for this transaction
+    -- first: it is the one sanctioned way past the anchor's guard.
     perform ores_utility_allow_immutable_purge_fn();
-    delete from ores_trading_trade_anchors_tbl where tenant_id = p_tenant_id;
+    select array_agg(t.tablename::text order by t.tablename) into v_pending
+    from pg_tables t
+    where t.schemaname = 'public'
+      and t.tablename like 'ores\_trading\_%\_tbl'
+      and exists (
+          select 1 from information_schema.columns c
+          where c.table_schema = t.schemaname
+            and c.table_name = t.tablename
+            and c.column_name = 'tenant_id');
+    v_pending := coalesce(v_pending, '{}');
+    for v_pass in 1 .. cardinality(v_pending) loop
+        exit when cardinality(v_pending) = 0;
+        v_blocked := '{}';
+        foreach v_table in array v_pending loop
+            v_rule := regexp_replace(v_table, '_tbl$', '_delete_rule');
+            v_has_rule := exists (
+                select 1 from pg_rules r
+                where r.schemaname = 'public'
+                  and r.tablename = v_table
+                  and r.rulename = v_rule);
+            begin
+                if v_has_rule then
+                    execute format('alter table %I disable rule %I', v_table, v_rule);
+                end if;
+                execute format('delete from %I where tenant_id = $1', v_table)
+                    using p_tenant_id;
+                if v_has_rule then
+                    execute format('alter table %I enable rule %I', v_table, v_rule);
+                end if;
+            exception when foreign_key_violation then
+                v_blocked := v_blocked || v_table;
+            end;
+        end loop;
+        v_pending := v_blocked;
+    end loop;
     perform set_config('ores.utility.allow_immutable_purge', 'off', true);
+    if cardinality(v_pending) > 0 then
+        raise exception 'Could not purge the trading tables %: they are still referenced.',
+            v_pending using errcode = '23503';
+    end if;
 
     raise notice 'Tenant data purge complete: % (id: %)', v_tenant_code, p_tenant_id;
 end;

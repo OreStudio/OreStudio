@@ -246,15 +246,6 @@
 \ir ./trading_instrument_strikes_create.sql
 \ir ./trading_instrument_strikes_notify_trigger_create.sql
 
-\ir ./trading_trade_envelopes_create.sql
-\ir ./trading_trade_envelopes_notify_trigger_create.sql
-
-\ir ./trading_trade_envelope_portfolio_ids_create.sql
-\ir ./trading_trade_envelope_portfolio_ids_notify_trigger_create.sql
-
-\ir ./trading_trade_envelope_additional_fields_create.sql
-\ir ./trading_trade_envelope_additional_fields_notify_trigger_create.sql
-
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql
@@ -309,10 +300,6 @@
 \ir ./trading_trade_bookings_notify_trigger_create.sql
 \ir ./trading_trade_states_create.sql
 \ir ./trading_trade_states_notify_trigger_create.sql
-
--- Trades (depends on reference data above)
-\ir ./trading_trades_create.sql
-\ir ./trading_trades_notify_trigger_create.sql
 
 -- Trade identifiers, party roles and additional fields (depend on the anchor)
 \ir ./trading_trade_identifiers_create.sql

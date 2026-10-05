@@ -27,9 +27,8 @@
 --
 -- Walks the portfolio hierarchy recursively via parent_portfolio_id and
 -- returns the UUID of every active book whose parent_portfolio_id falls within
--- that subtree. The C++ repository calls this to obtain the book_id set, then
--- queries ores_trading_trades_tbl directly using sqlgen for type-safe,
--- schema-coupled trade retrieval.
+-- that subtree. The trade export resolves a node to its books through this,
+-- then reads the live bookings filed in them.
 create or replace function ores_trading_get_book_ids_by_portfolio_fn(
     p_tenant_id    uuid,
     p_portfolio_id uuid
@@ -59,37 +58,6 @@ comment on function ores_trading_get_book_ids_by_portfolio_fn(uuid, uuid) is
 'Returns the UUIDs of all books belonging to any portfolio in the subtree
  rooted at p_portfolio_id. Walks the portfolio hierarchy recursively via
  parent_portfolio_id.';
-
--- =============================================================================
--- Export Trade IDs by Book IDs
--- =============================================================================
-
-/**
- * Returns the UUIDs of all active trades belonging to any of the supplied
- * book IDs.
- *
- * Used by the trading service export-to-storage handler to resolve the
- * trade set for a report without cross-schema dependencies.
- */
-create or replace function ores_trading_get_trade_ids_by_books_fn(
-    p_tenant_id  uuid,
-    p_book_ids   uuid[]
-)
-returns setof uuid as $$
-begin
-    return query
-        select t.id
-        from ores_trading_trades_tbl t
-        where t.tenant_id = p_tenant_id
-          and t.book_id = any(p_book_ids)
-          and t.valid_to = ores_utility_infinity_timestamp_fn()
-        order by t.book_id, t.id;
-end;
-$$ language plpgsql stable security definer set search_path = public, pg_temp;
-
-comment on function ores_trading_get_trade_ids_by_books_fn(uuid, uuid[]) is
-'Returns the UUIDs of all active trades belonging to any of the supplied book
- IDs. Filtered by tenant_id and ordered by book_id, trade_id.';
 
 -- =============================================================================
 -- Resolve Node to Book IDs

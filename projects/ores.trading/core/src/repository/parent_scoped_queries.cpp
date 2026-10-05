@@ -60,12 +60,6 @@
 #include "ores.trading.core/repository/instrument_schedule_mapper.hpp"
 #include "ores.trading.core/repository/instrument_strike_entity.hpp"
 #include "ores.trading.core/repository/instrument_strike_mapper.hpp"
-#include "ores.trading.core/repository/trade_envelope_additional_field_entity.hpp"
-#include "ores.trading.core/repository/trade_envelope_additional_field_mapper.hpp"
-#include "ores.trading.core/repository/trade_envelope_entity.hpp"
-#include "ores.trading.core/repository/trade_envelope_mapper.hpp"
-#include "ores.trading.core/repository/trade_envelope_portfolio_id_entity.hpp"
-#include "ores.trading.core/repository/trade_envelope_portfolio_id_mapper.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
@@ -83,65 +77,6 @@ auto& lg() {
     return instance;
 }
 
-}
-
-std::vector<domain::trade_envelope>
-read_envelopes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
-    if (trade_ids.empty())
-        return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_envelope_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c);
-
-    return execute_read_query<trade_envelope_entity, domain::trade_envelope>(
-        ctx,
-        query,
-        [](const auto& entities) { return trade_envelope_mapper::map(entities); },
-        lg(),
-        "Reading trade envelopes by trade ids.");
-}
-
-std::vector<domain::trade_envelope_portfolio_id>
-read_portfolio_ids_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
-    if (trade_ids.empty())
-        return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_envelope_portfolio_id_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
-
-    return execute_read_query<trade_envelope_portfolio_id_entity,
-                              domain::trade_envelope_portfolio_id>(
-        ctx,
-        query,
-        [](const auto& entities) { return trade_envelope_portfolio_id_mapper::map(entities); },
-        lg(),
-        "Reading trade envelope portfolio identifiers by trade ids.");
-}
-
-std::vector<domain::trade_envelope_additional_field>
-read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
-    if (trade_ids.empty())
-        return {};
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<trade_envelope_additional_field_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
-        order_by("trade_id"_c, "sequence_number"_c);
-
-    return execute_read_query<trade_envelope_additional_field_entity,
-                              domain::trade_envelope_additional_field>(
-        ctx,
-        query,
-        [](const auto& entities) { return trade_envelope_additional_field_mapper::map(entities); },
-        lg(),
-        "Reading trade envelope additional fields by trade ids.");
 }
 
 std::vector<domain::bond_issue_call_date>

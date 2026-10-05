@@ -1132,12 +1132,6 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_legs:delete',                           'Delete swap legs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swaption_instruments:write',                 'Create and modify swaption instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swaption_instruments:delete',                'Delete swaption instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelope_additional_fields:write',     'Create and modify trade envelope additional fields');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelope_additional_fields:delete',    'Delete trade envelope additional fields');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelope_portfolio_ids:write',         'Create and modify trade envelope portfolio ids');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelope_portfolio_ids:delete',        'Delete trade envelope portfolio ids');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelopes:write',                      'Create and modify trade envelopes');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_envelopes:delete',                     'Delete trade envelopes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_id_types:write',                       'Create and modify trade id types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_id_types:delete',                      'Delete trade id types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:write',                    'Create and modify trade identifiers');

@@ -19,8 +19,6 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.org_loader import load_org_model  # noqa: E402
 
-TRADE = REPO_ROOT / "projects/ores.trading/modeling/ores.trading.trade.org"
-
 GROUP = """\
 #+title: ores.probe.thing_bits
 #+type: ores.codegen.field_group
@@ -77,24 +75,6 @@ def _write(tmp_path, extra_columns="", extra_cpp=""):
         ENTITY.format(extra_columns=extra_columns, extra_cpp=extra_cpp),
         encoding="utf-8")
     return p
-
-
-def test_trade_resolves_every_column_through_a_group():
-    de = load_org_model(TRADE)["domain_entity"]
-    members = [g["member"] for g in de["domain_groups"]]
-    assert members == [
-        "identity", "parties", "classification", "lifecycle", "audit",
-    ]
-    resolved = {f["name"] for f in de["domain_group_fields"]}
-    assert "lifecycle.trade_date" in resolved
-    assert "identity.id" in resolved
-
-
-def test_trade_carries_the_field_types_the_converter_needs():
-    de = load_org_model(TRADE)["domain_entity"]
-    by_name = {f["name"]: f["cpp_type"] for f in de["domain_group_fields"]}
-    assert by_name["lifecycle.trade_date"] == "std::optional<std::chrono::year_month_day>"
-    assert by_name["identity.id"] == "boost::uuids::uuid"
 
 
 def test_a_column_in_no_group_is_refused(tmp_path):

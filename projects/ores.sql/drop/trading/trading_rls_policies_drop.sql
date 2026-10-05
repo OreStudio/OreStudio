@@ -64,9 +64,6 @@ drop policy if exists trade_states_tenant_isolation_policy on "ores_trading_trad
 drop policy if exists trade_anchors_party_isolation_policy on "ores_trading_trade_anchors_tbl";
 drop policy if exists trade_anchors_tenant_isolation_policy on "ores_trading_trade_anchors_tbl";
 
--- Trades
-drop policy if exists trades_tenant_isolation_policy on "ores_trading_trades_tbl";
-
 -- Bond relational model (pilot), task D7943D7E
 drop policy if exists bond_issues_tenant_isolation_policy on "ores_trading_bond_issues_tbl";
 drop policy if exists bond_issue_call_dates_tenant_isolation_policy on "ores_trading_bond_issue_call_dates_tbl";
@@ -90,6 +87,3 @@ drop policy if exists instrument_options_tenant_isolation_policy on "ores_tradin
 drop policy if exists instrument_schedule_dates_tenant_isolation_policy on "ores_trading_instrument_schedule_dates_tbl";
 drop policy if exists instrument_schedules_tenant_isolation_policy on "ores_trading_instrument_schedules_tbl";
 drop policy if exists instrument_strikes_tenant_isolation_policy on "ores_trading_instrument_strikes_tbl";
-drop policy if exists trade_envelope_additional_fields_tenant_isolation_policy on "ores_trading_trade_envelope_additional_fields_tbl";
-drop policy if exists trade_envelope_portfolio_ids_tenant_isolation_policy on "ores_trading_trade_envelope_portfolio_ids_tbl";
-drop policy if exists trade_envelopes_tenant_isolation_policy on "ores_trading_trade_envelopes_tbl";

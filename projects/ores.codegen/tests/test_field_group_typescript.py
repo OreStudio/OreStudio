@@ -34,10 +34,10 @@ def _render(model, tmp_path):
 
 
 def test_field_group_renders_its_own_interface(tmp_path):
-    rendered = _render("ores.trading.trade_audit_field_group.org", tmp_path)
+    rendered = _render("ores.trading.instrument_identity_field_group.org", tmp_path)
 
-    assert "export interface TradeAudit {" in rendered
-    assert "    change_reason_code: string;" in rendered
+    assert "export interface InstrumentIdentity {" in rendered
+    assert "    trade_type_code: string;" in rendered
     assert ": ;" not in rendered
 
 

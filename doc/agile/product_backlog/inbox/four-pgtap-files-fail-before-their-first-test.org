@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 473EFEB9-35D7-4F8A-9586-748900BD5CB8
+:END:
+#+title: Four pgTAP files fail before their first test
+#+description: Under the test DDL role, refdata_counterparty_test, refdata_currencies_test and refdata_party_test die on fixtures the schema no longer accepts (a missing business_centre, a dropped asset_class column, a missing party_category), and synthetic_market_data_generation_config_scope_test hard-codes another worktree's DDL user as modified_by. The other 16 files pass.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -28,7 +28,6 @@ set(files
     "domain_trade_id_type_tests.cpp"
     "domain_trade_identifier_tests.cpp"
     "domain_trade_party_role_tests.cpp"
-    "domain_trade_tests.cpp"
     "domain_trade_type_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"

@@ -41,9 +41,6 @@
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
-#include "ores.trading.api/domain/trade_envelope.hpp"
-#include "ores.trading.api/domain/trade_envelope_additional_field.hpp"
-#include "ores.trading.api/domain/trade_envelope_portfolio_id.hpp"
 #include "ores.trading.core/export.hpp"
 #include <string>
 #include <vector>
@@ -66,36 +63,6 @@ using context = ores::database::context;
  * shape.
  */
 /**@{*/
-
-/**
- * @brief Reads the envelopes of a set of trades.
- *
- * @param ctx The database context, which carries the tenant.
- * @param trade_ids UUIDs of the trades whose envelopes to read.
- */
-ORES_TRADING_CORE_EXPORT std::vector<domain::trade_envelope>
-read_envelopes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
-
-/**
- * @brief Reads the portfolio identifiers of a set of trade envelopes.
- *
- * Rows come back in envelope order, then in ordinal order, so a caller
- * that appends as it walks rebuilds the document's list order.
- *
- * @param ctx The database context, which carries the tenant.
- * @param trade_ids UUIDs of the trades whose envelopes to read.
- */
-ORES_TRADING_CORE_EXPORT std::vector<domain::trade_envelope_portfolio_id>
-read_portfolio_ids_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
-
-/**
- * @brief Reads the additional fields of a set of trade envelopes.
- *
- * @param ctx The database context, which carries the tenant.
- * @param trade_ids UUIDs of the trades whose envelopes to read.
- */
-ORES_TRADING_CORE_EXPORT std::vector<domain::trade_envelope_additional_field>
-read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the call dates of a set of bond issues.

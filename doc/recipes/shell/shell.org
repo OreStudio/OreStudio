@@ -1001,10 +1001,6 @@ tangled into the runnable script library
 
 - [[id:69B14EAF-F811-5183-B39B-40EC96303100][How do I run the swaption_instruments commands from the shell?]]
 
-* Trades
-
-- [[id:6C5A66CC-E129-5ED2-B4E2-87399C7EE885][How do I run the trades commands from the shell?]]
-
 * Vanilla Swap Instruments
 
 - [[id:9F8435B5-AB4E-59E1-B85A-AB212F3E9A52][How do I run the vanilla_swap_instruments commands from the shell?]]

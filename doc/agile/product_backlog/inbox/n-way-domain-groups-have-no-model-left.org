@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B25254BE-AD31-4F3B-9B37-ACC79C182976
+:END:
+#+title: N-way domain groups have no model left
+#+description: The wide trade was the only entity that composed its struct from N field groups (identity, parties, classification, lifecycle, audit). With it deleted, the codegen's N-way domain group path, the group member prefixes it feeds the eventing seed plan and the grouped audit stamping run for no model; only probe refusal tests remain. Instruments use the separate identity and audit group slots. Decide whether to remove the N-way path or keep it with probe tests that load a complete grouped entity.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

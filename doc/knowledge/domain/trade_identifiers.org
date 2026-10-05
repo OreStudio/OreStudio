@@ -71,7 +71,7 @@ currently seeds two values, =UTI= and =USI=.
 
 A trade carries its identifiers in
 [[id:6284BC22-3076-4E8A-8938-B50D12B169C0][=trade_identifier=]], which holds a scheme and a value per row, so one
-[[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] can carry a UTI and a USI at once. The firm's own trade id
+[[id:4304A441-E532-45FB-837A-378F13693CAE][=trade_anchor=]] can carry a UTI and a USI at once. The firm's own trade id
 stays on the trade itself, because it is not one of these schemes.
 
 The LEI that prefixes a UTI names a legal entity, and

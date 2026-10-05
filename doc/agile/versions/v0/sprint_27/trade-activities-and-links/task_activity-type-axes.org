@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trade-activities-and-links
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Each activity type states whether it is economic, confirmable and real, and wher
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -40,9 +40,21 @@ Each activity type states whether it is economic, confirmable and real, and wher
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The activity type already has =requires_confirmation=, which is the
+  confirmable axis; add =is_economic=, =is_real= and =priority= beside it
+  rather than a second confirmable flag.
+- Priority ranks 1 to 8 follow the reason-for-update order in Trade
+  versioning (book moves first, misbooking last); 9 is every other cause.
+- Checks: the priority is a rank of that order, and a type that is not real
+  is neither economic nor confirmable.
+- One table in =scratchpad/seed_axes.py= rewrites every seed row with its
+  axes and adds =null_amend=, the one type that is not real. Several
+  confirmation flags change to agree with the activity mapping in the
+  knowledge note (amendment, partial and full termination, assignment,
+  increase, decrease, roll, compression, clearing, netting, rebook, split
+  and merge are confirmable).
+- The knowledge note gains a table of the seeded types generated from the
+  populate script, so the two cannot disagree.
 
 * Measurements
 
@@ -56,7 +68,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Activity types seeded with axes and priority | 33 (32 plus =null_amend=) | =scratchpad/seed_axes.py= | cd915c1aa2 + working tree |
+| pgTAP, activity types, under the test DDL role | 8 of 8 | =pg_prove test/trading_activity_types_test.sql= | cd915c1aa2 + working tree |
+| pgTAP, every trading file, under the test DDL role | 5 files, 71 tests, pass | =pg_prove test/trading_*_test.sql= | cd915c1aa2 + working tree |
+| Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | cd915c1aa2 + working tree |
+| codegen pytest | 1139 passed | =pytest projects/ores.codegen/tests= | cd915c1aa2 + working tree |
+| ctest | 94 of 94 | =compass test run= | cd915c1aa2 + working tree |
 
 * Notes
 
@@ -84,3 +101,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Each activity type states the confirmable (=requires_confirmation=),
+economic and real axes and its priority in the reason-for-update order. The
+schema refuses a priority outside ranks 1 to 9 and a type that is not real
+but claims to be economic or confirmable. =null_amend= joins the seeds as
+the one type that is not real, and the confirmation flags now agree with
+the activity mapping in the trade activity note, which lists every seeded
+type with its axes.

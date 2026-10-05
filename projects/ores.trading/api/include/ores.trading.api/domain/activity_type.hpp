@@ -77,9 +77,34 @@ struct activity_type final {
     std::string category;
 
     /**
-     * @brief True when this activity type requires counterparty confirmation.
+     * @brief True when this activity type requires counterparty confirmation. This is the
+     * /confirmable/ axis of [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]]: a
+     * confirmable activity changes the terms the counterparty agreed, so a new confirmation is
+     * issued.
      */
     bool requires_confirmation = false;
+
+    /**
+     * @brief True when an activity of this type changes what the trade pays, so the trade must be
+     * revalued. This is the /economic/ axis.
+     */
+    bool is_economic = false;
+
+    /**
+     * @brief True when an activity of this type changes anything at all. This is the /real/ axis.
+     * Only a null amend is not real: the value entered equals the value held, so the activity is
+     * recorded for the audit trail and versions nothing.
+     */
+    bool is_real = true;
+
+    /**
+     * @brief Where this activity type sits when several causes land on one version: the lowest
+     * number names the version. Ranks 1 to 8 follow the order in
+     * [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] (book moves, funding roll or
+     * reserve, CEM charge or contra revenue, close outs, triggered, exercised or expired, fixing,
+     * misbooking); 9 is every other cause.
+     */
+    int priority = 0;
 
     /**
      * @brief Detailed description of the activity type.

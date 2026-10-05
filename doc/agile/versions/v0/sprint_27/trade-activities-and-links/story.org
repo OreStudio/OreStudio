@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Add trade_activity with its type and participants, the act detail tables, and tr
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -38,7 +38,7 @@ Add trade_activity with its type and participants, the act detail tables, and tr
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:765E9672-E777-48F6-A4A1-1AE08284FB9A][Give the activity type its axes and priority]] | BACKLOG | | | Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is. |
+| [[id:765E9672-E777-48F6-A4A1-1AE08284FB9A][Give the activity type its axes and priority]] | DONE | 2026-10-05 | 2026-10-05 | Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is. |
 | [[id:FCB5F73B-986F-4EAA-9251-0E3D72F9EE0E][Record each business event as a trade activity]] | BACKLOG | | | Add trade_activity, an append-only record of each business event with its type, actor, time, comment and operational-error flag, and make booking a trade write one. |
 | [[id:831583EA-B294-48DB-88AD-53E7534E5658][Point every component version at its activity]] | BACKLOG | | | Give the booking, state, identifier, party role, additional field, portfolio and instrument tables a foreign key to the trade_activity that wrote each version, replacing the bare activity type code. |
 | [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Name each trade an activity touches]] | BACKLOG | | | Add trade_activity_participant (activity, trade, role), so an act that touches several trades names each one and the part it plays, replacing the activity's single unit. |

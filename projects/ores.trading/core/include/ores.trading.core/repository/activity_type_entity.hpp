@@ -47,6 +47,9 @@ struct activity_type_entity {
     int version = 0;
     std::string category;
     bool requires_confirmation = false;
+    bool is_economic = false;
+    bool is_real = true;
+    int priority = 0;
     std::optional<std::string> description;
     std::optional<std::string> fpml_event_type_code;
     std::optional<std::string> fsm_transition_id;

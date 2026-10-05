@@ -183,6 +183,52 @@ taxonomy rather than an accident of it: an amendment moves a version
 and may withdraw an authorisation, but a trade that is live stays
 live.
 
+* The seeded activity types
+
+The activity types ORE Studio seeds, each stating three of the four axes and
+its priority. The customer-visible axis is not a property of the type: it
+follows from the confirmable one, because the external version moves only for
+a confirmable activity. Priority 1 to 8 follows the order in
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]]; 9 is every other cause. A type that is not real
+is neither economic nor confirmable, and the schema refuses one that claims to
+be.
+
+| Code | Category | Confirmable | Economic | Real | Priority |
+|------+----------+-------------+----------+------+----------|
+| =new_booking= | New activity | Yes | Yes | Yes | 9 |
+| =new_internal_transfer= | New activity | No | Yes | Yes | 9 |
+| =draft_capture= | New activity | No | No | Yes | 9 |
+| =execution= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =amendment= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =null_amend= | Lifecycle event | No | No | No | 9 |
+| =confirmation= | Lifecycle event | No | No | Yes | 9 |
+| =novation= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =partial_termination= | Lifecycle event | Yes | Yes | Yes | 4 |
+| =full_termination= | Lifecycle event | Yes | Yes | Yes | 4 |
+| =maturity= | Lifecycle event | No | Yes | Yes | 6 |
+| =exercise= | Lifecycle event | No | Yes | Yes | 6 |
+| =assignment= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =increase= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =decrease= | Lifecycle event | Yes | Yes | Yes | 4 |
+| =roll= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =compression= | Lifecycle event | Yes | Yes | Yes | 4 |
+| =clearing= | Lifecycle event | Yes | Yes | Yes | 9 |
+| =netting= | Lifecycle event | Yes | Yes | Yes | 4 |
+| =rate_reset= | Valuation change | No | Yes | Yes | 7 |
+| =fx_reset= | Valuation change | No | Yes | Yes | 7 |
+| =accrual= | Valuation change | No | No | Yes | 9 |
+| =cashflow= | Valuation change | No | No | Yes | 9 |
+| =correction= | Misbooking | No | No | Yes | 8 |
+| =rebook= | Misbooking | Yes | Yes | Yes | 8 |
+| =maturity_reversal= | Misbooking | No | Yes | Yes | 6 |
+| =cancellation_reversal= | Misbooking | No | Yes | Yes | 9 |
+| =transfer= | Misbooking | No | No | Yes | 1 |
+| =split= | Misbooking | Yes | Yes | Yes | 9 |
+| =merge= | Misbooking | Yes | Yes | Yes | 9 |
+| =cancel= | Cancellation | No | Yes | Yes | 9 |
+| =cancel_confirmed= | Cancellation | No | Yes | Yes | 9 |
+| =void= | Cancellation | No | Yes | Yes | 9 |
+
 * See also
 
 

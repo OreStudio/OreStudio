@@ -75,6 +75,7 @@ export const en: SourceCatalogue = {
         },
         menu: {
             home: 'Home',
+            accounts: 'Accounts',
             tenants: 'Tenants',
             parties: 'Parties',
             rescue: 'Rescue access',

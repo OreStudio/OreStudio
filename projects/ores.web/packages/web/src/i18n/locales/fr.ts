@@ -69,6 +69,7 @@ const fr: SourceCatalogue = {
         },
         menu: {
             home: 'Accueil',
+            accounts: 'Comptes',
             tenants: 'Locataires',
             parties: 'Parties',
             rescue: 'Rétablir un accès',

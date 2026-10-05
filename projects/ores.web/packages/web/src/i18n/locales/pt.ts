@@ -74,6 +74,7 @@ const pt: SourceCatalogue = {
         },
         menu: {
             home: 'Início',
+            accounts: 'Contas',
             tenants: 'Inquilinos',
             parties: 'Partes',
             rescue: 'Recuperar acesso',

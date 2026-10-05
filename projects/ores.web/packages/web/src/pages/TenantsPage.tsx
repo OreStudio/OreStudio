@@ -46,9 +46,9 @@ const SEARCH_PAUSE_MS = 300;
  * nothing. The destructive operations are their own journey, so a person who
  * only wants to know what exists never has to open one.
  *
- * The system tenant is not here because it is not a tenant somebody set up: it
- * is the deployment's own bookkeeping. The server's search leaves it out, so this
- * screen cannot show it by accident.
+ * The deployment's own record, the system tenant, is on this roster like any
+ * other, and opening it is how the system administrator reaches the
+ * deployment's own data.
  *
  * A deployment that holds no tenant of its own is the state right after the
  * system administrator is created, and it is a normal state rather than an

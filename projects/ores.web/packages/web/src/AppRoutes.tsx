@@ -326,8 +326,8 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => (
-                        <PeoplePage />
+                    (view) => (
+                        <PeoplePage mode={view.mode} />
                     ),
                     'workspace',
                 )}

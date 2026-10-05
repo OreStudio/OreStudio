@@ -293,6 +293,12 @@ add_custom_target(sprint_charts
     COMMAND ${CMAKE_SOURCE_DIR}/projects/ores.compass/compass.sh sprint charts
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+get_filename_component(ORES_PRESET_NAME ${CMAKE_BINARY_DIR} NAME)
+add_custom_target(check_includes
+    COMMENT "Checking include hygiene with clang-tidy misc-include-cleaner" VERBATIM
+    COMMAND ${CMAKE_SOURCE_DIR}/build/scripts/check_includes.sh ${ORES_PRESET_NAME}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 add_custom_target(make_all_diagrams)
 add_custom_target(mad)
 add_dependencies(mad make_all_diagrams)

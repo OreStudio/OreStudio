@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 391139E2-DF18-4E5D-B7C4-B576A78D4C6E
+:END:
+#+title: Task: Name the administrators and greet people by name
+#+description: The initial administrator and a provisioned tenant administrator are created with the full names Super Admin and Tenant Admin, and every surface that names the signed-in person shows the name, so the home page stops greeting a raw username.
+#+type: task
+#+level: s1
+#+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The super administrator and a tenant's administrator are people with names: the creation paths record Super Admin and Tenant Admin, and the greeting, the shell and the people screens show the name and fall back to the username.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The initial administrator carries the full name Super Admin, and the administrator a provisioning run creates carries Tenant Admin.
+- The home greeting shows the full name when the account holds one and the username otherwise.
+- One helper computes the name a surface shows, and the shell, the greeting and the people lists use it, so they agree.
+- No surface shows an empty name.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Where the name is missing and where it is already wanted:
+
+- The greeting: =projects/ores.web/packages/web/src/pages/HomePage.tsx=
+  passes =username= to =home.welcome= ("Welcome, {name}"), in the system
+  and tenant homes. The locales are under
+  =projects/ores.web/packages/web/src/i18n/locales/= (en, fr, pt).
+- The shell already prefers the name:
+  =projects/ores.web/packages/web/src/components/AppShell.tsx= uses
+  =self.fullName !== '' ? self.fullName : username=.
+- No creation path records a name:
+  =ores_iam_create_initial_admin_fn= in
+  =projects/ores.sql/create/iam/iam_system_provisioner_create.sql=, and
+  the tenant provisioning service
+  (=projects/ores.iam/core/include/ores.iam.core/service/tenant_provisioning_service.hpp=)
+  both create the account without =full_name=.
+- The lists compute the name in place — =TenantPeople= in
+  =projects/ores.web/packages/web/src/pages/TenantPage.tsx= and
+  =projects/ores.web/packages/web/src/access/PeoplePage.tsx=.
+- The first-run form keeps its fields:
+  =projects/ores.web/packages/web/src/journeys/FirstRunJourney.tsx=
+  (principal, email, password; default principal =super_admin=).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

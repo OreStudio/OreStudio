@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 56F20355-7AED-49FD-8F45-9BC89DD51FB1
+:END:
+#+title: Task: Give the administrators their pictures when ACME is set up
+#+description: The two administrator avatars join the seeded pictures: setting the ACME example up attaches the super administrator's picture and the ACME tenant administrator's picture, and each shows wherever an account is shown.
+#+type: task
+#+level: s1
+#+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+super_admin_avatar.png and tenant_admin_avatar.png are part of the images the seeds install. Setting the ACME example up gives the super administrator and the ACME tenant's administrator their pictures, and each shows wherever an account is shown.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The two avatars are vendored beside the ACME image assets and seeded as system-tenant templates, keyed like acme_party_logo.
+- The attach_photos step gives the super administrator's account the super administrator's picture, and the ACME tenant's administrator the tenant administrator's picture.
+- Setting the profile up twice leaves one picture per account, unchanged.
+- An account without a picture still falls back to initials.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The images and the pattern to follow:
+
+- The source images are =/home/marco/Pictures/super_admin_avatar.png= and
+  =/home/marco/Pictures/tenant_admin_avatar.png=; vendor them into the
+  repository beside =external/acme/Acme-corp.png=.
+- The pattern: =projects/ores.sql/populate/acme/acme_party_logo_populate.sql=
+  seeds a system-tenant template row in =ores_assets_images_tbl=, keyed by
+  name, and =attach_photos= copies it per tenant and attaches it.
+- The step: =attach_photos_step= in
+  =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=,
+  with the =acme_demo= arguments in
+  =projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql= (position
+  50: =party_logo= and the =parties= datasets).
+- The staff photos make the same trip: =generate_sql.py= under
+  =projects/ores.seeder/datasets/acme_corporation/= generates
+  =acme_staff_photos_populate.sql= from =external/facestudio/faces= and
+  =photo_assignments.json=.
+- The tenant and its administrator are created before the steps run, so
+  =attach_photos= can name the ACME administrator; the super
+  administrator's account is created at first run in the system tenant
+  and the step runs in the run's own tenant.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -86,6 +86,7 @@ Two behavioural facets are switched off, each with a reason:
 :read_only:       true
 :guard_reads:     true
 :generate_touch_function: true
+:default_order: username
 :END:
 
 * Columns
@@ -145,6 +146,8 @@ std::string("active")
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Unique username for login purposes. It is the natural key, so the
@@ -160,6 +163,8 @@ std::string(faker::internet::username(std::string(faker::person::firstName()), s
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:sortable: true
+:searchable: true
 :END:
 
 The account holder's full (real) name. Not every account represents a
@@ -243,6 +248,7 @@ ctx.alphanumeric(32)
 :cpp_type: std::string
 :nullable: false
 :unique:   true
+:searchable: true
 :END:
 
 Email address associated with the account. It is unique within a

@@ -27,6 +27,7 @@ import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { CalendarDay, RecordResourceView, RecordRow } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { CalendarPage, CalendarsPage } from './calendars.js';
+import { FIRST_PAGE, pageKey } from './RecordList.js';
 import { invalidFields, writeOf, type FieldSpec } from './records.js';
 
 function resource(key: string): RecordResourceView {
@@ -93,15 +94,10 @@ function render(
     client.setQueryData(['my-access'], everything);
     client.setQueryData(['labels'], { labels: [], domains: {} });
     client.setQueryData(['records', 'calendars'], [target, office, desk]);
-    client.setQueryData(
-        [
-            'records',
-            'calendars',
-            'page',
-            { offset: 0, limit: 15, search: '', sort: '', descending: false },
-        ],
-        { rows: [target, office, desk], total: 61 },
-    );
+    client.setQueryData(pageKey({ key: 'calendars' }, FIRST_PAGE), {
+        rows: [target, office, desk],
+        total: 61,
+    });
     client.setQueryData(['image-map'], {
         currencies: {},
         countries: { GB: 'gb-flag' },

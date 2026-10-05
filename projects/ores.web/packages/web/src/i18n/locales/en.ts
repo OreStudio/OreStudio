@@ -344,7 +344,7 @@ export const en: SourceCatalogue = {
 
     parties: {
         title: 'Parties',
-        description: 'The parties of this tenant, a page at a time.',
+        description: 'The parties of this tenant.',
         failed: 'The parties could not be read.',
         code: 'Code',
         name: 'Name',

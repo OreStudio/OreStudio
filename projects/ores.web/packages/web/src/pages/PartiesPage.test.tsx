@@ -25,6 +25,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { PartyPage } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { PartiesPage } from './PartiesPage.js';
 
 /**
@@ -82,7 +83,10 @@ const page: PartyPage = {
 
 function render(): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['parties', 0], page);
+    client.setQueryData(pageKey({ key: 'parties' }, FIRST_PAGE), {
+        rows: page.parties,
+        total: page.totalCount,
+    });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -99,7 +103,7 @@ describe('PartiesPage', () => {
         const html = render();
 
         expect(html).toContain('acme_group');
-        expect(html).toContain('>Acme System</td>');
+        expect(html).toMatch(/>Acme System<\/td>/);
         expect(html).toContain('Not one you can see');
     });
 
@@ -114,7 +118,7 @@ describe('PartiesPage', () => {
     it('pages with the server total', () => {
         const html = render();
 
-        expect(html).toContain('Showing 1–3 of 30 parties');
+        expect(html).toContain('1–3 of 30');
         expect(html).toContain('Next');
         expect(html).toMatch(/disabled=""[^>]*>Previous/);
     });

@@ -346,7 +346,7 @@ const fr: SourceCatalogue = {
 
     parties: {
         title: 'Parties',
-        description: 'Les parties de ce locataire, une page à la fois.',
+        description: 'Les parties de ce locataire.',
         failed: 'Les parties n’ont pas pu être lues.',
         code: 'Code',
         name: 'Nom',

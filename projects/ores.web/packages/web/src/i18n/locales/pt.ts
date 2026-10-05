@@ -349,7 +349,7 @@ const pt: SourceCatalogue = {
 
     parties: {
         title: 'Partes',
-        description: 'As partes deste inquilino, uma página de cada vez.',
+        description: 'As partes deste inquilino.',
         failed: 'Não foi possível ler as partes.',
         code: 'Código',
         name: 'Nome',

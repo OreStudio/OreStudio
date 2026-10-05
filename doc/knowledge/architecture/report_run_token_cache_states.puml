@@ -1,0 +1,36 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One entry of the run token cache, keyed by grant id and run id
+
+hide empty description
+
+[*] --> exchanging : first request of the run\non this replica
+exchanging --> fresh : IAM answers a token
+exchanging --> failed : IAM refuses, or does not answer\ninside the step's budget
+fresh --> fresh : a request uses the token
+fresh --> stale : less than 20% of the\nlifetime is left
+stale --> exchanging : the next request\n(concurrent misses share it)
+fresh --> exchanging : an owner answers token_expired\n(one retry of the request)
+fresh --> evicted : the step completes, the run ends,\nor the LRU bound is reached
+stale --> evicted : the run ends,\nor the LRU bound is reached
+failed --> [*] : the step fails with the reason
+evicted --> [*]
+
+@enduml

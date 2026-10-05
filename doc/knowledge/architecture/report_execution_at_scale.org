@@ -160,6 +160,13 @@ grant id on the definition beside the scheduler job id.
   person of the party, schedules the definition again. That action is a new
   consent.
 
+#+caption: The run grant: created by a consent, ended by a revocation, by its last run, or by its time limit. A lapsed grantor is a check at each exchange.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_run_grant_states.png]]
+
+Source: [[./report_run_grant_states.puml][=report_run_grant_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_run_grant_states.puml=.
+
 The effect of a revocation reaches a run in flight within one token lifetime.
 That bound is deliberate. A shorter bound needs a check on every request, and
 the cost of that grows with every owner call of every run.
@@ -268,6 +275,13 @@ Each step service holds one cache in memory per process.
 - *Replicas.* Replicas do not share the cache. Each replica exchanges on its
   first miss. A run uses few replicas, so the cost is a few exchanges per run.
 
+#+caption: One entry of the run token cache: exchanged on the first miss, refreshed when stale or refused as expired, and evicted when the step or the run ends.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_run_token_cache_states.png]]
+
+Source: [[./report_run_token_cache_states.puml][=report_run_token_cache_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_run_token_cache_states.puml=.
+
 *** Why the exchange scales
 
 A run makes one exchange per step service and per five minutes of that
@@ -343,6 +357,13 @@ Reconciliation is as described on the definition page, with two additions. A
 definition with a job and no active grant is suspended. A job whose definition
 is gone is deleted, and its grant is revoked.
 
+#+caption: The schedule of a definition: unscheduled, scheduled under a grant, and suspended when the grant lapses. The definition's own lifecycle is active in the first two and suspended in the third.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_definition_schedule_states.png]]
+
+Source: [[./report_definition_schedule_states.puml][=report_definition_schedule_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_definition_schedule_states.puml=.
+
 *** 3. Fire
 
 The scheduler loop fires the job at its minute. It writes the firing record
@@ -374,6 +395,25 @@ state. Promotion takes the oldest queued run of the tenant whose party is under
 its limit, moves it to =pending=, and starts its workflow. Promotion uses a
 row lock on the oldest candidate, so two replicas cannot promote the same run.
 A sweep every minute promotes any run that an event missed.
+
+Two replicas can admit runs of one tenant at the same time. Admission
+therefore takes a transaction-scoped advisory lock on the tenant before it
+counts. The lock serialises admission inside one tenant and never across
+tenants.
+
+#+caption: Admission and promotion: a tenant that fires 500 jobs at one minute runs 20 at a time, and a tenant that fires three runs all three at once.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_admission_interaction.png]]
+
+Source: [[./report_admission_interaction.puml][=report_admission_interaction.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_admission_interaction.puml=.
+
+#+caption: A report instance: the state it is born in, promotion from queued, and the terminal states. The states are those of report_instance_lifecycle; promotion is the edge from queued to pending.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_instance_admission_states.png]]
+
+Source: [[./report_instance_admission_states.puml][=report_instance_admission_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_instance_admission_states.puml=.
 
 The trigger is idempotent on the firing id. A repeated trigger finds the
 instance for that firing and returns it.

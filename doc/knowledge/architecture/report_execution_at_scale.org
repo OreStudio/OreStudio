@@ -1,0 +1,661 @@
+:PROPERTIES:
+:ID: B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0
+:END:
+#+title: Report execution at scale
+#+description: The target design for a scheduled report run from end to end: how IAM, the scheduler, reporting, the workflow engine, the owners, ORE, storage and compute take part, how a run acts as its tenant and party with no caller present, and how thousands of runs from many tenants share the platform.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:scheduling:iam:workflow:compute:multi_tenancy:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+startup: inlineimages
+
+* Summary
+
+A report belongs to a tenant and a party. Row-level security uses the same
+pair. A scheduled run has no caller, so it has no token to forward. The
+scheduler and the step services act as themselves, and a service identity has
+no tenant and no party. This page closes that gap and shows the whole path.
+It covers every service from the creation of a report to its completed
+instance.
+
+The design has three parts:
+
+1. *A run grant.* When a person schedules a report, IAM records their consent.
+   The grant says that runs of this definition may act in this tenant and this
+   party with a narrow role, the =ReportRun= role. The grant is not a
+   credential.
+2. *A run token.* A step service exchanges its own token and the grant id for
+   a short-lived token. The token carries the tenant, the party and the
+   =ReportRun= permissions. The service keeps it in a memory cache, and the
+   workflow state never holds it. The owners read and write as that tenant and
+   that party, and their handlers do not change.
+3. *Fair shares.* Three queues hold the work of many tenants: admission in
+   reporting, step concurrency in each step service, and dispatch in the
+   compute grid. Each queue gives every tenant a share, so one tenant with many
+   reports cannot hold back the others.
+
+This page is the end-to-end view. The pages it links own the detail of each
+part, and this page does not restate them.
+
+* Detail
+
+** What this page adds, and what it defers
+
+The report processing cluster describes the phases of a run. The workflow
+cluster describes the engine. The scheduler cluster describes the firing. This
+page adds the parts that no other page holds, and it links the rest.
+
+#+ATTR_HTML: :class hug-leading
+| Concern | Owner of the detail | What this page adds |
+|---------+---------------------+---------------------|
+| The definition, the schedule and the instance states | [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] | the run grant on the definition; admission by quota |
+| The phases of a run | [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] | which service performs each phase, and with which identity |
+| The engine's contract with a step | [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]], [[id:247E1FE4-A00C-42D1-A6BA-831BC22C8078][The step protocol]] | the run fields in the start message |
+| The firing and the trigger | [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]] | nothing; the trigger is unchanged |
+| The input archive and its digest | [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] | the owners' operations that supply it, and the as-of instant |
+| Submission and the workunit | [[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] | fair dispatch across tenants |
+| The result store | [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] | nothing; its owner stays open |
+| Service-to-service calls | [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]], [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] | the run grant and the token exchange |
+| Every subject and storage key | [[id:8DAB4D55-9D53-48FA-96B0-2EA432B4B42C][Report processing interfaces]] | the IAM subjects below |
+
+** The participants
+
+#+ATTR_HTML: :class hug-leading
+| Service | Owns | Part in a run | Identity it uses in a run |
+|---------+------+---------------+---------------------------|
+| =ores.iam= | accounts, roles, run grants, the signing key | creates and revokes grants; exchanges a grant for a run token | itself |
+| =ores.scheduler= | job definitions and firings | fires the job and calls the trigger | itself |
+| =ores.reporting= | definitions, run documents, instances, results | admits the run, starts it, collects results, finalises | itself to admit; the run token for steps |
+| =ores.workflow= | workflow instances and steps | dispatches each step, enforces deadlines, compensates | itself |
+| =ores.ore= | the mapping to the engine's documents | prepares the input archive | the run token |
+| =ores.refdata=, =ores.analytics= | the configuration documents | serve the documents of the party | the caller's: the run token |
+| =ores.trading= | trades | serves the scope read | the caller's: the run token |
+| =ores.marketdata= | market data | resolves what the trades need | the caller's: the run token |
+| =ores.storage= | objects | holds the input, the package and the output | the caller's |
+| =ores.compute= | batches, workunits, results, hosts | creates the batch and dispatches it fairly | the run token to create; itself to dispatch |
+| a worker node | nothing | runs the engine | the node identity |
+
+** The rules every part follows
+
+1. *A run acts as its tenant and its party.* Every read and every write of a
+   run goes through row-level security for that pair. No step uses the system
+   tenant to reach tenant data.
+2. *No credential in durable state.* The workflow request, the step results,
+   the instance and the logs hold the grant id. They never hold a token.
+3. *Each service owns its tables.* A step reads another component's data
+   through that component's operations. The rule is recorded in the memory
+   /No service reads or writes another component's tables/.
+4. *Every step converges on a repeat.* The engine delivers a step at least
+   once. [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]] states the contract.
+5. *Every queue is fair across tenants.* No queue serves work in plain arrival
+   order across tenants.
+6. *The cost of a run does not grow with the number of tenants.* No step scans
+   all tenants, and no service holds a standing session per tenant.
+
+** The identity of a run
+
+*** The problem
+
+The existing service-to-service patterns do not cover a scheduled run:
+
+- *Client credentials* give a service its own identity. That identity has no
+  tenant and no party. A read of party data with it returns no rows, and RLS
+  reports no error.
+- *On-behalf-of delegation* forwards the caller's token. A scheduled run has no
+  caller. The scheduler calls the trigger, and the scheduler is a service.
+- *Internal actor impersonation* lets a service in =ores.iam= mint a token for
+  an account. A step service outside IAM cannot mint, and it must not link
+  IAM's core library.
+
+A token from the person who scheduled the report is not a solution either. It
+expires in minutes, and the schedule lasts for months. A stored refresh token
+would be a durable credential, and the auth patterns page forbids that.
+
+The design uses OAuth 2.0 token exchange (RFC 8693) with consent that the
+server holds. This is the networked form of internal actor impersonation. IAM
+remains the only signer.
+
+*** The run grant
+
+A run grant is an IAM entity. It records that a person allows runs of one
+definition to act in one tenant and one party. It holds no secret.
+
+#+ATTR_HTML: :class hug-leading
+| Field | Meaning |
+|-------+---------|
+| =id= | the grant id; a random uuid |
+| =tenant_id=, =party_id= | where the runs act; the party of the definition |
+| =grantor_account_id= | the person who gave consent |
+| =role= | the role the token carries; =ReportRun= |
+| =resource= | what the grant serves, as =reporting.report_definition/<id>= |
+| =audience= | the services that may exchange it: =ores.reporting.service=, =ores.ore.service=, =ores.compute.service= |
+| =max_runs= | empty for a schedule; one for a manual run |
+| =not_after= | empty for a schedule; the run's longest duration for a manual run |
+| =revoked_at=, =revoked_by=, =revoke_reason= | set when the grant ends |
+
+The grant is a bitemporal row with the audit envelope of every entity. IAM
+owns it, so IAM never reads a reporting table to check it. Reporting stores the
+grant id on the definition beside the scheduler job id.
+
+*** The life of a grant
+
+- *Schedule.* A person asks reporting to schedule a definition. Reporting calls
+  =iam.v1.run_grants.create= on behalf of the person, with their token. IAM
+  checks that the person holds every permission of =ReportRun= in that party.
+  A person cannot grant more than they hold. Reporting then puts the scheduler
+  job.
+- *Manual run.* A person triggers a run. Reporting creates a grant for one run,
+  on behalf of that person, and the run uses it. The run acts with the
+  authority of the person who triggered it, and not with the schedule's.
+- *Change of party or owner.* A change to the definition's party revokes the
+  grant and creates a new one. The person who makes the change gives the new
+  consent.
+- *Unschedule or delete.* Reporting deletes the job and revokes the grant.
+- *The grantor leaves.* IAM checks the grantor at every exchange. When the
+  account is inactive, or no longer holds the permissions in the party, the
+  exchange answers =forbidden= with the reason =grant_lapsed=.
+- *Lapse.* Reporting receives =grant_lapsed= from a step. It fails the run and
+  moves the definition to =suspended=. A tenant administrator, or another
+  person of the party, schedules the definition again. That action is a new
+  consent.
+
+The effect of a revocation reaches a run in flight within one token lifetime.
+That bound is deliberate. A shorter bound needs a check on every request, and
+the cost of that grows with every owner call of every run.
+
+*** The token exchange
+
+A step service calls =iam.v1.run_grants.exchange=. It authenticates with its
+own client-credentials token, the existing service token. The request carries
+the grant id, the run id and the tenant from the step headers.
+
+IAM checks, in this order:
+
+1. The caller holds =iam::run_grants:exchange=.
+2. The caller's service name is in the grant's audience.
+3. The grant exists, is not revoked, and is inside =not_after= and =max_runs=.
+4. The grant's tenant equals the tenant in the request.
+5. The grantor is active.
+
+IAM then computes the permissions. They are the =ReportRun= permissions,
+intersected with the permissions the grantor holds in the party now. A grantor
+who loses a permission therefore loses it for their runs too. IAM appends one
+row to the issue log and signs the token.
+
+#+ATTR_HTML: :class hug-leading
+| Claim | Value |
+|-------+-------|
+| =sub= | the grantor's account id |
+| =username= | the grantor's username, so audit columns name a person |
+| =tenant_id= | the grant's tenant |
+| =party_id= | the grant's party |
+| =visible_party_ids= | the grant's party only |
+| =roles= | the computed permission codes |
+| =act= | the requesting service; the actor claim of RFC 8693 |
+| =grant_id=, =run_id= | the grant, and the report instance the token serves |
+| =aud= | the requesting service |
+| =exp= | five minutes after issue |
+| =session_id= | absent; a run token opens no session |
+
+A run token creates no session row. The sessions table therefore does not grow
+with the number of runs.
+
+#+caption: A step obtains the run token from its cache or from IAM, an owner reads as the tenant and the party, and an expired token is exchanged again once.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_run_token_exchange.png]]
+
+Source: [[./report_run_token_exchange.puml][=report_run_token_exchange.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_run_token_exchange.puml=.
+
+*** The =ReportRun= role
+
+The role holds only what a run needs. Each owner seeds its own permission
+codes, and IAM seeds the role.
+
+#+ATTR_HTML: :class hug-leading
+| Owner | Permissions | Why the run needs them |
+|-------+-------------+------------------------|
+| reporting | read run documents and definitions; write instance progress and results | the run document; collection; finalisation |
+| refdata | read curve configuration and conventions documents | the engine's configuration |
+| analytics | read pricing engines and today's market documents | the engine's configuration |
+| trading | the scope read | the trades in scope |
+| marketdata | the resolution read | the market data the trades need |
+| storage | write and read under =ore/= and =reporting/= run keys; read under =compute/output/= | the input archive and the output |
+| compute | create a batch and its workunits | submission |
+
+The role has no write on reference data, trades or market data. A run that
+tries one is refused by the owner's permission check.
+
+*** How a step uses the token
+
+The step sends the run token as a plain =Authorization= header. The token is
+an originated identity, as in internal actor impersonation, and not a
+forwarded one.
+
+The owner's handler calls =make_request_context= as it does for any caller.
+The context has tenant T, party P, the visible parties {P} and the =ReportRun=
+permissions. The handler checks the permission. RLS returns the party's rows
+and the shared rows of the system tenant. No owner has a code path for runs.
+
+An owner that writes stamps =modified_by= with the grantor's username, as for
+any write by that person. It stamps =performed_by= with its own service
+account, as for every write. The change reason names the run. An auditor
+therefore sees who consented, which service wrote, and which run caused it.
+
+An owner that calls a further service forwards the run token with
+=with_delegation=, as it forwards any caller's token. Storage receives the run
+token in this way when trading writes its export.
+
+*** The run token cache
+
+Each step service holds one cache in memory per process.
+
+- *Key.* The pair (grant id, run id). Two runs of one definition use two
+  tokens, so the =run_id= claim stays exact.
+- *Lifetime.* A token is used while it has more than 20% of its life left.
+  After that the next request exchanges again. Two requests that miss at the
+  same time share one exchange.
+- *Expiry in flight.* An owner that answers =token_expired= causes one
+  invalidation, one exchange and one retry of the same request. This is the
+  rule of =internal_request_client=, and the cache reuses it. Any other refusal
+  fails the request.
+- *Eviction.* The cache drops the entries of a run when the step completes and
+  when the instance reaches a terminal state. It is also a bounded LRU, so a
+  missed event costs memory for at most one token lifetime.
+- *No persistence.* The cache is never written to disk, a database, a message
+  or a log. A restart empties it, and the next step exchanges again.
+- *Replicas.* Replicas do not share the cache. Each replica exchanges on its
+  first miss. A run uses few replicas, so the cost is a few exchanges per run.
+
+*** Why the exchange scales
+
+A run makes one exchange per step service and per five minutes of that
+service's work. A run of four steps that lasts thirty minutes makes about
+seven exchanges. The exchange reads one grant and the grantor's permissions,
+then signs. IAM caches grants and permissions in memory, and change events on
+those entities invalidate the cache.
+
+#+ATTR_HTML: :class hug-leading
+| Load (design target) | Exchanges per second at IAM |
+|----------------------+------------------------------|
+| 1,000 runs in flight, thirty minutes each | about 4 |
+| 2,000 runs start in one minute | about 100 for that minute, one per run for its first step |
+
+An RS256 signature costs about a millisecond. One IAM replica serves these
+rates. IAM limits exchanges per service and per tenant, so a fault in one
+caller cannot exhaust it.
+
+*** Trust boundaries
+
+#+ATTR_HTML: :class hug-leading
+| Threat | What stops it |
+|--------+---------------|
+| A service exchanges a grant it should not use | the audience; the permission =iam::run_grants:exchange= |
+| A caller guesses a grant id | ids are random; the caller must also be a service in the audience |
+| A run reads another party's data | the token's =visible_party_ids= is one party; RLS |
+| A run writes reference or trade data | =ReportRun= has no such write; the owner's check |
+| A person grants more than they hold | IAM checks the grantor at create and at every exchange |
+| A token leaks from a log or a row | no token is written; a leaked token expires in five minutes and names its run |
+| A grantor leaves the firm | the next exchange answers =grant_lapsed= |
+| A step service is compromised | it can act only for grants that name it, and the issue log records each token |
+
+** The life of a report, end to end
+
+#+caption: A scheduled report run: the definition and its grant, the firing and admission, and the four steps of the run, each acting as the tenant and the party.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_execution_at_scale_sequence.png]]
+
+Source: [[./report_execution_at_scale_sequence.puml][=report_execution_at_scale_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_execution_at_scale_sequence.puml=.
+
+*** 1. Create the definition
+
+A person of the party creates the definition in reporting, with their own
+token. The definition holds the report type, the scope, the concurrency policy
+and the cron expression. The engine's configuration lives with its owners. The
+person imports it with =ore.v1.run_configuration.import=. ORE runs that import
+as a saga over the owners: reporting saves the run document, and refdata and
+analytics save the configuration documents. Reporting binds each document to
+the definition. Every write uses the person's token, so every row belongs to
+the party.
+
+No grant exists yet. A definition without a schedule cannot run, except by a
+manual trigger.
+
+*** 2. Schedule it
+
+The person asks reporting to schedule the definition. Reporting performs three
+actions, in this order:
+
+1. It creates the grant through IAM, on behalf of the person.
+2. It puts the scheduler job. The job name is =report_definition.<id>=. The job
+   holds the tenant and the party, so the firings belong to the tenant, and a
+   tenant administrator can see them.
+3. It records the grant id and the job id on the definition.
+
+Each action is idempotent. A repeated grant create for the same definition and
+grantor returns the active grant. The job name is its identity, so a repeated
+put changes nothing. A failure after step 1 leaves a grant that no job uses.
+The next schedule request adopts it.
+
+Reconciliation is as described on the definition page, with two additions. A
+definition with a job and no active grant is suspended. A job whose definition
+is gone is deleted, and its grant is revoked.
+
+*** 3. Fire
+
+The scheduler loop fires the job at its minute. It writes the firing record
+and then sends the trigger to reporting as an authenticated request with its
+own identity. The trigger carries the definition, the tenant and the firing id.
+The scheduler's part ends with the reply.
+
+The trigger needs no tenant identity. Reporting checks that the caller holds
+the trigger permission, then acts on the definition as itself. That is
+reporting's own work on its own table. The run's tenant identity starts with
+the first step.
+
+*** 4. Admit
+
+Reporting decides the state the instance is born in. Two checks apply, in this
+order:
+
+1. *The definition's concurrency policy.* It applies when another run of the
+   same definition is in flight: skip, fail or queue, as the definition page
+   describes.
+2. *The quotas.* A tenant has a limit on its running instances, and a party has
+   a limit inside its tenant. A run over either limit is born =queued=.
+
+The quotas are configuration in reporting, per tenant, with a platform default.
+A firing never fails because of a quota. It queues.
+
+Reporting promotes queued runs when a run of the tenant reaches a terminal
+state. Promotion takes the oldest queued run of the tenant whose party is under
+its limit, moves it to =pending=, and starts its workflow. Promotion uses a
+row lock on the oldest candidate, so two replicas cannot promote the same run.
+A sweep every minute promotes any run that an event missed.
+
+The trigger is idempotent on the firing id. A repeated trigger finds the
+instance for that firing and returns it.
+
+*** 5. Start the run
+
+Reporting creates the instance and publishes =workflow.v1.start=. The workflow
+instance id is created by reporting and recorded on the instance. A repeated
+start therefore opens the same run. The request carries:
+
+#+ATTR_HTML: :class hug-leading
+| Field | Why the run needs it |
+|-------+----------------------|
+| the report instance id | the run id; the =run_id= claim of the token |
+| the tenant and the party | the step headers; the check at exchange |
+| the grant id | the exchange |
+| the as-of instant | the instant of the firing; every bitemporal read of the run uses it |
+| the run configuration | the chain the engine builds |
+| the definition id | the run document to read |
+
+The as-of instant fixes the shape of the run. The definition page requires
+that an edit during a run does not change that run. The steps read every
+bitemporal document as of this instant, so an edit after the firing does not
+reach the run. The start message therefore carries a reference and an instant,
+and not a copy of the documents.
+
+The chain for a run that executes both ends has four steps:
+
+#+ATTR_HTML: :class hug-leading
+| # | Step | Subject | Service | Deadline |
+|---+------+---------+---------+----------|
+| 1 | =prepare_ore_package= | =ore.v1.report.prepare-package= | ores.ore | =data_step_timeout= |
+| 2 | =submit_compute= | =compute.v1.report.submit= | ores.compute | the grid budget |
+| 3 | =collect_compute_results= | =reporting.v1.report.collect-compute-results= | ores.reporting | =data_step_timeout= |
+| 4 | =finalise= | =reporting.v1.report.finalise= | ores.reporting | =write_step_timeout= |
+
+Pre-processing is one step, as the pre-processing page requires. The
+substituted chains replace step 1 or step 3 as
+[[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]]
+describes. Every step compensates with =reporting.v1.report.fail=.
+
+*** 6. Prepare the input
+
+=ores.ore= owns this step. It owns the mapping to the engine's documents, so
+the archive has one author.
+
+1. *Identity.* It obtains the run token.
+2. *The run document.* It calls =reporting.v1.run_documents.get= for the
+   definition, as of the instant. The answer names the configuration documents
+   the run binds.
+3. *The configuration.* It calls the owners' gets in parallel:
+   =refdata.v1.curve_configuration_documents.get=,
+   =refdata.v1.conventions_documents.get=,
+   =analytics.v1.pricing_engines_documents.get= and
+   =analytics.v1.todays_market_documents.get=, each with the party and the
+   instant.
+4. *The digest.* It computes the digest of the tenant, the party, the version
+   of each document, the scope, the as-of instant, the market data instant and
+   the engine version. The tenant and the party are in the digest, so two
+   tenants never share an archive.
+5. *The lookup.* It asks storage for =ore/inputs/<digest>.tar.gz=. A complete
+   object ends the step: the run reuses it.
+6. *The data.* It calls the trading scope read and the market data resolution,
+   as [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]]
+   specifies. Each owner writes its batch to storage under the run's key with
+   the run token and answers with the key. Bulk data does not travel in a
+   message.
+7. *Map and package.* It streams the batches through the mappers into the
+   archive and writes it under the digest key. A write goes to a temporary key
+   and is then renamed, so a reader never sees a partial archive.
+8. *Answer.* It completes the step with the key, the digest, and whether it
+   generated the archive or found it.
+
+The step converges on a repeat. A repeat finds the archive under the digest,
+or it generates it again under the same key.
+
+*** 7. Submit to the grid
+
+=ores.compute= owns this step. It obtains the run token and creates the batch
+in the tenant, with the report instance id as the batch's external reference.
+A repeat finds the batch by that reference and adopts it, so a repeat never
+runs the engine twice. The workunits name the input key, the package of the
+tenant's engine version, and the output key.
+
+The step does not complete at submission. Compute records a link between the
+batch and the step. When the batch closes, compute completes the step with the
+batch id and the output keys. The step's deadline is the grid budget, which
+covers the queue wait and the engine time.
+
+Compute dispatches with its own identity. Dispatch is compute's own work on its
+own table, and the fair share below decides its order.
+
+*** 8. Execute
+
+A worker node takes an assignment from the queue of its platform. The worker
+holds no run token. An engine run can last longer than any token, and a node
+serves many tenants. The node uses its own identity. That identity reads only
+=compute/packages/= and =ore/inputs/= and writes only =compute/output/=. Each
+assignment names the exact keys. The node runs the engine and writes the output
+archive, then submits the result on =compute.v1.results.submit=.
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes the
+node's work.
+
+*** 9. Collect the results
+
+Reporting obtains the run token and reads the output archive from storage. It
+uses the parser that =ores.ore= supplies as a library, and it bulk loads the
+results into the result store as
+[[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] describes.
+Each row carries the instance id, the tenant and the party. A repeat replaces
+the rows of the instance and does not add to them.
+
+*** 10. Finalise
+
+Reporting moves the instance to =completed= and records the output key, the
+row counts and which phases were substituted. It then promotes the next queued
+run of the tenant. The engine publishes the instance status event. Every step
+service drops the run's cache entries when it receives that event.
+
+** Thousands of runs at once
+
+*** Design targets
+
+#+ATTR_HTML: :class hug-leading
+| Quantity | Target |
+|----------+--------|
+| Tenants | 1,000 |
+| Scheduled definitions | 20,000 |
+| Runs that start in the busiest minute | 2,000 |
+| Runs in flight | 1,000 |
+| Default running runs per tenant | 20 |
+| Default running runs per party | 5 |
+
+These numbers are targets for capacity tests. They are not measurements.
+
+*** Where the load lands, and what absorbs it
+
+#+ATTR_HTML: :class hug-leading
+| Service | Load at the busiest minute | What absorbs it |
+|---------+-----------------------------+-----------------|
+| ores.scheduler | 2,000 firings | the loop does not wait for an action; each firing is one row and one request |
+| ores.reporting, trigger | 2,000 triggers | each trigger is one instance row and one publish; replicas share a queue group |
+| ores.reporting, admission | 2,000 decisions | a count of running instances per tenant, from an index on tenant and state |
+| ores.workflow | 2,000 starts; the steps in flight | replicas share a durable consumer; the deadline pass reads only dispatched steps |
+| ores.iam | about 2,000 exchanges | the grant cache; one signature per exchange |
+| the owners | parallel reads per run | bulk reads by scope; queue groups; replicas |
+| ores.ore | the packaging of new digests | a worker pool per replica; the digest cache |
+| storage | archives in and out | streaming; the backend's throughput |
+| ores.compute | the workunits of 1,000 runs | the fair-share dispatcher; the node pool |
+| ores.reporting, collect | result files | bulk load |
+
+A busy minute costs little at the front, because the trigger and the start do
+no heavy work. The heavy work waits in the step queues and in the grid, and
+those queues are fair.
+
+*** Three fair queues
+
+- *Admission, in reporting.* The quotas cap the running runs of each tenant and
+  each party. Promotion is first in, first out inside a tenant. A tenant that
+  schedules 500 reports at the same minute runs 20 at a time. The other
+  tenants are not blocked behind it.
+- *Step concurrency, in each step service.* Each replica has a fixed pool of
+  workers for heavy steps. It also limits the steps of one tenant that run at
+  the same time on the replica. A step over the tenant limit waits in a local
+  queue, and the replica serves its local queues round robin across tenants.
+  The wait counts against the step's deadline, so the limits must keep the
+  wait well inside the budget.
+- *Dispatch, in compute.* Compute holds the workunits and releases them to the
+  platform queue by weighted fair share across tenants. A tenant has a weight
+  and a cap on its assignments in flight. A tenant with dedicated nodes has a
+  pool of its own, and its work does not enter the shared pool.
+
+The engine time of a run is the largest cost, so the grid's fair share decides
+most of the waiting. Admission keeps the grid queue short, so a run waits in
+=queued=, where a person can see it, and not in a hidden queue.
+
+*** Isolation between services
+
+Each service has its own replicas, pools and limits. A slow owner delays only
+the step that calls it. The step's deadline bounds that delay, and the run
+fails with a message that names the service, as
+[[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]]
+describes. A slow tenant cannot take all the workers of a replica, because of
+the tenant limit in the step pool.
+
+*** Caches
+
+#+ATTR_HTML: :class hug-leading
+| Cache | Where | Key | Removes |
+|-------+-------+-----+---------|
+| The input archive | storage | the digest | packaging for a repeated run of the same inputs |
+| The run token | each step service, in memory | grant id and run id | an exchange per request |
+| Grants and permissions | IAM, in memory | grant id; account and party | a database read per exchange |
+| The engine package | each worker node, on disk | the application version | a download per run |
+
+None of these caches holds data across tenants. The input digest includes the
+tenant and the party, and the token cache key includes the grant.
+
+** Failure and recovery
+
+The engine's rules apply unchanged. The table lists the failures that this
+design adds or makes specific.
+
+#+ATTR_HTML: :class hug-leading
+| Failure | Detected by | Outcome |
+|---------+-------------+---------|
+| The grant lapsed or was revoked | the exchange answers =forbidden=, =grant_lapsed= | the step fails; the run fails; reporting suspends the definition and tells the party |
+| IAM does not answer | the exchange times out | the step retries the exchange with back-off inside its budget, then fails |
+| The token expires during a call | the owner answers =token_expired= | one exchange and one retry |
+| An owner refuses with =forbidden= | the owner's permission check | the step fails; the error names the permission; this is a seeding defect |
+| An owner does not answer | the step's deadline | the run stops and names the service |
+| The grid is busy | nothing fails; the run waits | the grid budget bounds the wait |
+| A worker dies | JetStream redelivers the assignment | another node runs it |
+| A step service restarts | the engine re-dispatches the step | the step converges; the cache refills |
+| A quota is reached | admission | the run is born =queued= |
+
+A failed run compensates through =reporting.v1.report.fail=. The archive, the
+batch and the output stay in place. A person reads the failure on the instance
+and triggers another run, which reuses the archive by its digest.
+
+** Observability
+
+Every message of a run carries the workflow instance id as the correlation id.
+Every token carries the run id. A log line of any service in the run can
+therefore be joined to the instance.
+
+#+ATTR_HTML: :class hug-leading
+| Measure | Labels | What it tells |
+|---------+--------+---------------|
+| Instances by state | tenant | the queue a tenant waits in |
+| Time in =queued= | tenant | whether the quotas are right |
+| Step duration and step wait | step, tenant | where a run spends its time |
+| Exchanges, cache hits and exchange latency | service | whether the token cache works |
+| Refused exchanges | reason | lapsed grants; a misconfigured audience |
+| Assignments in flight and queue depth | tenant, platform | whether the grid is fair and big enough |
+
+[[id:12CE932E-6562-4D4D-A66E-C910E6423ED1][Report processing data characteristics]]
+lists the measures of the phases themselves. The IAM issue log is the audit
+record of every token. It records the grant, the run, the service, the time and
+the computed permissions.
+
+** Decisions this design takes
+
+- *A run acts through a grant, never through a stored token.* The grant is
+  consent that IAM holds. The exchange produces the credential when a step
+  needs it.
+- *IAM serves impersonation as an operation.* Internal actor impersonation
+  stays the pattern. The exchange makes it available to services outside IAM,
+  with an audience and a narrow role.
+- *The token names the grantor and the actor.* =sub= is the person who gave
+  consent. =act= is the service. The audit columns keep their meaning.
+- *A run reads its documents as of its firing.* The start message carries an
+  instant and not a copy.
+- *Pre-processing is one step in =ores.ore=.* The reporting gather and
+  assemble steps leave the chain. The pre-processing page leaves the owner of
+  packaging open, and this design places it in =ores.ore=, which owns the
+  mapping.
+- *Quotas queue a run and never fail it.* The existing =queued= state carries
+  the wait.
+- *The grid dispatches by fair share.* Tenants share platform pools, with a
+  weight and a cap each.
+- *Worker nodes hold no run token.* The node identity reaches only the keys an
+  assignment names.
+
+** What this design does not settle
+
+- The owner of the result store. [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] holds the question.
+- The tenancy of storage, a bucket per tenant or keys per tenant.
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] holds the
+  question. The node identity's key rules depend on the answer.
+- The values of the quotas and weights. Capacity tests against the targets
+  above decide them.
+- How a party is told that a grant lapsed. The notification channel belongs to
+  the user journeys.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note for the run grant and the token exchange.
+- [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] — the pattern the exchange serves over the bus.
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] — the two flows that do not cover a scheduled run.
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the job and the firing.
+- [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] — the engine that runs the four steps.
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow page for the chain.
+- [[https://www.rfc-editor.org/rfc/rfc8693][RFC 8693, OAuth 2.0 Token Exchange]] — the exchange and the actor claim.

@@ -52,6 +52,15 @@ each one, rebuilds the chain on every dispatch, and re-dispatches unfinished
 work after a restart. The obligations this puts on a phase — idempotence above
 all — are what the phase pages below must satisfy.
 
+** How a scheduled run acts, and how many runs share the platform
+
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — read
+after the orchestration page. It follows one scheduled run through every
+service, from the definition to the completed instance. It defines the run
+grant and the token exchange that let a run with no caller act as its tenant
+and party, and the fair queues that let thousands of runs from many tenants
+share the platform.
+
 ** Why the phases are shaped the way they are
 
 [[id:12CE932E-6562-4D4D-A66E-C910E6423ED1][Report processing data characteristics]] —

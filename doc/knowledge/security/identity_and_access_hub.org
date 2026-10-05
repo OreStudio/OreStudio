@@ -88,6 +88,11 @@ a specific end user. Read it straight after the patterns note, because it
 is the one we chose from among them, and read both before touching any
 service-to-service call.
 
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] —
+the same pattern served by IAM as an operation. A person's consent becomes a
+run grant, and a step service exchanges the grant for a short-lived token that
+acts as the tenant and the party of a scheduled run.
+
 ** What the database enforces regardless
 
 [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] —

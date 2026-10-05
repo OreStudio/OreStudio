@@ -1,0 +1,61 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A step obtains the run token, and an owner reads as the tenant and the party
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "ores.workflow" as engine
+box "a step service replica"
+participant "step handler" as handler
+participant "run token cache" as cache
+end box
+participant "ores.iam" as iam
+participant "an owner\n(for example ores.refdata)" as owner
+database "the owner's store\n(row-level security)" as db
+
+engine -> handler : step command\n(step id, instance id, tenant headers;\ngrant id and run id in the payload)
+handler -> cache : get (grant id, run id)
+alt a hit with more than 20% of its life left
+    cache --> handler : run token
+else a miss, or close to expiry
+    cache -> iam : iam.v1.run_grants.exchange\n(Authorization: the service's own token;\ngrant id, run id, tenant)
+    iam -> iam : the caller holds iam::run_grants:exchange\nand is in the grant's audience
+    iam -> iam : the grant is active, its tenant matches,\nand its grantor is active
+    iam -> iam : permissions = ReportRun\nintersected with the grantor's permissions in the party
+    iam -> iam : append to the issue log
+    iam --> cache : signed token, expires in 5 minutes
+    cache --> handler : run token
+end
+handler -> owner : operation request\n(Authorization: the run token)
+owner -> owner : make_request_context: tenant T, party P,\nvisible parties {P}, ReportRun permissions
+owner -> db : set the session tenant and party; read
+db --> owner : the party's rows and the system tenant's shared rows
+owner --> handler : response
+handler -> engine : step completed
+
+== the token expires during a long call ==
+
+handler -> owner : operation request (an expired token)
+owner --> handler : X-Error: token_expired
+handler -> cache : invalidate, then exchange again
+handler -> owner : the same request, once
+@enduml

@@ -212,10 +212,13 @@ By layer, then:
 | Domain service handler       | The caller, for user-shaped work | Forward the inbound bearer             |
 | Domain service, own work     | Itself                         | Client credentials built once (=svc_nats=) |
 | Workflow step or timer       | Itself, unless dispatched with a bearer | Client credentials, or the dispatched token |
+| Step of a scheduled run      | The run's tenant and party     | A run token exchanged for the run grant  |
 | Orchestrator, internal actor | A specific end user, no client | Self-minted impersonation, last resort   |
 
 * See also
 
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the run grant
+  and the token exchange that let a scheduled run act as its tenant and party.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the
   bucket and key protocol, and the delegated bearer the storage interfaces take.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.

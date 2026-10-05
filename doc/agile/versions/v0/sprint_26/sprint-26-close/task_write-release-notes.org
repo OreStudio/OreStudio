@@ -8,7 +8,7 @@
 #+filetags: :sprint-26-close:sprint_26:v0:
 #+owner: marco
 #+branch: feature/sprint-26-health-review-1
-#+pr: 2658
+#+pr: 2659
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05

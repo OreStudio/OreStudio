@@ -79,6 +79,9 @@ The pieces the entry reaches for:
 - The system tenant is already on the roster and its screen opens
   (=d4525844bc=, "Show the system tenant"), so this task adds the super
   administrator's own entry, not the underlying reads.
+- =TenantsPage.tsx= carries a comment (lines 49-51) that says the system
+  tenant is not on the roster; =d4525844bc= made it reachable, so the
+  comment is stale and goes with this work.
 - The prototype page that fixed the Tenants-only menu is
   [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]]; the
   new entry and the decision it revisits are recorded there.

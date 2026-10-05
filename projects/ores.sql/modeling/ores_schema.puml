@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-05T01:40:12.497181Z
+' Generated: 2026-10-05T08:10:55.095056Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -13907,6 +13907,408 @@ package "synthetic" #F9FBE7 {
     generation, its only consumer today; not promoted to shared refdata
     until it is genuinely shared by something else, per this story's own
     payment_frequency precedent. Managed by the system tenant.
+    end note
+
+}
+
+'
+' ==================== inbox (Inbox — Approval Requests and Notifications) ====================
+'
+package "inbox" #FCE4EC {
+    entity ores_inbox_approval_decision_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * requires_comment : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_decision_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Decision Type Table
+    Reference data table of the decisions a person can take on an approval request:
+    'approve', 'refuse', 'hold', 'resume', 'withdraw', 'reverse'.
+    requires_comment states which decisions always need a comment, whatever the
+    kind: a refusal and a reversal do, because the person who asked reads them. A
+    kind can ask for more, through its comment_on_approve flag.
+    Decision types are managed by the system tenant.
+    end note
+
+    entity ores_inbox_approval_decisions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * decision_code : text
+        * decided_by : uuid
+        * decided_at : timestamptz
+        * comment : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_decisions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Decision Table
+    A request is decided by many decisions, not one: a kind may need two approvers,
+    and a hold, a return to waiting, a withdrawal, a refusal and a reversal are each
+    a decision of their own. Each is a row here, and a decision is never edited.
+    Two rules of the record are rules of the schema. The person who asked cannot
+    decide their own request, and a withdrawal is the one decision only they take:
+    a hand-written trigger in inbox_approval_decision_rules_create.sql checks
+    both. One person approves a request at most once: the unique index below
+    states it.
+    end note
+
+    entity ores_inbox_approval_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * decide_permission_code : text
+        * allows_hold : boolean
+        * comment_on_approve : boolean
+          expires_after_days : integer
+        * approvals_required : integer
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Kind Table
+    Reference data table of the kinds of approval request. Examples:
+    'iam.role_grant', 'trading.operational_authorisation'.
+    A kind is the small declaration the generic record reads: the permission a
+    decider needs, whether the kind uses the held state, whether an approval
+    needs a comment, how long an unanswered request waits, and how many approvals,
+    each by a different person, close a request as approved. The component that
+    owns the kind owns its detail table and the operation that applies an approval.
+    Kinds are managed by the system tenant.
+    end note
+
+    entity ores_inbox_approval_request_states_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * is_final : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_request_states_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Request State Table
+    Reference data table of the states of an approval request: 'waiting', 'held',
+    'approved', 'refused', 'withdrawn', 'expired'.
+    A final state has no exit but the ones the lifecycle names: approved can be
+    reversed with a comment, and refused, withdrawn and expired cannot be left
+    at all. The queue reads is_final to tell open requests from closed ones.
+    States are managed by the system tenant.
+    end note
+
+    entity ores_inbox_approval_requests_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * kind_code : text
+        * state_code : text
+        * requested_by : uuid
+        * requested_at : timestamptz
+        * reason : text
+          expires_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_approval_requests_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Approval Request Table
+    The header every kind of approval request shares: what is asked, who asked,
+    when and why, where the request is, and when it closes unanswered. What the
+    request is about lives in the kind's own detail table, owned by the component
+    that owns the kind and keyed by this request's id.
+    state_code is the state the request's decisions have reached. The decisions
+    themselves are rows of [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]], many per request.
+    The record is bitemporal, so every change of state is a version and the history
+    is the audit trail an auditor reads.
+    end note
+
+    entity ores_inbox_delivery_outcome_types_tbl  #F7E5FF {
+        * code : text <<PK>>
+        --
+        * description : text
+    }
+
+    note right of ores_inbox_delivery_outcome_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Delivery Outcome Type Table
+    The outcomes of one attempt to reach a person through one channel: 'pending',
+    'delivered' and 'failed'.
+    The set is closed, and the C++ enum domain::delivery_outcome holds the same
+    values. A code with no enum value cannot be read back, so the table is
+    immutable: it is seeded once and never changes at run time. Because it is
+    immutable, a delivery references it with a database foreign key rather than a
+    trigger check. The table has no tenant: the set is the same for every tenant.
+    end note
+
+    entity ores_inbox_notification_arguments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * notification_id : uuid <<PK, FK>>
+        * name : text <<PK>>
+        --
+        * version : integer
+        * value : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_arguments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Notification Argument Table
+    The values a notification's message names, one row each: the role, the tenant,
+    the step. The screen renders the kind's message with them in the reader's
+    language, so a notification stores no finished sentence and no document.
+    A row is identified by the notification and the argument's name.
+    end note
+
+    entity ores_inbox_notification_channels_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_channels_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Notification Channel Table
+    Reference data table of the ways a person is reached: 'in_app' and 'mail'. A
+    channel is a delivery of the same notification, not a different message.
+    Channels are managed by the system tenant.
+    end note
+
+    entity ores_inbox_notification_deliveries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * notification_id : uuid <<FK>>
+        * account_id : uuid <<FK>>
+        * channel_code : text
+        * attempted_at : timestamptz
+        * outcome : text
+          failure_reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_deliveries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Notification Delivery Table
+    One attempt to reach one recipient through one channel, and its outcome. A
+    recipient has many: a failed mail is retried, and each attempt is a row of its
+    own, so "were they told?" has an answer. A failed delivery never fails the
+    activity that raised the notification.
+    outcome is pending, delivered or failed, the C++ enum
+    domain::delivery_outcome. failure_reason says why a failed attempt failed,
+    and is null otherwise.
+    end note
+
+    entity ores_inbox_notification_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * message_key : text
+        * mail_optional : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Notification Kind Table
+    Reference data table of the kinds of notification. Examples:
+    'inbox.approval_waiting', 'inbox.approval_decided'.
+    A notification carries a kind and its values, not a finished sentence. The kind
+    names the message key the screen renders in the reader's language. A component
+    adds a kind with a seed row and needs no change to the subsystem.
+    mail_optional says whether a person may turn the mail copy of this kind off.
+    A password recovery is a kind a person cannot turn off. The in-application copy
+    is always kept.
+    Kinds are managed by the system tenant.
+    end note
+
+    entity ores_inbox_notification_preferences_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * account_id : uuid <<PK, FK>>
+        * kind_code : text <<PK>>
+        * channel_code : text <<PK>>
+        --
+        * version : integer
+        * enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_preferences_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Notification Preference Table
+    Whether a person is reached through one channel for one kind. The key is the
+    account, the kind and the channel together, so a person holds one row for each
+    pair they have chosen; no row means the kind's default.
+    The in-application copy is always kept, and a kind that is not
+    mail_optional ignores a choice to turn its mail off. The service applies both
+    rules when it delivers.
+    end note
+
+    entity ores_inbox_notification_recipients_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * notification_id : uuid <<PK, FK>>
+        * account_id : uuid <<PK, FK>>
+        --
+        * version : integer
+          read_at : timestamptz
+          cleared_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notification_recipients_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Notification Recipient Table
+    Each person a notification reaches has their own row, kept until they read or
+    clear it, and a person reads only their own. read_at and cleared_at are the
+    person's read state: null until they read or clear it. The unread count on
+    every screen counts a person's rows with no read_at.
+    A row is identified by the notification and the account.
+    end note
+
+    entity ores_inbox_notifications_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * kind_code : text
+        * raised_by : uuid
+        * raised_at : timestamptz
+        * link_route : text
+          link_id : text <<FK>>
+          audience_permission_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_inbox_notifications_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Notification Table
+    One thing that happened: its kind, who raised it and when, and where it is dealt
+    with. The values its message names are rows of
+    [[id:9A498098-9038-4930-9074-67F84BAFB19E][ores.inbox.notification_argument]], and the people it reaches are rows of
+    [[id:2451E78F-269A-4C48-819F-F7F24E03B4D8][ores.inbox.notification_recipient]], each with their own read state.
+    Every notification links to where it is dealt with: link_route names the
+    screen, and link_id names the thing on it, when there is one. A notification
+    never asks a person to act inside it, and it carries no password, token or
+    trade economics, because mail leaves the system.
+    When a notification is raised to every holder of a permission, the permission
+    is resolved into recipient rows at that moment, and audience_permission_code
+    records which permission it was.
     end note
 
 }

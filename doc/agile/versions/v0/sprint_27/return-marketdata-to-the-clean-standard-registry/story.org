@@ -60,6 +60,7 @@ two tasks moved here.
 |------+-------+-------+-----+-------------|
 | [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | BACKLOG | | | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
 | [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]] | DONE | 2026-10-05 | 2026-10-06 | Fourteen shared C++ templates end each namespace with an end-of-line comment, which H03 forbids; remove it from the templates and from the 2,873 files they generated, in one mechanical PR. |
+| [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]] | BACKLOG | | | The :has_as_of_lookup: flag adds an as_of field to an entity's list request, but no generated handler, service or repository reads it. Make the generated list read return the rows valid at the stated instant, so every entity can offer the canonical point-in-time read P01 asks for. |
 
 * Decisions
 

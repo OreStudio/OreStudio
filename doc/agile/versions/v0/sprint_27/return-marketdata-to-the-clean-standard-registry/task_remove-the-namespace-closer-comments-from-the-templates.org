@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/remove-the-namespace-closer-comments-from-the-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ No generated C++ file ends a namespace with an end-of-line comment, so the gener
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -41,9 +41,11 @@ No generated C++ file ends a namespace with an end-of-line comment, so the gener
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One rewrite, as a script on the task: =evidence/strip_namespace_closer_comments.py=
+turns =} // namespace ...= into =}= in the template sources, their tangled
+templates and every generated file that carries one, and =--check= reports what
+is left. The generated files are edited, not regenerated, so no component's
+other drift rides along; the drift checks prove the edited files match a render.
 
 * Measurements
 
@@ -57,7 +59,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Template files with a closer comment, before and after | 28 (14 sources, 14 tangled), 52 lines; 0 after | =evidence/strip_namespace_closer_comments.py --check= | =6d0865ee12= |
+| Generated files with a closer comment, before and after | 2,954, 3,715 lines; 10 after, all in =EXCLUDED= | the same script | =6d0865ee12= |
+| Generated files with a closer comment from any other template | 0 | =git grep= for the closer, grouped by =Template:= header | =6d0865ee12= |
+| Changed code lines that are not a closer becoming =}= | 0 | =git diff -U0 -- projects=, filtered on the closer pattern | =70c014b735= |
+| Tangled templates the tangle changes after the rewrite | 0 | =compass build --direct codegen_templates=, then =git diff= | =70c014b735= |
+| Registry drift and catalogue sweep on the files touched | clean, both | =check_component_drift.py --all= and =--sweep= | =bee2d715a5= |
+| Removed lines that end in a backslash (a line splice) | 0 of 3,705 | =git diff -U0 origin/main...HEAD -- projects=, removed lines ending in =\= | =bee2d715a5= |
+| Marketdata test targets and their dependencies, built and run | build clean; ctest =ores.marketdata= 5/5 on a recreated database | =compass build= on the four test targets, then =compass test run -R ores.marketdata= | =bee2d715a5= |
 
 * Notes
 
@@ -87,6 +96,28 @@ over the files their =Template:= header selects. Applying it to the generated
 files, rather than regenerating them, keeps other components' unrelated drift
 out of the PR; the drift checks then prove the edited files match a render.
 
+** How the change was verified
+
+A full rebuild reached 19% in two hours on the shared build lock, so it would
+have held the lock for about ten hours more. Decided with the owner on
+2026-10-05: verify by tokens and by one component instead. Every removed line is
+=} // namespace ...= with no trailing backslash, so no line splice joins it to
+the next and the compiler sees the same tokens in all 2,972 files. The
+marketdata targets and everything they depend on are built and tested end to
+end, and the nightly build compiles the rest.
+
+** The ten files left alone
+
+The first sweep failed on ten generated services in =ores.scheduler= and
+=ores.synthetic=. Their closer comments were gone, but each already differs from
+its template for other reasons: =job_definition_service.cpp=, for one, was
+generated before its template learned ordering and filters. Touching a file
+makes the sweep hold the change responsible for all of its drift, so the ten
+were restored from main and listed in the script's =EXCLUDED=. Neither component
+is in =COMPONENTS_UNDER_TEST=; sprint 27's =clean-scheduler= and
+=clean-synthetic= stories regenerate them, and since the templates no longer
+write the comment, it leaves them then.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -111,3 +142,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The fourteen templates and 2,944 of the files they generated close a namespace
+with a bare brace. The ten generated files that already drift for other reasons
+keep their comment until their components' clean-up regenerates them. The drift
+checks prove every edited file matches a fresh render, and the diff changes
+nothing but closer lines.

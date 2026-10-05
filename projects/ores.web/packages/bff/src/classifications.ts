@@ -73,7 +73,10 @@ const orderBodySchema = reasonSchema.extend({
             }),
         )
         .min(1)
-        .max(1000),
+        .max(1000)
+        .refine((rows) => new Set(rows.map((row) => row.code)).size === rows.length, {
+            message: 'Each row may appear once.',
+        }),
 });
 
 const labelBodySchema = reasonSchema.extend({
@@ -190,14 +193,14 @@ export function registerClassificationRoutes(
         const list = listFor(request);
         const [rows, labels] = await Promise.all([
             listClassificationRows(session.client, list),
-            readClassificationLabels(session.client, list).catch(() => ({})),
+            readClassificationLabels(session.client, list).catch(
+                (error: unknown): Readonly<Record<string, string>> => {
+                    request.log.warn({ err: error, list: list.key }, 'labels could not be read');
+                    return {};
+                },
+            ),
         ]);
-        return {
-            rows: rows.map((row) => ({
-                ...row,
-                labelCode: (labels as Record<string, string>)[row.code] ?? null,
-            })),
-        };
+        return { rows: rows.map((row) => ({ ...row, labelCode: labels[row.code] ?? null })) };
     });
 
     /** The shared label catalogue: every label, and the labels each code domain uses. */
@@ -220,6 +223,14 @@ export function registerClassificationRoutes(
             throw invalidRequest('A label needs a badge, or null to take it away, and a reason.');
         }
         const { badgeCode, reasonCode, commentary } = body.data;
+        /*
+         * The label catalogue maps any code of any domain, so it cannot refuse
+         * a code the list does not hold; the BFF does.
+         */
+        const rows = await listClassificationRows(session.client, list);
+        if (!rows.some((row) => row.code === code)) {
+            throw notFound(`${list.key} has no row ${code}.`);
+        }
         answer(
             await setClassificationLabel(session.client, list, code, badgeCode, {
                 reasonCode,

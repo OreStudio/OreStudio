@@ -224,6 +224,10 @@ describe('the labels', () => {
 
     it('labels a row of a read-only list, because a label is not a spelling', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.day_counters.list': {
+                result: ok,
+                day_counters: [{ version: 1, code: 'A360' }],
+            },
             'dq.v1.badge_mappings.put': { result: ok },
         });
         const response = await send(
@@ -237,7 +241,7 @@ describe('the labels', () => {
             },
         );
         expect(response.statusCode).toBe(204);
-        expect(calls[0]?.body).toMatchObject({
+        expect(calls[1]?.body).toMatchObject({
             change: {
                 write: {
                     code_domain_code: 'day_counter',
@@ -248,8 +252,33 @@ describe('the labels', () => {
         });
     });
 
+    it('refuses to label a code the list does not hold', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.rounding_types.list': {
+                result: ok,
+                types: [{ version: 1, code: 'Up', name: 'Up' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/classifications/rounding-type/rows/Nope/label',
+            {
+                badgeCode: 'active',
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(404);
+        expect(calls.map((call) => call.subject)).toEqual(['refdata.v1.rounding_types.list']);
+    });
+
     it('takes a label away when the badge is null', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.rounding_types.list': {
+                result: ok,
+                types: [{ version: 1, code: 'Up', name: 'Up' }],
+            },
             'dq.v1.badge_mappings.delete': { result: ok },
         });
         const response = await send(
@@ -263,7 +292,7 @@ describe('the labels', () => {
             },
         );
         expect(response.statusCode).toBe(204);
-        expect(calls[0]?.subject).toBe('dq.v1.badge_mappings.delete');
+        expect(calls[1]?.subject).toBe('dq.v1.badge_mappings.delete');
     });
 });
 
@@ -417,6 +446,25 @@ describe('the classification writes', () => {
         );
         expect(response.statusCode).toBe(204);
         expect((calls[0]?.body as { changes: unknown[] }).changes).toHaveLength(2);
+    });
+
+    it('refuses a reorder that names a row twice', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/classifications/rounding-type/order',
+            {
+                rows: [
+                    { code: 'Up', name: 'Up', description: '', displayOrder: 10, version: 1 },
+                    { code: 'Up', name: 'Up', description: '', displayOrder: 20, version: 1 },
+                ],
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
     });
 
     it('refuses to reorder a list of ORE spellings', async () => {

@@ -90,6 +90,13 @@ via its "Verifies task" field.
 | 2 | Local review: the label route accepts a read-only list | =bff/src/classifications.ts= | Kept | A label is how a code is drawn, not how ORE spells it; the server checks =dq::badge_mappings:write= |
 | 3 | Local review: the history route takes an entity type from the browser | =bff/src/classifications.ts= | Kept | Served only for the catalogue's entity types; any other type answers 404 |
 | 4 | Local review: headers, comments, debug leftovers, misspell | changed files | Clean | The two =} // namespace= closers in =registrar.cpp= predate this change |
+| 5 | PR #2640 round 1: the label route does not check the code is in the list | =bff/src/classifications.ts= | Accepted | The catalogue maps any code, so the BFF reads the list and answers 404 for a code it lacks |
+| 6 | PR #2640 round 1: a reorder may name a row twice | =bff/src/classifications.ts= | Accepted | The schema refuses duplicate codes |
+| 7 | PR #2640 round 1: the counts are 28 sequential calls | =bff/src/classifications.ts= | Declined | About 0.2 s; the comment says why, and the slow concurrent client is a filed capture |
+| 8 | PR #2640 round 1: a type cast on the labels fallback | =bff/src/classifications.ts= | Accepted | The fallback is typed; the cast is gone |
+| 9 | PR #2640 round 1: a failed label read is silent | =bff/src/classifications.ts= | Accepted | Logged at warn with the list key |
+| 10 | PR #2640 round 1: DELETE carries a JSON body | =bff/src/classifications.ts= | Declined | The BFF and the browser are the only clients; the tenant removal route already does the same |
+| 11 | PR #2640 round 1: confirm the site build | — | Noted | Reported on the PR when it finishes |
 
 * Result
 

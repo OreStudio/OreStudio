@@ -18,6 +18,8 @@
  *
  */
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include <algorithm>
+#include <cctype>
 #include <stdexcept>
 
 namespace ores::marketdata::repository {
@@ -53,14 +55,19 @@ std::size_t as_of_bucket_ordinal(const as_of_row& row, std::size_t bucket_count)
     if (row.empty() || !row[0])
         throw std::runtime_error("read_as_of_buckets: a row has no bucket ordinal");
 
+    // Digits only: std::stoul also takes a sign and leading spaces, and wraps
+    // a negative value into a huge one.
+    const auto& text = *row[0];
+    const bool digits = !text.empty() && std::ranges::all_of(text, [](unsigned char c) {
+        return std::isdigit(c) != 0;
+    });
     std::size_t ordinal = 0;
     try {
-        std::size_t used = 0;
-        ordinal = std::stoul(*row[0], &used);
-        if (used != row[0]->size())
-            throw std::invalid_argument("trailing characters");
+        if (!digits)
+            throw std::invalid_argument("not digits");
+        ordinal = std::stoul(text);
     } catch (const std::logic_error&) {
-        throw std::runtime_error("read_as_of_buckets: bucket ordinal '" + *row[0] +
+        throw std::runtime_error("read_as_of_buckets: bucket ordinal '" + text +
                                  "' is not a number");
     }
     if (ordinal >= bucket_count)

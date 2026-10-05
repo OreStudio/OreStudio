@@ -51,8 +51,8 @@ ORES_MARKETDATA_CORE_EXPORT market_observation_entity as_of_observation(const as
 /**
  * @brief The bucket a bucketed as-of row belongs to, from its first column.
  *
- * @throws std::runtime_error if the ordinal is missing, is not a number, or is
- * not below @p bucket_count.
+ * @throws std::runtime_error if the ordinal is missing, is not all digits, or
+ * is not below @p bucket_count.
  */
 ORES_MARKETDATA_CORE_EXPORT std::size_t as_of_bucket_ordinal(const as_of_row& row,
                                                              std::size_t bucket_count);

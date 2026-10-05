@@ -83,6 +83,10 @@ TEST_CASE("a_bucket_ordinal_that_is_not_a_number_is_refused", tags) {
                       ContainsSubstring("'two' is not a number"));
     CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row("2x"), 4),
                       ContainsSubstring("'2x' is not a number"));
+    CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row("-1"), 4),
+                      ContainsSubstring("'-1' is not a number"));
+    CHECK_THROWS_WITH(as_of_bucket_ordinal(bucket_row(" 1"), 4),
+                      ContainsSubstring("' 1' is not a number"));
 }
 
 TEST_CASE("a_bucket_ordinal_outside_the_buckets_is_refused", tags) {

@@ -576,7 +576,7 @@ component carries it today.
 | Revert | =RevertDialog= | Exists |
 | History | =HistoryPanel= | Exists |
 | Links | =LinkPanel= | Exists |
-| Parts | =PartsPanel= in =refdata/calendars.tsx= | Exists; to move beside =LinkPanel= |
+| Parts | =PartsPanel= in =refdata/records.tsx= | Exists, beside =LinkPanel= |
 | Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
 | Icons | =Icon= in =ui/Icon.tsx=, the =icon= of =Button= | Exists for the actions in the icon table |
 | Last-changed line | =LastChanged=, drawn by =RecordDetails= | Exists |
@@ -589,7 +589,7 @@ component carries it today.
 | Screen | Where it differs from this standard |
 |--------+-------------------------------------|
 | Currencies, desk groups, currency pairs | Conform, except recency and the whole-kind pickers; a desk group reads its members from the whole junction, which has no read by group |
-| Holiday calendars | Reads every row; Remove for Delete; no icons |
+| Holiday calendars | Conform, except recency and the whole-kind pickers; the business days follow the server's rebuild, which never rewrites a built day and does not read QuantLib holidays (both captured) |
 | Classifications | Reads every row of a list; a different list layout; no icons |
 | People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
 | Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |

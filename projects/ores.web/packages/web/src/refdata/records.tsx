@@ -33,7 +33,7 @@ import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
 import { ImageField } from '../images/ImageChooser.js';
 import { imageUrl } from '../ui/Images.js';
 import { RecordPicker, type Choice } from './RecordPicker.js';
-import { fieldValue } from './HistoryPanel.js';
+import { HistoryPanel, fieldValue } from './HistoryPanel.js';
 import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
 
 /** The reason a new row is written with; no other reason applies to a new record. */
@@ -1127,5 +1127,214 @@ export function RecordHeader({
                 }
             />
         </div>
+    );
+}
+
+/**
+ * The parts of a record: rows that belong to one parent and keep their own
+ * versions, such as a calendar's exceptions. The table lists them in their
+ * natural order, each with History, Edit and Delete, and Add sits under it.
+ * Every parts panel is this component, as the record screen standard sets it.
+ */
+export function PartsPanel({
+    resource,
+    entityType,
+    specs,
+    parentField,
+    parent,
+    rows,
+    error,
+    columns,
+    sort,
+    keep,
+    initial,
+    lead,
+    titles,
+}: {
+    readonly resource: string;
+    readonly entityType: string;
+    readonly specs: readonly FieldSpec[];
+    readonly parentField: string;
+    readonly parent: string;
+    readonly rows: readonly RecordRow[];
+    readonly error: string | undefined;
+    readonly columns: readonly {
+        readonly header: string;
+        readonly cell: (row: RecordRow) => ReactNode;
+        readonly mono?: boolean;
+    }[];
+    readonly sort: (row: RecordRow) => string;
+    readonly keep?: readonly string[];
+    readonly initial?: Readonly<Record<string, string>>;
+    readonly lead?: string;
+    /** How the dialogs name one part: adding it, opening it, and deleting it. */
+    readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
+}): ReactNode {
+    const { t } = useTranslation();
+    const may = useRecordPermissions(resource);
+    const [open, setOpen] = useState<{
+        readonly row: RecordRow | undefined;
+        readonly id: string;
+        readonly view: 'edit' | 'history' | 'remove';
+    } | null>(null);
+    const [reverting, setReverting] = useState<{
+        readonly row: RecordRow;
+        readonly version: HistoryVersion;
+    } | null>(null);
+    const kept = ['id', parentField, ...(keep ?? [])];
+    const sorted = [...rows].sort((a, b) => sort(a).localeCompare(sort(b)));
+
+    return (
+        <section className="space-y-3">
+            {lead !== undefined && <p className="text-sm text-ink-muted">{lead}</p>}
+            {error !== undefined && <Notice tone="error">{error}</Notice>}
+            <div className="overflow-x-auto rounded-md border border-line">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            {columns.map((column) => (
+                                <th key={column.header} className="px-4 py-2 font-medium">
+                                    {column.header}
+                                </th>
+                            ))}
+                            <th className="px-4 py-2" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sorted.length === 0 && (
+                            <tr>
+                                <td
+                                    colSpan={columns.length + 1}
+                                    className="px-4 py-3 text-ink-muted"
+                                >
+                                    {t('refdata.records.noLinks')}
+                                </td>
+                            </tr>
+                        )}
+                        {sorted.map((row) => (
+                            <tr
+                                key={show(row['id'])}
+                                className="border-b border-line-subtle last:border-b-0"
+                            >
+                                {columns.map((column) => (
+                                    <td
+                                        key={column.header}
+                                        className={
+                                            column.mono === true
+                                                ? 'px-4 py-2 font-mono text-xs text-ink-muted'
+                                                : 'px-4 py-2'
+                                        }
+                                    >
+                                        {column.cell(row)}
+                                    </td>
+                                ))}
+                                <td className="px-4 py-1.5 text-right whitespace-nowrap">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        icon="history"
+                                        onClick={() =>
+                                            setOpen({ row, id: show(row['id']), view: 'history' })
+                                        }
+                                    >
+                                        {t('refdata.records.tabs.history')}
+                                    </Button>
+                                    {may.write && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="edit"
+                                            onClick={() =>
+                                                setOpen({ row, id: show(row['id']), view: 'edit' })
+                                            }
+                                        >
+                                            {t('refdata.records.edit')}
+                                        </Button>
+                                    )}
+                                    {may.remove && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="delete"
+                                            onClick={() =>
+                                                setOpen({
+                                                    row,
+                                                    id: show(row['id']),
+                                                    view: 'remove',
+                                                })
+                                            }
+                                        >
+                                            {t('refdata.records.delete')}
+                                        </Button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {may.write && (
+                <Button
+                    icon="add"
+                    onClick={() =>
+                        setOpen({ row: undefined, id: crypto.randomUUID(), view: 'edit' })
+                    }
+                >
+                    {t('refdata.records.add')}
+                </Button>
+            )}
+            {open?.view === 'edit' && (
+                <RecordDialog
+                    title={open.row === undefined ? titles.add : titles.one}
+                    resource={resource}
+                    specs={specs}
+                    row={open.row}
+                    keep={kept}
+                    given={{ id: open.id, [parentField]: parent }}
+                    {...(open.row === undefined && initial !== undefined ? { initial } : {})}
+                    onClose={() => setOpen(null)}
+                />
+            )}
+            {open?.view === 'history' && open.row !== undefined && (
+                <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
+                    <HistoryPanel
+                        entityType={entityType}
+                        entityId={open.id}
+                        {...(may.write
+                            ? {
+                                  onRevert: (version: HistoryVersion) => {
+                                      const row = open.row;
+                                      if (row !== undefined) {
+                                          setReverting({ row, version });
+                                          setOpen(null);
+                                      }
+                                  },
+                              }
+                            : {})}
+                    />
+                </Dialog>
+            )}
+            {open?.view === 'remove' && open.row !== undefined && (
+                <RemoveRecordDialog
+                    resource={resource}
+                    title={titles.remove}
+                    warning={t('refdata.records.deletePartWarning')}
+                    recordKey={{ id: open.id }}
+                    version={open.row.version}
+                    onClose={() => setOpen(null)}
+                    onRemoved={() => setOpen(null)}
+                />
+            )}
+            {reverting !== null && (
+                <RevertDialog
+                    resource={resource}
+                    specs={specs}
+                    row={reverting.row}
+                    version={reverting.version}
+                    keep={kept}
+                    onClose={() => setReverting(null)}
+                />
+            )}
+        </section>
     );
 }

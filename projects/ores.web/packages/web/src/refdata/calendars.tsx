@@ -21,26 +21,31 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type CalendarDay, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { useFlags } from '../images/flags.js';
+import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { HistoryPanel } from './HistoryPanel.js';
+import { RecordList, useRecordSource } from './RecordList.js';
+import { RecordPicker } from './RecordPicker.js';
 import {
     ClassifiedValue,
-    RecordDialog,
+    PartsPanel,
     RecordDetails,
-    RecordTable,
+    RecordDialog,
+    RecordGate,
+    RecordHeader,
     RemoveRecordDialog,
     RevertDialog,
+    show,
+    useRecord,
     useRecordPermissions,
     useRecordTabs,
-    show,
     useRecords,
     type FieldSpec,
 } from './records.js';
-import { Crumbs } from './shared.js';
 
 const CALENDARS = 'calendars';
 const RULES = 'calendar-rules';
@@ -48,7 +53,13 @@ const EXCEPTIONS = 'calendar-exceptions';
 const EVENTS = 'calendar-events';
 
 const CALENDAR_FIELDS: readonly FieldSpec[] = [
-    { field: 'code', history: 'Code', kind: { kind: 'text', max: 100 }, fixed: true },
+    {
+        field: 'code',
+        history: 'Code',
+        kind: { kind: 'text', max: 100 },
+        fixed: true,
+        flag: 'calendar',
+    },
     { field: 'name', history: 'Name', kind: { kind: 'text' } },
     {
         field: 'calendar_type',
@@ -59,11 +70,13 @@ const CALENDAR_FIELDS: readonly FieldSpec[] = [
         field: 'country_code',
         history: 'Country Code',
         kind: { kind: 'record', resource: 'countries', value: 'alpha2_code', label: 'name' },
+        flag: 'country',
     },
+    { field: 'image_id', history: 'Image ID', kind: { kind: 'image' }, optional: true },
 ];
 
 /** The calendar fields the server requires that the form does not edit. */
-const CALENDAR_KEPT = ['image_id', 'source', 'is_editable', 'base_calendar_code'];
+const CALENDAR_KEPT = ['source', 'is_editable', 'base_calendar_code'];
 
 const RULE_KINDS = ['fixed_date', 'nth_weekday_of_month', 'last_weekday_of_month', 'easter_offset'];
 
@@ -173,99 +186,66 @@ function userCalendar(base: string | null): Readonly<Record<string, unknown>> {
     return { image_id: null, source: 'user', is_editable: true, base_calendar_code: base };
 }
 
-/** The tenant's calendars, filtered by code, name, country or type. */
+/** The tenant's calendars: one page at a time, searched and sorted on the server. */
 export function CalendarsPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const calendars = useRecords(CALENDARS);
-    const may = useRecordPermissions(CALENDARS);
-    const [filter, setFilter] = useState('');
     const [adding, setAdding] = useState(false);
-
-    if (calendars.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (calendars.isError) {
-        return <Notice tone="error">{calendars.error.message}</Notice>;
-    }
-    const wanted = filter.trim().toLowerCase();
-    const shown = calendars.data.filter(
-        (row) =>
-            wanted === '' ||
-            ['code', 'name', 'country_code', 'calendar_type']
-                .map((field) => show(row[field]))
-                .join(' ')
-                .toLowerCase()
-                .includes(wanted),
-    );
+    const source = useRecordSource(CALENDARS);
     return (
-        <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.calendars.title') },
-                    ]}
-                />
-                <PageHeader
-                    title={t('refdata.calendars.title')}
-                    description={t('refdata.calendars.lead')}
-                    actions={
-                        may.write ? (
-                            <Button variant="primary" onClick={() => setAdding(true)}>
-                                {t('refdata.calendars.add')}
-                            </Button>
-                        ) : undefined
-                    }
-                />
-            </div>
-            <section className="overflow-hidden rounded-md border border-line">
-                <div className="border-b border-line p-3">
-                    <Input
-                        type="search"
-                        value={filter}
-                        placeholder={t('refdata.records.filter')}
-                        aria-label={t('refdata.records.filter')}
-                        onChange={(event) => setFilter(event.target.value)}
-                    />
-                </div>
-                <RecordTable
-                    rows={shown}
-                    pathOf={(row) => calendarPath(show(row['code']))}
-                    empty={t('refdata.records.noMatch')}
-                    columns={[
-                        {
-                            header: t('refdata.fields.code'),
-                            cell: (row) => show(row['code']),
-                            mono: true,
-                        },
-                        { header: t('refdata.fields.name'), cell: (row) => show(row['name']) },
-                        {
-                            header: t('refdata.fields.calendar_type'),
-                            cell: (row) => (
-                                <ClassifiedValue
-                                    list="calendar-type"
-                                    code={show(row['calendar_type'])}
-                                />
-                            ),
-                        },
-                        {
-                            header: t('refdata.fields.country_code'),
-                            cell: (row) => show(row['country_code']),
-                        },
-                        {
-                            header: t('refdata.calendars.made'),
-                            cell: (row) => <MadeOf calendar={row} />,
-                        },
-                    ]}
-                />
-                <div className="border-t border-line px-4 py-2 text-xs text-ink-muted">
-                    {t('refdata.classifications.shown', {
-                        shown: String(shown.length),
-                        total: String(calendars.data.length),
-                    })}
-                </div>
-            </section>
+        <>
+            <RecordList
+                source={source}
+                title={t('refdata.calendars.title')}
+                lead={t('refdata.calendars.lead')}
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.calendars.title') },
+                ]}
+                pathOf={(row) => calendarPath(show(row['code']))}
+                addLabel={t('refdata.calendars.add')}
+                onAdd={() => setAdding(true)}
+                columns={[
+                    {
+                        id: 'code',
+                        header: t('refdata.fields.code'),
+                        cell: (row) => show(row['code']),
+                        mono: true,
+                        sort: 'code',
+                        flag: { source: 'calendar', code: (row) => show(row['code']) },
+                    },
+                    {
+                        id: 'name',
+                        header: t('refdata.fields.name'),
+                        cell: (row) => show(row['name']),
+                        sort: 'name',
+                    },
+                    {
+                        id: 'calendar_type',
+                        header: t('refdata.fields.calendar_type'),
+                        cell: (row) => (
+                            <ClassifiedValue
+                                list="calendar-type"
+                                code={show(row['calendar_type'])}
+                            />
+                        ),
+                        sort: 'calendar_type',
+                    },
+                    {
+                        id: 'country_code',
+                        header: t('refdata.fields.country_code'),
+                        cell: (row) => show(row['country_code']),
+                        mono: true,
+                        sort: 'country_code',
+                        flag: { source: 'country', code: (row) => show(row['country_code']) },
+                    },
+                    {
+                        id: 'made',
+                        header: t('refdata.calendars.made'),
+                        cell: (row) => <MadeOf calendar={row} />,
+                    },
+                ]}
+            />
             {adding && (
                 <RecordDialog
                     title={t('refdata.calendars.addTitle')}
@@ -277,7 +257,7 @@ export function CalendarsPage(): ReactNode {
                     onSaved={(write) => void navigate(calendarPath(show(write['code'])))}
                 />
             )}
-        </div>
+        </>
     );
 }
 
@@ -297,29 +277,15 @@ function MadeOf({ calendar }: { readonly calendar: RecordRow }): ReactNode {
 
 /** One calendar: its row, the inputs that make its business days, the days, and the history. */
 export function CalendarPage(): ReactNode {
-    const { t } = useTranslation();
     const { code } = useParams();
-    const calendars = useRecords(CALENDARS);
-    if (calendars.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (calendars.isError) {
-        return <Notice tone="error">{calendars.error.message}</Notice>;
-    }
-    const calendar = calendars.data.find((candidate) => candidate['code'] === code);
-    if (calendar === undefined) {
-        return <Navigate to={calendarPath()} replace />;
-    }
-    return <CalendarBody key={show(calendar['code'])} calendar={calendar} all={calendars.data} />;
+    return (
+        <RecordGate resource={CALENDARS} recordKey={code ?? ''} listPath={calendarPath()}>
+            {(calendar) => <CalendarBody key={show(calendar['code'])} calendar={calendar} />}
+        </RecordGate>
+    );
 }
 
-function CalendarBody({
-    calendar,
-    all,
-}: {
-    readonly calendar: RecordRow;
-    readonly all: readonly RecordRow[];
-}): ReactNode {
+function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const code = show(calendar['code']);
@@ -334,47 +300,36 @@ function CalendarBody({
     const [deriving, setDeriving] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
-    const base = all.find((candidate) => candidate['code'] === calendar['base_calendar_code']);
+    const baseCode = show(calendar['base_calendar_code']);
+    const baseRecord = useQuery({
+        queryKey: ['records', CALENDARS, 'key', baseCode],
+        queryFn: () => api.record(CALENDARS, baseCode),
+        enabled: baseCode !== '',
+    });
+    const base = baseCode === '' ? undefined : baseRecord.data;
 
     return (
         <div className="space-y-4">
-            <div>
-                <Crumbs
-                    parts={[
-                        { label: t('refdata.area.title'), to: '/refdata' },
-                        { label: t('refdata.calendars.title'), to: calendarPath() },
-                        { label: code },
-                    ]}
-                />
-                <PageHeader
-                    title={show(calendar['name'])}
-                    description={t('refdata.records.lead', {
-                        code,
-                        version: String(calendar.version),
-                    })}
-                    actions={
-                        may.write || may.remove ? (
-                            <div className="flex gap-2">
-                                {may.write && (
-                                    <Button onClick={() => setDeriving(true)}>
-                                        {t('refdata.calendars.derive')}
-                                    </Button>
-                                )}
-                                {may.write && editable && (
-                                    <Button onClick={() => setEditing(true)}>
-                                        {t('refdata.records.edit')}
-                                    </Button>
-                                )}
-                                {may.remove && editable && (
-                                    <Button variant="danger" onClick={() => setRemoving(true)}>
-                                        {t('refdata.records.remove')}
-                                    </Button>
-                                )}
-                            </div>
-                        ) : undefined
-                    }
-                />
-            </div>
+            <RecordHeader
+                crumbs={[
+                    { label: t('refdata.area.title'), to: '/refdata' },
+                    { label: t('refdata.calendars.title'), to: calendarPath() },
+                    { label: code },
+                ]}
+                title={show(calendar['name'])}
+                recordKey={code}
+                version={calendar.version}
+                flag="calendar"
+                own={
+                    may.write ? (
+                        <Button icon="add" onClick={() => setDeriving(true)}>
+                            {t('refdata.calendars.derive')}
+                        </Button>
+                    ) : undefined
+                }
+                onEdit={may.write && editable ? () => setEditing(true) : undefined}
+                onDelete={may.remove && editable ? () => setRemoving(true) : undefined}
+            />
             {bar}
             {tab === 'details' && (
                 <div className="space-y-4">
@@ -405,9 +360,15 @@ function CalendarBody({
             {tab === 'rules' && (
                 <PartsPanel
                     resource={RULES}
+                    titles={{
+                        add: t('refdata.calendars.addPart.calendar-rules'),
+                        one: t('refdata.calendars.editPart.calendar-rules'),
+                        remove: t('refdata.calendars.removePart.calendar-rules'),
+                    }}
                     entityType="ores.refdata.calendar_rule"
                     specs={RULE_FIELDS}
-                    calendar={code}
+                    parentField="calendar_code"
+                    parent={code}
                     rows={rules.data ?? []}
                     error={rules.error?.message}
                     initial={{ kind: 'fixed_date', shift: 'none' }}
@@ -433,9 +394,15 @@ function CalendarBody({
             {tab === 'exceptions' && (
                 <PartsPanel
                     resource={EXCEPTIONS}
+                    titles={{
+                        add: t('refdata.calendars.addPart.calendar-exceptions'),
+                        one: t('refdata.calendars.editPart.calendar-exceptions'),
+                        remove: t('refdata.calendars.removePart.calendar-exceptions'),
+                    }}
                     entityType="ores.refdata.calendar_exception"
                     specs={EXCEPTION_FIELDS}
-                    calendar={code}
+                    parentField="calendar_code"
+                    parent={code}
                     rows={exceptions.data ?? []}
                     error={exceptions.error?.message}
                     initial={{ is_business_day: 'false' }}
@@ -464,9 +431,15 @@ function CalendarBody({
             {tab === 'events' && (
                 <PartsPanel
                     resource={EVENTS}
+                    titles={{
+                        add: t('refdata.calendars.addPart.calendar-events'),
+                        one: t('refdata.calendars.editPart.calendar-events'),
+                        remove: t('refdata.calendars.removePart.calendar-events'),
+                    }}
                     entityType="ores.refdata.calendar_event"
                     specs={EVENT_FIELDS}
-                    calendar={code}
+                    parentField="calendar_code"
+                    parent={code}
                     rows={events.data ?? []}
                     error={events.error?.message}
                     keep={['source']}
@@ -492,12 +465,7 @@ function CalendarBody({
                 />
             )}
             {tab === 'days' && (
-                <DaysPanel
-                    calendar={calendar}
-                    base={base}
-                    all={all}
-                    exceptions={exceptions.data ?? []}
-                />
+                <DaysPanel calendar={calendar} base={base} exceptions={exceptions.data ?? []} />
             )}
             {tab === 'history' && (
                 <HistoryPanel
@@ -534,7 +502,7 @@ function CalendarBody({
             {removing && (
                 <RemoveRecordDialog
                     resource={CALENDARS}
-                    title={t('refdata.records.removeTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code })}
                     warning={t('refdata.calendars.removeWarning')}
                     recordKey={{ code }}
                     version={calendar.version}
@@ -626,212 +594,6 @@ function RuleWords({ rule }: { readonly rule: RecordRow }): ReactNode {
     }
 }
 
-/**
- * The rows of one part of a calendar, such as its exceptions, with an add, and
- * an edit, a history and a remove on each row. Each row has its own versions.
- */
-function PartsPanel({
-    resource,
-    entityType,
-    specs,
-    calendar,
-    rows,
-    error,
-    columns,
-    sort,
-    keep,
-    initial,
-    lead,
-}: {
-    readonly resource: string;
-    readonly entityType: string;
-    readonly specs: readonly FieldSpec[];
-    readonly calendar: string;
-    readonly rows: readonly RecordRow[];
-    readonly error: string | undefined;
-    readonly columns: readonly {
-        readonly header: string;
-        readonly cell: (row: RecordRow) => ReactNode;
-        readonly mono?: boolean;
-    }[];
-    readonly sort: (row: RecordRow) => string;
-    readonly keep?: readonly string[];
-    readonly initial?: Readonly<Record<string, string>>;
-    readonly lead?: string;
-}): ReactNode {
-    const { t } = useTranslation();
-    const may = useRecordPermissions(resource);
-    const [open, setOpen] = useState<{
-        readonly row: RecordRow | undefined;
-        readonly id: string;
-        readonly view: 'edit' | 'history' | 'remove';
-    } | null>(null);
-    const [reverting, setReverting] = useState<{
-        readonly row: RecordRow;
-        readonly version: HistoryVersion;
-    } | null>(null);
-    const kept = ['id', 'calendar_code', ...(keep ?? [])];
-    const sorted = [...rows].sort((a, b) => sort(a).localeCompare(sort(b)));
-
-    return (
-        <section className="space-y-3">
-            {lead !== undefined && <p className="text-sm text-ink-muted">{lead}</p>}
-            {error !== undefined && <Notice tone="error">{error}</Notice>}
-            <div className="overflow-x-auto rounded-md border border-line">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            {columns.map((column) => (
-                                <th key={column.header} className="px-4 py-2 font-medium">
-                                    {column.header}
-                                </th>
-                            ))}
-                            <th className="px-4 py-2" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sorted.length === 0 && (
-                            <tr>
-                                <td
-                                    colSpan={columns.length + 1}
-                                    className="px-4 py-3 text-ink-muted"
-                                >
-                                    {t('refdata.calendars.none')}
-                                </td>
-                            </tr>
-                        )}
-                        {sorted.map((row) => (
-                            <tr
-                                key={show(row['id'])}
-                                className="border-b border-line-subtle last:border-b-0"
-                            >
-                                {columns.map((column) => (
-                                    <td
-                                        key={column.header}
-                                        className={
-                                            column.mono === true
-                                                ? 'px-4 py-2 font-mono text-xs text-ink-muted'
-                                                : 'px-4 py-2'
-                                        }
-                                    >
-                                        {column.cell(row)}
-                                    </td>
-                                ))}
-                                <td className="px-4 py-1.5 text-right whitespace-nowrap">
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() =>
-                                            setOpen({ row, id: show(row['id']), view: 'history' })
-                                        }
-                                    >
-                                        {t('refdata.records.tabs.history')}
-                                    </Button>
-                                    {may.write && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() =>
-                                                setOpen({ row, id: show(row['id']), view: 'edit' })
-                                            }
-                                        >
-                                            {t('refdata.records.edit')}
-                                        </Button>
-                                    )}
-                                    {may.remove && (
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() =>
-                                                setOpen({
-                                                    row,
-                                                    id: show(row['id']),
-                                                    view: 'remove',
-                                                })
-                                            }
-                                        >
-                                            {t('refdata.records.remove')}
-                                        </Button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {may.write && (
-                <Button
-                    onClick={() =>
-                        setOpen({ row: undefined, id: crypto.randomUUID(), view: 'edit' })
-                    }
-                >
-                    {t('refdata.records.add')}
-                </Button>
-            )}
-            {open?.view === 'edit' && (
-                <RecordDialog
-                    title={
-                        open.row === undefined
-                            ? t(`refdata.calendars.addPart.${resource}`)
-                            : t(`refdata.calendars.editPart.${resource}`)
-                    }
-                    resource={resource}
-                    specs={specs}
-                    row={open.row}
-                    keep={kept}
-                    given={{ id: open.id, calendar_code: calendar }}
-                    {...(open.row === undefined && initial !== undefined ? { initial } : {})}
-                    onClose={() => setOpen(null)}
-                />
-            )}
-            {open?.view === 'history' && open.row !== undefined && (
-                <Dialog
-                    title={t(`refdata.calendars.editPart.${resource}`)}
-                    onClose={() => setOpen(null)}
-                    wide
-                >
-                    <HistoryPanel
-                        entityType={entityType}
-                        entityId={open.id}
-                        {...(may.write
-                            ? {
-                                  onRevert: (version: HistoryVersion) => {
-                                      const row = open.row;
-                                      if (row !== undefined) {
-                                          setReverting({ row, version });
-                                          setOpen(null);
-                                      }
-                                  },
-                              }
-                            : {})}
-                    />
-                </Dialog>
-            )}
-            {open?.view === 'remove' && open.row !== undefined && (
-                <RemoveRecordDialog
-                    resource={resource}
-                    title={t(`refdata.calendars.removePart.${resource}`)}
-                    warning={t('refdata.calendars.removePartWarning')}
-                    recordKey={{ id: open.id }}
-                    version={open.row.version}
-                    onClose={() => setOpen(null)}
-                    onRemoved={() => setOpen(null)}
-                />
-            )}
-            {reverting !== null && (
-                <RevertDialog
-                    resource={resource}
-                    specs={specs}
-                    row={reverting.row}
-                    version={reverting.version}
-                    keep={kept}
-                    onClose={() => setReverting(null)}
-                />
-            )}
-        </section>
-    );
-}
-
 const ENTRY_STYLE = {
     here: '',
     other: 'text-ink-muted italic',
@@ -856,15 +618,15 @@ function isNotable(day: CalendarDay): boolean {
 function DaysPanel({
     calendar,
     base,
-    all,
     exceptions,
 }: {
     readonly calendar: RecordRow;
     readonly base: RecordRow | undefined;
-    readonly all: readonly RecordRow[];
     readonly exceptions: readonly RecordRow[];
 }): ReactNode {
     const { t, language } = useTranslation();
+    const flags = useFlags();
+    const calendars = useRecords(CALENDARS);
     const code = show(calendar['code']);
     const [year, setYear] = useState(new Date().getUTCFullYear());
     const [other, setOther] = useState('');
@@ -954,19 +716,22 @@ function DaysPanel({
                     </Button>
                 </div>
                 <Field label={t('refdata.calendars.compare')}>
-                    <Select value={other} onChange={(event) => setOther(event.target.value)}>
-                        <option value="">—</option>
-                        {all
-                            .filter((candidate) => candidate['code'] !== code)
-                            .map((candidate) => (
-                                <option
-                                    key={show(candidate['code'])}
-                                    value={show(candidate['code'])}
-                                >
-                                    {show(candidate['name'])}
-                                </option>
-                            ))}
-                    </Select>
+                    <div className="w-72">
+                        <RecordPicker
+                            value={other}
+                            optional
+                            choices={(calendars.data ?? [])
+                                .filter((candidate) => candidate['code'] !== code)
+                                .map((candidate) => ({
+                                    value: show(candidate['code']),
+                                    label: show(candidate['name']),
+                                    image: flags.flag('calendar', show(candidate['code'])),
+                                }))}
+                            onChange={setOther}
+                            placeholder="—"
+                            label={t('refdata.calendars.compare')}
+                        />
+                    </div>
                 </Field>
             </div>
             {base !== undefined && shapeOf(base) === 'quantlib' && (

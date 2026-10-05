@@ -1375,6 +1375,7 @@ const fr: SourceCatalogue = {
             revertCommentary: 'Rétabli à la version {version}.',
         },
         records: {
+            deletePartWarning: 'La ligne est fermée. Son historique reste.',
             yes: 'Oui',
             no: 'Non',
             cancel: 'Annuler',

@@ -1362,6 +1362,7 @@ const pt: SourceCatalogue = {
             revertCommentary: 'Revertido para a versão {version}.',
         },
         records: {
+            deletePartWarning: 'A linha é fechada. O histórico fica.',
             yes: 'Sim',
             no: 'Não',
             cancel: 'Cancelar',

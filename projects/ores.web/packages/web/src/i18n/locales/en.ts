@@ -1349,6 +1349,7 @@ export const en: SourceCatalogue = {
             revertCommentary: 'Reverted to version {version}.',
         },
         records: {
+            deletePartWarning: 'The row closes. Its history stays.',
             yes: 'Yes',
             no: 'No',
             cancel: 'Cancel',

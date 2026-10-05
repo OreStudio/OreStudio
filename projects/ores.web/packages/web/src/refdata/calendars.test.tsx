@@ -26,7 +26,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
 import type { CalendarDay, RecordResourceView, RecordRow } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { CalendarPage } from './calendars.js';
+import { CalendarPage, CalendarsPage } from './calendars.js';
 import { invalidFields, writeOf, type FieldSpec } from './records.js';
 
 function resource(key: string): RecordResourceView {
@@ -93,6 +93,25 @@ function render(
     client.setQueryData(['my-access'], everything);
     client.setQueryData(['labels'], { labels: [], domains: {} });
     client.setQueryData(['records', 'calendars'], [target, office, desk]);
+    client.setQueryData(
+        [
+            'records',
+            'calendars',
+            'page',
+            { offset: 0, limit: 15, search: '', sort: '', descending: false },
+        ],
+        { rows: [target, office, desk], total: 61 },
+    );
+    client.setQueryData(['image-map'], {
+        currencies: {},
+        countries: { GB: 'gb-flag' },
+        calendars: { TARGET: 'eu-flag' },
+        businessCentres: {},
+        noFlag: null,
+    });
+    for (const row of [target, office, desk]) {
+        client.setQueryData(['records', 'calendars', 'key', row['code']], row);
+    }
     for (const code of ['TARGET', 'OFFICE', 'DESK']) {
         client.setQueryData(['records', 'calendar-rules', code], parts.rules ?? []);
         client.setQueryData(['records', 'calendar-exceptions', code], parts.exceptions ?? []);
@@ -104,6 +123,7 @@ function render(
             <TranslationProvider>
                 <MemoryRouter initialEntries={[path]}>
                     <Routes>
+                        <Route path="/refdata/calendars" element={<CalendarsPage />} />
                         <Route path="/refdata/calendars/:code" element={<CalendarPage />} />
                     </Routes>
                 </MemoryRouter>
@@ -136,7 +156,7 @@ describe('the calendar page', () => {
         expect(html).toContain('Derive a calendar');
         expect(html).toContain('QuantLib supplies the holidays');
         expect(html).not.toContain('>Edit<');
-        expect(html).not.toContain('>Remove<');
+        expect(html).not.toContain('Delete');
         expect(html).not.toContain('>Rules<');
         expect(html).not.toContain('>Exceptions<');
         expect(html).not.toContain('>Business days<');
@@ -249,5 +269,15 @@ describe('a field asked for only in some shapes', () => {
     it('refuses an empty or out-of-range value only while the field is asked for', () => {
         expect(invalidFields(specs, { kind: 'a', month: '', day: '32' })).toEqual(['month', 'day']);
         expect(invalidFields(specs, { kind: 'b', month: '', day: '32' })).toEqual([]);
+    });
+});
+
+describe('the calendar list', () => {
+    it('draws one page of calendars with the server total, each with its flag', () => {
+        const html = render('/refdata/calendars');
+        expect(html).toContain('1–3 of 61');
+        expect(html).toContain('/api/images/eu-flag');
+        expect(html).toContain('/api/images/gb-flag');
+        expect(html).toContain('TARGET, with exceptions');
     });
 });

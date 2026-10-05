@@ -119,6 +119,20 @@ most resources, so the permission exists and nothing checks it.
    without the =:read= codes the roles use would lock members out of screens
    they use today, so the codegen task and the seed task land in one pull
    request.
+4. *Explicit codes, composed through a Member role; no read wildcards.* A
+   wildcard such as =refdata::*:read= grants resources that do not exist yet,
+   so a sensitive entity added later would be readable by every person role
+   without anybody deciding it. Reads are granted one code at a time, and the
+   reads every person needs are held by one stored role, =Member=, that every
+   person account holds. Job roles add only their own codes. A person without
+   Member sees empty screens, which fails closed. Decided 2026-10-06.
+5. *Classify a read before granting it.* Vocabulary (currencies, calendars,
+   day counts, the status and type lookups) may go in Member. A business fact
+   (parties, counterparties, books, business units) or personal data goes only
+   to the job roles that need it. Decided 2026-10-06.
+6. *History is exactly as open as the entity.* A history provider registers
+   with its entity's read code, and the history dispatcher checks it, so the
+   per-component history subject is no side door.
 
 * Out of scope
 

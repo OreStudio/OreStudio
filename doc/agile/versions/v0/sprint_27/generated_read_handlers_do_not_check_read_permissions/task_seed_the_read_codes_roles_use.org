@@ -59,6 +59,19 @@ task and name that file in the Command column.
 
 * Notes
 
+Member's codes come from what the member screens read, traced on
+2026-10-06: the reference data record routes (=REFDATA_RECORDS= in
+=wire-protocol/src/records.ts=, 15 resources), the classification lists
+(=wire-protocol/src/classifications.ts=, 28 lookups), and the furniture every
+screen uses: badge definitions and mappings, change reasons, images and
+feature flags. 48 codes. All are vocabulary or screen furniture; none names a
+firm or a person except =assets::images:read=, which serves colleagues'
+pictures and is in Member on purpose, as a workplace directory shows them.
+
+=refdata::calendar_dates:read= is not seeded: the entity is read-only, so no
+write code was ever defined, and nothing checked a read. It must be seeded
+before the default guards it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

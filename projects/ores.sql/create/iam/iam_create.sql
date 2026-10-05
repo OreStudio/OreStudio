@@ -70,6 +70,9 @@
 \ir ./iam_account_roles_create.sql
 \ir ./iam_rbac_functions_create.sql
 
+-- Every person account holds Member (needs accounts, roles and account roles)
+\ir ./iam_member_role_create.sql
+
 -- Run grants (a person's consent for scheduled runs; depends on accounts and
 -- roles)
 \ir ./iam_run_grants_create.sql

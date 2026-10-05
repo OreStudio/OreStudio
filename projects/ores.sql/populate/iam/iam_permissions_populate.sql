@@ -270,6 +270,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:delete',     'Delete business day convention types');
 
     -- Calendar events permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_dates:read',                      'View the materialised business days of calendars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:read',                     'View calendar events');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:write',                    'Create and modify calendar events');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::calendar_events:delete',                   'Delete calendar events');

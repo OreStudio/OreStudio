@@ -8,7 +8,7 @@
 #+filetags: :workspace:sandbox:codegen:cleanup:v0:sprint_27:
 #+created: 2026-10-04
 #+updated: 2026-10-05
-#+environment: merry_newton
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]], carried unfinished from [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Removing =ores.workspace= waits on [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]], which drops the trading workspace references. |
@@ -41,7 +41,7 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:5FC28F73-62D7-4124-9EC8-55B51EC5C31A][Scaffold story: Remove workspaces from every component]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:507EC593-8A63-46BE-A741-B9E172144C14][Inventory and sequence the workspace removal]] | BACKLOG | | | Initial task for: Remove workspaces from every component |
+| [[id:507EC593-8A63-46BE-A741-B9E172144C14][Inventory and sequence the workspace removal]] | STARTED | 2026-10-05 | | Initial task for: Remove workspaces from every component |
 
 * Decisions
 

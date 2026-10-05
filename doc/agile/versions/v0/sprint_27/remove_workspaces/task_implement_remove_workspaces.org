@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :remove_workspaces:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sequence-workspace-removal
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-05
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

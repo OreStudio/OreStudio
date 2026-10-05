@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 25870CC8-06CF-4921-8804-878F2CF62401
+:END:
+#+title: A version conflict carries no message
+#+description: The store answers a stale claim with outcome conflict and code version_conflict, and with an empty message. The profile panel composes the record-changed sentence itself, and the self contact write carries no version claim, so no member path reaches the empty message. The profile journeys checker asserts that the conflict answer carries a message, and fails on the empty one. Decide whether the wire answer carries words of its own, or the checker asserts the code alone. Found by the profile journeys run on the rebuilt database, 2026-10-05.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

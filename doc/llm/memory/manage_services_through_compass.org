@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E4FA8A76-00C6-48C5-9B68-866EF6DE1BB8
+:END:
+#+title: Manage services through compass, never systemctl
+#+description: Start, stop, restart and inspect the fleet or one service with compass services, not systemctl or journalctl directly.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :compass:services:feedback:memory:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+Every service lifecycle action goes through compass: ./compass.sh services start, stop, restart, status and logs. Restarting one service is ./compass.sh services restart followed by its short name, such as web. Never call systemctl --user or journalctl directly for this environment's units.
+
+*Why:* I restarted ores.web with systemctl --user restart after rebuilding the web bundle; the user said services must be managed through compass. Compass regenerates and deploys the units before it acts, applies the .env log level, and waits for readiness, which a bare systemctl call skips.
+
+*How to apply:* After rebuilding ores.web or any service, run ./compass.sh services restart with the service's short name; check the fleet with ./compass.sh services status; read a unit's output with ./compass.sh services logs and the service name.

@@ -30,6 +30,10 @@
 \ir ./iam_tenant_provisioner_drop.sql
 
 -- Account-party association (dropped before accounts and RBAC)
+\ir ./iam_role_grant_request_functions_drop.sql
+\ir ./iam_role_grant_request_role_drop.sql
+\ir ./iam_role_grant_requests_notify_trigger_drop.sql
+\ir ./iam_role_grant_requests_drop.sql
 \ir ./iam_account_party_functions_drop.sql
 \ir ./iam_account_party_drop.sql
 

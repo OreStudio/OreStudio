@@ -52,6 +52,11 @@
 # across the tenant-isolation RLS policy (see ores_assets_get_template_image_fn).
 - ores_assets_get_template_image_
 
+# Security-definer reconciliation that lists, across every tenant, the roles
+# approved role requests asked for and their accounts do not yet hold (see
+# ores_iam_unapplied_role_grants_fn).
+- ores_iam_unapplied_role_grants_
+
 * ores.refdata.service
 :PROPERTIES:
 :psql_var:    refdata_service

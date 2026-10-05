@@ -195,6 +195,22 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Role Grant Request Roles (many-to-many)
+-- -----------------------------------------------------------------------------
+alter table ores_iam_role_grant_request_roles_tbl enable row level security;
+
+drop policy if exists role_grant_request_roles_tenant_isolation_policy
+    on ores_iam_role_grant_request_roles_tbl;
+
+create policy role_grant_request_roles_tenant_isolation_policy on ores_iam_role_grant_request_roles_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Account Parties (many-to-many)
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_parties_tbl enable row level security;

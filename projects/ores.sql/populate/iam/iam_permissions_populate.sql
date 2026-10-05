@@ -102,6 +102,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:write', 'Create and modify the parameters a seed profile declares');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:delete', 'Delete a parameter from a seed profile');
 
+    -- Role grant requests: the IAM detail of an iam.role_grant approval
+    -- request. A person asks through the ask operation, which needs no code of
+    -- these; they guard the generated administrator surface.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:read', 'Read role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:write', 'Create and modify role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:delete', 'Delete role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:read', 'Read the roles of role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:write', 'Create and modify the roles of role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:delete', 'Delete the roles of role grant requests');
+
     -- IAM component wildcard
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::*', 'Full access to all IAM operations');
 

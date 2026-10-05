@@ -5406,7 +5406,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The same list as operations, exactly as a domain entity states it:
         # a junction addresses the same verbs and its handler is the same
         # adapter, so the two are projected from one derivation.
-        _ops = protocol_operations(junction['messages'])
+        _ops = protocol_operations(
+            junction['messages'], junction.get('guard_reads', False))
         junction['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             junction[f'{_verb}_operations'] = _verb_ops

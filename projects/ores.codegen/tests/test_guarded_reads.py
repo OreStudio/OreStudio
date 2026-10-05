@@ -125,3 +125,44 @@ def test_a_model_without_the_flag_leaves_its_reads_unguarded(tmp_path):
             assert "has_permission(" not in block, name
     # The writes keep the check they always had.
     assert '"testcomp::probes:write"' in handler
+
+
+JUNCTION = REPO_ROOT / "projects/ores.iam/modeling/ores.iam.role_grant_request_role.org"
+
+
+def _generate_junction(tmp_path, guarded):
+    body = JUNCTION.read_text(encoding="utf-8")
+    if not guarded:
+        body = body.replace(":guard_reads: true\n", "")
+    model_path = tmp_path / JUNCTION.name
+    model_path.write_text(body, encoding="utf-8")
+    output_dir = tmp_path / "out"
+    output_dir.mkdir(exist_ok=True)
+    output = "role_grant_request_role_handler.hpp"
+    generate_from_model(
+        str(model_path),
+        DATA_DIR,
+        TEMPLATES_DIR,
+        output_dir,
+        is_processing_batch=True,
+        target_template="cpp_nats_handler.hpp.mustache",
+        target_output=output,
+    )
+    return (output_dir / output).read_text(encoding="utf-8")
+
+
+def test_a_guarded_junction_checks_its_read_code(tmp_path):
+    blocks = _blocks(_generate_junction(tmp_path, guarded=True))
+
+    reads = [name for name in blocks if name.startswith(("list_", "get_"))]
+    assert reads, "the junction derived no read operation"
+    for name in reads:
+        assert '"iam::role_grant_request_roles:read"' in blocks[name], name
+
+
+def test_a_junction_without_the_flag_leaves_its_reads_unguarded(tmp_path):
+    blocks = _blocks(_generate_junction(tmp_path, guarded=False))
+
+    for name, block in blocks.items():
+        if name.startswith(("list_", "get_")):
+            assert "has_permission(" not in block, name

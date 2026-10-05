@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F68CC5A5-8CBD-4AF1-94AA-7E84BEA3D21B
+:END:
+#+title: A QuantLib calendar builds its business days without its holidays
+#+description: The rebuild reads only stored calendar rules, and QuantLib calendars have none, so their days and the days of any calendar derived from them mark weekends only, labelled quantlib_computed.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:quantlib:data_quality:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

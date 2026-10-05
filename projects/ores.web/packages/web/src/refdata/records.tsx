@@ -19,6 +19,7 @@
  *
  */
 
+import { AccessMark } from '../ui/AccessMark.js';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Navigate, useNavigate } from 'react-router';
@@ -33,7 +34,7 @@ import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
 import { ImageField } from '../images/ImageChooser.js';
 import { imageUrl } from '../ui/Images.js';
 import { RecordPicker, type Choice } from './RecordPicker.js';
-import { fieldValue } from './HistoryPanel.js';
+import { HistoryPanel, fieldValue } from './HistoryPanel.js';
 import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
 
 /** The reason a new row is written with; no other reason applies to a new record. */
@@ -48,7 +49,8 @@ const UNLINK_REASON = 'common.rectification';
  * A picker reads its choices from a classification list or another record
  * resource. A fixed field is the record's key: it is entered once and never
  * corrected. An optional field writes null when it is left empty; a blank
- * field writes an empty string.
+ * field writes an empty string. A field with `when` is asked for only while
+ * the form's values meet it, and writes null otherwise.
  */
 export type FieldKind =
     | { readonly kind: 'text'; readonly max?: number }
@@ -56,6 +58,8 @@ export type FieldKind =
     | { readonly kind: 'decimal' }
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
+    | { readonly kind: 'date' }
+    | { readonly kind: 'choice'; readonly options: readonly string[]; readonly numeric?: boolean }
     | { readonly kind: 'classification'; readonly list: string }
     | {
           readonly kind: 'record';
@@ -73,6 +77,11 @@ export interface FieldSpec {
     readonly blank?: boolean;
     /** The field holds a code of this source, drawn with its flag. */
     readonly flag?: FlagSource;
+    readonly when?: (values: FieldValues) => boolean;
+}
+
+function asked(spec: FieldSpec, values: FieldValues): boolean {
+    return spec.when === undefined || spec.when(values);
 }
 
 export type FieldValues = Readonly<Record<string, string>>;
@@ -100,13 +109,16 @@ export function writeOf(specs: readonly FieldSpec[], values: FieldValues): Recor
     const write: Record<string, unknown> = {};
     for (const spec of specs) {
         const raw = (values[spec.field] ?? '').trim();
-        if (raw === '' && spec.optional === true) {
+        if (!asked(spec, values) || (raw === '' && spec.optional === true)) {
             write[spec.field] = null;
             continue;
         }
         switch (spec.kind.kind) {
             case 'int':
                 write[spec.field] = Number.parseInt(raw, 10);
+                break;
+            case 'choice':
+                write[spec.field] = spec.kind.numeric === true ? Number.parseInt(raw, 10) : raw;
                 break;
             case 'decimal':
                 write[spec.field] = Number.parseFloat(raw);
@@ -277,6 +289,24 @@ export function FieldInput({
             </Field>
         );
     }
+    if (spec.kind.kind === 'choice') {
+        return (
+            <Field label={label}>
+                <Select
+                    value={value}
+                    disabled={disabled}
+                    onChange={(event) => onChange(event.target.value)}
+                >
+                    {(spec.optional === true || value === '') && <option value="">—</option>}
+                    {spec.kind.options.map((option) => (
+                        <option key={option} value={option}>
+                            {t(`refdata.choices.${spec.field}.${option}`)}
+                        </option>
+                    ))}
+                </Select>
+            </Field>
+        );
+    }
     if (spec.kind.kind === 'bool') {
         return (
             <Field label={label} {...(error === undefined ? {} : { error })}>
@@ -300,6 +330,7 @@ export function FieldInput({
                 value={value}
                 disabled={disabled}
                 onBlur={onBlur}
+                type={spec.kind.kind === 'date' ? 'date' : undefined}
                 inputMode={numeric ? 'decimal' : undefined}
                 maxLength={spec.kind.kind === 'text' ? (spec.kind.max ?? 2000) : 40}
                 onChange={(event) => onChange(event.target.value)}
@@ -308,16 +339,27 @@ export function FieldInput({
     );
 }
 
-/** The values a form refuses: a required field left empty, or a number that is not one. */
+/**
+ * The values a form refuses: a required field left empty, or a number that is
+ * not one or is out of its range. A field the form does not ask for is never refused.
+ */
 export function invalidFields(specs: readonly FieldSpec[], values: FieldValues): readonly string[] {
     return specs
         .filter((spec) => {
+            if (!asked(spec, values)) {
+                return false;
+            }
             const raw = (values[spec.field] ?? '').trim();
             if (raw === '') {
                 return spec.optional !== true && spec.blank !== true;
             }
             if (spec.kind.kind === 'int') {
-                return !/^-?[0-9]+$/.test(raw);
+                const number = Number.parseInt(raw, 10);
+                return (
+                    !/^-?[0-9]+$/.test(raw) ||
+                    number < (spec.kind.min ?? Number.MIN_SAFE_INTEGER) ||
+                    number > (spec.kind.max ?? Number.MAX_SAFE_INTEGER)
+                );
             }
             if (spec.kind.kind === 'decimal') {
                 return Number.isNaN(Number.parseFloat(raw));
@@ -369,8 +411,10 @@ export function LeavingFooter({
  * Adds a record, or corrects one against the version read.
  *
  * A new record needs no reason chosen; it is written as a new record. A
- * correction needs one, and some reasons need a commentary too. `after`
- * runs once the record is written, for a write that belongs with it.
+ * correction needs one, and some reasons need a commentary too. `given`
+ * holds the fields the screen sets rather than the person, such as the parent
+ * a row belongs to; `initial` fills a new row's form. `after` runs once the
+ * record is written, for a write that belongs with it.
  */
 export function RecordDialog({
     title,
@@ -378,6 +422,8 @@ export function RecordDialog({
     specs,
     row,
     keep,
+    given,
+    initial,
     onClose,
     onSaved,
     after,
@@ -387,6 +433,8 @@ export function RecordDialog({
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow | undefined;
     readonly keep?: readonly string[];
+    readonly given?: Readonly<Record<string, unknown>>;
+    readonly initial?: FieldValues;
     readonly onClose: () => void;
     readonly onSaved?: (write: Readonly<Record<string, unknown>>) => void;
     readonly after?: (
@@ -396,7 +444,7 @@ export function RecordDialog({
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const [values, setValues] = useState<FieldValues>(valuesOf(specs, row));
+    const [values, setValues] = useState<FieldValues>({ ...valuesOf(specs, row), ...initial });
     const [commentary, setCommentary] = useState('');
     const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
     const editing = row !== undefined;
@@ -420,7 +468,7 @@ export function RecordDialog({
     };
     const save = useMutation({
         mutationFn: async () => {
-            const write = { ...kept(keep, row), ...writeOf(specs, values) };
+            const write = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
             const intent = editing
                 ? { reasonCode: reason.code, commentary: commentary.trim() }
                 : { reasonCode: NEW_RECORD_REASON, commentary: '' };
@@ -467,17 +515,19 @@ export function RecordDialog({
         >
             <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
-                    {specs.map((spec) => (
-                        <FieldInput
-                            key={spec.field}
-                            spec={spec}
-                            value={values[spec.field] ?? ''}
-                            disabled={editing && spec.fixed === true}
-                            onChange={(value) => setValues({ ...values, [spec.field]: value })}
-                            onBlur={() => setTouched(new Set([...touched, spec.field]))}
-                            error={errorOf(spec)}
-                        />
-                    ))}
+                    {specs
+                        .filter((spec) => asked(spec, values))
+                        .map((spec) => (
+                            <FieldInput
+                                key={spec.field}
+                                spec={spec}
+                                value={values[spec.field] ?? ''}
+                                disabled={editing && spec.fixed === true}
+                                onChange={(value) => setValues({ ...values, [spec.field]: value })}
+                                onBlur={() => setTouched(new Set([...touched, spec.field]))}
+                                error={errorOf(spec)}
+                            />
+                        ))}
                 </div>
                 {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
                 {editing ? (
@@ -595,6 +645,9 @@ function DetailValue({
                 {text}
             </span>
         );
+    }
+    if (spec.kind.kind === 'choice') {
+        return <>{t(`refdata.choices.${spec.field}.${text}`)}</>;
     }
     return <>{text}</>;
 }
@@ -1030,6 +1083,7 @@ export function RecordHeader({
     onDelete,
     flag,
     mark,
+    access,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1042,6 +1096,12 @@ export function RecordHeader({
     readonly flag?: FlagSource;
     /** A picture drawn before the name when the record has no flag, such as a person's. */
     readonly mark?: ReactNode;
+    /**
+     * Whether the person may change the record, shown as the access mark.
+     * By default it follows whether Edit is offered; `null` draws no mark, for
+     * a page whose parts carry their own.
+     */
+    readonly access?: boolean | null;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1059,7 +1119,10 @@ export function RecordHeader({
                     version: String(version),
                 })}
                 actions={
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
+                        {access !== null && (
+                            <AccessMark canWrite={access ?? onEdit !== undefined} />
+                        )}
                         {own}
                         {onEdit !== undefined && (
                             <Button icon="edit" onClick={onEdit}>
@@ -1075,5 +1138,214 @@ export function RecordHeader({
                 }
             />
         </div>
+    );
+}
+
+/**
+ * The parts of a record: rows that belong to one parent and keep their own
+ * versions, such as a calendar's exceptions. The table lists them in their
+ * natural order, each with History, Edit and Delete, and Add sits under it.
+ * Every parts panel is this component, as the record screen standard sets it.
+ */
+export function PartsPanel({
+    resource,
+    entityType,
+    specs,
+    parentField,
+    parent,
+    rows,
+    error,
+    columns,
+    sort,
+    keep,
+    initial,
+    lead,
+    titles,
+}: {
+    readonly resource: string;
+    readonly entityType: string;
+    readonly specs: readonly FieldSpec[];
+    readonly parentField: string;
+    readonly parent: string;
+    readonly rows: readonly RecordRow[];
+    readonly error: string | undefined;
+    readonly columns: readonly {
+        readonly header: string;
+        readonly cell: (row: RecordRow) => ReactNode;
+        readonly mono?: boolean;
+    }[];
+    readonly sort: (row: RecordRow) => string;
+    readonly keep?: readonly string[];
+    readonly initial?: Readonly<Record<string, string>>;
+    readonly lead?: string;
+    /** How the dialogs name one part: adding it, opening it, and deleting it. */
+    readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
+}): ReactNode {
+    const { t } = useTranslation();
+    const may = useRecordPermissions(resource);
+    const [open, setOpen] = useState<{
+        readonly row: RecordRow | undefined;
+        readonly id: string;
+        readonly view: 'edit' | 'history' | 'remove';
+    } | null>(null);
+    const [reverting, setReverting] = useState<{
+        readonly row: RecordRow;
+        readonly version: HistoryVersion;
+    } | null>(null);
+    const kept = ['id', parentField, ...(keep ?? [])];
+    const sorted = [...rows].sort((a, b) => sort(a).localeCompare(sort(b)));
+
+    return (
+        <section className="space-y-3">
+            {lead !== undefined && <p className="text-sm text-ink-muted">{lead}</p>}
+            {error !== undefined && <Notice tone="error">{error}</Notice>}
+            <div className="overflow-x-auto rounded-md border border-line">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            {columns.map((column) => (
+                                <th key={column.header} className="px-4 py-2 font-medium">
+                                    {column.header}
+                                </th>
+                            ))}
+                            <th className="px-4 py-2" />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sorted.length === 0 && (
+                            <tr>
+                                <td
+                                    colSpan={columns.length + 1}
+                                    className="px-4 py-3 text-ink-muted"
+                                >
+                                    {t('refdata.records.noLinks')}
+                                </td>
+                            </tr>
+                        )}
+                        {sorted.map((row) => (
+                            <tr
+                                key={show(row['id'])}
+                                className="border-b border-line-subtle last:border-b-0"
+                            >
+                                {columns.map((column) => (
+                                    <td
+                                        key={column.header}
+                                        className={
+                                            column.mono === true
+                                                ? 'px-4 py-2 font-mono text-xs text-ink-muted'
+                                                : 'px-4 py-2'
+                                        }
+                                    >
+                                        {column.cell(row)}
+                                    </td>
+                                ))}
+                                <td className="px-4 py-1.5 text-right whitespace-nowrap">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        icon="history"
+                                        onClick={() =>
+                                            setOpen({ row, id: show(row['id']), view: 'history' })
+                                        }
+                                    >
+                                        {t('refdata.records.tabs.history')}
+                                    </Button>
+                                    {may.write && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="edit"
+                                            onClick={() =>
+                                                setOpen({ row, id: show(row['id']), view: 'edit' })
+                                            }
+                                        >
+                                            {t('refdata.records.edit')}
+                                        </Button>
+                                    )}
+                                    {may.remove && (
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="delete"
+                                            onClick={() =>
+                                                setOpen({
+                                                    row,
+                                                    id: show(row['id']),
+                                                    view: 'remove',
+                                                })
+                                            }
+                                        >
+                                            {t('refdata.records.delete')}
+                                        </Button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {may.write && (
+                <Button
+                    icon="add"
+                    onClick={() =>
+                        setOpen({ row: undefined, id: crypto.randomUUID(), view: 'edit' })
+                    }
+                >
+                    {t('refdata.records.add')}
+                </Button>
+            )}
+            {open?.view === 'edit' && (
+                <RecordDialog
+                    title={open.row === undefined ? titles.add : titles.one}
+                    resource={resource}
+                    specs={specs}
+                    row={open.row}
+                    keep={kept}
+                    given={{ id: open.id, [parentField]: parent }}
+                    {...(open.row === undefined && initial !== undefined ? { initial } : {})}
+                    onClose={() => setOpen(null)}
+                />
+            )}
+            {open?.view === 'history' && open.row !== undefined && (
+                <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
+                    <HistoryPanel
+                        entityType={entityType}
+                        entityId={open.id}
+                        {...(may.write
+                            ? {
+                                  onRevert: (version: HistoryVersion) => {
+                                      const row = open.row;
+                                      if (row !== undefined) {
+                                          setReverting({ row, version });
+                                          setOpen(null);
+                                      }
+                                  },
+                              }
+                            : {})}
+                    />
+                </Dialog>
+            )}
+            {open?.view === 'remove' && open.row !== undefined && (
+                <RemoveRecordDialog
+                    resource={resource}
+                    title={titles.remove}
+                    warning={t('refdata.records.deletePartWarning')}
+                    recordKey={{ id: open.id }}
+                    version={open.row.version}
+                    onClose={() => setOpen(null)}
+                    onRemoved={() => setOpen(null)}
+                />
+            )}
+            {reverting !== null && (
+                <RevertDialog
+                    resource={resource}
+                    specs={specs}
+                    row={reverting.row}
+                    version={reverting.version}
+                    keep={kept}
+                    onClose={() => setReverting(null)}
+                />
+            )}
+        </section>
     );
 }

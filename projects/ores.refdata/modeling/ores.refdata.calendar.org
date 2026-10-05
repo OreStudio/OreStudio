@@ -53,6 +53,8 @@ paste block).
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
+:sortable: true
+:searchable: true
 :END:
 
 QuantLib/ORE calendar token, verbatim (e.g. "TARGET", "UnitedStates",
@@ -67,6 +69,8 @@ std::string("X")
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable: true
+:searchable: true
 :END:
 
 Human-readable, unique display name (e.g. "TARGET (Euro area)",
@@ -82,6 +86,7 @@ Human-readable, unique display name (e.g. "TARGET (Euro area)",
 :cpp_type: std::string
 :nullable: false
 :default:  public_holiday
+:sortable: true
 :END:
 
 Classification of the calendar's purpose; soft FK to
@@ -98,6 +103,7 @@ std::string("public_holiday")
 :cpp_type: std::string
 :nullable: false
 :default:  ZZ
+:sortable: true
 :END:
 
 ISO 3166-1 alpha-2 country code of the calendar's owning country; soft

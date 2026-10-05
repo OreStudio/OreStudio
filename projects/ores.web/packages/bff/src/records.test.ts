@@ -512,3 +512,174 @@ describe('GET /api/accounts', () => {
         expect(calls).toHaveLength(0);
     });
 });
+
+describe('the calendar routes', () => {
+    const bespoke = {
+        code: 'ACME',
+        name: 'Acme office',
+        calendar_type: 'public_holiday',
+        country_code: 'GB',
+        image_id: null,
+        source: 'user',
+        is_editable: true,
+        base_calendar_code: null,
+    };
+
+    it('writes a user calendar and refuses one that claims another source', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.calendars.put': { result: ok },
+        });
+        const saved = await send(server, sessionId, 'PUT', '/api/refdata/calendars', {
+            write: bespoke,
+            version: null,
+            ...reason,
+        });
+        expect(saved.statusCode).toBe(204);
+        const refused = await send(server, sessionId, 'PUT', '/api/refdata/calendars', {
+            write: { ...bespoke, source: 'quantlib', is_editable: false },
+            version: null,
+            ...reason,
+        });
+        expect(refused.statusCode).toBe(400);
+        expect(calls).toHaveLength(1);
+    });
+
+    it('refuses a rule of a kind the rule engine does not know', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'PUT', '/api/refdata/calendar-rules', {
+            write: {
+                id: '55555555-5555-4555-8555-555555555555',
+                calendar_code: 'ACME',
+                kind: 'every_full_moon',
+                month: null,
+                day: null,
+                weekday: null,
+                occurrence: null,
+                day_offset: null,
+                shift: 'none',
+                effective_from: null,
+                effective_to: null,
+            },
+            version: null,
+            ...reason,
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('answers the days of one year, and refuses a year out of range', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.calendar_dates.list_by_calendar_code': {
+                result: ok,
+                calendar_dates: [
+                    { date: '2025-12-31', is_business_day: true, source: 'user_defined' },
+                    { date: '2026-01-01', is_business_day: false, source: 'user_defined' },
+                    { date: '2027-01-01', is_business_day: false, source: 'user_defined' },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/calendars/ACME/days?year=2026',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            days: [{ date: '2026-01-01', businessDay: false, source: 'user_defined' }],
+        });
+        const refused = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/refdata/calendars/ACME/days?year=99',
+        );
+        expect(refused.statusCode).toBe(400);
+    });
+
+    it('rebuilds one calendar up to a year', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.calendar_dates.regenerate': {
+                success: true,
+                message: '',
+                rows_written: 730,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/refdata/calendars/ACME/rebuild',
+            {
+                endYear: 2027,
+            },
+        );
+        expect(response.json()).toEqual({ written: 730 });
+        expect(calls[0]?.body).toEqual({ calendar_code: 'ACME', end_year: 2027 });
+    });
+});
+
+describe('a calendar rule write', () => {
+    /** The server answers a read by key with that one calendar. */
+    const only = (calendar: { code: string; is_editable: boolean }) => ({
+        'refdata.v1.calendars.list': { result: ok, calendars: [{ ...calendar, version: 1 }] },
+        'refdata.v1.calendar_rules.put': { result: ok },
+    });
+    const calendars = only({ code: 'ACME', is_editable: true });
+    const christmas = {
+        id: '55555555-5555-4555-8555-555555555555',
+        calendar_code: 'ACME',
+        kind: 'fixed_date',
+        month: 12,
+        day: 25,
+        weekday: null,
+        occurrence: null,
+        day_offset: null,
+        shift: 'nearest_weekday',
+        effective_from: null,
+        effective_to: null,
+    };
+    const put = (server: ReturnType<typeof buildServer>, sessionId: string, write: unknown) =>
+        send(server, sessionId, 'PUT', '/api/refdata/calendar-rules', {
+            write,
+            version: null,
+            ...reason,
+        });
+
+    it('writes a rule with the fields its kind is made of', async () => {
+        const { server, sessionId } = buildTestServer(calendars);
+        expect((await put(server, sessionId, christmas)).statusCode).toBe(204);
+    });
+
+    it('refuses a rule missing a field its kind needs, or carrying one it does not', async () => {
+        const { server, sessionId, calls } = buildTestServer(calendars);
+        const missing = await put(server, sessionId, { ...christmas, day: null });
+        expect(missing.statusCode).toBe(400);
+        expect(missing.json()).toMatchObject({
+            message: expect.stringContaining('fixed_date rule needs month, day'),
+        });
+        const extra = await put(server, sessionId, { ...christmas, weekday: 1 });
+        expect(extra.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a first year after the last year', async () => {
+        const { server, sessionId } = buildTestServer(calendars);
+        const response = await put(server, sessionId, {
+            ...christmas,
+            effective_from: 2030,
+            effective_to: 2020,
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('refuses a rule on a calendar that is not editable', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            only({ code: 'TARGET', is_editable: false }),
+        );
+        const response = await put(server, sessionId, { ...christmas, calendar_code: 'TARGET' });
+        expect(response.statusCode).toBe(403);
+        expect(calls.map((call) => call.subject)).not.toContain('refdata.v1.calendar_rules.put');
+        expect(calls[0]?.body).toMatchObject({ limit: 1, filter: { code_one_of: ['TARGET'] } });
+    });
+});

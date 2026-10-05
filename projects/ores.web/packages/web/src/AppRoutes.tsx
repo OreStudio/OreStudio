@@ -48,6 +48,7 @@ import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
+import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
@@ -459,6 +460,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <CurrencyPairPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/calendars"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalendarsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/calendars/:code"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CalendarPage />
                     ),
                     'workspace',
                 )}

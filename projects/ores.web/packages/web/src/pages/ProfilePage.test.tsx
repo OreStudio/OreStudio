@@ -219,8 +219,18 @@ describe('ProfilePage', () => {
 
         expect(html).not.toContain('Find the person');
         expect(html).not.toContain('Grace Hopper</');
-        expect(html).toContain('You may change your own name, job title and photo.');
+        expect(html).toContain('Editable');
+        expect(html).not.toContain('iam::');
         expect(html).toContain('Reports to Grace Hopper.');
+    });
+
+    it("marks the member's own panels editable, naming no permission", () => {
+        const html = render((client) => {
+            client.setQueryData(['my-access'], access([]));
+            client.setQueryData(['account', 'ada'], account);
+        }, '/profile');
+        expect(html).toContain('Editable');
+        expect(html).not.toContain('iam::');
     });
 
     it('states a refused account read rather than drawing fields it cannot ground', async () => {

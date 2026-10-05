@@ -238,6 +238,7 @@ describe('the currency screens', () => {
         expect(html).toContain('Edit');
         expect(html).toContain('Delete');
         expect(html).not.toContain('>Remove<');
+        expect(html).toContain('Editable');
     });
 
     it('lists the countries on their own tab, each removable as a link', () => {
@@ -279,8 +280,9 @@ describe('the currency screens', () => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
             client.setQueryData(['my-access'], access(['refdata::currencies:read']));
         });
-        expect(html).not.toContain('Edit');
+        expect(html).not.toContain('>Edit<');
         expect(html).not.toContain('Delete');
+        expect(html).toContain('Read only');
     });
 });
 

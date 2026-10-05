@@ -27,18 +27,15 @@ import { Crumbs, classificationsPath } from './shared.js';
 
 /** The screens built, with their addresses. */
 const BUILT = [
+    { screen: 'calendars', to: '/refdata/calendars' },
     { screen: 'currencies', to: '/refdata/currencies' },
     { screen: 'currencyPairs', to: '/refdata/currency-pairs' },
     { screen: 'deskGroups', to: '/refdata/desk-groups' },
 ] as const;
 
-/** The screens designed but not built yet. */
-const COMING = ['calendars'] as const;
-
 /**
  * Reference data, the area: the data every trade, curve and report is built
- * on. Each screen is a tile; the ones not built yet stay, dimmed, so people
- * know they are coming.
+ * on. Each screen is a tile.
  */
 export function RefdataPage(): ReactNode {
     const { t } = useTranslation();
@@ -51,8 +48,8 @@ export function RefdataPage(): ReactNode {
             <Tiles
                 tiles={[
                     ...BUILT.map(({ screen, to }) => ({
-                        title: t(`refdata.area.coming.${screen}`),
-                        body: t(`refdata.area.coming.${screen}Body`),
+                        title: t(`refdata.area.screens.${screen}`),
+                        body: t(`refdata.area.screens.${screen}Body`),
                         to,
                     })),
                     {
@@ -61,13 +58,6 @@ export function RefdataPage(): ReactNode {
                         to: classificationsPath(),
                     },
                 ]}
-            />
-            <Tiles
-                tiles={COMING.map((screen) => ({
-                    title: t(`refdata.area.coming.${screen}`),
-                    body: t(`refdata.area.coming.${screen}Body`),
-                }))}
-                later={t('refdata.area.later')}
             />
         </div>
     );

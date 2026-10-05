@@ -510,9 +510,6 @@ const pt: SourceCatalogue = {
         },
         identity: {
             title: 'Fotografia e identidade',
-            whySelf: 'Pode alterar o seu nome, o seu cargo e a sua fotografia.',
-            whyAdmin: 'Tem iam::accounts:update neste inquilino.',
-            whyReadOnly: 'Apenas leitura para si: não tem iam::accounts:update neste inquilino.',
             fullName: 'Nome completo',
             jobTitle: 'Cargo',
             username: 'Nome de utilizador',
@@ -551,10 +548,6 @@ const pt: SourceCatalogue = {
         },
         contact: {
             title: 'Contactos',
-            whySelf: 'Pode alterar o seu próprio registo de contactos.',
-            whyAdmin: 'Tem iam::account_contact_informations:write neste inquilino.',
-            whyReadOnly:
-                'Apenas leitura para si: não tem iam::account_contact_informations:write neste inquilino.',
             noRecord: 'Esta conta ainda não tem registo de contactos. A primeira gravação cria-o.',
             noRecordShort: 'Ainda sem registo',
             streetLine1: 'Rua',
@@ -642,6 +635,14 @@ const pt: SourceCatalogue = {
         select: 'Escolher',
         choose: 'Escolher uma imagem',
         none: 'Nenhuma',
+    },
+
+    accessMark: {
+        editable: 'Editável',
+        editableWhy: 'Pode alterar isto.',
+        readOnly: 'Só leitura',
+        readOnlyWhy:
+            'Pode ler isto, mas não alterar. Um administrador do inquilino pode alterá-lo.',
     },
 
     audit: {
@@ -1222,8 +1223,7 @@ const pt: SourceCatalogue = {
             lead: 'Os dados em que assentam todas as operações, curvas e relatórios.',
             classificationsBody:
                 'As 28 listas de códigos que classificam os dados de referência: tipos, estados e códigos ORE.',
-            later: 'Desenhado; ainda não construído',
-            coming: {
+            screens: {
                 currencies: 'Moedas',
                 currenciesBody: 'Uma moeda com os seus países, calendários e grupos.',
                 currencyPairs: 'Pares de moedas',
@@ -1363,6 +1363,7 @@ const pt: SourceCatalogue = {
             revertCommentary: 'Revertido para a versão {version}.',
         },
         records: {
+            deletePartWarning: 'A linha é fechada. O histórico fica.',
             yes: 'Sim',
             no: 'Não',
             cancel: 'Cancelar',
@@ -1410,6 +1411,10 @@ const pt: SourceCatalogue = {
                 calendars: 'Calendários',
                 groups: 'Grupos de moedas',
                 members: 'Membros',
+                rules: 'Regras',
+                exceptions: 'Exceções',
+                events: 'Eventos',
+                days: 'Dias úteis',
             },
         },
         fields: {
@@ -1448,6 +1453,135 @@ const pt: SourceCatalogue = {
             business_day_convention: 'Convenção de dia útil',
             spot_relative: 'Datas a prazo desde o spot',
             end_of_month: 'Fim do mês',
+            calendar_type: 'Tipo de calendário',
+            country_code: 'País',
+            kind: 'Tipo de regra',
+            month: 'Mês',
+            day: 'Dia',
+            occurrence: 'Ocorrência',
+            weekday: 'Dia da semana',
+            day_offset: 'Dias após a Páscoa',
+            shift: 'Ajuste de fim de semana',
+            effective_from: 'Primeiro ano',
+            effective_to: 'Último ano',
+            exception_date: 'Data',
+            is_business_day: 'Dia útil',
+            event_date: 'Data',
+            diary_entry_type: 'Tipo de entrada',
+        },
+        choices: {
+            kind: {
+                fixed_date: 'Data fixa',
+                nth_weekday_of_month: 'Enésimo dia da semana do mês',
+                last_weekday_of_month: 'Último dia da semana do mês',
+                easter_offset: 'Dias a partir da Páscoa',
+            },
+            month: {
+                '1': 'janeiro',
+                '2': 'fevereiro',
+                '3': 'março',
+                '4': 'abril',
+                '5': 'maio',
+                '6': 'junho',
+                '7': 'julho',
+                '8': 'agosto',
+                '9': 'setembro',
+                '10': 'outubro',
+                '11': 'novembro',
+                '12': 'dezembro',
+            },
+            occurrence: {
+                '1': '1.º',
+                '2': '2.º',
+                '3': '3.º',
+                '4': '4.º',
+            },
+            weekday: {
+                '0': 'domingo',
+                '1': 'segunda-feira',
+                '2': 'terça-feira',
+                '3': 'quarta-feira',
+                '4': 'quinta-feira',
+                '5': 'sexta-feira',
+                '6': 'sábado',
+            },
+            shift: {
+                none: 'Sem ajuste',
+                nearest_weekday: 'Dia útil mais próximo',
+                roll_forward_to_monday: 'Passar para segunda-feira',
+            },
+        },
+        calendars: {
+            title: 'Calendários de feriados',
+            lead: 'Os calendários que decidem que dias são úteis, para a liquidação e para os calendários de pagamento.',
+            add: 'Adicionar calendário',
+            addTitle: 'Adicionar um calendário próprio',
+            made: 'Feriados de',
+            derivedFrom: '{base}, com exceções',
+            shape: {
+                quantlib: 'QuantLib',
+                bespoke: 'As suas próprias regras',
+            },
+            derive: 'Derivar um calendário',
+            deriveTitle: 'Derivar um calendário de {base}',
+            quantlibNote:
+                'O QuantLib fornece os feriados deste calendário, e eles não estão guardados aqui. Para adicionar os seus próprios feriados ou dias úteis, derive um calendário.',
+            rule: 'Regra',
+            years: 'Anos',
+            exceptionsLead:
+                'Uma exceção muda uma data: um feriado num dia útil, ou um dia útil num feriado. Para terminar um feriado recorrente a partir de um ano, defina o último ano da sua regra.',
+            eventsLead:
+                'Um evento marca uma data, como uma reunião de um banco central. Não muda os dias úteis.',
+            effect: 'Efeito',
+            businessDay: 'Dia útil',
+            holiday: 'Feriado',
+            removeWarning:
+                'Isto remove o calendário com as suas regras, exceções e eventos. As moedas e os pares que o usam mantêm as ligações.',
+            rules: {
+                fixed: '{day} de {month}',
+                nth: '{occurrence} {weekday} de {month}',
+                last: 'Último(a) {weekday} de {month}',
+                easter: '{offset} dias a partir da Páscoa',
+            },
+            none: 'Nenhum ainda.',
+            addPart: {
+                'calendar-rules': 'Adicionar uma regra',
+                'calendar-exceptions': 'Adicionar uma exceção',
+                'calendar-events': 'Adicionar um evento',
+            },
+            editPart: {
+                'calendar-rules': 'Regra',
+                'calendar-exceptions': 'Exceção',
+                'calendar-events': 'Evento',
+            },
+            removePart: {
+                'calendar-rules': 'Remover esta regra?',
+                'calendar-exceptions': 'Remover esta exceção?',
+                'calendar-events': 'Remover este evento?',
+            },
+            removePartWarning: 'A linha é fechada. O histórico fica.',
+            cause: {
+                exception: 'Exceção',
+                rule: 'Regra',
+                base: 'De {base}',
+                other: 'Feriado só em {other}',
+                unbuilt:
+                    '{words}: não está nos dias construídos, e uma reconstrução não o acrescenta',
+            },
+            previousYear: 'Ano anterior',
+            nextYear: 'Ano seguinte',
+            compare: 'Comparar com',
+            quantlibBaseWarning:
+                '{base} obtém os feriados do QuantLib, mas a reconstrução não os lê. Os dias abaixo mostram só os fins de semana e estas exceções.',
+            notBuilt:
+                'Nenhum dia útil está construído para {year}. Reconstrua o calendário para os construir.',
+            summary: '{business} dias úteis e {holidays} feriados em dias de semana em {year}.',
+            noHolidays: 'Sem feriados.',
+            rebuildTo: 'Construir até ao fim de',
+            rebuild: 'Reconstruir os dias úteis',
+            rebuildNote:
+                'Uma reconstrução adiciona os dias ainda não construídos. Não muda um dia já construído, por isso uma alteração a uma regra ou exceção não aparece num ano já construído.',
+            rebuilt: '{count} dias escritos.',
         },
         currencies: {
             title: 'Moedas',

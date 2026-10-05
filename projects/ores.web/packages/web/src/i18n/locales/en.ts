@@ -509,9 +509,6 @@ export const en: SourceCatalogue = {
         },
         identity: {
             title: 'Photo and identity',
-            whySelf: 'You may change your own name, job title and photo.',
-            whyAdmin: 'You hold iam::accounts:update in this tenant.',
-            whyReadOnly: 'Read-only for you: you do not hold iam::accounts:update in this tenant.',
             fullName: 'Full name',
             jobTitle: 'Job title',
             username: 'Username',
@@ -549,10 +546,6 @@ export const en: SourceCatalogue = {
         },
         contact: {
             title: 'Contact details',
-            whySelf: 'You may change your own contact record.',
-            whyAdmin: 'You hold iam::account_contact_informations:write in this tenant.',
-            whyReadOnly:
-                'Read-only for you: you do not hold iam::account_contact_informations:write in this tenant.',
             noRecord: 'This account has no contact record yet. The first save creates it.',
             noRecordShort: 'No record yet',
             streetLine1: 'Street',
@@ -640,6 +633,13 @@ export const en: SourceCatalogue = {
         select: 'Select',
         choose: 'Choose an image',
         none: 'None',
+    },
+
+    accessMark: {
+        editable: 'Editable',
+        editableWhy: 'You may change this.',
+        readOnly: 'Read only',
+        readOnlyWhy: 'You may read this, but not change it. A tenant administrator can change it.',
     },
 
     audit: {
@@ -1210,8 +1210,7 @@ export const en: SourceCatalogue = {
             lead: 'The data every trade, curve and report is built on.',
             classificationsBody:
                 'The 28 short code lists that classify reference data: types, statuses and ORE codes.',
-            later: 'Designed; not built yet',
-            coming: {
+            screens: {
                 currencies: 'Currencies',
                 currenciesBody: 'A currency with its countries, calendars and desk groups.',
                 currencyPairs: 'Currency pairs',
@@ -1350,6 +1349,7 @@ export const en: SourceCatalogue = {
             revertCommentary: 'Reverted to version {version}.',
         },
         records: {
+            deletePartWarning: 'The row closes. Its history stays.',
             yes: 'Yes',
             no: 'No',
             cancel: 'Cancel',
@@ -1397,6 +1397,10 @@ export const en: SourceCatalogue = {
                 calendars: 'Calendars',
                 groups: 'Desk groups',
                 members: 'Members',
+                rules: 'Rules',
+                exceptions: 'Exceptions',
+                events: 'Diary events',
+                days: 'Business days',
             },
         },
         fields: {
@@ -1435,6 +1439,133 @@ export const en: SourceCatalogue = {
             business_day_convention: 'Business day convention',
             spot_relative: 'Forward dates from spot',
             end_of_month: 'End of month',
+            calendar_type: 'Calendar type',
+            country_code: 'Country',
+            kind: 'Rule kind',
+            month: 'Month',
+            day: 'Day',
+            occurrence: 'Occurrence',
+            weekday: 'Weekday',
+            day_offset: 'Days after Easter',
+            shift: 'Weekend shift',
+            effective_from: 'First year',
+            effective_to: 'Last year',
+            exception_date: 'Date',
+            is_business_day: 'Business day',
+            event_date: 'Date',
+            diary_entry_type: 'Entry type',
+        },
+        choices: {
+            kind: {
+                fixed_date: 'Fixed date',
+                nth_weekday_of_month: 'Nth weekday of the month',
+                last_weekday_of_month: 'Last weekday of the month',
+                easter_offset: 'Days from Easter',
+            },
+            month: {
+                '1': 'January',
+                '2': 'February',
+                '3': 'March',
+                '4': 'April',
+                '5': 'May',
+                '6': 'June',
+                '7': 'July',
+                '8': 'August',
+                '9': 'September',
+                '10': 'October',
+                '11': 'November',
+                '12': 'December',
+            },
+            occurrence: {
+                '1': '1st',
+                '2': '2nd',
+                '3': '3rd',
+                '4': '4th',
+            },
+            weekday: {
+                '0': 'Sunday',
+                '1': 'Monday',
+                '2': 'Tuesday',
+                '3': 'Wednesday',
+                '4': 'Thursday',
+                '5': 'Friday',
+                '6': 'Saturday',
+            },
+            shift: {
+                none: 'No shift',
+                nearest_weekday: 'Nearest weekday',
+                roll_forward_to_monday: 'Move to Monday',
+            },
+        },
+        calendars: {
+            title: 'Holiday calendars',
+            lead: 'The calendars that decide which days are business days, for settlement and for schedules.',
+            add: 'Add calendar',
+            addTitle: 'Add a bespoke calendar',
+            made: 'Holidays from',
+            derivedFrom: '{base}, with exceptions',
+            shape: {
+                quantlib: 'QuantLib',
+                bespoke: 'Its own rules',
+            },
+            derive: 'Derive a calendar',
+            deriveTitle: 'Derive a calendar from {base}',
+            quantlibNote:
+                'QuantLib supplies the holidays of this calendar, and they are not stored here. To add your own holidays or business days, derive a calendar from it.',
+            rule: 'Rule',
+            years: 'Years',
+            exceptionsLead:
+                'An exception changes one date: a holiday on a working day, or a business day on a holiday. To stop a recurring holiday from a year on, set the last year of its rule.',
+            eventsLead:
+                'A diary event marks a date, such as a central bank meeting. It does not change the business days.',
+            effect: 'Effect',
+            businessDay: 'Business day',
+            holiday: 'Holiday',
+            removeWarning:
+                'This removes the calendar with its rules, exceptions and events. Currencies and pairs that use it keep their links.',
+            rules: {
+                fixed: '{day} {month}',
+                nth: '{occurrence} {weekday} of {month}',
+                last: 'Last {weekday} of {month}',
+                easter: '{offset} days from Easter',
+            },
+            none: 'None yet.',
+            addPart: {
+                'calendar-rules': 'Add a rule',
+                'calendar-exceptions': 'Add an exception',
+                'calendar-events': 'Add a diary event',
+            },
+            editPart: {
+                'calendar-rules': 'Rule',
+                'calendar-exceptions': 'Exception',
+                'calendar-events': 'Diary event',
+            },
+            removePart: {
+                'calendar-rules': 'Remove this rule?',
+                'calendar-exceptions': 'Remove this exception?',
+                'calendar-events': 'Remove this diary event?',
+            },
+            removePartWarning: 'The row closes. Its history stays.',
+            cause: {
+                exception: 'Exception',
+                rule: 'Rule',
+                base: 'From {base}',
+                other: 'Holiday in {other} only',
+                unbuilt: '{words}: not in the built days, and a rebuild does not add it',
+            },
+            previousYear: 'Previous year',
+            nextYear: 'Next year',
+            compare: 'Compare with',
+            quantlibBaseWarning:
+                '{base} takes its holidays from QuantLib, but the rebuild does not read them. The days below show weekends and these exceptions only.',
+            notBuilt: 'No business days are built for {year}. Rebuild the calendar to build them.',
+            summary: '{business} business days and {holidays} weekday holidays in {year}.',
+            noHolidays: 'No holidays.',
+            rebuildTo: 'Build up to the end of',
+            rebuild: 'Rebuild business days',
+            rebuildNote:
+                'A rebuild adds the days not built yet. It does not change a day that is already built, so a change to a rule or an exception does not show in a year already built.',
+            rebuilt: '{count} days written.',
         },
         currencies: {
             title: 'Currencies',

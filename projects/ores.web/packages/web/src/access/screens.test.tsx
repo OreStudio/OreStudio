@@ -192,6 +192,12 @@ describe('A person', () => {
         );
     }
 
+    it('marks their details read only for a viewer who may not change them', () => {
+        const html = person('priya', '/people/daniel');
+        expect(html).toContain('Read only');
+        expect(html).not.toContain('iam::');
+    });
+
     it('opens on their details, with their contact, roles and sign-ins as tabs', () => {
         const html = person('priya', '/people/daniel');
 

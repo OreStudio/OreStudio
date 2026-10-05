@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FE482B7E-ED92-4C2D-B9F3-D2D093A2CD66
+:END:
+#+title: A calendar rebuild never rewrites a day it already built
+#+description: calendar_dates.regenerate only adds days past the watermark, so a rule or exception change never reaches a year that is already built; the business days stay wrong until someone deletes them by hand.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:data_quality:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

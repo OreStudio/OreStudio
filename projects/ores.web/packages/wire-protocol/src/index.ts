@@ -152,6 +152,8 @@ export {
     listRecordPage,
     listRecords,
     readRecord,
+    readCalendarYear,
+    rebuildCalendar,
     recordResource,
     removeRecord,
     resourceName,
@@ -160,6 +162,7 @@ export {
 export type {
     PageRequest,
     RecordPage,
+    CalendarDay,
     RecordResource,
     RecordRow,
     WriteIntent,

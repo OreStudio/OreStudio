@@ -230,6 +230,7 @@ on when they need the same actions.
 | Export | =arrow_upload= | 20 |
 | Purge | =delete_dismiss= | 20 |
 | Lock | =lock_closed= | 20 |
+| Read only (the access mark) | =lock_closed= | 16 |
 | Unlock | =lock_open= | 20 |
 
 Refresh and Remove a link joined the set from the Fluent repository for the

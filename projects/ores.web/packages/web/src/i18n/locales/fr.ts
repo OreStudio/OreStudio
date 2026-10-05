@@ -510,10 +510,6 @@ const fr: SourceCatalogue = {
         },
         identity: {
             title: 'Photo et identité',
-            whySelf: 'Vous pouvez modifier votre nom, votre intitulé de poste et votre photo.',
-            whyAdmin: 'Vous détenez iam::accounts:update dans ce locataire.',
-            whyReadOnly:
-                'Lecture seule pour vous : vous ne détenez pas iam::accounts:update dans ce locataire.',
             fullName: 'Nom complet',
             jobTitle: 'Intitulé du poste',
             username: "Nom d'utilisateur",
@@ -554,10 +550,6 @@ const fr: SourceCatalogue = {
         },
         contact: {
             title: 'Coordonnées',
-            whySelf: 'Vous pouvez modifier votre propre fiche de coordonnées.',
-            whyAdmin: 'Vous détenez iam::account_contact_informations:write dans ce locataire.',
-            whyReadOnly:
-                'Lecture seule pour vous : vous ne détenez pas iam::account_contact_informations:write dans ce locataire.',
             noRecord:
                 "Ce compte n'a pas encore de fiche de coordonnées. Le premier enregistrement la crée.",
             noRecordShort: 'Pas encore de fiche',
@@ -647,6 +639,14 @@ const fr: SourceCatalogue = {
         select: 'Choisir',
         choose: 'Choisir une image',
         none: 'Aucune',
+    },
+
+    accessMark: {
+        editable: 'Modifiable',
+        editableWhy: 'Vous pouvez le modifier.',
+        readOnly: 'Lecture seule',
+        readOnlyWhy:
+            'Vous pouvez le lire, mais pas le modifier. Un administrateur du locataire peut le modifier.',
     },
 
     audit: {
@@ -1228,8 +1228,7 @@ const fr: SourceCatalogue = {
             lead: 'Les données sur lesquelles reposent chaque opération, chaque courbe et chaque rapport.',
             classificationsBody:
                 'Les 28 listes de codes qui classent les données de référence : types, statuts et codes ORE.',
-            later: 'Conçu ; pas encore construit',
-            coming: {
+            screens: {
                 currencies: 'Devises',
                 currenciesBody: 'Une devise avec ses pays, ses calendriers et ses groupes.',
                 currencyPairs: 'Paires de devises',
@@ -1376,6 +1375,7 @@ const fr: SourceCatalogue = {
             revertCommentary: 'Rétabli à la version {version}.',
         },
         records: {
+            deletePartWarning: 'La ligne est fermée. Son historique reste.',
             yes: 'Oui',
             no: 'Non',
             cancel: 'Annuler',
@@ -1423,6 +1423,10 @@ const fr: SourceCatalogue = {
                 calendars: 'Calendriers',
                 groups: 'Groupes de devises',
                 members: 'Membres',
+                rules: 'Règles',
+                exceptions: 'Exceptions',
+                events: 'Événements',
+                days: 'Jours ouvrés',
             },
         },
         fields: {
@@ -1461,6 +1465,135 @@ const fr: SourceCatalogue = {
             business_day_convention: 'Convention de jour ouvré',
             spot_relative: 'Dates à terme depuis le spot',
             end_of_month: 'Fin de mois',
+            calendar_type: 'Type de calendrier',
+            country_code: 'Pays',
+            kind: 'Type de règle',
+            month: 'Mois',
+            day: 'Jour',
+            occurrence: 'Occurrence',
+            weekday: 'Jour de la semaine',
+            day_offset: 'Jours après Pâques',
+            shift: 'Report du week-end',
+            effective_from: 'Première année',
+            effective_to: 'Dernière année',
+            exception_date: 'Date',
+            is_business_day: 'Jour ouvré',
+            event_date: 'Date',
+            diary_entry_type: "Type d'entrée",
+        },
+        choices: {
+            kind: {
+                fixed_date: 'Date fixe',
+                nth_weekday_of_month: 'Nième jour de la semaine du mois',
+                last_weekday_of_month: 'Dernier jour de la semaine du mois',
+                easter_offset: 'Jours depuis Pâques',
+            },
+            month: {
+                '1': 'janvier',
+                '2': 'février',
+                '3': 'mars',
+                '4': 'avril',
+                '5': 'mai',
+                '6': 'juin',
+                '7': 'juillet',
+                '8': 'août',
+                '9': 'septembre',
+                '10': 'octobre',
+                '11': 'novembre',
+                '12': 'décembre',
+            },
+            occurrence: {
+                '1': '1er',
+                '2': '2e',
+                '3': '3e',
+                '4': '4e',
+            },
+            weekday: {
+                '0': 'dimanche',
+                '1': 'lundi',
+                '2': 'mardi',
+                '3': 'mercredi',
+                '4': 'jeudi',
+                '5': 'vendredi',
+                '6': 'samedi',
+            },
+            shift: {
+                none: 'Pas de report',
+                nearest_weekday: 'Jour de semaine le plus proche',
+                roll_forward_to_monday: 'Reporter au lundi',
+            },
+        },
+        calendars: {
+            title: 'Calendriers de jours fériés',
+            lead: 'Les calendriers qui décident quels jours sont ouvrés, pour le règlement et les échéanciers.',
+            add: 'Ajouter un calendrier',
+            addTitle: 'Ajouter un calendrier sur mesure',
+            made: 'Jours fériés selon',
+            derivedFrom: '{base}, avec exceptions',
+            shape: {
+                quantlib: 'QuantLib',
+                bespoke: 'Ses propres règles',
+            },
+            derive: 'Dériver un calendrier',
+            deriveTitle: 'Dériver un calendrier de {base}',
+            quantlibNote:
+                'QuantLib fournit les jours fériés de ce calendrier, et ils ne sont pas stockés ici. Pour ajouter vos propres jours fériés ou jours ouvrés, dérivez un calendrier.',
+            rule: 'Règle',
+            years: 'Années',
+            exceptionsLead:
+                "Une exception change une date : un jour férié un jour ouvré, ou un jour ouvré un jour férié. Pour arrêter un jour férié récurrent à partir d'une année, fixez la dernière année de sa règle.",
+            eventsLead:
+                'Un événement marque une date, comme une réunion de banque centrale. Il ne change pas les jours ouvrés.',
+            effect: 'Effet',
+            businessDay: 'Jour ouvré',
+            holiday: 'Jour férié',
+            removeWarning:
+                "Ceci retire le calendrier avec ses règles, exceptions et événements. Les devises et les paires qui l'utilisent gardent leurs liens.",
+            rules: {
+                fixed: '{day} {month}',
+                nth: '{occurrence} {weekday} de {month}',
+                last: 'Dernier {weekday} de {month}',
+                easter: '{offset} jours depuis Pâques',
+            },
+            none: "Aucun pour l'instant.",
+            addPart: {
+                'calendar-rules': 'Ajouter une règle',
+                'calendar-exceptions': 'Ajouter une exception',
+                'calendar-events': 'Ajouter un événement',
+            },
+            editPart: {
+                'calendar-rules': 'Règle',
+                'calendar-exceptions': 'Exception',
+                'calendar-events': 'Événement',
+            },
+            removePart: {
+                'calendar-rules': 'Retirer cette règle ?',
+                'calendar-exceptions': 'Retirer cette exception ?',
+                'calendar-events': 'Retirer cet événement ?',
+            },
+            removePartWarning: 'La ligne est fermée. Son historique reste.',
+            cause: {
+                exception: 'Exception',
+                rule: 'Règle',
+                base: 'Selon {base}',
+                other: 'Férié dans {other} seulement',
+                unbuilt:
+                    "{words} : absent des jours construits, et une reconstruction ne l'ajoute pas",
+            },
+            previousYear: 'Année précédente',
+            nextYear: 'Année suivante',
+            compare: 'Comparer avec',
+            quantlibBaseWarning:
+                '{base} prend ses jours fériés de QuantLib, mais la reconstruction ne les lit pas. Les jours ci-dessous montrent seulement les week-ends et ces exceptions.',
+            notBuilt:
+                "Aucun jour ouvré n'est construit pour {year}. Reconstruisez le calendrier pour les construire.",
+            summary: '{business} jours ouvrés et {holidays} jours fériés en semaine en {year}.',
+            noHolidays: 'Aucun jour férié.',
+            rebuildTo: "Construire jusqu'à la fin de",
+            rebuild: 'Reconstruire les jours ouvrés',
+            rebuildNote:
+                "Une reconstruction ajoute les jours pas encore construits. Elle ne change pas un jour déjà construit : une modification d'une règle ou d'une exception n'apparaît pas dans une année déjà construite.",
+            rebuilt: '{count} jours écrits.',
         },
         currencies: {
             title: 'Devises',

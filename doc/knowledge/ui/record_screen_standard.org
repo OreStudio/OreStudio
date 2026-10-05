@@ -504,6 +504,10 @@ message.
 
 - An action a person may not take is not drawn, rather than drawn disabled.
   =useRecordPermissions= decides from the registry and the person's roles.
+- Whether the person may change a record is shown by the access mark, Editable
+  or Read only, in the record header and beside a form panel's title, as
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] sets it. A screen
+  never shows a permission code.
 - The server decides; the screen only hides what the server would refuse. A
   refusal is shown as a refusal, not as a failure.
 
@@ -576,20 +580,21 @@ component carries it today.
 | Revert | =RevertDialog= | Exists |
 | History | =HistoryPanel= | Exists |
 | Links | =LinkPanel= | Exists |
-| Parts | =PartsPanel= in =refdata/calendars.tsx= | Exists; to move beside =LinkPanel= |
+| Parts | =PartsPanel= in =refdata/records.tsx= | Exists, beside =LinkPanel= |
 | Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
 | Icons | =Icon= in =ui/Icon.tsx=, the =icon= of =Button= | Exists for the actions in the icon table |
 | Last-changed line | =LastChanged=, drawn by =RecordDetails= | Exists |
 | Timestamps | =RelativeTime= in =ui/Time.tsx= | Exists |
 | Recency | (none) | Missing; needs the change notification consumer |
 | Permissions | =useRecordPermissions= | Exists |
+| Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
 
 ** How today's record screens conform
 
 | Screen | Where it differs from this standard |
 |--------+-------------------------------------|
 | Currencies, desk groups, currency pairs | Conform, except recency and the whole-kind pickers; a desk group reads its members from the whole junction, which has no read by group |
-| Holiday calendars | Reads every row; Remove for Delete; no icons |
+| Holiday calendars | Conform, except recency and the whole-kind pickers; the business days follow the server's rebuild, which never rewrites a built day and does not read QuantLib holidays (both captured) |
 | Classifications | Reads every row of a list; a different list layout; no icons |
 | People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
 | Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |

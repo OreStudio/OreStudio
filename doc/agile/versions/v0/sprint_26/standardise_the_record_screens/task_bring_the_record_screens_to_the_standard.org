@@ -59,6 +59,15 @@ task and name that file in the Command column.
 
 * Notes
 
+- PR #2644 brought the currency, desk group and pair screens to the standard,
+  with the shared list, pager, icons, flags and image chooser.
+- PR #2655 split My profile from People; People conforms, and the tab bar and
+  the list's source became shared parts.
+- PR #2646 brings the holiday calendar screen to the standard, moves the parts
+  panel beside the links panel, and adds the shared access mark (Editable or
+  Read only) in place of permission codes.
+- Still to do: the classification screens, and the tenant and party screens.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

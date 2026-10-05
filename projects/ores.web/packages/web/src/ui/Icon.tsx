@@ -30,6 +30,7 @@ import edit from '../assets/icons/ic_fluent_edit_20_regular.svg';
 import filter from '../assets/icons/ic_fluent_filter_20_regular.svg';
 import history from '../assets/icons/ic_fluent_history_20_regular.svg';
 import linkDismiss from '../assets/icons/ic_fluent_link_dismiss_20_regular.svg';
+import lockClosed from '../assets/icons/ic_fluent_lock_closed_20_regular.svg';
 import save from '../assets/icons/ic_fluent_save_20_regular.svg';
 import search from '../assets/icons/ic_fluent_search_20_regular.svg';
 
@@ -46,6 +47,7 @@ const ICONS = {
     edit,
     filter,
     history,
+    locked: lockClosed,
     refresh: arrowClockwise,
     remove: linkDismiss,
     revert: arrowRotateCounterclockwise,

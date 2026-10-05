@@ -34,9 +34,9 @@ pattern.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not yet started.                       |
+| Now           | The type, the hub, the identity group, the IAM reconciliation and the reporting design are done. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Write the other five groups, then make a design name its patterns. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance

@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_record_screens:sprint_26:v0:
 #+owner: marco
 #+branch: feature/split-my-profile-from-people
-#+pr:
+#+pr: 2655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2655][#2655]] | [web] Split my profile from the people screens |
 
 * Review
 

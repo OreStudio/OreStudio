@@ -108,3 +108,45 @@ def test_a_lower_case_link_counts(tmp_path):
         "doc/u.org": page(USE, "knowledge", f"* Detail\n\n{link(PATTERN.lower())}\n"),
     })
     assert check_pattern_uses.check(docs) == []
+
+
+def test_an_unresolved_id_in_in_ore_studio_is_reported(tmp_path):
+    missing = "44444444-4444-4444-4444-444444444444"
+    docs = tree(tmp_path, {"doc/p.org": pattern_page([missing])})
+    problems = check_pattern_uses.check(docs)
+    assert problems == [f"doc/p.org lists id {missing} under In ORE Studio, "
+                        f"which no page has"]
+
+
+def test_a_duplicate_id_on_a_use_is_reported(tmp_path):
+    docs = tree(tmp_path, {
+        "doc/p.org": pattern_page([USE]),
+        "doc/u.org": page(USE, "knowledge", f"* Detail\n\n{link(PATTERN)}\n"),
+        "doc/v.org": page(USE, "knowledge", f"* Detail\n\n{link(PATTERN)}\n"),
+    })
+    problems = check_pattern_uses.check(docs, check_pattern_uses.load.duplicates)
+    assert len(problems) == 1
+    assert problems[0].startswith(f"id {USE} is shared by ")
+
+
+def test_a_duplicate_id_elsewhere_is_ignored(tmp_path):
+    docs = tree(tmp_path, {
+        "doc/o.org": page(OTHER, "knowledge", "* Detail\n"),
+        "doc/q.org": page(OTHER, "knowledge", "* Detail\n"),
+    })
+    assert check_pattern_uses.check(docs, check_pattern_uses.load.duplicates) == []
+
+
+def test_an_in_ore_studio_section_last_in_the_file_is_read(tmp_path):
+    body = f"* Sources\n\n* In ORE Studio\n\n- {link(USE)}"
+    docs = tree(tmp_path, {
+        "doc/p.org": page(PATTERN, "service_architecture_pattern", body),
+        "doc/u.org": page(USE, "knowledge", "* Detail\n"),
+    })
+    assert len(check_pattern_uses.check(docs)) == 1
+
+
+def test_an_empty_tree_passes(tmp_path):
+    (tmp_path / "doc").mkdir()
+    assert check_pattern_uses.check(check_pattern_uses.load([tmp_path / "doc"], tmp_path)) == []
+

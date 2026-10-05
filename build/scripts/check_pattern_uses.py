@@ -57,7 +57,10 @@ def links(body):
 
 
 def load(roots=SEARCH, base=ROOT):
+    """The pages by id. A second page with an id already seen is kept in
+    =load.duplicates=, so the check can report an id it cannot trust."""
     docs = {}
+    load.duplicates = {}
     for root in roots:
         for p in root.rglob("*.org"):
             rel = p.relative_to(base).as_posix()
@@ -65,11 +68,15 @@ def load(roots=SEARCH, base=ROOT):
                 continue
             try:
                 text = p.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
+            except (OSError, UnicodeDecodeError) as e:
+                print(f"⚠️  skipped {rel}: {e}", file=sys.stderr)
                 continue
             did = doc_id(text)
-            if did:
-                docs[did] = (rel, text)
+            if not did:
+                continue
+            if did in docs:
+                load.duplicates.setdefault(did, [docs[did][0]]).append(rel)
+            docs[did] = (rel, text)
     return docs
 
 
@@ -77,14 +84,21 @@ def exempt(rel):
     return rel.startswith(EXEMPT)
 
 
-def check(docs):
+def check(docs, duplicates=None):
     """Every broken link, as one message each."""
     problems = []
+    duplicates = duplicates or {}
     patterns = {d for d, (_, t) in docs.items() if doc_type(t) == PATTERN_TYPE}
+    involved = set(patterns)
     for pid in sorted(patterns):
         prel, ptext = docs[pid]
         for uid in links(section(ptext, "In ORE Studio")):
-            if uid in patterns or uid not in docs:
+            if uid not in docs:
+                problems.append(f"{prel} lists id {uid} under In ORE Studio, "
+                                f"which no page has")
+                continue
+            involved.add(uid)
+            if uid in patterns:
                 continue
             urel, utext = docs[uid]
             if exempt(urel):
@@ -95,7 +109,10 @@ def check(docs):
     for did, (rel, text) in sorted(docs.items()):
         if exempt(rel) or did in patterns:
             continue
-        for pid in links(section(text, "Patterns used")):
+        used = links(section(text, "Patterns used"))
+        if used:
+            involved.add(did)
+        for pid in used:
             if pid not in patterns:
                 target = docs[pid][0] if pid in docs else pid
                 problems.append(f"{rel} lists {target} under Patterns used, "
@@ -105,11 +122,14 @@ def check(docs):
             if did not in links(section(ptext, "In ORE Studio")):
                 problems.append(f"{rel} uses {prel}, which does not list it "
                                 f"under In ORE Studio")
+    for did in sorted(involved & set(duplicates)):
+        problems.append(f"id {did} is shared by " + ", ".join(duplicates[did]))
     return problems
 
 
 def main():
-    problems = check(load())
+    docs = load()
+    problems = check(docs, load.duplicates)
     for p in problems:
         print(f"❌ {p}")
     if problems:

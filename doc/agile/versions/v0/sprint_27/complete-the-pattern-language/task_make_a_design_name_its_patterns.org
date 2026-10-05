@@ -101,7 +101,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #2664, Claude: a shared =:ID:= is silent | build/scripts/check_pattern_uses.py | Accept | Reported when the id is a pattern or a use. |
+| 2 | PR #2664, Claude: an unresolved id under In ORE Studio passes | build/scripts/check_pattern_uses.py | Accept | Reported. |
+| 3 | PR #2664, Claude: a pattern's own Patterns used is not checked | build/scripts/check_pattern_uses.py | Decline | Patterns relate under Related patterns. |
+| 4 | PR #2664, Claude: exact heading match; a section last in the file | test_check_pattern_uses.py | Partly accept | Test for the last section; the templates produce the exact heading. |
+| 5 | PR #2664, Claude: test gaps | test_check_pattern_uses.py | Accept | Empty tree tested; a body-only link triggers no reverse check by design. |
+| 6 | PR #2664, Claude: unreadable files skipped silently | build/scripts/check_pattern_uses.py | Accept | A warning on stderr. |
 
 * Result
 

@@ -6376,8 +6376,11 @@ def _cmd_site_page(paths, skip_index: bool = False):
     out_root = PROJECT_ROOT / _SITE_OUTPUT
     copied = 0
     for page in resolved:
-        html = out_root / Path(page).relative_to(PROJECT_ROOT).with_suffix(".html")
-        copied += _publish_page_images(html, out_root)
+        try:
+            rel = Path(page).relative_to(PROJECT_ROOT)
+        except ValueError:
+            continue
+        copied += _publish_page_images(out_root / rel.with_suffix(".html"), out_root)
     if copied:
         print(f"\U0001f5bc️  copied {copied} image(s)")
     return 0

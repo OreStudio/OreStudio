@@ -94,7 +94,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A page path outside the project root made the image step raise after a successful publish | projects/ores.compass/src/compass.py | Accept | Skip the page; local review before the PR. |
+| 2 | Two new lines in the generator ran past the file's line width | projects/ores.codegen/src/doc_generate.py | Accept | Rewrapped; local review before the PR. |
+| 3 | Report execution at scale states a four-step chain that the report execution workflow page does not yet list | doc/knowledge/architecture/report_execution_at_scale.org | Decline | The design states the target; the workflow page changes when the chain is built. |
 
 * Result
 

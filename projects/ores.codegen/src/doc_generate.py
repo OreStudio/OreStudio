@@ -417,9 +417,10 @@ def parse_args(argv=None):
                              "the slug.")
     parser.add_argument("--pattern-group", dest="pattern_group", default="",
                         choices=("",) + PATTERN_GROUPS,
-                        help="For --type service_architecture_pattern: the group of the pattern "
-                             "language the pattern belongs to, written to "
-                             "#+pattern_group:. Required for a pattern.")
+                        help="For --type service_architecture_pattern: the "
+                             "group of the pattern language the pattern "
+                             "belongs to, written to #+pattern_group:. "
+                             "Required for a pattern.")
     parser.add_argument("--dataset", default="",
                         help="For --type dataset_overview: dataset name "
                              "(e.g. acme_corporation). Drives the output path "
@@ -703,8 +704,8 @@ def main(argv=None):
     # hub orders its reading by group, so a pattern with no group has no place.
     if args.type == "service_architecture_pattern":
         if not args.pattern_group:
-            sys.exit("error: --pattern-group is required for a service architecture pattern: "
-                     + ", ".join(PATTERN_GROUPS))
+            sys.exit("error: --pattern-group is required for a service "
+                     "architecture pattern: " + ", ".join(PATTERN_GROUPS))
         pattern_group = args.pattern_group
     else:
         pattern_group = ""
@@ -808,8 +809,10 @@ def main(argv=None):
     #              sort together in the shared folder)
     # - report:    <parent-dir>/report_<slug>.org    (flat file under
     #              doc/knowledge/reports, prefixed for the same reason)
-    # - service_architecture_pattern: <parent-dir>/pattern_<slug>.org (flat file under
-    #              doc/knowledge/service_architecture_patterns, prefixed for the same reason)
+    # - service_architecture_pattern:
+    #              <parent-dir>/pattern_<slug>.org (flat file under
+    #              doc/knowledge/service_architecture_patterns, prefixed for
+    #              the same reason)
     # - task:      <parent-dir>/task_<slug>.org   (prefix groups tasks under
     #              "t" so they sort below story.org and stand apart from any
     #              future siblings in the story folder)
@@ -906,8 +909,8 @@ def main(argv=None):
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"
     elif args.type == "service_architecture_pattern":
-        # Every pattern page shares doc/knowledge/service_architecture_patterns, so the prefix groups
-        # them in the folder and keeps the hub apart from the patterns.
+        # Every pattern page shares one folder with its hub, so the prefix
+        # groups the patterns and keeps the hub apart from them.
         leaf = args.slug if args.slug.startswith("pattern_") else f"pattern_{args.slug}"
         out_dir = parent_dir
         out_file = out_dir / f"{leaf}.org"

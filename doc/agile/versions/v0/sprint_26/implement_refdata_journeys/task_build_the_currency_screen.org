@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-currency-screen
-#+pr:
+#+pr: 2644
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2644][#2644]] | [web] Build the currency, desk group and currency pair screens |
 
 * Review
 

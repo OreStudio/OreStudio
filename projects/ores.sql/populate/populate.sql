@@ -123,6 +123,8 @@ select ores_utility_allow_version_replace_fn();
 \ir acme/acme_hk_account_contact_informations_artefact_populate.sql
 \ir acme/acme_party_logo_populate.sql
 \ir acme/acme_demo_counterparty_logo_populate.sql
+\ir acme/super_admin_avatar_populate.sql
+\ir acme/tenant_admin_avatar_populate.sql
 
 -- =============================================================================
 -- Badge Severities Dataset (self-published DQ artefact; must follow the

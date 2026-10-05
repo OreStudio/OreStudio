@@ -24,6 +24,7 @@
 #include "ores.analytics.core/repository/todays_market_configuration_repository.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_repository.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <set>
 
@@ -33,13 +34,12 @@ using namespace ores::analytics::repository;
 using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
-using ores::database::repository::stamp_party;
 
 todays_market_document_service::todays_market_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void todays_market_document_service::save(messaging::todays_market_document v) {
-    stamp_party(ctx_, v);
+    ores::service::messaging::stamp_document(v, ctx_);
     todays_market_config_repository().write(ctx_, v.config);
     todays_market_collection_repository().write(ctx_, v.collections);
     todays_market_entry_repository().write(ctx_, v.entries);

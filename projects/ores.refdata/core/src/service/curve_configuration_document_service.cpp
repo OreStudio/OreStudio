@@ -50,6 +50,7 @@
 #include "ores.refdata.core/repository/intraday_power_curve_config_repository.hpp"
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <set>
 
@@ -59,13 +60,12 @@ using namespace ores::refdata::repository;
 using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
-using ores::database::repository::stamp_party;
 
 curve_configuration_document_service::curve_configuration_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void curve_configuration_document_service::save(messaging::curve_configuration_document v) {
-    stamp_party(ctx_, v);
+    ores::service::messaging::stamp_document(v, ctx_);
     curve_configuration_repository().write(ctx_, v.config);
 
     curve_configuration_section_repository().write(ctx_, v.sections);

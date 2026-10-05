@@ -27,6 +27,7 @@
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_market_binding_repository.hpp"
 #include "ores.reporting.core/repository/report_run_setup_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -42,7 +43,6 @@ namespace ores::reporting::service {
 using namespace ores::reporting::repository;
 using ores::database::repository::ids_of;
 using ores::database::repository::read_where;
-using ores::database::repository::stamp_party;
 
 namespace {
 
@@ -76,7 +76,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
         b.id = next_id();
         b.report_definition_id = report_definition_id;
     }
-    stamp_party(ctx_, v);
+    ores::service::messaging::stamp_document(v, ctx_);
 
     std::map<std::pair<std::string, std::string>, boost::uuids::uuid> definition_ids;
     for (const auto& d : read_where(system_scope(ctx_),
@@ -104,7 +104,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
             parameters.push_back(std::move(row));
         }
     }
-    stamp_party(ctx_, parameters);
+    ores::service::messaging::stamp_document(parameters, ctx_);
 
     report_run_setup_repository().write(ctx_, v.setup);
     report_analytic_repository().write(ctx_, analytics);
@@ -182,7 +182,7 @@ domain::configuration run_document_service::bind(const boost::uuids::uuid& repor
     c.name = name;
     c.configuration_type_code = configuration_type_code;
     c.owning_component = types.front().owning_component;
-    stamp_party(ctx_, c);
+    ores::service::messaging::stamp_document(c, ctx_);
     configuration_repository().write(ctx_, c);
 
     domain::report_configuration binding;
@@ -190,7 +190,7 @@ domain::configuration run_document_service::bind(const boost::uuids::uuid& repor
     binding.report_definition_id = report_definition_id;
     binding.configuration_type_code = configuration_type_code;
     binding.configuration_id = c.id;
-    stamp_party(ctx_, binding);
+    ores::service::messaging::stamp_document(binding, ctx_);
     report_configuration_repository().write(ctx_, binding);
     return c;
 }

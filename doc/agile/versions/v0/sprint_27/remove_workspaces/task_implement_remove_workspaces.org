@@ -79,13 +79,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Tables with a =workspace_id= column | refdata 26, analytics 3, reporting 2, marketdata 1, workspace 1; trading 0 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| Models that set =has_workspace_id= true | 4: analytics 2, marketdata 1, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| Models bound to a profile that defaults it true | 30: refdata 26, analytics 3, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| Files naming =workspace_id=, outside ores.workspace | refdata 133, sql 43, web 35, codegen 29, analytics 17, modeling 14, marketdata 12, reporting 11, nats 4, service 2, database 2, shell 2, trading 2 (stale class diagram), utility 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| =ores.workspace= component files | 81 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| ores.shell workspace part and script files | 23 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
-| Callers that select a workspace other than Live, outside tests | 0 (=setWorkspace= in ores.web; =with_workspace_id= and =with_workspace_resolution= in C++) | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | 8b35c78670 |
+| Tables with a =workspace_id= column | refdata 26, analytics 3, reporting 2, marketdata 1, workspace 1; trading 0 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| Models that set =has_workspace_id= true | 4: analytics 2, marketdata 1, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| Models bound to a profile that defaults it true | 30: refdata 26, analytics 3, reporting 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| Files naming =workspace_id=, outside ores.workspace | refdata 133, sql 43, web 35, codegen 29, analytics 17, modeling 14, marketdata 12, reporting 11, nats 4, service 2, database 2, shell 2, trading 2 (stale class diagram), utility 1 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| =ores.workspace= component files | 81 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| ores.shell workspace part and script files | 23 | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
+| Callers that select a workspace other than Live, outside tests | 0 (=setWorkspace= in ores.web; =with_workspace_id= and =with_workspace_resolution= in C++ sources and headers) | =evidence/measure_workspaces.sh=, output in =evidence/inventory.txt= | e88764c3e8 |
 
 * Notes
 
@@ -135,7 +135,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The four tasks are ordered in prose only; =blocked_on= is empty. | task_*.org | Accept | Context and codegen wait on the column task; the component waits on the context. |
+| 2a | =count()='s =\|\| true= does nothing. | evidence/measure_workspaces.sh | Decline | Under =set -o pipefail= a pipeline takes the failing =git grep='s status when nothing matches, so the guard is what lets the script run on. |
+| 2b | The caller count scans =.cpp= only. | evidence/measure_workspaces.sh | Accept | Headers are scanned too; still 0. |
+| 3 | The profile section hard-codes two profile names. | evidence/measure_workspaces.sh | Accept | The section is named for what it counts, and a new section lists every profile that sets the flag. |
+| 4a | Abandoned status cells are not padded. | three abandoned documents | Accept | Padded. |
+| 4b | The abandoned story's sprint row still says the shell surface is in flight. | sprint.org | Accept | The row states the abandonment. |
+| 5 | =inventory.txt= is a snapshot and will look stale. | evidence/inventory.txt | Decline | Its first line names its commit, and the story's Inventory section says the script is the source and each task records it at its own head. The snapshot was retaken after the rebase. |
 
 * Result
 

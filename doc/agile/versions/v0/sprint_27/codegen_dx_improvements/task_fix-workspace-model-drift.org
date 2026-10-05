@@ -40,12 +40,12 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED |
+| State        | ABANDONED                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
 | Now          | Nothing. Abandoned; see Result. |
-| Waiting on   | Nothing. |
-| Next         | Nothing. |
-| Last touched | 2026-10-05 |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 

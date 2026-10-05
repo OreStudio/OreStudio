@@ -9,21 +9,27 @@ echo "commit $(git rev-parse --short HEAD)"
 echo
 echo "## Tables with a workspace_id column, by SQL directory"
 git grep -l -E '^\s*"?workspace_id"?\s+uuid' -- 'projects/ores.sql/create/*' \
-    | awk -F/ '{print $4}' | sort | uniq -c
+    | awk -F/ '{print $4}' | sort | uniq -c || true
 
 echo
 echo "## Models that set has_workspace_id true"
-git grep -l ":has_workspace_id: true" -- 'projects/*/modeling/*.org'
+git grep -l ":has_workspace_id: true" -- 'projects/*/modeling/*.org' || true
 
 echo
-echo "## Models bound to a profile whose default sets has_workspace_id true"
+# The two profiles that set has_workspace_id true when the removal began. A
+# profile that sets it later is not counted here; the profile check below is.
+echo "## Models bound to fk-scoped-child or workspace-scoped-lookup"
 git grep -l -E ":profile:.*(fk-scoped-child|fk_scoped_child|workspace-scoped-lookup|workspace_scoped_lookup)" \
-    -- 'projects/*/modeling/*.org' | awk -F/ '{print $2}' | sort | uniq -c
+    -- 'projects/*/modeling/*.org' | awk -F/ '{print $2}' | sort | uniq -c || true
+
+echo
+echo "## Profiles that set has_workspace_id true"
+git grep -l -E "\]\[has_workspace_id\]\] \| true \|" -- 'projects/modeling/variability_*.org' || true
 
 echo
 echo "## Files naming workspace_id, by component (excluding ores.workspace and doc)"
 git grep -l "workspace_id" -- 'projects/*' ':!projects/ores.workspace' \
-    | awk -F/ '{print $2}' | sort | uniq -c | sort -rn
+    | awk -F/ '{print $2}' | sort | uniq -c | sort -rn || true
 
 echo
 echo "## ores.workspace component files"
@@ -39,6 +45,6 @@ count() { git grep -n "$@" | wc -l || true; }
 echo "## Callers that select a workspace other than Live"
 echo "setWorkspace callers in ores.web (excluding the definition):"
 count "setWorkspace(" -- projects/ores.web ':!*client.ts'
-echo "with_workspace_id / with_workspace_resolution callers outside tests:"
-count -E "\.with_workspace_(id|resolution)\(" -- 'projects/*.cpp' \
+echo "with_workspace_id / with_workspace_resolution callers in C++ sources and headers, outside tests:"
+count -E "\.with_workspace_(id|resolution)\(" -- 'projects/*.cpp' 'projects/*.hpp' \
     ':!projects/ores.nats/src/service/nats_client.cpp' ':!projects/*/tests/*'

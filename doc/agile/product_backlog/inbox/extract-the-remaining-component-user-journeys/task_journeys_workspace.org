@@ -26,12 +26,12 @@ Every journey a person had in ores.workspace is documented as a user journey, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED |
+| State        | ABANDONED                              |
 | Parent story | [[id:1BDBC708-2749-41D0-9E2F-6B0EB7FBE645][Extract the remaining component user journeys]] |
 | Now          | Nothing. Abandoned; see Result. |
-| Waiting on   | Nothing. |
-| Next         | Nothing. |
-| Last touched | 2026-10-05 |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 

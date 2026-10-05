@@ -34,9 +34,11 @@
  * with the username of the approver whose decision closed it. IAM grants each
  * one. It is a reconciliation, not a queue: granting a role takes the row out
  * of the answer, so running it twice grants nothing twice, and an approval made
- * while IAM was down is granted the next time it runs. Only active tenants
- * are read: a tenant that was terminated or removed has nobody to grant to, and
- * leaving its approvals in the answer would fail every run.
+ * while IAM was down is granted the next time it runs. Only tenants that still
+ * exist and are not terminated are read: a removed or terminated tenant has
+ * nobody to grant to, and leaving its approvals in the answer would fail every
+ * run. A suspended tenant's approvals are still granted, since suspension only
+ * stops signing in.
  */
 
 create or replace function ores_iam_open_role_grant_requests_fn(
@@ -100,7 +102,7 @@ begin
        and q.valid_to = ores_utility_infinity_timestamp_fn()
     join ores_iam_tenants_tbl t
         on t.id = g.tenant_id
-       and t.status = 'active'
+       and t.status <> 'terminated'
        and t.valid_to = ores_utility_infinity_timestamp_fn()
     where g.valid_to = ores_utility_infinity_timestamp_fn()
       and q.kind_code = 'iam.role_grant'

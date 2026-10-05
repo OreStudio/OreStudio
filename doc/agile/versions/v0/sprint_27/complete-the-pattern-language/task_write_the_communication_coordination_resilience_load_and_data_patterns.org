@@ -8,7 +8,7 @@
 #+filetags: :complete-the-pattern-language:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/write-the-remaining-pattern-groups
-#+pr:
+#+pr: 2666
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2666][#2666]] | [doc] Write the remaining service architecture pattern groups |
 
 * Review
 

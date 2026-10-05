@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 2BA72C77-99DC-4538-8937-52A572CF6F53
+:END:
+#+title: Role requests
+#+description: How a person gains a role by asking: which roles may be asked for, who decides, how an approval becomes a grant exactly once, and what each step leaves for the audit.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:iam:rbac:approval:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+* Summary
+
+(Three to five sentences capturing the load-bearing facts. Should be
+enough that a reader skimming the summary alone can decide whether to
+read on.)
+
+* Detail
+
+(The content proper. Subheadings welcome; aim for navigable, not
+exhaustive.)
+
+* Patterns used
+
+(Optional. When this page describes how services work together, list each
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][service architecture pattern]] it
+applies, with a link and one line on how this page applies it. The pattern
+lists this page back in its =* In ORE Studio= section, and
+=build/scripts/check_pattern_uses.py= checks both directions. Delete the
+section when the page describes no interaction between services.)
+
+-
+
+* See also
+
+-

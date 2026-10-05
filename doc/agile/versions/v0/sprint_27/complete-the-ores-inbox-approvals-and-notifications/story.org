@@ -50,7 +50,7 @@ moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | BACKLOG | | | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
+| [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | STARTED | 2026-10-05 | | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
 | [[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] | DONE | 2026-10-05 | 2026-10-05 | The IAM role grant request and its roles as the first approval kind, applying an approval through the ordinary grant and raising the waiting and decided notifications. |
 
 * Decisions

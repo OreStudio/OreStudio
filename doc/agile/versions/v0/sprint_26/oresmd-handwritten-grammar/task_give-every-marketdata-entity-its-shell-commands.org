@@ -8,7 +8,7 @@
 #+filetags: :oresmd-handwritten-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/give-every-marketdata-entity-its-shell-commands
-#+pr:
+#+pr: 2643
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2643][#2643]] | [marketdata] Give every marketdata entity its shell commands |
 
 * Review
 

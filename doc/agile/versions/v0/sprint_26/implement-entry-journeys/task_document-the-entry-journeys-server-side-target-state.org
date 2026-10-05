@@ -8,7 +8,7 @@
 #+filetags: :web:iam:journeys:entry:v0:sprint_26:implement-entry-journeys:
 #+owner: marco
 #+branch: feature/implement-entry-journeys
-#+pr:
+#+pr: 2423
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-29
@@ -80,8 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2423][#2423]] | [iam,web] Implement the entry journeys' registration door |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

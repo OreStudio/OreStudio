@@ -8,7 +8,7 @@
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
 #+branch: feature/ore-report-configuration
-#+pr:
+#+pr: 2307
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -132,8 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2307][#2307]] | [reporting] Model the registry and round trip a credit simulation |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

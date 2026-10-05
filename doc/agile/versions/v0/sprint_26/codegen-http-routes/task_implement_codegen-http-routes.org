@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen-http-routes:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/http-story-closeout
 #+pr: 2229
 #+blocked_on:
 #+blocked_since:

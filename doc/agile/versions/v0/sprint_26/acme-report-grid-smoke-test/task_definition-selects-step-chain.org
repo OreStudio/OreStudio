@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
 #+owner: marco
-#+branch: feature/definition-selects-step-chain
-#+pr:
+#+branch: feature/execution-mode-and-result-roles
+#+pr: 2289
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -71,8 +71,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2289][#2289]] | [reporting] Select a report's phases from its run configuration |
 * Result
 
 Closed without its own change, because PR #2289 delivered the whole of its goal

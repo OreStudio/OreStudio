@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 6047683C-54F2-4FAC-A55E-AD0CFF371852
+:END:
+#+title: Story: Return marketdata to the clean-standard registry
+#+description: The remainder of the oresmd rewrite: take the marketdata registry entry once P01 and H01 close, and remove the namespace closer comments H03 forbids from the templates and the files they generate. Split from Rewrite the oresmd grammar as a hand-written codec checked against ORE at sprint 26 close.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:oresmd:sprint_26:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+marketdata passes every item of the component clean standard, or holds an
+exception the owner accepted, and is back in =COMPONENTS_UNDER_TEST= so the
+drift and protocol twin gates cover it again: P01 and H01 close, H03's
+namespace closer comments leave the templates and the files they generate,
+and the record is re-measured at one commit.
+
+This story was split from
+[[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a
+hand-written codec checked against ORE]] when that story was reworded to its
+delivered scope and closed DONE at the sprint 26 close on 2026-10-05; its
+two tasks moved here.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Take P01 and H01 first, then re-measure the record and restore the registry entry. |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- P01: every marketdata list request carries the canonical =as_of= read, or
+  the owner accepts P01 as an exception with the reason backlog story
+  =F15A8480= records.
+- H01: the composite root diagram =modeling/ores.marketdata.puml= carries
+  the two-pass sentinel, or the reason it cannot is accepted as an
+  exception.
+- H03: no template and no generated file carries a namespace closer
+  comment.
+- Every one of the 49 items is re-measured at one commit and recorded in
+  Measurements.
+- marketdata is back in =COMPONENTS_UNDER_TEST=, and
+  =check_component_drift.py --all= and =check_protocol_twin_coverage.py=
+  pass with it listed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | BACKLOG | | | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
+| [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]] | BACKLOG | | | Fourteen shared C++ templates end each namespace with an end-of-line comment, which H03 forbids; remove it from the templates and from the 2,873 files they generated, in one mechanical PR. |
+
+* Decisions
+
+* Out of scope
+
+-

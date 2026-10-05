@@ -8,7 +8,7 @@
 #+filetags: :listener-falls-behind-a-notification-burst:sprint_26:v0:
 #+owner: marco
 #+branch: hotfix/listener-falls-behind-a-notification-burst
-#+pr:
+#+pr: 2513
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-02
@@ -72,8 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2513][#2513]] | [database] Drain the listener's backlog without pausing between polls |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

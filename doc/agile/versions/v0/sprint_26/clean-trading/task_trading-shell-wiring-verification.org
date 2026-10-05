@@ -40,7 +40,7 @@ check is the one that already fails and is therefore honest.
 | State        | DONE                                 |
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Nothing. |
-| Waiting on   | The merge of #2496. |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-02                               |
 

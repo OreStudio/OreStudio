@@ -29,8 +29,8 @@ Every distinct fixing index name in external/ore/examples resolves to an oresmd 
 | State        | DONE                              |
 | Parent story | [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] |
 | Now          | Nothing. Every class the corpus puts in the fixing space is closed: interest rates 57 of 57, intraday power 48, commodity 25, equity 8, inflation 7, FX 7, security 2 and generic 2. That is 156 of the 158 names in a fixing column, and the other two are market-data keys rather than index names, refused and pinned apart. |
-| Waiting on   | Nothing. The corpus-driven test's allowlist is empty. |
-| Next         | Nothing. The review is recorded, the pull requests are merged, and the import's use of =from_index_name= landed with the identity cutover (#2414, #2425), which is what the third acceptance was waiting on. |
+| Waiting on | Nothing. |
+| Next | Nothing. |
 | Last touched | 2026-09-30                               |
 
 * Acceptance

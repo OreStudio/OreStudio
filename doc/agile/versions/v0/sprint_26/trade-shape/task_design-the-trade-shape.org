@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :trade-shape:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-trade-groups
 #+pr: 2521
 #+blocked_on:
 #+blocked_since:

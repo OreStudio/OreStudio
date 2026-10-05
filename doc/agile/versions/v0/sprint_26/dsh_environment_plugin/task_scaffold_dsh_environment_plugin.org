@@ -8,7 +8,7 @@
 #+filetags: :dsh_environment_plugin:sprint_26:v0:
 #+owner: marco
 #+branch: feature/dsh-environment-plugin
-#+pr:
+#+pr: 2417
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -74,8 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2417][#2417]] | [dsh] Add the environment plugin and the compass verb it reads |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

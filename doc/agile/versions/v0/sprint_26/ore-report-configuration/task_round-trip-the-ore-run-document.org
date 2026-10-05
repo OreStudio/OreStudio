@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch: feature/ore-report-configuration
-#+pr:
+#+branch: feature/model-the-run-document-and-analytics
+#+pr: 2383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -80,8 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2383][#2383]] | [reporting] Model the run document and the analytic list |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

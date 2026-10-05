@@ -5,16 +5,16 @@
 #+description: Raise the recovery case's step-command buffer to 512 and its wait to 20 seconds, with the reason beside them, and verify the case alone and with other suites beside it.
 #+type: task
 #+level: s1
-+#+filetags: :hotfix:workflow:tests:isolation:sprint_26:v0:workflow-recovery-test-isolation-hotfix:
-+#+owner: marco
-+#+branch: hotfix/recovery-test-isolation
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-10-01
-+#+updated: 2026-10-01
-+#+environment: clever_dijkstra
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+filetags: :hotfix:workflow:tests:isolation:sprint_26:v0:workflow-recovery-test-isolation-hotfix:
+#+owner: marco
+#+branch: hotfix/regenerate-the-er-diagram
+#+pr: 2458
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4F9A2C81-7E35-4B6D-A0C2-8D1F3E7B5A96][Hotfix: the recovery test fails when the database is busy]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -69,8 +69,7 @@ Make the recovery case pass whatever else is running.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2458][#2458]] | Regenerate the ER diagram the SQL tree drifted away from |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

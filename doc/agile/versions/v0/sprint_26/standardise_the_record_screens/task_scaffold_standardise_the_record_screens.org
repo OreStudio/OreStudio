@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_record_screens:sprint_26:v0:
 #+owner: marco
 #+branch: feature/standardise-the-record-screens
-#+pr:
+#+pr: 2649
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -74,8 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2649][#2649]] | [doc] Add the record screen standard |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

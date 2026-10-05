@@ -2,12 +2,12 @@
 :ID: 407D66D4-EB37-4B79-967D-5019B9899A42
 :END:
 #+title: Story: Generate the shell surface of the clean components
-#+description: Every ores.shell command a component at the clean standard answers is code generated, or is a hand-crafted command signed off with a reason. Closes with the shell facet defaulting on at the profile level.
+#+description: Every ores.shell command a component at the clean standard answers is code generated, or is a hand-crafted command signed off with a reason. The facet's profile-level default split to its own story at the sprint 26 close.
 #+type: story
 #+level: s2
 #+filetags: :shell:codegen:cleanup:sprint_26:v0:
 #+created: 2026-10-01
-#+updated: 2026-10-01
+#+updated: 2026-10-05
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,24 +15,29 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Each component the clean standard has cleared has a shell surface that generation produces, with every hand-crafted command recorded and justified, and the ores.cpp.shell-command facet then defaults on at the profile level.
+Each component the clean standard has cleared has a shell surface that generation produces, with every hand-crafted command recorded and justified. The facet's profile-level default split to [[id:8C88DD48-2C49-4DD6-87FB-882FE9E1BCA0][Default the shell facet on at the profile level]] at the sprint 26 close on 2026-10-05.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The seven components are done; the profile default is blocked on the programme. |
-| Waiting on    | The clean-standard pass of every component outside this story. |
-| Next          | Flip the facet node's default once no component would gain an unintended unit, or land it with explicit opt-outs. |
-| Last touched  | 2026-10-01                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-05                               |
+
+On 2026-10-05, at the sprint 26 close, this story was reworded to the
+surface it delivered and closed DONE. The facet's profile-level default is
+[[id:8C88DD48-2C49-4DD6-87FB-882FE9E1BCA0][Default the shell facet on at the
+profile level]], and the task Default the shell facet on moved there.
 
 * Acceptance
 
 - Every command the shell answers for each clean component is produced by a generated unit, or is recorded on that component's task as a hand-craft with its reason.
 - No two shell units register the same menu or verb, and every duplicate found is removed rather than shadowed.
-- The ores.cpp.shell-command facet is enabled at the profile level, and the tree builds with every shell suite green.
+- The tree builds with every shell suite green.
 
 * Tasks
 
@@ -45,7 +50,6 @@ Each component the clean standard has cleared has a shell surface that generatio
 | [[id:2BBD64F2-E5CE-41EC-8848-CD13897364F6][Generate the refdata shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every refdata command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:DFE84302-EB58-4414-9ACA-D96790A44DE8][Generate the storage shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every storage command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
 | [[id:9AD6EDE6-3242-4976-BA00-AA6BDDA35A37][Generate the synthetic shell surface]] | DONE | 2026-10-01 | 2026-10-01 | Check every synthetic command the shell answers, make the generated units the whole surface, and record every remaining hand-craft with its reason. |
-| [[id:9B53C333-7C25-45E1-8855-D1BE8794F6F3][Default the shell facet on at the profile level]] | BLOCKED | 2026-10-01 | | With every clean component's shell surface generated, make ores.cpp.shell-command default on so a model no longer opts in one file at a time. The safe half is done; the flip is blocked because the facet default is global and 76 models in 16 components would gain a unit. |
 
 * Notes
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :web:ux:journeys:setup:iam:v0:sprint_26:implement-setup-journeys:
 #+owner: marco
-#+branch:
+#+branch: chore/close-the-reload-task
 #+pr: 2381
 #+blocked_on:
 #+blocked_since:

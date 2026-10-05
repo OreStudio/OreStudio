@@ -30,7 +30,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Parent story | [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] |
 | Now          | The story, its implement task and the sprint wiring are written, and PR #2293 carries them. |
 | Waiting on   | Nothing.                               |
-| Next          | Nothing. The story's implement task starts after this lands. |
+| Next | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

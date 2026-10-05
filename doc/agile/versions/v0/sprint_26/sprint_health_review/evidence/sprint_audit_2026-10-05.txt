@@ -1,0 +1,131 @@
+🧭 ores.compass — sprint audit: Sprint 26
+
+🔀  Open tasks whose pull requests have all merged
+  • Model the handcrafted ores.dq code and generate the artefact tables  STARTED, merged #2189, #2190, #2193, #2196, #2198, #2200, #2203, #2216, #2220, #2224, #2231, #2237, #2239, #2244, #2248, #2252, #2260
+    story: Clean ores.dq to the component clean standard
+    compass show 686E9BB0-5A38-4E72-93B8-65CF76B35710
+  • Bring ores.scheduler to the clean standard  STARTED, merged #2169
+    story: Clean ores.scheduler to the component clean standard
+    compass show 49B3C660-E587-4CFC-B703-63DC845F7610
+  • Bring ores.synthetic to the clean standard  STARTED, merged #2159, #2170
+    story: Clean ores.synthetic to the component clean standard
+    compass show 8063C1A9-79D8-404A-8FF1-3D02706702CF
+  • Default the shell facet on at the profile level  BLOCKED, merged #2474
+    story: Default the shell facet on at the profile level
+    compass show 9B53C333-7C25-45E1-8855-D1BE8794F6F3
+  • Add the identity workflow and the commands that drive it  STARTED, merged #2180, #2184
+    story: Exercise the workflow engine end to end
+    compass show 0442FD13-1833-427F-B6CA-C4B5877C452B
+  • Remove the presentation keys no template reads  STARTED, merged #2138
+    story: Remove the legacy Qt remnants
+    compass show 54AEFA10-CE27-4878-B692-4CD1A109FF84
+
+🧹  Closed documents whose Now is not 'Nothing.'
+  • Give a person's token the permissions they hold  (story, DONE) Now: All tasks done.
+    compass show 31644F1D-5A51-4742-BF6B-1E72F4697229
+  • Act inside a tenant  (story, DONE) Now: All tasks done.
+    compass show 9AD70987-64E2-44A6-B214-A2449F00C905
+  • Clean ores.cli to the component clean standard  (story, ABANDONED) Now: Closed unstarted. The component retires instead.
+    compass show 534EAFC1-37CC-4A0D-A508-C10272612F23
+  • Bring ores.cli to the clean standard  (task, ABANDONED) Now: Closed unstarted. The component retires instead.
+    compass show 62ADAC3F-A0DF-41B5-A80A-25284C2431C8
+  • Clean ores.iam to the component clean standard  (story, DONE) Now: Closed. The clean-up, the defects it recorded and the security defects the same review found are all closed.
+    compass show D65BA4A2-8FBD-429D-B2AD-697D4F66C20A
+  • Bring ores.marketdata to the clean standard  (task, DONE) Now: Complete. 28 checklist items Pass, four Fail and one Partial; the five are recorded with their dispositions in =* Result= and none is left untracked. The story's four other tasks are merged.
+    compass show F9E8C6BE-9606-48E5-AEE3-431642C0EB28
+  • Give every fixing index name an oresmd identity  (task, DONE) Now: Nothing. Every class the corpus puts in the fixing space is closed: interest rates 57 of 57, intraday power 48, commodity 25, equity 8, inflation 7, FX 7, security 2 and generic 2. That is 156 of the 158 names in a fixing column, and the other two are market-data keys rather than index names, refused and pinned apart.
+    compass show AB2922AA-8208-442C-B39C-156877E83D64
+  • Clean ores.platform to the component clean standard  (story, DONE) Now: Work done 2026-09-25. Thirteen items landed, plus the shared scoped temp types, across eight commits and the tree is verified.
+    compass show C9C01FAC-E281-46DF-9C3C-C718E7B6C003
+  • Bring ores.platform to the clean standard  (task, DONE) Now: Nothing. The work is done and verified.
+    compass show DE3200A3-7E68-40DE-B2C8-53FAF985B27D
+  • Clean ores.refdata to the component clean standard  (story, DONE) Now: Complete, with no accepted exception, and merged. Every applicable item passes with its evidence on the task, V04 included: the shell sweep runs all 732 generated refdata commands against the live fleet with 0 aborts. Merged to main as =f69b1e61b5= through PR #2318, and the merged tree was verified again end to end.
+    compass show 70CC87FB-BA24-4B22-827F-F4F42C1F5A1B
+  • Bring ores.refdata to the clean standard  (task, DONE) Now: Complete, with no accepted exception left, and re-verified a second time on main. Every applicable item passes, V04 included: the shell sweep runs all 732 generated refdata commands with 0 aborts, and =ores.refdata= is listed in =COMPONENTS_UNDER_TEST= with =check_component_drift.py --all= reporting no drift. The second rebase (main had moved 292 commits) re-ran the whole gate on a store rebuilt from nothing; it found two main-side defects, both filed, and one stale environment variable.
+    compass show 1117D49B-5460-4A3A-AE4F-8263A3270251
+  • Clean ores.security to the component clean standard  (story, DONE) Now: Merged as `b2e6c069db` in PR #2162.
+    compass show 7EF62300-3026-49F9-A663-A1F3705C70A1
+  • Bring ores.security to the clean standard  (task, DONE) Now: Merged as `b2e6c069db` in PR #2162.
+    compass show B4721EB0-FEA5-4AE1-96F2-58717D29B323
+  • Clean ores.service to the component clean standard  (story, DONE) Now: Done. The task's record carries the item-by-item evidence.
+    compass show C649F853-C3F9-47E1-AF47-EB84DD27EC2F
+  • Sync the ores.trading tree to its models  (task, DONE) Now: Merged as =8733a051fb= on 2026-09-26. All eleven pull-request checks pass.
+    compass show 14795122-7D5B-442E-9B2A-E7517632F612
+  • Clean ores.utility to the component clean standard  (story, DONE) Now: Merged as `9b2427bfca` in PR #2155.
+    compass show 2464A2A7-8744-4F0C-A2E4-6A1D11DF30EA
+  • Bring ores.utility to the clean standard  (task, DONE) Now: Merged as `9b2427bfca` in PR #2155.
+    compass show 71F982F0-B4AB-426F-ADFB-BD1CF9881459
+  • Clean ores.variability to the component clean standard  (story, DONE) Now: Nothing. Delivered on =feature/clean-variability=, PR #2176.
+    compass show BE43B02A-BBD7-426E-8803-722506B0D51B
+  • Clean ores.workspace to the component clean standard  (story, DONE) Now: Nothing. The component is generated, builds, tests, recreates its schema from scratch, is listed in =COMPONENTS_UNDER_TEST=, carries the namespace documentation headers G08 asks for, and cannot have its Live workspace archived or deleted.
+    compass show 86ECC459-36B7-4521-91EB-DDD83534CFA3
+  • Bring ores.workspace to the clean standard  (task, DONE) Now: Complete. Every item is recorded in the table below, the component is generated and listed in =COMPONENTS_UNDER_TEST=, and the review round is what remains.
+    compass show 2B99EBE4-6153-43E4-AF72-37E6FFFF768C
+  • Mop up the workspace clean-up leftovers  (task, DONE) Now: Complete, and merged as #2337. Every item below is done or handed over with its measurement.
+    compass show 3AE56807-65BE-4965-9863-D2E6116C211F
+  • Convert the remaining integer flags to boolean  (task, DONE) Now: Nothing. All three columns are boolean, each with a one-shot migration.
+    compass show DA77CBDB-6C6C-4033-8794-53A35C1FD2CB
+  • Retire the orphaned ORE directory round-trip export  (task, ABANDONED) Now: Closed unstarted. The method is kept and covered instead.
+    compass show BC0854B0-E6FD-4935-B326-7FDC654A80CB
+  • Format the generated TypeScript with prettier  (story, DONE) Now: The style is committed, the render formats its own output, the tree passes the check, and the check runs on a pull request. The drift gate is clean.
+    compass show 753E0E14-FDCE-46B5-86AD-0F4AF6721CA3
+  • Scaffold story: Format the generated TypeScript with prettier  (task, DONE) Now: The story, its implement task and the sprint wiring are written, and PR #2293 carries them.
+    compass show 06C72448-F226-4D00-9C29-A1A09A38FFCB
+  • Keep the ores.iam eventing tests idempotent  (story, DONE) Now: The synthetic seed profile's code is unique per deployment, so =ores.iam.core.tests= passes twice in a row against one database: 425 assertions in 165 test cases, both runs. What the tests still leave behind is captured rather than silent.
+    compass show 4A771CA8-1640-4AC4-AB36-B7C64B6C38AA
+  • Implement the entry journeys in ores.web  (story, DONE) Now: Both journeys run. The server refuses the registration it should never have accepted, resolves the tenant from the address, and writes the state; the BFF serves the policy read and the sign-up route; and the door renders the closed notice or the same rail the setup journeys use, with the confirmation naming what the account received and what it still waits for. The sign-in dialog and the door carry the same banner element as the setup journeys. Asking for more roles is the Access group's own journey, and it is written.
+    compass show E156DD8A-327F-4B7E-B7FE-A2DE8559002F
+  • Implement the setup journeys in ores.web  (story, DONE) Now: Both clients run the three Setup journeys' work against the same contract, and nothing is left of the provisioning the wizards did client-side. The browser sets an empty installation up from the setup page — the first administrator, the first tenant from a registered starting point, the hand-over, the first sign-in and *Ready* — and a reload comes back to the rail rather than stranding the person. The shell says the same things with =bootstrap setup=, =provision tenant= and =provision party=, each sending one request per stage and following the run through the same progress read the browser's rail renders, and the end-to-end recipes each ran from their own empty installation to a working tenant. The two verbs the generic request replaced retired with the shell, and so did the generated duplicates of the porcelain commands and the synthetic organisation generator. Every acceptance line is met, the last one by =scripts/verify-first-run.ts=, and the *Operational* card now chooses its root legal entity from the deployment's register rather than taking a code it cannot check.
+    compass show DCF3E855-AEDF-4520-97B6-815A428DB514
+  • Build the application shell, the route table and the bootstrap gate  (task, DONE) Now: The two shells, the route table and the bootstrap gate are in, and the gate reads the server's own answer. The workspace typechecks, passes the format check, tests green and builds.
+    compass show 804BA5B0-0025-43C9-8D58-936B279C44A9
+  • Correct and add the architecture the journeys depend on  (task, DONE) Now: Units 1 to 3 are written, in three commits. =compass lint= is clean, and the site renders every page the change touches.
+    compass show 6F644305-4D98-4F58-8BFF-1CF3E8B46427
+  • Create the first administrator from the setup screen  (task, DONE) Now: The setup screen creates the first administrator, the server closes bootstrap mode when it does, and the path is proven against the running fleet.
+    compass show 549C5E75-56B8-47B9-B365-9B9FC0F8D023
+  • Default the administrator's identity on the setup screen  (task, DONE) Now: The form proposes the administrator's identity and leaves the password to the person. The workspace typechecks, passes the format check, tests green and builds.
+    compass show F22E12E7-C099-4B6F-BD7A-024448F015A8
+  • Define the tenant provisioning workflow  (task, DONE) Now: Complete: a live run of the Operational profile finishes in four steps, the tenant leaves bootstrap mode and holds the data its profile ordered.
+    compass show 1516C4BD-65A6-4A5D-A2AD-A1F358D14050
+  • Give the setup screen its banner and its copy  (task, DONE) Now: The screen carries the banner and the copy states the condition, the consequence and what the setup process begins with. The workspace typechecks, passes the format check, tests green and builds.
+    compass show 6D345419-B3C5-4B20-BE04-126807CC4641
+  • Restore the UI primitives and port the journey runtime  (task, DONE) Now: The primitives are restored and the rail renders from =journeys/runtime.ts=. The workspace typechecks, builds and tests green.
+    compass show ADEB07AC-11FC-44B1-958F-D542A32D8E09
+  • Implement order and filter in the generated list contract  (story, DONE) Now: Done.
+    compass show B476DBDD-F7AE-4337-A2F2-17295CE5A971
+  • Make the shell speak to people plainly  (story, DONE) Now: Done: every task is merged or in its final PR.
+    compass show 4F510088-2ABB-4204-A5E1-90B1C112BAA7
+  • Make the oresmd URI grammar explicit and typed  (story, DONE) Now: Every unit landed. The generated grammar it built was later replaced by the hand-written codecs of [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]].
+    compass show 12DAAEC7-2E9D-4487-80E5-E690737071B3
+  • Declare the oresmd coordinates in the models  (task, DONE) Now: Not yet started.
+    compass show 55EDA7FC-5AD9-4D90-93D0-9D5C48590389
+  • Scaffold story: Make the oresmd URI grammar explicit and typed  (task, DONE) Now: Not yet started.
+    compass show 86830D2B-9BEE-48C4-B3F7-DFC2F9901C9A
+  • Hotfix: Linux and Windows CI builds on main  (story, DONE) Now: Fix verified locally; PR raised.
+    compass show 8D47C644-5253-4476-9597-8BD4DEDD0ADB
+  • Refuse to start against a database built from other SQL  (story, DONE) Now: Every service, test run and compass services start compares the schema fingerprint compiled into the code with the one the database records, logs both, and refuses to start on a mismatch.
+    compass show A6B0E6DC-9A9C-44B5-B5C1-135BF71A0713
+  • Remove the ores.web fleet workaround  (story, DONE) Now: Nothing. The scripts are gone and the paths that offered them are updated.
+    compass show CC5F510F-28C4-40F8-B1F3-D5F666F3EDB9
+  • Roll the generator fixes out to the components outside the test list  (story, DONE) Now: Merged as =17fa9f47fd= through PR #2334, with 14 checks green. Five of the seven components are regenerated and the shell's scheduler command reads the optional definition the new shape carries. The merge tree is identical to the verified branch head.
+    compass show 5663FE34-8F23-40F6-B1BC-4E97B3290030
+  • Regenerate the five components and fix the callers the new shapes break  (task, DONE) Now: Merged. Every gate passed on the branch, and the merge commit's tree is identical to the branch head that was verified, so nothing needed re-running.
+    compass show 21B66CCB-379C-434B-821E-418CB5EC5867
+  • Make first-generation component scaffolding opt-in  (story, DONE) Now: Not yet started.
+    compass show 231347B8-D537-4742-8D7E-5296DAE9A070
+  • See an account's sign-ins  (story, DONE) Now: An administrator opens any account to its kind, sign-in state and sessions, newest first; the system administrator reads the system tenant's service accounts this way.
+    compass show B43E22C1-DBFA-4A7A-BB71-D613F588DD41
+  • Send the filter with every web list request  (story, DONE) Now: Done.
+    compass show 94DE38EB-1544-4BBE-84B6-C7957CEC691B
+  • Stop the web typecheck racing the web tests  (story, DONE) Now: Done.
+    compass show 47BF4D70-7118-4E86-BF9E-C5BBE47FE33E
+  • Split the trade into an anchor and its components  (story, DONE) Now: Done: the trade is an immutable row with temporal components, and the wide trade is gone.
+    compass show AA3E4655-8E80-4F69-845C-9D77B3985835
+  • Make the tenant roster a working list  (story, DONE) Now: All tasks done.
+    compass show E846FEE8-3E20-47D0-B8EC-7BC3BB4EA790
+  • Guard every reflected struct against the C1202 limit  (task, ABANDONED) Now: Abandoned: the premise does not hold.
+    compass show 384B992A-59D7-43C4-95D4-83D3E831C898
+
+  58 finding(s).
+
+[exited with code 0]

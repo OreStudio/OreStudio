@@ -8,7 +8,7 @@
 #+filetags: :oresmd-explicit-grammar:sprint_26:v0:
 #+owner: marco
 #+branch: feature/move-the-stored-identity
-#+pr:
+#+pr: 2497
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-01

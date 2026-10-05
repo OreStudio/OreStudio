@@ -5,16 +5,16 @@
 #+description: Parse the SQL tree into the model and render the diagram over it, then prove the check passes.
 #+type: task
 #+level: s1
-+#+filetags: :hotfix:sql:codegen:diagram:sprint_26:v0:er-diagram-drift-hotfix:
+#+filetags: :hotfix:sql:codegen:diagram:sprint_26:v0:er-diagram-drift-hotfix:
 #+owner: marco
-+#+branch: hotfix/regenerate-the-er-diagram
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-10-01
-+#+updated: 2026-10-01
-+#+environment: clever_dijkstra
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+branch: hotfix/regenerate-the-er-diagram
+#+pr: 2458
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-01
+#+updated: 2026-10-01
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D024F7F9-92A0-442F-9EDE-4BBD23597859][Hotfix: the ER diagram no longer matches the SQL tree]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -64,8 +64,7 @@ Take the =drift= job green for every pull request.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2458][#2458]] | Regenerate the ER diagram the SQL tree drifted away from |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

@@ -8,7 +8,7 @@
 #+filetags: :see_an_accounts_sign_ins:sprint_26:v0:
 #+owner: marco
 #+branch: feature/see-an-accounts-sign-ins
-#+pr:
+#+pr: 2623
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -74,8 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2623][#2623]] | [iam] Show an account's sign-ins |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

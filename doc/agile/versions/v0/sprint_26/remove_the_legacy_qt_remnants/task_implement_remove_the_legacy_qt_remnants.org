@@ -28,9 +28,9 @@ Nothing in the tree computes, documents or names a Qt concept that no longer exi
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16E56982-F716-4214-AA09-E438C1E46DC2][Remove the legacy Qt remnants]] |
-| Now          | Not yet started.                       |
+| Now          | The removal is delivered and verified; what remains is prose: about fourteen user manual chapters and the entity meta-model page still describe the Qt surfaces it deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Rewrite the manual chapters that describe Qt screens and the entity meta-model's drawer-property section. |
 | Last touched | 2026-09-23                               |
 
 * Acceptance

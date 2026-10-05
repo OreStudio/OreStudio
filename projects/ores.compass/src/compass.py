@@ -2012,7 +2012,7 @@ def _sc_get_merged_prs(start, end):
             "gh", "pr", "list", "--state", "merged",
             "--search", f"merged:>={start}",
             "--json", "number,title,createdAt,mergedAt",
-            "--limit", "200",
+            "--limit", "1000",
         ], text=True).strip()
     except subprocess.CalledProcessError as e:
         print(f"Warning: gh pr list failed: {e}", file=sys.stderr)
@@ -4041,12 +4041,13 @@ def _remove_task_row_from_story(story_path, task_id):
     except OSError:
         return None
     lines = text.splitlines()
+    first, last = _table_bounds(lines, "* Tasks")
     row_idx = None
-    for i, line in enumerate(lines):
-        if (f"[[id:{task_id.lower()}]" in line.lower()
-                and line.strip().startswith("|")):
-            row_idx = i
-            break
+    if first is not None:
+        for i in range(first, last + 1):
+            if f"[[id:{task_id.lower()}]" in lines[i].lower():
+                row_idx = i
+                break
     if row_idx is None:
         return None
     extracted = lines.pop(row_idx)

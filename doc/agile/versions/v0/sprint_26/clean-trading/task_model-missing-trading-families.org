@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/model-missing-trading-families
-#+pr:
+#+pr: 2333
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26

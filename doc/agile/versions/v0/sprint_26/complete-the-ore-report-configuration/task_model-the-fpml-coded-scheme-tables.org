@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 08B98A2C-5123-45B0-B536-8421AB99EC0E
+:END:
+#+title: Task: Model the FpML coded-scheme tables so codegen owns them
+#+description: Fifteen refdata coded-scheme tables (account types, asset classes, business centres and the rest), their DQ artefact tables and their notify triggers say do not edit, but the legacy JSON models that generated them no longer exist, so nothing can regenerate them and they have been edited by hand since. Write entity models for them so codegen produces the same SQL.
+#+type: task
+#+level: s1
+#+filetags: :complete-the-ore-report-configuration:sprint_26:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-02
+#+updated: 2026-10-02
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report configuration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Codegen produces the FpML coded-scheme tables, their DQ artefact tables and
+their notify triggers from models, so the "do not edit" comment on them is true
+again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A93B2CA2-66AB-4AD2-84EB-B41964980C57][Complete the ORE report configuration]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-02                               |
+
+* Acceptance
+
+- Each of the fifteen refdata coded-scheme tables has an entity model, and its generated create, notify trigger, drop and DQ artefact files are identical to the current ones or differ only in ways recorded and explained.
+- The hand-written =refdata_*_notify_trigger_create.sql= files for these tables are replaced by generated ones.
+- The census reports none of these files as hand-written or as another generator's output.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+From the [[file:evidence/hand_written_sql_census.md][hand-written SQL census]] in [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+
+These 44 files were written by the legacy JSON "table" models, which no longer
+exist. They have been edited by hand since, for example by =c30f8c312e=. The
+fifteen older =refdata_*_notify_trigger.sql= copies the legacy generator wrote
+were dead and are deleted by [[id:B9FE1B6D-08B1-4B06-BD76-5CDD12123568][Find why so much SQL is hand-written and generate what codegen can]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

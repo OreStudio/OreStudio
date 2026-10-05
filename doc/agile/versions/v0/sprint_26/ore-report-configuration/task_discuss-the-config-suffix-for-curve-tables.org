@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: none (a discussion task; no branch)
+#+pr: none (a discussion task; its outcome shipped in PR #2571)
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-03
@@ -88,14 +88,12 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| (none) | a discussion task; its outcome shipped in PR #2571. |
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
+| (none) | a discussion task; its outcome shipped in PR #2571. |
 * Result
 
 Decided by the operator on 2026-10-03, after the curve configuration round trip

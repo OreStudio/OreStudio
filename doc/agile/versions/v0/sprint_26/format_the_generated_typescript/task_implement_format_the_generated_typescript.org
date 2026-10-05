@@ -29,7 +29,7 @@ The TypeScript render emits a tree that no formatter owns, so the format check n
 | State        | DONE                              |
 | Parent story | [[id:753E0E14-FDCE-46B5-86AD-0F4AF6721CA3][Format the generated TypeScript with prettier]] |
 | Now          | Nothing. |
-| Waiting on   | The review round on the change. |
+| Waiting on | Nothing. |
 | Next          | Nothing. |
 | Last touched | 2026-09-27                               |
 

@@ -8,7 +8,7 @@
 #+filetags: :clean-trading:sprint_26:v0:
 #+owner: marco
 #+branch: feature/sync-trading-drift
-#+pr:
+#+pr: 2204
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-26
@@ -43,7 +43,7 @@ already reproduces the tree's semantics.
 | Parent story | [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] |
 | Now          | Merged as =8733a051fb= on 2026-09-26. All eleven pull-request checks pass. |
 | Waiting on   | Nothing. |
-| Next         | Raise PR 2, answer the review, merge, then start PR 3. |
+| Next | Nothing. |
 | Last touched | 2026-09-26                               |
 
 * Acceptance
@@ -529,7 +529,7 @@ component joins the registry and which are still vacuous.
 
 | PR | Title |
 |----+-------|
-| https://github.com/OreStudio/OreStudio/pull/2204[#2204] | Sync the ores.trading tree to its models |
+| [[https://github.com/OreStudio/OreStudio/pull/2204][#2204]] | Sync the ores.trading tree to its models |
 
 * Review
 

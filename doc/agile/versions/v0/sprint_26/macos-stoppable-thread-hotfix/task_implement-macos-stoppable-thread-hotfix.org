@@ -5,16 +5,16 @@
 #+description: Add ores.platform::concurrency::stoppable_thread, move the workflow engine's deadline watch onto it, and verify with the workflow and platform suites plus a macOS run.
 #+type: task
 #+level: s1
-+#+filetags: :hotfix:platform:workflow:macos:concurrency:sprint_26:v0:macos-stoppable-thread-hotfix:
-+#+owner: marco
-+#+branch: hotfix/macos-stoppable-thread
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-09-30
-+#+updated: 2026-09-30
-+#+environment: clever_dijkstra
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+filetags: :hotfix:platform:workflow:macos:concurrency:sprint_26:v0:macos-stoppable-thread-hotfix:
+#+owner: marco
+#+branch: hotfix/macos-stoppable-thread
+#+pr: 2442
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-30
+#+updated: 2026-09-30
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D1E7A34-8C26-4B0F-9A73-6E4B2C8D1F05][Hotfix: the workflow deadline watch uses a thread Apple's libc++ lacks]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -76,8 +76,7 @@ Make the deadline watch portable, so both macOS legs build and test again.
 
 | PR | Title |
 |----+-------|
-|    |       |
-
+| [[https://github.com/OreStudio/OreStudio/pull/2442][#2442]] | Fix the macOS build: a portable stoppable thread for the deadline watch |
 * Review
 
 | # | Comment summary | File | Decision | Notes |

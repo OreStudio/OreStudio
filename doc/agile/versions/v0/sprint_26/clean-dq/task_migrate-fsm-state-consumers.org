@@ -31,7 +31,7 @@ The migration also left the tree unable to recreate its own database. a fresh =c
 | State        | DONE         |                                        |
 | Parent story | [[id:832B7389-6F9A-4117-B832-221AA28FB56D][Clean ores.dq to the component clean standard]] | |
 | Now          | Nothing. |
-| Waiting on   | Nothing. | |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-09-27   |                                        |
 

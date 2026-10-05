@@ -29,7 +29,7 @@ Every pricingengine*.xml in the corpus round trips through the entities, both wa
 | State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing. The branch needs a PR. |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-01                               |
 

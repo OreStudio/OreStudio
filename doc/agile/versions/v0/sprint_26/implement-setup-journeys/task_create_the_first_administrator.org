@@ -29,8 +29,8 @@ The setup screen reports the state and cannot change it. Give it the one action 
 | State        | DONE                              |
 | Parent story | [[id:DCF3E855-AEDF-4520-97B6-815A428DB514][Implement the setup journeys in ores.web]] |
 | Now          | The setup screen creates the first administrator, the server closes bootstrap mode when it does, and the path is proven against the running fleet. |
-| Waiting on   | The review round on the change. |
-| Next          | The rest of plan step 4: the seed profile read, provision, progress and retry. |
+| Waiting on | Nothing. |
+| Next | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

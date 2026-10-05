@@ -37,7 +37,7 @@ fail closed rather than fall back to allow.
 | State        | DONE                              |
 | Parent story | [[id:5EA439A5-43AE-4223-9026-6B3D8C91AEEA][Give object storage a NATS and HTTP interface with authentication]] |
 | Now          | Nothing. |
-| Waiting on   | The review.                            |
+| Waiting on | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-09-26                               |
 

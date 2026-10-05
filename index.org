@@ -28,7 +28,7 @@
 #+HTML: <figcaption class="carousel-caption"><strong>Live FX Cross-Rates</strong><span>Real-time cross-rates matrices for any currency set, with mini price charts and configurable update intervals.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.24.png" alt="Organisational Structure">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.26.png" alt="Organisational Structure">
 #+HTML: <figcaption class="carousel-caption"><strong>Organisational Structure</strong><span>Manage parties, accounts, and holding-group hierarchies, visualised live in the Org Explorer.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">

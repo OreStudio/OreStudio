@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 765E9672-E777-48F6-A4A1-1AE08284FB9A
+:END:
+#+title: Task: Give the activity type its axes and priority
+#+description: Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is.
+#+type: task
+#+level: s1
+#+filetags: :trade-activities-and-links:sprint_27:v0:
+#+owner: marco
+#+branch: feature/trade-activities-and-links
+#+pr: 2668
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each activity type states whether it is economic, confirmable and real, and where it sits in the priority order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The activity type carries the economic, confirmable and real flags and a priority, seeded for every existing code.
+- The seeds match the trade activity knowledge note; a pgTAP test checks a sample of codes.
+
+* Plan
+
+- The activity type already has =requires_confirmation=, which is the
+  confirmable axis; add =is_economic=, =is_real= and =priority= beside it
+  rather than a second confirmable flag.
+- Priority ranks 1 to 8 follow the reason-for-update order in Trade
+  versioning (book moves first, misbooking last); 9 is every other cause.
+- Checks: the priority is a rank of that order, and a type that is not real
+  is neither economic nor confirmable.
+- One table in =scratchpad/seed_axes.py= rewrites every seed row with its
+  axes and adds =null_amend=, the one type that is not real. Several
+  confirmation flags change to agree with the activity mapping in the
+  knowledge note (amendment, partial and full termination, assignment,
+  increase, decrease, roll, compression, clearing, netting, rebook, split
+  and merge are confirmable).
+- The knowledge note gains a table of the seeded types generated from the
+  populate script, so the two cannot disagree.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Activity types seeded with axes and priority | 33 (32 plus =null_amend=) | =scratchpad/seed_axes.py= | cd915c1aa2 + working tree |
+| pgTAP, activity types, under the test DDL role | 8 of 8 | =pg_prove test/trading_activity_types_test.sql= | cd915c1aa2 + working tree |
+| pgTAP, every trading file, under the test DDL role | 5 files, 71 tests, pass | =pg_prove test/trading_*_test.sql= | cd915c1aa2 + working tree |
+| Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | cd915c1aa2 + working tree |
+| codegen pytest | 1139 passed | =pytest projects/ores.codegen/tests= | cd915c1aa2 + working tree |
+| ctest | 94 of 94 | =compass test run= | cd915c1aa2 + working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2668][#2668]] | [trading] Give the activity type its axes and priority |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR review: priority defaulted to 0 in C++, which the check refuses. | =ores.trading.activity_type.org= | accept | Defaults to 9 (every other cause) in the column and the C++ structs. |
+| 2 | PR review: no migration for existing databases. | =trading_activity_types_create.sql= | decline | Schema changes ship by recreate; the binaries carry the schema fingerprint. |
+| 3 | PR review: validate the axes in the service before the database. | =activity_type_service.cpp= | decline | The checks are the one rule; a second copy in the service could drift from them. |
+| 4 | PR review: the shell commands take three more positionals. | =activity_type_commands.cpp= | decline | Every caller is generated and updated here; the only other mention is a sprint 26 evidence file. |
+| 5 | PR review: maturity and cancellation reversals are economic without confirmation. | =trading_activity_types_populate.sql= | decline | A reversal puts the trade's cash flows back, so it is revalued; the note says neither needs a new confirmation. |
+
+* Result
+
+Each activity type states the confirmable (=requires_confirmation=),
+economic and real axes and its priority in the reason-for-update order. The
+schema refuses a priority outside ranks 1 to 9 and a type that is not real
+but claims to be economic or confirmable. =null_amend= joins the seeds as
+the one type that is not real, and the confirmation flags now agree with
+the activity mapping in the trade activity note, which lists every seeded
+type with its axes.

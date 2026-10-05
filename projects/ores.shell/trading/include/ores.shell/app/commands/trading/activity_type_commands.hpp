@@ -87,24 +87,25 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <category> <requires_confirmation> <description> <fpml_event_type_code>
-     * <fsm_transition_id> <reason> <commentary>
+     * @brief add <code> <category> <requires_confirmation> <is_economic> <is_real> <priority>
+     * <description> <fpml_event_type_code> <fsm_transition_id> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <code> <category> <requires_confirmation> <description> <fpml_event_type_code>
-     * <fsm_transition_id> <reason> <commentary> [--version <n>]
+     * @brief set <code> <category> <requires_confirmation> <is_economic> <is_real> <priority>
+     * <description> <fpml_event_type_code> <fsm_transition_id> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <code> <category> <requires_confirmation> <description>
-     * <fpml_event_type_code> <fsm_transition_id> <reason> <commentary>
+     * @brief put-many --count <n> <code> <category> <requires_confirmation> <is_economic> <is_real>
+     * <priority> <description> <fpml_event_type_code> <fsm_transition_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

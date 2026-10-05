@@ -42,6 +42,9 @@ create table if not exists "ores_trading_activity_types_tbl" (
     "version" integer not null,
     "category" text not null,
     "requires_confirmation" boolean not null default false,
+    "is_economic" boolean not null default false,
+    "is_real" boolean not null default true,
+    "priority" integer not null default 9,
     "description" text null,
     "fpml_event_type_code" text null,
     "fsm_transition_id" uuid null,
@@ -60,7 +63,9 @@ create table if not exists "ores_trading_activity_types_tbl" (
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
     check ("category" in ('new_activity', 'lifecycle_event', 'misbooking', 'valuation_change', 'cancellation')),
-    check ("fpml_event_type_code" is null or "fpml_event_type_code" in ('New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination'))
+    check ("fpml_event_type_code" is null or "fpml_event_type_code" in ('New', 'Amendment', 'Novation', 'PartialTermination', 'FullTermination')),
+    check ("priority" between 1 and 9),
+    check ("is_real" or not ("is_economic" or "requires_confirmation"))
 );
 
 -- Version uniqueness for optimistic concurrency

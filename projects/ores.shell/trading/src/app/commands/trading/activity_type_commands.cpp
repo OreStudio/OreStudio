@@ -141,24 +141,26 @@ void activity_type_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <category> <requires_confirmation> <description> <fpml_event_type_code> "
-        "<fsm_transition_id> <reason> <commentary>");
+        "add <code> <category> <requires_confirmation> <is_economic> <is_real> <priority> "
+        "<description> <fpml_event_type_code> <fsm_transition_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <category> <requires_confirmation> <description> <fpml_event_type_code> "
-        "<fsm_transition_id> <reason> <commentary> [--version <n>]");
+        "set <code> <category> <requires_confirmation> <is_economic> <is_real> <priority> "
+        "<description> <fpml_event_type_code> <fsm_transition_id> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <category> <requires_confirmation> <description> "
-        "<fpml_event_type_code> <fsm_transition_id> <reason> <commentary>");
+        "put-many --count <n> <code> <category> <requires_confirmation> <is_economic> <is_real> "
+        "<priority> <description> <fpml_event_type_code> <fsm_transition_id> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +355,8 @@ void activity_type_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -363,6 +365,9 @@ void activity_type_commands::process_add(std::ostream& out,
         read_token(req.change.write.requires_confirmation,
                    parsed->positionals[next++],
                    "requires_confirmation");
+        read_token(req.change.write.is_economic, parsed->positionals[next++], "is_economic");
+        read_token(req.change.write.is_real, parsed->positionals[next++], "is_real");
+        read_token(req.change.write.priority, parsed->positionals[next++], "priority");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.fpml_event_type_code,
                    parsed->positionals[next++],
@@ -411,8 +416,8 @@ void activity_type_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,6 +426,9 @@ void activity_type_commands::process_set(std::ostream& out,
         read_token(req.change.write.requires_confirmation,
                    parsed->positionals[next++],
                    "requires_confirmation");
+        read_token(req.change.write.is_economic, parsed->positionals[next++], "is_economic");
+        read_token(req.change.write.is_real, parsed->positionals[next++], "is_real");
+        read_token(req.change.write.priority, parsed->positionals[next++], "priority");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         read_token(req.change.write.fpml_event_type_code,
                    parsed->positionals[next++],
@@ -481,8 +489,8 @@ void activity_type_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 6 + 2) {
-            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,6 +501,9 @@ void activity_type_commands::process_put_many(std::ostream& out,
             read_token(change.write.requires_confirmation,
                        parsed->positionals[next++],
                        "requires_confirmation");
+            read_token(change.write.is_economic, parsed->positionals[next++], "is_economic");
+            read_token(change.write.is_real, parsed->positionals[next++], "is_real");
+            read_token(change.write.priority, parsed->positionals[next++], "priority");
             read_token(change.write.description, parsed->positionals[next++], "description");
             read_token(change.write.fpml_event_type_code,
                        parsed->positionals[next++],

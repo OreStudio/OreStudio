@@ -116,10 +116,11 @@ misspell check with it.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =misspell-fixer .= exits 1 on the tree. | the sprint 25 and 26 task pages, and the local pnpm store | No action | Every hit is outside this diff: the task pages quote an upstream load-profile identifier misspelled in the portfolio, in review tables that already decline the correction, and the store is a gitignored local artifact. A run over this diff's files reports "nothing to replace" and exits 0. |
+| 2 | The site export aborts on the moved-assignment page: the command cell splits at its pipes, and the POSIX class in the fragment before the first split reads as a link to =:space:=. | task_order-the-actor-validation-before-the-version-replace.org:73 | Fixed | The command moves to a =sh= block below the Measurements table, exact as it ran. The emacs link check (=ores-check-org-links.el=) and =compass site page= then pass. |
 
 Verdict: ready to merge. The delta is the three templates' reorder, its
 regeneration across the create scripts, the repository case that guards the
-order, and the records; no finding lands in it.
+order, and the records; the one finding in it is fixed and re-checked.
 
 * Result
 

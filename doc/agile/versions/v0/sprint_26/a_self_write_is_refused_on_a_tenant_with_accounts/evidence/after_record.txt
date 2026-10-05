@@ -1,0 +1,21 @@
+Self-write after-record (new order in the regenerated schema, loaded transactionally)
+Commit: a6db8fe7233f40833fa2b0999a04daff53bd9b7a  Branch: feature/fix-the-self-write
+Database: ores_dev_brave_hopper on 127.0.0.1:5432, user ores_brave_hopper_ddl_user (owns both functions)
+Script: /tmp/selfwrite_after_probe.sql — begins, loads the regenerated
+projects/ores.sql/create/iam/iam_accounts_create.sql, runs the three probes, rolls back.
+Date: 2026-10-05T09:22:15+01:00
+
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:119: NOTICE:  relation "ores_iam_accounts_tbl" already exists, skipping
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:124: NOTICE:  relation "accounts_username_uniq_idx" already exists, skipping
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:129: NOTICE:  relation "accounts_version_uniq_idx" already exists, skipping
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:133: NOTICE:  relation "accounts_id_uniq_idx" already exists, skipping
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:137: NOTICE:  relation "accounts_tenant_idx" already exists, skipping
+psql:/home/marco/Development/OreStudio/ores_dev_brave_hopper/projects/ores.sql/create/iam/iam_accounts_create.sql:142: NOTICE:  relation "accounts_email_uniq_idx" already exists, skipping
+psql:/tmp/selfwrite_probe_body.sql:27: NOTICE:  probe 1 (self write): LANDED
+psql:/tmp/selfwrite_probe_body.sql:46: NOTICE:  probe 2 (another actor): LANDED
+psql:/tmp/selfwrite_probe_body.sql:64: NOTICE:  probe 3 (bogus actor): REFUSED sqlstate=23503 message=Invalid modified_by: no_such_actor_zzz. Must be a valid account username or service role.
+
+Rollback check (after the probes): the deployment still holds the old
+order, so nothing leaked out of the transaction.
+$ select position('select version into current_version' in d) < position('modified_by := ores_iam_validate_account_username_fn' in d) as deployed_keeps_old_order from (select pg_get_functiondef('ores_iam_accounts_insert_fn'::regproc) as d) s;
+t

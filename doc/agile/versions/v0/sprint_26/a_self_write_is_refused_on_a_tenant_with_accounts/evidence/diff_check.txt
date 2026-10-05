@@ -1,0 +1,24 @@
+changed files under projects/ores.sql: 321
+expected files (template-owned carriers): 321
+hand-written carriers no template owns (not regenerated): 17
+  projects/ores.sql/create/dq/dq_dataset_dependency_create.sql
+  projects/ores.sql/create/dq/dq_fsm_machines_create.sql
+  projects/ores.sql/create/refdata/refdata_account_types_create.sql
+  projects/ores.sql/create/refdata/refdata_asset_classes_create.sql
+  projects/ores.sql/create/refdata/refdata_asset_measures_create.sql
+  projects/ores.sql/create/refdata/refdata_benchmark_rates_create.sql
+  projects/ores.sql/create/refdata/refdata_business_processes_create.sql
+  projects/ores.sql/create/refdata/refdata_cashflow_types_create.sql
+  projects/ores.sql/create/refdata/refdata_entity_classifications_create.sql
+  projects/ores.sql/create/refdata/refdata_local_jurisdictions_create.sql
+  projects/ores.sql/create/refdata/refdata_party_categories_create.sql
+  projects/ores.sql/create/refdata/refdata_party_relationships_create.sql
+  projects/ores.sql/create/refdata/refdata_party_roles_create.sql
+  projects/ores.sql/create/refdata/refdata_person_roles_create.sql
+  projects/ores.sql/create/refdata/refdata_regulatory_corporate_sectors_create.sql
+  projects/ores.sql/create/refdata/refdata_reporting_regimes_create.sql
+  projects/ores.sql/create/refdata/refdata_supervisory_bodies_create.sql
+changed but not expected: []
+expected but not changed: []
+relocation blocks matched: domain=305 table_junction=16
+violations: 0

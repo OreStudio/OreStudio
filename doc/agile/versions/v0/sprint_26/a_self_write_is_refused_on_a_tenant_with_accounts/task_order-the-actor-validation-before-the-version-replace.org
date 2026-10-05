@@ -26,11 +26,11 @@ The three literate SQL create templates validate modified_by above their version
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8F7AA9CF-C92C-484F-8B2E-3F14EBEC4168][Fix the self write refusal on a tenant with accounts]] |
-| Now          | The reproduction on the current tree, then the template edit and the regeneration. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Capture the before record, edit the three templates, re-tangle, regenerate. |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance

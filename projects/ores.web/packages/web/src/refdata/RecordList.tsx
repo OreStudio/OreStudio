@@ -401,6 +401,21 @@ export function RecordTable<Row>({
         return () => window.clearTimeout(timer);
     }, [typed, state.search]);
 
+    const emptyPastFirst =
+        rows.data !== undefined && rows.data.rows.length === 0 && state.offset > 0;
+    const move = useRef(state.move);
+    move.current = state.move;
+    /*
+     * A page can empty under the person, such as the last page after a
+     * delete. An empty page past the first is not an answer, so the list
+     * returns to the first.
+     */
+    useEffect(() => {
+        if (emptyPastFirst) {
+            move.current(0);
+        }
+    }, [emptyPastFirst]);
+
     const sortBy = (field: string): void =>
         state.order(field, state.sort === field ? !state.descending : false);
     const open = pathOf === undefined ? undefined : (row: Row): void => void navigate(pathOf(row));
@@ -436,19 +451,20 @@ export function RecordTable<Row>({
                 )}
                 {filters.map((candidate) =>
                     candidate.kind === 'choice' ? (
-                        <Select
-                            key={candidate.id}
-                            aria-label={candidate.label}
-                            value={state.filters[candidate.id] ?? ''}
-                            onChange={(event) => state.filter(candidate.id, event.target.value)}
-                        >
-                            <option value="">{candidate.all}</option>
-                            {candidate.choices.map((choice) => (
-                                <option key={choice.value} value={choice.value}>
-                                    {choice.label}
-                                </option>
-                            ))}
-                        </Select>
+                        <div key={candidate.id} className="w-48 shrink-0">
+                            <Select
+                                aria-label={candidate.label}
+                                value={state.filters[candidate.id] ?? ''}
+                                onChange={(event) => state.filter(candidate.id, event.target.value)}
+                            >
+                                <option value="">{candidate.all}</option>
+                                {candidate.choices.map((choice) => (
+                                    <option key={choice.value} value={choice.value}>
+                                        {choice.label}
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
                     ) : (
                         <label
                             key={candidate.id}

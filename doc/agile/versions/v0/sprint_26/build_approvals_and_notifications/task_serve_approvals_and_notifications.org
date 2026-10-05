@@ -8,7 +8,7 @@
 #+filetags: :inbox:service:build_approvals_and_notifications:sprint_26:v0:
 #+owner: marco
 #+branch: feature/serve-approvals-and-notifications
-#+pr:
+#+pr: 2652
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2652][#2652]] | [inbox] Serve approval requests and notifications |
 
 * Review
 

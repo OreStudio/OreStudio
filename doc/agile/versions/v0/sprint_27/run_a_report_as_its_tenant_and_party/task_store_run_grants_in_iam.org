@@ -28,11 +28,11 @@ only through IAM's create and revoke operations, which make the checks.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -73,7 +73,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Run grant service tests | 8 passed | =compass test run -- -R iam= | fd84fb4b19 |
+| IAM test programs | 5 of 5 passed | =compass test run -- -R iam= | fd84fb4b19 |
+| Full test suite | 94 of 94 programs passed | =compass test run= | fd84fb4b19 |
+| Codegen suite | 1155 passed | =pytest projects/ores.codegen/tests= | fd84fb4b19 |
 
 * Notes
 
@@ -101,3 +104,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+IAM stores run grants. =ores.iam.run_grant= is a tenant-scoped, party-isolated,
+bitemporal entity whose reads are generated on the wire, the shell and the
+TypeScript protocol, and whose writes are IAM's own operations. Codegen gained
+the shape that makes this possible: a domain entity may now declare
+=:client_read_only:= in its root flags, which keeps the repository writable for
+the service and removes the write verbs from the wire.
+
+=iam.v1.run_grants.create= refuses a session with no party or no permission
+list, and a role the person does not hold in full; it returns the active grant
+for the same resource, and re-activates a revoked one under the same id. A
+create for an active grant returns it unchanged, so changing its role is a
+revoke and a create. =iam.v1.run_grants.revoke= needs the grantor or the new
+permission =iam::run_grants:revoke=, and a repeated revoke changes nothing.
+
+The database was recreated for the new table, and the services were restarted.
+Tasks 2 and 3 wait for the partition token work in the worktree clever
+dijkstra, which adds the same claims, issue log and token cache.

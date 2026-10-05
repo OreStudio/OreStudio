@@ -59,6 +59,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- Hold until the worktree clever dijkstra lands its story "Read each tenant's
+  cache partition inside its tenant", branch
+  =feature/read-each-tenant-cache-partition-inside-its-tenant=. It adds IAM's
+  in-process Token Exchange with delegation semantics, the =act= claim, the issue
+  log and a generic =partition_token_cache= in =ores.eventing=. Build on those
+  rather than a second set.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -26,11 +26,11 @@ The written ores.refdata journeys run in ores.web against the real server: a ref
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A70FCD02-6AEA-4BC4-BD10-EE3ACBA9814B][Implement the refdata journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -86,6 +86,34 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: adding a row with a label is two writes, so a failed label leaves the row unlabelled | =ClassificationListPage.tsx= | Accepted as Minor | The label lives in the catalogue, not on the row; the dialog shows the error and the label can be set from the row |
+| 2 | Local review: the label route accepts a read-only list | =bff/src/classifications.ts= | Kept | A label is how a code is drawn, not how ORE spells it; the server checks =dq::badge_mappings:write= |
+| 3 | Local review: the history route takes an entity type from the browser | =bff/src/classifications.ts= | Kept | Served only for the catalogue's entity types; any other type answers 404 |
+| 4 | Local review: headers, comments, debug leftovers, misspell | changed files | Clean | The two =} // namespace= closers in =registrar.cpp= predate this change |
 
 * Result
+
+Maintain a classification list runs in ores.web against the real server, built
+from the accepted [[id:CB72DF9A-ED51-4E92-8A1E-FA03230FC077][reference data prototype]]:
+
+- Reference data is an area of the application and tenant menus and a live tile
+  on Home. Classifications is an index of the 28 lists by topic with row counts;
+  a list has Add row and Reorder on it, a filter and a Label column; a row opens
+  on its own page with Details and History tabs and is edited, removed and
+  reverted in dialogs.
+- Rows are painted from the shared label catalogue (badge definitions and
+  mappings), with a new shared =ui/Label.tsx= the tenant screens now use too; a
+  label is chosen from the list's own labels first and written as a badge
+  mapping.
+- History shows a timeline with each version's provenance, compares any two
+  versions, and draws each changed field as an old and a new line with the
+  changed characters marked.
+- Edit actions follow the person's permissions; the ORE vocabularies are
+  read-only.
+
+Found and fixed on the real server: lists refuse ordering by display order;
+two lists require =as_of= in their list request; conflicts arrive with no
+words; the calendar name and day counter handlers were never wired into the
+refdata service. Found and captured: the broker client is slow under
+concurrent calls, and tenant sessions never reach tenant administration, with
+sixteen more captures from the journeys.

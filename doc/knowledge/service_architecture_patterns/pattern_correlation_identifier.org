@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 4F11D22B-2830-4E8E-B752-552F0C59CD07
+:END:
+#+title: Correlation Identifier
+#+description: Every message carries an identifier that the first service sets and every later hop forwards, so the log lines of one request can be found across services.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:communication:observability:logging:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: communication
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Correlation Identifier in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Each message carries an identifier that ties it to the action that caused it, so
+the work one action spreads across services can be found together. In ORE Studio
+the identifier travels in the =Nats-Correlation-Id= header, and every log line
+written for a request should name it.
+
+* Also known as
+
+- /Correlation id/, /request id/, and the =X-Request-Id= or =X-Correlation-Id=
+  header of HTTP services.
+- Hohpe and Woolf define the pattern for matching a reply to its request. The
+  microservice literature widens it to every hop an action causes, which is the
+  use here.
+
+* Context
+
+One action of a person, or one firing of a schedule, becomes requests to several
+services, workflow steps that run minutes later, and events that other services
+consume. Each service writes its own log. A failure surfaces in one log, and its
+cause is in another.
+
+* Problem
+
+How does a person find every log line, in every service, that one action caused?
+
+* Forces
+
+- Each service logs on its own; nothing joins the lines of one action.
+- Work outlives the request: a workflow step runs after a restart, an event is
+  consumed later.
+- A trail with one missing hop is broken from that hop on.
+- An identifier from outside can carry anything, including text that forges a
+  log line.
+- The identifier must cost nothing and decide nothing.
+
+* Solution
+
+The origin of an action creates the identifier: the client, the HTTP edge, or a
+scheduler firing. Every message the action causes carries it. A handler reads it
+on entry, opens a log scope so that every line it writes names it, forwards it on
+every outbound call and every event, stores it with any work that outlives the
+request, and echoes it on the reply.
+
+#+caption: Correlation Identifier: the origin creates the id, every hop forwards it and logs it, and the workflow engine keeps it for steps that run later.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_correlation_identifier.png]]
+
+Source: =[[./pattern_correlation_identifier.puml][pattern_correlation_identifier.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_correlation_identifier.puml=.
+
+A handler follows a fixed order on entry. It accepts a well-formed id, replaces a
+malformed one, creates one when none arrived, and says in the log that it did, so
+a broken trail is visible.
+
+#+caption: Correlation Identifier: what a handler does with the id, from the header check to the log scope, the forwarding and the echo.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_correlation_identifier_handler.png]]
+
+Source: =[[./pattern_correlation_identifier_handler.puml][pattern_correlation_identifier_handler.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_correlation_identifier_handler.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The error reply echoes the id, and the client shows it, so a person can quote it. The error's log line names it. |
+| Timeouts | A caller that times out logs the id of the request it gave up on, so the slow service's lines can be found. |
+| Retries | A retry of the same request keeps the same id; a new action gets a new one. |
+| Idempotency | Does not apply. The id follows work and never deduplicates it; a step keeps its own step id for that. |
+| Observability | This is the pattern's purpose: one search for the id returns the trail. |
+
+* Pitfalls
+
+- *A hop that does not forward.* The next service creates a new id, and the trail
+  breaks there. Every hop that does not forward is a gap, and a handler that
+  creates an id must log that it did.
+
+#+caption: Correlation Identifier: service A forwards nothing, so B creates a new id and the trail from the origin stops at A.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_correlation_identifier_broken_trail.png]]
+
+Source: =[[./pattern_correlation_identifier_broken_trail.puml][pattern_correlation_identifier_broken_trail.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_correlation_identifier_broken_trail.puml=.
+
+- *The id on the entry line only.* A handler that logs the id once leaves its
+  other lines unjoined. Put the id in a log scope, so every line carries it.
+- *Work that outlives the request.* A workflow step that runs after a restart has
+  no inbound header unless the run stored the id. Store it with the work.
+- *The id used as an idempotency key.* Two different requests of one action share
+  it, so deduplicating on it drops real work.
+- *An outside id written to the log as it came.* A value with a newline forges a
+  log line. Accept only the expected shape.
+- *A session id used as a correlation id.* A session spans many actions; a search
+  for it returns all of them.
+
+* Security
+
+The id grants nothing and identifies no one, so a forged id can only mislead a
+search. The cost of a hostile value is log injection, which the shape check
+prevents. The id may be stored, unlike a token, because it is not a credential.
+
+* Resulting context
+
+- Benefits :: One search of the logs returns everything one action caused, across
+  services and across time. A person can quote the id from an error.
+- Liabilities :: Every hop must take part, and one that does not breaks the
+  trail. The id shows that lines belong together, not their order in a call tree
+  or how long each hop took.
+
+* In ORE Studio
+
+- *The mechanism.* =ores.nats= defines the =Nats-Correlation-Id= header and
+  =extract_or_generate_correlation_id=, and =nats_client::with_correlation_id=
+  forwards it. =log_handler_entry= in =ores.service= logs it on entry. The
+  extractor does not yet check the shape: it accepts any non-empty value, so the
+  log-injection pitfall below is open until the story closes it.
+- *The workflow engine.* The start message carries a correlation id, and the
+  engine's events carry it.
+- *The rest of the platform.* The handlers, the codegen templates, the origins and
+  the log format do not yet carry it through.
+  [[id:A0125055-F1FE-4200-9F6D-0638CF6F72F4][Follow a request across services from its logs]]
+  is the story that does, and it states the measured starting point.
+
+* Related patterns
+
+- [[id:32FE1EB9-653F-4E12-9474-406BB884C56A][Distributed Tracing]] — adds the call tree and the timings; the correlation id becomes the trace id.
+- [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — travels the same hops, with the same rule: forward what the inbound request carried.
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the firing is the origin of a scheduled run, and the run id is in its token.
+
+* Sources
+
+- Gregor Hohpe and Bobby Woolf, /Enterprise Integration Patterns/, Addison-Wesley, 2003, [[https://www.enterpriseintegrationpatterns.com/patterns/messaging/CorrelationIdentifier.html][Correlation Identifier]].
+- Sam Newman, /Building Microservices/, second edition, O'Reilly, 2021, chapter 10, "From Monitoring to Observability" — correlation IDs.
+- Chris Richardson, [[https://microservices.io/patterns/observability/application-logging.html][Pattern: Log aggregation]] and [[https://microservices.io/patterns/observability/distributed-tracing.html][Pattern: Distributed tracing]], microservices.io — the request id each log line carries.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

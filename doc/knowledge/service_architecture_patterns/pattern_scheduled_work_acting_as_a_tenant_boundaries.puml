@@ -1,0 +1,43 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Scheduled Work Acting as a Tenant: the pattern at each boundary
+
+
+skinparam componentStyle rectangle
+actor person
+component "owning service" as owner
+component "IAM" as iam
+component "scheduler" as sched
+component "workflow engine" as engine
+component "step service\n[run token cache]" as step
+component "data owner" as data
+component "further service" as further
+database "store\n(row-level security)" as db
+
+person --> owner : Access Token\n(the person's session)
+owner --> iam : Grant Management\n(create, revoke; relayed person)
+sched --> owner : Client Credentials\n(trigger)
+owner --> engine : start message\n(grant id, run id; no token)
+engine --> step : step command\n(grant id, run id)
+step --> iam : Token Exchange\n(own token + grant id)
+step --> data : run token\n(Authorization)
+data --> further : Token Relay\n(the run token)
+data --> db : tenant T, party P
+@enduml

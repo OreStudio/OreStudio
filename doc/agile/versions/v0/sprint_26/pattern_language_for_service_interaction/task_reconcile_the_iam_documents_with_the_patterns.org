@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 71F04B0E-A6C6-48F9-939A-0706C31F8704
+:END:
+#+title: Task: Reconcile the IAM documents with the patterns
+#+description: Make the service-to-service guide, internal actor impersonation, anatomy of a service and the IAM hub name the patterns instead of restating them.
+#+type: task
+#+level: s1
+#+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
+#+owner: marco
+#+branch: feature/add-the-pattern-document-type-and-hub
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The IAM pages name the identity patterns and do not restate them, so a reader
+finds one page per mechanism and one page per decision.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The service-to-service guide is the identity group's decision guide, and its
+  by-layer table names the pattern of each row.
+- Internal actor impersonation states that it is the in-process form of Token
+  Exchange.
+- Anatomy of a service names the two patterns of its mint-or-delegate section.
+- The IAM hub points to the identity group and no longer calls impersonation
+  "the pattern we use".
+- No page loses content.
+
+* Plan
+
+Edit each page in place. Keep the decision questions, the ORE Studio idioms,
+the worked examples and the history on the existing pages, because they are
+uses and decisions. Add the pattern names and links where each page names a
+mechanism.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Four pages now name their patterns. The service-to-service guide opens as the
+decision guide of the identity group and its by-layer table has a pattern
+column. Internal actor impersonation states that it is Token Exchange with
+impersonation semantics, in process, and keeps its worked example and its
+expiry lesson. Anatomy of a service names Client Credentials and Token Relay.
+The IAM hub lists the identity patterns and corrects its old claim that
+impersonation was the pattern the platform chose; it is one use of Token
+Exchange. The two plans stay as they are: they are point-in-time records, and
+the pattern pages cite them.

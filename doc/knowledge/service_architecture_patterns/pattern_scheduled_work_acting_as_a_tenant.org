@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7
+:END:
+#+title: Scheduled Work Acting as a Tenant
+#+description: A composite: work that starts from a schedule, with no caller, acts as a tenant and a party through a stored grant, a token exchange and a token cache.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:identity:scheduling:multi_tenancy:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Scheduled Work Acting as a Tenant in the
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]]. It is a composite:
+work that starts from a schedule, with no caller, acts as a tenant and a party
+through a grant, a token exchange and a token cache. In ORE Studio scheduled
+reports use it, and so does any timer-driven work that reads or writes a
+party's data.
+
+* Also known as
+
+- /Run grant and run token/, the names the reporting design uses.
+
+* Context
+
+A person sets up work in a tenant and a party, and a scheduler starts it later,
+many times. The scheduler and the workflow engine are services, so their
+identity has no tenant and no party. The work reads and writes data that
+row-level security scopes by tenant and party. Hundreds or thousands of such runs
+from different tenants are in flight at once.
+
+* Problem
+
+How does work that a schedule starts act as the tenant and the party it belongs
+to, when no caller and no caller's token exists?
+
+* Forces
+
+- The service's own identity sees no party data.
+- There is no caller token to relay, and a stored token would be a credential
+  at rest.
+- The person who set up the work must be able to stop it, and must not grant
+  more than they hold.
+- A run can last longer than any token.
+- Thousands of runs must not mean thousands of standing sessions, or an
+  exchange per request.
+
+* Solution
+
+The composite combines three patterns in a fixed order:
+
+1. *Consent, once:* [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]].
+   When a person schedules the work, the owning service creates a grant on their
+   behalf with their token. It stores the grant id with the schedule.
+2. *Start, at each firing:* [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]].
+   The scheduler triggers the owning service as itself. The owning service
+   starts the run with the run id and the grant id, and with no token.
+3. *Act, at each step:* [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]]
+   behind a cache. A step service looks up the run token for the grant id and
+   the run id in its memory cache. On a miss, it exchanges its own token and the
+   grant id for a run token that lasts minutes. It calls the data owners with
+   the run token in =Authorization=, and they act as the tenant and the party.
+
+The composite is easiest to read as a map: each boundary between two
+participants uses one pattern, and the start message and the step command carry
+ids, never a token.
+
+#+caption: Scheduled Work Acting as a Tenant: the pattern each boundary uses, from the person's session to the store that row-level security guards.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant_boundaries.png]]
+
+Source: =[[./pattern_scheduled_work_acting_as_a_tenant_boundaries.puml][pattern_scheduled_work_acting_as_a_tenant_boundaries.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant_boundaries.puml=.
+
+The combination adds three rules of its own:
+
+- *No token in durable state.* The run's messages, rows and logs carry the grant
+  id and the run id, never a token.
+- *One cache key per run.* The cache key is the grant id and the run id, so a
+  token names exactly one run.
+- *Lapse stops the work.* A refused exchange with the reason =grant_lapsed=
+  fails the run and suspends the schedule until a person consents again.
+
+#+caption: Scheduled Work Acting as a Tenant: a person consents once, the scheduler starts each run as itself, and each step exchanges the grant for a short-lived run token behind a cache.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant.png]]
+
+Source: =[[./pattern_scheduled_work_acting_as_a_tenant.puml][pattern_scheduled_work_acting_as_a_tenant.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_scheduled_work_acting_as_a_tenant.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | =grant_lapsed= or a revoked grant fails the run and suspends the schedule. A =forbidden= from a data owner fails the step and names the permission, which is a defect in the role. |
+| Timeouts | An exchange that does not answer is retried with back-off inside the step's budget, then the step fails. The step's deadline bounds the whole wait. |
+| Retries | =token_expired= from a data owner causes one exchange and one retry. A restarted step service exchanges again on its first miss. |
+| Idempotency | Every step converges on a repeat, as the workflow engine requires. The exchange itself is safe to repeat. |
+| Observability | The run id is in the token, in the correlation id and on every log line. IAM's issue log records every run token. Measure exchanges, cache hits and refusals by reason. |
+
+* Pitfalls
+
+- *The service's identity used for the run.* The run reads no party data and
+  reports no error. This is the failure the composite exists to prevent.
+- *The scheduling person's token stored.* It expires in minutes, and stored it
+  is a credential at rest.
+- *A token in the workflow request.* The engine persists its request, so the
+  token becomes durable. Carry the grant id instead.
+- *No cache.* Every owner call becomes an exchange, and IAM carries the load of
+  every run.
+- *A cache keyed by grant only.* Two runs of one schedule then share a token,
+  and the run id in the token is wrong for one of them.
+- *Revocation assumed to be instant.* A run in flight keeps working until its
+  current token expires. Size the token's lifetime to the delay the business
+  accepts.
+
+* Security
+
+The composite inherits the bounds of its parts. The grant limits the scope to a
+role made for the work and to one party. The exchange is limited to the services
+in the grant's audience. Each token lasts minutes and names its run. No
+credential exists at rest. The person who consented, and the service that acted,
+both appear in every audit row the run writes.
+
+* Resulting context
+
+- Benefits :: Scheduled work acts in its tenant and party, and row-level
+  security and the owners' permission checks apply unchanged. The cost per run
+  is a few exchanges, whatever the number of tenants.
+- Liabilities :: IAM holds grants and serves exchanges, so it is on the path of
+  every new run. A person's departure suspends their schedules, so a team must
+  re-consent.
+
+* In ORE Studio
+
+- *The implementation.* [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] is IAM's form of the composite, the same for
+  every component: the grant entity, the exchange checks, the token's claims
+  and the cache rules.
+- *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
+  applies the composite: the =ReportRun= role, the audience of reporting, ORE
+  and compute, and the moments reporting creates and revokes a grant.
+- *Any timer-driven work in a tenant.* A component whose scheduled job must read
+  or write party data uses this composite rather than a design of its own.
+
+* Related patterns
+
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — the consent.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the run token.
+- [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] — the scheduler's trigger and the step's proof of itself.
+- [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — the data owners relay the run token to the services they call.
+
+* Sources
+
+The composite has no single source. Each part cites its own:
+
+- OpenID Foundation, [[https://openid.net/specs/oauth-v2-grant-management-ID1.html][Grant Management for OAuth 2.0]].
+- [[https://www.rfc-editor.org/rfc/rfc8693][RFC 8693, OAuth 2.0 Token Exchange]].
+- [[https://www.rfc-editor.org/rfc/rfc6749#section-4.4][RFC 6749, section 4.4, Client Credentials Grant]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:13105F27-9C05-495E-B9A0-2EFC9B5AC811][Scheduling and workflows]] — the boundary between the firing and the run.

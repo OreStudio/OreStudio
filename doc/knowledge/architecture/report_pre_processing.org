@@ -111,9 +111,10 @@ data rather than the steps:
   write — belong to one owner, so that the contract with the grid has a single
   author.
 
-Whether that owner is a worker role inside reporting or a component of its own
-is a deployment decision rather than a data one, and it is deliberately left
-open. The criteria are whether the batch workload needs to scale independently
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] places
+that owner in =ores.ore=, because =ores.ore= owns the mapping. Whether it later
+moves to a worker role or a component of its own is a deployment decision
+rather than a data one. The criteria are whether the batch workload needs to scale independently
 of reporting's request handling, and whether its failures should be isolated
 from the rest of the service. The interfaces above are the same either way.
 

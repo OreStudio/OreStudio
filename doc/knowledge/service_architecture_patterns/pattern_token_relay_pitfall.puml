@@ -1,0 +1,47 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Token Relay: the pitfall of calling with the service's own identity
+
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor "caller\n(tenant T, party P)" as caller
+participant "service A" as a
+participant "service B" as b
+database "B's store\n(row-level security)" as db
+
+caller -> a : request (the caller's token)
+group wrong: Client Credentials for a caller's data
+    a -> b : request (Authorization: A's own token only)
+    b -> b : context: the service's identity,\nno tenant, no party
+    b -> db : read
+    db --> b : no rows, and no error
+    b --> a : an empty answer that looks like\n"the data does not exist"
+end
+group right: Token Relay
+    a -> b : request (A's token;\nX-Delegated-Authorization: the caller's token)
+    b -> b : context: tenant T, party P
+    b -> db : read
+    db --> b : the party's rows
+    b --> a : the caller's data
+end
+a --> caller : response
+@enduml

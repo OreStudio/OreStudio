@@ -128,7 +128,10 @@ service calling *itself* — is its own concern; see [[id:1D02DB5B-1E50-4AA0-978
 Phases]]. Briefly: register every subject the service owns first, /then/
 mint tokens or warm caches — never the other way around.
 
-A service that calls another service must present a token. Two mechanisms (see
+A service that calls another service must present a token. The two mechanisms
+below are the [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] and
+[[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] patterns; their pages
+hold the failure handling and the pitfalls. Two mechanisms (see
 [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] and the IAM client, [[id:28A7AF22-1EB1-4989-B4BD-A383D09605F3][ores.iam.client]]):
 
 1. *Mint its own service token* — for calls a service initiates itself (e.g.

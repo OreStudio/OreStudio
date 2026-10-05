@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: AE30F62E-3B9E-4B59-9D11-E8FEE876949A
+:END:
+#+title: Grant Management
+#+description: The issuer holds a person's consent as a grant with an id, so a client can use, query and revoke it without holding a long-lived credential.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:identity:oauth:consent:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Grant Management in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+The issuer holds a person's consent as a grant with an id, and a client uses,
+queries and revokes it by that id. In ORE Studio IAM holds the run grants that
+let scheduled work act as a tenant and a party long after the person who
+scheduled it signed out.
+
+* Also known as
+
+- /Run grant/, the name the reporting design uses for its grants.
+- /Stored consent/ or /standing delegation/.
+- The /offline access/ refresh token of RFC 6749 solves the same problem with a
+  long-lived credential the client holds. This pattern keeps the consent on the
+  server instead.
+
+* Context
+
+A person starts work that will run later and repeatedly, such as a scheduled
+report. When it runs, the person is not present and their token has expired.
+The work must still act within the person's authority and no wider.
+
+* Problem
+
+How does work that runs without its owner present act with the owner's
+consent, without the client holding a long-lived credential?
+
+* Forces
+
+- A stored token is a credential at rest, and a refresh token is a long-lived
+  one.
+- The consent must be revocable, and revocation must reach the work soon.
+- A person must not grant more than they hold, and must lose it when they lose
+  the permission.
+- The client must refer to the consent in messages and rows that are not
+  secret.
+
+* Solution
+
+The client asks the issuer to create a grant, on behalf of the person and with
+the person's token. The grant names the person, the tenant and the party, the
+scope, the resource it serves and the services that may use it. The issuer
+checks that the person holds the scope, stores the grant, and returns its id.
+The client stores the id. The id is not a credential: using it needs the
+client's own token as well, through
+[[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]], and the issuer
+re-checks the grant and the grantor each time. The client revokes the grant when
+the work ends.
+
+#+caption: Grant Management: a person's consent becomes a grant held by IAM, used later through Token Exchange and revoked when the work ends.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_grant_management.png]]
+
+Source: =[[./pattern_grant_management.puml][pattern_grant_management.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_grant_management.puml=.
+
+A grant has a lifecycle of its own. It ends by revocation, by its last permitted
+use or by its time limit. A grantor who left or lost the scope does not end the
+grant: each use is refused until the owning service revokes it.
+
+#+caption: Grant Management: a grant is created active, is used through exchanges, and ends revoked, exhausted or expired. A lapsed grantor refuses each use and leaves the grant active.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_grant_management_states.png]]
+
+Source: =[[./pattern_grant_management_states.puml][pattern_grant_management_states.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_grant_management_states.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A use of a revoked, expired or lapsed grant answers =forbidden= with the reason. A lapsed grant is one whose grantor is inactive or no longer holds the scope. The client stops the work and asks a person for a new consent. |
+| Timeouts | Create and revoke are requests with a timeout. The work that uses a grant follows [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]]. |
+| Retries | Create is idempotent for a resource and a grantor, so a retry returns the active grant. Revoke is idempotent. |
+| Idempotency | A second create for the same resource and grantor returns the active grant. A second revoke changes nothing. |
+| Observability | The issuer records who created, used and revoked each grant, and why a use was refused. |
+
+* Pitfalls
+
+- *A grant id treated as a secret.* The id appears in messages and rows. Safety
+  comes from requiring the client's own token and an audience check, not from
+  hiding the id.
+- *A grant that never lapses.* Checking the grantor only at creation lets a
+  person who has left keep acting through their grants. Check at every use.
+- *Revocation forgotten.* A deleted schedule whose grant stays active is
+  standing authority nobody uses. Revoke with the work, and reconcile grants
+  against the work that should hold them.
+- *A grant wider than the work.* A grant with the person's whole role is a
+  session in disguise. Grant a role made for the work.
+
+* Security
+
+A grant is authority without a credential. It is only as strong as the checks at
+use: the actor must hold the exchange permission and be in the grant's audience,
+the tenant must match, and the grantor must still hold the scope. A stolen grant
+id alone is useless. A compromised service in the audience can use the grants
+that name it until they are revoked, and the issue log records each use.
+
+* Resulting context
+
+- Benefits :: Work acts with a person's consent for months, with no stored
+  credential. Revoking the grant, or deactivating the person, stops it.
+- Liabilities :: The issuer stores and checks grants, so it gains state. A
+  revocation reaches work in flight only when its current token expires.
+
+* In ORE Studio
+
+- *Run grants.* IAM holds them and serves =iam.v1.run_grants.create=, =revoke=,
+  =get= and =exchange=. [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] holds the entity, its checks and its lifecycle.
+- *Scheduled reports.* Reporting creates a grant when a person schedules a
+  report definition and revokes it when the definition is unscheduled or
+  deleted. [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
+  states the role and the audience.
+
+* Related patterns
+
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — how a grant is used.
+- [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — the alternative while the person is present.
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the composite this pattern starts.
+
+* Sources
+
+- OpenID Foundation, [[https://openid.net/specs/oauth-v2-grant-management-ID1.html][Grant Management for OAuth 2.0]], Implementer's Draft — the grant id, and the query and revoke operations.
+- [[https://www.rfc-editor.org/rfc/rfc6749#section-1.5][RFC 6749, OAuth 2.0, section 1.5, Refresh Token]] — the client-held alternative.
+- [[https://www.rfc-editor.org/rfc/rfc7009][RFC 7009, OAuth 2.0 Token Revocation]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

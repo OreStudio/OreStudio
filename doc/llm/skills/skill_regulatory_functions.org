@@ -312,6 +312,7 @@ or more, and the assignment is declared in the type's own contract under
 | Test scenario                 | sequencing, declaration, recording |
 | Workflow                      | sequencing, declaration, recording |
 | Report                        | declaration, recording           |
+| Pattern                       | loading, citation                |
 
 The skill document type is the exception: a skill implements citation, sequencing
 or execution according to what it contains, so its regulatory function cannot

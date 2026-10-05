@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 78B82824-0BBB-4442-A9FA-E1F265DF57BD
+:END:
+#+title: Run grants and run tokens
+#+description: IAM's implementation of Scheduled Work Acting as a Tenant: the run grant entity and its lifecycle, the exchange and its checks, the run token's claims, and the cache every step service keeps.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:iam:patterns:multi_tenancy:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+startup: inlineimages
+
+* Summary
+
+This page states the target design. It does not describe what is built.
+
+This page is IAM's implementation of the
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]]
+pattern. It is the same for every component that uses the pattern. A *run
+grant* is IAM's form of [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]]:
+a person's consent that runs of one resource act in one tenant and one party,
+with one role. A *run token* is the result of
+[[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]]: a step service
+presents its own token and a grant id, and receives a token that lasts five
+minutes. Each step service keeps run tokens in a memory cache.
+
+The pattern pages hold the mechanism, the failure handling, the pitfalls and the
+sources. This page holds IAM's choices: the entity, the operations, the checks,
+the claims and the cache rules. A component that uses run grants states only
+its own choices, which are its role, its audience, its resource name and the
+moments it grants and revokes.
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] is the
+first such component.
+
+* Detail
+
+** The operations
+
+#+ATTR_HTML: :class hug-leading
+| Subject | Caller | Authenticated as | What it does |
+|---------+--------+------------------+--------------|
+| =iam.v1.run_grants.create= | the owning service | the person, by [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] | creates a grant, or returns the active one for the same resource and grantor |
+| =iam.v1.run_grants.revoke= | the owning service | itself, or the person | ends a grant |
+| =iam.v1.run_grants.get= | the owning service, an administrator | itself, or the person | reads a grant and its state |
+| =iam.v1.run_grants.exchange= | a step service in the audience | itself, by [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] | returns a run token |
+
+** The run grant
+
+A run grant is an IAM entity. It holds no secret.
+
+#+ATTR_HTML: :class hug-leading
+| Field | Meaning |
+|-------+---------|
+| =id= | the grant id; a random uuid |
+| =tenant_id=, =party_id= | where the runs act |
+| =grantor_account_id= | the person who gave consent |
+| =role= | the role a run token carries; the owning component defines it |
+| =resource= | what the grant serves, as =<component>.<entity>/<id>= |
+| =audience= | the services that may exchange it |
+| =max_runs= | empty for a standing grant; one for a single manual run |
+| =not_after= | empty for a standing grant; the longest duration of a single run |
+| =revoked_at=, =revoked_by=, =revoke_reason= | set when the grant ends |
+
+The grant is a bitemporal row with the audit envelope of every entity. IAM owns
+it, so IAM never reads another component's table to check it. The owning
+component stores the grant id beside the work it authorises.
+
+At create, IAM checks that the person holds every permission of the role in the
+party. A person cannot grant more than they hold. A second create for the same
+resource and grantor returns the active grant, so a retry is safe.
+
+#+caption: The run grant: created by a consent, ended by a revocation, by its last run, or by its time limit. A lapsed grantor is a check at each exchange.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/security/run_grant_states.png]]
+
+Source: [[./run_grant_states.puml][=run_grant_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/security/run_grant_states.puml=.
+
+A revocation reaches a run in flight within one token lifetime. That bound is
+deliberate. A shorter bound needs a check on every request, and the cost of that
+grows with every call of every run.
+
+** The exchange
+
+A step service calls =iam.v1.run_grants.exchange= with its own token. The request
+carries the grant id, the run id and the tenant from the step headers. IAM
+checks, in this order:
+
+1. The caller holds =iam::run_grants:exchange=.
+2. The caller's service name is in the grant's audience.
+3. The grant exists, is not revoked, and is inside =not_after= and =max_runs=.
+4. The grant's tenant equals the tenant in the request.
+5. The grantor is active.
+
+IAM then computes the permissions: the role's permissions, intersected with the
+permissions the grantor holds in the party now. A grantor who loses a permission
+loses it for their runs too, and a grantor who loses all of them makes the
+exchange answer =forbidden= with the reason =grant_lapsed=. IAM appends one row
+to the issue log and signs the token.
+
+#+ATTR_HTML: :class hug-leading
+| Claim | Value |
+|-------+-------|
+| =sub= | the grantor's account id |
+| =username= | the grantor's username, so audit columns name a person |
+| =tenant_id= | the grant's tenant |
+| =party_id= | the grant's party |
+| =visible_party_ids= | the grant's party only |
+| =roles= | the computed permission codes |
+| =act= | the requesting service; the actor claim of RFC 8693 |
+| =grant_id=, =run_id= | the grant, and the run the token serves |
+| =aud= | the requesting service |
+| =exp= | five minutes after issue |
+| =session_id= | absent; a run token opens no session |
+
+A run token creates no session row, so the sessions table does not grow with
+the number of runs.
+
+#+caption: A step obtains the run token from its cache or from IAM, an owner reads as the tenant and the party, and an expired token is exchanged again once.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/security/run_token_exchange.png]]
+
+Source: [[./run_token_exchange.puml][=run_token_exchange.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/security/run_token_exchange.puml=.
+
+** How a data owner sees a run token
+
+The step sends the run token as a plain =Authorization= header. The token is an
+originated identity, not a relayed one.
+
+The owner's handler calls =make_request_context= as it does for any caller. The
+context has the tenant, the party, the one visible party and the role's
+permissions. The handler checks the permission, and row-level security returns
+the party's rows and the shared rows of the system tenant. No owner has a code
+path for runs.
+
+An owner that writes stamps =modified_by= with the grantor's username, as for any
+write by that person, and =performed_by= with its own service account, as for
+every write. The change reason names the run. An auditor sees who consented,
+which service wrote, and which run caused it. An owner that calls a further
+service relays the run token like any caller's token.
+
+** The run token cache
+
+Each step service keeps one cache in memory per process. The cache is
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][the composite's]] third part, and its
+rules are these:
+
+- *Key.* The pair of grant id and run id. Two runs under one grant use two
+  tokens, so the =run_id= claim stays exact.
+- *Lifetime.* A token is used while it has more than 20% of its life left. The
+  next request after that exchanges again. Concurrent misses share one exchange.
+- *Expiry in flight.* An owner that answers =token_expired= causes one
+  invalidation, one exchange and one retry of the same request. Any other
+  refusal fails the request.
+- *Eviction.* The cache drops a run's entries when the step completes and when
+  the run reaches a terminal state. It is also a bounded LRU, so a missed event
+  costs memory for at most one token lifetime.
+- *No persistence.* The cache is never written to disk, a database, a message or
+  a log. A restart empties it.
+- *Replicas.* Replicas do not share the cache. Each replica exchanges on its first
+  miss.
+
+#+caption: One entry of the run token cache: exchanged on the first miss, refreshed when stale or refused as expired, and evicted when the step or the run ends.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/security/run_token_cache_states.png]]
+
+Source: [[./run_token_cache_states.puml][=run_token_cache_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/security/run_token_cache_states.puml=.
+
+** Load on IAM
+
+A run makes one exchange per step service and per five minutes of that service's
+work. A run of four steps that lasts thirty minutes makes about seven exchanges.
+An exchange reads one grant and the grantor's permissions, then signs. IAM keeps
+grants and permissions in memory, and change events on those entities invalidate
+them. An RS256 signature costs about a millisecond, so one IAM replica serves
+thousands of exchanges a minute. IAM limits exchanges per service and per tenant,
+so a fault in one caller cannot exhaust it.
+
+** Trust boundaries
+
+#+ATTR_HTML: :class hug-leading
+| Threat | What stops it |
+|--------+---------------|
+| A service exchanges a grant it should not use | the audience; the permission =iam::run_grants:exchange= |
+| A caller guesses a grant id | ids are random; the caller must also be a service in the audience |
+| A run reads another party's data | the token's =visible_party_ids= is one party; row-level security |
+| A run writes data its role does not cover | the role; the owner's permission check |
+| A person grants more than they hold | IAM checks the grantor at create and at every exchange |
+| A token leaks from a log or a row | no token is written; a leaked token expires in five minutes and names its run |
+| A grantor leaves the firm | the next exchange answers =grant_lapsed= |
+| A step service is compromised | it can act only for grants that name it, and the issue log records each token |
+
+** What a component that uses run grants states
+
+- The role, with each permission and why the run needs it.
+- The resource name of its grants.
+- The audience: the step services that exchange.
+- When it creates, revokes and re-creates a grant, and what it does on
+  =grant_lapsed=.
+
+* See also
+
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the pattern this page implements.
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the first component to use run grants.

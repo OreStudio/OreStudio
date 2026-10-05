@@ -49,6 +49,12 @@ A job with a published action names a subject and a body. A trigger message
 carries what the owner needs to create its row, which for a report is the
 definition, the tenant and the firing's identity.
 
+The scheduler sends the trigger as itself, by
+[[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], because a firing
+has no caller. The trigger therefore carries no tenant identity. When the run
+must act as its tenant and party, the owner uses
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]].
+
 The start message is published on the workflow start subject, by the owner
 rather than by the scheduler. It carries the workflow type, the tenant, the
 request payload, the correlation identifier, and the instance identifier of the

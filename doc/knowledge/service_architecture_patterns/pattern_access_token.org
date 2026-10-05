@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 4E0D934A-21D4-4609-8B7C-29F6D9A6A52D
+:END:
+#+title: Access Token
+#+description: Every request carries a signed token that names the requester, so each service verifies the identity and its permissions without calling the issuer.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:identity:jwt:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Access Token in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+Every request carries a token that securely identifies the requester, and each
+service verifies it without calling the issuer. In ORE Studio the token is a JWT
+that IAM signs. It carries the tenant, the party, the visible parties and the
+permissions that row-level security and the permission checks use.
+
+* Also known as
+
+- /Bearer token/, in RFC 6750, which defines how a token travels on a request.
+- /Session token/, the name ORE Studio uses for the token a login returns.
+
+* Context
+
+The platform is a set of services behind an edge, the HTTP gateway and the NATS
+bus. A request enters at the edge and can pass through several services before
+it reaches the store that answers it. Each service checks permissions, and the
+database applies row-level security by tenant and party.
+
+* Problem
+
+How does every service that handles a request know who the requester is, and
+what the requester may do?
+
+* Forces
+
+- A call to the issuer on every request makes the issuer a bottleneck and a
+  single point of failure.
+- A service must not trust an identity it cannot verify.
+- The identity must reach the database, because row-level security decides
+  which rows a query sees.
+- An identity that cannot expire is a permanent credential once it leaks.
+
+* Solution
+
+The issuer signs a token at login. The token states the subject, the tenant,
+the party, the visible parties, the permissions and an expiry. Every request
+carries it in the =Authorization= header. Each service verifies the signature
+with the issuer's public key, which it fetches once, and checks the expiry. It
+then builds a request context from the claims, checks the permission the
+operation needs, and sets the tenant and the party on the database session.
+
+#+caption: Access Token: the client logs in once, each service verifies the token with the issuer's public key, and the database filters rows by the tenant and the party in it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token.png]]
+
+Source: =[[./pattern_access_token.puml][pattern_access_token.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token.puml=.
+
+The claims decide everything downstream. The request context takes them, the
+database session takes the tenant and the party, and the audit columns take the
+username.
+
+#+caption: Access Token: the claims the token states, and where each one goes: the request context, the database session that row-level security reads, and the audit columns.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token_claims.png]]
+
+Source: =[[./pattern_access_token_claims.puml][pattern_access_token_claims.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token_claims.puml=.
+
+* Failure handling
+
+A service refuses in a fixed order, and each refusal has its own code. Only
+=token_expired= is worth a retry, and only after a renewal.
+
+#+caption: Access Token: the checks a service makes in order, the code each refusal carries, and the point where row-level security takes over.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_access_token_verification.png]]
+
+Source: =[[./pattern_access_token_verification.puml][pattern_access_token_verification.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_access_token_verification.puml=.
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A missing token answers =unauthorized=. A token without the permission answers =forbidden=. The reply has an empty body and an =X-Error= header, and a client reads the header before it decodes the body. |
+| Timeouts | Does not apply to verification, which is local. The key fetch at startup has its own timeout, and a service with no key refuses every request. |
+| Retries | An =X-Error: token_expired= reply is retried once, after a refresh. Every other refusal is final: the same token gets the same answer. |
+| Idempotency | Does not apply. Verification has no effect. |
+| Observability | The subject, the tenant and the party of the context are on every log line of the request. A refusal logs the reason and the subject. |
+
+* Pitfalls
+
+- *A refusal decoded as a body.* A client that decodes the reply before it reads
+  =X-Error= reports a decode error. The real cause is an authentication failure.
+  See [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]].
+- *The wrong algorithm at the edge.* IAM signs with RS256. An edge that verifies
+  another algorithm refuses every token, and the failure looks like a
+  permission bug. See [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]].
+- *A second verifier "as a fallback".* A shared secret beside the public key is
+  a second way to be believed. It authenticates nothing legitimate and widens
+  what a stolen secret can do.
+- *A token stored as state.* A token in a row, a queue archive or a workflow
+  instance outlives its request and becomes a credential at rest.
+
+* Security
+
+The token is a bearer credential: whoever holds it acts as its subject until it
+expires. Its lifetime bounds the cost of a leak, which is 30 minutes for a
+session token by default. Only IAM signs, so a service that is compromised
+cannot forge a token for another subject. The permissions in the token are a
+snapshot, so a revoked permission takes effect at the next token.
+
+* Resulting context
+
+- Benefits :: Services verify identity with no call to IAM. The tenant and the
+  party reach the database on every request, so row-level security applies to
+  every read.
+- Liabilities :: A token cannot be revoked before it expires. A change to an
+  account's roles reaches its sessions only at their next token.
+
+* In ORE Studio
+
+- *Signing.* IAM signs with RS256 and publishes its public key through JWKS. The
+  claims are =jwt_claims= in =ores.security=: subject, tenant, party, visible
+  parties, roles, expiry.
+- *Lifetime.* =token_settings= in =ores.iam.core=: an access lifetime of 1800
+  seconds, renewal at 80% of the lifetime, and a session ceiling of 8 hours.
+- *Verification.* =make_request_context= in =ores.service= builds the request
+  context, and =has_permission= checks a permission.
+- *The edge.* The HTTP gateway verifies with the same key and never signs. See
+  [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]].
+- *The database.* [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]
+  sets the session's tenant and party, and
+  [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]]
+  filters on them.
+
+* Related patterns
+
+- [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] — how a service obtains an access token for itself.
+- [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] — how a service passes the caller's access token on.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — how a service obtains a different access token for a purpose.
+
+* Sources
+
+- Chris Richardson, [[https://microservices.io/patterns/security/access-token.html][Pattern: Access token]], microservices.io.
+- [[https://www.rfc-editor.org/rfc/rfc7519][RFC 7519, JSON Web Token]].
+- [[https://www.rfc-editor.org/rfc/rfc6750][RFC 6750, OAuth 2.0 Bearer Token Usage]].
+- [[https://www.rfc-editor.org/rfc/rfc7517][RFC 7517, JSON Web Key]] — the key set a verifier fetches.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

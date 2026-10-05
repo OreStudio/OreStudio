@@ -193,6 +193,13 @@ SET app.current_tenant_id = 'tenant-uuid-here';
 All queries on tenant-scoped tables automatically filter by this value,
 preventing cross-tenant data access.
 
+The value comes from the request, not from the service. A request carries an
+[[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] whose claims state the
+tenant and the party, and the handler's request context sets the session from
+them. A service that calls with its own identity, by
+[[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], therefore has no
+party and sees no party rows.
+
 * Database Context
 
 ** =context= Class

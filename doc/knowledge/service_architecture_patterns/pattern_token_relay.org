@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: EC6FAA96-294C-4547-8C2D-247C708E61C7
+:END:
+#+title: Token Relay
+#+description: A service forwards its caller's token to the services it calls, so each one acts as the caller with the caller's tenant, party and permissions.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:identity:oauth:delegation:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Token Relay in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+A service forwards its caller's token to the services it calls, so each one acts
+as the caller with the caller's tenant, party and permissions. In ORE Studio the
+caller's token travels in the =X-Delegated-Authorization= header, and every HTTP
+route relays the caller's token.
+
+* Also known as
+
+- /On-Behalf-Of (OBO) delegation/, the name ORE Studio used first, and the name
+  of Microsoft's flow.
+- /Token relay/, the name of the Spring Cloud Gateway filter.
+- /Delegation/, in RFC 8693, where the forwarded identity is the subject and the
+  forwarding service is the actor.
+
+* Context
+
+A caller asks service A for something, and A must ask service B for data that is
+scoped to the caller: rows of the caller's tenant and party. A has the caller's
+verified token.
+
+* Problem
+
+How does service B answer as if the caller had asked it directly, when the
+request comes from service A?
+
+* Forces
+
+- B must see the caller's tenant, party and permissions, not A's.
+- B must still know that A relayed the call.
+- A must not hold the caller's token beyond the request.
+- Relaying must not need a call to IAM, or every hop costs one.
+
+* Solution
+
+A sends its own token in =Authorization=, and the caller's token in
+=X-Delegated-Authorization=. B verifies both. Its request context takes the
+identity from the delegated token, so B checks the caller's permissions and sets
+the caller's tenant and party on the database session. A forwards the token for
+the length of the request and keeps no copy.
+
+#+caption: Token Relay: service A forwards the caller's token, and service B reads the caller's rows as the caller.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_token_relay.png]]
+
+Source: =[[./pattern_token_relay.puml][pattern_token_relay.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_relay.puml=.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | B refuses with =forbidden= when the caller lacks the permission, and A passes the refusal on. A does not retry with its own identity. |
+| Timeouts | The relayed call has the caller's request timeout, less what A has spent. |
+| Retries | A =token_expired= from B means the caller's token expired during the request. A cannot renew a caller's token, so it fails the request and the caller renews. |
+| Idempotency | Does not apply to the relay. The call B serves has its own rule. |
+| Observability | B logs the delegated subject and the relaying service. The correlation id joins the hops. |
+
+* Pitfalls
+
+- *The service's identity used for a caller's data.* Using
+  [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] here returns no
+  rows and no error. See
+  [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes]].
+- *A relay with no caller.* A timer, a scheduled job or a workflow step has no
+  inbound token to forward. Relaying is impossible there. See
+  [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]].
+- *A relayed token stored.* A request that carries the caller's token into a
+  persisted message, such as a workflow start, makes it a credential at rest.
+- *A token relayed past its lifetime.* Work that continues after the request,
+  such as a long import, outlives the caller's token. Such work needs its own
+  identity.
+
+The first pitfall is the reason the pattern exists, and the two calls below differ
+only in one header:
+
+#+caption: Token Relay: the same read made with the service's own identity returns no rows and no error; made with the relayed caller's token it returns the party's rows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/service_architecture_patterns/pattern_token_relay_pitfall.png]]
+
+Source: =[[./pattern_token_relay_pitfall.puml][pattern_token_relay_pitfall.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_token_relay_pitfall.puml=.
+
+* Security
+
+B trusts A to forward only the token of A's own caller. A cannot forge a token,
+because only IAM signs, but a compromised A can use every token that passes
+through it while the token is valid. The caller's permissions bound what A can
+do with it.
+
+* Resulting context
+
+- Benefits :: Row-level security and the permission checks apply the caller's
+  scope at every hop, with no call to IAM.
+- Liabilities :: The work is bounded by the caller's request and the caller's
+  token. Work that outlives the request cannot use this pattern.
+
+* In ORE Studio
+
+- =nats_client::with_delegation(token)= returns a client that adds
+  =X-Delegated-Authorization=; =make_request_context= prefers the delegated
+  identity.
+- The generated HTTP routes call =with_delegation= with the request's bearer
+  token, so every modelled route relays.
+- =storage_transfer= takes the relayed token, so storage authorises the caller.
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] holds the
+  decision rule and [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]]
+  is the plan that introduced it.
+
+* Related patterns
+
+- [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] — the token this pattern forwards.
+- [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] — the alternative for the service's own work.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the alternative when there is no caller, or when the next hop needs a narrower token.
+
+* Sources
+
+- [[https://www.rfc-editor.org/rfc/rfc8693#section-1.1][RFC 8693, OAuth 2.0 Token Exchange, section 1.1, Delegation vs. Impersonation Semantics]].
+- [[https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow][Microsoft identity platform, OAuth 2.0 On-Behalf-Of flow]].
+- [[https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/gatewayfilter-factories/tokenrelay-factory.html][Spring Cloud Gateway, TokenRelay filter]].
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.

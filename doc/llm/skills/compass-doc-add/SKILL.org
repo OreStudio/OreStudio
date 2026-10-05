@@ -89,6 +89,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =release_notes= | =compass add release_notes= | =--parent-dir= | =🎬 Demo=, =✅ Highlights=, =🛠️ Key Improvements=, =⚠️ Known Issues & Postponed=, =📈 Sprint Charts=, =📊 Time Summary= |
 | =report= | =compass add report= | =doc/knowledge/reports= | =Purpose=, =Audience=, =Frequency=, =Inputs=, =Outputs=, =Measures=, =ORE configuration=, =Parameters=, =Test coverage=, =Related=, =See also= |
 | =runbook= | =compass add runbook= | =--parent-dir= | =Goal=, =Preconditions=, =Steps=, =Postconditions=, =See also= |
+| =service_architecture_pattern= | =compass add service_architecture_pattern= | =doc/knowledge/service_architecture_patterns= | =Also known as=, =Context=, =Problem=, =Forces=, =Solution=, =Failure handling=, =Pitfalls=, =Security=, =Resulting context=, =In ORE Studio=, =Related patterns=, =Sources=, =See also= |
 | =service_registry= | =compass add service_registry= | =--parent-dir= | =ores.example.service= |
 | =skill= | =compass add skill= | =doc/llm/skills= | =When to use this skill=, =How to use this skill=, =Recipes=, =Reference= |
 | =sprint= | =compass add sprint= | =the current version= | =Mission=, =Status=, =Stories=, =Achievements=, =Captures=, =Health Review=, =Charts=, =Retrospective= |

@@ -93,6 +93,7 @@ How the codebase is put together.
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | The four composition classes for a journey, where the transaction boundary sits, and why a journey is not a saga |
 | [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] | The engine, the step protocol, the run and step states, and how a component describes the steps of a run |
 | [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] | The cron expression, the loop that evaluates it, the firing and its record, and the actions a firing performs |
+| [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | The pattern language of service interaction: the established patterns the platform uses, by group, with their sources, failure handling and pitfalls |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |

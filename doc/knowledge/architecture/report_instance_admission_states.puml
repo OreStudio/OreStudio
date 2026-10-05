@@ -1,0 +1,51 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A report instance, from admission to a terminal state
+
+hide empty description
+
+state "admission" as adm <<choice>>
+[*] --> adm : trigger (one per firing id)
+adm --> skipped : the concurrency policy is skip\nand a run is in flight
+adm --> failed : the concurrency policy is fail\nand a run is in flight
+adm --> queued : a run is in flight under the queue policy,\nor the tenant or party quota is full
+adm --> pending : admitted
+
+queued --> pending : promotion\n(oldest of the tenant whose party\nis under its quota)
+queued --> cancelled : a person cancels
+pending --> running : the first step is dispatched
+pending --> failed : the start is refused
+running --> completed : finalise
+running --> failed : a step fails, a deadline expires,\nor the grant lapses
+running --> cancelled : a person cancels
+
+completed --> [*]
+failed --> [*]
+skipped --> [*]
+cancelled --> [*]
+
+note right of queued
+  Every terminal transition of a tenant's run
+  promotes at most one queued run of that tenant.
+  A sweep each minute promotes runs that an
+  event missed.
+end note
+
+@enduml

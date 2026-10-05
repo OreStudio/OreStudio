@@ -1,0 +1,45 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Distributed Tracing: the context a hop carries and the records it leaves
+
+hide empty methods
+class "trace context (W3C traceparent)" as ctx {
+  version : 00
+  trace_id : 16 bytes, the whole action
+  parent_id : 8 bytes, the caller's span
+  flags : sampled or not
+}
+class "span" as span {
+  trace_id
+  span_id : 8 bytes, this hop
+  parent_span_id
+  name : the subject handled
+  start, end
+  status
+}
+class "log record" as log {
+  timestamp, severity, body
+  trace_id
+  span_id
+}
+ctx --> span : a hop starts a span\nwhose parent is parent_id
+span "1" --> "*" log : each log line of the hop
+note bottom of ctx : the correlation id of a request\nbecomes its trace_id
+@enduml

@@ -31,11 +31,11 @@ clean on the changed pages.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EC15BD44-1660-48EA-84AA-E4062FAE0DFF][Keep the prototypes in git]] |
-| Now          | The merges run in a scratch worktree; the hub and the docs follow. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the three tips, verify the web package, update the records, close. |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -87,8 +87,16 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Remote branches carrying web prototype files | 7 of 115, all named =prototype/*= | sweep: every =git ls-tree -r --name-only <branch> -- projects/ores.web= filtered by =prototype= | merge base a971cb6a3e |
-| Web test suite | | =npm test= in =projects/ores.web= | |
-| Site check | | =./compass.sh site page= | |
+| Prototype branches that are ancestors of the branch head | 7 of 7 | =git merge-base --is-ancestor origin/prototype/<name> HEAD= for each | f2e644f3f3 |
+| Web typecheck | 0 errors in every workspace | =npm run typecheck= in =projects/ores.web= | f2e644f3f3 |
+| Web tests | 222, 300 and 136 passed; 0 failed | =npm test= in =projects/ores.web= | f2e644f3f3 |
+| Web format | every file in Prettier style | =npx prettier --check packages/web/src= | f2e644f3f3 |
+| Web bundle | built, the onboarding logo among its assets | =npm run build --workspace @ores/web= | f2e644f3f3 |
+| Hub routes that render their own screen | 12 of 12 (the index and eleven journeys), each in its actor's shell | headless Chrome =--dump-dom= against =vite preview=, one load per route | f2e644f3f3 |
+| Pasted block symbols | 21 names resolve | =check_paste_block_symbols.py= | 6f155829ec |
+| CMake component file lists | all up to date | =regenerate_cmake_component_files.py --all --check= | 6f155829ec |
+| Catalogue drift sweep | clean on the files this branch touched | =check_component_drift.py --sweep= | 6f155829ec |
+| Site check | running when the PR was raised (a cold tree publishes all 6980 pages); the result follows on the PR | =./compass.sh site page= | 6f155829ec |
 
 * Notes
 
@@ -121,3 +129,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three chain tips merged into main as merge commits, so the seven
+prototype branches are ancestors of main and git reports each of them merged.
+The merges resolved toward main for every shared file a branch had drafted
+earlier, because main carries the merged successor of that work.
+
+What changed beyond the merges, and why:
+
+- The hub is one route table, =PrototypeApp.tsx=, that answers eleven
+  journey routes and an index grouped by onboarding, credentials and
+  operations. Each route states its actor's shell: the member and the tenant
+  administrator in Acme, the system administrator on the system tenant, and
+  the public shell for onboarding. The credentials routes link the accepted
+  variant B.
+- The onboarding screens moved from the application's routes (=/setup=,
+  =/iam/tenant/onboard=, =/refdata/party/new=) to =/prototype/setup=,
+  =/prototype/tenant= and =/prototype/party=, because the application owns
+  those routes now.
+- Both prototype sets brought a =fixtures.ts=. Their exports never overlapped,
+  so they split into =credentialsFixtures.ts= and =operationsFixtures.ts=.
+- Main's password field now takes the policy as a prop. The onboarding stub
+  gained a policy fixture in the shape the server returns.
+- The "throwaway, delete with the branch" comments now state the code is the
+  kept record.
+- The journey pages name =main= as each prototype's source; the credentials
+  journeys gained the Prototype section they lacked. A project memory, [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep
+  journey prototypes on main]], records the convention.
+
+Not run: the C++ build and ctest, because no C++ changed; and
+=misspell-fixer=, which this session may not run.

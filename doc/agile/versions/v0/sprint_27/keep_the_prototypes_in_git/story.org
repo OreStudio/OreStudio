@@ -25,11 +25,11 @@ main rather than a branch that may disappear.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The task merges the three chain tips and settles the hub; the inventory below lists every prototype branch. |
+| Now           | Done. Main carries every prototype, and the hub answers every route. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, verify the web package, and close the task. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -53,9 +53,9 @@ task's Measurements, so the sweep can be rerun.
 #+ATTR_HTML: :class hug-leading
 | Prototype | Branch | Screens | State |
 |-----------+--------+---------+-------|
-| Onboarding: first run, new tenant, new party | =prototype/new-party-journey= (carries =prototype/new-tenant-journey= and =prototype/first-run-journey=) | Setup, tenant onboarding, party onboarding | Merges in this story |
-| Credentials: protect my account, rescue access, audit sign-ins | =prototype/audit-sign-ins= (carries =prototype/rescue-access= and =prototype/protect-my-account=) | Security, rescue, sign-in audit | Merges in this story |
-| Operations: services, grid, bus, logs, versions | =prototype/operations-journeys= | Five screens | Merges in this story |
+| Onboarding: first run, new tenant, new party | =prototype/new-party-journey= (carries =prototype/new-tenant-journey= and =prototype/first-run-journey=) | Setup, tenant onboarding, party onboarding | Merged |
+| Credentials: protect my account, rescue access, audit sign-ins | =prototype/audit-sign-ins= (carries =prototype/rescue-access= and =prototype/protect-my-account=) | Security, rescue, sign-in audit | Merged |
+| Operations: services, grid, bus, logs, versions | =prototype/operations-journeys= | Five screens | Merged |
 | The static UX prototypes | on main under =doc/prototypes/= | Access, home, navigation, profile, refdata, registration door, trade entry | Already on main |
 
 Two further branches carry "prototype" in the name and are already merged:
@@ -67,7 +67,7 @@ record.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6A9162A2-527C-4CFB-B597-A71379145C67][Merge the prototype branches into main]] | STARTED | 2026-10-05 | | The three chain tips (new-party-journey, audit-sign-ins, operations-journeys) merge into main with the conflicts resolved; the prototype hub answers every prototype route; the journey records stop calling the prototypes unmerged. |
+| [[id:6A9162A2-527C-4CFB-B597-A71379145C67][Merge the prototype branches into main]] | DONE | 2026-10-05 | 2026-10-06 | The three chain tips (new-party-journey, audit-sign-ins, operations-journeys) merge into main with the conflicts resolved; the prototype hub answers every prototype route; the journey records stop calling the prototypes unmerged. |
 
 * Decisions
 
@@ -91,3 +91,11 @@ record.
 - Cleaning the prototypes up (tests, typing, wiring them into the
   application's real routes) stays out; they are the record as accepted.
 - The static prototypes under =doc/prototypes= stay where they are.
+
+* Result
+
+All seven prototype branches are ancestors of main, through three merge
+commits, and the =/prototype= hub answers eleven journey routes. Each route
+opens in its actor's shell. The journey pages name main as each prototype's
+source, and a project memory records the convention for the next prototype.
+The evidence is on [[id:6A9162A2-527C-4CFB-B597-A71379145C67][Merge the prototype branches into main]].

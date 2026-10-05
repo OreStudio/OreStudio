@@ -342,7 +342,6 @@ the derivation owns only the CRUD surface.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #+end_src
 

@@ -22,6 +22,7 @@
 #include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <set>
 
@@ -31,13 +32,12 @@ using namespace ores::analytics::repository;
 using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
-using ores::database::repository::stamp_party;
 
 pricing_engines_document_service::pricing_engines_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
-    stamp_party(ctx_, v);
+    ores::service::messaging::stamp_document(v, ctx_);
     pricing_model_config_repository().write(ctx_, v.config);
     pricing_model_product_repository().write(ctx_, v.products);
     pricing_model_product_parameter_repository().write(ctx_, v.parameters);

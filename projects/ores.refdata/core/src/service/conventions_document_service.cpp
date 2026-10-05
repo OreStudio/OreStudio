@@ -43,6 +43,7 @@
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <map>
 #include <set>
@@ -51,7 +52,6 @@
 namespace ores::refdata::service {
 
 using namespace ores::refdata::repository;
-using ores::database::repository::stamp_party;
 
 namespace {
 
@@ -100,7 +100,7 @@ conventions_document_service::conventions_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
-    stamp_party(ctx_, v);
+    ores::service::messaging::stamp_document(v, ctx_);
     conventions_save_result r;
     replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
     replace_party_rows(ctx_, average_ois_convention_repository(), std::move(v.average_ois));

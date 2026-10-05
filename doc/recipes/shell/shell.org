@@ -49,6 +49,7 @@ shell's =ore= menu (=ore upload=, =ore import=, =ore export=). Each is
 tangled into the runnable script library
 (=projects/ores.shell/scripts/library/ore/=).
 
+- [[id:30CFD4C8-6C4F-49B8-8718-B05E29B3D0A3][How do I import a run's configuration into a report definition?]]
 - [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]]
 
 * Compute

@@ -21,7 +21,6 @@
 #define ORES_DATABASE_REPOSITORY_DOCUMENT_OPERATIONS_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/domain/party_scope.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
@@ -35,16 +34,6 @@
  * @brief Helpers for a component that stores a document across its tables.
  */
 namespace ores::database::repository {
-
-/**
- * @brief Stamps the session's party on every row of a value, when the session
- * has one; otherwise the rows keep the party the caller gave them.
- */
-template <typename T>
-void stamp_party(const database::context& ctx, T& v) {
-    if (const auto party = ctx.party_id())
-        domain::assign_party(v, *party);
-}
 
 /**
  * @brief The latest rows the session sees that satisfy @p keep.

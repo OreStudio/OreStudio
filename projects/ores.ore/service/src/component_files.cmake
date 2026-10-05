@@ -29,6 +29,8 @@ set(files
     "messaging/ore_import_handler.cpp"
     "messaging/registrar.cpp"
     "messaging/report_package_handler.cpp"
+    "messaging/run_configuration_handler.cpp"
+    "messaging/run_configuration_operations.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -40,9 +42,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/nats_call.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/ore_import_execute_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/ore_import_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/report_package_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/run_configuration_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/messaging/run_configuration_operations.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.service/ores.ore.service.hpp"
 )

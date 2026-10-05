@@ -33,10 +33,12 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <rfl.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::service::messaging {
 
@@ -160,6 +162,40 @@ void stamp(T& obj,
     if constexpr (requires { obj.change_reason_code; }) {
         if (obj.change_reason_code.empty())
             obj.change_reason_code = std::string(change_reason);
+    }
+}
+
+/**
+ * @brief Stamps every row of a document as stamp() stamps one object.
+ *
+ * Walks the value: a row, which has modified_by, is stamped; a vector, an
+ * optional or a struct of rows is walked into; anything else is left alone.
+ * A document's rows all need the session's party and audit fields, and a live
+ * tenant refuses a row whose modified_by is empty.
+ */
+template <typename T>
+void stamp_document(T& v,
+                    const ores::database::context& ctx,
+                    std::string_view change_reason = change_reasons::new_record) {
+    if constexpr (requires { v.modified_by; }) {
+        stamp(v, ctx, change_reason);
+    } else if constexpr (requires {
+                             v.begin();
+                             v.end();
+                             typename T::value_type;
+                         }) {
+        if constexpr (!std::is_same_v<typename T::value_type, char>)
+            for (auto& e : v)
+                stamp_document(e, ctx, change_reason);
+    } else if constexpr (requires {
+                             v.has_value();
+                             *v;
+                         }) {
+        if (v)
+            stamp_document(*v, ctx, change_reason);
+    } else if constexpr (std::is_class_v<T> && std::is_aggregate_v<T>) {
+        rfl::to_view(v).apply(
+            [&](const auto& field) { stamp_document(*field.value(), ctx, change_reason); });
     }
 }
 

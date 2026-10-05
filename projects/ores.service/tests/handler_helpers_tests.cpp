@@ -26,7 +26,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -49,6 +51,15 @@ struct record {
 struct party_scoped_record {
     std::string tenant_id;
     boost::uuids::uuid party_id{};
+};
+
+// A document of the shape stamp_document() walks: rows on their own, in a
+// vector of optionals, and beside a leaf the walk must leave alone.
+struct document {
+    record header;
+    std::vector<std::optional<record>> rows;
+    boost::uuids::uuid id{};
+    int count = 0;
 };
 
 }
@@ -170,6 +181,21 @@ TEST_CASE("stamp overwrites the party id from the context", tags) {
     stamp(r, ctx);
 
     REQUIRE(r.party_id == other_party);
+}
+
+TEST_CASE("stamp_document stamps every row of a document, however deep", tags) {
+    ores::testing::database_helper h;
+    const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
+    document d;
+    d.rows = {record{}, std::nullopt, record{}};
+
+    stamp_document(d, ctx);
+
+    REQUIRE(d.header.modified_by == "alice");
+    REQUIRE(d.rows[0]->modified_by == "alice");
+    REQUIRE_FALSE(d.rows[1].has_value());
+    REQUIRE(d.rows[2]->change_reason_code == "system.new_record");
+    REQUIRE(d.id == boost::uuids::uuid{});
 }
 
 TEST_CASE("delegated_actor prefers the acting user and falls back to the service account", tags) {

@@ -20,9 +20,11 @@
 #include "ores.ore.service/messaging/registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 #include "ores.ore.service/messaging/report_package_handler.hpp"
+#include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include <memory>
 
@@ -53,12 +55,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Inbound client handler: validates JWT, dispatches workflow start.
     // ----------------------------------------------------------------
-    auto h = std::make_shared<ore_import_handler>(nats, ctx, std::move(signer));
+    auto h = std::make_shared<ore_import_handler>(nats, ctx, signer);
 
     subs.push_back(nats.queue_subscribe(
         ores::ore::messaging::ore_import_request::nats_subject, qg, [h](ores::nats::message msg) {
             h->ore_import(std::move(msg));
         }));
+
+    auto rch =
+        std::make_shared<run_configuration_handler>(nats, ctx, std::move(signer), outbound_nats);
+    subs.push_back(nats.queue_subscribe(
+        ores::ore::messaging::import_run_configuration_request::nats_subject,
+        qg,
+        [rch](ores::nats::message msg) { rch->import_run_configuration(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        ores::ore::messaging::export_run_configuration_request::nats_subject,
+        qg,
+        [rch](ores::nats::message msg) { rch->export_run_configuration(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Engine-dispatched step handlers: execute and rollback. The report
@@ -66,6 +79,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // authenticate as the service.
     // ----------------------------------------------------------------
     auto rph = std::make_shared<report_package_handler>(nats, ctx, http_base_url, outbound_nats);
+    auto rci = std::make_shared<run_configuration_import_handler>(nats, outbound_nats);
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::ore::messaging::run_configuration_import_execute_request::nats_subject),
+        qg,
+        [rci](ores::nats::message msg) { rci->execute(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::ore::messaging::run_configuration_import_rollback_request::nats_subject),
+        qg,
+        [rci](ores::nats::message msg) { rci->rollback(std::move(msg)); }));
     auto eh = std::make_shared<ore_import_execute_handler>(
         // Not std::move: the report package handler below takes the same
         // base URL, and moving it here leaves that one empty, so every

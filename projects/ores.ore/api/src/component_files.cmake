@@ -26,7 +26,9 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/ore_import_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/run_configuration_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/net/ore_storage.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/ores.ore.api.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/workflow/ore_import_workflow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/workflow/run_configuration_import_workflow.hpp"
 )

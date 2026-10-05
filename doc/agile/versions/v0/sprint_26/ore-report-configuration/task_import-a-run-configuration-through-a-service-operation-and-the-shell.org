@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/import-a-run-configuration-through-a-service-operation-and-the-shell
+#+pr: 2647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A user loads a run's configuration into a report definition, and reads it back, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -79,12 +79,49 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2647][#2647]] | [ore,shell] Import a run's configuration through a saga over its owners |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A failed re-import can delete content that existed before it | run_configuration_operations.cpp | Decline | Reporting refuses a save into a definition that already holds a run document, which is the import's first write; every other document lands in a new configuration with a new header, so nothing that existed is replaced. Conventions are replaced by id and not undone, as the PR states. |
+| 2 | The workflow request holds the bearer token and the files; a large input exceeds the NATS payload | run_configuration_handler.cpp | Accept, in part | The token travels in the request exactly as the ORE trade import's does. The payload limit is real: the shell refuses an input over 900 KB with the reason, and [[id:D0E47AF2-6948-4E2C-97A6-2824C60D8F66][Carry a run's input through object storage]] removes the limit and the files from the request. |
+| 3 | Thin request validation | run_configuration_handler.cpp | Accept | The import and export refuse an id that is not a uuid, and the import refuses an empty name, before the workflow starts. |
+| 4 | A bind can outlive a failed store | run_configuration_operations.cpp | Accept | It cannot: deleting the run document deletes every binding and its configuration row. A comment now says so. |
+| 5 | with_header copies the document | run_configuration_operations.cpp | Accept | Returns a reference. |
+| 6 | stamp_document is untested | handler_helpers.hpp | Accept | A unit test covers rows on their own, in a vector of optionals, and a leaf left alone. |
+| 7 | Two bindings naming one file overwrite each other | run_configuration_operations.cpp | Decline | A run setup names one file per configuration type, and a definition fills each slot once. |
+| 8 | No failure-injection test of import and export | run_configuration_operations.cpp | Decline here | The operations call the owners through the concrete NATS client; a test would need it injected. The live run covers the happy path. |
 
 * Result
+
+A run's configuration now imports and exports through the owning services,
+from the shell or any NATS client, without the ORE service touching another
+component's tables.
+
+- =ores.ore.run_configuration_messages=: the client import, which starts
+  =run_configuration_import_workflow= and answers with its instance; the
+  workflow's execute and rollback messages; and a synchronous export.
+- The execute step parses and maps every file first, saves the run document
+  through reporting, then binds a configuration through reporting and saves
+  each document through its owner, as the caller. A failure part way deletes
+  what the step stored; the rollback, which the engine sends as compensation,
+  does the same from the step's result. The export reads the run through
+  reporting and each document through its owner, and rebuilds the files.
+- =nats_call= moved to a shared header, so the trade import and the run import
+  call the owners the same way.
+- The live run exposed that the document services stamped only the party: a
+  live tenant refuses a row with no modified_by, while the test tenants, which
+  have no user accounts, accept one. =stamp_document= in =ores.service= stamps
+  every row of a document with the session's party and audit fields, and every
+  document service uses it.
+- The shell's =ore import-run= waits for the workflow; =ore export-run= writes
+  the files. The recipe records the live run.
+
+Live, against Acme Corporation: ORE-Python Example_1 imported into Acme
+Corporation Plc's NPV definition and exported back; pricing engines, today's
+market and the run document matched, the curve configuration differed only in
+how two tolerances print, and the conventions held all but the FX convention,
+which has no store yet. ctest 90/90 after a database recreate.
+

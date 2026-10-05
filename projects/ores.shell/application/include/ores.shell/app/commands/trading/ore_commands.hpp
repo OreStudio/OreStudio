@@ -126,6 +126,33 @@ public:
                                const std::string& output_file,
                                const std::string& node_id,
                                std::uint32_t limit);
+
+    /**
+     * @brief Store an ORE input directory's files against a report definition.
+     *
+     * Sends every regular file at the top of the directory; the run document
+     * is its ore.xml. The import runs as a workflow, which this waits for;
+     * marks command failure when the workflow does not complete.
+     *
+     * @param name Prefixes the configurations the import creates; the
+     *             directory's name when empty.
+     */
+    static void process_import_run(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::string& report_definition_id,
+                                   const std::string& src_dir,
+                                   const std::string& name);
+
+    /**
+     * @brief Write a report definition's run configuration into a directory.
+     *
+     * Refuses a file name that is absolute or climbs out with .., since the
+     * names come from the service.
+     */
+    static void process_export_run(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::string& report_definition_id,
+                                   const std::string& out_dir);
 };
 
 }

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :inbox:service:build_approvals_and_notifications:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-approvals-and-notifications
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:358A54AB-CB49-401E-A108-18C5F622AFD2][Build approval requests and notifications]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

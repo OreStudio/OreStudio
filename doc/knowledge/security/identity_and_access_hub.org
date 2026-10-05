@@ -78,20 +78,25 @@ access.
 
 ** How a service acts for a user
 
+The mechanisms are established patterns, and the identity group of the
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]] holds them: Access
+Token, Client Credentials, Token Relay, Token Exchange, Grant Management, and the
+composite Scheduled Work Acting as a Tenant. Each pattern page states its
+failure handling, its pitfalls and its sources. The pages below decide between
+them and record how ORE Studio uses them.
+
 [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth
-Patterns]] — what happens when one service must call another, and the
-choice between a service acting as itself and acting for the caller.
+Patterns]] — the decision guide: which identity pattern a call needs, with the
+questions that decide it and the table of which layer acts as whom.
 
 [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]] —
-the pattern we use: a service self-mints a short-lived token impersonating
-a specific end user. Read it straight after the patterns note, because it
-is the one we chose from among them, and read both before touching any
-service-to-service call.
+Token Exchange in its in-process form inside IAM, used by tenant provisioning to
+act as several parties in turn. Read it for the worked example and for the
+expiry failure it met.
 
-[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] —
-the same pattern served by IAM as an operation. A person's consent becomes a
-run grant, and a step service exchanges the grant for a short-lived token that
-acts as the tenant and the party of a scheduled run.
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the
+first use of Scheduled Work Acting as a Tenant: the role, the audience and the
+moments reporting grants and revokes.
 
 ** What the database enforces regardless
 

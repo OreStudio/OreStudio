@@ -11,16 +11,23 @@
 
 * Summary
 
+This page is the decision guide for the identity group of the
+[[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]]. It answers one
+question: which identity does this call carry? The answer is a pattern:
+[[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]], [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]], or, for work a schedule starts,
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]]. The pattern pages hold each mechanism's failure handling, pitfalls and
+sources. This page holds the questions that choose between them, the ORE Studio
+idioms, and the rule against reaching around a service boundary.
+
 A service that needs data another service owns has exactly two legitimate
 ways to authenticate that call — mint its own service identity (the
 *client credentials* grant) or forward the calling user's own token (the
 *on-behalf-of*, OBO, delegation flow) — never both blended into one call,
 and never a shortcut around either by reaching into the other service's
-repository/tables directly. (A third, narrower pattern —
-[[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][internal actor impersonation]] — applies specifically to server-side
-orchestrators that must act as several identities in turn with no inbound
-caller to delegate from; see that doc for when it, rather than either
-flow below, is the right call.) Which of the two flows below to use is
+repository/tables directly. (When no inbound caller exists, neither flow fits. An orchestrator that must
+act as several identities in turn uses [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]], as
+[[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][internal actor impersonation]]
+records, and work a schedule starts uses [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]].) Which of the two flows below to use is
 decided by one
 question: is the data being read scoped to the *current caller* (tenant,
 party, permissions) or is it scoped to *the service itself* (background
@@ -203,20 +210,22 @@ request carries =bearer_token=, and the workflow instance is persisted, so
 whether that token is stored with it needs checking -- the policy above says it
 must not be.
 
-By layer, then:
+By layer, then. The last column names the pattern; its page holds the failure
+handling and the pitfalls.
 
-| Layer                        | Acts as                        | Mechanism                                |
-|------------------------------+--------------------------------+------------------------------------------|
-| UI, CLI, =ores.shell=        | The signed-in user             | Session token on every call              |
-| HTTP edge (generated routes) | The caller, always             | =with_delegation(req.get_bearer_token())= |
-| Domain service handler       | The caller, for user-shaped work | Forward the inbound bearer             |
-| Domain service, own work     | Itself                         | Client credentials built once (=svc_nats=) |
-| Workflow step or timer       | Itself, unless dispatched with a bearer | Client credentials, or the dispatched token |
-| Step of a scheduled run      | The run's tenant and party     | A run token exchanged for the run grant  |
-| Orchestrator, internal actor | A specific end user, no client | Self-minted impersonation, last resort   |
+| Layer | Acts as | Mechanism | Pattern |
+|-------+---------+-----------+---------|
+| UI, CLI, =ores.shell= | The signed-in user | Session token on every call | [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] |
+| HTTP edge (generated routes) | The caller, always | =with_delegation(req.get_bearer_token())= | [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] |
+| Domain service handler | The caller, for user-shaped work | Forward the inbound bearer | [[id:EC6FAA96-294C-4547-8C2D-247C708E61C7][Token Relay]] |
+| Domain service, own work | Itself | Client credentials built once (=svc_nats=) | [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] |
+| Workflow step or timer | Itself, unless dispatched with a bearer | Client credentials, or the dispatched token | [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] |
+| Step of a scheduled run | The run's tenant and party | A run token exchanged for the run grant | [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] |
+| Orchestrator, internal actor | A specific end user, no client | Self-minted impersonation, last resort | [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] |
 
 * See also
 
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Patterns]] — the pattern language; this page is the decision guide for its identity group.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the run grant
   and the token exchange that let a scheduled run act as its tenant and party.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the

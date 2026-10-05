@@ -109,7 +109,10 @@ needs it split out first.
   =series_classification_rule=; and the junction's paged list by series, with
   its total and its order.
 - =as_of_rows=: the as-of row mapping, moved out of the model's two reads so a
-  test reaches it. =repository_as_of_rows_tests.cpp= covers a good row, a short
+  test reaches it. The move is not quite pure: the bucket ordinal must now be
+  all digits, so =1x=, =-1= and = 1= are refused as not a number, where
+  =std::stoul= took the leading digits, a sign or a space. A row that is both
+  short and missing its ordinal now reports the missing ordinal first. =repository_as_of_rows_tests.cpp= covers a good row, a short
   row, a missing ordinal, an ordinal that is not a number (=two=, =2x=) and an
   ordinal outside the buckets.
 - =tick_plan=: =on_tick='s decision, moved out of the loop. =app_tick_plan_tests.cpp=
@@ -189,7 +192,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 2650: the ordinal parse is stricter than before; say so. | =as_of_rows.cpp= | Accepted | Noted under the task's notes. |
+| 2 | PR 2650: a short row with no ordinal now reports the ordinal first. | =as_of_rows.cpp= | Not changed | Both refusals still fire; no test depends on the order. Noted. |
+| 3 | PR 2650: =-1= wraps in =std::stoul= and reports as outside the buckets. | =as_of_rows.cpp= | Accepted | The ordinal must be all digits; =-1= and = 1= are tested. |
+| 4 | PR 2650: confirm =bindings_by_source_= never holds an empty vector. | =feed_ingest_loop.cpp= | Not changed | =refresh()= creates an entry only by pushing an enabled binding. |
+| 5 | PR 2650: would a foreign key refuse the generator's fixed source id? | =observation_lineage= model | Not changed | =source_series_ids= is =jsonb= with one check, a non-empty array; no foreign key. |
 
 * Result
 

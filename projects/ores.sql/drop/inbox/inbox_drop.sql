@@ -23,6 +23,7 @@
 -- =============================================================================
 -- Children first, so nothing is dropped while a reference holds.
 
+\ir ./inbox_notification_fn_drop.sql
 \ir ./inbox_notification_preferences_notify_trigger_drop.sql
 \ir ./inbox_notification_preferences_drop.sql
 \ir ./inbox_notification_deliveries_notify_trigger_drop.sql

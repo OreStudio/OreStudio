@@ -48,7 +48,12 @@ std::string calendar_repository::sql() {
 }
 
 bool calendar_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "code",
+        "name",
+        "calendar_type",
+        "country_code",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -85,6 +90,8 @@ filter_condition(const std::optional<messaging::calendars_filter>& filter) {
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"code", "name"}, *filter->search));
     return all_of(std::move(r));
 }
 

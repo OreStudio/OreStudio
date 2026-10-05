@@ -67,6 +67,7 @@ struct calendar_lookup {
 
 struct calendars_filter {
     std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::string> search;
 };
 
 struct calendar_event {

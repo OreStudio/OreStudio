@@ -60,6 +60,7 @@ export interface CalendarLookup {
 
 export interface CalendarsFilter {
     code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface CalendarEvent {

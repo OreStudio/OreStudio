@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ore-report-configuration:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/expose-the-configuration-document-operations-from-each-owning-service
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A service saves, reads and deletes another component's configuration documents o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:EC3B6F30-2A64-4FAB-9E5A-71A5A5645C9B][Model the ORE report configuration as entities]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -87,3 +87,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Refdata, analytics and reporting now serve their configuration documents over
+NATS, so the ORE service can import and export a run without touching their
+tables.
+
+- Operation models, with the TypeScript facet off since no UI reads them:
+  =ores.refdata.configuration_document_messages= (curve configuration save, get
+  and delete; conventions save and get), =ores.analytics.configuration_document_messages=
+  (pricing engines and today's market save, get and delete) and
+  =ores.reporting.run_document_messages= (run document save, bind, get and
+  delete).
+- Handlers and registrars in each owner's core, under the caller's session. A
+  get may name a party when the session acts for none, as a workflow step's
+  does (=for_requested_party= in =ores.service=). Reporting acts only on a
+  definition the session's party owns, or as the owner for a session with no
+  party.
+- Delete on every document service, for the saga's compensation.
+- =refdata::conventions:read= and =:write= are seeded; the other operations use
+  their header table's existing codes.
+- Five headers (curve configuration, pricing model config, today's market
+  config, stress test library, credit simulation config) checked
+  =configuration_id= against reporting's table in their insert trigger, which
+  runs with the inserting service's grants and so would have failed under the
+  owners' own grants, and broke the rule besides. Their foreign keys now carry
+  =:skip_check:=, which drops the trigger check and keeps the generated list by
+  configuration operations; reporting's binding holds the reference.
+- Tests drive each handler over real NATS with a minted token
+  (=ores.testing/handler_test_support.hpp=): save, get by configuration and
+  delete per owner, the permission refusal, and reporting's cross-party
+  refusal. ctest 90/90 after a database recreate.
+

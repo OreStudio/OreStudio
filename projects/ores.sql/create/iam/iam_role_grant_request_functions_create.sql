@@ -29,16 +29,19 @@
  * the caller's tenant. A second request for the same role while one waits is
  * refused, so a person cannot flood the queue.
  *
- * ores_iam_unapplied_role_grants_fn answers, across every tenant, each role an
- * approved iam.role_grant request asked for that its account does not yet hold,
- * with the username of the approver whose decision closed it. IAM grants each
- * one. It is a reconciliation, not a queue: granting a role takes the row out
- * of the answer, so running it twice grants nothing twice, and an approval made
- * while IAM was down is granted the next time it runs. Only tenants that still
- * exist and are not terminated are read: a removed or terminated tenant has
- * nobody to grant to, and leaving its approvals in the answer would fail every
- * run. A suspended tenant's approvals are still granted, since suspension only
- * stops signing in.
+ * ores_iam_unapplied_role_grants_fn answers, across every tenant that still
+ * exists and is not terminated, each role an approved iam.role_grant request
+ * asked for and IAM has not yet applied, with the approver whose decision
+ * closed it and whether the account already holds the role. IAM grants a role
+ * not held, then marks every row applied. It is a reconciliation, not a queue:
+ * a row leaves the answer once applied, so a second run grants nothing twice,
+ * a crash between the grant and the mark converges on the next run, an
+ * approval made while IAM was down is granted when it next runs, and a role
+ * taken away after it was applied is not granted again. A removed or
+ * terminated tenant has nobody to grant to; a suspended tenant's approvals are
+ * still applied, since suspension only stops signing in. An approval whose
+ * approver account no longer exists is left out, since nobody can be named as
+ * the grant's author; an administrator approves a new request instead.
  */
 
 create or replace function ores_iam_open_role_grant_requests_fn(
@@ -66,36 +69,35 @@ begin
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 
+-- The answer's columns changed when held and applied_at were added, and a
+-- function's result type cannot be replaced in place.
+drop function if exists ores_iam_unapplied_role_grants_fn();
+
 create or replace function ores_iam_unapplied_role_grants_fn()
 returns table (
     tenant_id uuid,
     request_id uuid,
     account_id uuid,
     role_id uuid,
-    approved_by text
+    approved_by text,
+    held boolean
 )
 as $$
 begin
     return query
-    select g.tenant_id, g.request_id, g.account_id, r.role_id,
-        coalesce((
-            select a.username
-            from ores_inbox_approval_decisions_tbl d
-            join ores_iam_accounts_tbl a
-                on a.id = d.decided_by
-               and a.tenant_id = d.tenant_id
-               and a.valid_to = ores_utility_infinity_timestamp_fn()
-            where d.request_id = g.request_id
-              and d.tenant_id = g.tenant_id
-              and d.decision_code = 'approve'
-              and d.valid_to = ores_utility_infinity_timestamp_fn()
-            order by d.decided_at desc
-            limit 1), '')
+    select g.tenant_id, g.request_id, g.account_id, r.role_id, approver.username,
+        exists (
+            select 1 from ores_iam_account_roles_tbl ar
+            where ar.tenant_id = g.tenant_id
+              and ar.account_id = g.account_id
+              and ar.role_id = r.role_id
+              and ar.valid_to = ores_utility_infinity_timestamp_fn())
     from ores_iam_role_grant_requests_tbl g
     join ores_iam_role_grant_request_roles_tbl r
         on r.request_id = g.request_id
        and r.tenant_id = g.tenant_id
        and r.valid_to = ores_utility_infinity_timestamp_fn()
+       and r.applied_at is null
     join ores_inbox_approval_requests_tbl q
         on q.id = g.request_id
        and q.tenant_id = g.tenant_id
@@ -104,15 +106,22 @@ begin
         on t.id = g.tenant_id
        and t.status <> 'terminated'
        and t.valid_to = ores_utility_infinity_timestamp_fn()
+    join lateral (
+        select a.username
+        from ores_inbox_approval_decisions_tbl d
+        join ores_iam_accounts_tbl a
+            on a.id = d.decided_by
+           and a.tenant_id = d.tenant_id
+           and a.valid_to = ores_utility_infinity_timestamp_fn()
+        where d.request_id = g.request_id
+          and d.tenant_id = g.tenant_id
+          and d.decision_code = 'approve'
+          and d.valid_to = ores_utility_infinity_timestamp_fn()
+        order by d.decided_at desc
+        limit 1) approver on true
     where g.valid_to = ores_utility_infinity_timestamp_fn()
       and q.kind_code = 'iam.role_grant'
-      and q.state_code = 'approved'
-      and not exists (
-          select 1 from ores_iam_account_roles_tbl ar
-          where ar.tenant_id = g.tenant_id
-            and ar.account_id = g.account_id
-            and ar.role_id = r.role_id
-            and ar.valid_to = ores_utility_infinity_timestamp_fn());
+      and q.state_code = 'approved';
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
 

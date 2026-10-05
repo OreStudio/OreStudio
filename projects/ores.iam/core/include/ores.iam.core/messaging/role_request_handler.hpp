@@ -184,7 +184,12 @@ private:
             return role_request_result(
                 outcome::denied, "no_account", "The signed-in account was not found.");
 
-        const auto ids = array_literal(req.role_ids);
+        // Every id parsed as a UUID above, so the literal is built from the
+        // parsed values and holds nothing but UUIDs.
+        std::vector<std::string> parsed;
+        for (const auto& id : req.role_ids)
+            parsed.push_back(boost::uuids::to_string(parse(id)));
+        const auto ids = array_literal(parsed);
         const auto held = ores::database::repository::execute_parameterized_string_query(
             ctx,
             "select role_id::text from ores_iam_account_roles_tbl"

@@ -35,6 +35,7 @@ export interface RoleGrantRequestRole {
     tenant_id: string;
     request_id: string;
     role_id: string;
+    applied_at: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

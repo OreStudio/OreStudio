@@ -48,6 +48,7 @@ struct role_grant_request_role_entity {
     std::string tenant_id;
     std::string role_id;
     int version = 0;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> applied_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

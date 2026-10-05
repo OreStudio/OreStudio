@@ -37,33 +37,56 @@ int role_grant_applier::apply() {
 
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
-        "select tenant_id::text, request_id::text, account_id::text, role_id::text, approved_by"
-        " from ores_iam_unapplied_role_grants_fn()",
+        "select tenant_id::text, request_id::text, account_id::text, role_id::text,"
+        " approved_by, held::text from ores_iam_unapplied_role_grants_fn()",
         {},
         lg(),
-        "Reading approved role requests not yet granted");
+        "Reading approved role requests not yet applied");
 
     boost::uuids::string_generator parse;
     int granted = 0;
     for (const auto& row : rows) {
         const auto request_id = row[1].value_or("");
+        const auto account_id = row[2].value_or("");
+        const auto role_id = row[3].value_or("");
         try {
             const auto tenant = utility::uuid::tenant_id::from_string(row[0].value_or(""));
             if (!tenant)
                 throw std::runtime_error("bad tenant " + row[0].value_or(""));
             const auto approver = row[4].value_or("");
-            authorization_service auth(ctx_.with_tenant(*tenant, approver), event_bus_);
-            auth.assign_role(parse(row[2].value_or("")),
-                             parse(row[3].value_or("")),
-                             approver,
-                             "Approved request " + request_id,
-                             "access.role_change");
-            ++granted;
-            BOOST_LOG_SEV(lg(), info) << "Granted role " << row[3].value_or("") << " to account "
-                                      << row[2].value_or("") << " for request " << request_id;
+            const auto ctx = ctx_.with_tenant(*tenant, approver);
+
+            // A role the account already holds needs no grant; it is marked
+            // applied all the same, so taking it away later is final.
+            if (row[5].value_or("") != "true") {
+                authorization_service auth(ctx, event_bus_);
+                auth.assign_role(parse(account_id),
+                                 parse(role_id),
+                                 approver,
+                                 "Approved request " + request_id,
+                                 "access.role_change");
+                ++granted;
+                BOOST_LOG_SEV(lg(), info) << "Granted role " << role_id << " to account "
+                                          << account_id << " for request " << request_id;
+            }
+
+            ores::database::repository::execute_parameterized_command(
+                ctx,
+                "insert into ores_iam_role_grant_request_roles_tbl (tenant_id, request_id,"
+                " role_id, version, applied_at, modified_by, performed_by, change_reason_code,"
+                " change_commentary)"
+                " select tenant_id, request_id, role_id, version, clock_timestamp(), $3, $3,"
+                " 'system.update', 'Applied'"
+                " from ores_iam_role_grant_request_roles_tbl"
+                " where request_id = $1::uuid and role_id = $2::uuid and applied_at is null"
+                " and valid_to = ores_utility_infinity_timestamp_fn()",
+                {request_id, role_id, approver},
+                lg(),
+                "Marking a request role applied");
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Granting a role for request " << request_id
-                                       << " failed; the next run tries again: " << e.what();
+            BOOST_LOG_SEV(lg(), error)
+                << "Applying role " << role_id << " for request " << request_id
+                << " failed; the next run tries again: " << e.what();
         }
     }
     return granted;

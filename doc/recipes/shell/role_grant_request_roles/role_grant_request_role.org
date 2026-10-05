@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-role_grant_request_roles add <request_id> <role_id> <reason> <commentary>
+role_grant_request_roles add <request_id> <role_id> <applied_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.role_grant_request_roles.put=.
 
 #+name: role_grant_request_roles-add
 #+begin_src ores-shell :tangle role_grant_request_roles-add.ores :exports none
-role_grant_request_roles add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+role_grant_request_roles add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-role_grant_request_roles set <request_id> <role_id> <reason> <commentary> [--version <n>]
+role_grant_request_roles set <request_id> <role_id> <applied_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =iam.v1.role_grant_request_roles.put=.
 
 #+name: role_grant_request_roles-set
 #+begin_src ores-shell :tangle role_grant_request_roles-set.ores :exports none
-role_grant_request_roles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+role_grant_request_roles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-role_grant_request_roles put-many --count <n> <request_id> <role_id> <reason> <commentary>
+role_grant_request_roles put-many --count <n> <request_id> <role_id> <applied_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =iam.v1.role_grant_request_roles.put_many=.
 
 #+name: role_grant_request_roles-put-many
 #+begin_src ores-shell :tangle role_grant_request_roles-put-many.ores :exports none
-role_grant_request_roles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+role_grant_request_roles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script
 #+end_src
 
 ** =delete=

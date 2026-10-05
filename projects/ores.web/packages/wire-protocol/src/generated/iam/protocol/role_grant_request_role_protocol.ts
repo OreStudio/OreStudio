@@ -37,6 +37,7 @@ export interface RoleGrantRequestRoleKey {
 export interface RoleGrantRequestRoleWrite {
     request_id: string;
     role_id: string;
+    applied_at: string | null;
 }
 
 export interface RoleGrantRequestRoleChange {

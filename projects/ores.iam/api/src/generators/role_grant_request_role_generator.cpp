@@ -41,6 +41,7 @@ generate_synthetic_role_grant_request_role(utility::generation::generation_conte
     r.tenant_id = tenant_id;
     r.request_id = ctx.generate_uuid();
     r.role_id = ctx.generate_uuid();
+    r.applied_at = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

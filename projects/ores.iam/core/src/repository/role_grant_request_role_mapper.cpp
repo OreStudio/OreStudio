@@ -42,6 +42,8 @@ role_grant_request_role_mapper::map(const role_grant_request_role_entity& v) {
     r.tenant_id = v.tenant_id;
     r.request_id = boost::lexical_cast<boost::uuids::uuid>(v.request_id.value());
     r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
+    r.applied_at = v.applied_at.has_value() ? std::optional(timestamp_to_timepoint(*v.applied_at)) :
+                                              std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -61,6 +63,9 @@ role_grant_request_role_mapper::map(const domain::role_grant_request_role& v) {
     r.tenant_id = v.tenant_id;
     r.role_id = boost::uuids::to_string(v.role_id);
     r.version = v.version;
+    r.applied_at = v.applied_at.has_value() ?
+                       std::optional(ores::platform::time::datetime::to_db_string(*v.applied_at)) :
+                       std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

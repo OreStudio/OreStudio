@@ -83,6 +83,7 @@ domain::role_grant_request_role to_domain(const messaging::role_grant_request_ro
     domain::role_grant_request_role v;
     v.request_id = write.request_id;
     v.role_id = write.role_id;
+    v.applied_at = write.applied_at;
     return v;
 }
 

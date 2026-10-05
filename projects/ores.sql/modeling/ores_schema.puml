@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-05T20:06:47.929131Z
+' Generated: 2026-10-05T20:50:01.327116Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -364,6 +364,7 @@ package "iam" #E8F4FD {
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
+          applied_at : timestamptz
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -378,7 +379,8 @@ package "iam" #E8F4FD {
     Role Grant Request Role Table
     The roles an iam.role_grant approval request asks for, one row each. A row is
     identified by the request and the role. When the request is approved, IAM
-    grants each role the account does not already hold.
+    grants each role the account does not already hold, and records that it
+    applied it.
     end note
 
     entity ores_iam_role_grant_requests_tbl <<junction>> #ECECEC {

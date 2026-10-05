@@ -43,6 +43,7 @@ struct role_grant_request_role_key {
 struct role_grant_request_role_write {
     boost::uuids::uuid request_id;
     boost::uuids::uuid role_id;
+    std::optional<std::chrono::system_clock::time_point> applied_at;
 };
 
 struct role_grant_request_role_change {

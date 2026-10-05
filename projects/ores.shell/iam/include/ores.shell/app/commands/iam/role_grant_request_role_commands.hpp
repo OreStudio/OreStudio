@@ -87,21 +87,21 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <request_id> <role_id> <reason> <commentary>
+     * @brief add <request_id> <role_id> <applied_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <request_id> <role_id> <reason> <commentary> [--version <n>]
+     * @brief set <request_id> <role_id> <applied_at> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <request_id> <role_id> <reason> <commentary>
+     * @brief put-many --count <n> <request_id> <role_id> <applied_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

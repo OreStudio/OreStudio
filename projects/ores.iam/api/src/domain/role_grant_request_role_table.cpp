@@ -25,19 +25,32 @@
 #include "ores.iam.api/domain/role_grant_request_role_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::iam::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<role_grant_request_role>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Request" << "Role" << "Version" << fort::endr;
+    table << fort::header << "Request" << "Role" << "Applied" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& rgrr : v) {
         table << boost::uuids::to_string(rgrr.request_id) << boost::uuids::to_string(rgrr.role_id)
-              << rgrr.version << fort::endr;
+              << opt_str(rgrr.applied_at) << rgrr.version << fort::endr;
     }
     return table.to_string();
 }

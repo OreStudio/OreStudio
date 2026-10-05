@@ -23,6 +23,7 @@
 #include "ores.iam.core/repository/role_grant_request_repository.hpp"
 #include "ores.iam.core/repository/role_grant_request_role_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/role_grant_applier.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -182,4 +183,24 @@ TEST_CASE("a_role_already_held_is_not_granted_again", tags) {
         lg(),
         "Counting role versions");
     CHECK(before == after);
+}
+
+TEST_CASE("a_role_taken_away_after_it_was_applied_is_not_granted_again", tags) {
+    ores::testing::scoped_database_helper h(true);
+    const auto asker = seed_account(h);
+    const auto approver = seed_account(h);
+    ores::iam::repository::role_repository roles;
+    const auto role_id = roles.read_latest(acting(h)).front().id;
+
+    approved_request(h, asker, approver, role_id);
+    role_grant_applier applier(h.context(), nullptr);
+    applier.apply();
+    REQUIRE(holds(h, asker, role_id));
+
+    ores::iam::service::authorization_service auth(acting(h));
+    auth.revoke_role(asker.id, role_id);
+    REQUIRE_FALSE(holds(h, asker, role_id));
+
+    applier.apply();
+    CHECK_FALSE(holds(h, asker, role_id));
 }

@@ -27,6 +27,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -37,7 +38,8 @@ namespace ores::iam::domain {
  *
  * The roles an iam.role_grant approval request asks for, one row each. A row is
  * identified by the request and the role. When the request is approved, IAM
- * grants each role the account does not already hold.
+ * grants each role the account does not already hold, and records that it
+ * applied it.
  */
 struct role_grant_request_role final {
     /**
@@ -63,6 +65,14 @@ struct role_grant_request_role final {
      * References ores_iam_roles_tbl.id (soft FK).
      */
     boost::uuids::uuid role_id;
+
+    /**
+     * @brief When IAM applied the role after the request was approved, or null until it has.
+     * Applying is done once: a role the account already held is marked applied without a grant, and
+     * a role taken away after it was applied is not granted again, because the request is still
+     * approved but no longer unapplied.
+     */
+    std::optional<std::chrono::system_clock::time_point> applied_at;
 
     /**
      * @brief Username of the person who last modified this role grant request role.

@@ -26,6 +26,13 @@ grants each role the account does not already hold.
 The handler is hand-written beside this model, because it calls the inbox and
 compensates when the second half fails.
 
+Two limits are accepted rather than locked against. Two asks for the same role
+at the same moment can both pass the check and both wait; approving both is
+harmless, because a role already held is not granted twice. If recording the
+roles fails and withdrawing the request fails too, the request waits in the
+queue naming no roles; the handler logs it, and an administrator refuses it
+from the queue.
+
 * Physical space
 
 The shell commands are switched on. Asking acts as the signed-in person, so a

@@ -26,7 +26,8 @@
  *
  * The roles an iam.role_grant approval request asks for, one row each. A row is
  * identified by the request and the role. When the request is approved, IAM
- * grants each role the account does not already hold.
+ * grants each role the account does not already hold, and records that it
+ * applied it.
  */
 
 create table if not exists "ores_iam_role_grant_request_roles_tbl" (
@@ -34,6 +35,7 @@ create table if not exists "ores_iam_role_grant_request_roles_tbl" (
     "tenant_id" uuid not null,
     "role_id" uuid not null,
     "version" integer not null,
+    "applied_at" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

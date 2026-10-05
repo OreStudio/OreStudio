@@ -19,7 +19,8 @@
 
 The roles an =iam.role_grant= approval request asks for, one row each. A row is
 identified by the request and the role. When the request is approved, IAM
-grants each role the account does not already hold.
+grants each role the account does not already hold, and records that it
+applied it.
 
 * Flags
 :PROPERTIES:
@@ -64,6 +65,22 @@ ctx.generate_uuid()
 #+end_src
 
 * Columns
+
+** applied_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When IAM applied the role after the request was approved, or null until it
+has. Applying is done once: a role the account already held is marked applied
+without a grant, and a role taken away after it was applied is not granted
+again, because the request is still approved but no longer unapplied.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
 
 * SQL
 
@@ -112,6 +129,7 @@ The role asked for; must exist in ores_iam_roles_tbl.
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -135,6 +153,7 @@ The role asked for; must exist in ores_iam_roles_tbl.
 |------------+---------|
 | request_id | Request |
 | role_id    | Role    |
+| applied_at | Applied |
 | version    | Version |
 
 ** Presentation

@@ -142,21 +142,21 @@ void role_grant_request_role_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <request_id> <role_id> <reason> <commentary>");
+        "add <request_id> <role_id> <applied_at> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <request_id> <role_id> <reason> <commentary> [--version <n>]");
+        "set <request_id> <role_id> <applied_at> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <request_id> <role_id> <reason> <commentary>");
+        "put-many --count <n> <request_id> <role_id> <applied_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -346,13 +346,14 @@ void role_grant_request_role_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.request_id, parsed->positionals[next++], "request_id");
         read_token(req.change.write.role_id, parsed->positionals[next++], "role_id");
+        read_token(req.change.write.applied_at, parsed->positionals[next++], "applied_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -395,13 +396,14 @@ void role_grant_request_role_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 2 + 2) {
-            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.request_id, parsed->positionals[next++], "request_id");
         read_token(req.change.write.role_id, parsed->positionals[next++], "role_id");
+        read_token(req.change.write.applied_at, parsed->positionals[next++], "applied_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -456,8 +458,8 @@ void role_grant_request_role_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 2 + 2) {
-            fail(out) << "Expected " << (change_count * 2 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 3 + 2) {
+            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -465,6 +467,7 @@ void role_grant_request_role_commands::process_put_many(std::ostream& out,
             messaging::role_grant_request_role_change change;
             read_token(change.write.request_id, parsed->positionals[next++], "request_id");
             read_token(change.write.role_id, parsed->positionals[next++], "role_id");
+            read_token(change.write.applied_at, parsed->positionals[next++], "applied_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

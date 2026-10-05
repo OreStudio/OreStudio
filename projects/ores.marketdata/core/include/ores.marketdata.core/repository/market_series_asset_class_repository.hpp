@@ -112,6 +112,11 @@ public:
     std::uint32_t get_total_asset_class_count();
     std::vector<domain::market_series_asset_class>
     read_latest_by_series(const boost::uuids::uuid& market_series_id);
+    /**
+     * @brief Reads latest asset classes filtered by market_series_id, with pagination.
+     */
+    std::vector<domain::market_series_asset_class> read_latest_by_series(
+        const boost::uuids::uuid& market_series_id, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active asset classes filtered by market_series_id.

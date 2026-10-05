@@ -20,7 +20,11 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "feed_binding_commands_tests.cpp"
     "main.cpp"
+    "market_fixing_commands_tests.cpp"
+    "market_observation_commands_tests.cpp"
+    "market_series_asset_class_commands_tests.cpp"
     "market_series_commands_tests.cpp"
     "observation_lineage_commands_tests.cpp"
     "series_classification_rule_commands_tests.cpp"

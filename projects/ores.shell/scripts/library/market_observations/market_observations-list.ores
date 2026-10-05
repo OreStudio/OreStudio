@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/market_observations/market_observation.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+market_observations list --limit 1

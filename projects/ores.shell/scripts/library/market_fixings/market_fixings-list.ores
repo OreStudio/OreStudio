@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/market_fixings/market_fixing.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+market_fixings list --limit 1

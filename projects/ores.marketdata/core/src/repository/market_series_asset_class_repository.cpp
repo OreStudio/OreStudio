@@ -249,6 +249,32 @@ market_series_asset_class_repository::read_latest_by_asset_class(
     return rows;
 }
 
+std::vector<domain::market_series_asset_class>
+market_series_asset_class_repository::read_latest_by_series(
+    const boost::uuids::uuid& market_series_id, std::uint32_t offset, std::uint32_t limit) {
+    const auto market_series_id_str = boost::uuids::to_string(market_series_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id
+                               << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_series_asset_class_entity>> |
+                       where("tenant_id"_c == tid && "market_series_id"_c == market_series_id_str &&
+                             "valid_to"_c == max.value()) |
+                       order_by("asset_class_code"_c) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
+
+    auto rows =
+        execute_read_query<market_series_asset_class_entity, domain::market_series_asset_class>(
+            ctx_,
+            query,
+            [](const auto& entities) { return market_series_asset_class_mapper::map(entities); },
+            lg(),
+            "Reading latest asset classes by series (paginated).");
+
+    return rows;
+}
+
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_by_series(
     const boost::uuids::uuid& market_series_id) {
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);

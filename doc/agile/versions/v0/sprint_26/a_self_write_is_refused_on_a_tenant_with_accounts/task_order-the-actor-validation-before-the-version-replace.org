@@ -70,7 +70,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generated create scripts that carry the moved assignment | 338 | =git grep -lE 'validate_account_username_fn[[:space:]]*\([[:space:]]*(new\|NEW)\.modified_by' -- 'projects/ores.sql/create/*.sql' \| wc -l= | a6db8fe723 |
+| Of those, template-owned (regenerated) | 321 | carriers ∩ [[file:evidence/regeneration_plan_dry_run.txt][regeneration plan]] | a6db8fe723 |
+| Of those, hand-written scripts no template owns | 17 (refdata 15, dq 2) | same | a6db8fe723 |
+| Registry drift dry run, before regeneration | 306 would change, 0 created, none outside the carriers | =check_component_drift.py --all --dry-run= — [[file:evidence/registry_drift_before_regeneration.txt][evidence]] | a6db8fe723 |
+| Catalogue-wide render, before regeneration: SQL changes | 321, 0 created, all within the carriers | helper on the checker's own render — [[file:evidence/catalogue_render_changes_before_regeneration.txt][evidence]] | a6db8fe723 |
+| Pre-existing drift outside the SQL tree, ungated components | 67 (doc 6, scheduler-cpp 4, synthetic-cpp 36, ores.web 21 created) | same evidence; no component on this branch touches them | a6db8fe723 |
+| Catalogue sweep, before regeneration | clean for every branch-touched file; 388 would change elsewhere | =check_component_drift.py --sweep= — [[file:evidence/sweep_before_regeneration.txt][evidence]] | a6db8fe723 |
+| Regeneration diff | 321 files, +1605/−321; 305 domain-shaped relocation blocks, 16 table/junction-shaped; 0 violations | [[file:evidence/diff_check.txt][diff check]] | 79d2861b46 |
+| Drift gate, after regeneration | clean: the regenerated tree matches the checked-in tree | =check_component_drift.py --all= — [[file:evidence/drift_gate_after.txt][evidence]] | 79d2861b46 |
+| Self write on the seeded tenant, before / after | REFUSED 23503 / LANDED | [[file:evidence/before_record.txt][before]] and [[file:evidence/after_record.txt][after]] | 79d2861b46 |
+| Bogus actor, before / after | REFUSED 23503 / REFUSED 23503 | same two records | 79d2861b46 |
 
 * Notes
 
@@ -98,3 +108,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three templates validate the actor above the version management, and
+above the parent touch in the domain entity archetype. The tree is
+regenerated in 79d2861b46: 321 files change, every diff carries the
+relocation alone (305 domain-shaped blocks, 16 table/junction-shaped, 0
+violations), and no drop script, notify trigger or ER diagram moves.
+
+The self write that the before-record refuses with =Invalid modified_by=
+(sqlstate 23503) lands in the after-record. The after-record loads the
+regenerated account create script inside a transaction, runs the same
+three probes, and rolls back; the control write lands in both records
+and the bogus actor is refused in both, so the fix orders the validation
+without weakening it. The rollback check in the after-record shows the
+deployment still holds the old order, and the recreate that makes the
+fix live belongs to the story's third task.
+
+The 17 hand-written refdata and dq create scripts that also validate the
+actor keep their order. Their version management retires their own
+table's row, not the account row the validator reads, so the self-write
+defect does not apply to them.
+
+The registry drift gate reports that the regenerated tree matches the
+checked-in tree, and the catalogue render finds no SQL change outside
+the 321 ([[file:evidence/drift_gate_after.txt][drift gate]],
+[[file:evidence/catalogue_render_changes_before_regeneration.txt][catalogue render]]).
+Pre-existing drift in ungated components (doc recipes, scheduler-cpp,
+synthetic-cpp, ores.web TypeScript) stays where it was; this branch does
+not touch it.

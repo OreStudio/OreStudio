@@ -47,7 +47,6 @@ std::expected<tick_plan, tick_drop> plan_tick(const messaging::market_tick& tick
     for (const auto& b : bindings)
         plan.targets.push_back({b,
                                 domain::market_tick_subject(b.tenant_id.to_string(),
-                                                            boost::uuids::to_string(b.workspace_id),
                                                             boost::uuids::to_string(b.party_id),
                                                             *ore_key)});
     return plan;

@@ -28,7 +28,7 @@ than by the corpus walk.
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

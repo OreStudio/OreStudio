@@ -33,7 +33,6 @@
 export interface ReportDefinition {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     name: string;
     party_id: string;

@@ -40,7 +40,6 @@ tenor_basis_swap_convention_mapper::map(const tenor_basis_swap_convention_entity
     domain::tenor_basis_swap_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.pay_index = v.pay_index;
@@ -74,7 +73,6 @@ tenor_basis_swap_convention_mapper::map(const domain::tenor_basis_swap_conventio
     tenor_basis_swap_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.pay_index = v.pay_index;

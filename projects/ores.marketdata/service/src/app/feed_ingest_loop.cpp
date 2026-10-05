@@ -88,8 +88,7 @@ void feed_ingest_loop::refresh() {
         for (const auto& b : source_bindings) {
             const binding_key key{b.source_name,
                                   b.tenant_id.to_string(),
-                                  boost::uuids::to_string(b.party_id),
-                                  boost::uuids::to_string(b.workspace_id)};
+                                  boost::uuids::to_string(b.party_id)};
             const auto it = stats_.find(key);
             kept[key] = it != stats_.end() ? it->second : std::make_shared<feed_stats>();
         }
@@ -146,8 +145,7 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
 
         const binding_key key{b.source_name,
                               b.tenant_id.to_string(),
-                              boost::uuids::to_string(b.party_id),
-                              boost::uuids::to_string(b.workspace_id)};
+                              boost::uuids::to_string(b.party_id)};
         std::uint64_t prev_count = 0;
         {
             std::lock_guard lock(mu_);
@@ -284,8 +282,8 @@ void feed_ingest_loop::log_status() const {
             system_clock::duration{st->last_tick_rep.load(std::memory_order_relaxed)}};
         const bool ever = last_tp != system_clock::time_point::min();
         BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << key.source_name << "' tenant='"
-                                  << key.tenant_id << "' party='" << key.party_id << "' workspace='"
-                                  << key.workspace_id << "' ticks=" << count
+                                  << key.tenant_id << "' party='" << key.party_id
+                                  << "' ticks=" << count
                                   << (ever ? std::format(
                                                  " last_tick={}s ago",
                                                  duration_cast<seconds>(now - last_tp).count()) :

@@ -24,7 +24,6 @@ renaming a matrix cannot silently orphan an entity.
 :product:   ores
 :component: analytics
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   fk-scoped-child
 :tablename: ores_analytics_credit_simulation_entities_tbl
 :END:

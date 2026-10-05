@@ -22,7 +22,7 @@ natural key (ORE <Id> element).
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

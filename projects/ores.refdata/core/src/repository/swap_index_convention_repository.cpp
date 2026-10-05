@@ -172,24 +172,9 @@ std::vector<domain::swap_index_convention>
 swap_index_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<swap_index_convention_entity, domain::swap_index_convention>(
-            ctx,
-            query,
-            [](const auto& entities) { return swap_index_convention_mapper::map(entities); },
-            lg(),
-            "Reading latest swap index conventions (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<swap_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<swap_index_convention_entity, domain::swap_index_convention>(
         ctx,
@@ -204,10 +189,8 @@ swap_index_convention_repository::read_latest(context ctx, const std::string& id
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap index convention. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<swap_index_convention_entity, domain::swap_index_convention>(
         ctx,
@@ -222,9 +205,8 @@ std::vector<domain::swap_index_convention>
 swap_index_convention_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all swap index convention versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<swap_index_convention_entity, domain::swap_index_convention>(
@@ -240,10 +222,8 @@ std::optional<domain::swap_index_convention> swap_index_convention_repository::r
     BOOST_LOG_SEV(lg(), debug) << "Reading swap index convention at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -275,10 +255,9 @@ swap_index_convention_repository::remove_status swap_index_convention_repository
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<swap_index_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing swap index convention from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -303,10 +282,8 @@ std::vector<domain::swap_index_convention> swap_index_convention_repository::rea
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swap index conventions with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<swap_index_convention_entity, domain::swap_index_convention>(
         ctx,
@@ -325,9 +302,8 @@ std::uint32_t swap_index_convention_repository::get_total_swap_index_convention_
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap index convention count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
+    const auto query =
+        sqlgen::read<std::vector<swap_index_convention_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<swap_index_convention_entity>(
         ctx,
@@ -343,10 +319,8 @@ swap_index_convention_repository::read_latest(context ctx, const std::vector<std
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<swap_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<swap_index_convention_entity, domain::swap_index_convention>(
         ctx,
         query,
@@ -367,10 +341,8 @@ void swap_index_convention_repository::remove(context ctx, const std::vector<std
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<swap_index_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing swap index conventions.");
 }
 

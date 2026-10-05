@@ -39,7 +39,6 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     domain::report_instance r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
     r.name = v.name;
@@ -73,7 +72,6 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     report_instance_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
 
     r.name = v.name;

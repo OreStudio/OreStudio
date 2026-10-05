@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T10:24:58.548404Z
+' Generated: 2026-10-06T15:09:22.055891Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -1018,7 +1018,6 @@ package "refdata" #FFF3E0 {
         * index : text
         * on_tenor : text
         * rate_cutoff : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1119,7 +1118,6 @@ package "refdata" #FFF3E0 {
           index_settlement_days : integer
           index_payment_period : text
           overnight_lockout_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1193,7 +1191,6 @@ package "refdata" #FFF3E0 {
           accuracy : double
           max_evaluations : integer
           guess : double
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1296,7 +1293,6 @@ package "refdata" #FFF3E0 {
         * is_sweepable : boolean
         * rates_centre_code : text
           sandbox_id : uuid <<FK>>
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1825,7 +1821,6 @@ package "refdata" #FFF3E0 {
         * pays_at_default_time : boolean
           upfront_settlement_days : integer
           last_period_day_count_fraction : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1921,7 +1916,6 @@ package "refdata" #FFF3E0 {
         * calendar : text
         * day_count_fraction : text
         * roll_convention : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2012,7 +2006,6 @@ package "refdata" #FFF3E0 {
           delivery_location : text
           business_day_convention : text
           outright : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2092,7 +2085,6 @@ package "refdata" #FFF3E0 {
           prohibited_expiries : text
           future_continuation_mappings : text
           option_continuation_mappings : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2477,7 +2469,6 @@ package "refdata" #FFF3E0 {
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2521,7 +2512,6 @@ package "refdata" #FFF3E0 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3724,7 +3714,6 @@ package "refdata" #FFF3E0 {
           end_of_month : boolean
           day_count_fraction : text
           settlement_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3955,7 +3944,6 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * index : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3985,7 +3973,6 @@ package "refdata" #FFF3E0 {
           netting_type : text
           calendar : text
           overnight_index_tenor : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4018,7 +4005,6 @@ package "refdata" #FFF3E0 {
           long_term_delta_type : text
           risk_reversal_in_favor_of : text
           butterfly_style : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4095,7 +4081,6 @@ package "refdata" #FFF3E0 {
         * settlement_days : integer
         * business_day_convention : text
         * end_of_month : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4256,7 +4241,6 @@ package "refdata" #FFF3E0 {
           publication_schedule_rules : text
           publication_schedule_dates : text
           publication_schedule_derived_groups : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4374,7 +4358,6 @@ package "refdata" #FFF3E0 {
         * version : integer
           explicit_load_profile : text
           business_day_load_rules : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4750,7 +4733,6 @@ package "refdata" #FFF3E0 {
           rule : text
           payment_calendar : text
           rate_cutoff : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4777,7 +4759,6 @@ package "refdata" #FFF3E0 {
         * fixing_calendar : text
         * day_count_fraction : text
         * settlement_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5222,7 +5203,6 @@ package "refdata" #FFF3E0 {
         * is_virtual : boolean
           sandbox_id : uuid <<FK>>
         * status : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5505,7 +5485,6 @@ package "refdata" #FFF3E0 {
         * index : text
           float_frequency : text
           sub_periods_coupon_type : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5532,7 +5511,6 @@ package "refdata" #FFF3E0 {
         * version : integer
         * conventions : text
           fixing_calendar : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5656,7 +5634,6 @@ package "refdata" #FFF3E0 {
           short_index : text
           short_pay_tenor : text
           spread_on_short : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5698,7 +5675,6 @@ package "refdata" #FFF3E0 {
         * short_fixed_day_count_fraction : text
         * short_index : text
           long_minus_short : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6071,7 +6047,6 @@ package "refdata" #FFF3E0 {
           spot_calendar : text
           roll_convention : text
           end_of_month : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6102,7 +6077,6 @@ package "refdata" #FFF3E0 {
         * frequency : text
         * availability_lag : text
         * currency : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11808,7 +11782,6 @@ package "reporting" #E0F7FA {
           prepared_input_key : text
         * post_processing : text
         * is_official : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11874,7 +11847,6 @@ package "reporting" #E0F7FA {
         * output_message : text
           started_at : timestamptz
           completed_at : timestamptz
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -12657,7 +12629,6 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * source_name : text
         * enabled : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -12671,39 +12642,22 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Feed Binding Table
-    A feed binding records that a party consumes one producer source, in one
-    workspace. It is the one place a live tick finds its owners, for every feed and
-    every asset class: a tick names its own datum by its oresmd quote URI and its
-    producer by source, and the ingest loop stores it once for each enabled
-    binding of that source, under the binding's tenant and party, and republishes
-    it on the per-party realtime stream
-    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
-    key is the datum's canonical ORE key.
-    workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
-    which resolves in every tenant. It is the seam where the future workspaces
-    feature binds scenario data: a binding reads "party P consumes source S in
-    workspace W" (see
-    [[file:../../../doc/llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]]).
-    Bindings are created by provisioning against the system party's config, not
-    per office: each party consumes the shared stream into its own per-party
-    series.
+    A feed binding records that a party consumes one producer source. It is the
+    one place a live tick finds its owners, for every feed and every asset class: a
+    tick names its own datum by its oresmd quote URI and its producer by source,
+    and the ingest loop stores it once for each enabled binding of that source,
+    under the binding's tenant and party, and republishes it on the per-party
+    realtime stream marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>, where the
+    key is the datum's canonical ORE key. Bindings are created by provisioning
+    against the system party's config, not per office: each party consumes the
+    shared stream into its own per-party series.
     Rebinding (editing source_name) switches the ingest source without restarting
     producers. Setting enabled  false= suspends the subscription without deleting
     the binding.
-    This model binds to no variability profile, and the omission is
-    deliberate rather than unfinished. A binding is workspace-scoped
-    (has_workspace_id  true=), keyed by a surrogate UUID
-    (has_uuid_primary_key  true=), and carries the standard presentation
-    tier (has_pagination  true=, has_change_reason_cache  true=,
-    has_tenant_id  true=). No profile in the catalogue has that
-    combination: workspace-scoped-lookup fixes
-    has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
-    has_workspace_id  false=, so every candidate contradicts one of the
-    two features that define this entity. Binding to the nearest profile
-    would move a false promise rather than remove it.
-    The gap is a profile the catalogue lacks, not a defect in this model.
-    ores.reporting.report_definition has the same shape and is recorded
-    in KNOWN_MODEL_DRIFT for the same reason.
+    This model binds to no variability profile. Its features match
+    uuid-surrogate-lookup, but that profile also enables the shell command
+    facet, which feed bindings do not have today. Binding it is a decision about
+    the shell surface, not about the model.
     end note
 
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
@@ -12988,7 +12942,6 @@ package "analytics" #E8F5E9 {
         * transition_matrix_id : uuid <<FK>>
         * initial_state : integer
           factor_loadings : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -13053,7 +13006,6 @@ package "analytics" #E8F5E9 {
         * p_b : double
         * p_c : double
         * p_default : double
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -13084,7 +13036,6 @@ package "analytics" #E8F5E9 {
         * credit_simulation_config_id : uuid <<FK>>
         * netting_set_id : text <<FK>>
         * position : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

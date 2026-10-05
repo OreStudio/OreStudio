@@ -1,0 +1,39 @@
+commit 68cc7f47f0
+
+## Tables with a workspace_id column, by SQL directory
+      1 workspace
+
+## Models that set has_workspace_id true
+
+## Models bound to fk-scoped-child or workspace-scoped-lookup
+      3 ores.analytics
+      2 ores.refdata
+      1 ores.reporting
+
+## Profiles that set has_workspace_id true
+projects/modeling/variability_workspace_scoped_lookup.org
+
+## Files naming workspace_id, by component (excluding ores.workspace and doc)
+     28 ores.codegen
+     14 modeling
+     10 ores.sql
+      5 ores.dsh_kanban
+      4 ores.nats
+      3 ores.web
+      2 ores.trading
+      2 ores.shell
+      2 ores.service
+      2 ores.database
+      1 ores.utility
+
+## ores.workspace component files
+81
+
+## ores.shell workspace part files
+23
+
+## Callers that select a workspace other than Live
+setWorkspace callers in ores.web (excluding the definition):
+0
+with_workspace_id / with_workspace_resolution callers in C++ sources and headers, outside tests:
+0

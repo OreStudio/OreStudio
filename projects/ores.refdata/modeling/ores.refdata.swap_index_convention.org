@@ -23,7 +23,7 @@ follows rather than by restating that convention's fields. Corresponds to the
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

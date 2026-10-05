@@ -40,13 +40,13 @@ else a miss, or close to expiry
     cache -> iam : iam.v1.run_grants.exchange\n(Authorization: the service's own token;\ngrant id, run id, tenant)
     iam -> iam : the caller holds iam::run_grants:exchange\nand is in the grant's audience
     iam -> iam : the grant is active, its tenant matches,\nand its grantor is active
-    iam -> iam : permissions = ReportRun\nintersected with the grantor's permissions in the party
+    iam -> iam : permissions = the grant's role\nintersected with the grantor's permissions in the party
     iam -> iam : append to the issue log
     iam --> cache : signed token, expires in 5 minutes
     cache --> handler : run token
 end
 handler -> owner : operation request\n(Authorization: the run token)
-owner -> owner : make_request_context: tenant T, party P,\nvisible parties {P}, ReportRun permissions
+owner -> owner : make_request_context: tenant T, party P,\nvisible parties {P}, the role's permissions
 owner -> db : set the session tenant and party; read
 db --> owner : the party's rows and the system tenant's shared rows
 owner --> handler : response

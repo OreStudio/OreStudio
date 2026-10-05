@@ -116,7 +116,7 @@ within its scope until it expires, and names the service that obtained it.
 - *Over the bus.* IAM serves the exchange as =iam.v1.run_grants.exchange= for
   work that runs under a grant. The subject is a grant id, the actor is the step
   service's own token, and the new token lasts five minutes. See
-  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]].
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] for IAM's checks and claims.
 
 * Related patterns
 

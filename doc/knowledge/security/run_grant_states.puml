@@ -21,7 +21,7 @@ title The run grant
 
 hide empty description
 
-[*] --> active : iam.v1.run_grants.create\n(the grantor holds every\npermission of ReportRun)
+[*] --> active : iam.v1.run_grants.create\n(the grantor holds every\npermission of the grant's role)
 
 active : each exchange checks the audience,\nthe tenant and the grantor
 
@@ -37,7 +37,7 @@ note right of active
   when the grantor is inactive or no longer holds
   the permissions in the party. Lapse is a check at
   exchange, not a stored state: the grant stays
-  active until reporting revokes it.
+  active until its owning service revokes it.
 end note
 
 @enduml

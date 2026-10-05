@@ -125,6 +125,9 @@ both appear in every audit row the run writes.
 
 * In ORE Studio
 
+- *The implementation.* [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] is IAM's form of the composite, the same for
+  every component: the grant entity, the exchange checks, the token's claims
+  and the cache rules.
 - *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
   applies the composite: the =ReportRun= role, the audience of reporting, ORE
   and compute, and the moments reporting creates and revokes a grant.

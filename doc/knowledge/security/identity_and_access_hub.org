@@ -94,9 +94,13 @@ Token Exchange in its in-process form inside IAM, used by tenant provisioning to
 act as several parties in turn. Read it for the worked example and for the
 expiry failure it met.
 
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — IAM's implementation of Scheduled Work Acting as a Tenant: the run
+grant entity, the exchange and its checks, the run token's claims and the cache
+rules. Read it before building any work that a schedule starts in a tenant.
+
 [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the
-first use of Scheduled Work Acting as a Tenant: the role, the audience and the
-moments reporting grants and revokes.
+first component to use run grants: the role, the audience and the moments
+reporting grants and revokes.
 
 ** What the database enforces regardless
 

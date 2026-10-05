@@ -35,8 +35,9 @@ The design has three parts:
    compute grid. Each queue gives every tenant a share, so one tenant with many
    reports cannot hold back the others.
 
-This page is the end-to-end view. The pages it links own the detail of each
-part, and this page does not restate them.
+The first two parts are the [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] pattern, and IAM implements them as
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]. This page is the end-to-end view. The pages it links own the detail of
+each part, and this page does not restate them.
 
 * Detail
 
@@ -56,7 +57,7 @@ page adds the parts that no other page holds, and it links the rest.
 | The input archive and its digest | [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] | the owners' operations that supply it, and the as-of instant |
 | Submission and the workunit | [[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] | fair dispatch across tenants |
 | The result store | [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] | nothing; its owner stays open |
-| Service-to-service calls | [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]], [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] | the run grant and the token exchange |
+| The identity of a run | [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]], [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] | the role, the audience and the moments reporting grants and revokes |
 | Every subject and storage key | [[id:8DAB4D55-9D53-48FA-96B0-2EA432B4B42C][Report processing interfaces]] | the IAM subjects below |
 
 ** The participants
@@ -95,125 +96,40 @@ page adds the parts that no other page holds, and it links the rest.
 
 ** The identity of a run
 
-*** The problem
+A scheduled run has no caller, and the scheduler and the step services act as
+themselves, with no tenant and no party. Reporting therefore uses the
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] pattern: a run grant that a person gives when they schedule, and a run
+token that each step service exchanges for the grant and keeps in a cache.
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] is IAM's implementation, and holds the grant entity, the exchange checks,
+the token's claims, the cache rules and the trust boundaries. This section holds
+only reporting's choices.
 
-The existing service-to-service patterns do not cover a scheduled run:
-
-- *Client credentials* give a service its own identity. That identity has no
-  tenant and no party. A read of party data with it returns no rows, and RLS
-  reports no error.
-- *On-behalf-of delegation* forwards the caller's token. A scheduled run has no
-  caller. The scheduler calls the trigger, and the scheduler is a service.
-- *Internal actor impersonation* lets a service in =ores.iam= mint a token for
-  an account. A step service outside IAM cannot mint, and it must not link
-  IAM's core library.
-
-A token from the person who scheduled the report is not a solution either. It
-expires in minutes, and the schedule lasts for months. A stored refresh token
-would be a durable credential, and the auth patterns page forbids that.
-
-The design uses OAuth 2.0 token exchange (RFC 8693) with consent that the
-server holds. This is the networked form of internal actor impersonation. IAM
-remains the only signer.
-
-*** The run grant
-
-A run grant is an IAM entity. It records that a person allows runs of one
-definition to act in one tenant and one party. It holds no secret.
+*** The grants reporting creates
 
 #+ATTR_HTML: :class hug-leading
-| Field | Meaning |
-|-------+---------|
-| =id= | the grant id; a random uuid |
-| =tenant_id=, =party_id= | where the runs act; the party of the definition |
-| =grantor_account_id= | the person who gave consent |
-| =role= | the role the token carries; =ReportRun= |
-| =resource= | what the grant serves, as =reporting.report_definition/<id>= |
-| =audience= | the services that may exchange it: =ores.reporting.service=, =ores.ore.service=, =ores.compute.service= |
-| =max_runs= | empty for a schedule; one for a manual run |
-| =not_after= | empty for a schedule; the run's longest duration for a manual run |
-| =revoked_at=, =revoked_by=, =revoke_reason= | set when the grant ends |
+| Field | Reporting's value |
+|-------+-------------------|
+| =resource= | =reporting.report_definition/<id>= |
+| =role= | =ReportRun= |
+| =audience= | =ores.reporting.service=, =ores.ore.service=, =ores.compute.service= |
+| =max_runs=, =not_after= | empty for a schedule; one run, and the run's longest duration, for a manual run |
 
-The grant is a bitemporal row with the audit envelope of every entity. IAM
-owns it, so IAM never reads a reporting table to check it. Reporting stores the
-grant id on the definition beside the scheduler job id.
+Reporting stores the grant id on the definition beside the scheduler job id.
 
-*** The life of a grant
+*** When reporting grants and revokes
 
-- *Schedule.* A person asks reporting to schedule a definition. Reporting calls
-  =iam.v1.run_grants.create= on behalf of the person, with their token. IAM
-  checks that the person holds every permission of =ReportRun= in that party.
-  A person cannot grant more than they hold. Reporting then puts the scheduler
-  job.
-- *Manual run.* A person triggers a run. Reporting creates a grant for one run,
-  on behalf of that person, and the run uses it. The run acts with the
-  authority of the person who triggered it, and not with the schedule's.
-- *Change of party or owner.* A change to the definition's party revokes the
-  grant and creates a new one. The person who makes the change gives the new
-  consent.
+- *Schedule.* A person asks reporting to schedule a definition. Reporting creates
+  the grant on behalf of the person, with their token, and then puts the
+  scheduler job.
+- *Manual run.* A person triggers a run. Reporting creates a grant for that one
+  run on behalf of that person, so the run acts with the authority of the person
+  who triggered it, and not with the schedule's.
+- *Change of party.* A change to the definition's party revokes the grant and
+  creates a new one. The person who makes the change gives the new consent.
 - *Unschedule or delete.* Reporting deletes the job and revokes the grant.
-- *The grantor leaves.* IAM checks the grantor at every exchange. When the
-  account is inactive, or no longer holds the permissions in the party, the
-  exchange answers =forbidden= with the reason =grant_lapsed=.
-- *Lapse.* Reporting receives =grant_lapsed= from a step. It fails the run and
-  moves the definition to =suspended=. A tenant administrator, or another
-  person of the party, schedules the definition again. That action is a new
-  consent.
-
-#+caption: The run grant: created by a consent, ended by a revocation, by its last run, or by its time limit. A lapsed grantor is a check at each exchange.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/report_run_grant_states.png]]
-
-Source: [[./report_run_grant_states.puml][=report_run_grant_states.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/report_run_grant_states.puml=.
-
-The effect of a revocation reaches a run in flight within one token lifetime.
-That bound is deliberate. A shorter bound needs a check on every request, and
-the cost of that grows with every owner call of every run.
-
-*** The token exchange
-
-A step service calls =iam.v1.run_grants.exchange=. It authenticates with its
-own client-credentials token, the existing service token. The request carries
-the grant id, the run id and the tenant from the step headers.
-
-IAM checks, in this order:
-
-1. The caller holds =iam::run_grants:exchange=.
-2. The caller's service name is in the grant's audience.
-3. The grant exists, is not revoked, and is inside =not_after= and =max_runs=.
-4. The grant's tenant equals the tenant in the request.
-5. The grantor is active.
-
-IAM then computes the permissions. They are the =ReportRun= permissions,
-intersected with the permissions the grantor holds in the party now. A grantor
-who loses a permission therefore loses it for their runs too. IAM appends one
-row to the issue log and signs the token.
-
-#+ATTR_HTML: :class hug-leading
-| Claim | Value |
-|-------+-------|
-| =sub= | the grantor's account id |
-| =username= | the grantor's username, so audit columns name a person |
-| =tenant_id= | the grant's tenant |
-| =party_id= | the grant's party |
-| =visible_party_ids= | the grant's party only |
-| =roles= | the computed permission codes |
-| =act= | the requesting service; the actor claim of RFC 8693 |
-| =grant_id=, =run_id= | the grant, and the report instance the token serves |
-| =aud= | the requesting service |
-| =exp= | five minutes after issue |
-| =session_id= | absent; a run token opens no session |
-
-A run token creates no session row. The sessions table therefore does not grow
-with the number of runs.
-
-#+caption: A step obtains the run token from its cache or from IAM, an owner reads as the tenant and the party, and an expired token is exchanged again once.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/report_run_token_exchange.png]]
-
-Source: [[./report_run_token_exchange.puml][=report_run_token_exchange.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/report_run_token_exchange.puml=.
+- *Lapse.* A step reports =grant_lapsed=. Reporting fails the run and moves the
+  definition to =suspended=. A tenant administrator, or another person of the
+  party, schedules the definition again, which is a new consent.
 
 *** The =ReportRun= role
 
@@ -234,85 +150,11 @@ codes, and IAM seeds the role.
 The role has no write on reference data, trades or market data. A run that
 tries one is refused by the owner's permission check.
 
-*** How a step uses the token
+*** The exchange load of reporting
 
-The step sends the run token as a plain =Authorization= header. The token is
-an originated identity, as in internal actor impersonation, and not a
-forwarded one.
-
-The owner's handler calls =make_request_context= as it does for any caller.
-The context has tenant T, party P, the visible parties {P} and the =ReportRun=
-permissions. The handler checks the permission. RLS returns the party's rows
-and the shared rows of the system tenant. No owner has a code path for runs.
-
-An owner that writes stamps =modified_by= with the grantor's username, as for
-any write by that person. It stamps =performed_by= with its own service
-account, as for every write. The change reason names the run. An auditor
-therefore sees who consented, which service wrote, and which run caused it.
-
-An owner that calls a further service forwards the run token with
-=with_delegation=, as it forwards any caller's token. Storage receives the run
-token in this way when trading writes its export.
-
-*** The run token cache
-
-Each step service holds one cache in memory per process.
-
-- *Key.* The pair (grant id, run id). Two runs of one definition use two
-  tokens, so the =run_id= claim stays exact.
-- *Lifetime.* A token is used while it has more than 20% of its life left.
-  After that the next request exchanges again. Two requests that miss at the
-  same time share one exchange.
-- *Expiry in flight.* An owner that answers =token_expired= causes one
-  invalidation, one exchange and one retry of the same request. This is the
-  rule of =internal_request_client=, and the cache reuses it. Any other refusal
-  fails the request.
-- *Eviction.* The cache drops the entries of a run when the step completes and
-  when the instance reaches a terminal state. It is also a bounded LRU, so a
-  missed event costs memory for at most one token lifetime.
-- *No persistence.* The cache is never written to disk, a database, a message
-  or a log. A restart empties it, and the next step exchanges again.
-- *Replicas.* Replicas do not share the cache. Each replica exchanges on its
-  first miss. A run uses few replicas, so the cost is a few exchanges per run.
-
-#+caption: One entry of the run token cache: exchanged on the first miss, refreshed when stale or refused as expired, and evicted when the step or the run ends.
-#+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/report_run_token_cache_states.png]]
-
-Source: [[./report_run_token_cache_states.puml][=report_run_token_cache_states.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/report_run_token_cache_states.puml=.
-
-*** Why the exchange scales
-
-A run makes one exchange per step service and per five minutes of that
-service's work. A run of four steps that lasts thirty minutes makes about
-seven exchanges. The exchange reads one grant and the grantor's permissions,
-then signs. IAM caches grants and permissions in memory, and change events on
-those entities invalidate the cache.
-
-#+ATTR_HTML: :class hug-leading
-| Load (design target) | Exchanges per second at IAM |
-|----------------------+------------------------------|
-| 1,000 runs in flight, thirty minutes each | about 4 |
-| 2,000 runs start in one minute | about 100 for that minute, one per run for its first step |
-
-An RS256 signature costs about a millisecond. One IAM replica serves these
-rates. IAM limits exchanges per service and per tenant, so a fault in one
-caller cannot exhaust it.
-
-*** Trust boundaries
-
-#+ATTR_HTML: :class hug-leading
-| Threat | What stops it |
-|--------+---------------|
-| A service exchanges a grant it should not use | the audience; the permission =iam::run_grants:exchange= |
-| A caller guesses a grant id | ids are random; the caller must also be a service in the audience |
-| A run reads another party's data | the token's =visible_party_ids= is one party; RLS |
-| A run writes reference or trade data | =ReportRun= has no such write; the owner's check |
-| A person grants more than they hold | IAM checks the grantor at create and at every exchange |
-| A token leaks from a log or a row | no token is written; a leaked token expires in five minutes and names its run |
-| A grantor leaves the firm | the next exchange answers =grant_lapsed= |
-| A step service is compromised | it can act only for grants that name it, and the issue log records each token |
+At the design targets below, 1,000 runs in flight for thirty minutes each make
+about four exchanges a second, and 2,000 runs that start in one minute make
+about 100 exchanges in that minute. [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states why one IAM replica serves this.
 
 ** The life of a report, end to end
 
@@ -657,14 +499,10 @@ the computed permissions.
 
 ** Decisions this design takes
 
-- *A run acts through a grant, never through a stored token.* The grant is
-  consent that IAM holds. The exchange produces the credential when a step
-  needs it.
-- *IAM serves impersonation as an operation.* Internal actor impersonation
-  stays the pattern. The exchange makes it available to services outside IAM,
-  with an audience and a narrow role.
-- *The token names the grantor and the actor.* =sub= is the person who gave
-  consent. =act= is the service. The audit columns keep their meaning.
+- *A run uses Scheduled Work Acting as a Tenant.* Reporting creates a run
+  grant when a person schedules, and every step exchanges it for a run token.
+  The mechanism, its decisions and its trust boundaries are on
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]].
 - *A run reads its documents as of its firing.* The start message carries an
   instant and not a copy.
 - *Pre-processing is one step in =ores.ore=.* The reporting gather and

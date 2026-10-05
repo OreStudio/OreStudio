@@ -7,41 +7,48 @@
 #+level: s1
 #+filetags: :pattern_language_for_service_interaction:sprint_26:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-pattern-document-type-and-hub
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The reporting design names the patterns it uses and keeps only reporting's own
+choices, so the mechanism has one home that any scheduled work can use.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6D3E7895-1A35-4168-86AE-947AF68E37DF][A pattern language for service interaction]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
 
--
+- Report execution at scale links Scheduled Work Acting as a Tenant and states
+  only reporting's role, audience, resource and grant moments.
+- The generic mechanism lives on one IAM page that any component can use.
+- No page links the moved diagrams by their old paths.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Splitting the reporting section showed a third layer between the pattern and
+reporting: IAM's implementation, the same for every component. Move the grant
+entity, the exchange checks, the claims, the cache rules, the load and the trust
+boundaries to a new page in the security cluster, with the three generic
+diagrams. Keep the role, the audience, the resource and the grant moments on the
+reporting page.
 
 * Measurements
 
@@ -83,3 +90,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The identity section of Report execution at scale now has four short parts:
+the grants reporting creates, when it grants and revokes, the =ReportRun= role,
+and its exchange load. It links the composite pattern and the new IAM page.
+
+The new page, [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run
+tokens]], holds the four IAM operations, the grant entity and its states, the
+exchange checks and the claims, how a data owner sees a run token, the cache
+rules and its states, the load on IAM, and the trust boundaries. It ends with the
+list of what a component that uses run grants must state. The three generic
+diagrams moved to =doc/knowledge/security/= with the reporting words removed.
+The Grant Management, Token Exchange and composite pages, and the IAM hub, link
+the new page.

@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/implement-implement-refdata-journeys
-#+pr:
+#+pr: 2640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2640][#2640]] | [web,refdata] Build the classification screens in ores.web |
 
 * Review
 

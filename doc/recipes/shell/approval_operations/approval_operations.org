@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 87A6B159-B028-5477-9AB8-DB6F58843216
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the approval_operations commands from the shell?
+#+description: Every command the approval_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:approval_operations:
+
+This file documents declared operations at the shell, one section per command. Every command is a subcommand of =approval_operations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =raise-approval=
+:PROPERTIES:
+:ID: 66C5D75D-EE57-5709-B02C-CDD59CF92AB5
+:END:
+
+Sends =raise_approval_request_request= and prints =raise_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =kind_code=, =reason=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations raise-approval <kind_code> <reason>
+#+end_example
+
+It is addressed at =inbox.v1.approval-requests.raise=.
+
+#+name: approval_operations-raise-approval
+#+begin_src ores-shell :tangle approval_operations-raise-approval.ores :exports none
+approval_operations raise-approval __none__ __none__
+#+end_src
+
+** =withdraw-approval=
+:PROPERTIES:
+:ID: FA8AB034-0435-59C4-8F5E-5B7658F04D3C
+:END:
+
+Sends =withdraw_approval_request_request= and prints =withdraw_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, =comment=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations withdraw-approval <request_id> <comment> [--version <v>]
+#+end_example
+
+It is addressed at =inbox.v1.approval-requests.withdraw=.
+
+#+name: approval_operations-withdraw-approval
+#+begin_src ores-shell :tangle approval_operations-withdraw-approval.ores :exports none
+approval_operations withdraw-approval __none__ __none__
+#+end_src
+
+** =decide-approval=
+:PROPERTIES:
+:ID: A78775F8-F1EB-5205-9698-006588776ACF
+:END:
+
+Sends =decide_approval_request_request= and prints =decide_approval_request_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, =decision_code=, =comment=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations decide-approval <request_id> <decision_code> <comment> [--version <v>]
+#+end_example
+
+It is addressed at =inbox.v1.approval-requests.decide=.
+
+#+name: approval_operations-decide-approval
+#+begin_src ores-shell :tangle approval_operations-decide-approval.ores :exports none
+approval_operations decide-approval __none__ __none__ __none__
+#+end_src
+
+** =list-approval-queue=
+:PROPERTIES:
+:ID: A7DB4599-651B-5E81-B321-6B3A0D4AE2F1
+:END:
+
+Sends =list_approval_queue_request= and prints =list_approval_queue_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations list-approval-queue [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =inbox.v1.approval-requests.queue=.
+
+#+name: approval_operations-list-approval-queue
+#+begin_src ores-shell :tangle approval_operations-list-approval-queue.ores :exports none
+approval_operations list-approval-queue
+#+end_src
+
+** =list-my-approval-requests=
+:PROPERTIES:
+:ID: 5E95809A-E28A-5E78-8EDD-D3FC141DB744
+:END:
+
+Sends =list_my_approval_requests_request= and prints =list_my_approval_requests_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations list-my-approval-requests [--offset <v>] [--limit <v>]
+#+end_example
+
+It is addressed at =inbox.v1.approval-requests.mine=.
+
+#+name: approval_operations-list-my-approval-requests
+#+begin_src ores-shell :tangle approval_operations-list-my-approval-requests.ores :exports none
+approval_operations list-my-approval-requests
+#+end_src
+

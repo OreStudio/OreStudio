@@ -1,0 +1,203 @@
+:PROPERTIES:
+:ID: B56760AF-078D-51CE-832D-C7E067B39A75
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the role_grant_request_roles commands from the shell?
+#+description: Every command the role_grant_request_roles submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:role_grant_request_roles:
+
+This file documents the role_grant_request_roles resource at the shell, one section per command. Every command is a subcommand of =role_grant_request_roles=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 22540BDC-7A54-550A-A523-45E3052585CE
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.list=.
+
+#+name: role_grant_request_roles-list
+#+begin_src ores-shell :tangle role_grant_request_roles-list.ores :exports none
+role_grant_request_roles list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 85CF5A9F-CEE2-553C-A46F-9A46E7590091
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles get <request_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.get=.
+
+#+name: role_grant_request_roles-get
+#+begin_src ores-shell :tangle role_grant_request_roles-get.ores :exports none
+role_grant_request_roles get 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 10CCE1AB-1258-5A3D-A3EB-91CAFE95430C
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles get-many <request_id> <role_id>
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.get_many=.
+
+#+name: role_grant_request_roles-get-many
+#+begin_src ores-shell :tangle role_grant_request_roles-get-many.ores :exports none
+role_grant_request_roles get-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: F44974CF-D4A8-57CE-B942-07C732BBFCC2
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles add <request_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.put=.
+
+#+name: role_grant_request_roles-add
+#+begin_src ores-shell :tangle role_grant_request_roles-add.ores :exports none
+role_grant_request_roles add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: B7519795-42D6-5C94-9070-F4C95D499C81
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles set <request_id> <role_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.put=.
+
+#+name: role_grant_request_roles-set
+#+begin_src ores-shell :tangle role_grant_request_roles-set.ores :exports none
+role_grant_request_roles set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B95B66F3-B8BA-59D2-89CA-3BFE516CE2E0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles put-many --count <n> <request_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.put_many=.
+
+#+name: role_grant_request_roles-put-many
+#+begin_src ores-shell :tangle role_grant_request_roles-put-many.ores :exports none
+role_grant_request_roles put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 454A5851-8B86-5BD6-9488-2B462348CEEB
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles delete <request_id> <role_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.delete=.
+
+#+name: role_grant_request_roles-delete
+#+begin_src ores-shell :tangle role_grant_request_roles-delete.ores :exports none
+role_grant_request_roles delete 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7BAC2D4E-C391-50C9-A9E3-47B94B0D3D4D
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles delete-many <request_id> <role_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.delete_many=.
+
+#+name: role_grant_request_roles-delete-many
+#+begin_src ores-shell :tangle role_grant_request_roles-delete-many.ores :exports none
+role_grant_request_roles delete-many 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 794B3C66-0D80-5EA8-8312-4E1BD1669E91
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_grant_request_roles by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.role_grant_request_roles.list_by_request_id=.
+
+#+name: role_grant_request_roles-by-request-id
+#+begin_src ores-shell :tangle role_grant_request_roles-by-request-id.ores :exports none
+role_grant_request_roles by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

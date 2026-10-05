@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :complete_the_super_administrator_ux_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/name-the-administrators
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The super administrator and a tenant's administrator are people with names: the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                             |
 
 * Acceptance
 
@@ -42,9 +42,33 @@ The super administrator and a tenant's administrator are people with names: the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The name rule lived in fifteen places, so it went into one helper and
+every surface was migrated to it. The decisions in the order they were
+made:
+
+- One helper, =displayName= in
+  =projects/ores.web/packages/web/src/access/names.ts=, computes the
+  name a surface shows. Its account parameter is structural
+  (={ readonly fullName: string } | null | undefined=), so the identity
+  form can pass its own draft without the helper knowing about drafts.
+- The greeting takes =self=, the signed-in person's own account, as a
+  =HomePage= prop, wired in =AppRoutes= from the shell's own read, so the
+  fallback is testable on the greeting's own surface rather than only
+  through the shell.
+- The initial admin function gains =p_full_name text default 'Super
+  Admin'= as the fifth parameter, after the already-defaulted actor. The
+  bootstrap handler's four-argument call keeps working through the
+  default and no caller changes. The drop file drops both the
+  four-argument and the five-argument signature, because =create or
+  replace= with a new signature leaves the old overload in place and
+  PostgreSQL prefers the exact-arity match.
+- =create_account= gains =full_name= appended after the defaulted
+  =change_commentary=, so the one five-argument caller rebinds nothing.
+  An empty string is what the mapper writes as NULL, which is also the
+  state the fallback covers.
+- Provisioning passes =tenant_admin_name=, a constant beside
+  =tenant_admin_role=, with the commentary "Provision tenant: create the
+  administrator", matching the call beside it.
 
 * Measurements
 
@@ -58,7 +82,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite | 299 tests in 30 files, all pass | =npm test --workspace @ores.web= (from =projects/ores.web=) | 9c21e4e36f |
+| Web typecheck | clean, no errors | =npm run typecheck --workspace @ores.web= | 9c21e4e36f |
+| Prettier, changed web files | clean | =npx prettier --check= on the 13 changed files | 9c21e4e36f |
+| clang-format, changed C++ files | clean, exit 0 | =clang-format --dry-run --Werror= on the 3 changed files | 54a98fdf56 |
+| Pasted block symbols | 21 names in 121 blocks across 28 models resolve | =python3 projects/ores.codegen/scripts/check_paste_block_symbols.py= | 9c21e4e36f |
+| Populate references | resolve | =python3 projects/ores.codegen/scripts/check_populate_references.py= | 9c21e4e36f |
+| Codegen drift sweep | clean for every file this branch touched; 79 files elsewhere belong to their components' own clean-up | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --sweep= | 9c21e4e36f |
 
 * Notes
 
@@ -105,6 +135,35 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | Local review of the delta | all changed files | No findings | The checklist's categories; no stale comments, no commented-out code, snake_case and headers intact |
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in =54a98fdf56= and =9c21e4e36f=. The deployment's first
+administrator is created with the full name Super Admin: the initial
+admin function inserts =full_name= and defaults it, so the bootstrap
+handler's four-argument call is unchanged. A provisioned tenant's
+administrator is created with =tenant_admin_name= ('Tenant Admin'),
+beside the role constant it already grants. On the screens, one helper,
+=displayName=, computes the name a surface shows, and the shell, the home
+greeting, the people lists, the role holders, the rescue finder and the
+identity form call it, so they agree.
+
+| Acceptance | Evidence |
+|------------+----------|
+| The initial administrator carries Super Admin, and a provisioned administrator carries Tenant Admin | The SQL default in =54a98fdf56= and the =tenant_admin_name= constant at the provisioning call site. Not exercised against a live database: that needs the destructive =compass db recreate= the operator owns. |
+| The greeting shows the full name when the account holds one and the username otherwise | The three greeting cases in =HomePage.test.tsx=: a named account, an unnamed one, and the shell before the read answers. |
+| One helper computes the name, and the shell, the greeting and the lists use it | =9c21e4e36f=; after the migration the only raw =fullName= renders left are the rescue finder's deliberate 'no full name' label and the party's own =fullName=, which is another domain. |
+| No surface shows an empty name | =displayName= returns the username for an absent account and for an empty name. |
+
+Limitations. The C++ build and ctest did not run: =compass build --preset
+linux-clang-debug-make= was started and queued behind other worktrees' builds
+on the host-wide build lock, and ctest needs the database, whose recreation is
+destructive and pending. The checkout's =.env= is at format 26 while
+=compass env version= answers 27, and =compass env configure= also waits on the
+operator. What was checked instead: clang-format is clean on the three changed
+C++ files, and the change is a defaulted parameter, one assignment and one call
+site. The screens were verified as server-rendered markup in the unit suite,
+not in a browser against a live deployment. The misspell check was not run: the
+fixer is not permitted in this environment.

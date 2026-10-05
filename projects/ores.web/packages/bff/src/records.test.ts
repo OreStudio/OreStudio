@@ -484,3 +484,31 @@ describe('GET /api/image-map', () => {
         });
     });
 });
+
+describe('GET /api/accounts', () => {
+    it('asks for one page of people, searched and ordered on the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'iam.v1.accounts.list': { accounts: [], total: 0 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/accounts?offset=15&limit=15&search=pri&sort=full_name&descending=true',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            offset: 15,
+            limit: 15,
+            order: { field: 'full_name', descending: true },
+            filter: { id_one_of: null, search: 'pri' },
+        });
+    });
+
+    it('refuses an order the account model does not declare', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'GET', '/api/accounts?limit=15&sort=email');
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+});

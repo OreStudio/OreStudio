@@ -30,7 +30,7 @@ import { Button, Dialog, Notice } from '../ui/Primitives.js';
 import { FlaggedCode } from '../images/flags.js';
 import { currencyPath } from './currencies.js';
 import { HistoryPanel } from './HistoryPanel.js';
-import { RecordList } from './RecordList.js';
+import { RecordList, useRecordSource } from './RecordList.js';
 import {
     ClassifiedValue,
     FieldInput,
@@ -111,10 +111,11 @@ export function CurrencyPairsPage(): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
+    const source = useRecordSource(PAIRS);
     return (
         <>
             <RecordList
-                resource={PAIRS}
+                source={source}
                 title={t('refdata.pairs.title')}
                 lead={t('refdata.pairs.lead')}
                 crumbs={[
@@ -131,7 +132,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['pair_code']),
                         mono: true,
                         sort: 'pair_code',
-                        flag: { source: 'pair', field: 'pair_code' },
+                        flag: { source: 'pair', code: (row) => show(row['pair_code']) },
                     },
                     {
                         id: 'base_currency',
@@ -139,7 +140,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['base_currency']),
                         mono: true,
                         sort: 'base_currency',
-                        flag: { source: 'currency', field: 'base_currency' },
+                        flag: { source: 'currency', code: (row) => show(row['base_currency']) },
                     },
                     {
                         id: 'quote_currency',
@@ -147,7 +148,7 @@ export function CurrencyPairsPage(): ReactNode {
                         cell: (row) => show(row['quote_currency']),
                         mono: true,
                         sort: 'quote_currency',
-                        flag: { source: 'currency', field: 'quote_currency' },
+                        flag: { source: 'currency', code: (row) => show(row['quote_currency']) },
                     },
                     {
                         id: 'classification',

@@ -37,6 +37,7 @@ export interface AccountLookup {
 
 export interface AccountsFilter {
     id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface AccountEvent {

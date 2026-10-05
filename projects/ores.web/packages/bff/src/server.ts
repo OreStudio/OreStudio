@@ -161,6 +161,18 @@ import {
  * route here talks to the same place for as long as the process runs.
  */
 
+/** A page of the people list: the order is one the account model declares sortable. */
+const accountPageQuerySchema = z.object({
+    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+    limit: z.coerce.number().pipe(z.int().min(1).max(1000)).default(100),
+    search: z.string().trim().max(256).default(''),
+    sort: z.enum(['', 'username', 'full_name']).default(''),
+    descending: z
+        .enum(['true', 'false'])
+        .default('false')
+        .transform((value) => value === 'true'),
+});
+
 const imagePageQuerySchema = z.object({
     offset: z.coerce.number().pipe(z.int().min(0)).default(0),
     limit: z.coerce.number().pipe(z.int().min(1).max(500)).default(100),
@@ -773,13 +785,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      */
     server.get('/api/accounts', async (request) => {
         const session = requireSession(request);
-        const query = request.query as Record<string, string | undefined>;
-        const page = listAccountsRequestSchema.safeParse({
-            offset: Number(query['offset'] ?? 0),
-            limit: Number(query['limit'] ?? 100),
-        });
+        const page = accountPageQuerySchema.safeParse(request.query);
         if (!page.success) {
-            throw invalidRequest('The page offset and limit must be whole numbers.');
+            throw invalidRequest(
+                'A page of people names an offset, a limit of 1 to 1000, a search, and an order by username or name.',
+            );
         }
         return readAccountsPage(session.client, page.data);
     });

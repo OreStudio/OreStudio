@@ -37,9 +37,9 @@ import { ProfilePage } from './ProfilePage.js';
  *
  * Every read the screen makes is seeded in the query cache, so the page
  * renders without a server. What is checked is the screen's own contract: a
- * member's panels and their read-only fields, the person search that appears
- * only for a holder of a write permission, and the statement a refused
- * account read draws instead of fields.
+ * member's own panels, one per tab, with their read-only fields; no other
+ * person, even for a holder of a write permission; and the statement a
+ * refused account read draws instead of fields.
  */
 
 const ACCOUNT_ID = '11111111-1111-1111-1111-111111111111';
@@ -147,7 +147,7 @@ function access(permissionCodes: readonly string[]): AccountAccess {
     };
 }
 
-function render(seed: (client: QueryClient) => void): string {
+function render(seed: (client: QueryClient) => void, path = '/profile'): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['contact-information', 'me'], contact);
     client.setQueryData(['amend-reasons'], reasons);
@@ -155,7 +155,7 @@ function render(seed: (client: QueryClient) => void): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[path]}>
                     <ProfilePage session={session} />
                 </MemoryRouter>
             </TranslationProvider>
@@ -164,21 +164,22 @@ function render(seed: (client: QueryClient) => void): string {
 }
 
 describe('ProfilePage', () => {
-    it("draws a member's own panels from the account and the contact record", () => {
-        const html = render((client) => {
-            client.setQueryData(['my-access'], access([]));
-            client.setQueryData(['account', 'ada'], account);
-        });
+    const member = (client: QueryClient) => {
+        client.setQueryData(['my-access'], access([]));
+        client.setQueryData(['account', 'ada'], account);
+    };
+
+    it("draws the member's identity on the first tab, with the others offered", () => {
+        const html = render(member);
 
         expect(html).toContain('My profile');
+        expect(html).toContain('>Details<');
+        expect(html).toContain('>Contact<');
+        expect(html).toContain('>Access<');
         expect(html).toContain('Photo and identity');
         expect(html).toContain('value="Ada Lovelace"');
         expect(html).toContain('value="Head of Desk"');
         expect(html).toContain('src="/api/images/55555555-5555-5555-5555-555555555555"');
-        // The two addresses are told apart, because a person expects one email field.
-        expect(html).toContain('ada@example.com');
-        expect(html).toContain('value="ada@colleagues.example.com"');
-        expect(html).toContain('not the sign-in address (ada@example.com)');
         expect(html).toContain('Record version 7.');
         expect(html).toContain('Non-material update');
         /*
@@ -188,37 +189,51 @@ describe('ProfilePage', () => {
         expect(html).toContain(`Reports to ${MANAGER_ID}.`);
         expect(html).toContain('the recorded identifier is shown');
         expect(html).toContain('Propose a change');
-        // The screen's own doors.
+        expect(html).not.toContain('value="1 Panton Street"');
+    });
+
+    it('draws the contact record on its tab, telling the two addresses apart', () => {
+        const html = render(member, '/profile?tab=contact');
+
+        expect(html).toContain('ada@example.com');
+        expect(html).toContain('value="ada@colleagues.example.com"');
+        expect(html).toContain('not the sign-in address (ada@example.com)');
+        expect(html).toContain('value="1 Panton Street"');
+        expect(html).not.toContain('value="Ada Lovelace"');
+    });
+
+    it('draws the access held, and the doors to sign-in and access, on its tab', () => {
+        const html = render(member, '/profile?tab=access');
+
         expect(html).toContain('Sign-in and access');
         expect(html).toContain('href="/security"');
         expect(html).toContain('href="/access"');
-        // No write permission, so no person search.
-        expect(html).not.toContain('Find the person');
     });
 
-    it('offers the person search to a holder of a write permission', () => {
+    it('shows a holder of a write permission only their own profile, with the manager named', () => {
         const html = render((client) => {
             client.setQueryData(['my-access'], access(['iam::accounts:update']));
             client.setQueryData(['account', 'ada'], account);
             client.setQueryData(['accounts'], { accounts: [account, manager], totalCount: 2 });
         });
 
-        expect(html).toContain('Find the person');
-        expect(html).toContain('grace');
-        expect(html).toContain('Grace Hopper');
-        // The panel opens on the administrator's own record, as it does for a member.
+        expect(html).not.toContain('Find the person');
+        expect(html).not.toContain('Grace Hopper</');
         expect(html).toContain('You may change your own name, job title and photo.');
-        // The tenant list names the manager where the member reads only the id.
         expect(html).toContain('Reports to Grace Hopper.');
     });
 
     it('states a refused account read rather than drawing fields it cannot ground', async () => {
-        const html = await renderAfterRefusal();
+        const html = await renderAfterRefusal('/profile');
 
         expect(html).toContain('The server did not let this screen read the account');
         expect(html).toContain('offers no save');
         expect(html).not.toContain('value="Ada Lovelace"');
-        // The contact record is the member's own, so that panel still works.
+    });
+
+    it('keeps the contact tab working when the account read is refused', async () => {
+        const html = await renderAfterRefusal('/profile?tab=contact');
+
         expect(html).toContain('Contact details');
         expect(html).toContain('value="1 Panton Street"');
     });
@@ -231,7 +246,7 @@ describe('ProfilePage', () => {
  * refused read leaves behind: a retry on mount would answer a fresh pending
  * state and there is no server here to settle it.
  */
-async function renderAfterRefusal(): Promise<string> {
+async function renderAfterRefusal(path: string): Promise<string> {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false, refetchOnMount: false } },
     });
@@ -247,7 +262,7 @@ async function renderAfterRefusal(): Promise<string> {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[path]}>
                     <ProfilePage session={session} />
                 </MemoryRouter>
             </TranslationProvider>

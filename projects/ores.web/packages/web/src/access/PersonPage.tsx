@@ -21,16 +21,19 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import type { Account, HeldRole } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
-import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
 import { areasOf, grantedBy, rolesGranting } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
 import { SignInsPanel } from './SignIns.js';
 import { roleLabel } from './words.js';
+import { ContactTab, IdentityTab } from './PersonForms.js';
+import { RecordHeader } from '../refdata/records.js';
+import { useTabs } from '../ui/Tabs.js';
 
 /**
  * One person's access: the roles they hold, who gave each one and why, and
@@ -81,134 +84,160 @@ function Person({
     const name = account.fullName === '' ? account.username : account.fullName;
     const refresh = () => queries.invalidateQueries({ queryKey: ['account-access', account.id] });
 
+    const { tab, bar } = useTabs({
+        label: name,
+        tabs: ['details', 'contact', 'roles', 'signIns'],
+        titleOf: (part) => t(`access.person.tabs.${part}`),
+    });
     const roles = access.data?.roles ?? [];
     const everything = roles.find((role) => role.permissionCodes.includes('*'));
 
     return (
-        <div className="space-y-6">
-            <p className="text-xs text-ink-faint">
-                <Link to="/people" className="text-accent-bright hover:underline">
-                    {t('access.people.title')}
-                </Link>{' '}
-                / {name}
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+        <div className="space-y-4">
+            <RecordHeader
+                crumbs={[
+                    { label: t('shell.menu.home'), to: '/' },
+                    { label: t('access.people.title'), to: '/people' },
+                    { label: name },
+                ]}
+                title={name}
+                recordKey={account.username}
+                version={account.version}
+                mark={
                     <Avatar
                         name={name}
                         size="lg"
                         src={account.imageId === null ? null : imageUrl(account.imageId)}
                     />
-                    <PageHeader
-                        title={name}
-                        description={[account.username, account.jobTitle]
-                            .filter((part) => part !== '')
-                            .join(' · ')}
-                    />
-                </div>
-                <Button variant="primary" onClick={() => setGiving(true)}>
-                    {t('access.person.give')}
-                </Button>
-            </div>
-
-            {access.isError && <Notice tone="error">{access.error.message}</Notice>}
-            <section className="overflow-x-auto rounded-md border border-line">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            <th className="px-4 py-2 font-medium">{t('access.person.role')}</th>
-                            <th className="px-4 py-2 font-medium">{t('access.givenBy')}</th>
-                            <th className="px-4 py-2 font-medium">{t('access.person.on')}</th>
-                            <th className="px-4 py-2 font-medium">{t('access.person.why')}</th>
-                            <th className="px-4 py-2" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {roles.length === 0 && (
-                            <tr>
-                                <td colSpan={5} className="px-4 py-3 text-ink-muted">
-                                    {access.isPending
-                                        ? t('common.loading')
-                                        : t('access.person.noRole')}
-                                </td>
-                            </tr>
-                        )}
-                        {roles.map((role) => (
-                            <tr
-                                key={role.roleId}
-                                className="border-b border-line-subtle last:border-b-0"
-                            >
-                                <td className="px-4 py-2">
-                                    <span className="block font-medium">
-                                        {roleLabel(t, role.name)}
-                                    </span>
-                                    <span className="block text-xs text-ink-faint">
-                                        {role.description}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-2">
-                                    <span className="flex items-center gap-2">
-                                        <AccountPicture
-                                            username={role.givenBy}
-                                            name={role.givenBy}
-                                            size="sm"
-                                        />
-                                        {role.givenBy}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-2 text-ink-muted">
-                                    {role.givenAt.slice(0, 10)}
-                                </td>
-                                <td className="px-4 py-2">
-                                    <span className="block">{role.reasonCode}</span>
-                                    {role.commentary !== '' && (
-                                        <span className="block text-xs text-ink-faint">
-                                            {role.commentary}
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="px-4 py-2 text-right">
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        disabled={self}
-                                        title={self ? t('access.person.notYourself') : undefined}
-                                        onClick={() => setTaking(role)}
-                                    >
-                                        {t('access.person.takeAway')}
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
-            <Notice tone="info">{t('access.person.whenItApplies', { name })}</Notice>
-
-            <SignInsPanel
-                queryKey={['account-sign-ins', account.username]}
-                read={(page) => api.accountSignIns(account.username, page)}
+                }
             />
+            {bar}
+            {tab === 'details' && (
+                <IdentityTab username={account.username} me={self} fallbackEmail={account.email} />
+            )}
+            {tab === 'contact' && (
+                <ContactTab username={account.username} me={self} fallbackEmail={account.email} />
+            )}
+            {tab === 'signIns' && (
+                <SignInsPanel
+                    queryKey={['account-sign-ins', account.username]}
+                    read={(page) => api.accountSignIns(account.username, page)}
+                />
+            )}
+            {tab === 'roles' && (
+                <div className="space-y-4">
+                    <div className="flex justify-end">
+                        <Button variant="primary" icon="add" onClick={() => setGiving(true)}>
+                            {t('access.person.give')}
+                        </Button>
+                    </div>
+                    {access.isError && <Notice tone="error">{access.error.message}</Notice>}
+                    <section className="overflow-x-auto rounded-md border border-line">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr className="border-b border-line text-xs text-ink-muted">
+                                    <th className="px-4 py-2 font-medium">
+                                        {t('access.person.role')}
+                                    </th>
+                                    <th className="px-4 py-2 font-medium">{t('access.givenBy')}</th>
+                                    <th className="px-4 py-2 font-medium">
+                                        {t('access.person.on')}
+                                    </th>
+                                    <th className="px-4 py-2 font-medium">
+                                        {t('access.person.why')}
+                                    </th>
+                                    <th className="px-4 py-2" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {roles.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="px-4 py-3 text-ink-muted">
+                                            {access.isPending
+                                                ? t('common.loading')
+                                                : t('access.person.noRole')}
+                                        </td>
+                                    </tr>
+                                )}
+                                {roles.map((role) => (
+                                    <tr
+                                        key={role.roleId}
+                                        className="border-b border-line-subtle last:border-b-0"
+                                    >
+                                        <td className="px-4 py-2">
+                                            <span className="block font-medium">
+                                                {roleLabel(t, role.name)}
+                                            </span>
+                                            <span className="block text-xs text-ink-faint">
+                                                {role.description}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <span className="flex items-center gap-2">
+                                                <AccountPicture
+                                                    username={role.givenBy}
+                                                    name={role.givenBy}
+                                                    size="sm"
+                                                />
+                                                {role.givenBy}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-2 text-ink-muted">
+                                            {role.givenAt.slice(0, 10)}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <span className="block">{role.reasonCode}</span>
+                                            {role.commentary !== '' && (
+                                                <span className="block text-xs text-ink-faint">
+                                                    {role.commentary}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-2 text-right">
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                disabled={self}
+                                                title={
+                                                    self
+                                                        ? t('access.person.notYourself')
+                                                        : undefined
+                                                }
+                                                onClick={() => setTaking(role)}
+                                            >
+                                                {t('access.person.takeAway')}
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+                    <Notice tone="info">{t('access.person.whenItApplies', { name })}</Notice>
 
-            <section className="space-y-3">
-                <h2 className="text-sm font-semibold">{t('access.person.whatTheyAllow')}</h2>
-                {everything !== undefined ? (
-                    <p className="text-sm text-ink-muted">
-                        {t('access.everythingBy', { role: roleLabel(t, everything.name) })}
-                    </p>
-                ) : (
-                    <PermissionAreas
-                        areas={areas}
-                        granted={grantedBy(roles)}
-                        onlyGranted
-                        explain={(code) =>
-                            rolesGranting(roles, code)
-                                .map((roleName) => roleLabel(t, roleName))
-                                .join(', ')
-                        }
-                    />
-                )}
-            </section>
+                    <section className="space-y-3">
+                        <h2 className="text-sm font-semibold">
+                            {t('access.person.whatTheyAllow')}
+                        </h2>
+                        {everything !== undefined ? (
+                            <p className="text-sm text-ink-muted">
+                                {t('access.everythingBy', { role: roleLabel(t, everything.name) })}
+                            </p>
+                        ) : (
+                            <PermissionAreas
+                                areas={areas}
+                                granted={grantedBy(roles)}
+                                onlyGranted
+                                explain={(code) =>
+                                    rolesGranting(roles, code)
+                                        .map((roleName) => roleLabel(t, roleName))
+                                        .join(', ')
+                                }
+                            />
+                        )}
+                    </section>
+                </div>
+            )}
 
             {giving && (
                 <GiveRoleDialog

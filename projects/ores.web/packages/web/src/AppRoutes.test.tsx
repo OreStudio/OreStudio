@@ -19,6 +19,7 @@
  *
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -86,26 +87,28 @@ function render(
     overrides: Partial<AppRoutesProps> = {},
 ): string {
     return renderToStaticMarkup(
-        <TranslationProvider>
-            <MemoryRouter initialEntries={[path]}>
-                <AppRoutes
-                    gate={gate}
-                    session={sessionState}
-                    journey={journey}
-                    newTenantJourney={newTenantJourney}
-                    newPartyJourney={newPartyJourney}
-                    signUpJourney={signUpJourney}
-                    journeyInProgress={false}
-                    onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
-                    onChooseParty={async () => undefined}
-                    onSignOut={() => undefined}
-                    onEnterTenant={async () => undefined}
-                    onLeaveTenant={() => undefined}
-                    onRetryBootstrap={() => undefined}
-                    {...overrides}
-                />
-            </MemoryRouter>
-        </TranslationProvider>,
+        <QueryClientProvider client={new QueryClient()}>
+            <TranslationProvider>
+                <MemoryRouter initialEntries={[path]}>
+                    <AppRoutes
+                        gate={gate}
+                        session={sessionState}
+                        journey={journey}
+                        newTenantJourney={newTenantJourney}
+                        newPartyJourney={newPartyJourney}
+                        signUpJourney={signUpJourney}
+                        journeyInProgress={false}
+                        onSignIn={async () => ({ outcome: 'active', passwordResetRequired: false })}
+                        onChooseParty={async () => undefined}
+                        onSignOut={() => undefined}
+                        onEnterTenant={async () => undefined}
+                        onLeaveTenant={() => undefined}
+                        onRetryBootstrap={() => undefined}
+                        {...overrides}
+                    />
+                </MemoryRouter>
+            </TranslationProvider>
+        </QueryClientProvider>,
     );
 }
 

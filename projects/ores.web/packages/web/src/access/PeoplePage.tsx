@@ -19,111 +19,109 @@
  *
  */
 
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router';
-import { useTranslation } from '../i18n/Provider.js';
+import type { Account } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { useTranslation } from '../i18n/Provider.js';
+import { RecordList, type ListSource } from '../refdata/RecordList.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
-import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Tag } from '../ui/Primitives.js';
 import { roleLabel } from './words.js';
 
+/** The address of one person's page. */
+export function personPath(username: string): string {
+    return `/people/${encodeURIComponent(username)}`;
+}
+
+/** What a person is called: their name, or their username when they have none. */
+export function nameOf(account: Account): string {
+    return account.fullName === '' ? account.username : account.fullName;
+}
+
+/** The tenant's people, one page at a time, searched and ordered on the server. */
+const PEOPLE: ListSource<Account> = {
+    key: 'people',
+    read: (page) => api.accountsPage(page),
+    search: true,
+    sortable: ['username', 'full_name'],
+    mayAdd: false,
+};
+
 /**
- * Who can sign in to the tenant, and the roles each one holds.
- *
- * Each row is a person with their picture; opening one is where roles are
- * given and taken away. The roles are read one account at a time, because the
- * server has no joined read yet, and a row whose roles cannot be read still
- * names the person.
+ * Who can sign in to the tenant, and the roles each one holds: the shared
+ * record list, so it pages, searches and sorts like every other list. Opening
+ * a person is where their details, contact, roles and sign-ins are kept.
  */
 export function PeoplePage(): ReactNode {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const people = useQuery({ queryKey: ['accounts'], queryFn: api.accounts });
-    const accounts = people.data?.accounts ?? [];
-    const access = useQueries({
-        queries: accounts.map((account) => ({
-            queryKey: ['account-access', account.id],
-            queryFn: () => api.accountAccess(account.id),
-        })),
-    });
-
-    if (people.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-    if (people.isError) {
-        return <Notice tone="error">{people.error.message}</Notice>;
-    }
-
     return (
-        <div>
-            <PageHeader title={t('access.people.title')} description={t('access.people.lead')} />
-            <div className="overflow-x-auto rounded-md border border-line">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            <th className="px-4 py-2 font-medium">{t('access.people.person')}</th>
-                            <th className="px-4 py-2 font-medium">{t('access.people.roles')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {accounts.map((account, index) => {
-                            const name =
-                                account.fullName === '' ? account.username : account.fullName;
-                            const held = access[index]?.data?.roles;
-                            return (
-                                <tr
-                                    key={account.id}
-                                    className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
-                                    onClick={() =>
-                                        void navigate(
-                                            `/people/${encodeURIComponent(account.username)}`,
-                                        )
-                                    }
-                                >
-                                    <td className="px-4 py-2">
-                                        <span className="flex items-center gap-3">
-                                            <Avatar
-                                                name={name}
-                                                src={
-                                                    account.imageId === null
-                                                        ? null
-                                                        : imageUrl(account.imageId)
-                                                }
-                                            />
-                                            <span>
-                                                <span className="block text-ink">{name}</span>
-                                                <span className="block text-xs text-ink-faint">
-                                                    {account.username}
-                                                    {account.jobTitle !== '' &&
-                                                        ` · ${account.jobTitle}`}
-                                                </span>
-                                            </span>
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        {held === undefined ? (
-                                            <span className="text-ink-faint">…</span>
-                                        ) : held.length === 0 ? (
-                                            <span className="text-ink-faint">
-                                                {t('access.people.noRole')}
-                                            </span>
-                                        ) : (
-                                            <span className="flex flex-wrap gap-1">
-                                                {held.map((role) => (
-                                                    <Tag key={role.roleId}>
-                                                        {roleLabel(t, role.name)}
-                                                    </Tag>
-                                                ))}
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <RecordList
+            source={PEOPLE}
+            title={t('access.people.title')}
+            lead={t('access.people.lead')}
+            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('access.people.title') }]}
+            pathOf={(account) => personPath(account.username)}
+            columns={[
+                {
+                    id: 'person',
+                    header: t('access.people.person'),
+                    sort: 'full_name',
+                    cell: (account) => (
+                        <span className="flex items-center gap-3">
+                            <Avatar
+                                name={nameOf(account)}
+                                size="sm"
+                                src={account.imageId === null ? null : imageUrl(account.imageId)}
+                            />
+                            {nameOf(account)}
+                        </span>
+                    ),
+                },
+                {
+                    id: 'username',
+                    header: t('access.people.username'),
+                    sort: 'username',
+                    mono: true,
+                    cell: (account) => account.username,
+                },
+                {
+                    id: 'job_title',
+                    header: t('access.people.jobTitle'),
+                    cell: (account) => account.jobTitle,
+                },
+                {
+                    id: 'roles',
+                    header: t('access.people.roles'),
+                    cell: (account) => <HeldRoles accountId={account.id} />,
+                },
+            ]}
+        />
+    );
+}
+
+/**
+ * The roles one person holds. Read one person at a time, because the server
+ * has no joined read yet; a page shows fifteen people, so fifteen reads.
+ */
+function HeldRoles({ accountId }: { readonly accountId: string }): ReactNode {
+    const { t } = useTranslation();
+    const access = useQuery({
+        queryKey: ['account-access', accountId],
+        queryFn: () => api.accountAccess(accountId),
+    });
+    const held = access.data?.roles;
+    if (held === undefined) {
+        return <span className="text-ink-faint">…</span>;
+    }
+    if (held.length === 0) {
+        return <span className="text-ink-faint">{t('access.people.noRole')}</span>;
+    }
+    return (
+        <span className="flex flex-wrap gap-1">
+            {held.map((role) => (
+                <Tag key={role.roleId}>{roleLabel(t, role.name)}</Tag>
+            ))}
+        </span>
     );
 }

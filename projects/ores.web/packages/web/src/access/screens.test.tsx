@@ -27,6 +27,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import type { Account, HeldRole, RoleSummary } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { MyAccessPage } from './MyAccessPage.js';
+import { PeoplePage } from './PeoplePage.js';
 import { PersonPage } from './PersonPage.js';
 import { RolePage } from './RolePage.js';
 import { RolesPage } from './RolesPage.js';
@@ -178,7 +179,7 @@ describe('Roles', () => {
 });
 
 describe('A person', () => {
-    function person(me: string): string {
+    function person(me: string, path = '/people/daniel?tab=roles'): string {
         return render(
             (client) => {
                 client.setQueryData(['account', 'daniel'], daniel);
@@ -186,10 +187,21 @@ describe('A person', () => {
                     roles: [held(TRADING, 'Trading', ['refdata::currencies:read'])],
                 });
             },
-            '/people/daniel',
+            path,
             <Route path="/people/:username" element={<PersonPage me={me} />} />,
         );
     }
+
+    it('opens on their details, with their contact, roles and sign-ins as tabs', () => {
+        const html = person('priya', '/people/daniel');
+
+        expect(html).toContain('>Details<');
+        expect(html).toContain('>Contact<');
+        expect(html).toContain('>Roles<');
+        expect(html).toContain('>Sign-ins<');
+        expect(html).toContain('href="/people"');
+        expect(html).not.toMatch(/Take away/);
+    });
 
     it('shows the person picture and the roles they hold, with a way to take one away', () => {
         const html = person('priya');
@@ -204,5 +216,30 @@ describe('A person', () => {
         const html = person('daniel');
 
         expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Take away<\/button>/);
+    });
+});
+
+describe('The people list', () => {
+    it('draws one page of people through the shared record list', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(
+                    [
+                        'records',
+                        'people',
+                        'page',
+                        { offset: 0, limit: 15, search: '', sort: '', descending: false },
+                    ],
+                    { rows: [daniel], total: 31 },
+                );
+            },
+            '/people',
+            <Route path="/people" element={<PeoplePage />} />,
+        );
+
+        expect(html).toContain('Daniel Okafor');
+        expect(html).toContain('1–1 of 31');
+        expect(html).toContain('Search…');
+        expect(html).toContain('href="/"');
     });
 });

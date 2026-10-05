@@ -118,6 +118,8 @@ const pt: SourceCatalogue = {
             whatTheyAllow: 'O que os seus papéis permitem',
         },
         people: {
+            username: 'Nome de utilizador',
+            jobTitle: 'Cargo',
             title: 'Pessoas',
             lead: 'Quem pode iniciar sessão neste inquilino, e os papéis de cada um.',
             person: 'Pessoa',
@@ -125,6 +127,12 @@ const pt: SourceCatalogue = {
             noRole: 'Sem papel',
         },
         person: {
+            tabs: {
+                details: 'Detalhes',
+                contact: 'Contacto',
+                roles: 'Funções',
+                signIns: 'Entradas',
+            },
             notFound: 'Nenhuma conta tem este nome de utilizador.',
             give: 'Dar um papel',
             role: 'Papel',
@@ -477,6 +485,11 @@ const pt: SourceCatalogue = {
      * painel guarde sozinho e responda sozinho.
      */
     profile: {
+        tabs: {
+            details: 'Detalhes',
+            contact: 'Contacto',
+            access: 'Acesso',
+        },
         title: {
             mine: 'O meu perfil',
             other: 'Alterar os dados de alguém',

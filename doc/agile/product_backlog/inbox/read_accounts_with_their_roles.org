@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5BB1EEC0-81F5-42E9-8D26-1971344F17C1
+:END:
+#+title: Read a page of accounts with the roles each holds
+#+description: The people list reads each person roles one account at a time, because the server has no read that joins accounts and their roles; a joined page read would draw the role column in one call.
+#+type: capture
+#+level: cross
+#+filetags: :iam:web:people:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

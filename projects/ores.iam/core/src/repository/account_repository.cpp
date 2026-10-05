@@ -53,7 +53,10 @@ std::string account_repository::sql() {
 }
 
 bool account_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "username",
+        "full_name",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -89,6 +92,8 @@ filter_condition(const std::optional<messaging::accounts_filter>& filter) {
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"username", "full_name", "email"}, *filter->search));
     return all_of(std::move(r));
 }
 
@@ -297,7 +302,7 @@ account_repository::read_latest(context ctx,
     return execute_ordered_read_query<account_entity, domain::account>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
+        list_order(order, {"username"}, false),
         filter_condition(filter),
         [](const auto& entities) { return account_mapper::map(entities); },
         lg(),

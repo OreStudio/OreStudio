@@ -119,6 +119,8 @@ export const en: SourceCatalogue = {
             whatTheyAllow: 'What your roles let you do',
         },
         people: {
+            username: 'Username',
+            jobTitle: 'Job title',
             title: 'People',
             lead: 'Who can sign in to this tenant, and the roles each one holds.',
             person: 'Person',
@@ -126,6 +128,12 @@ export const en: SourceCatalogue = {
             noRole: 'No role',
         },
         person: {
+            tabs: {
+                details: 'Details',
+                contact: 'Contact',
+                roles: 'Roles',
+                signIns: 'Sign-ins',
+            },
             notFound: 'No account has this username.',
             give: 'Give a role',
             role: 'Role',
@@ -476,6 +484,11 @@ export const en: SourceCatalogue = {
      * saves on its own and reports on its own.
      */
     profile: {
+        tabs: {
+            details: 'Details',
+            contact: 'Contact',
+            access: 'Access',
+        },
         title: {
             mine: 'My profile',
             other: "Change someone's details",

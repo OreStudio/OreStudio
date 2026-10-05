@@ -113,6 +113,8 @@ const fr: SourceCatalogue = {
             whatTheyAllow: 'Ce que vos rôles vous permettent',
         },
         people: {
+            username: "Nom d'utilisateur",
+            jobTitle: 'Fonction',
             title: 'Personnes',
             lead: 'Qui peut se connecter à ce locataire, et les rôles de chacun.',
             person: 'Personne',
@@ -120,6 +122,12 @@ const fr: SourceCatalogue = {
             noRole: 'Aucun rôle',
         },
         person: {
+            tabs: {
+                details: 'Détails',
+                contact: 'Contact',
+                roles: 'Rôles',
+                signIns: 'Connexions',
+            },
             notFound: 'Aucun compte n’a cet identifiant.',
             give: 'Accorder un rôle',
             role: 'Rôle',
@@ -477,6 +485,11 @@ const fr: SourceCatalogue = {
      * chaque panneau enregistre seul et rend compte seul.
      */
     profile: {
+        tabs: {
+            details: 'Détails',
+            contact: 'Contact',
+            access: 'Accès',
+        },
         title: {
             mine: 'Mon profil',
             other: "Modifier les informations d'une personne",

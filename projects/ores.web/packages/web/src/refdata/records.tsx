@@ -21,13 +21,14 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { useTabs } from '../ui/Tabs.js';
 import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
 import { ImageField } from '../images/ImageChooser.js';
 import { imageUrl } from '../ui/Images.js';
@@ -131,7 +132,7 @@ function kept(
     return Object.fromEntries((keep ?? []).map((field) => [field, row?.[field] ?? null]));
 }
 
-/** The tabs of a record's page, held in the address so a link reopens the same tab. */
+/** The tabs of a record's page, titled from the record screens' words. */
 export function useRecordTabs({
     label,
     tabs,
@@ -140,30 +141,7 @@ export function useRecordTabs({
     readonly tabs: readonly string[];
 }): { readonly tab: string; readonly bar: ReactNode } {
     const { t } = useTranslation();
-    const [search, setSearch] = useSearchParams();
-    const requested = search.get('tab');
-    const tab = tabs.find((candidate) => candidate === requested) ?? tabs[0] ?? '';
-    const bar = (
-        <div role="tablist" aria-label={label} className="flex gap-1 border-b border-line">
-            {tabs.map((candidate) => (
-                <button
-                    key={candidate}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === candidate}
-                    className={
-                        tab === candidate
-                            ? 'border-b-2 border-accent px-3 py-2 text-sm text-ink'
-                            : 'border-b-2 border-transparent px-3 py-2 text-sm text-ink-muted hover:text-ink'
-                    }
-                    onClick={() => setSearch(candidate === tabs[0] ? {} : { tab: candidate })}
-                >
-                    {t(`refdata.records.tabs.${candidate}`)}
-                </button>
-            ))}
-        </div>
-    );
-    return { tab, bar };
+    return useTabs({ label, tabs, titleOf: (tab) => t(`refdata.records.tabs.${tab}`) });
 }
 
 export function useRegistry(): ReturnType<
@@ -1051,6 +1029,7 @@ export function RecordHeader({
     onEdit,
     onDelete,
     flag,
+    mark,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
@@ -1061,6 +1040,8 @@ export function RecordHeader({
     readonly onDelete?: (() => void) | undefined;
     /** The record's own flag, drawn before its name. */
     readonly flag?: FlagSource;
+    /** A picture drawn before the name when the record has no flag, such as a person's. */
+    readonly mark?: ReactNode;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -1068,9 +1049,11 @@ export function RecordHeader({
             <Crumbs parts={crumbs} />
             <PageHeader
                 title={title}
-                {...(flag === undefined
-                    ? {}
-                    : { mark: <FlagOf source={flag} code={recordKey} size="lg" /> })}
+                {...(flag !== undefined
+                    ? { mark: <FlagOf source={flag} code={recordKey} size="lg" /> }
+                    : mark !== undefined
+                      ? { mark }
+                      : {})}
                 description={t('refdata.records.lead', {
                     code: recordKey,
                     version: String(version),

@@ -249,6 +249,27 @@ export const api = {
             .parse(await request('/api/accounts', { method: 'GET' }));
     },
 
+    /** One page of the tenant's people, searched and ordered on the server. */
+    async accountsPage(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search: string;
+        readonly sort: string;
+        readonly descending: boolean;
+    }): Promise<{ readonly rows: readonly Account[]; readonly total: number }> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            search: page.search,
+            sort: page.sort,
+            descending: String(page.descending),
+        });
+        const answer = z
+            .object({ accounts: z.array(accountSchema), totalCount: z.int().nonnegative() })
+            .parse(await request(`/api/accounts?${query.toString()}`, { method: 'GET' }));
+        return { rows: answer.accounts, total: answer.totalCount };
+    },
+
     /** The reasons a role may be given for: the access category, in display order. */
     async accessReasons(): Promise<
         readonly { readonly code: string; readonly description: string }[]

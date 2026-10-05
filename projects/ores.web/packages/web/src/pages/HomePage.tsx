@@ -19,6 +19,7 @@
  *
  */
 
+import { useHolds } from '../access/holds.js';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -377,6 +378,7 @@ function PartyHome({
     readonly partyName: string;
 }): ReactNode {
     const { t } = useTranslation();
+    const holds = useHolds();
     const coming: Tile[] = (['marketdata', 'trading', 'reporting'] as const).map((area) => ({
         title: t(`home.party.${area}`),
         body: t(`home.party.${area}Body`),
@@ -390,6 +392,15 @@ function PartyHome({
             />
             <Tiles
                 tiles={[
+                    ...(holds('iam::accounts:read')
+                        ? [
+                              {
+                                  title: t('home.tenant.people'),
+                                  body: t('home.tenant.peopleBody'),
+                                  to: '/people',
+                              },
+                          ]
+                        : []),
                     {
                         title: t('home.party.refdata'),
                         body: t('home.party.refdataBody'),

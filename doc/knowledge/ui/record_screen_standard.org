@@ -591,6 +591,7 @@ component carries it today.
 | Currencies, desk groups, currency pairs | Conform, except recency and the whole-kind pickers; a desk group reads its members from the whole junction, which has no read by group |
 | Holiday calendars | Reads every row; Remove for Delete; no icons |
 | Classifications | Reads every row of a list; a different list layout; no icons |
+| People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
 | Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |
 
 The story [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] closes these

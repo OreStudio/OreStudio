@@ -184,7 +184,7 @@ describe('the field table', () => {
     });
 });
 
-const firstPage = { offset: 0, limit: 100, search: '', sort: '', descending: false };
+const firstPage = { offset: 0, limit: 15, search: '', sort: '', descending: false };
 
 describe('the currency screens', () => {
     it('lists one page of currencies with the server total, Refresh, Add and the pager', () => {

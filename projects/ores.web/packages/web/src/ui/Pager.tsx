@@ -24,10 +24,10 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Button, Select } from './Primitives.js';
 
 /** The page sizes a list offers, as the record screen standard sets them. */
-export const PAGE_SIZES = [25, 50, 100, 200, 500] as const;
+export const PAGE_SIZES = [15, 25, 50, 100, 200, 500] as const;
 
-/** The page size a list starts with. */
-export const DEFAULT_PAGE_SIZE = 100;
+/** The page size every paged list starts with: about one screen of rows. */
+export const DEFAULT_PAGE_SIZE = 15;
 
 /** Load all is offered only up to this total, so it never reads an unbounded list. */
 export const LOAD_ALL_LIMIT = 1000;

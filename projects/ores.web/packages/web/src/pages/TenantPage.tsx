@@ -29,16 +29,13 @@ import { ApiFailure } from '../api/transport.js';
 import { PaintedValue, SetupCell } from './TenantParts.js';
 import { FlaggedCode } from '../images/flags.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
-import { Pager, pageBounds } from '../ui/Pager.js';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { Button, Detail, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RemoveTenantDialog } from './RemoveTenantDialog.js';
 
 /** The tabs of a tenant's screen, in the order they are drawn. */
 const TABS = ['overview', 'parties', 'people'] as const;
 type Tab = (typeof TABS)[number];
-
-/** How many parties or people a tab shows at a time. */
-const TAB_PAGE_SIZE = 20;
 
 /**
  * One tenant, opened from the roster: what it is, how its setup went, and its
@@ -234,7 +231,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
     const [offset, setOffset] = useState(0);
     const read = useQuery({
         queryKey: ['tenant-parties', code, offset],
-        queryFn: () => api.tenantParties(code, { offset, limit: TAB_PAGE_SIZE }),
+        queryFn: () => api.tenantParties(code, { offset, limit: DEFAULT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
 
@@ -300,7 +297,7 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
                 offset={offset}
                 shown={parties.length}
                 total={totalCount}
-                pageSize={TAB_PAGE_SIZE}
+                pageSize={DEFAULT_PAGE_SIZE}
                 showing={plural('parties.showing', totalCount, { first, last })}
                 onMove={setOffset}
             />
@@ -315,7 +312,7 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
     const [offset, setOffset] = useState(0);
     const read = useQuery({
         queryKey: ['tenant-people', code, offset],
-        queryFn: () => api.tenantPeople(code, { offset, limit: TAB_PAGE_SIZE }),
+        queryFn: () => api.tenantPeople(code, { offset, limit: DEFAULT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
 
@@ -396,7 +393,7 @@ function TenantPeople({ code }: { readonly code: string }): ReactNode {
                 offset={offset}
                 shown={accounts.length}
                 total={totalCount}
-                pageSize={TAB_PAGE_SIZE}
+                pageSize={DEFAULT_PAGE_SIZE}
                 showing={plural('tenants.detail.showingPeople', totalCount, { first, last })}
                 onMove={setOffset}
             />

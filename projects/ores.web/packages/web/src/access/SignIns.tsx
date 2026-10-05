@@ -25,10 +25,7 @@ import type { AccountSignIns } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { Notice, Tag } from '../ui/Primitives.js';
-import { Pager, pageBounds } from '../ui/Pager.js';
-
-/** How many sessions a page of an account's sign-ins shows. */
-export const SIGN_INS_PAGE_SIZE = 20;
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /**
  * One account's sign-ins, read a page at a time.
@@ -54,7 +51,7 @@ export function SignInsPanel({
     const [offset, setOffset] = useState(0);
     const signIns = useQuery({
         queryKey: [...queryKey, offset],
-        queryFn: () => read({ offset, limit: SIGN_INS_PAGE_SIZE }),
+        queryFn: () => read({ offset, limit: DEFAULT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
         retry: false,
     });
@@ -195,7 +192,7 @@ function SignInsView({
                         offset={offset}
                         shown={sessions.length}
                         total={totalCount}
-                        pageSize={SIGN_INS_PAGE_SIZE}
+                        pageSize={DEFAULT_PAGE_SIZE}
                         showing={plural('signIns.showing', totalCount, { first, last })}
                         onMove={onMove}
                     />

@@ -129,7 +129,7 @@ one path segment, as the pair code =EUR/USD= is.
    EUR    Euro                 (G10)      Fiat       €
    …
   ─────────────────────────────────────────────────────────────────────────
-  1–100 of 168        [« First] [‹ Previous] [Next ›] [Last »]   Page size [100 ▾]
+  1–15 of 168         [« First] [‹ Previous] [Next ›] [Last »]   Page size [15 ▾]
 #+end_src
 
 *** Header
@@ -180,9 +180,10 @@ repeats.
 - A list reads one page with =offset=, =limit= and the server's =total=, through
   the generated list contract. It never reads with a large fixed limit, and it
   never pages to the end to show everything.
-- The footer is the shared =Pager=: the count first ("1–100 of 168"), then
-  /First/, /Previous/, /Next/, /Last/, then /Page size/ with 25, 50, 100, 200
-  and 500, default 100.
+- The footer is the shared =Pager=: the count first ("1–15 of 168"), then
+  /First/, /Previous/, /Next/, /Last/, then /Page size/ with 15, 25, 50, 100,
+  200 and 500. Every paged list starts at 15 rows, about one screen
+  (=DEFAULT_PAGE_SIZE=); no screen sets its own default.
 - /Load all/ is offered only when the server's total is 1000 or less, and then
   reads that total in one page. It is the whole list by the server's count, never
   a cap, so it keeps the rule in

@@ -27,10 +27,7 @@ import { api } from '../api/client.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
 import { FlaggedCode } from '../images/flags.js';
 import { imageUrl } from '../ui/Images.js';
-import { Pager, pageBounds } from '../ui/Pager.js';
-
-/** How many parties one page shows. */
-export const PARTY_PAGE_SIZE = 25;
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /**
  * The parties of the session's own tenant, a page at a time.
@@ -45,7 +42,7 @@ export function PartiesPage(): ReactNode {
     const [offset, setOffset] = useState(0);
     const read = useQuery({
         queryKey: ['parties', offset],
-        queryFn: () => api.parties({ offset, limit: PARTY_PAGE_SIZE }),
+        queryFn: () => api.parties({ offset, limit: DEFAULT_PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
 
@@ -91,7 +88,7 @@ export function PartiesPage(): ReactNode {
                 offset={offset}
                 shown={parties.length}
                 total={totalCount}
-                pageSize={PARTY_PAGE_SIZE}
+                pageSize={DEFAULT_PAGE_SIZE}
                 showing={plural('parties.showing', totalCount, pageBounds(offset, parties.length))}
                 onMove={setOffset}
             />

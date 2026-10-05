@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-09-27
+#+updated: 2026-10-05
 
 The icon vocabulary for this interface, and the process for adding to it.
 
@@ -16,7 +16,7 @@ marks for one idea, and a third invents a fourth. This document exists so that
 does not happen: the table below is the whole vocabulary, and adding to it is a
 process with a checklist rather than a decision made at a call site.
 
-The artwork is the 68 SVG files in
+The artwork is the 70 SVG files in
 =projects/ores.web/packages/web/src/assets/icons/=. Every icon named below has a
 file there. The [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]]
 page carries the same set grouped for design use, and is the source of truth for
@@ -86,6 +86,7 @@ the size and the =regular= variant appended, for example
 | Save | =ic_fluent_save= | Saving, applying changes |
 | Checkmark | =ic_fluent_checkmark= | Confirming, success, the selected state in a list |
 | Dismiss | =ic_fluent_dismiss= | Closing, cancelling, clearing |
+| Link dismiss | =ic_fluent_link_dismiss= | Removing a link between two records; the records stay |
 | Star | =ic_fluent_star= | Favourited |
 | Terminal | =ic_fluent_window_console= | Shell surfaces, consoles, command lines |
 | Search | =ic_fluent_search= | Search fields and search actions |
@@ -97,6 +98,7 @@ the size and the =regular= variant appended, for example
 |---+---+---|
 | /Navigation/ | | |
 | Arrow left | =ic_fluent_arrow_left= | Back, scrolling left |
+| Arrow clockwise | =ic_fluent_arrow_clockwise= | Refreshing a list from the server |
 | Arrow download | =ic_fluent_arrow_download= | Downloading, importing a file |
 | Arrow sync | =ic_fluent_arrow_sync= | Synchronising |
 | Arrow trending | =ic_fluent_arrow_trending= | Trends, movement |
@@ -210,9 +212,11 @@ on when they need the same actions.
 
 | Action | Icon | Size |
 |---+---+---|
+| Refresh | =arrow_clockwise= | 20 |
 | Add | =add= | 20 |
 | Edit | =edit= | 20 |
 | Delete | =delete= | 20 |
+| Remove a link | =link_dismiss= | 20 |
 | History | =history= | 20 |
 | Save | =save= | 20 |
 | Close or cancel | =dismiss= | 20 |
@@ -228,5 +232,6 @@ on when they need the same actions.
 | Lock | =lock_closed= | 20 |
 | Unlock | =lock_open= | 20 |
 
-The set has no refresh icon. A screen that needs one adds a file to the set
-before it uses it.
+Refresh and Remove a link joined the set from the Fluent repository for the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]], which draws
+every action in this table through the shared =Icon= component.

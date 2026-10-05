@@ -429,10 +429,9 @@ where its meaning is not plain.
 | Filter | =filter= | (the filter select) |
 | Copy | =copy= | Copy |
 
-=arrow_clockwise= and =link_dismiss= are not in the asset set yet. They are added
-to the set and to the icon reference before a screen draws them, as the icon
-reference requires; Refresh does not borrow =arrow_rotate_counterclockwise=,
-which is Revert. An action this table lacks is added to it and to the icon
+=arrow_clockwise= and =link_dismiss= joined the asset set from the Fluent set for
+this table; Refresh does not borrow =arrow_rotate_counterclockwise=, which is
+Revert. An action this table lacks is added to it and to the icon
 reference before it is used, so two screens never draw one idea with two icons,
 and no icon carries two ideas.
 
@@ -524,22 +523,25 @@ component carries it today.
 |------+-----------+--------|
 | Record kinds reachable from the browser | =REFDATA_RECORDS=, =/api/refdata= routes | Exists |
 | Write checked at the boundary | =WRITES= | Exists |
-| Field table, form, details | =FieldSpec=, =FieldInput=, =RecordDialog=, =RecordDetails= | Exists; no inline messages on leaving a field, no text area |
+| Field table, form, details | =FieldSpec=, =FieldInput=, =RecordDialog=, =RecordDetails= | Exists, with a message under a field the person leaves wrong; no text area yet |
 | Tabs in the address | =useRecordTabs= | Exists |
-| Paged list | =Pager=, =pageBounds= in =ui/Pager.tsx= | Partial: Previous and Next only; no First, Last, page size or Load all |
-| Server paging of record kinds | =listRecords=, =useRecords= | Missing: they read every row; must read one page and the total |
-| Server search, filter and order | the list contract's =filter= and =order= | Missing for most refdata kinds |
-| List table | =RecordTable= | Partial: no sorting, column menu, keyboard opening or recency |
-| Change reasons | =useReason=, =ReasonFields= | Partial: no filter by whether a field changed |
-| Unsaved changes | (none) | Missing |
-| Delete | =RemoveRecordDialog= | Exists; its word is still Remove; parts are deleted one after another |
+| Record page reads one record | =RecordGate=, =useRecord=, =GET /api/refdata/:kind/key/:key= | Exists for kinds with a one-field key |
+| Record page header | =RecordHeader= | Exists |
+| Paged list | =Pager= in =ui/Pager.tsx= | Exists: First, Previous, Next, Last, page size and Load all |
+| List screen | =RecordList=, =useListState= | Exists: server paging, search and order held in the address, column menu, keyboard opening, the states |
+| Server paging, search and order | =listRecordPage=, the model's =:searchable:= and =:sortable:= columns | Exists for currencies, desk groups and currency pairs |
+| Record pickers | =FieldInput= over =useRecords= | Partial: a picker reads its whole kind; a searchable picker replaces it |
+| Change reasons | =useReason=, =reasonsFor=, =ReasonFields= | Exists, filtered by whether a field changed |
+| Unsaved changes | =useCloseGuard=, =LeavingFooter= | Exists |
+| Delete | =RemoveRecordDialog= | Exists; parts are deleted one after another |
 | Revert | =RevertDialog= | Exists |
 | History | =HistoryPanel= | Exists |
 | Links | =LinkPanel= | Exists |
 | Parts | =PartsPanel= in =refdata/calendars.tsx= | Exists; to move beside =LinkPanel= |
 | Labels and fallback | =RowLabel=, =ClassifiedValue=, =ui/Label.tsx= | Exists |
-| Icons | the SVG set in =web/src/assets/icons= | Missing: no screen draws them yet; =arrow_clockwise= and =link_dismiss= to add |
-| Last-changed line | (none) | Missing |
+| Icons | =Icon= in =ui/Icon.tsx=, the =icon= of =Button= | Exists for the actions in the icon table |
+| Last-changed line | =LastChanged=, drawn by =RecordDetails= | Exists |
+| Timestamps | =RelativeTime= in =ui/Time.tsx= | Exists |
 | Recency | (none) | Missing; needs the change notification consumer |
 | Permissions | =useRecordPermissions= | Exists |
 
@@ -547,9 +549,7 @@ component carries it today.
 
 | Screen | Where it differs from this standard |
 |--------+-------------------------------------|
-| Currencies | Reads every row; links shown as panels on Details instead of tabs; Remove for Delete; no icons |
-| Desk groups | Reads every row; members on Details instead of a tab; Remove for Delete; no icons |
-| Currency pairs | Reads every row; calendars on Details instead of a tab; Remove for Delete; no icons |
+| Currencies, desk groups, currency pairs | Conform, except recency and the whole-kind pickers; a desk group reads its members from the whole junction, which has no read by group |
 | Holiday calendars | Reads every row; Remove for Delete; no icons |
 | Classifications | Reads every row of a list; a different list layout; no icons |
 | Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |

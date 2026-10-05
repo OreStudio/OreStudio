@@ -23,7 +23,20 @@ import { z } from 'zod';
 import {
     accountAccessSchema,
     accountSignInsSchema,
+    accountWriteViewSchema,
+    contactViewSchema,
+    contactWriteViewSchema,
+    imageUploadPolicyViewSchema,
+    imageUploadViewSchema,
+    type AccountContactInformation,
     type AccountSignIns,
+    type AccountWriteView,
+    type ClaimedContactWrite,
+    type ContactWrite,
+    type ContactWriteView,
+    type ImageUploadPolicy,
+    type ImageUploadView,
+    type ProfileWrite,
     permissionEntrySchema,
     roleSummarySchema,
     badgePresentationSchema,
@@ -252,6 +265,46 @@ export const api = {
                     reason.categoryCode === 'common' &&
                     (kind === 'amend' ? reason.appliesToAmend : reason.appliesToDelete),
             )
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(({ code, description, requiresCommentary }) => ({
+                code,
+                description,
+                requiresCommentary,
+            }));
+    },
+
+    /**
+     * The reasons a record may be amended for: the common category, in display
+     * order.
+     *
+     * A profile write changes a record rather than creating or deleting one,
+     * so the reasons offered are the ones the catalogue marks for amendments.
+     * The commentary flag travels too, because a reason that requires one
+     * makes the screen ask for it before the server would refuse.
+     */
+    async amendReasons(): Promise<
+        readonly {
+            readonly code: string;
+            readonly description: string;
+            readonly requiresCommentary: boolean;
+        }[]
+    > {
+        const answer = z
+            .object({
+                reasons: z.array(
+                    z.object({
+                        code: z.string(),
+                        description: z.string(),
+                        categoryCode: z.string(),
+                        appliesToAmend: z.boolean(),
+                        requiresCommentary: z.boolean(),
+                        displayOrder: z.number(),
+                    }),
+                ),
+            })
+            .parse(await request('/api/change-reasons', { method: 'GET' }));
+        return answer.reasons
+            .filter((reason) => reason.categoryCode === 'common' && reason.appliesToAmend)
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(({ code, description, requiresCommentary }) => ({
                 code,
@@ -874,6 +927,111 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify({ currentPassword, newPassword }),
         });
+    },
+
+    /**
+     * Writes the signed-in person's own name, job title and picture.
+     *
+     * The session names the account, so the body carries no account id. A
+     * refusal -- a field a member does not own -- is the answer's result and
+     * not a failed call, because the panel has to read its code.
+     */
+    async saveMyProfile(write: ProfileWrite): Promise<AccountWriteView> {
+        return accountWriteViewSchema.parse(
+            await request('/api/me/profile', {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(write),
+            }),
+        );
+    },
+
+    /** The signed-in person's own contact record, or nothing when none exists. */
+    async myContactInformation(): Promise<AccountContactInformation | null> {
+        const view = contactViewSchema.parse(
+            await request('/api/me/contact-information', { method: 'GET' }),
+        );
+        return view.contact;
+    },
+
+    /** Writes the signed-in person's own contact record, creating it on the first write. */
+    async saveMyContactInformation(write: ContactWrite): Promise<ContactWriteView> {
+        return contactWriteViewSchema.parse(
+            await request('/api/me/contact-information', {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(write),
+            }),
+        );
+    },
+
+    /**
+     * Writes one account's profile fields, as a tenant administrator.
+     *
+     * The route reads the account and sends the record whole, so the fields
+     * this screen does not set are kept. The server refuses a caller without
+     * =iam::accounts:update=.
+     */
+    async saveAccountProfile(username: string, write: ProfileWrite): Promise<void> {
+        await request(`/api/accounts/${encodeURIComponent(username)}/profile`, {
+            method: 'PUT',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(write),
+        });
+    },
+
+    /** One account's contact record, or nothing when none exists. */
+    async accountContactInformation(accountId: string): Promise<AccountContactInformation | null> {
+        const view = contactViewSchema.parse(
+            await request(
+                `/api/accounts/${encodeURIComponent(accountId)}/contact-information`,
+                { method: 'GET' },
+            ),
+        );
+        return view.contact;
+    },
+
+    /**
+     * Writes one account's contact record, as a tenant administrator.
+     *
+     * The version the panel read travels as the claim, so the store refuses a
+     * record that moved under the save rather than overwriting it.
+     */
+    async saveAccountContactInformation(
+        accountId: string,
+        write: ClaimedContactWrite,
+    ): Promise<ContactWriteView> {
+        return contactWriteViewSchema.parse(
+            await request(`/api/accounts/${encodeURIComponent(accountId)}/contact-information`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(write),
+            }),
+        );
+    },
+
+    /**
+     * Uploads one image and answers its identifier.
+     *
+     * The upload sets no photo: the identifier rides into the panel's own
+     * save. A refused image is the answer's result and not a failed call,
+     * because the picker branches on the server's code.
+     */
+    async uploadImage(mimeType: string, data: string): Promise<ImageUploadView> {
+        return imageUploadViewSchema.parse(
+            await request('/api/images', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ mimeType, data }),
+            }),
+        );
+    },
+
+    /** The rule an uploaded image must satisfy, read from the validator that enforces it. */
+    async imageUploadPolicy(): Promise<ImageUploadPolicy> {
+        return imageUploadPolicyViewSchema.parse(
+            await request('/api/image-upload-policy', { method: 'GET' }),
+        );
     },
 };
 

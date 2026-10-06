@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/run_grants/run_grant.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+run_grants list --limit 1

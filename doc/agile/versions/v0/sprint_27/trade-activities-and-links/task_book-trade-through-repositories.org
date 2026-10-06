@@ -197,7 +197,8 @@ when it did. sqlgen =0.8.0#2= carries it.
 
 Verified 2026-10-06 with sqlgen =0.8.0#2=: =ores.database.tests= passes, 138
 assertions across 39 cases, including "a read inside a unit of work does not
-commit it"; the three booking tests pass, 18 assertions. The memory
+commit it"; =ores.trading.core.tests= passes, 886 assertions across 127 cases,
+with the NATS server running. The memory
 [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] carries the rule.
 
 Raised upstream as munich-data-engineering/sqlgen#140. The port's =0.8.0= is

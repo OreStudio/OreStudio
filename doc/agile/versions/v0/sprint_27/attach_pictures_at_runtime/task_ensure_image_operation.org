@@ -8,7 +8,7 @@
 #+filetags: :attach_pictures_at_runtime:sprint_27:v0:
 #+owner: marco
 #+branch: feature/attach-pictures-at-runtime
-#+pr:
+#+pr: 2705
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2705][#2705]] | [sql,iam,assets] Attach pictures at runtime through one seam |
 
 * Review
 

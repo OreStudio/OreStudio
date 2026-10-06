@@ -152,5 +152,22 @@ BEGIN
         'gleif.lei_bic',
         'bic_reference'
     );
+
+    -- The service accounts' images ride assets.system_avatars, and the
+    -- provisioning attaches them by code. Every GLEIF dataset declares the
+    -- dependency, so publishing GLEIF data publishes the images first.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(
+        ores_utility_system_tenant_id_fn(), v.code, 'assets.system_avatars', 'visual_assets')
+    FROM (VALUES
+        ('gleif.lei_bic'),
+        ('gleif.lei_counterparties.large'),
+        ('gleif.lei_counterparties.small'),
+        ('gleif.lei_entities.large'),
+        ('gleif.lei_entities.small'),
+        ('gleif.lei_parties.large'),
+        ('gleif.lei_parties.small'),
+        ('gleif.lei_relationships.large'),
+        ('gleif.lei_relationships.small')
+    ) AS v(code);
 END $$;
 

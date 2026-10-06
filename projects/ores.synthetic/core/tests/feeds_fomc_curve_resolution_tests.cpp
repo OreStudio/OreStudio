@@ -22,6 +22,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/publish_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -31,7 +32,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.synthetic.core.tests");
 const std::string tags("[feeds][fomc]");
 
 /// A tenant of this test's own, with the base calendar data published to it.
@@ -47,27 +47,22 @@ struct fomc_tenant {
     fomc_tenant()
         : ctx(base.context()) {
         using ores::testing::test_database_manager;
-        auto lg(ores::logging::make_logger(test_suite));
         const auto code = test_database_manager::generate_test_tenant_code("synthetic.fomc");
         const auto tenant =
             test_database_manager::provision_test_tenant(ctx, code, "ores.synthetic FOMC curve");
 
+        // The build publishes nothing, so the test publishes the chain it
+        // needs. The coding schemes come first: the country publish resolves
+        // ISO_3166_1_ALPHA_2 against them.
+        REQUIRE(ores::testing::publish_dataset(
+            ctx, tenant, "iso.coding_schemes", "ores_dq_coding_schemes_publish_fn"));
         for (const auto& [dataset, entity] :
              {std::pair{"iso.countries", "countries"},
               std::pair{"refdata.calendar_types", "calendar_types"},
               std::pair{"refdata.calendars", "calendars"},
               std::pair{"refdata.tenor_schedules", "tenor_schedules"},
               std::pair{"refdata.calendar_events", "calendar_events"}}) {
-            ores::database::repository::execute_parameterized_string_query(
-                ctx,
-                std::string(
-                    "SELECT count(*)::text FROM ores_dq_datasets_tbl d, ores_refdata_publish_") +
-                    entity +
-                    "_from_dq_fn(d.id, $1::uuid) p WHERE d.code = $2"
-                    " AND d.valid_to = ores_utility_infinity_timestamp_fn()",
-                {tenant, dataset},
-                lg,
-                std::string("Publishing ") + dataset);
+            REQUIRE(ores::testing::publish_refdata_dataset(ctx, tenant, dataset, entity));
         }
         ctx = ores::database::service::tenant_context::with_tenant(base.context(), tenant);
     }

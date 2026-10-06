@@ -192,10 +192,11 @@ opens, and each write states a claim that reads nothing: =any= for the two
 current-state tables, =must_not_exist= for the two versioned ones. All three
 booking tests pass.
 
-=vcpkg-overlays/sqlgen= holds an overlay port that patches the iterator to
-leave an enclosing transaction alone, with the defect and the enable step
-written in =vcpkg-overlays/README.org=. The overlay is inert until
-=vcpkg-configuration.json= names it. The memory
+The tracked overlay at =build/cmake/overlays/common/sqlgen= carries a staged
+=fix-iterator-transaction.patch= that stops the iterator running =BEGIN= and
+=END= around a transaction it joined. It is prepared and not applied: list it
+in the portfile's =PATCHES= to enable it, then remove the read-free claims and
+invert the unit-of-work case that records the defect. The memory
 [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] carries the rule.
 
 Raised upstream as https://github.com/munich-data-engineering/sqlgen/issues/140.

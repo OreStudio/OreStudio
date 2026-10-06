@@ -8,6 +8,12 @@ vcpkg_from_github(
         # Upstream Parser_default::write formats floats with std::to_string,
         # which keeps six decimal places. Unfixed upstream as of 816ca6adec.
         fix-floating-point-precision.patch
+        # fix-iterator-transaction.patch is staged in this directory and not
+        # applied. It stops the postgres iterator running BEGIN/END, and so
+        # committing, a transaction it merely joined. List it here once the
+        # read-free claims in trade_operations_service.cpp go and the case
+        # named "a read inside a unit of work commits the transaction" is
+        # inverted. Raised upstream as munich-data-engineering/sqlgen#140.
 )
 
 if(VCPKG_TARGET_IS_WINDOWS)

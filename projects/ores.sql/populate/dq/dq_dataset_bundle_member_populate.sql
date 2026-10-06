@@ -28,6 +28,29 @@
 DO $$
 BEGIN
     -- =============================================================================
+    -- System Core Bundle Members
+    -- =============================================================================
+
+    -- --- System Core Bundle Members ---
+
+    -- The datasets the installation itself is read from, published into the
+    -- system tenant before any tenant is provisioned. A coding-scheme
+    -- validator resolves its scheme against the system tenant, a template
+    -- image is read from it across the tenant-isolation policy, and several
+    -- reference reads treat its rows as a shared overlay on the tenant's own
+    -- ("tenant_id in (p_tenant_id, system)"). None of these rides a profile,
+    -- because a profile describes one tenant and these rows never belong to
+    -- one.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.coding_schemes', 1);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.coding_schemes', 2);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'assets.country_flags', 3);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'assets.system_avatars', 4);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.countries', 5);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.currencies', 6);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.asset_class', 7);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 8);
+
+    -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================
 
@@ -56,12 +79,11 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendar_events', 20);
 
     -- FpML Standards
-    -- NOTE: iso.coding_schemes/fpml.coding_schemes are deliberately NOT bundle
-    -- members here. They are published once, unconditionally, to the system
-    -- tenant at DB build time (see iso_populate.sql/fpml_populate.sql) and
-    -- every coding-scheme validator (business_centre, party_id_scheme, ...)
-    -- checks only the system tenant's rows. Publishing them again per-tenant
-    -- via this bundle produced dead, RLS-visible duplicate rows (every code
+    -- NOTE: iso.coding_schemes/fpml.coding_schemes are deliberately NOT members
+    -- of this bundle. They are the system tenant's, published by the
+    -- system_core bundle before any tenant is provisioned, and every
+    -- coding-scheme validator checks the system tenant's rows. Publishing them
+    -- here as well produced dead, RLS-visible duplicate rows (every code
     -- appearing twice in tenant-scoped combos) with no validator ever
     -- consulting the tenant-owned copy.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.account_type', 101);

@@ -788,6 +788,9 @@ private:
             case provision_step_action::complete_provisioning:
                 complete_provisioning_step(wf, command);
                 return;
+            case provision_step_action::system_provision:
+                system_provision_step(wf, command);
+                return;
             case provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
@@ -841,6 +844,44 @@ private:
             throw std::runtime_error(
                 failure.empty() ? "The bundle '" + bundle_code + "' did not publish." : failure);
         }
+    }
+
+    /// Publishes the system's own datasets into the system tenant, which is
+    /// where the installation is read from: a coding-scheme validator resolves
+    /// its scheme there, a template image is read from there across the
+    /// tenant-isolation policy, and several reference reads treat its rows as a
+    /// shared overlay on the tenant's own.
+    ///
+    /// The step runs before the tenant's own steps, so the tenant is built on a
+    /// system that already makes sense. It acts as a system administrator rather
+    /// than as the run's actor, because the rows belong to the system tenant and
+    /// the account that writes them must be one of its own.
+    void system_provision_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command) {
+        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        boost::uuids::string_generator parse;
+
+        dq::messaging::publish_bundle_params params;
+        const auto params_json = dq::messaging::build_params_json(params);
+        const auto bundle_code = std::string(ores::iam::workflow::system_core_bundle_code);
+
+        for (const auto& id : super_admin_account_ids(sys_ctx)) {
+            const auto account = system_accounts.get_account(parse(id));
+            if (!account)
+                continue;
+            const auto super_actor = actor_of(sys_ctx, *account);
+            auto admin_client = make_step_client(tenant_context::system_tenant_id,
+                                                 super_actor.account_id,
+                                                 super_actor.party_id,
+                                                 super_actor.username);
+            publish_bundle_or_throw(
+                admin_client, bundle_code, super_actor.username, params_json, command.kind);
+            wf.complete(rfl::json::write(
+                provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
+            return;
+        }
+        wf.fail("The system tenant holds no administrator to publish '" + bundle_code + "' as.");
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

@@ -8,10 +8,10 @@ repository. The fill is the upstream #212121, so every picture is a single
 dark shape on a clear background.
 
 The file name without its extension is the image code. The provisioning
-handler attaches the two administrator pictures by their codes, and
-iam_service_account_pictures_populate.sql attaches each service account's
-picture by the code derived from its service registry name, the dots
-replaced by underscores.
+handler attaches the two administrator pictures by their codes, and the
+accounts-populate script names each service account's picture: a registry
+service by its registry name with the dots replaced by underscores, and an
+infrastructure account by the code stated beside it.
 
 Code                      Icon
 ------------------------  ----------------
@@ -38,6 +38,10 @@ ores_web_service          Window
 ores_storage_service      Storage
 ores_inbox_service        Mail Inbox
 ores_compute_wrapper      Developer Board
+ores_ddl                  Database Arrow Right
+ores_shell                Code
+ores_test_ddl             Database Checkmark
+ores_test_dml             Table
 
 To regenerate the SQL after a change here:
 

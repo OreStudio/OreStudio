@@ -122,12 +122,15 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
        'Initial population of seed profile steps'
 from ores_iam_seed_profiles_tbl p
 cross join (values
+    ('empty_operational', 'system_provision', 5, '{}'::jsonb),
     ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('gleif_entity', 'system_provision', 5, '{}'::jsonb),
     ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('acme_demo', 'system_provision', 5, '{}'::jsonb),
     ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"], "opted_in_datasets": ["gleif.lei_counterparties.small", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),

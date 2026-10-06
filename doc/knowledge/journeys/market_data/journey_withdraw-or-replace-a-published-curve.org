@@ -1,0 +1,219 @@
+:PROPERTIES:
+:ID: B05A31CC-FA22-4534-848E-601A30822992
+:END:
+#+title: User Journey: Withdraw or replace a published curve
+#+description: A trader undoes or supersedes a published curve after an error, with the reason kept and the approver's decision where the kind asks for one.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader undoes or supersedes a published curve after an error, with the reason kept and the approver's decision where the kind asks for one.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"That curve is published and wrong. I want it taken back, or a corrected one in
+its place, and I want the record to say why." The journey is done when the
+published curve is withdrawn or superseded, the reason is kept against the act,
+and the consumers that read it have been told.
+
+* Actor and trigger
+
+The actor is the trader who owns the published curve. Where the kind's
+=approvals_required= is one or more, an approver holding the kind's
+=decide_permission_code= is a second actor on the same act, exactly as in
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]. The trigger is
+an error found after publication: a stale pillar, a wrong quote, a recipe
+changed after the fact. The journey starts at the published curve and ends when
+the withdrawal or the replacement is live. It undoes what
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] did.
+
+Withdrawal and replacement are two answers to one problem. Withdrawal takes the
+curve out of use; replacement puts a corrected version in its place. The
+approval count for a withdrawal is configurable like a publish's: the kind
+carries =approvals_required=, so a tenant may let a trader withdraw alone
+(count zero) or require one or more approvals. A refusal is final and an
+approval is reversed rather than edited, as for every kind.
+
+* Steps
+
+1. *Find the published curve.* The trader opens the curve by its =oresmd_uri= or
+   finds it in the curve list. The system shows the series and its latest
+   points. Nothing marks which version is published, so there is no "published"
+   filter to find it by; see /What is missing/.
+2. *Read what is published.* The trader reads the points the system is using.
+   The snapshot read returns the latest observations; it does not say whether
+   they are published, and nothing shows the act or the person that published
+   them.
+3. *Read the trail.* The trader opens the curve's history and reads every
+   version with the field-level difference from the one before, so the error
+   and the version that introduced it are both visible.
+4. *State the reason and choose.* The trader writes why the curve must be
+   undone and chooses *Withdraw* or *Replace*. For a replacement the trader
+   names the corrected set or its as-of.
+5. *Raise the request.* The trader chooses *Raise withdrawal request* or
+   *Raise replacement request*. The system raises an approval request for the
+   signed-in trader, waiting, under the withdrawal kind. No market-data
+   withdrawal kind is seeded; see /What is missing/.
+6. *Watch for the decision, or publish at once.* Where the kind's
+   =approvals_required= is zero the withdrawal is immediate; where it is one or
+   more, an approver decides in the queue. An approver who is also the asker is
+   refused.
+7. *Apply the withdrawal or the replacement.* Once approved, the system makes
+   the withdrawal or the replacement live: the withdrawn curve stops being the
+   one pricing and reporting use, or the replacement becomes it. No such
+   operation exists; see /What is missing/.
+8. *See the consumers change.* The consumers that read the curve pick up the
+   change at their next read. The system tells them a published curve changed.
+   No notification kind exists for this; see /What is missing/.
+9. *Confirm the audit.* The trader re-reads the history and sees the withdrawal
+   or the replacement as a new version, with the reason and the decision
+   attached. A withdrawal is not a deletion: the published version stays in the
+   history.
+10. *Leave.* The trader goes back to the curve list.
+
+Steps 5 to 7 are the ones that carry state: the request waits on a person
+between the ask and the act, and the act is applied by the component that owns
+the kind. Nothing here overwrites history; the withdrawal is a new version.
+
+* Screens and wireframes
+
+One screen. The published curve sits at the top, its published versions and the
+proposed change sit in the middle, and the reason, the action and the effect on
+consumers sit at the bottom, so the trader reads what is live and what would
+replace it before the act.
+
+#+caption: Withdraw or replace: the published curve, its versions, the reason and the choice, the approvals, and the consumers affected.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_withdraw-or-replace-a-published-curve.png]]
+
+The action controls are disabled while no withdrawal or replacement operation
+exists, and the panel says so, so the screen does not pretend the act succeeded.
+
+* Prototype
+
+A static page at =doc/prototypes/withdraw-or-replace-a-published-curve/index.html=: mock data only, no backend,
+no build step and no session. It argues that a wrong publish is undone as an act with a reason, and the withdrawal can need its own approval.
+
+- Variants :: a the withdraw form, b the replace form, c the retired version against its replacement
+- States :: no-approval, approval, withdrawn
+- Source :: =doc/prototypes/withdraw-or-replace-a-published-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/withdraw-or-replace-a-published-curve/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The published curve's identity and how it was derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The published points, and the replacement points that would supersede them | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The recipe and source as-of behind the version being withdrawn, and behind its replacement | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =approval_request= | The withdrawal or replacement ask: who, which kind, why, and its state | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | How many approvals the withdrawal needs, and who may decide it | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | Who approved or refused the withdrawal, when, and why | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =notification_kind= | What kind of notice a withdrawal sends to consumers | [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] |
+| =notification= | The notice itself: who it is for and where it points | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
+
+No entity holds the published state a withdrawal would change. There is no
+=published_at=, no =published_by= and no superseded link; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the published curve | List and read the series | =marketdata.v1.market_series.list=, =.get= | exists |
+| Read what is published | Read the latest snapshot of the curve | =marketdata.v1.curve-snapshot.get= | partial |
+| Read the trail | Read every version with its diff | =marketdata.v1.history.get= | exists |
+| Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
+| Raise the request | Raise the withdrawal or replacement request | =inbox.v1.approval-requests.raise= | exists |
+| Watch for the decision | Read the queue and decide | =inbox.v1.approval-requests.queue=, =inbox.v1.approval-requests.decide= | exists |
+| Apply the withdrawal | Take the published curve out of use | =marketdata.v1.curve_bootstrap.withdraw= | missing |
+| Apply the replacement | Publish a corrected version in its place, linked to the one it supersedes | =marketdata.v1.curve_bootstrap.replace= | missing |
+| See the consumers change | Announce the change on the series' own event | =marketdata.v1.market_series_events.updated=, =marketdata.v1.market_observations_events.updated= | partial |
+| See the consumers change | Raise a notice to the consumers | =inbox.v1.notifications.raise= | partial |
+
+The history read is the generic one,
+=marketdata.v1.history.get=, with =entity_type=
+=ores.marketdata.market_series= or =ores.marketdata.observation_lineage=;
+both register a history provider. The change events exist and fire on a write,
+but they carry an entity change and not the meaning "the published curve
+changed".
+
+* What is missing
+
+1. *There is no withdrawal or replacement operation.* A published curve cannot
+   be taken out of use or superseded by a corrected one. The candidates are
+   =marketdata.v1.curve_bootstrap.withdraw= and
+   =marketdata.v1.curve_bootstrap.replace=. Until they exist the action
+   controls are disabled, and the only write,
+   =marketdata.v1.curve_bootstrap.republish=, would silently write a new set
+   with nothing withdrawn and nothing linked.
+2. *There is no published state to withdraw.* Nothing marks a version
+   published, so there is nothing to change on withdrawal and nothing to find
+   the published curve by. The candidate is a published state — =published_at=,
+   =published_by= and the as-of — or a publish record, on the series or the
+   build. Until then the screen shows the latest observations and states that
+   it cannot say which version is live.
+3. *There is no market-data withdrawal kind.* One kind is seeded,
+   =iam.role_grant=, and it does not withdraw a curve. The candidate is a kind,
+   =marketdata.curve_withdrawal=, with =decide_permission_code=,
+   =comment_on_approve= and a configurable =approvals_required=, so a tenant
+   may allow a trader to withdraw alone or require approvals. Until then the
+   raise cannot be given a kind and the controls are disabled.
+4. *Nothing links a replacement to the version it supersedes.* A corrected
+   curve written under the same =oresmd_uri= would be a new set of observations
+   with no pointer from the old version to the new. The candidate is a
+   =superseded_by= link or a =valid_to= on the published record. Until then the
+   history shows two versions in time order and cannot say which one replaced
+   the other.
+5. *No notification kind tells consumers a curve changed.* The consumers of a
+   published curve are not told it was withdrawn or replaced. The candidate is
+   an =ores.inbox.notification_kind= such as =marketdata.curve_withdrawn=,
+   seeded beside the kind. Until then the consumers panel states that nobody is
+   told, and the change is found only at the next read.
+6. *No read maps a published curve to its consumers.* Nothing returns which
+   people or services read a given published curve, so the screen cannot list
+   who is affected. The candidate is a read over the feed bindings or a
+   subscription record. Until then the consumers panel names the roles that
+   read curves in general, not the ones bound to this curve.
+7. *There is no delta against the last published.* A replacement is a change,
+   and there is no baseline to show what it changes. The candidate is the delta
+   read of the first journey. Until then the change panel is shown empty and
+   the trader describes the change in the reason.
+
+* Related journeys
+
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the publish this journey undoes or supersedes.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the raise this journey reuses, with a withdrawal kind instead of a publish kind.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the approver's screen, which decides a withdrawal the same way.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — where a consumer sees the curve stop or change.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the trail that keeps the withdrawal and its reason.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — the corrected points a replacement is often built from.
+
+* Related knowledge
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the lifecycle, and why an approval is reversed and never edited
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] — the published curve being withdrawn
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] — the points withdrawn or replaced
+- [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] — the provenance of the version and its replacement
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the withdrawal raised against the curve

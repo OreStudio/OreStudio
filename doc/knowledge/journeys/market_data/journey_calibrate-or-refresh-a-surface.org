@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 89537A61-5C48-4A8D-AE3A-8DD4069433DF
+:END:
+#+title: User Journey: Calibrate or refresh a surface
+#+description: A trader builds or refreshes a candidate volatility surface from the day's market, reads its calibration error and its slices, and leaves it unpublished.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader builds or refreshes a candidate volatility surface from the day's market, reads its calibration error and its slices, and leaves it unpublished.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want today's quotes turned into a candidate surface I can price from, and I
+want to see how well that surface fits before anyone signs it off." The journey
+is done when a candidate surface exists for the chosen as-of, the person has
+read its calibration error and its slices, and the surface is still a
+candidate: nothing has been published, so pricing still reads the surface it
+read before.
+
+* Actor and trigger
+
+The actor is the trader, acting as maker: the person who holds the market-data
+management role for this party. The trader owns the surface and is the only
+person who builds or refreshes it; an approver owns the decision to publish,
+in a different journey. The trigger is the start of a trading day, a market
+move, a fresh quote set, or a request from pricing. The journey starts at the
+list of curves and surfaces and ends when the trader leaves the surface
+unpublished.
+
+A surface is a *derived* object. It is a candidate until it is approved and
+published, and only the published object is visible to pricing and reporting;
+see /What is missing/ for the model and the engine that do not exist yet.
+
+* Steps
+
+1. *Find the surface.* The person opens *Curves and surfaces* and filters to
+   surfaces. The system lists the market series whose =series_subclass= is
+   volatility, one row per =oresmd_uri=, with its asset class and its
+   =derivation_kind=. There is no surface table to list, so the catalogue row
+   is the only row the screen can show.
+2. *Choose the surface and an as-of.* The person selects a series and an as-of
+   timestamp. The system reads the =market_series= row and the observations
+   at or before that instant. The chosen as-of is the snapshot the calibration
+   would read; the point-in-time read is a repository method
+   (=read_as_of=), not an operation on the wire.
+3. *Read the market it is built from.* The system lists the quotes the surface
+   is built from, one row per =oresmd_uri=: the value, the =source= tag that
+   published it, and its =observation_datetime=. An observation is evidence the
+   market sent; nobody signs it off.
+4. *Confirm the parameterisation.* The person checks the surface's axes, its
+   strike or moneyness convention, and the model the fit would use. The system
+   carries none of these: it shows the series' =derivation_kind= and its
+   =derivation_config_id=/=derivation_config_version=, and it marks the fields
+   the model does not hold as absent rather than showing them empty. See
+   /What is missing/.
+5. *Fit the quotes to the parameterisation.* The person chooses *Calibrate
+   candidate*. The system has no calibration engine and no operation to call,
+   so the step names the subject it needs and changes nothing. See /What is
+   missing/.
+6. *Read the calibration error.* The person reads the fit error for the
+   candidate, by slice and overall. Nothing serves it: the only curve compute
+   the server offers returns bootstrapped discount points, not a surface fit
+   error.
+7. *Read the slices.* The person inspects the smiles across tenors and the
+   surface mesh. The snapshot read is keyed by an =oresmd_uri= and reconstructs
+   curve or grid points; it has no surface or slice shape, so the screen shows
+   the quotes alone.
+8. *Refresh or leave.* The person either excludes a quote, changes the as-of
+   and refits, or accepts the candidate. Refitting repeats step 5.
+9. *Leave unpublished.* The person chooses *Leave unpublished* and returns to
+   the list. The system records no publication: the surface stays a candidate,
+   and the published object pricing reads is unchanged.
+
+Calibration, if it existed, would be a server-side computation that writes a
+derived series, so the journey would not carry state between steps: the reply
+would carry the candidate. Nothing in this journey publishes.
+
+* Screens and wireframes
+
+One screen. The surface row and its as-of sit at the top, the quotes and the
+parameterisation sit in the middle, and the calibration error and the slices
+they produce sit at the bottom, so the person reads cause above effect. The
+state line at the foot says the surface is a candidate only.
+
+#+caption: Surface calibration: the surface and as-of, the quotes it reads, the parameterisation, and the calibration error and slices.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_calibrate-or-refresh-a-surface.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/calibrate-or-refresh-a-surface/index.html=: mock data only, no backend,
+no build step and no session. It argues that a surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions.
+
+- Variants :: a the slice table, b the 2-D smile, c the fit-error summary
+- States :: converged, failed (no convergence, the last iterate shown as such)
+- Source :: =doc/prototypes/calibrate-or-refresh-a-surface/index.html=
+- Open :: =/OreStudio/doc/prototypes/calibrate-or-refresh-a-surface/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The surface identity: the =oresmd_uri=, its asset class, and its =derivation_kind=/config/version marking it derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The market quotes the surface is calibrated from, one point per =oresmd_uri= and =observation_datetime= | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The provenance of each derived surface point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =market_series_asset_class= | The asset class the surface list filters on | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
+| =tenor= | The tenor axis labels the quotes and smiles are named by | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =ir_curve_bootstrap_config= | The nearest existing derivation recipe: the config whose id/version the series carries | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =currency= | The currency the surface is quoted in | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+
+The models above are what the screen can read today. There is no surface
+model, so the parameterisation, the strike labels and the calibration-error
+rows have no entity to compose; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the surface | List the series that may be a surface | =marketdata.v1.market_series.list= | exists |
+| Choose the surface | Read one series | =marketdata.v1.market_series.get= | exists |
+| Read the market | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the slices | Read the curve/grid snapshot for an =oresmd_uri= | =marketdata.v1.curve-snapshot.get= | partial |
+| Confirm the parameterisation | Read the derivation config | =refdata.v1.ir_curve_bootstrap_configs.get= | partial |
+| Fit the quotes | Calibrate the surface | =marketdata.v1.surface.calibrate= | missing |
+| Read the calibration error | Read the fit error | =marketdata.v1.surface.calibration.get= | missing |
+| Read the slices | Read one smile | =marketdata.v1.surface-slice.get= | missing |
+| Refresh the surface | Re-read the observations over a range | =marketdata.v1.curve-snapshot.buckets= | partial |
+| Leave unpublished | Arrange the approval later | =inbox.v1.approval-requests.raise= | exists |
+| Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
+
+The generic history read is the one with =entity_type=
+=ores.marketdata.market_series=; =market_series= registers a history provider.
+The snapshot and buckets reads are keyed by the =oresmd_uri=, not by a typed
+surface identity, and both read now: =.get= has no as-of parameter and
+=.buckets= serves five half-hour buckets ending now. The approval subject is
+the generic one; the approval kind that would carry how many approvals a
+surface publish needs and which group decides it does not exist yet.
+
+* What is missing
+
+1. *There is no surface model.* No table carries a surface's axes, its
+   quoting convention or its parameterisation, so the screen cannot show what
+   the surface is. The candidate is a surface entity, and its axe and
+   parameter entities, in =ores.marketdata= or =ores.refdata=. Until then the
+   screen lists =market_series= rows whose =series_subclass= is volatility and
+   marks the missing fields as absent.
+2. *There is no calibration engine and no operation to call it.* The subject
+   =marketdata.v1.surface.calibrate= would have to be added, with a request
+   that names the surface and the as-of and a response that carries the
+   fitted points and the fit error. Until then the *Calibrate candidate*
+   button names the step and stays inert.
+3. *There is no quoting convention and no strike-label vocabulary.* Nothing
+   says whether a strike is an absolute level, a delta, or a moneyness, so a
+   strike axis cannot be labelled and the quotes cannot be mapped to the
+   surface's parameterisation. The candidate is a vol quoting convention in
+   =ores.refdata=. Until then the screen shows the raw =oresmd_uri=
+   coordinates and no axis labels.
+4. *There is no calibration-error read.* The subject
+   =marketdata.v1.surface.calibration.get= would have to be added to return
+   the residual per quote and the error per slice. Until then the calibration
+   error panel is empty and labelled.
+5. *There is no surface or slice read.* =marketdata.v1.curve-snapshot.get=
+   reconstructs curve or grid points at one instant and has no surface shape,
+   and there is no slice subject. The candidate is a surface read, with a
+   slice subject such as =marketdata.v1.surface-slice.get=, on top of the
+   modelled surface. Until then the screen shows the quotes alone; the
+   concurrent slices journey
+   [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]]
+   records the same gap from the reading side.
+6. *A read cannot be taken as of a time in the past.* Both snapshot reads
+   always read now, so the as-of the person chooses cannot be served over the
+   wire; the point-in-time read exists only as the repository method
+   =read_as_of=. The candidate is an =as_of= parameter on the snapshot
+   request. Until then the screen offers the current snapshot and cannot
+   reproduce yesterday's calibration.
+7. *The surface has no typed identity at the wire.* Every read is keyed by
+   the =oresmd_uri= string, so a caller cannot ask for "the USD swaption
+   surface" without knowing the URI spelling. The candidate is a typed
+   surface read, =marketdata.v1.surfaces.*=. Until then the screen shows the
+   URI as the identity.
+
+* Related journeys
+
+- [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] — set the axes, the quoting convention and the model this calibration reads.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a candidate where the market is thin or wrong.
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — read the smiles and the mesh the calibration produced.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — put the candidate surface to a second pair of eyes.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — see how the published surface moved over the day.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — the curve-shaped sibling this journey mirrors.
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

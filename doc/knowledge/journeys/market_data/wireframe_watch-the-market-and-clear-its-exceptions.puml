@@ -1,0 +1,51 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>MARKET WATCH: source ^synthetic.v1.ir_curve^, as of 2026-10-06 11:30</b> | [ Refresh ]
+  --
+  {
+    Scope | ^feed binding: synthetic.v1.ir_curve^ | [ Change scope ]
+    Rows | 84 points, 5 exceptions
+  }
+  --
+  {#
+    Raw points | Observation time | oresmd URI | Value | Source | Age
+    . | 11:30:00 | ...?type=quote&tenor=3M&term=5Y | 4.312 | synthetic.v1.ir_curve | 0s
+    . | 11:30:00 | ...?type=quote&tenor=6M&term=5Y | 4.355 | synthetic.v1.ir_curve | 0s
+    . | 10:30:00 | ...?type=quote&tenor=1Y&term=5Y | 4.401 | synthetic.v1.ir_curve | 1h
+  }
+  --
+  {#
+    Exceptions | Kind | oresmd URI | Detail | Fallback
+    . | missing | ...?tenor=2Y&term=5Y | no point at this as-of | [ Carry forward ] [ Proxy ] [ Escalate ]
+    . | stale | ...?tenor=1Y&term=5Y | last point 1h old | [ Carry forward ] [ Proxy ] [ Escalate ]
+    . | crossed | ...?tenor=10Y&term=5Y | above the 20Y point | [ Carry forward ] [ Proxy ] [ Escalate ]
+  }
+  --
+  {#
+    Resolutions this session | Exception | Choice | By | Reason
+    . | stale 1Y | carry forward | A. Trader | illiquid
+  }
+  --
+  Nothing is stored: no quality field, no exception record, no resolution record.
+}
+
+@enduml

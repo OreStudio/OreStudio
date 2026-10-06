@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 6ACE3F41-4ECD-4AE8-AC96-F557845193E0
+:END:
+#+title: User Journey: Watch the market and clear its exceptions
+#+description: A trader watches the raw market observations arriving for a scope and clears the points that fail: missing, stale or crossed, with a recorded fallback.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader watches the raw market observations arriving for a scope and clears the points that fail: missing, stale or crossed, with a recorded fallback.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see what the market is sending and clear anything that is wrong
+before a curve is built from it." The journey is done when every point in the
+scope is either clean or carries a resolution the person chose: carried
+forward, proxied, or escalated.
+
+* Actor and trigger
+
+The actor is a trader who holds the market-data management role, with
+operations alongside them for the feeds. The trader watches and decides; both
+run the same screen. The trigger is the start of a trading day, a feed gap, a
+stale-data alarm, or the minutes before a curve is bootstrapped. The journey
+starts at one watch screen and ends when the person leaves it.
+
+The watch and the clearing are one screen. Watching alone is not the goal: the
+person watches in order to clear, so a separate list and a separate decision
+form would split one act across two pages.
+
+An observation is evidence, not a signed object. Nobody approves it. This
+journey clears it: it decides which observations the build may read. Because
+the resolution is not stored today, the journey carries no server state; see
+/What is missing/.
+
+* Steps
+
+1. *Choose a scope.* The person opens *Market data*, then *Market watch*, and
+   chooses a scope: a producer source, named by a =feed_binding=, or one series.
+   The system shows the raw observations of that scope, newest first, with the
+   observation time, the oresmd URI, the value, the source and the age. The
+   scope is not typed: the person picks a source from the bindings list or a
+   series from the series list.
+2. *Read the raw points.* The person reads the values, the source channel and
+   the age of each point. The system marks a point fresh, or over the age
+   threshold the screen itself holds. No quality is stored, so the screen marks
+   what it can compute.
+3. *Find the exceptions.* The system groups the points that fail, three
+   kinds at once: *missing*, a point the blueprint's pillars name at this as-of
+   with no observation; *stale*, an age past the threshold; and *crossed*, a
+   value that inverts the points around it. The screen computes all three from
+   the points and pillars it read. None of the three is computed or stored by
+   the server.
+4. *Decide each exception.* For each one the person chooses a fallback: *carry
+   forward* the last good value, *proxy* it from a named other series, or
+   *escalate* it to a person. No operation carries the choice; it lives on the
+   page.
+5. *Record the resolution.* The screen shows each resolution with the person,
+   the time and a reason. If the person carries a value forward, the screen can
+   write that one value through the generated observation =put=. That write
+   carries no actor, no reason and no link to the exception, so it is
+   indistinguishable from a market point; the resolution itself is not
+   recorded.
+6. *Check what the market already holds.* The person opens one point's history,
+   or a derived point's lineage, to see its versions and which config produced
+   it. Neither read names a person, because the observation has no audit
+   columns.
+7. *Leave.* The person goes back to the scope. Nothing cleared is stored, so
+   the next reader sees the same exceptions.
+
+* Screens and wireframes
+
+One screen. The scope sits at the top, the raw points sit in the middle, and
+the exceptions and their resolutions sit at the bottom, so watching and
+clearing read as one act.
+
+#+caption: Market watch: the scope, the raw observations with their source and age, the exceptions, and the fallbacks the person chooses.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_watch-the-market-and-clear-its-exceptions.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/watch-the-market-and-clear-its-exceptions/index.html=: mock data only, no backend,
+no build step and no session. It argues that the market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen.
+
+- Variants :: a exceptions beside the quotes, b below them, c queue-first
+- States :: clean, crossed, stale
+- Source :: =doc/prototypes/watch-the-market-and-clear-its-exceptions/index.html=
+- Open :: =/OreStudio/doc/prototypes/watch-the-market-and-clear-its-exceptions/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_observation= | The raw points: time, oresmd URI, value, source and party; the only identity is the URI | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =feed_binding= | The source scope: which producer channel the party consumes | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
+| =market_series= | What each point belongs to, and whether the series is observed or derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_fixing= | The fixings a scope watches alongside the quotes | [[id:C3D4E5F6-A7B8-9012-C3D4-E5F6A7B89012][ores.marketdata.market_fixing]] |
+| =observation_lineage= | The provenance of a derived point, which the person reads when a value looks wrong | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =ir_curve_bootstrap_pillar= | The points a blueprint expects, which the screen compares against what arrived | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+
+The observations are append-only and carry no audit columns; the readings that
+say who cleared what do not exist yet.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose a scope | List the producer sources | =marketdata.v1.feed_bindings.list= | exists |
+| Choose a scope | List the series | =marketdata.v1.market_series.list= | exists |
+| Read the raw points | List one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the raw points | List observations with an as-of | =marketdata.v1.market_observations.list= | exists |
+| Read the raw points | List the fixings | =marketdata.v1.market_fixings.list= | exists |
+| Read the raw points | Read each point's lineage | =marketdata.v1.observation_lineages.get= | exists |
+| Find the exceptions | Compare against the expected points | =refdata.v1.ir_curve_bootstrap_pillars.list= | partial |
+| Find the exceptions | Check the feed vintage | =marketdata.v1.market_feed_configs.vintage_validity= | partial |
+| Find the exceptions | Read the exceptions of a scope | none | missing |
+| Decide each exception | Read the exception rules and thresholds | none | missing |
+| Record the resolution | Write the resolution | none | missing |
+| Record the resolution | Write a carried-forward value | =marketdata.v1.market_observations.put= | partial |
+| Escalate | Raise an approval request | =inbox.v1.approval-requests.raise= | partial |
+| Check what the market holds | Read every version with its diff | =marketdata.v1.history.get= | exists |
+
+The history request is the generic one, with =entity_type=
+=ores.marketdata.market_observation= or
+=ores.marketdata.observation_lineage=; both register a history provider. The
+vintage check covers only the =fx_spot= generation configs, so the screen cannot
+ask it about every feed.
+
+* What is missing
+
+1. *An observation has no quality and no rejection.* The columns are id,
+   party_id, series_id, observation_datetime, oresmd_uri, value and source.
+   There is no status, quality flag, rejection reason or rejection author. The
+   candidate is a quality value and a rejection record, or a companion
+   exception row. Until then the screen marks points from the values and the
+   ages it computes itself, and nothing is stored.
+2. *There is no exception.* No subject raises, lists or resolves an exception,
+   and no entity holds one. The candidate is an exception entity with its
+   scope, its kind, its state and its resolution, and the subjects to list and
+   resolve it. Until then the screen computes the three kinds in the page and
+   shows them read-only.
+3. *The scope is not typed.* A scope is a series UUID or a source string.
+   Nothing names "the USD rates quotes", "the funding curve's inputs" or "this
+   feed's points" as a scope the server resolves. The candidate is a typed
+   scope, or a filter over asset class, currency, instrument and curve family.
+   Until then the person picks a series from the series list or a source from
+   the bindings list.
+4. *A resolution is not recorded.* A fallback choice has no subject and no
+   fields. A carried-forward value can be written, but the write carries no
+   actor, no reason and no link to the exception it answers, so the record of
+   who cleared what and why does not exist. The candidate is a resolution
+   operation that names the exception, the choice, the person and the reason.
+   Until then the screen shows the choice for the session only.
+5. *The thresholds and the rules are not stored.* Nothing holds the age at
+   which a point is stale, or what counts as crossed for a given series. The
+   candidate is an exception policy, per series or per blueprint. Until then
+   the screen holds one threshold for every scope.
+6. *The source tag is free text.* =market_observation.source= is a text tag,
+   and the feed binding joins to it by string match. The candidate is a typed
+   producer reference. Until then the screen joins the tag to the binding's
+   =source_name= and shows an unmatched tag as unknown.
+7. *No screen exists.* No web page, HTTP route or shell verb reaches any curve
+   or watch operation. The candidate is a page and a route. Until then the
+   journey runs only from the shell.
+
+* Related journeys
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build the candidate from the market this screen cleared.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — read a candidate against the quotes it came from, including the ones cleared here.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a built curve by hand when a market point cannot be recovered.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the audit trail this journey cannot yet write.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

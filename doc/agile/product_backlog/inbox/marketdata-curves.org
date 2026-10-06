@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :v0:marketdata:curves:product_backlog:inbox:
 #+created: 2026-09-27
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ stored as a series.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | BACKLOG (paused)                     |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not started. Scoped by a read-only investigation on 2026-09-27, recorded below. |
-| Waiting on    | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. That story replaces the datum identity this one builds on, so this one starts when it closes. |
-| Next          | A deeper analysis: decide whether a curve becomes an entity of its own or stays a derived series with an explicit shape. |
-| Last touched  | 2026-09-27                               |
+| Now           | The journey documents and their prototypes are written; the curve work itself is paused on purpose. |
+| Waiting on    | The synthetic data generation story (Sprint 27, =synthetic-data-against-market-data=, PR #2703) — a curve cannot be argued without data to plot, and the synthetic feeds are where the data comes from. Link it by ID once that story has merged, so this branch never carries a dangling link. |
+| Next          | Once the synthetic feeds drive the new model, check the data model against the journeys and start the representation. |
+| Last touched  | 2026-10-06                               |
 
 * What exists today
 
@@ -149,27 +149,728 @@ The curve ground in that tree, for whoever picks this up:
 Any deeper analysis of what a curve is, or of what a lossless ORE export
 would have to reproduce, should read that tree rather than the vendored copy.
 
+* Deeper analysis, 2026-10-06
+
+A second read-only pass, at =d02032a18c=. It answers the open questions far
+enough to choose a direction. It is a snapshot, not a description of the
+system. Two facts the first investigation stated are corrected here, because
+they change the shape of the answer.
+
+** What a curve is made of
+
+Four things, and the tree already holds three of them under other names.
+
+- *Identity*: which curve this is. =market_series= is already the identity of
+  a term structure; the oresmd URI is the name. The seeded example is
+  =oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC=
+  (=(marketdata_market_series_fomc_populate.sql)=). There is no
+  =instrument_type::curve= in code: the only =instrument_type= enum is ORE's
+  own MarketDatum list (=api/include/ores.marketdata.api/datum/ore_types.hpp=),
+  and the ={fixing, curve, quote, vol}= enum is a design-file fiction. A curve
+  is named by =curve_id= in the URI today, not by an instrument type.
+- *Points*: the pillar-to-value map. These are =market_observation= rows. The
+  point identity is the =oresmd_uri=; **the observation table has no
+  =point_id= column** (the design file draws one; the model does not). The
+  pillar's tenor lives inside the URI.
+- *Build*: when the curve was built against which source, and by which recipe.
+  This is the part that is only half present. =market_series= carries
+  =derivation_kind= and =derivation_config_id/version=; =observation_lineage=
+  carries, per point, =derivation_config_id/version=, =source_as_of= and
+  =source_series_ids=. What is missing is a *reference date* and a *build
+  kind*, and a build identity that groups the points of one build.
+- *Recipe*: how to build it. This lives in =ores.refdata= as
+  =ir_curve_bootstrap_config= (family role, discount curve for a projection,
+  interpolation, day count, tenor convention, split tenor) plus
+  =ir_curve_bootstrap_pillar= rows. Its =output_series_id= and the pillars'
+  tenor codes are *soft* references into other components.
+
+** The correction that matters: lineage is most of the build
+
+The first investigation read the build as entirely absent. It is not:
+=observation_lineage= is written by =republish()= beside every output
+observation (=curve_republish_service.cpp:365-366=) and already answers "what
+was this built from, by which recipe, and against what as-of". A build header
+therefore does not have to invent provenance; it has to *group* the points of
+one build and add the two facts lineage lacks, =reference_date= and
+=build_kind=. That is a much smaller table than the sprint 25 design assumed.
+
+** The second correction: the point identity is the URI
+
+The sprint 25 =curve_point= design draws a =point_id= column. The shipped
+observation table has none; the point identity is the whole =oresmd_uri=. Any
+curve design either reads the pillar identity out of the URI or adds a real
+=point_id=/tenor column. The first is free; the second must be justified.
+
+** How each part maps onto the existing infrastructure
+
+| Curve part | Existing home | State |
+|------------+---------------+-------|
+| Identity | =market_series= + oresmd URI =curve_id= | Exists; the curve is not *marked* as a curve beyond =derivation_kind= and =series_subclass= |
+| Points | =market_observation= (=oresmd_uri=, =value=, =observation_datetime=) | Exists, bitemporal, versioned, RLS, evented |
+| Point provenance | =observation_lineage= | Exists per point |
+| Build identity and reference date | none | Missing |
+| Build kind (bootstrap / derived / imported) | none | Missing (=IR_CURVE_BOOTSTRAP= sits on the series, not the build) |
+| Recipe | =ir_curve_bootstrap_config= + =_pillar= in =ores.refdata= | Exists, cross-component soft refs |
+| Recipe editing | refdata shell CRUD units | Exists for the recipe; no curve verb |
+| Compute / publish | =marketdata.v1.curve_bootstrap.compute= / =.republish= | Exists server-side; no sender anywhere |
+| Read back | =marketdata.v1.curve-snapshot.get= / =.buckets= | Exists; the handler checks no permission and no code is seeded |
+| Consumer | none | Missing |
+
+** The modelling decision
+
+Three shapes are available. The recommendation is the first, with the third
+held open until a journey proves it.
+
+1. *Keep the series as the identity, add a build header, keep the points as
+   observations.* A =curve_build= row names the output series, the
+   =reference_date=, the =build_kind=, the recipe (=config id + version=) and
+   the =source_as_of=; the points stay =market_observation= rows whose
+   =observation_datetime= is the reference date and whose =oresmd_uri= is the
+   pillar. This reuses bitemporality, versioning, row-level security,
+   eventing, shell units, the protocol and the TypeScript twin, and adds one
+   small table. It matches what =republish()= already writes, so no data has
+   to move.
+2. *A =curve_point= table beside =curve_build=.* The sprint 25 design. It buys
+   an explicit point-to-build link and a place to hang point-level
+   trustworthiness fields, and it pays for it with a second bitemporal,
+   versioned, evented, shell-served table that duplicates the observation
+   stack. Justified only if a consumer needs point sets that are independent
+   of the series' own history, such as two builds compared point by point.
+3. *A =curve= entity distinct from =market_series=.* Rejected as the starting
+   point: it duplicates the identity, versioning and history the series
+   already owns. The series is the term structure; a curve is a series whose
+   points are pillars.
+
+The deciding input is *what a consumer does with a curve*, which is what the
+journeys are for. The design deliberately stops before =curve_point= and lets
+the journey work decide whether it is earned.
+
+** Curves and tenors
+
+The relation is real but undeclared today, in three places.
+
+- *The recipe side.* =ir_curve_bootstrap_pillar.start_tenor_code= and
+  =.end_tenor_code= are undeclared soft references to =refdata_tenors=: no
+  foreign key, and the only database check validates =curve_role_code=, not
+  the tenors. The engine resolves a pillar by
+  =end_tenor_code -> tenors_by_code -> resolution(convention) -> anchor +
+  offset [+ schedule steps] -> date= (=tenor_resolution.cpp:151-222=), and the
+  end tenor doubles as the =point_id= the resolver reads the quote under
+  (=curve_republish_resolver.cpp:90-92=). A typo in a tenor code is a
+  runtime throw, not a save-time refusal.
+- *The point side.* The observation's =oresmd_uri= carries the term
+  coordinate (=datum::term=: period, date, fx_tenor or continuation), and the
+  oresmd =term= field is the canonical datum-side name for a tenor. The two
+  vocabularies join only by string at the pillar bridge; nothing checks that
+  the URI's term is the pillar's tenor.
+- *The gaps.* Tenor resolution never rolls for a business day (the
+  conventions carry no calendar column), so a pillar that lands on a holiday
+  is not adjusted; =split_tenor_code= is stored but read by no consumer logic;
+  and =dataset_family_role=FUNDING/PROJECTION= is the one role vocabulary that
+  is live, while refdata's =curve_role= is hard-coded in the engine and
+  oresmd's =curve_role= is inert outside the synthetic feed's conflict check.
+
+The recommendation is to make the pillar's tenor a checked reference to
+=refdata_tenors=, and to carry that same tenor code on the curve's points so a
+reader can group by tenor without parsing the URI. The business-day gap and
+the split tenor are separate defects, not part of the representation.
+
+** The user journeys are the input that decides this
+
+The tree has no market-data journey group and no journey that owns a curve;
+the closest analogues are =journey_keep_a_holiday_calendar_right= (rules, then
+a derived artefact consumers read) and =journey_add_or_correct_a_currency=
+(entity with owned child panels and history). Curve creation, review and
+consumption have no owner, and the journey-extraction task for marketdata is
+still =BACKLOG=. The candidates a journey pass should settle, one person and
+one goal each, are:
+
+| Candidate journey | Person | First consumer it creates |
+|-------------------+--------+---------------------------|
+| Build a curve for a currency and a date | Rates quant or market data engineer | The =republish= sender the server has never had |
+| Keep a curve recipe right | Market data engineer | The recipe editor the desktop client took away |
+| Read a curve and trust it | Rates quant | The curve read-back: points, shape, provenance |
+| Correct a curve point | Market data engineer | Point-level override and re-publish |
+| See how a curve changed | Risk reviewer or auditor | Build history and build-to-build comparison |
+| Take a curve to ORE, and bring one back | Platform | The lossless =curveconfig= / =market= round trip |
+
+They settle the model because each names an operation the server must serve:
+a build journey needs a build, a comparison journey is what earns
+=curve_point=, and a provenance journey decides which of
+=curve_point_provenance='s fields are worth storing. They also force the
+vocabulary question, because the actor classes in the journeys are
+=TenantAdmin= and =Operations= today and neither is a rates quant.
+
+** Defects found on the way, independent of the representation
+
+- The curve-snapshot reads are unauthenticated: =curve_snapshot_handler= checks
+  no permission and no =curve-snapshot= code is seeded
+  (=iam_permissions_populate.sql=). This is a W02-class defect and belongs in
+  its own capture.
+- The recipe's tenors are unvalidated at save time, as above.
+- =CUBIC_SPLINE= is recognised by the engine and throws; =IMM_ROLL= is
+  superseded and throws.
+
+** Recommended next steps
+
+1. Agree the journey catalogue above with the owner (J08 of the extraction
+   standard), then run the marketdata journey extraction, reading the legacy
+   =CurveBuilderWorkbench= from =git show af67db3062^:projects/ores.qt/...=.
+2. Let the journeys choose between build-header-only and =curve_point=, and
+   write the chosen shape into the target model before any table is added.
+3. File the curve-snapshot permission defect and the tenor-validation defect
+   as captures; neither waits on the representation decision.
+4. Keep the ORE handoff out of this story, as it already is; the lossless
+   export is the second journey's consumer and its own story.
+
+* Curve data model, 2026-10-06
+
+A design pass against the existing tables and the
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria, at
+=d02032a18c=. It answers one question: which curve tables does the model need,
+and how do they join to the ones already there? The joins below were run
+against the recreated database.
+
+** The joins a curve needs already exist
+
+A curve is a =market_series= whose oresmd URI names it. Its points are
+=market_observation= rows of that series. Its inputs are per-point
+=observation_lineage= rows. Its recipe is the refdata config and its pillars.
+None of this needs a new key.
+
+| Hop | From | To | Key | Note |
+|-----+------+----+-----+------|
+| Recipe to curve | =ir_curve_bootstrap_configs.output_series_id= | =market_series.id= | soft, no FK | cross-component; verified, one row |
+| Curve to points | =market_series.id= | =market_observations.series_id= | hard FK | indexed; points are the curve |
+| Points to inputs | =(series_id, observation_datetime, oresmd_uri)= | =observation_lineage= same triple | soft, natural key | per-point recipe and sources |
+| Pillars to tenors | =ir_curve_bootstrap_pillars.end_tenor_code= | =refdata_tenors.code= | soft, no FK | verified for the seeded pillars |
+| Point to tenor | =market_observations.oresmd_uri= coordinate | =refdata_tenors.code= | by code, via the URI codec | the coordinate *is* the pillar's end tenor |
+
+The point-to-tenor hop is the one that has no column. That is deliberate: the
+component removed its decomposed key columns and made the URI the single
+identity, and the model says a reader that wants the key's parts reads them
+through =oresmd_uri_codec= rather than off a row
+(=ores.marketdata.market_series.org=). Adding a =tenor= column to
+=market_observation= would reverse that decision, and it would pollute a
+generic time-series table with one facet's coordinate. The relation is instead
+carried where it is authoritative: by the recipe's pillar, whose tenor must be
+validated (see below), with the point's coordinate equal to it by construction
+(=curve_republish_service.cpp= passes =point.point_id=, the end tenor, to
+=datum_at_point=).
+
+** The decision: the values add no table; the shape and the provenance do
+
+The facts a build needs are already stored, or are derivable:
+
+| Fact | Where it is today |
+|------+-------------------|
+| Which curve | =market_series.oresmd_uri= (=curve_id=) |
+| When the curve answers | =market_observations.observation_datetime= for its points |
+| When the build ran, and its versions | the observation rows' bitemporal =valid_from= |
+| Which recipe, and its version | =market_series.derivation_config_id/version=, and =observation_lineage= per point |
+| What it was built from | =observation_lineage.source_series_ids= and =source_as_of= |
+| Which values are quoted, interpolated or overridden | not stored; the =curve_point_provenance= proposal |
+
+A build is therefore the =(series, observation_datetime)= slice of a curve
+series' observations, and two builds are told apart by that slice, by the
+bitemporal version within a slice, and by the recipe version. No table is
+needed to represent that, and adding one would denormalise a fact the
+observation hypertable already holds: the table is append-only, partitioned
+on =observation_datetime=, carries no audit payload, and gives identity by
+key. That is the shape a data-oriented model wants for the points.
+
+The cold tables the requirements do imply are two, and neither is a second
+representation of the points:
+
+- the *shape* tables, which state the object's axes and their ordered values
+  so a hole is a hole (see *Where is the shape?* below), and
+- the *per-point provenance* annex, keyed by the point and holding no value
+  (see *Manually keyed points* below).
+
+Both are cold data split away from the hot row, which is what the
+data-oriented criteria ask for.
+
+** If a first-class build is needed, it is a cold header
+
+One consumer type would earn a table: a journey that treats a build as an
+object in its own right, with a state, a reviewer or a sign-off, rather than
+as a slice of a series. The prior Qt surface had exactly that shape, *Build &
+Diagnostics* then *Publish*, and the review/sign-off task is still a recorded
+intention. If that journey is agreed, the table is small and cold, and it
+joins without touching the points:
+
+#+begin_example
+ores_marketdata_curve_builds_tbl
+  id               uuid      -- surrogate key
+  tenant_id        uuid      -- row-level security
+  party_id         uuid      -- ownership, natural key part
+  version          integer   -- bitemporal version
+  valid_from       timestamptz
+  valid_to         timestamptz
+  series_id        uuid      -- FK -> ores_marketdata_market_series_tbl(id)
+  reference_date   timestamptz  -- the instant the curve answers at; the join key
+  build_kind       text      -- BOOTSTRAP | DERIVED | IMPORTED, validation fn
+  source_as_of     timestamptz  -- when the inputs were observed
+  -- the standard record provenance: modified_by, performed_by,
+  -- change_reason_code, change_commentary
+natural key:  (party_id, series_id, reference_date, build_kind)
+unique index: (tenant_id, party_id, series_id, reference_date, build_kind) current only
+index:        (tenant_id, party_id, series_id, reference_date desc)
+FK:           series_id -> market_series(id), list_by, order reference_date desc
+#+end_example
+
+Its one join is =market_observations.series_id = builds.series_id AND
+market_observations.observation_datetime = builds.reference_date=, which the
+existing =observations_series_datetime= index already serves. The recipe and
+the inputs stay where they are: =market_series.derivation_config_id= for the
+build, =observation_lineage= per point. The build table carries only what
+neither holds, and it stays off the hot path: the kernel reads the points, not
+the header.
+
+The recommendation is to *not* create it until that journey is agreed, and to
+write the journey first if it is. This is the one place the curve model may
+add a table, and the journeys decide it.
+
+** The data-oriented layout
+
+The three regimes get three shapes, and the storage shape is already the
+right one.
+
+- *Storage (Regime 2).* The points are rows, not a blob: identity by key
+  (=series_id=, =observation_datetime=, =oresmd_uri=), table-shaped children,
+  core state split from the cold =observation_lineage= annex, batched access
+  through one repository call. The one decision to keep is that a curve must
+  not be stored as a serialised snapshot on a single row: that would break
+  bitemporality, the as-of read and the eventing that every other series has.
+- *Kernel (Regime 1, the bootstrap and any valuation).* The existing
+  =read_as_of= returns an array of observation objects, each holding its value
+  as text and its coordinate inside a URI string. A kernel should not walk
+  that. Add one read that projects the same rows into arrays:
+
+  #+begin_example
+  struct curve {
+      boost::uuids::uuid series_id;
+      std::chrono::system_clock::time_point as_of;
+      std::vector<std::chrono::sys_days> pillar_dates;   // resolved tenors
+      std::vector<double>                discount_factors;
+  };
+  curve read_curve(context, series_id, as_of);           // one query, one parse
+  #+end_example
+
+  The value text is parsed once at the boundary, the tenors are resolved once,
+  and the kernel sees stride-1 spans. No per-point object, no variant, no
+  parse in the loop. =read_as_of= stays for the generic reader; =read_curve= is
+  the kernel projection of the same rows, not a second source of truth.
+- *Wire (Regime 3).* The curve read is one batched message carrying parallel
+  arrays, not one message per point, and the existing
+  =marketdata.v1.curve-snapshot.get= is reshaped to it rather than joined by a
+  second subject.
+
+** Does the storage hold up for the evolution read?
+
+It does. The composite object is a series; its nodes are the series' point
+observations at each instant; the hypertable already stores them that way, and
+=read_as_of_buckets= already reconstructs snapshots. Nothing about the
+evolution requirement needs a new table:
+
+- Discovery by typed attributes — currency pair, object kind, party — is a
+  *wire* and *service* concern: the request carries typed fields and the
+  server resolves them to the series URI. If that lookup needs an index rather
+  than a scan, the index goes on a derived projection of the URI's parts, not
+  on a new table.
+- Coordinate typing is a *read* concern: the server parses each node's
+  =oresmd_uri= once through the codec to produce the coordinate labels and to
+  align the matrix. The identity stays the URI, as the component decided.
+- Alignment, shape change and the instant range are the evolution read's
+  design, not the schema's.
+
+What the evolution requirement does change is the priority: the aligned
+matrix read is the first thing to build, and the single-curve build journey is
+not.
+
+* The composite object is the requirement, 2026-10-06
+
+A person does not ask for a series or a point. They ask for a *term structure*
+or a *surface* — a composite object with named axes — and then they ask how it
+*changed*. "Show me the FX vol surface for EURUSD over the last quarter" is
+the canonical question, and the acceptance below did not ask it: it asked for
+a curve's identity, one build and one consumer. Evolution, surfaces and axes
+were absent, and the word *surface* did not appear.
+
+** Today's answer to the canonical question, and why it is not easy
+
+The storage supports the question. An FX vol surface is one =market_series=
+whose points carry =(expiry, strike_label)= coordinates — the =fx_option= row
+in =datum/schema.hpp= — and the observation hypertable is append-only and
+partitioned on time. The *retrieval* does not:
+
+- *Discovery needs the URI string.* Both reads are keyed by =oresmd_uri=
+  (=get_curve_snapshot_buckets_request.oresmd_uri=). "The FX vol surface for
+  EURUSD" must be turned into the exact oresmd string by the caller; nothing
+  indexes the identity's parts or lists the surfaces of a currency pair.
+- *Evolution is a fixed window ending now.* The one evolution read takes
+  =bucket_seconds= and =bucket_count= (=5= buckets of =1800s= by default) and
+  ends at the present. There is no time range and no set of instants, so "over
+  the last quarter" is not expressible.
+- *The result is not aligned.* =get_curve_snapshot_buckets_response.buckets=
+  is a =vector<vector<market_observation>>=: the client matches nodes across
+  buckets itself, and each value is text. Nothing returns the surface as a
+  matrix of instants by nodes.
+- *Shape change is undefined.* When the surface gains an expiry or loses a
+  strike between two instants, the buckets simply hold different point sets.
+  Nothing reports an added, dropped or persistent node.
+- *The object has no type.* A curve, a surface and a grid are all "a series"
+  with different coordinate shapes; nothing states which series are surfaces,
+  or what their axes are. A generic evolution view cannot offer "all the vol
+  surfaces for EURUSD" because it cannot tell one composite object from
+  another.
+
+So the data model does *not* make the FX vol surface evolution easy to
+retrieve, and the reason is the requirements, not the storage. The storage
+already holds the right rows; the reads and the acceptance never ask the
+question in the person's terms.
+
+** Where is the shape? There is no shape table, and there must be
+
+The question is the right one, and the answer today is: nowhere. The seven
+marketdata tables hold the series identity, the points, the fixings, the
+asset-class junction, the lineage, the feed bindings and the classification
+rules. None of them says which tenors, expiries or strikes make up a term
+structure. The shape is inferred from the points and nothing else:
+
+- *For an observed structure* the shape is whatever arrived. The set of tenors
+  is =SELECT DISTINCT= over the point URIs, so a tenor missing because the feed
+  dropped it is indistinguishable from a tenor the structure does not have.
+- *For a bootstrapped curve* the shape is the refdata recipe's pillars:
+  =ir_curve_bootstrap_pillar= carries =start_tenor_code=, =end_tenor_code= and
+  =sequence_index=. That is close, but it is a *build recipe in another
+  component*, it exists only for bootstrapped curves, and it describes the
+  recipe's inputs rather than the term structure's nodes.
+- *The oresmd schema* declares the coordinate *fields* an instrument type
+  carries — the axes — but no per-series values, so it cannot say which tenors
+  a particular curve comprises.
+
+Without a shape, several of the requirements below cannot be met. A missing
+node cannot be drawn as a hole. Completeness cannot be checked. "Which nodes
+were added or dropped between two instants" cannot be answered against an
+expected axis. And a surface's components cannot be enumerated without
+scanning history.
+
+** The shape is a first-class, cold declaration
+
+The object's shape is its axes and their ordered values:
+
+| Object | Axes | Axis values |
+|--------+------+-------------|
+| A yield curve | =term= | 1M, 3M, 6M, 1Y, ... |
+| An FX vol surface | =expiry=, =strike_label= | the expiries; ATM, 25RR, 25BF |
+| A swaption cube | =expiry=, =term=, =strike_level= | ... |
+
+A *node* is one value per axis; the grid is the product of the axes; an
+observation is the value at a node; and a node with no observation is a hole,
+which is exactly what the rendering, completeness, alignment and component
+requirements need. The tables are small and cold:
+
+#+begin_example
+ores_marketdata_series_axes_tbl
+  series_id   uuid      -- FK -> market_series(id)
+  axis_field  text      -- an oresmd field code: term, expiry, strike_label, ...
+  sequence    integer
+  unique current: (tenant_id, party_id, series_id, axis_field)
+
+ores_marketdata_series_axis_values_tbl
+  series_id   uuid
+  axis_field  text
+  value       text      -- the code or level, validated where a vocabulary exists
+  sequence    integer
+  unique current: (tenant_id, party_id, series_id, axis_field, value)
+#+end_example
+
+Both are cold: tens of rows per object, read once when an axis is drawn or a
+build is validated, never on the point path. They join to the series by
+=series_id=, and to the points by =(series, axis attribute)= against the
+coordinate the read extracts from the point's URI. A point whose coordinate is
+not a declared axis value is a defect, and the write-time check that refuses
+it is what keeps the shape and the points from drifting.
+
+For a bootstrapped curve the shape and the recipe's pillars are the same tenors
+seen twice, so the rule is: the *shape* is the marketdata-side statement of
+what the object comprises, and the *recipe* states how each node is built. A
+build writes the shape from its pillars when it publishes, so the two cannot
+drift; an observed or imported structure writes its shape from what it
+declares, with no recipe at all. This is also where the tenor validation
+lands: an axis value that is a term must be a =refdata_tenors= code.
+
+** The components: ATM, RR and BF are the surface's own axis
+
+The vol surface's quoting convention is not a detail beside the surface; it
+is one of its axes. The FX option key is
+=FX_OPTION/<quote>/unitCcy/ccy/expiry/strike=, and ORE keeps the strike as a
+*label*: =ATM=, =25RR=, =25BF= (=ore_key_fx.cpp:56-64=). So ATM, risk
+reversal and butterfly are =strike_label= values, one per node, and each one
+is a term structure over =expiry= — exactly the three the question names. That
+decomposition is already in the data; the model exposes none of it:
+
+- There is no read that returns a component. "The ATM ladder" is every node of
+  the surface whose URI carries =ATM=, and the client finds them by parsing
+  and filtering.
+- The labels are free text with no vocabulary and no validation, so =BF=,
+  =FLY= and =25BF= are three spellings the model cannot reconcile, and the
+  delta convention they imply is not stored at all.
+- There is no "what are the components of this surface" read, so a screen
+  cannot offer ATM, 25RR and 25BF without scanning history.
+- The evolution read is URI-keyed and windowed, so "the ATM ladder over the
+  last quarter" is not expressible either.
+
+This is the same gap as the surface, one axis down, and it argues for the axis
+work rather than for a table: the components are slices of the surface's grid,
+not independent objects.
+
+** One series per surface, or one per component?
+
+The question this raises is whether ATM, RR and BF should each be a series of
+their own, grouped into a surface, rather than a coordinate of one surface
+series. The answer turns on what changes and what is consumed:
+
+- A market quote is a =(pair, expiry, strike label)= point. The grid is one
+  object quoted by one convention, and a change to its shape is a point
+  change. One series per surface makes that an ordinary bitemporal point
+  write.
+- One series per component would make a shape change a change of *group
+  membership* with its own history, which is a junction with validity rather
+  than a point, and it would spread one object's identity across N series.
+- The components are almost always read together with the surface, and the
+  [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][curve set]] storage grouping is
+  for grouping *independent* series — a funding curve and its projections —
+  not for slicing one grid.
+
+So the recommendation stays: the surface is one series; ATM, RR and BF are
+values of its strike-label axis, and what they need is a typed, named,
+validated axis and a read that returns a slice, not a series and not a table.
+
+** Manually keyed points
+
+Users key points by hand: a trader's IR level, a broker's vol, a correction
+after a bad feed. That is a first-class market-data operation, not an anomaly,
+and it needs three facts the model does not store at a point today: that the
+value is manual, who keyed it, and when.
+
+Two facts decide the design:
+
+- *The hot row must not carry them.* =market_observation= is
+  =no_audit_columns=, append-only, and the hot path. Adding actor and reason
+  columns would put cold metadata on every one of its rows and undo the
+  hot/cold split the model already has.
+- *A manual point is an ordinary bitemporal write.* The value has the same
+  shape as any other point, and the table's =soft_update_delete= trigger
+  already closes the prior row and inserts the new one. The override therefore
+  needs no value storage of its own: the manual write is a normal write, and
+  the history keeps both the fed value and the manual one.
+
+What is missing is the point's *provenance*, which is cold and belongs in the
+existing per-point annex. =observation_lineage= is keyed by the same triple
+and already carries =modified_by=, =performed_by=, =change_reason_code= and
+=change_commentary=. What it lacks is the two things a manual point needs in
+order to be told from a fed or derived one:
+
+- a *point source kind* — quoted, interpolated, extrapolated and manual (the
+  [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][curve point provenance]]
+  proposal's derivation kind, extended with manual), and
+- the *actor and time at point granularity*, which the annex has and the
+  observation does not.
+
+The clean shape is one per-point cold annex, not a second table keyed the same
+way: either broaden =observation_lineage= into the point-provenance annex that
+document already proposes, or rename it to say what it now is. Two cold tables
+keyed by =(series_id, observation_datetime, oresmd_uri)= would be a smell.
+
+** Precedence: a feed must not silently undo a manual point
+
+Because the manual write is bitemporal, a later feed tick would close the
+manual row and take over, so the precedence is a policy the model must state
+rather than a consequence of write order. Either the point is marked locked in
+its provenance and the ingest skips a locked point, or the read prefers the
+latest manual point over the latest automatic one until the manual point is
+cleared. Either way the rule is explicit and testable, and the evolution view
+can show the manual segment with its actor and its reason.
+
+** The requirements the use case implies
+
+1. A composite object is first-class: identifiable and of a kind (term
+   structure, surface, grid), with its axes named, before any point is read.
+2. Its *shape* is declared: the axes and their ordered values are stored as a
+   cold, per-object declaration, so a node with no value is a hole and not an
+   absent node, and completeness can be checked.
+3. Its nodes have typed coordinates -- terms, expiries, strikes or deltas,
+   dimensions -- that can be queried, joined and aligned, not only text inside
+   an identity string, and every node coordinate is a value of the declared
+   shape.
+4. Every axis value is a typed, validated code with a vocabulary, so =ATM=,
+   =25RR= and =25BF= are canonical and a component can be named.
+5. The components of an object along an axis are retrievable as term
+   structures in their own right, over time: "the ATM ladder of the EURUSD
+   surface, over the last quarter" is one request.
+6. Evolution is a first-class read: one bounded request returns the aligned
+   matrix of instants by nodes, with the coordinate labels and the values.
+7. Shape change is explicit: the read reports nodes added, dropped and
+   persistent against the declared shape.
+8. The single-instant read, the slice read and the evolution read share one
+   definition of the object, so they cannot disagree.
+9. Every node's value carries its provenance per instant, so the view can
+   explain a change.
+10. A point's source kind is stored per point -- quoted, derived or manual --
+    and a manual point names the actor, the time and the reason.
+11. A manual point is not silently overwritten by a later automatic write; the
+    precedence between the two is explicit.
+12. The evolution view distinguishes manual points and shows their actor and
+    reason, so a person can see what was keyed by hand.
+
+** What to add, in order
+
+1. The composite-object identity at the wire boundary: a typed request (asset
+   class, scope such as a currency pair, object kind, party) that resolves to
+   the series, so "the FX vol surface for EURUSD" needs no hand-built URI.
+2. The shape tables: the per-object axes and their ordered values, written
+   from the recipe's pillars by a build and from the declaration by an import,
+   with every term value validated against =refdata_tenors= (which also closes
+   capture =A6472918= on the recipe side) and a write-time check that refuses a
+   point whose coordinate is not a declared axis value.
+3. The axis values as typed, validated codes: the strike-label vocabulary and
+   the quoting convention, so ATM, 25RR and 25BF are canonical and the
+   components of a surface are enumerable.
+4. The slice read: a component along one axis -- the ATM ladder -- returned as
+   a term structure over time, from the same object definition.
+5. The aligned evolution read: the object plus a range or a set of instants,
+   returning instants by nodes with the coordinate labels and numeric values,
+   and the added, dropped and persistent nodes against the declared shape. It
+   replaces the fixed five-bucket window and returns a matrix, not arrays of
+   objects.
+6. The single-instant read reshaped to the same object definition, so the
+   three cannot disagree.
+7. The per-point provenance annex: the source kind (quoted, derived, manual),
+   and for a manual point the actor, the time and the reason, in one cold
+   annex keyed by the point's natural key. Name it once -- broaden
+   =observation_lineage= or rename it -- rather than adding a second cold
+   table beside it.
+8. The manual precedence rule: what a later automatic write does to a manual
+   point, stated as a policy and covered by a test.
+9. Guard the curve-snapshot reads (capture =D9258D1F=).
+10. Only then decide the =curve_builds= table, from the agreed journeys.
+
+* Journey catalogue, signed off 2026-10-06
+
+The catalogue was agreed with the owner on 2026-10-06. The journey documents
+are written against it under =doc/knowledge/journeys/market_data/=, with the
+feeds journey under =doc/knowledge/journeys/operations/=.
+
+** The model the journeys assume: observations are not curves
+
+- *A market observation* is what the market sends. It arrives per point, from
+  a feed or an import, and nobody signs it off. It is the evidence.
+- *A published curve or surface* is what the system uses. A trader holding the
+  market-data management role owns it, updates it from what they see in the
+  market or adjusts it by hand, and *publishes* it once the configured
+  approvals are given. Only the published object is visible to pricing,
+  reporting and every other consumer.
+
+** Actors
+
+| Actor | Who they are | Note |
+|-------+--------------+------|
+| Trader (maker) | The front-office person who owns a currency's curves or a desk's surfaces | Holds the market-data management role |
+| Approver (checker) | A person who decides a publish | Holds the decide permission for the approval kind |
+| Quant | Authors models and diagnostics; may hold the same role | |
+| Operations | The installation's feeds and services | |
+| Consumer | Any user who reads published market data | |
+| Auditor | Reads the trail after an incident | |
+
+** The catalogue
+
+| # | Journey | Actor | Group |
+|---+---------+-------+-------|
+| 1 | Manage a curve's blueprint | Trader, Quant | market_data |
+| 2 | Author a surface's framework | Trader, Quant | market_data |
+| 3 | Watch the market and clear its exceptions | Trader, Operations | market_data |
+| 4 | Bootstrap or refresh a curve | Trader | market_data |
+| 5 | Calibrate or refresh a surface | Trader | market_data |
+| 6 | Adjust a curve or surface by hand | Trader | market_data |
+| 7 | Check a curve's fit | Trader, Quant | market_data |
+| 8 | Inspect a surface's slices | Trader, Quant | market_data |
+| 9 | Ask for a publish to be approved | Trader | market_data |
+| 10 | Decide a publish | Approver | market_data |
+| 11 | Publish the approved set | Trader | market_data |
+| 12 | Withdraw or replace a published curve | Trader, Approver | market_data |
+| 13 | Watch a curve or surface evolve | Consumer | market_data |
+| 14 | See who changed a curve, and when | Auditor | market_data |
+| 15 | Keep the market data feeds running | Operations | operations |
+
+** Decisions taken at sign-off
+
+- *Journeys 3 and 4 of the first draft are one screen*, now journey 3: the
+  market's exceptions are cleared where they are seen.
+- *The two read journeys are one screen*, now journey 13: one instant and a
+  range are the same view at different zoom.
+- *Approvals are generic and configurable.* An approval kind carries how many
+  approvals are needed and which group decides, so a publish may need zero,
+  one or n approvals. A withdrawal uses the same rule.
+- *The ORE export is not a journey.* It is excluded from this catalogue and
+  the data model must still cater for it; a later task owns it.
+- *The feeds journey moves to the =operations= group*, because Operations owns
+  it and it is not about curves.
+
 * Acceptance
 
-- A curve is identifiable as a curve without knowing which strings to
-  combine. Whatever the representation, "is this a curve" and "which curve is
-  this" are answerable from the data.
-- A build records when it was built and against what, so two builds of the
-  same curve are distinguishable and a build is distinguishable from an
-  observation.
-- A curve's provenance is readable: what it was built from, by which recipe,
-  and when.
-- At least one production consumer reads a curve, or the story says in the
+Read every bullet in the person's terms: the composite object first, its
+evolution second, the representation third.
+
+- *A composite object is first-class.* A term structure or a surface is
+  identifiable, and of a kind, with its axes named, without knowing which
+  strings to combine. "Is this a curve or a surface" and "which one is this"
+  are answerable from the data.
+- *Its shape is declared.* The axes and their ordered values are stored, so a
+  node with no value is a hole and not an absent node, completeness can be
+  checked, and every node's coordinate is a value of the declared shape.
+- *Its nodes are typed coordinates.* A node's coordinate tuple — terms,
+  expiries, strikes or deltas, dimensions — is queryable and joinable, not
+  only text inside an identity string.
+- *Its axis values are typed codes.* ATM, 25RR and 25BF are validated
+  vocabulary, so a component can be named and reconciled, and the quoting
+  convention they imply is recorded.
+- *A component is a term structure in its own right.* The ladders along one
+  axis — the ATM, RR and BF term structures of a vol surface — are retrievable
+  over time in one request, as term structures, not filtered points.
+- *Evolution is one bounded read.* Given the object and a time range or a set
+  of instants, the server returns the aligned matrix of instants by nodes,
+  with the coordinate labels and the values. "The FX vol surface for EURUSD
+  over the last quarter" is one request, not a client-side join.
+- *Shape change is explicit.* Nodes added, dropped and persistent between
+  instants are reported, never silently different point sets under the same
+  object.
+- *A node's provenance is readable per instant*: what it was built from, by
+  which recipe, and when.
+- *A point can be keyed by hand.* A manual point or override is written as an
+  ordinary point, and the history keeps the value it replaced.
+- *A manual point is attributable.* A point says whether it is quoted, derived
+  or manual; a manual one names who keyed it, when and why, so it is never
+  indistinguishable from a fed or derived point.
+- *A manual point is respected.* A later automatic write does not silently
+  undo it; the precedence rule is explicit and tested.
+- *The single-instant, slice and evolution reads agree*, because they share
+  one definition of the object at an instant.
+- At least one production consumer reads the object, or the story says in the
   record why none does.
 - The three role vocabularies are either reconciled or documented where a
   reader meets them, because two of them share a name.
 - No new name collision between this work and the oresmd layer's existing
   =curve= vocabulary.
+- Every market data journey has a plain-HTML prototype, the prototypes are
+  listed in one inventory, and the inventory check is green.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
 |      |       |       |     |             |
 
 * Decisions
@@ -197,6 +898,9 @@ model that is still in motion would mean doing it twice.
   a producer, not a representation.
 
 * Open questions for the deeper analysis
+
+Answered by the =Deeper analysis, 2026-10-06= section above; the questions
+are kept as the record of what was asked.
 
 - **How does a curve read its points?** The grammar story keeps the 45-way
   variation in the datum identity, which is cold, and leaves the hot side

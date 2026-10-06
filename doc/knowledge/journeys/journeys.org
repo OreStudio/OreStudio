@@ -44,6 +44,7 @@ not to the folder the code happens to live in.
 | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs |
 | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce |
 | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] | The short code lists that classify reference data |
+| [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time |
 
 * How to read a journey
 

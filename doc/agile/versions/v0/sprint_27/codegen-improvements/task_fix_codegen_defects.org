@@ -168,16 +168,21 @@ Defects 3 and 5 stay open and out of scope, as the register records.
 
 * Result
 
-* Result
+Defect 6 is fixed at the templates and delivered as PR #2698 on
+=feature/codegen-improvements-rebased=, rebased onto current main. The nine
+templates declare what their output uses, =core.py= computes the context
+flags, =test_include_gates.py= pins each gate, and =test_domain_includes.py=
+fails on an over-declared standard header.
 
-Defect 6 is fixed at the templates and delivered as PR #2698,
-=feature/codegen-improvements-rebased=, rebased onto main's as-of list read.
-The nine templates declare what their output uses, =core.py= computes the
-context flags, =test_include_gates.py= pins each gate and
-=test_domain_includes.py= fails on an over-declared standard header.
+Verified on the rebased tree: =check_component_drift.py --all= reports no
+drift, the codegen suite passes 1192 tests, and the generated diff is
+includes and comments only (20633 includes and 1441 comments added, 3194
+includes and 181 comments removed; no other line changed). The full C++
+build is the only check not re-run on the final base, so the merge is forced
+and the build is watched for fallout.
 
-Verified at commit 2732ccd8db's successor: =check_component_drift.py --all=
-reports no drift, the codegen suite passes 1178 tests, and the full
-linux-clang-debug-make build is clean with zero warnings. The umbrella-header
-and scaffold work (defects 1 and 2) is carried separately and is not in this
-PR.
+The umbrella-header and scaffold work (defects 1 and 2) is carried separately
+on =feature/codegen-improvements= and is not in this PR: main has since
+reworked the CMake, scaffold and umbrella generation, and the branch's
+versions of those revert main's hand-authored files. Defects 3 and 5 stay
+open, as the register records.

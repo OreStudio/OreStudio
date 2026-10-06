@@ -32,11 +32,11 @@ logs the issue.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Implemented; PR #2702 is open and green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then record the close-out.      |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -159,3 +159,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The exchange is live. =decide_exchange= makes the five checks in order over
+  gathered values, the service intersects the role's permissions with the
+  grantor's, mints a five minute token, and appends one row to the issue log.
+- Verified on a real database. The twelve exchange tests pass with 50
+  assertions against a freshly seeded throwaway database, created with
+  =compass db setup= and dropped afterwards. They cover each check and its
+  reason, the run budget, the token claims and a rate limit refusal.
+- =ores.iam.core.lib=, =ores.iam.core.tests=, =ores.iam.service.exe= and
+  =ores.reporting.core.tests= build with zero errors. =validate_schemas.sh=
+  reports 0 warnings over 446 tables. =compass site page= compiles the changed
+  pages with 0 failures.
+- An independent review raised ten findings and all ten are fixed. They include
+  six tests built without a signer, four schema validation failures, a grantor
+  permission read in the wrong tenant, and a =max_runs= race.
+- The target state is recorded in
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] and
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]], with
+  the long run diagram.
+- The development database is stale against this branch, so the normal suites
+  need a recreate before they run from it. That recreate is still pending.

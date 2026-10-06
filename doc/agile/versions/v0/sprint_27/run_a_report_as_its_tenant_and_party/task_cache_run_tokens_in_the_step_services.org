@@ -115,6 +115,10 @@ task and name that file in the Command column.
 - Two of the owners the design names are not wired yet. =ores.ore= reads the
   configuration documents through its own steps, and =ores.compute= obtains the
   run token to create its batch. Those follow the same shape.
+- Eviction is wired for the reporting steps. A step-scoped guard drops the run's
+  entries when the step ends, on every return, and the terminal handlers drop
+  them again when the run completes or fails. The bounded LRU remains the
+  backstop for an event nobody sees.
 
 * Test Scenarios
 

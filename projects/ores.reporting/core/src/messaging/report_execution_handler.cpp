@@ -73,6 +73,30 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
     }
 }
 
+/**
+ * @brief Drops a run's cached run tokens when its step ends.
+ *
+ * Nothing the cache holds outlives the step, so no token sits in memory between
+ * steps. The destructor runs on every return, including the failure paths.
+ */
+class step_token_scope final {
+public:
+    step_token_scope(ores::service::service::cache::run_token_cache& cache, std::string run_id)
+        : cache_(cache)
+        , run_id_(std::move(run_id)) {}
+
+    ~step_token_scope() { cache_.evict_run(run_id_); }
+
+    step_token_scope(const step_token_scope&) = delete;
+    step_token_scope& operator=(const step_token_scope&) = delete;
+    step_token_scope(step_token_scope&&) = delete;
+    step_token_scope& operator=(step_token_scope&&) = delete;
+
+private:
+    ores::service::service::cache::run_token_cache& cache_;
+    std::string run_id_;
+};
+
 } // namespace
 
 
@@ -80,6 +104,9 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
                                                     const std::string& instance_id,
                                                     const std::string& error_message) {
     try {
+        // A failed run holds no token, whether or not this instance already
+        // recorded its failure.
+        run_tokens_.evict_run(instance_id);
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
         service::report_instance_service inst_svc(tenant_ctx);
         boost::uuids::string_generator sg;
@@ -162,6 +189,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
+    step_token_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_trades starting | instance=" << req.report_instance_id
                               << " definition=" << req.definition_id;
@@ -268,6 +296,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
+    step_token_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_market_data starting | instance="
                               << req.report_instance_id;
@@ -488,6 +517,8 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         inst->completed_at = std::chrono::system_clock::now();
         inst->output_message = "Report execution completed.";
         inst_svc.save_instance(*inst);
+        // The run is terminal, so no token of it may stay in memory.
+        run_tokens_.evict_run(req.report_instance_id);
 
         BOOST_LOG_SEV(lg(), info) << "finalise complete | instance=" << req.report_instance_id;
 

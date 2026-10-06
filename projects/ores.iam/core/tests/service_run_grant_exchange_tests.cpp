@@ -115,6 +115,19 @@ role write_role(database_helper& h,
     return r;
 }
 
+/// The role named @p name if the tenant already has one, and a new role that
+/// bundles @p code otherwise. A provisioned tenant copies the service roles, so
+/// a fixture that inserted one would collide on the name index.
+role existing_or_new_role(database_helper& h,
+                          generation_context& gen,
+                          const std::string& name,
+                          const std::string& code) {
+    authorization_service auth(h.context());
+    if (const auto found = auth.find_role_by_name(name))
+        return *found;
+    return write_role(h, gen, name, code);
+}
+
 /// A step service's own context: it acts as its service account, in the
 /// tenant the request names, carrying only the exchange permission.
 context service_context(database_helper& h,
@@ -180,8 +193,8 @@ struct exchange_fixture {
         , tenant_id(h.tenant_id().to_string()) {
         grantor = write_account(h, gen, grantor_status);
         service_account = write_account(h, gen, "active");
-        grantor_role = write_role(h, gen, "ReportRunViewer", granted_code);
-        service_role = write_role(h, gen, reporting_service, granted_code);
+        grantor_role = existing_or_new_role(h, gen, "ReportRunViewer", granted_code);
+        service_role = existing_or_new_role(h, gen, reporting_service, granted_code);
 
         authorization_service auth(h.context());
         auth.assign_role(
@@ -278,7 +291,7 @@ TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role", ta
 
 TEST_CASE("exchange_run_grant_refuses_a_service_outside_the_audience", tags) {
     exchange_fixture f;
-    const auto other_role = write_role(f.h, f.gen, compute_service, granted_code);
+    const auto other_role = existing_or_new_role(f.h, f.gen, compute_service, granted_code);
     const auto other = write_account(f.h, f.gen, "active");
     authorization_service(f.h.context())
         .assign_role(other.id, other_role.id, f.h.db_user(), "Synthetic test data", "system.test");

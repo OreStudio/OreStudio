@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 6585F9F0-881B-46FC-B247-37E5E6252FDF
+:END:
+#+title: Task: Record service starts and stops
+#+description: Every process announces its start and its graceful stop through the shared service lifecycle; telemetry stores the events, so the roster tells stopped from lost and counts restarts.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The roster can tell a graceful stop from a crash, and it can count restarts.
+Heartbeats alone answer only whether an instance went quiet. Every process
+announces two lifecycle events through the shared service lifecycle in
+=ores.service=: =started= when it becomes ready, and =stopped= in its shutdown
+hook, before =nats.drain()= flushes it. The messages and the table belong to
+telemetry, which already stores every heartbeat: the events are modelled in
+=ores.telemetry= and stored in =ores_telemetry_service_events_tbl=, and no
+service writes the table itself. The roster then states four things:
+*running* (started, heartbeats fresh), *stopped* (the last event was a graceful
+stop), *lost* (started, never stopped, heartbeats quiet) and *missing* (no
+instance ever filled the slot), with each instance's start time and its
+service's restart count.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The telemetry model carries the =started= and =stopped= event messages, and
+  telemetry stores them in =ores_telemetry_service_events_tbl=.
+- The shared lifecycle in =ores.service= publishes =started= on readiness and
+  =stopped= on a graceful shutdown, and owns the heartbeat the services start
+  one by one today, so no service wires either by hand.
+- =ores.storage.service= and the =ores.web= BFF publish heartbeats and both
+  events; today neither sends a heartbeat, so the roster shows both missing.
+- The roster states running, stopped, lost and missing, each instance's start
+  time, and each service's restart count over a stated window; a restart whose
+  previous instance never stopped is marked as one.
+- A test proves each state, and a graceful =systemctl stop= of a live service
+  reads as stopped rather than lost.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Settled with the operator on 2026-10-06, after comparing the decommissioned
+controller (definitions, instances with =pid=, =phase= and =restart_count=, and
+events). The roster needs a small subset of it: what should run, which comes
+from the registry through the expected-services table; and what each instance
+said about itself, which comes from these events and the heartbeats.
+Supervision stays systemd's job, as it would be Kubernetes' in a real
+deployment, so =pid=, stderr and restart policy are not modelled.
+
+A service cannot write the table itself: =ores.service= owns no SQL, and the
+compute wrapper, the http server and the web BFF have no database. Telemetry
+is the one writer, as it is for heartbeats.
+
+When the telemetry service itself stops, its own =stopped= event may be lost,
+because it is draining the subscription that would store it, so it can read
+as lost. That limit is documented rather than solved.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

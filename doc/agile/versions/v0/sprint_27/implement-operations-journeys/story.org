@@ -90,12 +90,14 @@ from the accepted design.
 |------+-------+-------+-----+-------------|
 | [[id:F9E6587E-30DD-4C39-9107-FE01A577E1C8][Scaffold story: Implement the operations journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Implement the operations journeys in ores.web |
-| [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] | BACKLOG | | | Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing. |
+| [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] | STARTED | 2026-10-06 | | Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing. |
 | [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]] | BACKLOG | | | Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own. |
 | [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]] | BACKLOG | | | Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back. |
 | [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]] | BACKLOG | | | Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle. |
 | [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] | BACKLOG | | | The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer. |
 | [[id:1878A3E4-0ACE-4CE6-892D-81DA0BCA8717][State who reaches the operations screens]] | DONE | 2026-10-05 | 2026-10-06 | The documents state who reaches each operations screen: the four installation screens are the system administrator's in the Operations area, and the versions screen is any signed-in person's in every mode. |
+| [[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]] | BACKLOG | | | Every process announces its start and its graceful stop through the shared service lifecycle; telemetry stores the events, so the roster tells stopped from lost and counts restarts. |
+| [[id:2F054957-1C41-4E98-B89E-6DE3D16924F7][Notify super administrators of service restarts]] | BACKLOG | | | Telemetry raises a service-restarted notification to the super administrators when a service starts again, marking a restart whose previous instance never stopped gracefully. |
 
 * Plan
 
@@ -134,6 +136,17 @@ from the accepted design.
   alone fails worst when the list is short: the operator cannot tell what is
   missing. The screen draws the installation's expected services and their
   replicas, and the read that serves them is the roster task.
+- *The estate's state is a small subset of the old controller.* Heartbeats
+  tell only whether an instance went quiet. The roster also needs what should
+  run, which the registry gives through a generated expected-services table,
+  and what each instance said about itself: every process announces =started=
+  and a graceful =stopped= through the shared service lifecycle, and telemetry
+  stores the events and raises a =service_restarted= notification to the super
+  administrators. Supervision stays systemd's, as it would be Kubernetes';
+  the decommissioned controller's =pid=, stderr and restart policy are not
+  brought back. Settled with the operator on 2026-10-06
+  ([[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]],
+  [[id:2F054957-1C41-4E98-B89E-6DE3D16924F7][Notify super administrators of service restarts]]).
 - *Both clients reach one operation.* Where the shell carries an operations
   journey today — the grid stats command and its recipe — it follows the same
   subject when the read changes. Where it carries none, this story records

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations: message bus prototype — Watch the message bus</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Watch the message bus, from
+  doc/knowledge/journeys/operations/journey_watch_the_message_bus.org.
+
+  Two variants, switchable with ?variant=sampled|empty, and two states,
+  switchable with ?state=rest|applied. The range is switchable with
+  ?range=15m|1h|6h. Every row is a fixture shaped by the NATS server and
+  stream sample replies; nothing on this page reads the server.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

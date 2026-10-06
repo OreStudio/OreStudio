@@ -1,0 +1,432 @@
+/* Setup journey prototype (First run). Self-contained: plain CSS, no build
+ * step, no import to wire.
+ *
+ * The tokens are the application's own, copied from
+ * projects/ores.web/packages/web/src/styles.css so a reviewer sees the
+ * prototype in the colours the real screens use. The furniture follows the
+ * navigation and profile prototypes beside this one: the journey rail is
+ * JourneyPage.tsx's grid, the card is `card p-6`, the footer is
+ * `mt-6 border-t pt-4` split by justify-between. */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --line-strong: #4a5568;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --radius: 0.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 7px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    max-width: 96vw;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.proto-bar button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 12px;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 999px;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar button.on { background: var(--accent-dim); color: var(--ink); }
+.proto-bar .label { padding: 0 8px; color: var(--ink); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+.proto-bar .sep { color: var(--line); padding: 0 2px; }
+
+/* ------------------------------------------------------------------ */
+/* Shared page furniture                                              */
+/* ------------------------------------------------------------------ */
+
+.page { padding: 78px 24px 110px; max-width: 1180px; margin: 0 auto; }
+.page.narrow { max-width: 720px; }
+
+.brand { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.tenant { margin-top: 6px; color: var(--ink-dim); font-size: 13px; }
+.tenant b { color: var(--ink); font-weight: 600; }
+
+.page > h1 { font-size: 22px; margin: 0 0 18px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+.lede { color: var(--ink-dim); margin: 0 0 24px; max-width: 62ch; }
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+.card h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem; }
+.card .lead { margin: 0 0 1.25rem; color: var(--ink-dim); font-size: 0.875rem; }
+
+.panel-soft {
+    background: var(--panel-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+}
+
+/* The step header: what stands above every step and does not change while the
+   steps do. JourneyPage wraps it in `mb-5 border-b border-line pb-4`. */
+.stepheader {
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+.stepheader img { height: 2.25rem; width: auto; border-radius: 0.375rem; background: #fff; padding: 0.25rem; }
+.stepheader .nm { font-weight: 500; }
+.stepheader .sub { font-size: 0.75rem; color: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* The flat step rail, as JourneyPage.tsx draws it                     */
+/* ------------------------------------------------------------------ */
+
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent-bright); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+
+/* ------------------------------------------------------------------ */
+/* Fields and controls                                                */
+/* ------------------------------------------------------------------ */
+
+.field { display: block; margin-bottom: 16px; }
+.field > .lbl { display: block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+.field input,
+.field select {
+    width: 100%;
+    background: #0e1218;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 13px;
+}
+.field select { cursor: pointer; }
+.field input:focus,
+.field select:focus { outline: none; border-color: var(--accent); }
+.field input:disabled { color: var(--ink-faint); background: #101014; border-style: dashed; }
+.field input::placeholder { color: var(--ink-faint); }
+.hint { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+.hint b { color: var(--ink-dim); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+@media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+.span2 { grid-column: 1 / -1; }
+
+fieldset { border: none; margin: 0 0 22px; padding: 0; }
+legend { font-size: 13px; font-weight: 600; margin-bottom: 10px; padding: 0; }
+
+.checkline { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; }
+.checkline input { width: auto; }
+
+.btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn.ghost { background: none; border-color: transparent; color: var(--ink-dim); }
+.btn.danger { background: none; border-color: var(--line); color: var(--bad); }
+.btn.small { padding: 5px 11px; font-size: 12px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.ghost:hover:not(:disabled) { color: var(--ink); background: var(--panel-2); }
+
+.notice { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-bottom: 18px; }
+.notice.info { background: #12161f; border: 1px solid #24344d; color: var(--ink); }
+.notice.success { background: #12281d; border: 1px solid #23543a; color: #a8e6c4; }
+.notice.warn { background: #2a2113; border: 1px solid #4a3a17; color: #efd39a; }
+.notice.error { background: #2b1614; border: 1px solid #5c2a24; color: #f0b7ae; }
+.notice .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ------------------------------------------------------------------ */
+/* The password field, as PasswordField.tsx draws it                  */
+/* ------------------------------------------------------------------ */
+
+.pwfield { margin-bottom: 16px; }
+.pwfield .pw-wrap { position: relative; }
+.pwfield .pw-wrap input { padding-right: 62px; }
+.pwfield .pw-toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    padding: 0 12px;
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 12px;
+    cursor: pointer;
+}
+.pwfield .pw-toggle:hover { color: var(--ink); }
+.pwstrength { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.pwstrength .bars { display: flex; flex: 1; gap: 4px; }
+.pwstrength .bar { height: 4px; flex: 1; border-radius: 999px; background: var(--line); }
+.pwstrength .bar.s1 { background: var(--bad); }
+.pwstrength .bar.s2 { background: var(--warn); }
+.pwstrength .bar.s3 { background: var(--ok); }
+.pwstrength .bar.s4 { background: var(--ok); }
+.pwstrength .word { width: 64px; text-align: right; font-size: 12px; color: var(--ink-dim); }
+.pwrules {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 16px;
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+@media (max-width: 640px) { .pwrules { grid-template-columns: 1fr; } }
+.pwrules li.met { color: var(--ok); }
+.pwerror { font-size: 12px; color: var(--bad); margin-top: 6px; }
+
+/* ------------------------------------------------------------------ */
+/* The starting-point cards, as ProfileChoice.tsx draws them          */
+/* ------------------------------------------------------------------ */
+
+.choicecards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .choicecards { grid-template-columns: 1fr; } }
+.choicecard {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.choicecard:hover { border-color: var(--line-strong); }
+.choicecard.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2); }
+.choicecard img { margin-bottom: 12px; height: 3rem; width: auto; border-radius: 0.375rem; background: #fff; padding: 0.375rem; }
+.choicecard .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.choicecard .top .nm { font-weight: 600; }
+.choicecard .top .aud { font-size: 12px; color: var(--ink-faint); }
+.choicecard .sum { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
+.choicecard ul { list-style: none; margin: 12px 0 0; padding: 0; font-size: 13px; }
+.choicecard ul li { display: flex; gap: 8px; margin: 3px 0; }
+.choicecard ul li .dot { color: var(--ink-faint); }
+.choicecard .counts { margin: 12px 0 0; font-size: 12px; color: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* The provisioning progress, as ProgressList.tsx draws it            */
+/* ------------------------------------------------------------------ */
+
+.runlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.runlist li { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.runlist .mark { width: 16px; text-align: center; }
+.runlist .pending { color: var(--ink-faint); }
+.runlist .running { color: var(--accent-bright); }
+.runlist .running .mark { animation: pulse 1.2s ease-in-out infinite; }
+.runlist .done { color: var(--ok); }
+.runlist .failed { color: var(--bad); }
+.runlist .lbl { color: var(--ink); }
+.runlist .pending .lbl { color: var(--ink-faint); }
+.runlist .timedout { font-size: 12px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.runfoot { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.runfoot .note { font-size: 12px; color: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* The review list, as the Review steps draw it                       */
+/* ------------------------------------------------------------------ */
+
+.reviewgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin: 0; }
+@media (max-width: 640px) { .reviewgrid { grid-template-columns: 1fr; } }
+.reviewgrid dt { color: var(--ink-faint); }
+.reviewgrid dd { margin: 0; color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
+/* Handoff, and the next-steps cards                                  */
+/* ------------------------------------------------------------------ */
+
+.handoffcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nextcards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media (max-width: 760px) { .handoffcards, .nextcards { grid-template-columns: 1fr; } }
+.handoffcard, .nextcard {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.handoffcard:hover, .nextcard:hover { border-color: var(--accent); }
+.handoffcard .nm, .nextcard .nm { font-weight: 600; }
+.handoffcard p, .nextcard p { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
+
+/* ------------------------------------------------------------------ */
+/* The legal-entity results, as NewPartyJourneyPrototype.tsx draws    */
+/* ------------------------------------------------------------------ */
+
+.entitylist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.entitylist .none { font-size: 13px; color: var(--ink-faint); }
+.entityresult {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.entityresult:hover { border-color: var(--line-strong); }
+.entityresult.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2); }
+.entityresult .parent { display: block; font-size: 12px; color: var(--ink-faint); }
+.entityresult .id { flex: 0 0 auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--ink-faint); }
+
+.accountgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+@media (max-width: 640px) { .accountgrid { grid-template-columns: 1fr; } }
+.accountgrid .checkline .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ------------------------------------------------------------------ */
+/* The welcome screen, as FirstRunJourneyPrototype.tsx draws it       */
+/* ------------------------------------------------------------------ */
+
+.welcome { max-width: 920px; margin: 0 auto; padding-bottom: 4rem; text-align: center; }
+.welcome img.splash {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 16px auto 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.welcome h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.01em; margin: 40px 0 0; }
+.welcome .lead { margin: 16px auto 0; max-width: 60ch; font-size: 17px; color: var(--ink-dim); }
+.welcome ol {
+    list-style: none;
+    margin: 40px auto 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 768px;
+    text-align: left;
+}
+@media (max-width: 760px) { .welcome ol { grid-template-columns: 1fr; } }
+.welcome ol li { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.welcome ol li .nm { font-weight: 500; }
+.welcome ol li p { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
+.welcome .btn { margin-top: 40px; padding: 12px 28px; font-size: 16px; }
+
+.signedin { margin: -16px 0 24px; font-size: 12px; color: var(--ink-faint); }
+.signedin .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.failtoggle { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e879f9; margin-top: 16px; }
+.failtoggle input { width: auto; }
+
+/* A note the prototype adds where the real screen would leave the page. */
+.proto-hint { margin-top: 12px; font-size: 12px; color: var(--warn); }

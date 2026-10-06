@@ -25,6 +25,7 @@
 #include "ores.iam.api/generators/run_grant_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>

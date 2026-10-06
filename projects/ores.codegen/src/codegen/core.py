@@ -3624,6 +3624,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             or domain_entity['has_text_natural_keys']
             or domain_entity['has_unique_suffix_columns']
         )
+        # The Boost UUID I/O header supplies boost::uuids::to_string, which a
+        # hand-written generator_expr may call (e.g. run_grant's resource
+        # renders a fresh UUID as text). Gate the include on an actual call so
+        # entities that never render a UUID as text keep it out.
+        generator_exprs = [
+            item.get('generator_expr') or ''
+            for item in [
+                domain_entity.get('primary_key', {}),
+                *domain_entity.get('natural_keys', []),
+                *domain_entity.get('columns', []),
+                *domain_entity.get('primary_key', {}).get('extra_columns', []),
+            ]
+        ]
+        domain_entity['has_uuid_to_string_generator'] = any(
+            'boost::uuids::to_string' in expr for expr in generator_exprs
+        )
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])
         if 'validations' in domain_entity:

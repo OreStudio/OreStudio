@@ -76,7 +76,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] | DONE | | 2026-10-06 | The domain-entity generator template emits generator expressions that call boost::uuids::to_string without including <boost/uuid/uuid_io.hpp>, so the generated ores.iam run_grant generator fails to compile. |
 
 * Achievements
 

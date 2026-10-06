@@ -27,11 +27,11 @@ a GNU ELPA outage no longer fails the build.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Fix verified locally: cold fallback, warm no-op. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit and open the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -45,8 +45,8 @@ a GNU ELPA outage no longer fails the build.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F7CC9903-B2EB-44B2-9B35-D3A9CAF1576A][Scaffold story: Hotfix: Site build needs live GNU ELPA]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:64415938-135B-4E32-AC30-FB64801B7A81][Implement Hotfix: Site build needs live GNU ELPA]] | STARTED | 2026-10-06 | | Cache the Emacs package tree in both site workflows, add a GNU ELPA mirror fallback, and make the archive-refresh retry detect a failed refresh. |
+| [[id:F7CC9903-B2EB-44B2-9B35-D3A9CAF1576A][Scaffold story: Hotfix: Site build needs live GNU ELPA]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:64415938-135B-4E32-AC30-FB64801B7A81][Implement Hotfix: Site build needs live GNU ELPA]] | DONE | 2026-10-06 | 2026-10-06 | Cache the Emacs package tree in both site workflows, add a GNU ELPA mirror fallback, and make the archive-refresh retry detect a failed refresh. |
 
 * Decisions
 
@@ -62,3 +62,9 @@ a GNU ELPA outage no longer fails the build.
 * Out of scope
 
 - Replacing GNU ELPA as the source of =queue= and =compat=.
+
+* Result
+
+Shipped in PR #2693. A cold bootstrap with unreachable GNU archives
+installs every site package through the mirror, and a warm CI cache
+removes the network dependency.

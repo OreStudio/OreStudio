@@ -8,7 +8,7 @@
 #+filetags: :site-build-needs-live-gnu-elpa:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/site-build-needs-live-gnu-elpa
-#+pr:
+#+pr: 2693
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -27,11 +27,11 @@ site CI must not install the packages on every run.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F49BC762-0B5E-48F6-8F82-F5C8C932591A][Hotfix: Site build needs live GNU ELPA]] |
-| Now          | Fix verified locally; ready to commit. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open the PR.                |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2693][#2693]] | [ci] Make the site package bootstrap survive a GNU ELPA outage |
 
 * Review
 
@@ -108,3 +108,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The bootstrap reads the refresh outcome, retries, and falls back to the
+BFSU mirrors. Both site workflows cache =./.packages=. A cold run with
+unreachable GNU archives installed all five packages; a warm run was a
+no-op. Merging PR #2693 makes site CI survive the next GNU ELPA outage.

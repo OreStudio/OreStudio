@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 117140A2-19CE-41EC-8734-A5648312385A
+:END:
+#+title: Story: Separate the account's credentials from its profile
+#+description: One account entity holds both profile data and the secrets a person or service authenticates with, so a profile write replaces the whole row and clears the credential the domain cannot carry. Split the access paths.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A profile write can never change a credential, and the history says which of the two actually changed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- Account credentials live in their own entity with their own read and write codes.
+- A profile update cannot clear a credential, because it cannot reach it.
+- No credential column travels on the wire.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | BACKLOG | | | Initial task for: Separate the account's credentials from its profile |
+
+* Decisions
+
+* Out of scope
+
+-

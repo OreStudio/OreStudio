@@ -671,8 +671,19 @@ account_repository::check_service_credentials(context ctx,
     for (unsigned int i = 0; i < digest_len; ++i)
         computed_hash += std::format("{:02x}", digest[i]);
 
-    if (!entity.service_password_hash.has_value() ||
-        computed_hash != entity.service_password_hash.value()) {
+    if (!entity.service_password_hash.has_value()) {
+        // The password is not what failed: the open version of the row has
+        // lost its hash, which an account update that cannot carry the
+        // credential column writes. Say that, so a data fault is not read
+        // as a rejected credential.
+        BOOST_LOG_SEV(lg(), warning)
+            << "Service account has no stored password hash, so it cannot "
+               "authenticate: "
+            << username;
+        return std::nullopt;
+    }
+
+    if (computed_hash != entity.service_password_hash.value()) {
         BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
         return std::nullopt;
     }

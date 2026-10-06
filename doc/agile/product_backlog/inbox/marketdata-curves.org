@@ -31,9 +31,9 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Candidate journey catalogue written on 2026-10-06, for owner sign-off. |
+| Now           | Revised journey catalogue written on 2026-10-06, for owner sign-off. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
-| Next          | The owner signs the journey catalogue off; then the journey documents are written; then the data model is checked against them. |
+| Next          | The owner signs the revised catalogue off; then the journey documents are written; then the data model is checked against them. |
 | Last touched  | 2026-10-06                               |
 
 * What exists today
@@ -761,79 +761,130 @@ can show the manual segment with its actor and its reason.
 
 J08 of the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][user journey extraction
 standard]] says the catalogue is agreed with the product owner before any
-journey document is written. This is that catalogue. No journey document
-exists yet, and its group is not yet created.
+journey document is written. This is the revised catalogue after the owner's
+first review; no journey document exists yet.
 
 ** The model the journeys assume: observations are not curves
-
-The distinction the whole catalogue turns on:
 
 - *A market observation* is what the market sends. It arrives per point, from
   a feed or an import, and nobody signs it off. It is the evidence.
 - *A published curve or surface* is what the system uses. A responsible
-  person -- the market data manager -- owns it, updates it from what they see
-  in the market or keys a point by hand, and *publishes* it. Only the
-  published object is visible to pricing, reporting and every other consumer.
+  person -- a trader holding the market-data management role -- owns it,
+  updates it from what they see in the market or adjusts it by hand, and
+  *publishes* it, subject to a second person's approval. Only the published
+  object is visible to pricing, reporting and every other consumer.
 
-So a derived curve is a *candidate* until it is published, and publishing is a
-named, attributable act, not a side effect of a build. Nothing a feed writes
-is a curve the system uses until the manager publishes it, and every journey
-below respects that boundary.
+So a derived curve is a *candidate* until it is approved and published, and
+publishing is a named, attributable act, not a side effect of a build.
 
 ** Actors
 
-The existing journey actor classes are =TenantAdmin= and =Operations= only.
-These journeys add two classes and raise one question.
+The owners are *traders*, not a separate market-data department: the
+management of a currency's curves and a desk's surfaces is a *role* added to a
+trader's account, not a new actor class. The second pair of eyes is a second
+person holding the decide permission.
 
-| Actor | Who they are | New? |
+| Actor | Who they are | Note |
 |-------+--------------+------|
-| Market data manager | The person responsible for a currency's curves, or a desk's surfaces | New |
-| Market data consumer | Any user who reads published market data | New |
+| Trader (maker) | The front-office person who owns a currency's curves or a desk's surfaces | Holds the market-data management role; authors, adjusts, asks for approval |
+| Approver (checker) | A second person who decides a publish | Holds the decide permission; the 4-eyes half |
+| Quant | Authors models and diagnostics; may hold the same management role | The blueprint and model work is theirs |
 | Operations | The installation's feeds and services | Exists |
-| Approver | A second person who signs a publish off | Proposed, not assumed; see journey 9 |
+| Consumer | Any user who reads published market data | Role-based |
+| Auditor | Reads the trail after an incident | Role-based |
+
+The background actors are not journeys: the feed handler that ingests quotes
+and the scheduler that bootstraps candidates are steps inside the journeys
+below, not people carrying a goal to completion.
 
 ** The catalogue
 
 One new group, =market_data=, under =doc/knowledge/journeys/=, unless the
 owner prefers it split by desk.
 
+*** Author the object
+
 | # | Journey | Actor | Trigger | Starts, ends |
 |---+---------+-------+---------+--------------|
-| 1 | See what the market is sending | Market data manager | A curve looks wrong, or a feed alerts | From a scope (a currency, a curve or a surface) to the raw points with their source, age and any rejection |
-| 2 | Keep the feeds running | Operations | A feed stops, or a service starts | From the feed roster to a started or stopped feed and its last tick |
-| 3 | Author a curve recipe | Market data manager | A currency or a curve family is new | From the currency to a saved bootstrap config and its ordered pillars |
-| 4 | Amend a curve recipe | Market data manager | A market convention changes | From an existing recipe to a saved change, with its effect on the curve shown |
-| 5 | Author a surface's convention | Market data manager | A vol surface is new | From the pair or underlying to a saved surface convention: its axes and how it is quoted |
-| 6 | Bootstrap or refresh a curve | Market data manager | The day's market, or a feed update | From a recipe and an as-of to a candidate curve: its points, its health and its provenance, not yet published |
-| 7 | Build or refresh a surface | Market data manager | The day's market, or a feed update | From the surface and an as-of to a candidate surface, not yet published |
-| 8 | Key a point by hand | Market data manager | A quote is wrong or missing | From a node to a manual point with a reason, which survives later feed updates until it is cleared |
-| 9 | Review and sign off | Market data manager, optionally an approver | The candidates are ready to publish | From the day's candidates to accepted or rejected ones, with what changed against the last published |
-| 10 | Publish a curve set | Market data manager | The sign-off is complete | From the signed-off candidates to the published curves the system now uses |
-| 11 | Withdraw or replace a published curve | Market data manager | An error is found after a publish | From a published curve to a withdrawn or superseded one, with the reason recorded |
-| 12 | See a curve or surface at an instant | Market data consumer | A valuation, or a question | From an object and a date to its nodes, its chart and its provenance |
-| 13 | Watch a curve or surface evolve | Market data consumer | A review, or a market move | From an object and a range to the aligned evolution: instants by nodes, with added and dropped nodes named |
-| 14 | Compare the market to the published curve | Market data manager | Suspicion that a published curve is stale | From an object to the raw observations overlaid on the published curve |
-| 15 | See what the system is using | Market data consumer | Before a run, or during an incident | From a scope to the published curve set for a date, with its staleness and its consumers |
-| 16 | See who changed a curve, and when | Auditor or reviewer | An incident, or an audit | From a curve to its trail: recipe changes, builds, manual points and publishes, each with its actor |
+| 1 | Manage a curve's blueprint | Trader, Quant | A currency or family is new, or a convention changes | From the currency to a saved curve blueprint: identity and role, pillar instruments, bootstrap method, interpolation, conventions and stub handling |
+| 2 | Author a surface's framework | Trader, Quant | A vol surface is new, or its convention changes | From the pair or underlying to a saved framework: axes and grid, quoting convention, interpolation and extrapolation, model |
+
+*** Watch the market
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 3 | See what the market is sending | Trader | A curve looks wrong, or a feed alerts | From a scope to the raw points with their source, age and quality flags |
+| 4 | Clear the market's exceptions | Trader, Operations | Missing, crossed or stale quotes | From the exception list to a fallback, a proxy or an escalation, each recorded |
+| 5 | Keep the feeds running | Operations | A feed stops, or a service starts | From the feed roster to a started or stopped feed and its last tick |
+
+*** Build a candidate
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 6 | Bootstrap or refresh a curve | Trader | The day's market, or a feed update | From a blueprint and an as-of to a candidate curve: points, health and provenance, not yet published |
+| 7 | Calibrate or refresh a surface | Trader | The day's market, or a feed update | From the surface and an as-of to a candidate surface, with its calibration error |
+
+*** Adjust by hand
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 8 | Adjust a curve or surface by hand | Trader | A quote is wrong, missing or not credible | From a node or a segment to a manual point or a spread overlay (parallel, twist) with a reason, which survives later feed updates until cleared |
+
+*** Diagnose
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 9 | Check a curve's fit | Trader, Quant | Suspicion that the candidate is stale or wrong | From a candidate to the raw quotes overlaid on it, with pillar residuals, forward smoothness and roll logic |
+| 10 | Inspect a surface's slices | Trader, Quant | Suspicion that the surface is arbitrageable or stale | From a candidate to its smiles across tenors and its mesh, with calendar and butterfly arbitrage checks |
+
+*** Govern: four eyes
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 11 | Ask for a publish to be approved | Trader (maker) | The candidates are ready | From the candidate set to an approval request, with what changed against the last published |
+| 12 | Decide the publish | Approver (checker) | An approval request | From the request to approved, refused or held, with a comment; the decision is an =ores.inbox= approval |
+| 13 | Publish the approved set | Trader | The approval is given | From the approved candidates to the published curves the system now uses |
+| 14 | Withdraw or replace a published curve | Trader, Approver | An error is found after a publish | From a published curve to a withdrawn or superseded one, with the reason recorded and the same approval rule |
+
+*** Consume
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 15 | See a curve or surface at an instant | Consumer | A valuation, or a question | From an object and a date to its nodes, its chart and its provenance |
+| 16 | Watch a curve or surface evolve | Consumer | A review, or a market move | From an object and a range to the aligned evolution, with added and dropped nodes named |
+| 17 | Give a valuation run its market data | Trader, Quant, Consumer | A valuation run is due | From a published set and a run to the ORE market-data files the run consumes, and the run's result |
+| 18 | See who changed a curve, and when | Auditor | An incident, or an audit | From a curve to its trail: blueprint changes, builds, manual adjustments, approvals and publishes, each with its actor |
+
+** What changed from the first draft
+
+- *The actor is a trader, not a market data manager.* The manager is a role
+  granted to a trader's account, and the approver is a second person.
+- *Author and amend merged* into journey 1, as the owner asked.
+- *Manual keying widened* into journey 8: a point, a clearing of one, or a
+  spread overlay over a segment.
+- *Sign-off is a four-eyes approval* (journeys 11 and 12), carried by the
+  =ores.inbox= approval workflow the component already models. Its
+  =approval_kind= carries a decide permission, whether a comment is required,
+  an expiry and how many approvals are needed, so a market-data publish is one
+  more kind rather than new machinery.
+- *The old "see what the system is using" became journey 17*: the consumer is
+  the ORE market-data files a valuation run reads, so the journey ends in a
+  run, not in a table.
+- *Adopted from the parallel analysis:* exception and stale-quote handling
+  (journey 4), surface calibration (journey 7), curve-fit diagnostics
+  (journey 9) and surface slice and arbitrage inspection (journey 10).
 
 ** Notes for the sign-off
 
-- *Journeys 3 and 4 may be one.* Authoring and amending a recipe are the same
-  screen over the same operations; they are apart because the triggers differ.
-  Merge them if you prefer.
-- *Journey 8 has a companion.* Clearing a manual point is the reverse act and
-  could be a step of journey 8 rather than a journey of its own.
-- *Journeys 6 and 7 may be one.* A curve and a surface are the same object
-  kind with a different number of axes, so the workbench may be one screen.
-  They are apart because the surface brings its quoting convention with it.
-- *Journey 9 assumes the sign-off is the manager's own act.* The abandoned
-  review and sign-off task suggests a second person; settle whether the
-  approver exists before that journey is written.
-- *Journey 2 belongs to Operations*, and the feed bindings already exist. It is
-  in the catalogue because a curve manager depends on it, not because it is
-  new.
-- *Journey 15's consumers are the first real consumer* the earlier analysis
-  asked for: the run or report that reads a published curve.
+- *Journeys 3 and 4 may be one* -- watch the market and clear its exceptions
+  are the same screen at different moments. Merge if you prefer.
+- *Journeys 15 and 16 may be one screen* -- one instant and a range are the
+  same view at different zoom.
+- *Journey 5 belongs to Operations*, and the feed bindings already exist; it
+  is here because a curve owner depends on it.
+- *Journey 17 is the first real consumer* the data-model analysis kept asking
+  for. If the ORE export is its own story, the journey still belongs here and
+  says so.
 
 ** Sign-off
 

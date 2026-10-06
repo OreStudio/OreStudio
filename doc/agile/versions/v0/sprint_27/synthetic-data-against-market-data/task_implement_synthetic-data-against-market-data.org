@@ -89,10 +89,11 @@ and the provenance axis.
 answers "was this published or computed?" (=OBSERVED= vs =IR_CURVE_BOOTSTRAP=,
 =CRM_DERIVATION=), and a synthetic feed is genuinely published, so calling it a
 derivation would break that meaning. Real-versus-generated is a separate axis
-about the *producer*, and belongs where the producer is known: the
-=feed_binding='s producer kind. Decided: a =producer_kind= code (=VENDOR= /
-=SYNTHETIC=) on the binding, stamped on the series and readable per
-observation.
+about the *producer*, carried by the =feed_binding= and readable from the
+series an observation belongs to. Decided: a =producer_kind= *reference-data
+code table* (=VENDOR=, =SYNTHETIC=) alongside =derivation_kind=, referenced by
+=feed_binding= and =market_series=, listable in the UI and validated by the
+seed rather than free text.
 
 **D2. One pipeline, asset class only where it is real. Decided.** The
 generator pipeline is common to every asset class, and IR and FX must not have
@@ -145,6 +146,8 @@ task and name that file in the Command column.
 | Forks inventoried | 24 (13 spurious, 11 genuine) | read =evidence/asset-class-fork-inventory.org= | =9c1c4af10e= |
 | Slice 1 subject tests | 22 assertions in 7 cases pass | =ores.synthetic.api.tests "[feed_factory]"= | =f09d43f5bf= |
 | marketdata tick-subject tests | 4 assertions in 3 cases pass | =ores.marketdata.api.tests "[tick_subjects]"= | =f09d43f5bf= |
+| synthetic service tests, after DB recreate | suite passes (subject cases included) | =ctest -R ores.synthetic.service.tests= | =c8421b2d45= |
+| synthetic core tests, after DB recreate | 40/41, one fixture failure (missing ISO coding scheme) | =ctest -R ores.synthetic.core.tests= | =c8421b2d45= |
 
 * Notes
 
@@ -156,11 +159,16 @@ pass the configured mode instead of a default. =IFeed= gains =nats_subject()=
 so the subject is assertable at the public seam. IR sandboxing is fixed.
 
 The =ores.synthetic.service.tests= and =ores.synthetic.core.tests= binaries
-refuse to start while the local database schema fingerprint (=0e5e94985734f233=)
-is behind the checkout (=416d79146b6d63e3=), so the renamed
-=feed_controller= subject cases were compiled but not run. The same behaviour
-is covered by the API-level factory test. A database recreate is the fix and
-is needed before the =persist()= slice's test can run.
+refused to start while the local database schema fingerprint (=0e5e94985734f233=)
+was behind the checkout (=416d79146b6d63e3=). The database was recreated on
+2026-10-06 (fingerprint now =416d79146b6d63e3=) and services restarted.
+=ores.synthetic.service.tests= now passes, so the renamed =feed_controller=
+subject cases run and pass. =ores.synthetic.core.tests= has one unrelated
+failure from the fresh database, in =feeds_fomc_curve_resolution_tests.cpp:92=:
+the country import inside its fixture cannot find the =ISO_3166_1_ALPHA_2=
+coding scheme, so a populate step the fixture depends on is missing after
+=db recreate -k=. That is an environment gap, not this change, and it needs
+capturing as its own task before the service-level tests are dependable.
 
 * Test Scenarios
 

@@ -52,7 +52,7 @@ domain::run_grant generate_synthetic_run_grant(utility::generation::generation_c
                  boost::uuids::to_string(ctx.generate_uuid()) + "-" + std::to_string(idx);
     r.grantor_account_id = ctx.generate_uuid();
     r.role_id = ctx.generate_uuid();
-    r.audience = std::string("ores.reporting.service");
+    r.audience = std::string("ReportingService");
     r.max_runs = 0;
     r.not_after = std::chrono::system_clock::time_point{};
     r.revoked_at = std::chrono::system_clock::time_point{};

@@ -113,6 +113,12 @@ _CLASS_RE = re.compile(
 _ENUM_CLASS_RE = re.compile(r'^\s*enum\s+class\s+(\w+)\s*(?::\s*[\w:]+\s*)?\{')
 _ENUM_RE = re.compile(r'^\s*enum\s+(\w+)\s*\{')
 
+# A type declared inside another type. The pass draws types at namespace scope
+# only, so a nested declaration is left to the manual section; a one-line body
+# balances its braces on the line and would otherwise read as a data member
+# whose type is the keyword.
+_NESTED_TYPE_RE = re.compile(r'^\s*(?:enum(?:\s+class)?|struct|class|union)\s+\w')
+
 # Field patterns inside struct/class bodies
 _FIELD_RE = re.compile(
     r'^\s*([\w:*&<>, ]+?)\s+(\w+)\s*'
@@ -357,21 +363,25 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
                 i += 1
                 continue
 
-            # --- Closing brace (could close namespace or be unrelated) ---
-            if stripped == '}' or stripped == '};':
-                if brace_depth > 0:
-                    brace_depth -= 1
-                    if ns_stack and brace_depth == len(ns_stack) - 1:
-                        ns_stack.pop()
-                preceding_was_template = False
-                i += 1
-                continue
-
-            # Count other opening braces not captured above
-            if '{' in stripped and not stripped.startswith('//'):
-                # Not a namespace or type we care about; just track depth
-                if '}' not in stripped:
-                    brace_depth += 1
+            # --- Braces that are neither a namespace nor a tracked type ---
+            # A namespace closes when the depth falls back to the level that
+            # opened it. A declaration may open or close more than one brace on
+            # a line -- a two-level brace initialiser opens two -- so the line's
+            # braces are counted rather than matched one at a time. A type
+            # declaration does its own bookkeeping below and is left out, or its
+            # brace would be counted twice and the enclosing namespace would
+            # never close.
+            is_type_decl = (_STRUCT_RE.match(line) or _CLASS_RE.match(line)
+                            or _ENUM_CLASS_RE.match(line) or _ENUM_RE.match(line))
+            if not is_type_decl and ('{' in stripped or '}' in stripped):
+                brace_depth += stripped.count('{') - stripped.count('}')
+                while ns_stack and brace_depth < len(ns_stack):
+                    ns_stack.pop()
+                # A line that only closes braces is not a declaration.
+                if stripped.count('{') == 0:
+                    preceding_was_template = False
+                    i += 1
+                    continue
 
             # --- Type declarations ---
             if not preceding_was_template:
@@ -447,6 +457,13 @@ def parse_header(path: Path) -> dict[tuple[str, ...], list[TypeInfo]]:
             # --- Inside a type body ---
             opens = stripped.count('{')
             closes = stripped.count('}')
+
+            # A nested type declaration is not a data member. A one-line body
+            # balances its braces, so without this it reaches the field pattern
+            # below and is drawn as a member named after the type.
+            if opens > 0 and opens == closes and _NESTED_TYPE_RE.match(stripped):
+                i += 1
+                continue
 
             # A member may carry a brace initialiser, so its line holds braces
             # that balance on the line itself. Read it before the brace

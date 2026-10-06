@@ -23,15 +23,24 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/trade_activity_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.trading.api/messaging/trade_activity_protocol.hpp"
 #include "ores.trading.core/messaging/trade_activity_handler.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::trading::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.trading.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_trade_activity_handlers(ores::nats::service::client& nats,
@@ -54,4 +63,4 @@ register_trade_activity_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::trading::messaging
+}

@@ -36,6 +36,6 @@ register_trade_activity_event_mapping(ores::eventing::service::postgres_event_so
                                       ores::eventing::service::event_bus& event_bus,
                                       ores::nats::service::client& nats);
 
-} // namespace ores::trading::service::messaging
+}
 
 #endif

@@ -22,10 +22,34 @@
 
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <optional>
+#include <regex>
+#include <stdexcept>
 #include <string>
 
 namespace ores::database::repository {
+
+/**
+ * @brief The instant a list request states, if it is one the database reads.
+ *
+ * The form is a UTC timestamp: a date, 'T' or a space, a time with an optional
+ * fraction of up to six digits, and Z, +00 or +00:00. The text is returned as
+ * the caller wrote it, so a fraction of a second is kept; the parse only proves
+ * the date and time exist.
+ */
+inline std::optional<std::string> parse_as_of(const std::string& text) {
+    static const std::regex form(
+        R"(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|\+00(:00)?))");
+    if (!std::regex_match(text, form))
+        return std::nullopt;
+    try {
+        static_cast<void>(ores::platform::time::datetime::from_iso8601_utc(text));
+    } catch (const std::invalid_argument&) {
+        return std::nullopt;
+    }
+    return text;
+}
 
 /**
  * @brief A row whose validity window holds the instant @p as_of.

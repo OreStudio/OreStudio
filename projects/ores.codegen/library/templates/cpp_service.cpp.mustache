@@ -17,6 +17,9 @@
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_include}}
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+{{#domain_entity.has_as_of_lookup}}
+#include "ores.database/repository/valid_at.hpp"
+{{/domain_entity.has_as_of_lookup}}
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 
@@ -149,14 +152,13 @@ messaging::{{response}}
 {{/domain_entity.has_search}}
 {{/has_filter}}
 {{#domain_entity.has_as_of_lookup}}
-    // A stated instant is parsed here, so a malformed one is the caller's
-    // mistake rather than a database error, and the store reads one form.
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
     std::optional<std::string> as_of;
     if (request.as_of) {
-        try {
-            as_of = ores::platform::time::datetime::to_iso8601_utc(
-                ores::platform::time::datetime::from_iso8601_utc(*request.as_of));
-        } catch (const std::invalid_argument&) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
             response.result.outcome = ores::utility::domain::outcome::invalid;
             response.result.code = "as_of_invalid";
             response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;

@@ -2714,6 +2714,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # 'component' is the short key some templates need (e.g. the
             # env-var-mirror generator), always psql_var with its "_service"
             # suffix stripped -- psql_var is always "<component>_service".
+            svc['summary_sql'] = _sql_literal(svc.get('summary', ''))
+            if not svc.get('account_var') and psql_var:
+                svc['account_var'] = f"{psql_var}_user"
             if psql_var.endswith('_service'):
                 svc['component'] = psql_var[: -len('_service')]
             elif psql_var:

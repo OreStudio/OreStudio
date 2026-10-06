@@ -29,11 +29,17 @@
  * heartbeat of each instance, so an expected instance that never reports
  * still has a row.
  *
+ * The description says what the service does. The service account is the
+ * IAM account the process signs in as, null for a process that signs in as
+ * no account of its own.
+ *
  * Installation-level, like the heartbeat samples: no tenant owns a service.
  */
 create table if not exists ores_telemetry_expected_services_tbl (
-    "service_name"  text not null,
-    "replicas"      integer not null,
+    "service_name"     text not null,
+    "replicas"         integer not null,
+    "description"      text not null default '',
+    "service_account"  text null,
     primary key (service_name),
     constraint expected_services_replicas_chk check (replicas > 0)
 );

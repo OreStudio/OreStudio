@@ -642,24 +642,27 @@ telemetry_repository::list_service_roster(context ctx,
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
 
-    const std::string sql = "SELECT service_name, slot, instance_id, host_id, version, sampled_at "
+    const std::string sql = "SELECT service_name, description, service_account, slot, "
+                            "instance_id, host_id, version, sampled_at "
                             "FROM ores_telemetry_service_roster_fn()";
     const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading the services roster");
 
     std::vector<messaging::service_roster_slot> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() < 6)
+        if (row.size() < 8)
             continue;
 
         messaging::service_roster_slot slot;
         slot.service_name = row[0].value_or("");
-        slot.slot = std::stoi(row[1].value_or("0"));
-        if (row[5].has_value() && !row[5]->empty()) {
-            slot.instance_id = row[2];
-            slot.host_id = row[3];
-            slot.version = row[4];
-            slot.sampled_at = datetime::from_db_string(*row[5]);
+        slot.description = row[1].value_or("");
+        slot.service_account = row[2];
+        slot.slot = std::stoi(row[3].value_or("0"));
+        if (row[7].has_value() && !row[7]->empty()) {
+            slot.instance_id = row[4];
+            slot.host_id = row[5];
+            slot.version = row[6];
+            slot.sampled_at = datetime::from_db_string(*row[7]);
             slot.state = now - *slot.sampled_at <= service_running_window ?
                              ores::telemetry::domain::service_state::running :
                              ores::telemetry::domain::service_state::lost;

@@ -115,6 +115,15 @@ export interface ServiceRosterSlot {
      */
     service_name: string;
     /**
+     * @brief What the service does, in one sentence from the service registry.
+     */
+    description: string;
+    /**
+     * @brief The IAM service account the process signs in as, empty for a process
+     * that signs in as no account of its own.
+     */
+    service_account: string | null;
+    /**
      * @brief Which expected instance this is, from 1 to the service's replicas.
      */
     slot: number;

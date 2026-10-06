@@ -252,6 +252,29 @@ and the operations dashboard reads the samples.
  */
 #+end_src
 
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the service does, in one sentence from the service registry.
+ */
+#+end_src
+
+*** service_account
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The IAM service account the process signs in as, empty for a process
+ * that signs in as no account of its own.
+ */
+#+end_src
+
 *** slot
 :PROPERTIES:
 :cpp_type: int

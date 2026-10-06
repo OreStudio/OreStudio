@@ -306,12 +306,15 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
     const auto reporting = "ores.test.roster-" + suffix + ".service";
     const auto silent = "ores.test.silent-" + suffix + ".service";
     const std::string insert_expected =
-        "INSERT INTO ores_telemetry_expected_services_tbl (service_name, replicas) "
-        "VALUES ($1, $2::integer)";
+        "INSERT INTO ores_telemetry_expected_services_tbl "
+        "(service_name, replicas, description, service_account) "
+        "VALUES ($1, $2::integer, $3, nullif($4, ''))";
     ores::database::repository::execute_parameterized_command(
-        h.context(), insert_expected, {reporting, "2"}, lg, "Expecting the reporting service");
+        h.context(), insert_expected, {reporting, "2", "Reports for the test.", "roster_test_user"},
+        lg, "Expecting the reporting service");
     ores::database::repository::execute_parameterized_command(
-        h.context(), insert_expected, {silent, "1"}, lg, "Expecting the silent service");
+        h.context(), insert_expected, {silent, "1", "Never reports.", ""}, lg,
+        "Expecting the silent service");
 
     const auto now = std::chrono::system_clock::now();
     const auto report = [&](const std::string& instance, std::chrono::minutes age) {
@@ -340,6 +343,8 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
                              << " silent=" << silent_slots.size();
 
     REQUIRE(reporting_slots.size() == 2);
+    CHECK(reporting_slots[0].description == "Reports for the test.");
+    CHECK(reporting_slots[0].service_account == std::optional<std::string>("roster_test_user"));
     CHECK(reporting_slots[0].slot == 1);
     CHECK(reporting_slots[0].instance_id == std::optional<std::string>("fresh"));
     CHECK(reporting_slots[0].state == ores::telemetry::domain::service_state::running);
@@ -351,6 +356,7 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
 
     REQUIRE(silent_slots.size() == 1);
     CHECK(silent_slots[0].slot == 1);
+    CHECK_FALSE(silent_slots[0].service_account.has_value());
     CHECK(silent_slots[0].state == ores::telemetry::domain::service_state::missing);
     CHECK_FALSE(silent_slots[0].instance_id.has_value());
     CHECK_FALSE(silent_slots[0].sampled_at.has_value());

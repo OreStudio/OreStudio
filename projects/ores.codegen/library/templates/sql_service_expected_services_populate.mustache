@@ -17,9 +17,14 @@
 
 {{#service_registry.services}}
 {{#enabled}}
-insert into ores_telemetry_expected_services_tbl (service_name, replicas)
-values ('{{name}}', {{replicas}})
-on conflict (service_name) do update set replicas = excluded.replicas;
+insert into ores_telemetry_expected_services_tbl
+    (service_name, replicas, description, service_account)
+values ('{{name}}', {{replicas}}, '{{summary_sql}}',
+        {{#account_var}}:'{{account_var}}'{{/account_var}}{{^account_var}}null{{/account_var}})
+on conflict (service_name) do update set
+    replicas = excluded.replicas,
+    description = excluded.description,
+    service_account = excluded.service_account;
 
 {{/enabled}}
 {{/service_registry.services}}

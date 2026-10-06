@@ -85,3 +85,9 @@ def test_db_grant_prefixes_still_round_trip(services):
     assert {"prefix": "ores_synthetic_"} in syn["dml_prefixes"]
     assert {"prefix": "ores_synthetic_publish_"} in syn["execute_prefixes"]
     assert len(syn["select_prefixes"]) == 9
+
+
+def test_every_entry_says_what_it_does(services):
+    """The services roster shows each service's summary, so none is blank."""
+    for name, svc in services.items():
+        assert svc.get("summary", "").strip(), name

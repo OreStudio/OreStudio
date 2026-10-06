@@ -145,6 +145,15 @@ struct service_roster_slot {
      */
     std::string service_name;
     /**
+     * @brief What the service does, in one sentence from the service registry.
+     */
+    std::string description;
+    /**
+     * @brief The IAM service account the process signs in as, empty for a process
+     * that signs in as no account of its own.
+     */
+    std::optional<std::string> service_account;
+    /**
      * @brief Which expected instance this is, from 1 to the service's replicas.
      */
     int slot = 0;

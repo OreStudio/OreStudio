@@ -26,16 +26,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B30B52D7-E6C9-438B-8F38-DA776F0C86A9][Hotfix: Continuous Linux red and the site build cancelled on every push]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The hotfix story and its two tasks exist in sprint 27 and are wired into the
+  sprint's Hotfixes table.
 
 * Plan
 
@@ -74,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2709][#2709]] | [ci] Restore Continuous Linux and pace the site build |
 
 * Review
 
@@ -83,3 +84,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass story new --kind hotfix= created the story, its branch and the two
+tasks, and wired the story into sprint 27's Hotfixes table. Both real tasks ride
+this branch, so the scaffold closes with PR #2709 rather than a separate
+scaffold PR.

@@ -11,6 +11,10 @@ with a token for it (Token Exchange), instead.
 Each policy that still widens is named below with the reason it stays, until
 its audit decides. A new widening fails this check.
 
+The check is a guard, not a proof: it matches two spellings of the widening.
+A policy that widens with IN (...), with a negation, or through a helper that
+wraps the comparison passes it.
+
 Run::
 
     python3 projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py

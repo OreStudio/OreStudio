@@ -438,6 +438,10 @@ the system tenant included. IAM's party cache, which names parties in the
 sign-in chooser, reads each tenant's partition inside that tenant with a
 token it issues itself, so it needs no wider read.
 
+The scope sits in the code as well as in the policy: the list read and the
+count name the caller's tenant in the query. A read that must cross tenants
+therefore changes the query and the policy, not the policy alone.
+
 ** Domain includes
 
 #+begin_src cpp :name includes

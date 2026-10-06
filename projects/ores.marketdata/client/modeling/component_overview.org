@@ -25,15 +25,15 @@ consumers use to reach the market-data service. =market_data_client=
 centralises the request/response round trip and the service authentication,
 so a caller states what it wants rather than hand-rolling a subject, an rfl
 payload and an auth header. =fx_spot_subscription= is the streaming half: it
-translates an ORE key plus the consuming (tenant, workspace, party) context
+translates an ORE key plus the consuming (tenant, party) context
 into the per-party tick subject and delivers decoded ticks to a callback.
 Both take a connected =nats_client= and own no state beyond it.
 
 * Inputs
 
 - A connected, authenticated =ores::nats::service::nats_client=.
-- An ORE canonical key (for example =FX/RATE/EUR/USD=) plus the tenant,
-  workspace and party the caller consumes as.
+- An ORE canonical key (for example =FX/RATE/EUR/USD=) plus the tenant
+  and party the caller consumes as.
 
 * Outputs
 

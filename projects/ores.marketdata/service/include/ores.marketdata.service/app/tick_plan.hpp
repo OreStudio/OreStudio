@@ -68,7 +68,7 @@ struct tick_plan final {
  * The checks run in the order the loop reports them: an empty @p bindings is an
  * unbound source, then the URI must name a datum, then the value must be a
  * number. A tick that passes gets one target per binding, each with the
- * republish subject for that binding's tenant, workspace and party.
+ * republish subject for that binding's tenant and party.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::expected<tick_plan, tick_drop>
 plan_tick(const messaging::market_tick& tick, const std::vector<domain::feed_binding>& bindings);

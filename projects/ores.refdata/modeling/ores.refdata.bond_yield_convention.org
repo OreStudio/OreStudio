@@ -28,7 +28,7 @@ a float widens to a double and narrows back with no loss.
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

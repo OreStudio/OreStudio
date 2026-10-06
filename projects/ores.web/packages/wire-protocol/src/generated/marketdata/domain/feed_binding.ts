@@ -33,7 +33,6 @@
 export interface FeedBinding {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     source_name: string;

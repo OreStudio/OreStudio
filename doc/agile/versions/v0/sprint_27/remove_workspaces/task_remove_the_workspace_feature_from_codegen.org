@@ -36,6 +36,7 @@ The codegen meta-model has no has_workspace_id feature, so no new entity can ask
 * Acceptance
 
 - No template, loader, profile, scaffolding option or test names has_workspace_id; the feature document is deleted and the variability docs no longer list it.
+- The workspace-scoped-lookup profile, which no model binds after the column task, is deleted.
 - Regeneration of every component under the drift gate is byte-identical.
 - The codegen tests pass.
 

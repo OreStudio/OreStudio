@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :remove_workspaces:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/drop-the-workspace-column
+#+pr: 2701
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,40 @@ No table, domain type, repository or generated TypeScript type carries a workspa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
 
-- No model sets has_workspace_id and no profile defaults it true; workspace-scoped-lookup is gone and its models bind simple-lookup.
+- No model sets has_workspace_id and no profile a model binds defaults it true; the 24 models that bound workspace-scoped-lookup bind simple-lookup. The unbound profile goes with the codegen feature.
 - No create script under projects/ores.sql/create declares a workspace_id column outside the workspace schema.
 - Hand-written workspace code in the four components is gone, including report_definition's read_latest_with_resolution and the refdata workspace inheritance test.
 - Regeneration is byte-identical, the build is green, and ctest and the codegen tests pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The workspace column comes from the generator, so the change is to the
+models and profiles, as in the trading task (PR #2620).
+
+- The 24 refdata conventions move from =workspace-scoped-lookup= to
+  =simple-lookup=, which differs only in =has_workspace_id=.
+- =fk-scoped-child= sets =has_workspace_id= false. It carries book,
+  portfolio, three analytics configs and =report_instance=.
+- The four models that set the flag themselves drop it. =report_definition=
+  then agrees with =uuid-identified-lookup=, so its =KNOWN_MODEL_DRIFT=
+  entry goes.
+- Regenerate refdata, reporting, analytics-cpp and marketdata. Each was at
+  zero drift before the change.
+- Hand-written code: the marketdata tick subject loses its workspace
+  segment (=marketdata.v1.tick.<tenant>.<party>.<key>=), the ingest loop
+  stops keying its stats on the workspace, the reporting test fixture stops
+  inserting one, and the refdata workspace inheritance test is deleted.
+- The request context, the codegen feature and ores.workspace stay for
+  their own tasks.
 
 * Measurements
 
@@ -58,9 +73,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tables with a workspace_id column, live database | 1: =ores_workspace_trade_scope_tbl=, which the component task removes (32 create scripts outside the workspace schema declared one before, per =evidence/inventory.txt=) | =compass sql -- -tAc "select table_name from information_schema.columns where column_name = 'workspace_id'"= after =compass db recreate -y -k= | branch head before commit |
+| Models that set has_workspace_id true | 0 (4 before) | =evidence/measure_workspaces.sh=, output in =evidence/inventory_after_column_drop.txt= | branch head before commit |
+| Codegen drift, refdata, reporting, analytics-cpp, marketdata | No drift before the change; after it, the regenerated tree is the checked-in tree | =check_component_drift.py --component <name>= | branch head before commit |
+| Model drift | 0 bindings disagree with their profile; the report_definition exception is gone | =check_model_drift.py= | branch head before commit |
+| Codegen tests | 1139 pass | =pytest projects/ores.codegen/tests= | branch head before commit |
+| ores.web typecheck and tests | Typecheck clean; 222, 295 and 136 tests pass | =npm run typecheck=, =npm test= in =projects/ores.web= | branch head before commit |
+| ORE portfolio round trip, Acme Corporation provisioned on a recreated database | Provisioning: 7 of 7 steps; round trip: 2 trades exported, in scope lost 0 and unexplained 0, out of scope lost 0, worst relative error 2.247e-8 | =how_do_i_round_trip_an_ore_document_through_the_database.ores= on =Cash_BondRepo_and_Bond.xml=, then =scripts/ore_mapper_roundtrip_diff.py= | branch head before commit |
+| ctest suites | 93/94 pass. =ores.scheduler.api.tests= fails one case: croncpp accepts =* * * * * *= since main's vcpkg bump (978e1e098d) updated the port. Not this change; filed as its own capture. | =compass test run --preset linux-clang-debug-make= | branch head before commit |
 
 * Notes
+
+- Component audit: the change removes a column and its reads from
+  refdata, analytics, reporting and marketdata. It adds or moves no part,
+  facet or dependency, so the components' shape is the one their last
+  audit recorded. =validate_docs.sh= passes for all 42 components.
+- =ores_schema.puml= still shows the dropped columns. It already lagged
+  its generator before this change, and two inbox captures track
+  regenerating it.
+- The registrar comments that list the workspace among the context a
+  handler sees are the request context's, and go with that task.
 
 * Test Scenarios
 
@@ -77,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2701][#2701]] | [codegen] Drop the workspace column from every entity |
 
 * Review
 
@@ -86,3 +118,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+No entity outside ores.workspace carries a workspace. The 24 refdata
+conventions bind =simple-lookup=, =fk-scoped-child= no longer sets the
+flag, and the four models that set it drop it. Regeneration removed the
+column from 32 tables, their domain types, repositories, generators and
+generated TypeScript, and the hand-written resolution read of
+=report_definition=, which came from a pasted model block. The marketdata
+tick subject is =marketdata.v1.tick.<tenant>.<party>.<key>=. The refdata
+workspace inheritance test is deleted. The request context, the codegen
+feature and ores.workspace remain for their own tasks.

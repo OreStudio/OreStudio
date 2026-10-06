@@ -33,13 +33,13 @@ TEST_CASE("a_producer_publishes_on_its_source_subject", tags) {
 }
 
 TEST_CASE("a_consumer_reads_a_datum_under_its_lower_cased_ore_key", tags) {
-    CHECK(ores::marketdata::domain::market_tick_subject("t", "w", "p", "FX/RATE/EUR/USD") ==
-          "marketdata.v1.tick.t.w.p.fx.rate.eur.usd");
+    CHECK(ores::marketdata::domain::market_tick_subject("t", "p", "FX/RATE/EUR/USD") ==
+          "marketdata.v1.tick.t.p.fx.rate.eur.usd");
 }
 
 TEST_CASE("the_consumer_subject_starts_with_the_market_tick_subject", tags) {
     const auto subject =
-        ores::marketdata::domain::market_tick_subject("t", "w", "p", "IR_SWAP/RATE/USD/0D/1D/30D");
+        ores::marketdata::domain::market_tick_subject("t", "p", "IR_SWAP/RATE/USD/0D/1D/30D");
     CHECK(subject.starts_with(std::string(ores::marketdata::messaging::market_tick::nats_subject) +
                               "."));
     CHECK(subject.ends_with(".ir_swap.rate.usd.0d.1d.30d"));

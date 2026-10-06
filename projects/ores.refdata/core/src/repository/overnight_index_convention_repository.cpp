@@ -174,25 +174,9 @@ std::vector<domain::overnight_index_convention>
 overnight_index_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<overnight_index_convention_entity,
-                                  domain::overnight_index_convention>(
-            ctx,
-            query,
-            [](const auto& entities) { return overnight_index_convention_mapper::map(entities); },
-            lg(),
-            "Reading latest overnight index conventions (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<overnight_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<overnight_index_convention_entity,
                               domain::overnight_index_convention>(
@@ -208,10 +192,8 @@ overnight_index_convention_repository::read_latest(context ctx, const std::strin
     BOOST_LOG_SEV(lg(), debug) << "Reading latest overnight index convention. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<overnight_index_convention_entity,
                               domain::overnight_index_convention>(
@@ -228,9 +210,8 @@ overnight_index_convention_repository::read_all(context ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading all overnight index convention versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<overnight_index_convention_entity,
@@ -249,10 +230,8 @@ overnight_index_convention_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading overnight index convention at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =
@@ -284,10 +263,9 @@ overnight_index_convention_repository::remove_status overnight_index_convention_
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<overnight_index_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing overnight index convention from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -312,10 +290,8 @@ std::vector<domain::overnight_index_convention> overnight_index_convention_repos
     BOOST_LOG_SEV(lg(), debug) << "Reading latest overnight index conventions with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<overnight_index_convention_entity,
                                       domain::overnight_index_convention>(
@@ -335,9 +311,8 @@ std::uint32_t overnight_index_convention_repository::get_total_overnight_index_c
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active overnight index convention count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
+    const auto query =
+        sqlgen::read<std::vector<overnight_index_convention_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<overnight_index_convention_entity>(
         ctx,
@@ -354,10 +329,8 @@ overnight_index_convention_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<overnight_index_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result =
         execute_read_query<overnight_index_convention_entity, domain::overnight_index_convention>(
             ctx,
@@ -380,10 +353,8 @@ void overnight_index_convention_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<overnight_index_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing overnight index conventions.");
 }
 

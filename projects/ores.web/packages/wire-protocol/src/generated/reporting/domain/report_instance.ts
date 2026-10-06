@@ -33,7 +33,6 @@
 export interface ReportInstance {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     name: string;
     description: string;

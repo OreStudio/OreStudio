@@ -45,7 +45,6 @@ generate_synthetic_ibor_index_convention(utility::generation::generation_context
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.id = std::string("EUR-EURIBOR") + "-" + std::to_string(idx);
     r.fixing_calendar = std::string("TARGET");

@@ -40,7 +40,6 @@ credit_simulation_entity_config_mapper::map(const credit_simulation_entity_confi
     domain::credit_simulation_entity_config r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.credit_simulation_config_id =
@@ -66,7 +65,6 @@ credit_simulation_entity_config_mapper::map(const domain::credit_simulation_enti
     credit_simulation_entity_config_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.credit_simulation_config_id = boost::uuids::to_string(v.credit_simulation_config_id);

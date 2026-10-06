@@ -28,7 +28,7 @@ either payment convention.
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

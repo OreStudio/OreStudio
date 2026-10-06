@@ -33,7 +33,6 @@
 export interface CreditSimulationMatrixRowConfig {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     transition_matrix_id: string;

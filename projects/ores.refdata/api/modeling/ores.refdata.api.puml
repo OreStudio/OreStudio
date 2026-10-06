@@ -40,7 +40,6 @@ namespace ores #F2F2F2 {
             class book <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : boost::uuids::uuid
                 +party_id : boost::uuids::uuid
                 +name : string
@@ -242,7 +241,6 @@ namespace ores #F2F2F2 {
             class cds_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +settlement_days : int
                 +calendar : string
@@ -551,7 +549,6 @@ namespace ores #F2F2F2 {
             class deposit_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +index_based : bool
                 +index : optional<string>
@@ -606,7 +603,6 @@ namespace ores #F2F2F2 {
             class fra_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +index : string
                 +modified_by : string
@@ -618,7 +614,6 @@ namespace ores #F2F2F2 {
             class ibor_index_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -721,7 +716,6 @@ namespace ores #F2F2F2 {
             class ois_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +spot_lag : int
                 +index : string
@@ -744,7 +738,6 @@ namespace ores #F2F2F2 {
             class overnight_index_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -902,7 +895,6 @@ namespace ores #F2F2F2 {
             class portfolio <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : boost::uuids::uuid
                 +party_id : boost::uuids::uuid
                 +name : string
@@ -974,7 +966,6 @@ namespace ores #F2F2F2 {
             class swap_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +fixed_calendar : optional<string>
                 +fixed_frequency : string
@@ -1108,7 +1099,6 @@ namespace ores #F2F2F2 {
             class zero_convention <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : string
                 +tenor_based : bool
                 +day_count_fraction : string

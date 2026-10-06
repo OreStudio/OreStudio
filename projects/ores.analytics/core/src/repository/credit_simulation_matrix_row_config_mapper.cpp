@@ -40,7 +40,6 @@ domain::credit_simulation_matrix_row_config credit_simulation_matrix_row_config_
     domain::credit_simulation_matrix_row_config r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.transition_matrix_id = boost::lexical_cast<boost::uuids::uuid>(v.transition_matrix_id);
@@ -70,7 +69,6 @@ credit_simulation_matrix_row_config_entity credit_simulation_matrix_row_config_m
     credit_simulation_matrix_row_config_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.transition_matrix_id = boost::uuids::to_string(v.transition_matrix_id);

@@ -183,27 +183,9 @@ std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<credit_simulation_netting_set_config_entity,
-                                  domain::credit_simulation_netting_set_config>(
-            ctx,
-            query,
-            [](const auto& entities) {
-                return credit_simulation_netting_set_config_mapper::map(entities);
-            },
-            lg(),
-            "Reading latest netting sets (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<credit_simulation_netting_set_config_entity,
                               domain::credit_simulation_netting_set_config>(
@@ -221,10 +203,8 @@ credit_simulation_netting_set_config_repository::read_latest(context ctx, const 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<credit_simulation_netting_set_config_entity,
                               domain::credit_simulation_netting_set_config>(
@@ -244,10 +224,9 @@ credit_simulation_netting_set_config_repository::read_latest_by_netting_set_id(
                                << netting_set_id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "netting_set_id"_c == netting_set_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "netting_set_id"_c == netting_set_id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<credit_simulation_netting_set_config_entity,
                               domain::credit_simulation_netting_set_config>(
@@ -265,10 +244,8 @@ credit_simulation_netting_set_config_repository::read_any_by_netting_set_id(
     context ctx, const std::string& netting_set_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting set by netting_set_id: " << netting_set_id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
-                             "netting_set_id"_c == netting_set_id) |
+                       where("tenant_id"_c == tid && "netting_set_id"_c == netting_set_id) |
                        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<credit_simulation_netting_set_config_entity,
@@ -287,9 +264,8 @@ std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all netting set versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<credit_simulation_netting_set_config_entity,
@@ -310,10 +286,8 @@ credit_simulation_netting_set_config_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading netting set at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<credit_simulation_netting_set_config_entity,
@@ -344,9 +318,8 @@ credit_simulation_netting_set_config_repository::read_latest_by_credit_simulatio
                                << " limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                       where("tenant_id"_c == tid &&
                              "credit_simulation_config_id"_c == credit_simulation_config_id &&
                              "valid_to"_c == max.value()) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
@@ -375,9 +348,8 @@ std::uint32_t credit_simulation_netting_set_config_repository::
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                       where("tenant_id"_c == tid &&
                              "credit_simulation_config_id"_c == credit_simulation_config_id &&
                              "valid_to"_c == max.value());
 
@@ -408,10 +380,9 @@ credit_simulation_netting_set_config_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<credit_simulation_netting_set_config_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing netting set from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -437,10 +408,8 @@ credit_simulation_netting_set_config_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<credit_simulation_netting_set_config_entity,
                                       domain::credit_simulation_netting_set_config>(
@@ -462,9 +431,8 @@ std::uint32_t credit_simulation_netting_set_config_repository::get_total_netting
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting set count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<credit_simulation_netting_set_config_entity>(
         ctx,
@@ -481,10 +449,8 @@ credit_simulation_netting_set_config_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<credit_simulation_netting_set_config_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<credit_simulation_netting_set_config_entity,
                                      domain::credit_simulation_netting_set_config>(
         ctx,
@@ -509,10 +475,8 @@ void credit_simulation_netting_set_config_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<credit_simulation_netting_set_config_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing netting sets.");
 }
 

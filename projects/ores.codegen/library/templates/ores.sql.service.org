@@ -19,13 +19,14 @@ table to them.
 
 * Summary
 
-Five templates projecting the /service registry/ onto SQL. Four give
-IAM its view: one PostgreSQL login role per service, the DML grants those
-roles need, and the matching IAM application accounts with their role
-assignments, with outputs under =projects/ores.sql/create/iam/= and
-=populate/iam/=. The fifth gives telemetry the expected services and their
-replica counts, under =populate/telemetry/=, so the services roster keeps a
-row for an instance that never reports.
+Six templates projecting the /service registry/ onto SQL. Five give IAM
+its view: one PostgreSQL login role per service, the DML grants those roles
+need, the matching IAM application accounts with their role assignments and
+their names, and each account's picture, with outputs under
+=projects/ores.sql/create/iam/= and =populate/iam/=. The sixth gives
+telemetry the expected services, with their replica counts, what each does
+and its service account, under =populate/telemetry/=, so the services roster
+keeps a row for an instance that never reports.
 
 * The ores.sql.service facet
 
@@ -47,10 +48,11 @@ idiom for the grant lists. Otherwise the group's standard constructs.
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:8B668CCA-35C0-4ACB-BC17-7136C065CC6D][ores.sql.service.account_pictures_populate]] | Saves each service account's picture on the account, from the system avatar coded by its registry name. Output =projects/ores.sql/populate/iam/iam_service_account_pictures_populate.sql=. |
 | [[id:F69A9286-6262-45C1-87CF-11693F80C3E1][ores.sql.service.account_roles_populate]] | Assigns each service account its ={{iam_role}}=. Output =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=. |
 | [[id:4BB161A1-7C81-4C19-9FAA-AA0630B586AF][ores.sql.service.accounts_populate]] | IAM application accounts for the services (=email=, =description=, password via psql variable). Output =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=. |
 | [[id:EB5E6878-28F3-4D63-BD92-2FD67595D388][ores.sql.service.db_grants]] | Grants each service role its DML surface: per-service =dml_prefixes=/=select_prefixes=/=execute_prefixes= list the table/function-name prefixes the service may touch. Output =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=. |
-| [[id:3147D526-C6E4-4D8E-9267-0AFDA7A6BC8F][ores.sql.service.expected_services_populate]] | The installation's expected services and their replica counts, one row per enabled registry entry. Output =projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql=. |
+| [[id:3147D526-C6E4-4D8E-9267-0AFDA7A6BC8F][ores.sql.service.expected_services_populate]] | The installation's expected services, one row per enabled registry entry, with its replica count, what it does and its service account. Output =projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql=. |
 | [[id:A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D][ores.sql.service.users_create]] | One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=. |
 
 * See also

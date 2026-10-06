@@ -88,8 +88,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 No code change, and the image is deliberately not gated.
 
 =ores_schema.png= and =ores_schema.cmapx= are rendered by whatever PlantUML

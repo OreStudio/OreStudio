@@ -93,8 +93,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The sweep found nothing to add. The bundle already holds every dataset that
 must be published into the system tenant.
 

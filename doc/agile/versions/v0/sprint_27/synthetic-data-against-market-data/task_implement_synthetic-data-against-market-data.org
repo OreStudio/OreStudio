@@ -148,6 +148,7 @@ task and name that file in the Command column.
 | marketdata tick-subject tests | 4 assertions in 3 cases pass | =ores.marketdata.api.tests "[tick_subjects]"= | =f09d43f5bf= |
 | synthetic service tests, after DB recreate | suite passes (subject cases included) | =ctest -R ores.synthetic.service.tests= | =c8421b2d45= |
 | synthetic core tests, after DB recreate | 40/41, one fixture failure (missing ISO coding scheme) | =ctest -R ores.synthetic.core.tests= | =c8421b2d45= |
+| Slice 2 binding tests | service and api suites 2/2 pass | =ctest -R 'ores.synthetic.service.tests\|ores.synthetic.api.tests'= | =2e3ca06d17= |
 
 * Notes
 
@@ -169,6 +170,24 @@ the country import inside its fixture cannot find the =ISO_3166_1_ALPHA_2=
 coding scheme, so a populate step the fixture depends on is missing after
 =db recreate -k=. That is an environment gap, not this change, and it needs
 capturing as its own task before the service-level tests are dependable.
+
+** Slice 2 done, 2026-10-06 (=2e3ca06d17=). Auto-creating a =feed_binding= was
+unreachable; the only caller of =ensure_feed_binding= was an FX-only
+=start(ore_key, GMM...)= with no production caller. Both live paths, the
+config-driven =add()= and the on-demand =start(IFeed)=, now call one
+=bind_feed(source, mode, token)= after releasing the mutex. It binds when the
+mode is =bound= and a caller token exists, and does nothing for a sandboxed
+feed or an internal start with no session. The marketdata round-trip sits
+behind a one-method =feed_binding_store= seam, so the rule is tested without a
+live service. The dead path and the =should_ensure_feed_binding= two-mode
+contract it needed are deleted.
+
+Open decision from slice 2: boot auto-start passes an empty token because no
+end-user session exists, so it still creates no binding. A binding for an
+auto-started feed must come from provisioning, or from a service-account
+identity decision about whose tenant and party the row lands in. Neither is
+settled and both are product calls, so they are recorded here rather than
+guessed at.
 
 * Test Scenarios
 

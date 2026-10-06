@@ -25,15 +25,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/tests/test_populate_references.py"
       - ".github/workflows/populate-reference-drift.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/ores.sql/**"
-      - "projects/ores.seeder/**"
-      - "projects/ores.codegen/scripts/check_populate_references.py"
-      - "projects/ores.codegen/tests/test_populate_references.py"
-      - ".github/workflows/populate-reference-drift.yml"
-
   workflow_dispatch:
 
 permissions:

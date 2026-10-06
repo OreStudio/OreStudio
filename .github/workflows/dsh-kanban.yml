@@ -20,11 +20,9 @@ name: DSH Kanban
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
-    paths: &plugin-paths
+    paths:
       - 'projects/ores.dsh_kanban/**'
       - '.github/workflows/dsh-kanban.yml'
-  pull_request:
-    paths: *plugin-paths
   workflow_dispatch:
 
 permissions:

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,29 @@ No GitHub workflow gates a pull request. The local check runner is the only pull
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
-- No workflow runs on pull_request.
-- The retired checks all have a local equivalent the runner executes.
-- The knowledge document and the raise-a-PR skill name the runner, not the retired workflows.
+- No workflow has a =pull_request= trigger.
+- The twelve workflows keep their =push= to =main= trigger and their
+  =workflow_dispatch= trigger, so a defect that escapes still shows on main.
+- Every comment that claimed a check ran on the pull request is corrected.
+- The scheduled continuous builds, the nightlies, the site deploy, CodeQL and
+  the bots keep running.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Strip the =pull_request= block from the twelve workflows that carry one, and
+correct the job comments that explain why the check runs on a pull request.
+The local runner replaces the pull-request gate; it arrives on its own task.
+The knowledge document and the raise-a-PR skill are rewritten on that task,
+because they must name the runner and it does not exist yet.
 
 * Measurements
 
@@ -85,3 +90,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The twelve pull-request gates no longer trigger on =pull_request=:
+codegen-drift, codegen-sweep, doc-lint, dsh-environment, dsh-kanban,
+event-registrar-composition, header-hygiene, populate-reference-drift,
+rls-system-tenant-widenings, shell-script-drift, template-drift and
+typescript. All twelve keep their =push= to =main= trigger, so they remain a
+post-merge backstop, and their =workflow_dispatch= trigger. Three job
+comments that named the pull request as the reason for the check were
+corrected. Nothing else changed: the continuous builds, the nightlies, the
+site deploy, CodeQL and the two bots still run as before.

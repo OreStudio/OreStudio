@@ -178,11 +178,24 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
         key: 'tenant-parties',
         scope: code,
         read: async (page) => {
-            const read = await api.tenantParties(code, { offset: page.offset, limit: page.limit });
+            const read = await api.tenantParties(code, {
+                offset: page.offset,
+                limit: page.limit,
+                search: page.search,
+                sort: page.sort,
+                descending: page.descending,
+            });
             return { rows: read.parties, total: read.totalCount };
         },
-        search: false,
-        sortable: [],
+        search: true,
+        sortable: [
+            'short_code',
+            'full_name',
+            'party_category',
+            'party_type',
+            'status',
+            'business_center_code',
+        ],
         mayAdd: false,
     };
     return (

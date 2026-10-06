@@ -124,13 +124,19 @@ async function readCentreFlags(
 export interface PartyPageQuery {
     readonly offset: number;
     readonly limit: number;
+    /** Text the code, the name or the codename contains, ignoring case. */
+    readonly search?: string;
+    /** The field to order by; the server refuses a field it cannot sort. */
+    readonly sort?: string;
+    readonly descending?: boolean;
 }
 
 /**
  * One page of the parties of the session's own tenant, and how many it holds.
  *
  * The tenant is the session's, so row-level security scopes the read from the
- * token and the request names no tenant. The server pages in key order. A
+ * token and the request names no tenant. The caller's search and order reach
+ * the server, which refuses a field it cannot sort. A
  * parent on another page is read by its id in one more read that names every
  * such parent. The flags of the page's business centres take two more reads,
  * one for the centres and one for their countries. A parent the session
@@ -143,9 +149,12 @@ export async function readPartiesPage(
     const pageRequest: ListPartiesRequest = {
         offset: query.offset,
         limit: query.limit,
-        order: { field: '', descending: false },
+        order: { field: query.sort ?? '', descending: query.descending ?? false },
         as_of: null,
-        filter: null,
+        filter:
+            query.search === undefined || query.search === ''
+                ? null
+                : { id_one_of: null, search: query.search },
     };
     const reply = await caller.callAuthenticated(
         SUBJECTS.listParties,
@@ -171,7 +180,7 @@ export async function readPartiesPage(
             limit: elsewhere.length,
             order: { field: '', descending: false },
             as_of: null,
-            filter: { id_one_of: elsewhere },
+            filter: { id_one_of: elsewhere, search: null },
         };
         const parents = await caller.callAuthenticated(
             SUBJECTS.listParties,

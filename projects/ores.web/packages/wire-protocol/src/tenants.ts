@@ -213,6 +213,9 @@ export interface TenantListQuery {
     readonly ids?: readonly string[];
     readonly offset?: number;
     readonly limit?: number;
+    /** The field to order by; the server refuses a field it cannot sort. */
+    readonly sort?: string;
+    readonly descending?: boolean;
 }
 
 /** The page of tenants, translated from the wire's names. */
@@ -251,7 +254,10 @@ export async function listTenantsPage(
     const request: ListTenantsRequest = {
         offset: input.offset ?? 0,
         limit: input.limit ?? 100,
-        order: { field: 'code', descending: false },
+        order: {
+            field: input.sort === undefined || input.sort === '' ? 'code' : input.sort,
+            descending: input.descending ?? false,
+        },
         as_of: null,
         filter: {
             type: input.type === undefined || input.type === '' ? null : input.type,

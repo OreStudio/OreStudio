@@ -215,6 +215,7 @@ jobs:
           doNotCache: false
 
       - name: Run CTest workflow
+        id: ctest
         run: |
           brew install autoconf automake libtool autoconf-archive
           export CMAKE_BUILD_PARALLEL_LEVEL=2
@@ -230,7 +231,9 @@ jobs:
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Show sccache statistics
-        if: always()
+        # ccache-action installs sccache. If no build ran, it is absent, and
+        # the statistics are not worth a second red step.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats
 
       - name: Upload a Build Artifact

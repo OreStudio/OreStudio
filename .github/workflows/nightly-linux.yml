@@ -239,6 +239,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
 
       - name: Run CTest workflow
+        id: ctest
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)
@@ -253,7 +254,10 @@ jobs:
           ctest -VV --timeout 12000 --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Delete sccache entry
-        if: ${{ !cancelled() }}
+        # Only after a build. An earlier failure never touches the compiler
+        # cache, and deleting the entry then discards a warm cache nothing
+        # replaced.
+        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -262,12 +266,14 @@ jobs:
             || true
 
       - name: Save sccache
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
           key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Show sccache statistics
-        if: always()
+        # ccache-action installs sccache. If no build ran, it is absent, and
+        # the statistics are not worth a second red step.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats

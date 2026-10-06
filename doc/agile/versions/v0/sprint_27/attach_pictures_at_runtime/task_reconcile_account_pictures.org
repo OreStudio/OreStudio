@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ The =attach_photos= step delegates to it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -88,3 +88,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=iam.v1.accounts.attach-pictures= is served by the provisioning handler, which
+is also the implementation the =attach_photos= step runs, so one reconcile
+serves both. Codegen emitted the shell verb =attach-account-pictures= and the
+TypeScript twin from the model. The IAM core suite passes (234 cases, the one
+failure being a flake that passes on re-run) and the full suite is 94 of 94.

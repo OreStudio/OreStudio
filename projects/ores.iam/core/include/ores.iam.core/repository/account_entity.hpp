@@ -58,6 +58,7 @@ struct account_entity {
     std::string email;
     std::optional<std::string> default_party_id;
     std::optional<std::string> image_id;
+    std::optional<std::string> picture_code;
     std::optional<std::string> job_title;
     std::optional<std::string> reports_to_account_id;
     std::string modified_by;

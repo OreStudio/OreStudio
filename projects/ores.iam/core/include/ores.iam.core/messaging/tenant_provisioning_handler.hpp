@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 
+#include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -30,6 +31,7 @@
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
@@ -624,6 +626,61 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.accounts.attach-pictures.
+     *
+     * The reconcile the attach_photos step runs, reachable on its own so an
+     * operator can re-run it from a client and so a scope that is not a
+     * provisioning run can be reconciled too.
+     */
+    void attach_account_pictures(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        auto req = decode<ores::iam::messaging::attach_account_pictures_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        ores::iam::messaging::attach_account_pictures_response response;
+        try {
+            auto caller_ctx = *ctx_expected;
+            ores::iam::service::account_service accounts(caller_ctx);
+            const auto caller = accounts.get_account_by_username(caller_ctx.actor());
+            if (!caller) {
+                response.result.outcome = ores::utility::domain::outcome::invalid;
+                response.result.code = "caller_unknown";
+                response.result.message = "The caller holds no account to act as.";
+                reply(nats_, msg, response);
+                return;
+            }
+            const auto tenant_id = caller_ctx.tenant_id().to_string();
+            auto client = make_step_client(tenant_id,
+                                           caller->id,
+                                           caller->default_party_id.value_or(boost::uuids::uuid{}),
+                                           caller->username);
+            std::vector<std::string> images;
+            attach_staff_photos(client, caller_ctx, tenant_id, images);
+            response.image_ids = std::move(images);
+            response.result.outcome = ores::utility::domain::outcome::ok;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            response.result.outcome = ores::utility::domain::outcome::failed;
+            response.result.code = "internal_error";
+            response.result.message = e.what();
+            reply(nats_, msg, response);
+        }
+    }
+
 private:
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
@@ -731,6 +788,9 @@ private:
             case provision_step_action::complete_provisioning:
                 complete_provisioning_step(wf, command);
                 return;
+            case provision_step_action::system_provision:
+                system_provision_step(wf, command);
+                return;
             case provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
@@ -784,6 +844,44 @@ private:
             throw std::runtime_error(
                 failure.empty() ? "The bundle '" + bundle_code + "' did not publish." : failure);
         }
+    }
+
+    /// Publishes the system's own datasets into the system tenant, which is
+    /// where the installation is read from: a coding-scheme validator resolves
+    /// its scheme there, a template image is read from there across the
+    /// tenant-isolation policy, and several reference reads treat its rows as a
+    /// shared overlay on the tenant's own.
+    ///
+    /// The step runs before the tenant's own steps, so the tenant is built on a
+    /// system that already makes sense. It acts as a system administrator rather
+    /// than as the run's actor, because the rows belong to the system tenant and
+    /// the account that writes them must be one of its own.
+    void system_provision_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command) {
+        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        boost::uuids::string_generator parse;
+
+        dq::messaging::publish_bundle_params params;
+        const auto params_json = dq::messaging::build_params_json(params);
+        const auto bundle_code = std::string(ores::iam::workflow::system_core_bundle_code);
+
+        for (const auto& id : super_admin_account_ids(sys_ctx)) {
+            const auto account = system_accounts.get_account(parse(id));
+            if (!account)
+                continue;
+            const auto super_actor = actor_of(sys_ctx, *account);
+            auto admin_client = make_step_client(tenant_context::system_tenant_id,
+                                                 super_actor.account_id,
+                                                 super_actor.party_id,
+                                                 super_actor.username);
+            publish_bundle_or_throw(
+                admin_client, bundle_code, super_actor.username, params_json, command.kind);
+            wf.complete(rfl::json::write(
+                provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
+            return;
+        }
+        wf.fail("The system tenant holds no administrator to publish '" + bundle_code + "' as.");
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports
@@ -971,7 +1069,7 @@ private:
 
             auto client =
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-            attach_staff_photos(client, tenant_ctx, command.tenant_id, assignment.dataset, images);
+            attach_staff_photos(client, tenant_ctx, command.tenant_id, images);
 
             // The party is read here, after any earlier step that wrote it, so
             // the version the logo's write states is the version the store
@@ -1492,63 +1590,23 @@ private:
         return all_saved;
     }
 
-    // Copies the system-tenant "key" template image into p_tenant_id (if not
-    // already copied) via the real assets.v1.images.save path, returning
-    // the per-tenant image_id. The template read itself stays a direct SQL
-    // read (not a NATS round-trip): unlike the write-side activation logic
-    // this rework replaces, a read has no versioning/validation behaviour
-    // to duplicate incorrectly, and reading the system tenant's own data
-    // needs no impersonation of an unrelated identity.
+    // Ensures the caller tenant holds the image with this code, copying the
+    // system tenant's template through the assets service when it does not,
+    // and answers the tenant image's id. The tenant and the actor are the
+    // session's, so the copy lands where the work is happening; the assets
+    // service owns both the cross-tenant template read and the write, so
+    // neither is repeated here.
     std::optional<boost::uuids::uuid> copy_template_image(internal_request_client& client,
-                                                          ores::database::context& ctx,
-                                                          const std::string& tenant_id,
                                                           const std::string& key) {
-        auto existing = execute_parameterized_string_query(
-            ctx,
-            "SELECT id::text FROM ores_assets_images_tbl WHERE tenant_id = $1::uuid AND "
-            "code = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {tenant_id, key},
-            tenant_provisioning_handler_lg(),
-            "copy_template_image");
-        if (!existing.empty())
-            return boost::uuids::string_generator{}(existing.front());
-
-        auto rows = execute_parameterized_multi_column_query(
-            ctx,
-            "SELECT description, mime_type, data FROM ores_assets_get_template_image_fn($1)",
-            {key},
-            tenant_provisioning_handler_lg(),
-            "copy_template_image");
-        if (rows.empty() || rows.front().size() < 3 || !rows.front()[0] || !rows.front()[1] ||
-            !rows.front()[2]) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "No system-tenant template image: " << key;
-            return std::nullopt;
-        }
-
-        // A write carries the user-owned fields alone. The tenant, the actor
-        // and the provenance are the assets service's to derive from the
-        // authenticated context, and the version is the database's.
-        ores::assets::messaging::put_image_request req;
-        const auto new_image_id = boost::uuids::random_generator{}();
-        req.change.write.id = new_image_id;
-        req.change.write.code = key;
-        req.change.write.description = *rows.front()[0];
-        req.change.write.mime_type = *rows.front()[1];
-        // The template function returns the column as stored: base64 text.
-        // The write record carries raw bytes, so decode that hop here.
-        req.change.write.data = ores::utility::convert::base64_converter::convert(*rows.front()[2]);
-        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        req.intent.reason_code = "system.external_data_import";
-        req.intent.commentary = "Copied from system-tenant template: " + key;
-
+        ores::assets::messaging::ensure_image_request req;
+        req.code = key;
         auto resp = client.request(req);
-        if (resp.result.outcome != ores::utility::domain::outcome::ok) {
+        if (resp.result.outcome != ores::utility::domain::outcome::ok || resp.image_id.empty()) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "Failed to copy template image " << key << ": " << resp.result.message;
+                << "No tenant image for '" << key << "': " << resp.result.message;
             return std::nullopt;
         }
-        return new_image_id;
+        return boost::uuids::string_generator{}(resp.image_id);
     }
 
     /// The legacy synchronous handler treats a staff photo as cosmetic: it
@@ -1562,64 +1620,33 @@ private:
                                          const std::string& dataset_code) {
         try {
             std::vector<std::string> images;
-            attach_staff_photos(client, ctx, tenant_id, dataset_code, images);
+            attach_staff_photos(client, ctx, tenant_id, images);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << "attach_staff_photos did not complete for " << dataset_code << ": " << e.what();
         }
     }
 
-    // Attaches a profile picture to every staff account the named dataset
-    // carries a photo_key for. Reads (username, photo_key) directly from the
-    // DQ artefact table (not modeled in the account NATS API, same reason
-    // grant_cross_entity_access's account_ids_for does the same for
-    // business_unit_code/role); each picture goes on through
-    // attach_account_photo.
+    // Attaches a profile picture to every account that names one it does not
+    // have. The wanted code rides the account, so the reconcile reads it from
+    // the account rather than from a DQ staging table, and the scope is simply
+    // "the accounts this tenant holds". Each picture goes on through
+    // attach_account_photo, which leaves an account that already has one alone.
     void attach_staff_photos(internal_request_client& client,
-                             ores::database::context& ctx,
-                             const std::string& tenant_id,
-                             const std::string& dataset_code,
+                             [[maybe_unused]] ores::database::context& ctx,
+                             [[maybe_unused]] const std::string& tenant_id,
                              std::vector<std::string>& images) {
-        auto dataset = execute_parameterized_string_query(
-            ctx,
-            "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
-            "AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {dataset_code},
-            tenant_provisioning_handler_lg(),
-            "attach_staff_photos");
-        if (dataset.empty())
-            throw std::runtime_error("The dataset '" + dataset_code +
-                                     "' does not exist, so its staff photos cannot be attached.");
-
-        auto rows = execute_parameterized_multi_column_query(
-            ctx,
-            "SELECT username, photo_key FROM ores_dq_accounts_artefact_tbl "
-            "WHERE dataset_id = $1::uuid AND photo_key IS NOT NULL",
-            {dataset.front()},
-            tenant_provisioning_handler_lg(),
-            "attach_staff_photos");
-        if (rows.empty())
-            return;
-
-        std::unordered_map<std::string, std::string> photo_key_by_username;
-        for (const auto& row : rows) {
-            if (row.size() < 2 || !row[0] || !row[1])
-                continue;
-            photo_key_by_username[*row[0]] = *row[1];
-        }
-
         iam::messaging::list_accounts_request accounts_req;
         accounts_req.limit = 10'000;
         auto accounts_resp = client.request(accounts_req);
         for (const auto& a : accounts_resp.accounts) {
-            const auto it = photo_key_by_username.find(a.username);
-            if (it == photo_key_by_username.end())
+            if (a.picture_code.empty())
                 continue;
             attach_account_photo(client,
                                  ctx,
                                  tenant_id,
                                  a,
-                                 it->second,
+                                 a.picture_code,
                                  "Attached staff photo during provisioning",
                                  images);
         }
@@ -1630,8 +1657,8 @@ private:
     /// a picture is left untouched, which is what makes a repeated run leave
     /// it unchanged.
     void attach_account_photo(internal_request_client& client,
-                              ores::database::context& ctx,
-                              const std::string& tenant_id,
+                              [[maybe_unused]] ores::database::context& ctx,
+                              [[maybe_unused]] const std::string& tenant_id,
                               const ores::iam::domain::account& account,
                               const std::string& template_key,
                               const std::string& commentary,
@@ -1639,7 +1666,7 @@ private:
         if (account.image_id)
             return;
 
-        auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        auto image_id = copy_template_image(client, template_key);
         if (!image_id)
             throw std::runtime_error("The template image '" + template_key +
                                      "' was not copied into the tenant.");
@@ -1709,6 +1736,35 @@ private:
                                  std::string(super_admin_avatar_key),
                                  "Attached the super administrator's picture during provisioning",
                                  images);
+
+            // A service account holds only the permissions its own domain
+            // needs, and attaching a picture is not one of them, so an
+            // administrator acts here as it does for its own picture.
+            attach_service_account_pictures(super_client, sys_ctx, images);
+        }
+    }
+
+    /// The registry names a picture for each service account, and the seed
+    /// writes that name onto the account. Turning the name into a picture is
+    /// what gives a seeded account its own icon, and it also repairs an
+    /// account that was seeded before its picture existed. The scope is the
+    /// system tenant, because that is where the service accounts live, and
+    /// attach_account_photo leaves an account that already carries a picture
+    /// alone, so this never overwrites the administrators.
+    void attach_service_account_pictures(internal_request_client& client,
+                                         ores::database::context& sys_ctx,
+                                         std::vector<std::string>& images) {
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        for (const auto& account : system_accounts.list_accounts(0, 10'000)) {
+            if (account.picture_code.empty() || account.image_id)
+                continue;
+            attach_account_photo(client,
+                                 sys_ctx,
+                                 tenant_context::system_tenant_id,
+                                 account,
+                                 account.picture_code,
+                                 "Attached the service account's picture during provisioning",
+                                 images);
         }
     }
 
@@ -1735,12 +1791,12 @@ private:
     /// Copies the named template image into the tenant and saves it on the
     /// party, which the caller read first so the write states its version.
     void attach_party_logo(internal_request_client& client,
-                           ores::database::context& ctx,
+                           [[maybe_unused]] ores::database::context& ctx,
                            const ores::refdata::domain::party& party,
                            const std::string& template_key,
-                           const std::string& tenant_id,
+                           [[maybe_unused]] const std::string& tenant_id,
                            std::vector<std::string>& images) {
-        const auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        const auto image_id = copy_template_image(client, template_key);
         if (!image_id)
             throw std::runtime_error("The template image '" + template_key +
                                      "' was not copied into the tenant.");
@@ -1879,8 +1935,8 @@ private:
     // synchronous Acme handler this serves never read these responses;
     // the step kinds report their failures instead.
     void finish_party(internal_request_client& client,
-                      ores::database::context& ctx,
-                      const std::string& tenant_id,
+                      [[maybe_unused]] ores::database::context& ctx,
+                      [[maybe_unused]] const std::string& tenant_id,
                       const boost::uuids::uuid& account_id,
                       [[maybe_unused]] const std::string& username,
                       ores::refdata::domain::party party,
@@ -1889,7 +1945,7 @@ private:
             const auto status = party.status == "Active" ? party.status : std::string("Active");
             auto image_id = party.image_id;
             if (!image_id)
-                image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo");
+                image_id = copy_template_image(client, "acme_party_logo");
             if (status != party.status || image_id != party.image_id)
                 save_party(client,
                            party,

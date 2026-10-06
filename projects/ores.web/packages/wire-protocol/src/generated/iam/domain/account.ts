@@ -41,6 +41,7 @@ export interface Account {
     email: string;
     default_party_id: string | null;
     image_id: string | null;
+    picture_code: string;
     job_title: string;
     reports_to_account_id: string | null;
     modified_by: string;

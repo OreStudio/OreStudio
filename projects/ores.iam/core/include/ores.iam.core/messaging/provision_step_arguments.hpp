@@ -34,6 +34,7 @@ namespace ores::iam::messaging {
 
 /// What the step executor does with a step command's kind.
 enum class provision_step_action {
+    system_provision,
     publish_bundle,
     import_lei_hierarchy,
     provision_party,
@@ -59,6 +60,8 @@ enum class provision_step_action {
         return provision_step_action::complete_provisioning;
     if (!is_executed_step_kind(kind))
         return provision_step_action::refuse;
+    if (kind == system_provision_step_kind)
+        return provision_step_action::system_provision;
     if (kind == "publish_bundle")
         return provision_step_action::publish_bundle;
     if (kind == "import_lei_hierarchy")

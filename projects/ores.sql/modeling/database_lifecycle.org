@@ -258,7 +258,6 @@ Login users inherit from appropriate group roles:
 | User               | Inherits From  | Purpose                        |
 |--------------------+----------------+--------------------------------|
 | =ores_ddl_user=    | =ores_owner=   | Migrations, schema changes     |
-| =ores_cli_user=    | =ores_rw=      | Command-line interface         |
 | =ores_shell_user=  | =ores_rw=      | Interactive shell               |
 | =ores_http_user=   | =ores_rw=      | HTTP REST service              |
 | =ores_readonly_user= | =ores_ro=    | Analytics, BI tools            |
@@ -277,13 +276,6 @@ Login users inherit from appropriate group roles:
 Create =~/.pg_service.conf= for convenient access:
 
 #+begin_src conf
-[ores_cli]
-host=localhost
-port=5432
-dbname=ores_dev_local2
-user=ores_cli_user
-password=your_password
-
 [ores_ddl]
 host=localhost
 port=5432
@@ -296,7 +288,7 @@ Set permissions and use:
 
 #+begin_src sh
 chmod 600 ~/.pg_service.conf
-psql service=ores_cli
+psql service=ores_ddl
 #+end_src
 
 *** Environment Variables
@@ -330,7 +322,6 @@ psql -U postgres -f setup_extensions.sql
 # 2. Create roles and users (provide passwords for all users)
 psql -U postgres \
   -v ddl_password='DDL_PASS' \
-  -v cli_password='CLI_PASS' \
   -v shell_password='SHELL_PASS' \
   -v http_password='HTTP_PASS' \
   -v test_ddl_password='TEST_DDL_PASS' \

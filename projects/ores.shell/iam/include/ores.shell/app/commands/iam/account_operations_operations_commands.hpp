@@ -165,6 +165,13 @@ public:
     process_get_my_account_contact_information(std::ostream& out,
                                                ores::nats::service::nats_client& session,
                                                const std::vector<std::string>& args);
+
+    /**
+     * @brief attach-account-pictures
+     */
+    static void process_attach_account_pictures(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
 };
 
 }

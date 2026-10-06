@@ -481,10 +481,3 @@ WIRE_001 populate_fpml.sql
 # backlog capture.
 WIRE_001 scheduler_populate.sql
 
-# Not wired: the build publishes no images, so the join it makes against
-# ores_assets_images_tbl finds nothing. Attaching each service account's
-# picture belongs to the runtime provisioning, after the base bundle
-# publishes assets.system_avatars. Captured on the Bootstrap the system at
-# runtime story until that step exists.
-WIRE_001 iam_service_account_pictures_populate.sql
-

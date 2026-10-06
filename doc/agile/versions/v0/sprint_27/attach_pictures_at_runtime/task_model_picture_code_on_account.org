@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ table.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -43,9 +43,25 @@ table.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The wanted picture is data about the account, so it belongs on the account
+row, not in a DQ staging table the handler reaches into. The reconcile then
+asks the account what it wants.
+
+1. Add =picture_code= (nullable text) to the account entity model,
+   =ores.iam.account.org=, and regenerate =ores.sql.schema= and the C++
+   facets. The column is additive and nullable, so the schema move is safe.
+2. Carry it on the API: the account writes state it, and the update the
+   reconcile makes preserves it. Check what the generated operations include
+   once the domain type gains the field.
+3. Set it where the account is created: =ores_iam_publish_accounts_from_dq_fn=
+   copies the artefact's =photo_key= into =picture_code= instead of leaving the
+   account with no wanted picture.
+4. Read it in the reconcile: =attach_staff_photos= stops querying
+   =ores_dq_accounts_artefact_tbl= and instead lists the tenant's accounts,
+   taking each account's =picture_code=. The dataset scope goes away, which is
+   what the registry scope in the next task needs.
+5. Recreate and run the suite. The fingerprint moves with the schema, so the
+   build and the recreate go together.
 
 * Measurements
 
@@ -87,3 +103,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=picture_code= is a nullable column on the accounts table and a field on the
+account domain, both generated from the entity model. The accounts publish
+sets it from the artefact's =photo_key=, so the wanted picture rides the
+account. The reconcile reads it there: =attach_staff_photos= lists the
+tenant's accounts and no longer queries =ores_dq_accounts_artefact_tbl=, and
+the operation's =dataset_code= scope is gone with it. Full recreate, then
+the full suite: 94 of 94.

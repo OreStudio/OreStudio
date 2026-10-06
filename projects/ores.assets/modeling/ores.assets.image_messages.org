@@ -156,3 +156,47 @@ statement, so a picker shows the server's rule rather than its own copy.
  * @brief The smallest height an upload accepts, in pixels.
  */
 #+end_src
+
+** ensure_image_request
+:PROPERTIES:
+:subject: assets.v1.images.ensure
+:response: ensure_image_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Ensures an image with this code exists in the caller's tenant.
+ *
+ * The system tenant carries the template images an installation ships. This
+ * operation answers the caller's own image with the code, and when the tenant
+ * holds none it copies the system tenant's template through the same store the
+ * upload writes to. It is idempotent: a tenant that already holds the code is
+ * answered with what it holds.
+ *
+ * A code the installation carries no template for is refused, so a caller that
+ * wanted a picture learns the template is missing rather than storing nothing.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** ensure_image_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** image_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the caller tenant's image with the requested code, on success.
+ */
+#+end_src

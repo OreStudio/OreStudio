@@ -8,12 +8,12 @@
 #+filetags: :attach_pictures_at_runtime:sprint_27:v0:
 #+owner: marco
 #+branch: feature/attach-pictures-at-runtime
-#+pr:
+#+pr: 2705
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ today call it instead of repeating the read-then-write.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2705][#2705]] | [sql,iam,assets] Attach pictures at runtime through one seam |
 
 * Review
 
@@ -90,3 +90,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=assets.v1.images.ensure= is served and registered, the assets service and
+the test users hold the template-image grant, and IAM's
+=copy_template_image= is a call to it. The assets suite is green, 48 cases
+including the two new ones, and the full suite is 94 of 94 after a recreate.

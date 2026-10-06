@@ -32,7 +32,6 @@
  *     -v ro_role='ores_local2_ro' \
  *     -v service_role='ores_local2_service' \
  *     -v ddl_user='ores_local2_ddl_user' \
- *     -v cli_user='ores_local2_cli_user' \
  *     -v shell_user='ores_local2_shell_user' \
  *     -v http_user='ores_local2_http_user' \
  *     -v test_ddl_user='ores_local2_test_ddl_user' \
@@ -51,7 +50,6 @@
  *     -v compute_service_user='ores_local2_compute_service' \
  *     -v workflow_service_user='ores_local2_workflow_service' \
  *     -v ddl_password='DDL_PASSWORD' \
- *     -v cli_password='CLI_PASSWORD' \
  *     -v shell_password='SHELL_PASSWORD' \
  *     -v http_password='HTTP_PASSWORD' \
  *     -v test_ddl_password='TEST_DDL_PASSWORD' \
@@ -102,18 +100,6 @@
 \if :{?ddl_password}
 \else
     \echo 'ERROR: ddl_password variable is required for DDL operations.'
-    \quit
-\endif
-
-\if :{?cli_user}
-\else
-    \echo 'ERROR: cli_user variable is required.'
-    \quit
-\endif
-
-\if :{?cli_password}
-\else
-    \echo 'ERROR: cli_password variable is required for CLI service.'
     \quit
 \endif
 
@@ -334,7 +320,6 @@ create role :service_role nologin;
 -- 2. Create service users (with login)
 -- Application-layer users retain broad rw_role access.
 create user :ddl_user      with password :'ddl_password'      in role :owner_role;
-create user :cli_user      with password :'cli_password'      in role :rw_role;
 create user :shell_user    with password :'shell_password'    in role :rw_role;
 create user :http_user     with password :'http_password'     in role :rw_role;
 -- Domain service users: no broad role — specific table GRANTs applied in
@@ -372,7 +357,6 @@ create user :readonly_user with password :'ro_password'       in role :ro_role;
 
 -- Set default search_path for all users
 alter role :ddl_user              set search_path to public;
-alter role :cli_user              set search_path to public;
 alter role :shell_user            set search_path to public;
 alter role :iam_service_user      set search_path to public;
 alter role :refdata_service_user  set search_path to public;

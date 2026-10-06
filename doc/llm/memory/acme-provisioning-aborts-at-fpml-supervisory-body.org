@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: CBF5B340-FFE1-4F1F-987A-7BFADD1AF0C2
+:END:
+#+title: The ACME provisioning aborts at fpml.supervisory_body
+#+description: A recreate followed by bootstrap setup acme_demo fails: the FPML publish wants a coding scheme the target tenant does not have, because fpml.coding_schemes is deliberately not a bundle member.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:runtime:bootstrap:provisioning:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+The ACME provisioning run fails at the fpml.supervisory_body step with Invalid coding_scheme_code: FPML_SUPERVISORY_BODY. Coding scheme must exist. A fresh database therefore cannot be provisioned end to end with bootstrap setup --profile acme_demo.
+
+*Why:* ores_refdata_publish_supervisory_bodies_from_dq_fn inserts a row whose coding_scheme_code is FPML_SUPERVISORY_BODY, and the insert function requires that coding scheme to exist for the target tenant. fpml.coding_schemes is deliberately not a member of any bundle, because the coding schemes were meant to be published into the system tenant at database build time; nothing publishes them to a provisioned tenant.
+
+*How to apply:* Do not expect a recreate plus bootstrap setup to finish until this is fixed. Steps after publish_bundle, including attach_photos, do not run, so a change that rides attach_photos cannot be verified by a live bring-up on its own. Verify such a change by its seed and its suite instead, and say so in the task Result.

@@ -79,6 +79,22 @@ public:
     messaging::get_image_upload_policy_response
     get_image_upload_policy(const messaging::get_image_upload_policy_request& request);
 
+    /**
+     * @brief Answers the caller tenant's image with a code, copying the
+     *        system tenant's template when it holds none.
+     *
+     * Idempotent: a tenant that already holds the code is answered with what
+     * it holds, and nothing is written. The copy goes through the same store
+     * the upload uses, so a tenant image is a tenant image whichever path
+     * made it. A code with no template is refused rather than answered with
+     * nothing, so a caller that wanted a picture learns the installation does
+     * not carry it.
+     *
+     * @param request The image code to ensure.
+     * @return The shared result, and the tenant image's id on success.
+     */
+    messaging::ensure_image_response ensure_image(const messaging::ensure_image_request& request);
+
 private:
     context ctx_;
     repository::image_repository repo_;

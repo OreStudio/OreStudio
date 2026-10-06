@@ -782,3 +782,53 @@ from here is what the registrar subscribes with.
  * The first update-self creates it.
  */
 #+end_src
+
+** attach_account_pictures_request
+:PROPERTIES:
+:subject: iam.v1.accounts.attach-pictures
+:response: attach_account_pictures_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reconciles the accounts a tenant holds with the pictures they name.
+ *
+ * Every account that names a picture code and carries no picture gets one:
+ * the image is ensured in the tenant and the account is updated. An account
+ * that already carries a picture is left alone, so a repeated call writes
+ * nothing.
+ *
+ * A trigger rather than a report: the provisioning step sends it, and an
+ * operator may re-run it from a client.
+ */
+#+end_src
+
+** attach_account_pictures_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** image_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The images attached, one per account that wanted one.
+ */
+#+end_src
+
+*** account_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The accounts the images were attached to.
+ */
+#+end_src
+

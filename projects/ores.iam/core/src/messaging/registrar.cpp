@@ -406,6 +406,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(ores::iam::workflow::provision_tenant_step_subject),
         qg,
         [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); }));
+    // The account-picture reconcile the attach_photos step runs is also a
+    // subject, so an operator can re-run it from a client and a scope that is
+    // not a provisioning run can be reconciled.
+    subs.push_back(nats.queue_subscribe(
+        ores::iam::messaging::attach_account_pictures_request::nats_subject,
+        qg,
+        [tph](ores::nats::message msg) { tph->attach_account_pictures(std::move(msg)); }));
 
     // --- Tenants, tenant statuses and tenant types ---
     // The generated registrars own these subjects, so the component registrar

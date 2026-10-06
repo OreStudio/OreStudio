@@ -112,6 +112,39 @@ struct get_image_upload_policy_response {
     int min_height;
 };
 
+/**
+ * @brief Ensures an image with this code exists in the caller's tenant.
+ *
+ * The system tenant carries the template images an installation ships. This
+ * operation answers the caller's own image with the code, and when the tenant
+ * holds none it copies the system tenant's template through the same store the
+ * upload writes to. It is idempotent: a tenant that already holds the code is
+ * answered with what it holds.
+ *
+ * A code the installation carries no template for is refused, so a caller that
+ * wanted a picture learns the template is missing rather than storing nothing.
+ */
+struct ensure_image_request {
+    using response_type = struct ensure_image_response;
+    static constexpr std::string_view nats_subject = "assets.v1.images.ensure";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string code;
+};
+
+struct ensure_image_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The id of the caller tenant's image with the requested code, on success.
+     */
+    std::string image_id;
+};
+
 }
 
 #endif

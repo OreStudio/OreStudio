@@ -278,6 +278,19 @@ always go through the party picker.
 Profile picture for this account. Soft reference to an image owned by
 ores.assets; unset means the account has no profile picture.
 
+** picture_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The image code this account wants as its profile picture, such as
+=acme_staff_photo:female_age20_european_02=. The reconcile attaches the
+image the code names, so the wanted picture is data about the account
+rather than something a handler reads out of a staging table. Unset means
+the account wants no picture.
+
 ** job_title
 :PROPERTIES:
 :type:     text

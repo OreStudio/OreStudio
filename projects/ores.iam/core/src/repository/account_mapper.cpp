@@ -64,6 +64,7 @@ domain::account account_mapper::map(const account_entity& v) {
     r.image_id = v.image_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
                      std::nullopt;
+    r.picture_code = v.picture_code.value_or("");
     r.job_title = v.job_title.value_or("");
     r.reports_to_account_id =
         v.reports_to_account_id.has_value() ?
@@ -101,6 +102,7 @@ account_entity account_mapper::map(const domain::account& v) {
                              std::nullopt;
     r.image_id =
         v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
+    r.picture_code = v.picture_code.empty() ? std::nullopt : std::optional(v.picture_code);
     r.job_title = v.job_title.empty() ? std::nullopt : std::optional(v.job_title);
     r.reports_to_account_id = v.reports_to_account_id.has_value() ?
                                   std::optional(boost::uuids::to_string(*v.reports_to_account_id)) :

@@ -78,6 +78,7 @@ inline constexpr std::string_view complete_provisioning_step_kind = "complete_pr
 
 /// The step kinds the notation knows, each named once so a handler that reads
 /// the catalogue by kind names the same string the catalogue declares.
+inline constexpr std::string_view system_provision_step_kind = "system_provision";
 inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
@@ -91,12 +92,20 @@ inline constexpr std::string_view start_market_feeds_step_kind = "start_market_f
 /// every run appends it; a profile that orders it is refused rather than given
 /// a second one. Not every kind here is one this build executes; see
 /// @ref provision_executed_step_kinds for the subset a profile may order today.
-inline constexpr std::string_view provision_step_kinds[] = {publish_bundle_step_kind,
+inline constexpr std::string_view provision_step_kinds[] = {system_provision_step_kind,
+                                                            publish_bundle_step_kind,
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
                                                             load_staff_step_kind,
                                                             attach_photos_step_kind,
                                                             start_market_feeds_step_kind};
+
+/// The bundle the system-provisioning step publishes. Its members are the
+/// datasets the installation itself is read from, so they belong to the system
+/// tenant and never to a profile: a profile describes one tenant, and these
+/// rows are not one. Extending what the installation publishes is a change to
+/// this bundle's membership, not to the step.
+inline constexpr std::string_view system_core_bundle_code = "system_core";
 
 /**
  * @brief What a person is shown for one step kind, and what it does.
@@ -127,6 +136,11 @@ struct step_kind_words {
  * screen can honestly say about it.
  */
 [[nodiscard]] inline step_kind_words words_for_step_kind(std::string_view kind) {
+    if (kind == system_provision_step_kind)
+        return {"Publish the system's own data",
+                "Publishes the datasets the installation itself is read from into the system "
+                "tenant, before the tenant has any of its own.",
+                orchestrating_step_timeout};
     if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
                 "Publishes the reference data the tenant works from: the bundles the starting "
@@ -175,7 +189,8 @@ struct step_kind_words {
 /// notation; this list states which of its kinds have an executor here, so a
 /// profile that orders the rest is refused before its run starts rather than
 /// half-provisioned. Growing it is a code change beside the executor.
-inline constexpr std::string_view provision_executed_step_kinds[] = {publish_bundle_step_kind,
+inline constexpr std::string_view provision_executed_step_kinds[] = {system_provision_step_kind,
+                                                                     publish_bundle_step_kind,
                                                                      import_lei_hierarchy_step_kind,
                                                                      provision_party_step_kind,
                                                                      load_staff_step_kind,

@@ -1242,6 +1242,9 @@ const pt: SourceCatalogue = {
     },
 
     server: {
+        "Publish the system's own data": 'Publicar os dados do próprio sistema',
+        'Publishes the datasets the installation itself is read from into the system tenant, before the tenant has any of its own.':
+            'Publica no inquilino do sistema os conjuntos de dados a partir dos quais a própria instalação é lida, antes de o inquilino ter os seus.',
         'Publish the reference data': 'Publicar os dados de referência',
         'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
             'Publica os dados de referência com que o inquilino trabalha: os pacotes que o ponto de partida encomenda e os conjuntos de dados que esses pacotes nomeiam.',

@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/messaging/report_analytic_parameter_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.reporting.api/messaging/report_analytic_parameter_protocol.hpp"
 #include "ores.reporting.core/messaging/report_analytic_parameter_handler.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::reporting::messaging {
 

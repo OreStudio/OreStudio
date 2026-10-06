@@ -28,11 +28,18 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+{{#domain_entity.has_filter_record}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+{{/domain_entity.has_filter_record}}
 #include "ores.utility/domain/protocol.hpp"
-#include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/stated_order.hpp"
+{{#domain_entity.has_filter_record}}
+#include "ores.database/repository/list_filter.hpp"
+{{/domain_entity.has_filter_record}}
+#include "ores.logging/boost_severity.hpp"
 {{#system_tenant_visible}}
 #include "ores.database/service/tenant_context.hpp"
 {{/system_tenant_visible}}
@@ -46,13 +53,47 @@ The full template source. Edit here and re-tangle with
 #include "ores.platform/time/datetime.hpp"
 {{/primary_key.has_timestamp_key}}
 {{#has_parent_id}}
+#include "ores.utility/domain/hierarchy.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid.hpp>
 {{/has_parent_id}}
+{{#repository_uses_uuid_io}}
+#include <boost/uuid/uuid_io.hpp>
+{{/repository_uses_uuid_io}}
+#include <boost/log/sources/severity_feature.hpp>
+#include <sqlgen/delete_from.hpp>
+{{#domain_entity.has_filter_record}}
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+{{/domain_entity.has_filter_record}}
+#include <sqlgen/dynamic/OrderBy.hpp>
+{{#current_state}}
+#include "ores.database/domain/tenant_aware_pool.hpp"
+#include <sqlgen/begin_transaction.hpp>
+#include <sqlgen/commit.hpp>
+#include <sqlgen/insert.hpp>
+{{/current_state}}
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+{{#repository_uses_utility}}
+#include <utility>
+{{/repository_uses_utility}}
+#include <vector>
+{{#domain_entity.sql.has_list_by_as_of}}
+#include <chrono>
+{{/domain_entity.sql.has_list_by_as_of}}
 {{#primary_key.is_compound}}
 #include <set>
 #include <tuple>
@@ -1050,25 +1091,44 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 }
 {{/domain_entity}}
 {{#junction}}
-{{#junction}}
-{{#left.query_needs_str}}
+{{#repository_uses_datetime}}
 #include "ores.platform/time/datetime.hpp"
-{{/left.query_needs_str}}
-{{#right.query_needs_str}}
-#include "ores.platform/time/datetime.hpp"
-{{/right.query_needs_str}}
-{{/junction}}
+{{/repository_uses_datetime}}
+{{#repository_uses_chrono}}
+#include <chrono>
+{{/repository_uses_chrono}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
 
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+{{^read_only}}
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
-#include <sqlgen/postgres.hpp>
+#include <sqlgen/delete_from.hpp>
+#include "ores.utility/domain/protocol.hpp"
+{{/read_only}}
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+#include <boost/log/sources/severity_feature.hpp>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/where.hpp>
 {{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_left_or_right}}
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
 #include "ores.{{component_core}}/repository/{{name_singular}}_mapper.hpp"

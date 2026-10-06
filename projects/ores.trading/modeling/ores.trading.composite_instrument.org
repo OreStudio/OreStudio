@@ -226,6 +226,7 @@ void composite_instrument_service::save_composite_instrument(
 
 ** Service includes
 #+begin_src cpp :name service_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
 #+end_src

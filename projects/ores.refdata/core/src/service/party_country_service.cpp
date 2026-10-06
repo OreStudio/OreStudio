@@ -23,15 +23,19 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/party_country_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
+#include "ores.refdata.api/domain/party_country.hpp"
+#include "ores.refdata.api/messaging/party_country_protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.database/domain/context.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 namespace ores::refdata::service {
 

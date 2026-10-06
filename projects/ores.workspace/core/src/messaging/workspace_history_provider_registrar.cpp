@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workspace.core/messaging/workspace_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.workspace.core/presentation/workspace_history_field_mapper.hpp"
 #include "ores.workspace.core/service/workspace_service.hpp"
 

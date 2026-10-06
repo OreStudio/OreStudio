@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.core/messaging/workflow_instance_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.workflow.core/presentation/workflow_instance_history_field_mapper.hpp"
 #include "ores.workflow.core/service/workflow_instance_service.hpp"
 

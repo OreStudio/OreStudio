@@ -23,10 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_mapper.hpp"
+#include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_netting_set_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.analytics.core/repository/credit_simulation_netting_set_config_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::analytics::repository {
 

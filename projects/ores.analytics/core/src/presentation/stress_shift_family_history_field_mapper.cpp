@@ -23,8 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/presentation/stress_shift_family_history_field_mapper.hpp"
+#include "ores.analytics.api/domain/stress_shift_family.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <vector>
 
 namespace ores::analytics::presentation {
 

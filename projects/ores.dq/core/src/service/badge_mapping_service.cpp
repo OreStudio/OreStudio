@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/badge_mapping_service.hpp"
+#include "ores.dq.api/domain/badge_mapping.hpp"
+#include "ores.dq.api/messaging/badge_mapping_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <cstddef>
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

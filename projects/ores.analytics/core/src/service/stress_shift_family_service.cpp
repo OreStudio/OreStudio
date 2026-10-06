@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/service/stress_shift_family_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.analytics.api/domain/stress_shift_family.hpp"
+#include "ores.analytics.api/messaging/stress_shift_family_protocol.hpp"
+#include "ores.analytics.core/repository/stress_shift_family_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

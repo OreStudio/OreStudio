@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/origin_dimension_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.api/messaging/origin_dimension_protocol.hpp"
+#include "ores.dq.core/repository/origin_dimension_repository.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

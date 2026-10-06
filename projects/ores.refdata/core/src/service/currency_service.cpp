@@ -23,18 +23,28 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_service.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
+// Log lines stream the party id with uuid_io's operator<<, which the include
+// check does not count as a use.
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
+#include <unordered_set>
 
 using ores::service::messaging::stamp;
 

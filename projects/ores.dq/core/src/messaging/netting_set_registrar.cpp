@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/messaging/netting_set_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/netting_set_protocol.hpp"
 #include "ores.dq.core/messaging/netting_set_handler.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::dq::messaging {
 

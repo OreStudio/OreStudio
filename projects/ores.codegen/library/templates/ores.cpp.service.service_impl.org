@@ -32,22 +32,48 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 #include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
 #include <cstdint>
 #include <stdexcept>
 {{#protocol_derived}}
-#include <algorithm>
-#include <iterator>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 {{/protocol_derived}}
-{{#has_uuid_include}}
-#include <boost/uuid/uuid_io.hpp>
-{{/has_uuid_include}}
+{{#service_pages_versions}}
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
+{{/service_pages_versions}}
+{{#service_lists_by_as_of}}
+#include <chrono>
+{{/service_lists_by_as_of}}
+#include <boost/log/sources/severity_feature.hpp>
+{{#service_uses_uuid}}
+#include <boost/uuid/uuid.hpp>
+{{/service_uses_uuid}}
+{{#service_parses_declared_uuid}}
+#include <boost/lexical_cast.hpp>
+{{/service_parses_declared_uuid}}
+{{#service_uses_uuid_io}}
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
+{{/service_uses_uuid_io}}
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+{{#service_uses_datetime}}
 #include "ores.platform/time/datetime.hpp"
+{{/service_uses_datetime}}
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+{{#has_parent_id}}
+#include "ores.utility/domain/hierarchy.hpp"
+{{/has_parent_id}}
 
 using ores::service::messaging::stamp;
 
@@ -893,17 +919,25 @@ std::vector<ores::utility::domain::hierarchy_node>
     different thing and keeps its meaning. }}
 #include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
 
-#include <cstddef>
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
+{{#service_uses_cstdint}}
 #include <cstdint>
+{{/service_uses_cstdint}}
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 {{#has_uuid_left_or_right}}
-#include <boost/uuid/uuid_io.hpp>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 {{/has_uuid_left_or_right}}
+{{#party_id_is_target}}
+#include "ores.database/domain/context.hpp"
+{{/party_id_is_target}}
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
 
 namespace ores::{{component}}::service {
 

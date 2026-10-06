@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/service/report_type_configuration_type_service.hpp"
+#include "ores.reporting.api/domain/report_type_configuration_type.hpp"
+#include "ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <cstddef>
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

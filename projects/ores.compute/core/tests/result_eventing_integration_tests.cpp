@@ -30,41 +30,53 @@
 #include "ores.compute.core/repository/result_repository.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 // Soft-FK parent seeding (ores_compute_workunits_tbl): the parent may live in another
-// component, so its own component names the headers.
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.compute.api/generators/workunit_generator.hpp"
 #include "ores.compute.core/repository/workunit_repository.hpp"
 // Grand-parent seeding (ores_compute_batches_tbl): the parent's own mandatory soft FKs
 // reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
 #include "ores.compute.api/generators/batch_generator.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
 // Grand-parent seeding (ores_compute_apps_tbl): the parent's own mandatory soft FKs
 // reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
 #include "ores.compute.api/generators/app_generator.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
 // Grand-parent seeding (ores_compute_app_versions_tbl): the parent's own mandatory soft FKs
 // reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
 #include "ores.compute.api/generators/app_version_generator.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for result -- the

@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/service/shift_type_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.analytics.api/domain/shift_type.hpp"
+#include "ores.analytics.api/messaging/shift_type_protocol.hpp"
+#include "ores.analytics.core/repository/shift_type_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

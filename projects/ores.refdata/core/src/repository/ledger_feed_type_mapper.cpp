@@ -24,7 +24,12 @@
  */
 #include "ores.refdata.core/repository/ledger_feed_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/ledger_feed_type.hpp"
 #include "ores.refdata.api/domain/ledger_feed_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/ledger_feed_type_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 

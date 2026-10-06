@@ -23,8 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/presentation/parameter_value_domain_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.reporting.api/domain/parameter_value_domain.hpp"
+#include <vector>
 
 namespace ores::reporting::presentation {
 

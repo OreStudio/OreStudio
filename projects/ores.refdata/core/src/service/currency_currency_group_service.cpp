@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/currency_currency_group_service.hpp"
+#include "ores.refdata.api/domain/currency_currency_group.hpp"
+#include "ores.refdata.api/messaging/currency_currency_group_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <cstddef>
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

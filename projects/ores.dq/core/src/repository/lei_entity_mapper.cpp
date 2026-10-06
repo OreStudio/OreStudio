@@ -24,7 +24,14 @@
  */
 #include "ores.dq.core/repository/lei_entity_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq.api/domain/lei_entity.hpp"
 #include "ores.dq.api/domain/lei_entity_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.core/repository/lei_entity_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::dq::repository {
 

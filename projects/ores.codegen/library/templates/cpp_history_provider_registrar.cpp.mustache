@@ -2,7 +2,9 @@
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/messaging/{{entity_singular}}_history_provider_registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 {{^primary_key.is_compound}}
+#include "ores.database/domain/context.hpp"
 #include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
 #include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"

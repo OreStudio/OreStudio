@@ -23,15 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.core/service/app_version_platform_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
+#include "ores.compute.api/domain/app_version_platform.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 namespace ores::compute::service {
 

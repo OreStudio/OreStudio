@@ -23,11 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/service/booking_nature_type_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <algorithm>
+#include "ores.trading.api/domain/booking_nature_type.hpp"
+#include "ores.trading.api/messaging/booking_nature_type_protocol.hpp"
+#include "ores.trading.core/repository/booking_nature_type_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <cstdint>
-#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>

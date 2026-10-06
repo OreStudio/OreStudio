@@ -23,9 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.variability.core/presentation/system_setting_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.variability.api/domain/system_setting.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::variability::presentation {
 

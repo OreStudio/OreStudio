@@ -34,29 +34,35 @@
 #include "ores.analytics.api/messaging/stress_test_shift_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_repository.hpp"
 #include "ores.analytics.core/service/stress_test_shift_service.hpp"
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_analytics_stress_shift_families_tbl): the parent may live in another
-// component, so its own component names the headers.
-#include "ores.analytics.api/generators/stress_shift_family_generator.hpp"
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.analytics.core/repository/stress_shift_family_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for stress_test_shift -- the

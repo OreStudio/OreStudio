@@ -25,8 +25,7 @@
 #include "ores.refdata.core/repository/sandbox_entity.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <rfl/json/write.hpp>
 
 namespace ores::refdata::repository {
 

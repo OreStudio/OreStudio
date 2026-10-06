@@ -24,9 +24,16 @@
  */
 #include "ores.iam.core/repository/account_contact_information_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.api/domain/account_contact_information_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/repository/account_contact_information_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::iam::repository {
 

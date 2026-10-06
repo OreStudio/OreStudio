@@ -23,8 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/presentation/currency_pair_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/currency_pair.hpp"
+#include <vector>
 
 namespace ores::refdata::presentation {
 

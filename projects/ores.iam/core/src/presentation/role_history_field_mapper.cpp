@@ -23,9 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/presentation/role_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.iam.api/domain/role.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::iam::presentation {
 

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::trading::messaging {
 

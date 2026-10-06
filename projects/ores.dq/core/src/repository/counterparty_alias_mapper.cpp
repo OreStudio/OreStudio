@@ -24,7 +24,13 @@
  */
 #include "ores.dq.core/repository/counterparty_alias_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq.api/domain/counterparty_alias.hpp"
 #include "ores.dq.api/domain/counterparty_alias_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.core/repository/counterparty_alias_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::dq::repository {
 

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :market_data:synthetic:approach:sprint_21:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-07-25
+#+updated: 2026-10-06
 
 * Purpose and scope
 
@@ -22,6 +22,27 @@ analysis documents the reasoning; this document documents the decisions.  It
 does not include implementation code, and it does not cover calibration to
 live market data feeds.  Seven design decisions are explicitly deferred (see
 [[#open-design-decisions][open design decisions]]).
+
+* Where the implemented mechanism is documented
+
+This document decides the method per asset class, the constraints that hold
+between asset classes, the measure bridge, the time evolution strategy and the
+sequence of work. The mechanism that has since become code is documented in
+its own notes, and this document does not restate them.
+
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]]
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]]
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]]
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
+- [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]]
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]]
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]]
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]
+
+Those notes are the place to change when the implementation changes. The
+method, constraint and strategy sections below remain this document's own
+subject.
 
 * The three building blocks
 
@@ -858,6 +879,8 @@ by this document.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
 - [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).

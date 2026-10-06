@@ -142,19 +142,17 @@ end note
 ' handlers the service registrars subscribe.
 
 class ores::synthetic::service::feed_controller {
-    +feed_controller(nats : nats::client&, auth_nats : nats_client&)
+    +feed_controller(nats : nats::client&, auth_nats : nats_client&, bindings : shared_ptr<feed_binding_store>)
     +~feed_controller()
-    +start(ore_key : string, source_name : string, means : vector<double>, stdevs : vector<double>, weights : vector<double>, initial_price : double, ticks_per_hour : double, process_type : string, vintage_source : string, vintage_date : string, error_detail : string*, caller_bearer_token : string, binding_mode : binding_mode, out_conflicting_source_name : string*) : start_result
-    +start(feed : shared_ptr<IFeed>) : start_result
-    +add(feed : shared_ptr<IFeed>, binding_mode : binding_mode, out_conflicting_source_name : string*) : bool
-    +add(feed : shared_ptr<IFeed>, out_conflicting_source_name : string*) : bool
+    +start(feed : shared_ptr<IFeed>, binding_mode : binding_mode, caller_bearer_token : string) : start_result
+    +add(feed : shared_ptr<IFeed>, binding_mode : binding_mode, caller_bearer_token : string, out_conflicting_source_name : string*) : bool
     +stop(key : string) : size_t
     +shutdown()
     +running_count() : size_t
     +list(kind : string) : vector<string>
     +validate(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
     +running_source_name_for_conflict_key(conflict_key : string) : optional<string>
-    -ensure_feed_binding(ore_key : string, source_name : string, caller_bearer_token : string)
+    -bind_feed(source_name : string, binding_mode : binding_mode, caller_bearer_token : string)
     -vintage_data_available(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
     -find_conflict(feed : IFeed&, excluding_source_name : string) : optional<string>
     -start_running(feed : shared_ptr<IFeed>, binding_mode : binding_mode)
@@ -170,19 +168,29 @@ pair -- feeds_conflict -- and a second one is refused by
 name, never by stopping the first.
 end note
 note bottom of "ores::synthetic::service::feed_controller"
-Three ways in, and the differences matter. add() is the
-config-driven path (boot auto-start, the folder cascade):
-the caller already built the feed, so no vintage check and
-no binding creation happen here. start(IFeed) is the
-on-demand path and distinguishes already_running from
-qualifier_conflict. start(ore_key, ...) is the
-client-supplied-params path: the only one that checks
-vintage availability and auto-creates a feed_binding, and
-it is FX-only. A sandboxed feed publishes on
-synthetic.v1.sandbox.tick.<source> and never creates a
-binding, so it is structurally unreachable from the
-bound-feed ingest loop. One tick thread per feed, plus one
-status thread that logs publish counts every minute.
+Two ways in, one binding gate. add() is the config-driven
+path (boot auto-start, the folder cascade); start(IFeed) is
+the on-demand path and distinguishes already_running from
+qualifier_conflict. Both call bind_feed after releasing the
+mutex, so a bound feed creates or confirms its marketdata
+feed_binding and a sandboxed feed never does, for every
+asset class; the marketdata round-trip sits behind
+feed_binding_store. A re-start of an already-running feed
+keeps the mode it is running with and still confirms its
+binding. An internal start with no end-user session has no
+party to bind under and skips the bind. One tick thread per
+feed, plus one status thread that logs publish counts every
+minute.
+end note
+
+class ores::synthetic::service::feed_binding_store {
+    +save_if_absent(source_name : string, caller_bearer_token : string) : expected<void,string>
+}
+note right of "ores::synthetic::service::feed_binding_store"
+The marketdata round-trip seam a feed_controller binds through. The controller
+owns the one rule, a bound feed is bound and a sandboxed feed is not; the
+store owns the list-then-write over NATS, so the rule is testable without a
+live marketdata service. Idempotent: an already-bound source keeps its one row.
 end note
 
 class ores::synthetic::service::feed_config_handler {
@@ -192,7 +200,7 @@ class ores::synthetic::service::feed_config_handler {
     +list(msg : nats::message)
     -start_fx(req_ctx : database::context&, msg : nats::message&, cfg : fx_spot_generation_config&)
     -start_ir(req_ctx : database::context&, msg : nats::message&, cfg : ir_curve_generation_config&)
-    -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<fx_spot_feed>)
+    -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<IFeed>, binding_mode : binding_mode, bearer : string)
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
 note right of "ores::synthetic::service::feed_config_handler"

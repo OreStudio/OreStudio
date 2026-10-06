@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 0CB45982-0B4C-49DC-87AA-C69C6B7E7A98
+:END:
+#+title: The FX spot generation config
+#+description: One FX pair feed, its datum identity, its GMM process choice and its tick clock.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:fx:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+An =fx_spot_generation_config= describes how to synthesise the tick stream
+for one FX spot rate. It is declared in
+=ores.synthetic.api/domain/fx_spot_generation_config.hpp=, it hangs under a
+=market_data_generation_config= through =config_id=, and its mixture
+components are separate =gmm_component= rows.
+
+* Detail
+
+** What the row names
+
+- The pair, as =base_currency_code= and =quote_currency_code=. Both are soft
+  foreign keys to currencies.
+- The datum, as =ore_key=, spelled the ORE way, for example
+  ="FX/RATE/EUR/USD"=. The key is derived from the pair rather than typed,
+  and the feed turns it into an oresmd URI at construction. See
+  [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
+- The provenance, as =source_name=, for example ="synthetic.eurusd"=. It is
+  derived from the pair, it is unique per tenant and party, and it is what
+  the published tick carries as its source.
+- The cadence, as =ticks_per_hour=.
+
+** Where the initial price comes from
+
+=price_source= is a discriminator with two values. ="vintage"= is the default
+and ="fixed"= is the alternative.
+
+- Under ="fixed"= the process starts from =gmm_initial_price= as entered, and
+  that value has to be greater than zero.
+- Under ="vintage"= the initial price is read at feed start from a real
+  =market_observation=, and =vintage_source= and =vintage_date= say which
+  one. The stored =gmm_initial_price= is then a sentinel zero.
+
+One SQL check ties the four columns together. Under ="fixed"= the initial
+price is greater than zero and both vintage columns are empty. Under
+="vintage"= the initial price is exactly the sentinel zero and both vintage
+columns are populated. The codegen in use has no true-nullable numeric
+column, so the zero is a marker rather than a null.
+
+=ticks_per_hour= has its own check and must be greater than zero. It sets the
+publish cadence only. The mixture moments are already per tick, so the
+process step does not change with the cadence.
+
+** The process choice
+
+=process_type= holds ="geometric"=, ="arithmetic"= or
+="ornstein_uhlenbeck"=, and a SQL check restricts the column to those three
+strings. The default is ="geometric"=.
+
+The column is a plain string and not a foreign key. An unrecognised value is
+therefore not rejected at write time. It is forwarded to
+=process_factory::make_process=, which falls back to the geometric engine for
+any string it does not recognise. See
+[[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]].
+
+The mixture itself is not on this row. The means, standard deviations and
+weights live as =gmm_component= children. See
+[[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]].
+
+** enabled and auto_start
+
+The two flags are orthogonal and they answer different questions.
+
+- =enabled= says the config is startable at all. A disabled config may not be
+  started by an auto-start pass or by a manual Start action.
+- =auto_start= says the config starts on its own when the service comes up.
+  A config can be enabled and not auto-start, which is the shape a legacy or
+  alternate-index variant takes when it lives beside a currency's primary
+  config.
+
+Starting a feed is refused outright when another feed is already running for
+the same =ore_key=. Nothing auto-disables the running one, so a switch is a
+Stop followed by a Start.
+
+** The fact the code shape does not show
+
+=folder_id= is optional, and only the publish-from-dq path fills it. A rate
+made by hand has no position in the Market Simulator tree even though
+=source_name= reads as though it had one.
+
+The pair is not the process identity. Two configs for the same pair differ by
+=source_name= and by their component rows, and the collision rule binds them
+by the =ore_key= alone, so they cannot run at the same time whatever else
+differs.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]], which owns this row.
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one row per weighted Gaussian.
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]], which starts from this row.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which turns =process_type= into an engine.
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], the second asset class, whose choices differ in the places noted there.

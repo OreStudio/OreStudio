@@ -24,13 +24,16 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/domain/feed_binding.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <atomic>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -43,6 +46,22 @@
 #include <vector>
 
 namespace ores::marketdata::service::app {
+
+/**
+ * @brief The series a tick creates when it lands in one for the first time.
+ *
+ * Identity and classification come from the datum; the producer kind comes
+ * from the binding the tick arrived under, so a series a generated producer
+ * creates says so while a real feed's keeps the default. A series already
+ * present keeps the kind it was created with, which is why the caller builds
+ * one of these only on the create path.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT domain::market_series
+make_feed_series(const domain::feed_binding& binding,
+                 const boost::uuids::uuid& id,
+                 const std::string& series_uri,
+                 const std::string& series_subclass,
+                 const std::string& service_account);
 
 /**
  * @brief The ingest loop: one subscription over every producer's ticks, and one
@@ -81,6 +100,18 @@ public:
 
     void start();
     void refresh();
+
+    /**
+     * @brief Stores @p tick for every cached binding of its source, and drops it
+     * when the cache holds none.
+     *
+     * This is the whole of what the loop does with a tick once it has arrived,
+     * so it is the entry point a test drives to reach the store without a live
+     * subscription. The bindings cache it consults is what refresh() built.
+     *
+     * @return The reason the tick was dropped, or nothing when it was stored.
+     */
+    std::optional<tick_drop> handle_tick(const messaging::market_tick& tick);
 
 private:
     void on_tick(const ores::nats::message& msg);

@@ -29,6 +29,13 @@ Rebinding (editing =source_name=) switches the ingest source without restarting
 producers. Setting =enabled = false= suspends the subscription without deleting
 the binding.
 
+A binding also says what kind of producer it names: a real feed (=VENDOR=) or a
+generated one (=SYNTHETIC=). The ingest loop stamps the series it creates with
+the binding's =producer_kind=, so a reader of a series can tell generated data
+from observed data without guessing from the =source= string. The column
+defaults to =VENDOR=, so every binding a real feed creates carries it without
+setting anything.
+
 This model binds to no variability profile. Its features match
 =uuid-surrogate-lookup=, but that profile also enables the shell command
 facet, which feed bindings do not have today. Binding it is a decision about
@@ -79,6 +86,25 @@ The producer, unique within a tenant: the =source= every tick it publishes
 carries, and the key of the ingest loop's binding cache. Matches the
 =source_name= of the feed config the binding was created from.
 
+** producer_kind
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "VENDOR"
+:END:
+
+References =producer_kind.code= -- the kind of producer this binding
+names: a real feed (=VENDOR=, the default) or a generated one
+(=SYNTHETIC=). The ingest loop stamps the series it creates from this
+code, so the real-versus-generated axis travels from the binding onto
+the series an observation lands in. A caller that sets nothing gets
+=VENDOR=, so a binding a real feed creates changes nothing.
+
+#+begin_src cpp :name generator
+std::string("VENDOR")
+#+end_src
+
 ** enabled
 :PROPERTIES:
 :type:          boolean
@@ -104,6 +130,13 @@ binding. Setting to false suspends ingestion without removing the binding record
 | expression       |
 |------------------|
 | "source_name" <> '' |
+
+* Insert trigger
+** Validations
+
+| column        | validation_function                    |
+|---------------+----------------------------------------|
+| producer_kind | ores_refdata_validate_producer_kind_fn |
 
 * C++
 

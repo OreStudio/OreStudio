@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90
+:END:
+#+title: ORE import and export
+#+description: How a market.txt and fixings.txt vintage becomes stored observations and fixings, how the store is written back out, and the reversed-key correction the import applies to FX quotes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:storage:ore:import:export:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=marketdata.v1.import= turns the text of an ORE =market.txt= and
+=fixings.txt= into stored series, observations and fixings.
+=marketdata.v1.export= writes the tenant's store back out in the same two
+formats. The import lives in
+=projects/ores.marketdata/core/src/service/import_service.cpp=. Neither
+operation needs a running producer.
+
+* Detail
+
+** The import request
+
+=import_market_data_request= carries =market_data_content=, the full text of
+an ORE market file, =fixings_content=, the full text of a fixings file, and
+a =source= tag. Either content field may be empty, so one call can import one
+file type or both. The parser accepts =YYYYMMDD= and =YYYY-MM-DD= dates and
+whitespace or comma delimiters.
+
+The =source= tag is stamped on every imported observation's =source= field.
+It tells one import from another, for example =ore.reference= for a named ORE
+example vintage. An empty tag keeps the untagged behaviour that existed
+before the field was added.
+
+** What the import does with a key
+
+The ORE key codec is the authority on what a key means.
+=datum::ore_key_codec::read= is asked to read each key, and a key the codec
+refuses is not imported at all. The key is then written back in canonical
+form, and the datum URI and the series URI are derived from it through
+=oresmd_uri_codec=.
+
+For each named key the import finds or creates the market series catalog
+entry. A new series is classified through the series classification rules,
+which give it its =series_subclass= and its asset class junction rows, and
+its change reason is =system.external_data_import=. The observations are
+then written in bulk.
+
+The fixings path is parallel and separate. A fixing's series is the index it
+fixes, so the import reads the qualifier with =datum::ore_index_codec::read=
+and writes the index's fixing URI as the series identity. A fixing name the
+codec refuses is reported and dropped, the same way a quote key the codec
+refuses is dropped. Fixings land in their own table through
+=market_fixing_repository=.
+
+An observation's key is not stored. It is written from the datum URI, so the
+series carries the only durable name.
+
+** The reversed-key correction
+
+Some vendored ORE example files store an FX spot value under a reversed
+currency pair. =fx_quote_convention_checker=, in
+=projects/ores.ore/core/include/ores.ore.core/market/fx_quote_convention_checker.hpp=,
+compares a quote's currency order against the canonical pairs that
+ores.refdata holds. When the reversed pair is the one actually present, it
+swaps the qualifier's two currencies and returns =key_swapped=.
+
+The checker never touches the quoted value, so it cannot introduce a
+floating point error, and an unrecognised pair is left alone rather than
+guessed at. When a swap happens, the observation's change commentary records
+that the key was reversed relative to refdata's canonical pair.
+
+The correction is best effort. If the refdata pair lookup fails, the import
+disables the correction for the whole batch and logs that fact, and the
+import still runs. A missing side check never fails an import.
+
+** The export
+
+=export_market_data_request= takes no arguments, and the request comment
+gives the reason. An ORE market file is a snapshot of everything a run
+needs, not a slice of one series, so an export that could name a subset
+would produce a file that does not reproduce anything.
+
+The service returns the file bodies rather than writing them, because the
+caller owns the file system. =market_data_content= holds one
+=DATE<TAB>KEY<TAB>VALUE= line per observation and =fixings_content= holds one
+=DATE<TAB>INDEX<TAB>VALUE= line per fixing. The response also carries the
+series, observation and fixing counts.
+
+Both requests declare =requires_session = true=.
+
+** Facts the code shape does not show
+
+- The import converges on the same catalog shape an ingest write produces. A
+  series it creates gets the same classification, subclass and asset class
+  junction rows, so a reader cannot tell an imported series from an ingested
+  one by its shape.
+- Every series the import creates carries =VENDOR=, because the
+  =market_series= domain type defaults =producer_kind= to =VENDOR= and the
+  import never sets the field. A =VENDOR= series in this store can therefore
+  mean imported text rather than a running vendor producer.
+- The export's scope is the tenant and the import's scope is the tenant.
+  Neither takes a series, a party or a date range.
+- The import reports parse warnings and errors in the response while
+  importing what it could read, so a partial vintage is visible rather than
+  rejected whole. The request's =duplicates_are_errors= flag chooses how a
+  repeated =date, key= pair is handled. The default keeps the later row and
+  reports a warning, and the strict mode reports the repeat as an error and
+  persists none of the affected content.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the =VENDOR= stamp an imported series carries.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the catalog the import writes into.
+- The import service is
+  =projects/ores.marketdata/core/src/service/import_service.cpp=.
+- The checker is =fx_quote_convention_checker= in
+  =projects/ores.ore/core/include/ores.ore.core/market/fx_quote_convention_checker.hpp=.

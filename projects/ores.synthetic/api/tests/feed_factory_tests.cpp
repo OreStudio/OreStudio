@@ -199,6 +199,9 @@ public:
     const std::string& role() const override {
         return role_;
     }
+    const std::string& nats_subject() const override {
+        return nats_subject_;
+    }
     std::string_view kind() const override {
         return "stub";
     }
@@ -215,6 +218,7 @@ private:
     std::string source_name_{"stub"};
     std::string qualifier_{"STUB/KEY"};
     std::string role_;
+    std::string nats_subject_{"synthetic.v1.tick.stub"};
 };
 
 }
@@ -258,6 +262,29 @@ TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config",
     CHECK(ir->conflict_key() == "USD/SOFR\x1f"
                                 "discount");
     CHECK(ir->publish_count() == 0);
+}
+
+TEST_CASE("factory::make derives the producer subject from the build input's binding_mode, "
+          "for every kind",
+          tags) {
+    const auto factory = make_default_feed_factory();
+    const auto f = make_ir_fixture();
+
+    auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
+    fx.binding_mode = binding_mode::bound;
+    CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
+          "synthetic.v1.tick.eur_usd_test");
+    fx.binding_mode = binding_mode::sandboxed;
+    CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
+          "synthetic.v1.sandbox.tick.eur_usd_test");
+
+    auto ir = ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
+    ir.binding_mode = binding_mode::bound;
+    CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
+          "synthetic.v1.tick.usd_sofr_test");
+    ir.binding_mode = binding_mode::sandboxed;
+    CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
+          "synthetic.v1.sandbox.tick.usd_sofr_test");
 }
 
 TEST_CASE("factory::make rejects an unknown kind", tags) {

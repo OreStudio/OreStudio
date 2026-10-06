@@ -98,6 +98,7 @@ domain::market_series to_domain(const messaging::market_series_write& write) {
     v.party_id = write.party_id;
     v.oresmd_uri = write.oresmd_uri;
     v.series_subclass = write.series_subclass;
+    v.producer_kind = write.producer_kind;
     v.derivation_kind = write.derivation_kind;
     v.derivation_config_id = write.derivation_config_id;
     v.derivation_config_version = write.derivation_config_version;

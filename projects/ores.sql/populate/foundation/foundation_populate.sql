@@ -164,9 +164,10 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_day_counters_populate.sql
 \ir ../refdata/refdata_calendar_names_populate.sql
 
--- Derivation kinds and series subclass codes: before marketdata's
--- market_series (FK via validation function).
+-- Derivation kinds, producer kinds and series subclass codes: before
+-- marketdata's market_series (FK via validation function).
 \ir ../refdata/refdata_derivation_kinds_populate.sql
+\ir ../refdata/refdata_producer_kinds_populate.sql
 \ir ../refdata/refdata_series_subclass_codes_populate.sql
 
 \ir ../refdata/refdata_business_unit_types_populate.sql

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: B4729C76-4D88-4F3C-B3D3-5FC7BD62D158
+:END:
+#+title: The feed and its lifecycle
+#+description: What an IFeed is, the identity triple it carries, the blocking start and stop contract, and the publish counter it exposes.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:producers:lifecycle:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A feed is a market data producer that ORE Studio runs as a live source.
+Every producer, whatever its asset class, implements the one interface
+=IFeed=, declared in =ores.marketdata.api/domain/i_feed.hpp=. The
+interface lives in =ores.marketdata.api= rather than in the generation
+service, so =ores.synthetic= and any future calibration service see the
+same type without creating a dependency cycle.
+
+* Detail
+
+** The identity triple
+
+A feed carries three names and each answers a different question.
+
+- =source_name()= is the producer's unique identity within a tenant, for
+  example "eur_usd_gbm_1". The feed controller keys its map of running
+  feeds by this name.
+- =qualifier()= is the published market data key that consumers look up,
+  for example "EUR/USD" for an FX spot feed or "USD/SOFR" for an interest
+  rate curve family.
+- =role()= is the series role the feed publishes under, which is oresmd's
+  =curve_role= for a curve. It is empty for a feed without roles, such as
+  FX spot.
+
+=feed_conflict_key= joins the qualifier and the role with a unit separator
+and defines the identity two feeds must not share while both run. The
+controller compares the qualifier and the role directly rather than the key
+string, and that matters for one case. A feed whose ORE key does not parse
+has an empty qualifier, and an empty qualifier conflicts with nothing even
+though its key string is not empty. A feed with an empty qualifier has no
+published market data key to protect.
+
+** The lifecycle contract
+
+=start()= blocks the calling thread until =stop()= is called from a
+different thread, so a caller always runs a feed on a thread it owns.
+=stop()= is thread safe, may be called from any thread, returns
+immediately, and lets the tick loop exit asynchronously. Every other method
+is single threaded. =publish_count()= returns the number of ticks published
+since start.
+
+A feed publishes its own ticks to NATS and the loop invokes no handler on
+it, so the publishing path sits inside the producer rather than in the
+framework around it.
+
+** The remaining two members
+
+=nats_subject()= is the subject the feed publishes on, derived from its
+source name and its binding mode. =kind()= is the factory kind string the
+producer registers under, and it is fixed for the producer's lifetime.
+[[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]] states the subject grammar and
+[[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]] states how the kind selects a builder.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], where a tick these feeds publish is written.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]], the one owner of the running feeds.

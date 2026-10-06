@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 00D63182-C7FF-4AC9-8A83-9A5D984B2876
+:END:
+#+title: The ingest loop and the one pipeline
+#+description: How a tick is planned against its bindings, written once per enabled binding and republished per consumer, and where an if still stands in for a registered hook.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:ingest:pipeline:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=feed_ingest_loop=, declared in
+=ores.marketdata.service/app/feed_ingest_loop.hpp=, is the one path every
+tick takes from the wire to the store. It holds one subscription over every
+producer's ticks and handles every tick the same way, whatever its asset
+class.
+
+* Detail
+
+** The one pipeline rule
+
+The market data pipeline in ORE Studio is one path. A producer publishes a
+=market_tick= on ="synthetic.v1.tick.<source>"=. The tick names its datum
+by its oresmd quote URI and its producer by its source, and it carries no
+owner. The ingest loop plans the tick against the enabled bindings of that
+source, writes one observation per binding, and republishes the tick on the
+per consumer stream. Every other note in this cluster describes one part of
+that path and links here rather than restating this rule.
+
+** How a tick is handled
+
+- =refresh()= reads every feed binding across all tenants through
+  =feed_binding_repository= and caches the enabled ones by source name. The
+  marketdata service subscribes to the =feed_binding_event= channel and
+  calls =refresh()= when a binding is created, retargeted or removed, so a
+  bind or an unbind changes what the loop ingests without a restart.
+- =plan_tick=, in =ores.marketdata.service/src/app/tick_plan.cpp=, is pure.
+  It reads the tick's URI into a datum through =oresmd_uri_codec::read=,
+  writes the canonical ORE key, parses the value and builds one target per
+  binding. Each target carries the binding and the republish subject from
+  =market_tick_subject=. It returns a =tick_drop= instead of a plan in three
+  cases, which are =unbound_source=, =unnameable_datum= and =not_a_number=.
+  The loop warns once per source or per URI and drops the tick.
+- For each target the loop persists the tick and then republishes it, so
+  the republish waits for the stored observation and the stream cannot
+  diverge from the table.
+- Persistence creates the series on the first tick that lands in it.
+  =make_feed_series= takes the identity and the classification from the
+  datum and the =producer_kind= from the binding. Every later tick inserts
+  an observation against the series that already exists.
+
+** Where the one path is not yet complete
+
+One branch in =handle_tick= is not a registered hook. After a successful
+persist, the loop offers an FX spot datum to the CRM bridge under the
+condition =plan->datum.type() == datum::instrument_type::fx_spot=. The
+comment beside it records the reason. Currency driver pairs are FX shaped,
+so only an FX spot rate is a candidate driver update. A third asset class
+that wants to feed CRM would need an edit at this line, so this is the one
+place where an =if= still stands in for a registration that a kind could
+supply.
+
+** Two facts the code shape does not show
+
+- The subscription is a single wildcard over the bound prefix and not one
+  subscription per source. A new producer starts being ingested through the
+  existence of its binding, with no subscription change.
+- A bound consumer that never ticks still appears in the status log,
+  because =refresh()= keeps a stats entry per bound consumer rather than
+  creating one on the first tick.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], the hub this cluster hangs from.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type the loop reads.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the loop leaves behind.
+- [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]], the extra row a derived observation carries.

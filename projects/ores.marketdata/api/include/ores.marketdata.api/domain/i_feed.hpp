@@ -90,6 +90,13 @@ public:
     virtual const std::string& role() const = 0;
 
     /**
+     * @brief The NATS subject this feed publishes its ticks on, derived from
+     * its source_name and binding_mode: "synthetic.v1.tick.<source>" for a
+     * bound feed, the sandbox prefix for a sandboxed one.
+     */
+    virtual const std::string& nats_subject() const = 0;
+
+    /**
      * @brief The factory kind string this producer registers under (the
      * asset-class discriminator of the factory seam, e.g. "fx_spot",
      * "ir_curve"). Control-plane code scopes running-feed listings by kind;

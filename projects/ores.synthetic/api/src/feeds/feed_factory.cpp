@@ -70,6 +70,7 @@ std::shared_ptr<ores::marketdata::domain::IFeed> build_ir_curve(const feed_build
                               in.values,
                               in.definitions,
                               in.refctx,
+                              in.binding_mode,
                               ctx.caller_bearer_token);
 }
 

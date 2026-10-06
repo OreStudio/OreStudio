@@ -67,7 +67,7 @@ Finance concepts the codebase relies on.
 | [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] | Classification, the book and portfolio distinction, groups, lifecycle, ledger connection |
 | [[id:CA299D08-AC97-4A37-B3F2-A5927F379326][Sweep]] | Cash centralisation, and the spot and ledger sweep types built on it |
 | [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] | The processes behind the quant generators: Wiener, Ito, and the mean-reverting family |
-| [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic Market Data Generation]] | The approach: method per asset class, cross-asset constraints, the P and Q bridge |
+| [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | How a tick becomes a stored observation, how a config becomes a running synthetic feed, the verbs and screens that drive it, and the vendor and stored data side |
 
 ** Topics with no hub yet
 

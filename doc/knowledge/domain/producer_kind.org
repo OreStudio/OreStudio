@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: C6D75337-0EA6-40F0-8E8B-52737558851D
+:END:
+#+title: The producer kind
+#+description: Why real against generated is a property of the producer and not of the data, how the kind travels from the binding onto the series, and how it differs from derivation_kind.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:provenance:refdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=producer_kind= is a reference data vocabulary that classifies who produced
+a series. The two codes are =VENDOR= for a real feed and =SYNTHETIC= for a
+generated one. The model is
+=projects/ores.refdata/modeling/ores.refdata.producer_kind.org=, the table is
+=ores_refdata_producer_kinds_tbl=, and the seeded rows are in
+=projects/ores.sql/populate/refdata/refdata_producer_kinds_populate.sql=.
+
+* Detail
+
+** Why the question belongs to the producer
+
+A generated producer publishes its ticks exactly as a vendor does. The tick
+type is one type, the subject grammar is one grammar, and the ingest loop is
+one loop. Nothing on the tick and nothing on the observation records which
+side a value came from.
+
+The answer therefore has to name the producer, not the data. The table
+carries one code per producer kind, and the model states the rule directly,
+that real against generated is a property of the producer and not of the
+series.
+
+** How the kind travels
+
+The kind enters at the binding. The =feed_binding.producer_kind= column
+references the code table and is validated on insert by
+=ores_refdata_validate_producer_kind_fn=. A caller that sets nothing gets
+=VENDOR=, which is the column default.
+
+The ingest loop then copies the binding's kind onto every series it creates.
+=make_feed_series= in
+=projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= assigns
+=series.producer_kind = binding.producer_kind= when it creates a market
+series for a tick. The loop is
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]],
+and the row it stamps is
+[[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]].
+
+The series carries the kind from the first observation onward and never
+revises it. A series a generated producer created stays generated however it
+is later read.
+
+** How it differs from derivation_kind
+
+=producer_kind= answers who produced the series. =derivation_kind= answers
+how. A directly observed series carries =OBSERVED= with the nil uuid
+sentinel, and a derived one carries a named mechanism such as
+=IR_CURVE_BOOTSTRAP= or =CRM_DERIVATION=.
+
+The two are orthogonal. A curve a bootstrap derived from vendor quotes is
+computed and vendor sourced at once, and a synthetic spot rate is generated
+and observed at once.
+
+** Facts the code shape does not show
+
+- The =SYNTHETIC= code is written in code rather than by the schema. The
+  synthetic binding store sets =producer_kind = "SYNTHETIC"= explicitly, so
+  the =VENDOR= default is what lets a real feed's binding need no change.
+- A series created outside the ingest loop also carries =VENDOR=. The
+  publish-from-DQ SQL inserts market series with ='VENDOR', 'OBSERVED'=, so
+  the code names a provenance class and not only a running producer.
+- The vocabulary is settled while no vendor producer exists in the tree. The
+  =VENDOR= code is today a default and a label for imported data, not a
+  description of a producer anyone can run. The contract a vendor producer
+  would have to satisfy is stated in
+  [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor producers]].
+- The two codes are seeded, and the column is foreign key validated rather
+  than free text. A new code is a data change and not a code change.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the row that carries the kind and hands it to the loop.
+- [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][Derivation Kind]], the sibling axis of published against computed.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]], the component the vocabulary lives in.

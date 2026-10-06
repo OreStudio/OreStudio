@@ -58,6 +58,12 @@ namespace ores::marketdata::domain {
  * observations. Per-observation lineage (which source series/as-of a
  * specific derived point came from) is a separate concern, tracked by
  * observation_lineage, not this catalog-level marker.
+ *
+ * producer_kind answers a different question: not how the series was
+ * produced but who produced it, a real feed (VENDOR) or a generated one
+ * (SYNTHETIC). It is stamped once, from the feed_binding the first
+ * observation arrived under, and is never revised -- a series a generated
+ * producer created stays generated however it is later read.
  */
 struct market_series final {
     /**
@@ -111,6 +117,15 @@ and the party is part of the key.
      * asset-class junction uses, and carried as the code itself: the taxonomy is runtime-managed.
      */
     std::string series_subclass;
+
+    /**
+     * @brief References producer_kind.code -- who produced this series: a real feed (VENDOR, the
+     * default) or a generated one (SYNTHETIC). Orthogonal to derivation_kind, which says whether
+     * the series was published or computed. The ingest loop stamps it from the binding the tick
+     * arrived under when it creates the series, and leaves an existing series' kind alone, so the
+     * axis records the producer that created the row rather than the last writer to touch it.
+     */
+    std::string producer_kind = "VENDOR";
 
     /**
      * @brief References derivation_kind.code -- whether this series is directly observed (the

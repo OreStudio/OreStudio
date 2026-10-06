@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 78B65BF0-C003-48F6-84E3-615A36D39266
+:END:
+#+title: Lineage and provenance
+#+description: Why a derived observation carries an extra lineage row, how derivation_kind separates published from computed, and how source_as_of fixes a rerun.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:storage:provenance:lineage:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=observation_lineage=, declared in
+=ores.marketdata.api/domain/observation_lineage.hpp=, carries per
+observation provenance for a derived observation. A row exists only for a
+derived observation, so the existence of a row is itself the derived
+marker. The common OBSERVED case writes none.
+
+* Detail
+
+** What one row records
+
+- =series_id= and =observation_datetime= point at the
+  =market_observation= row this lineage describes.
+- =oresmd_uri= matches that observation row's own URI.
+- =derivation_config_id= and =derivation_config_version= name the config
+  that produced the observation.
+- =source_as_of= is the as of timestamp of the upstream source data this
+  derivation read.
+- =source_series_ids= is a serialised JSON array of the upstream
+  =market_series= ids the observation was derived from.
+
+** How =source_as_of= fixes a rerun
+
+A rerun of a derivation over the same natural key closes the prior
+generation's lineage row and inserts a new one, which is the same soft
+update convention every other bitemporal entity in this codebase receives.
+Because each row carries the upstream as of timestamp it read, a reader can
+tell which upstream vintage each generation used instead of guessing from
+the current values.
+
+** Why it is not a hypertable
+
+The lineage table is a standard bitemporal entity with GIST exclusion and
+the soft update and delete triggers. It is not a hypertable, because
+lineage rows are written only for the minority of observations that are
+derived. The tick level volume argument that makes =market_observations_tbl=
+a hypertable with no audit columns does not apply here, so this table does
+carry the audit columns.
+
+** The axis this is not
+
+=derivation_kind= separates a published observation from a computed one.
+=producer_kind= on the series records whether the producer was a real feed
+or a generated one. The two axes are independent, and a generated feed
+whose output is then bootstrapped into a curve appears under both. The
+producer kind note states the second axis.
+
+** The fact the code shape does not show
+
+The table is deliberately generic and not curve specific. CRM's own derived
+cross publishing can reuse it unchanged whenever it starts persisting,
+stamping =derivation_kind= to CRM_DERIVATION exactly as the IR curve
+bootstrapper stamps it to IR_CURVE_BOOTSTRAP.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]], the curve specific view of provenance, which this note must not restate.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the tables a lineage row points at.

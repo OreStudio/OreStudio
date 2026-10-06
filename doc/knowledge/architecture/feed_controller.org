@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 39057B64-8F85-4882-9B66-D2D4FC7468E4
+:END:
+#+title: The feed controller
+#+description: Why one process owns the add, start and stop of every synthetic feed, what each start result means, and the one rule that binds a started feed.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:lifecycle:control:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=feed_controller=, declared in
+=ores.synthetic/service/src/feed_controller.hpp=, owns every running
+synthetic producer feed. It runs one tick thread per feed and one status
+thread for the whole controller. One class serves every asset class,
+because every feed enters it through =IFeed= and the feed's kind is
+irrelevant to how it is owned.
+
+* Detail
+
+** Why one owner
+
+The map of running feeds is keyed by =source_name=, so several producers
+run at once and publish on distinct subjects. At most one feed per pair of
+qualifier and role runs at a time. A conflict is rejected, never silently
+and never by stopping the existing feed, so switching sources requires an
+explicit stop first. =running_source_name_for_conflict_key()= names the
+holder so the control plane can build an actionable message.
+
+** The two registration paths
+
+- =add()= is the config driven path, used by boot auto start and the
+  folder cascade. The caller has already built the feed from persisted
+  config through the factory, including any vintage resolution, so this
+  path does no vintage check and no process construction. It returns false
+  without starting when the source name is already running or the conflict
+  key is held.
+- =start(IFeed)= is the on demand path used by the per config control
+  plane. It reports =already_running= when that source is already up.
+
+** What each start result means
+
+Both paths report a =start_result=. The four values are =started=,
+=already_running=, =qualifier_conflict= and =vintage_data_missing=.
+=start()= returns the first three today. The fourth value exists because
+the IR builder resolves its vintage at construction and throws a
+=vintage_data_missing_error= before the controller ever sees the feed, so
+the control plane still has a value to report for that case.
+
+** The binding rule
+
+Both paths create the feed's marketdata feed binding from one gate. A
+bound feed is bound and a sandboxed feed is never bound. A start with no
+caller bearer token binds nothing, because an internal start with no end
+user session has no party to bind under. [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]]
+states what the two modes mean.
+
+** Three facts the code shape does not show
+
+- A re-start of an already running feed keeps the mode the feed is running
+  with, not the mode passed on the re-start. A caller who does not know the
+  feed is sandboxed therefore cannot bind it.
+- A genuine re-start still confirms the binding, so a feed whose binding
+  row was deleted by hand regains it on the next start.
+- Binding creation is a blocking marketdata round trip, so it runs after
+  the mutex is released, and a store failure is logged rather than thrown.
+  The feed has already started either way, and the missing binding shows as
+  no ticks reaching the market series.
+
+The store behind the rule is the =feed_binding_store= seam. The controller
+owns the rule and the store owns the round trip, so a test drives the rule
+without a live marketdata service. The binding itself is the subject of
+The feed binding.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface the controller stores.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], what reads the binding a start creates.

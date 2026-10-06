@@ -41,13 +41,13 @@ Ornstein-Uhlenbeck in particular.
   individual PDF plus the combined mixture PDF, with the combined
   curve in a visually distinct colour.
 - The other stochastic process types catalogued in
-  [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] are reviewed against what is
+  the processes in [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] are reviewed against what is
   actually implemented; gaps are either implemented or explicitly
   scoped out with rationale.
 - Ornstein-Uhlenbeck (mean-reverting) is implemented as a synthetic
   process, matching the design already recorded in
-  [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] and
-  [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] (=synthetic_ou=), or the
+  the processes in [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] and
+  the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] (=synthetic_ou=), or the
   decision to defer it is recorded with rationale.
 
 * Tasks

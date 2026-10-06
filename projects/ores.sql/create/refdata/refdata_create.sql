@@ -133,9 +133,11 @@
 \ir ./refdata_instrument_codes_create.sql
 \ir ./refdata_instrument_codes_notify_trigger_create.sql
 
--- Derivation kinds and series subclass codes: before marketdata's
--- market_series (FK via validation function).
+-- Derivation kinds, producer kinds and series subclass codes: before
+-- marketdata's market_series (FK via validation function).
 \ir ./refdata_derivation_kinds_create.sql
+\ir ./refdata_producer_kinds_create.sql
+\ir ./refdata_producer_kinds_notify_trigger_create.sql
 \ir ./refdata_series_subclass_codes_create.sql
 \ir ./refdata_series_subclass_codes_notify_trigger_create.sql
 

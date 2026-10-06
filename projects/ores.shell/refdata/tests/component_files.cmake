@@ -134,6 +134,7 @@ set(files
     "payment_frequency_commands_tests.cpp"
     "portfolio_commands_tests.cpp"
     "portfolio_right_commands_tests.cpp"
+    "producer_kind_commands_tests.cpp"
     "purpose_type_commands_tests.cpp"
     "regulatory_book_type_commands_tests.cpp"
     "rounding_type_commands_tests.cpp"

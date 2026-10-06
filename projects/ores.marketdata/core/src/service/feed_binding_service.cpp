@@ -97,6 +97,7 @@ domain::feed_binding to_domain(const messaging::feed_binding_write& write) {
     v.id = write.id;
     v.party_id = write.party_id;
     v.source_name = write.source_name;
+    v.producer_kind = write.producer_kind;
     v.enabled = write.enabled;
     return v;
 }

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1
+:END:
+#+title: The yield curve process type catalogue
+#+description: The short-rate engines a curve config may choose, the parameter names each one accepts, and the two code paths that disagree about which of them work.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:catalogue:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=yield_curve_process_type= is a reference-data table that enumerates the
+short-rate engines an =ir_curve_generation_config= may select. It is
+declared in =ores.synthetic.api/domain/yield_curve_process_type.hpp=, it is
+seeded by
+=projects/ores.sql/populate/synthetic/synthetic_yield_curve_process_types_populate.sql=,
+and an IR curve config's =process_type= column is a foreign key to its =code=.
+
+* Detail
+
+** Why it is a table
+
+The column was once constrained by an inline check listing three strings. The
+catalogue replaces that with one row per engine, so an engine is describable,
+validatable as a foreign key, and orderable for display. It is scoped to
+=ores.synthetic= rather than =ores.refdata=, because selecting an
+=IYieldCurveProcess= engine is specific to synthetic curve generation and has
+no other consumer yet. The system tenant manages the rows.
+
+** The row
+
+The columns are =code=, =name=, =description= and =display_order=, followed
+by the audit block every entity in this schema carries. The primary key is
+the tenant, the code and the valid-time window, with an exclusion constraint
+that keeps two live versions of one code from overlapping. Partial unique
+indexes cover the active name, the active code and the code and version pair.
+
+** The seeded engines and their parameters
+
+Five codes are seeded. Each one's accepted parameter names come from
+=yield_curve_process_parameter_definition= and are also fixed in the mapping
+layer's own expected set.
+
+| Code                  | Parameters                                              |
+|-----------------------+---------------------------------------------------------|
+| VASICEK               | kappa, theta, sigma, initial_rate                        |
+| COX_INGERSOLL_ROSS    | kappa, theta, sigma, initial_rate                        |
+| HULL_WHITE            | kappa, theta, sigma, initial_rate                        |
+| BLACK_KARASINSKI      | kappa, theta, sigma, initial_rate                        |
+| TWO_FACTOR_GAUSSIAN   | kappa_x, kappa_y, theta, sigma_x, sigma_y, rho, initial_rate |
+
+The four one-factor engines share one parameter vocabulary. The two-factor
+engine adds a second mean-reversion speed, a second volatility and a
+correlation, which is why =rho= carries the bounds of minus one and one in
+its definition row.
+
+** The fact the code shape does not show
+
+Two factories exist for these engines and they disagree, so a catalogue row
+is a statement about one of them and not about both.
+
+=map_parameters_to_yield_curve_process= in
+=ores.synthetic.api/src/domain/yield_curve_process_parameter_mapping.cpp=
+constructs all five. It is the path the IR curve feed and the curve shape
+preview handler both take, so all five engines are reachable from a config.
+
+=ores::analytics::quant::service::process_factory::make_yield_curve_process=
+constructs three of them, =vasicek=, =cox_ingersoll_ross= and =hull_white=,
+and throws =std::invalid_argument= for anything else. It has no caller
+anywhere in the tree. The header comment on this note's own entity, and the
+comment on the create script, both name only those three engines, which
+understates the seeded table.
+
+A reader who needs to know what a curve config can actually run has to read
+the mapping layer, not this table and not the create script.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], whose =process_type= is the foreign key into this table.
+- [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], which holds the value rows these definitions describe.
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which takes the mapping path.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], the hub for the mathematics of each engine.
+- [[id:2350DE1D-00F7-4909-8308-D91831F4C0EA][Cox-Ingersoll-Ross (CIR) Process]], [[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek Process]] and [[id:3A5924E0-43BA-4A8E-8107-36D38DA07A87][Hull-White Process]], three of the engines this table lists.

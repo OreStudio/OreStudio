@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB
+:END:
+#+title: The feed binding
+#+description: What a feed_binding row records, the one place a live tick finds its owners, the enabled flag as a suspend, rebinding as a source switch, and the gap between a binding and the config that authored its source.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:binding:vendor:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A =feed_binding= records that one party consumes one producer source. It is
+the join between a producer and the consumers of its ticks, and it is the
+same join for every asset class. The model is
+=projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org=, the
+domain type is
+=projects/ores.marketdata/api/include/ores.marketdata.api/domain/feed_binding.hpp=,
+and the table is =ores_marketdata_feed_bindings_tbl=.
+
+* Detail
+
+** What a row records
+
+The columns are a surrogate =id=, the =tenant_id=, the =party_id= of the
+consumer, the =source_name= of the producer, a =producer_kind=, an =enabled=
+flag, and the standard audit and version members. The natural key is the
+party and the source name, and the table carries one check, that
+=source_name= is not empty.
+
+The =source_name= is the producer, unique within a tenant. It is the
+=source= every tick that producer publishes carries, and it is the key of
+the ingest loop's binding cache.
+
+=producer_kind= references the refdata code table and defaults to =VENDOR=.
+The insert trigger validates it with =ores_refdata_validate_producer_kind_fn=.
+
+** The one place a tick finds its owners
+
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
+reads the bindings through
+=feed_binding_repository::read_latest_all_tenants=, which skips the tenant
+filter and reads only the rows whose =valid_to= is the maximum timestamp.
+It then keeps the enabled rows and groups them by =source_name= into its
+=bindings_by_source_= cache.
+
+A tick arrives on the producer subject. The loop looks the tick's =source=
+up in that cache, plans the tick against every binding the source has, and
+for each binding writes the observation under the binding's tenant and
+party and republishes the tick on
+=marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>=, where the key is the
+datum's canonical ORE key.
+
+A tick whose source has no enabled binding is dropped with the
+=unbound_source= reason, and the loop logs the drop once per source rather
+than once per tick.
+
+** The enabled flag is a suspend
+
+Setting =enabled = false= removes the source from the loop's cache on the
+next refresh and leaves the row in place. Nothing is deleted, so re-enabling
+the binding restores ingestion without a new row.
+
+** Rebinding is a source switch
+
+Editing =source_name= points the binding at a different producer. The
+producers themselves keep running, because the loop drives them and not the
+reverse. The switch takes effect at the next refresh of the binding cache.
+
+The refresh is not on a timer. The marketdata application subscribes to the
+=feed_binding_event= stream, and a binding that is created, retargeted or
+removed triggers =feed_ingest_loop::refresh()=. That is what makes a source
+switch land without a service restart.
+
+** The gap between a binding and the config that authored its source
+
+A binding names only its =source_name=. Nothing on the row references the
+=market_data_generation_config= or the feed config that produced that source,
+and the collection entity itself is
+[[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]].
+No foreign key joins them, and no column carries a config id.
+
+The link back is name similarity. The column comment says the =source_name=
+matches the =source_name= of the feed config the binding was created from,
+and that sentence is the whole of the relationship.
+
+The consequence is that a binding cannot show which config authored its
+source. Two configs that share a source name are indistinguishable on the
+binding row, and a config renamed without the matching binding edited leaves
+a binding that names a source nothing is publishing. A reader who wants the
+config behind a binding has to match names by hand.
+
+This gap is recorded here rather than left for a reader to infer a
+relationship the schema does not carry.
+
+** Facts the code shape does not show
+
+- The synthetic side creates its own binding when a bound feed starts, in
+  =feed_controller::bind_feed= through =marketdata_binding_store::save_if_absent=.
+  That side is [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]].
+  The store writes =producer_kind = "SYNTHETIC"= rather than taking the
+  entity default.
+- =save_if_absent= reads before it writes, so a feed started, stopped and
+  restarted keeps one binding row instead of gaining a second.
+- An internal start with no end user session binds nothing, because it has
+  no party to bind under. The feed runs and no binding appears.
+- The model deliberately binds to no variability profile. The
+  =uuid-surrogate-lookup= profile would also enable the shell command facet,
+  and the binding model has no shell verb today.
+- Bindings are created by provisioning against the system party's config,
+  not per office. Each party consumes the shared stream into its own
+  per-party series.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the vocabulary the =producer_kind= column validates against.
+- [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], which decides whether a started feed creates a binding at all.
+- The model is =projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org=.
+- The repository method the loop uses is
+  =feed_binding_repository::read_latest_all_tenants= in
+  =projects/ores.marketdata/core/include/ores.marketdata.core/repository/feed_binding_repository.hpp=.

@@ -1,36 +1,42 @@
 :PROPERTIES:
 :ID: 2178AA83-4A4C-4734-8837-33F158FA5A3C
 :END:
-#+title: Task: Implement Implement synthetic data generation against the new market data model
+#+title: Task: Implement synthetic data generation against the new market data model
 #+description: Initial task for: Implement synthetic data generation against the new market data model
 #+type: task
 #+level: s1
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-synthetic-data-against-market-data
+#+pr: 2708
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Make the synthetic feeds first-class producers in the new market data model. A feed already speaks oresmd and can auto-create a feed_binding, but nothing yet proves the whole path end to end: that its series is registered under the oresmd identity, that each observation it publishes carries per-point provenance and is marked generated rather than observed, that the ingest loop lands it in market_observation under the right tenant and source, and that a consumer such as the curve bootstrap reads it and says where it came from. This story proves that path, fixes the gaps it finds, and leaves the synthetic feeds able to drive the curve and surface work with data that can be plotted.
+Prove and complete the path from a synthetic feed's tick to a row the new
+market data model owns, and fix what does not hold. The feed already speaks
+oresmd and can auto-create a =feed_binding=; the work is to show, end to end,
+that its series is registered under the oresmd series identity, that each
+observation lands under the right tenant, party, source and point identity,
+that a reader can tell the data was generated rather than observed, and that a
+consumer such as the curve bootstrap reads it and says where it came from.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -40,12 +46,90 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 - The path is exercised end to end against a running service: start a feed, see the series and observations appear, and read them back by oresmd URI.
 - The curve bootstrap consumes a synthetic feed's observations the same way it consumes market observations, and the resulting points record the synthetic provenance.
 - The gaps found are fixed or captured as their own tasks, and the story states what a workspace-scoped or scenario feed would still need.
+- IR and FX run one pipeline: the same feed abstraction, tick, binding, producer kind, ingest and persistence. Any remaining difference is the datum, the config fields or the process, and the fork inventory justifies every one of them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What exists today, traced
+
+- A feed publishes a =market_tick= (=oresmd_uri= quote URI, =value=,
+  =observation_time=, =source=) on =synthetic.v1.tick.<source>= (or the
+  sandbox prefix).
+- =ores::marketdata::service::app::feed_ingest_loop= subscribes to every
+  producer's ticks. =refresh()= caches the enabled =feed_binding=s by source;
+  each binding is one consumer. =persist()= runs per binding:
+  - derives the series URI with =oresmd_uri_codec::write(series_of(datum))=;
+  - creates the =market_series= row if the tenant+party+series URI has none,
+    with =series_subclass= from =series_classifier= and
+    =market_series_asset_class= rows;
+  - writes one =market_observation= with =series_id=, =observation_datetime=,
+    =value=, =source= and the point =oresmd_uri=;
+  - drops a tick from a source with no enabled binding, one warning per source.
+- The synthetic =feed_controller= auto-creates the =feed_binding= for a bound
+  feed, and a sandboxed feed never gets one.
+
+So acceptance 1 and most of 2 already hold on paper. What is missing is proof
+and the provenance axis.
+
+** Gaps
+
+1. *Nothing says generated.* =market_series.derivation_kind= defaults to
+   =OBSERVED=, and the =OBSERVED= seed's own description says it is the default
+   "for every existing producer (synthetic, vendor feeds)". The model therefore
+   treats a synthetic series as observed, because *observed* currently means
+   "directly published, not derived", not "real". There is no axis that says
+   real versus generated. =market_observation= carries only =source=.
+2. *No test proves the persist path.* =app_tick_plan_tests= covers routing, and
+   =feed_controller_tests= covers start/stop, but nothing drives a tick through
+   =persist()= and reads back the rows.
+
+** Decisions
+
+**D1. Provenance is a second axis, not =derivation_kind=. Decided.** =derivation_kind=
+answers "was this published or computed?" (=OBSERVED= vs =IR_CURVE_BOOTSTRAP=,
+=CRM_DERIVATION=), and a synthetic feed is genuinely published, so calling it a
+derivation would break that meaning. Real-versus-generated is a separate axis
+about the *producer*, carried by the =feed_binding= and readable from the
+series an observation belongs to. Decided: a =producer_kind= *reference-data
+code table* (=VENDOR=, =SYNTHETIC=) alongside =derivation_kind=, referenced by
+=feed_binding= and =market_series=, listable in the UI and validated by the
+seed rather than free text.
+
+**D2. One pipeline, asset class only where it is real. Decided.** The
+generator pipeline is common to every asset class, and IR and FX must not have
+separate paths with spurious differences. An asset class may vary only where
+the difference is genuine: the shape of its datum, its config fields, and the
+process that produces its numbers. Everything around that — the feed
+abstraction, the tick, the oresmd identity, the subject, start and stop, the
+producer kind, the ingest, the provenance, the series and observation write —
+is one path parameterised by the config, not a branch per asset class. Any
+existing FX/IR fork in the pipeline is either justified against this rule or
+removed.
+
+**D3. Work in slices.** Slice 0 is done: the fork inventory is at
+=evidence/asset-class-fork-inventory.org= — 24 forks, 13 spurious, 11 genuine.
+It changed the order, because it found that binding auto-creation is
+unreachable from the live control plane (=feed_controller::start(ore_key, GMM)=
+is FX-only with no production caller, and it is the only caller of
+=ensure_feed_binding=), and that =binding_mode= is not expressible for IR, so a
+sandboxed IR curve publishes on the ingested subject.
+
+- 1. One producer subject, mode-aware for every kind: collapse the FX
+  =synthetic_producer_subject(source, mode)= and the IR hardcoded
+  =synthetic_tick_subject(source)=, thread =binding_mode= into the IR build
+  input and through the one =add()= / =start()= path. Fixes the IR sandbox
+  bug; test both subjects.
+- 2. Binding creation on the one live start path, gated by =binding_mode=,
+  deleting the FX-only ad-hoc start.
+- 3. The =producer_kind= from D1, on the shared binding and the shared persist
+  path.
+- 4. The =persist()= integration test: series and observation written, an
+  unbound source dropped.
+- 5. Collapse the remaining spurious forks the inventory lists: the
+  =feed_config_handler= kind resolution and duplicated start/stop, the
+  duplicated vintage scan, the duplicated tick clock, the duplicated
+  simulate/preview envelope, and the common config plumbing fields.
+- 6. The curve bootstrap consumer check.
 
 * Measurements
 
@@ -59,9 +143,110 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Forks inventoried | 24 (13 spurious, 11 genuine) | read =evidence/asset-class-fork-inventory.org= | =9c1c4af10e= |
+| Slice 1 subject tests | 22 assertions in 7 cases pass | =ores.synthetic.api.tests "[feed_factory]"= | =f09d43f5bf= |
+| marketdata tick-subject tests | 4 assertions in 3 cases pass | =ores.marketdata.api.tests "[tick_subjects]"= | =f09d43f5bf= |
+| synthetic service tests, after DB recreate | suite passes (subject cases included) | =ctest -R ores.synthetic.service.tests= | =c8421b2d45= |
+| synthetic core tests, after DB recreate | 40/41, one fixture failure (missing ISO coding scheme) | =ctest -R ores.synthetic.core.tests= | =c8421b2d45= |
+| Slice 2 binding tests | service and api suites 2/2 pass | =ctest -R 'ores.synthetic.service.tests\|ores.synthetic.api.tests'= | =2e3ca06d17= |
+| Slice 3 affected suites | 9/9 pass (refdata, marketdata, synthetic, shell) | =ctest -R 'ores.refdata\|ores.marketdata\|ores.synthetic\|ores.shell.refdata\|ores.shell.marketdata'= | =08b308b968= |
+| Slice 3 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =08b308b968= |
+| Slice 4 persist test | service suite 40 cases / 215 assertions pass, 18 in the 2 new cases | =ctest -R ores.marketdata.service.tests= | =627f2386e1= |
+| Slice 4 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =627f2386e1= |
+| Fork disposition | 2 forks collapsed, 1 remaining group captured | =evidence/asset-class-fork-inventory.org= | =2887d018ef= |
 
 * Notes
+
+** Slice 1 done, 2026-10-06 (=f09d43f5bf=). One =producer_subject(source,
+mode)= in =ores.synthetic/api/include/ores.synthetic.api/feeds/producer_subject.hpp=
+serves FX and IR; the IR build input and =make_ir_curve_feed= carry the mode,
+and the auto-start path, =feed_config_handler= and =folder_feed_control_handler=
+pass the configured mode instead of a default. =IFeed= gains =nats_subject()=
+so the subject is assertable at the public seam. IR sandboxing is fixed.
+
+The =ores.synthetic.service.tests= and =ores.synthetic.core.tests= binaries
+refused to start while the local database schema fingerprint (=0e5e94985734f233=)
+was behind the checkout (=416d79146b6d63e3=). The database was recreated on
+2026-10-06 (fingerprint now =416d79146b6d63e3=) and services restarted.
+=ores.synthetic.service.tests= now passes, so the renamed =feed_controller=
+subject cases run and pass. =ores.synthetic.core.tests= has one unrelated
+failure from the fresh database, in =feeds_fomc_curve_resolution_tests.cpp:92=:
+the country import inside its fixture cannot find the =ISO_3166_1_ALPHA_2=
+coding scheme, so a populate step the fixture depends on is missing after
+=db recreate -k=. That is an environment gap, not this change, and it needs
+capturing as its own task before the service-level tests are dependable.
+
+** Slice 2 done, 2026-10-06 (=2e3ca06d17=). Auto-creating a =feed_binding= was
+unreachable; the only caller of =ensure_feed_binding= was an FX-only
+=start(ore_key, GMM...)= with no production caller. Both live paths, the
+config-driven =add()= and the on-demand =start(IFeed)=, now call one
+=bind_feed(source, mode, token)= after releasing the mutex. It binds when the
+mode is =bound= and a caller token exists, and does nothing for a sandboxed
+feed or an internal start with no session. The marketdata round-trip sits
+behind a one-method =feed_binding_store= seam, so the rule is tested without a
+live service. The dead path and the =should_ensure_feed_binding= two-mode
+contract it needed are deleted.
+
+Open decision from slice 2: boot auto-start passes an empty token because no
+end-user session exists, so it still creates no binding. A binding for an
+auto-started feed must come from provisioning, or from a service-account
+identity decision about whose tenant and party the row lands in. Neither is
+settled and both are product calls, so they are recorded here rather than
+guessed at.
+
+** Slice 3 done, 2026-10-06 (=08b308b968=). A =producer_kind= reference-data
+table holds =VENDOR= and =SYNTHETIC=. =feed_binding= carries it, defaulting to
+=VENDOR=, and the synthetic binding store sets =SYNTHETIC=. The ingest stamps
+the series it creates from the binding and leaves an existing series alone.
+Everything is generated from the org models, including the SQL and the shell
+surface for the new entity. The codegen sweep reports that no file this branch
+touched would change. All nine affected suites pass, including the generated
+producer-kind eventing test.
+
+** Slice 4 done, 2026-10-06 (=627f2386e1=). The persist path is now proved
+against the database. =feed_ingest_loop::handle_tick= holds the whole of what
+the loop does with an arrived tick and returns the drop reason the caller
+observes, so a test reaches the real =persist= through the real path; =on_tick=
+only decodes and delegates. A bound synthetic tick is driven through it and the
+rows are read back by oresmd URI, with the series carrying =producer_kind
+SYNTHETIC= and the observation carrying the point URI, source, series id and
+value. A tick whose source has no enabled binding returns =unbound_source= and
+leaves no series. The codegen sweep stays clean.
+
+** Slice 5, fork disposition 2026-10-06. The inventory found 24 forks, 13 of
+them spurious. Each spurious one is now collapsed or captured.
+
+- *Collapsed.* The producer subject and binding mode fork, one builder for
+  every kind (slice 1). The FX-only ad-hoc =start(ore_key, GMM...)= and the
+  vintage scan it alone duplicated, deleted in slice 2, which also removed the
+  two-mode =should_ensure_feed_binding= contract that existed only to protect
+  its default argument.
+- *Captured.* The remaining spurious forks are the control-plane duplication
+  around the producer registry: the per-asset =feed_config_handler= start and
+  stop with kind resolved by probing the FX then the IR repository, the
+  FX-shaped and triplicated vintage lookup, the duplicated tick clock, the
+  duplicated simulate and preview envelope, the factory rebuilt at four call
+  sites, and the common config plumbing fields repeated across the two
+  generation-config entities. They are one coherent piece of work and are
+  captured as [[id:F9E2DB59-962B-48D1-96C9-022D56665ECC][Collapse the
+  remaining synthetic control-plane forks]], so this task can close without
+  leaving them unrecorded. Every one is listed with its file and line in
+  =evidence/asset-class-fork-inventory.org=.
+
+** Slice 6, the bootstrap consumer check 2026-10-06. No code change is needed,
+and here is the evidence rather than an assertion.
+
+- The ingest writes one =market_observation= per bound consumer whatever the
+  producer kind is, because =persist= takes the binding and the datum only;
+  nothing in it branches on the asset class or the kind.
+- The curve bootstrap reads observations through the same
+  =market_observation_repository= on the same table, so a synthetic series and
+  a vendor series are the same shape to it. That is what makes the one-pipeline
+  rule pay off here: the consumer needs no synthetic case.
+- The generated provenance is readable from the series: the slice 4 test reads
+  a series written by the ingest back from the database and asserts
+  =producer_kind == "SYNTHETIC"=, and =market_series= carries the field for
+  every consumer to read.
 
 * Test Scenarios
 
@@ -78,7 +263,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2708][#2708]] | [synthetic] Make the synthetic feeds first-class producers in the new market data model |
 
 * Review
 
@@ -87,3 +272,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The synthetic feeds now run the same pipeline as every other producer, and the
+path is proved end to end.
+
+- Slices 1 to 4 are implemented, tested and committed, and the branch is in PR
+  [[https://github.com/OreStudio/OreStudio/pull/2708][#2708]].
+- Slice 5's spurious forks are collapsed or captured; the one large remaining
+  group is its own backlog task, [[id:F9E2DB59-962B-48D1-96C9-022D56665ECC][Collapse the remaining synthetic
+  control-plane forks]].
+- Slice 6 is evidenced rather than asserted: the ingest writes the one
+  observation shape and the bootstrap reads that shape through the one
+  repository, so no consumer needs a synthetic case, and the generated
+  provenance is readable from the series a slice 4 test reads back.
+- Two product calls are left open on purpose. Boot auto-start has no session,
+  so its binding must come from provisioning or a service-account identity.
+  And the shell =marketdata stream= task is backlog, which is the by-hand
+  end-to-end check this work enables.

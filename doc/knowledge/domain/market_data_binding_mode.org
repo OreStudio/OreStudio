@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 04720FEB-1224-4398-B112-0B787B768D46
+:END:
+#+title: Binding mode
+#+description: The bound and sandboxed modes, the subjects each one publishes on, and why a sandboxed feed is unreachable by ingest.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:binding:synthetic:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A =binding_mode= says whether generated market data is authoritative or
+exploratory. It is declared in =ores.synthetic.api/domain/binding_mode.hpp=
+with two values, =bound= and =sandboxed=, and it is carried on
+=market_data_generation_config.binding_mode=.
+
+* Detail
+
+** What each mode does
+
+- A =bound= feed publishes on ="synthetic.v1.tick.<source>"=, the subjects
+  the marketdata ingest loop subscribes to. Its ticks are stored and
+  republished to the parties whose bindings name the source.
+- A =sandboxed= feed publishes under ="synthetic.v1.sandbox.tick."=, a
+  prefix the ingest loop never subscribes to. Its ticks cannot be stored
+  whatever bindings exist.
+
+The string form of the enum is lower case, and the two spellings match the
+SQL check constraint on the config column and the JSON wire format.
+
+** Why a sandboxed feed is unreachable
+
+Reachability is a property of the subject and not of a flag that ingest
+checks. The ingest loop's subscription covers the bound prefix only, so a
+sandboxed tick is never delivered to a handler. This is also why the feed
+controller never creates a binding for a sandboxed feed. A binding naming a
+sandboxed source would claim that ingestion happens on the bound subject
+when it does not.
+
+** The fact the code shape does not show
+
+Binding mode is orthogonal to scope. Binding mode decides whether the
+generated data is authoritative, and scope decides who consumes it. A
+party scoped sandboxed feed and a party scoped bound feed differ in
+whether their data is ever stored, and not in who the data is meant for.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]], the other, orthogonal config axis.
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], which turns the mode into the two prefixes.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]], which applies the mode when it binds a feed.

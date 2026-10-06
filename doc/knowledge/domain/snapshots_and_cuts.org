@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 4EE26B23-003B-4DF1-AA83-1196CC6810C3
+:END:
+#+title: Snapshots and cuts
+#+description: The stored-data as-of read, the bucketed curve evolution read and its bucket ceiling, and how both differ from the resolution-side market data snapshot.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:storage:snapshot:cut:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+Two read-only operations answer questions about observations that are
+already stored. =marketdata.v1.curve-snapshot.get= returns the latest value
+of every point of one series. =marketdata.v1.curve-snapshot.buckets= returns
+the same kind of read repeated over a window of time, which is the cut. Both
+are served by =curve_snapshot_handler= in
+=projects/ores.marketdata/core/include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp=.
+
+* Detail
+
+** The snapshot
+
+=get_curve_snapshot_request= carries one field, the =oresmd_uri= of the
+series, which is
+[[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]].
+The handler resolves the series id server side from that URI through
+=market_series_repository::read_latest_by_uri=, so a caller never handles an
+internal series id and never decomposes the key. It then calls
+=market_observation_repository::read_as_of= with the series id and the
+service's current time, and returns one observation per point.
+
+A series that does not exist yet is not an error. A feed that has not
+published leaves an empty snapshot with =success = true=, because an empty
+curve is a normal state and not a failure.
+
+The request comment states the limit directly. The as-of time is always now,
+and there is no parameter for an as-of instant in the past.
+
+** The cut
+
+=get_curve_snapshot_buckets_request= carries the =oresmd_uri=, a
+=bucket_seconds= defaulting to 1800, and a =bucket_count= defaulting to 5.
+The handler calls =market_observation_repository::read_as_of_buckets=, which
+takes one latest boundary, a bucket size and a bucket count, and returns one
+vector of observations per bucket, ordered oldest to newest. A bucket with no
+observation at or before its boundary is an empty vector.
+
+When the series does not exist, the handler returns =bucket_count= empty
+buckets, so the response shape does not change with the data.
+
+** The bucket ceiling
+
+=max_bucket_count = 200= is declared in hard in
+=curve_snapshot_handler.hpp= as a server side ceiling, enforced whatever a
+caller allows. The handler rejects a request with a =bucket_count= of zero,
+above 200, or a =bucket_seconds= at or below zero, and answers with a bad
+request error rather than running the query. The reason is cost. An
+oversized bucket count buys a large =generate_series()= join and a matching
+result allocation.
+
+** How a malformed read is refused
+
+=projects/ores.marketdata/core/include/ores.marketdata.core/repository/as_of_rows.hpp=
+decodes the raw rows the database returns. =as_of_observation= reads the ten
+observation columns from a given offset, and throws when the row is too
+short to carry them. =as_of_bucket_ordinal= reads the bucket ordinal from
+the first column, and throws when the ordinal is missing, is not all digits,
+or is not below the bucket count.
+
+The throw is deliberate. A short row would leave a curve snapshot one pillar
+short with no visible sign, so the read fails instead of returning a partial
+curve.
+
+** How this differs from the resolution-side snapshot
+
+[[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] is the
+resolution-side concept, a requirement satisfied from identifiers. This note
+is about the stored data, a read of rows that already exist. The two share a
+word and nothing else.
+
+** Facts the code shape does not show
+
+- Every read is taken at the service's own clock. The request structs carry
+  no as-of field and the handler passes =std::chrono::system_clock::now()=,
+  so a caller cannot ask for the store as it stood at a past instant.
+- The handler owns the series id lookup, so the two operations are the only
+  read path that needs no series registry knowledge from the client.
+- A rejected bucket request is an error reply and not a response with
+  =success = false=. The handler enforces the ceiling before it runs the
+  query, so the response's own message field is never used for a shape
+  mismatch.
+- Both requests declare =requires_session = true=, so a caller establishes
+  a session first.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution-side snapshot this note is not about.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the two reads return rows from.
+- The handler is =curve_snapshot_handler= in
+  =projects/ores.marketdata/core/include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp=.
+- The row helpers are
+  =projects/ores.marketdata/core/include/ores.marketdata.core/repository/as_of_rows.hpp=.

@@ -181,6 +181,7 @@ void auto_start_feeds(feed_controller& ctrl,
     for (const auto& cfg : configs) {
         if (!startable(cfg.enabled, cfg.auto_start, cfg.config_id))
             continue;
+        const auto container = enabled_feeds.find(cfg.config_id);
         const auto it = entries_by_config.find(cfg.id);
         if (it == entries_by_config.end() || it->second.empty()) {
             BOOST_LOG_SEV(auto_start_lg(), warn)
@@ -206,11 +207,15 @@ void auto_start_feeds(feed_controller& ctrl,
                 << " — tenor convention not found.";
             continue;
         }
-        candidates.push_back(
-            {std::string(ir_curve_feed_kind),
-             cfg.currency_code + "/" + cfg.index_family,
-             ores::synthetic::domain::binding_mode::bound,
-             ir_curve_feed_build_input{cfg, it->second, vit->second, definitions, *refctx}});
+        candidates.push_back({std::string(ir_curve_feed_kind),
+                              cfg.currency_code + "/" + cfg.index_family,
+                              container->second.binding_mode,
+                              ir_curve_feed_build_input{cfg,
+                                                        it->second,
+                                                        vit->second,
+                                                        definitions,
+                                                        *refctx,
+                                                        container->second.binding_mode}});
     }
 
     const auto factory = make_default_feed_factory();
@@ -220,6 +225,7 @@ void auto_start_feeds(feed_controller& ctrl,
             std::string conflicting_source_name;
             if (ctrl.add(factory.make(c.kind, bctx, c.input),
                          c.binding_mode,
+                         bctx.caller_bearer_token,
                          &conflicting_source_name)) {
                 ++started;
             } else if (!conflicting_source_name.empty()) {
@@ -295,7 +301,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
                             {nats.make_subject("synthetic.v1.tick.>")});
         // Sandboxed feeds (binding_mode::sandboxed, see feed_controller's
-        // synthetic_producer_subject) publish under a distinct
+        // producer_subject) publish under a distinct
         // "synthetic.v1.sandbox.tick.>" subject, not covered by
         // synthetic_ticks's "synthetic.v1.tick.>" filter -- js_publish to a
         // subject with no matching stream throws, so this needs its own stream.

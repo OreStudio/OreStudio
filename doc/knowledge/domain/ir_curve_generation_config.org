@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 316F0EA0-2DA4-4E96-87D5-F4EAE7490938
+:END:
+#+title: The IR curve generation config
+#+description: One curve feed, its currency, index family, role and tenor, its vintage binding, and the collision rule that lets a discount and a projection curve coexist.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:ir:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+An =ir_curve_generation_config= describes how to synthesise one interest
+rate curve. It is declared in
+=ores.synthetic.api/domain/ir_curve_generation_config.hpp=, it hangs under a
+=market_data_generation_config= through =config_id=, and its instrument grid
+and its short-rate parameters are two separate sets of child rows.
+
+* Detail
+
+** What identifies the curve
+
+- =currency_code=, a soft foreign key to currencies.
+- =index_family=, a fixed lower-case token such as =sofr=, =estr= or
+  =euribor=. It is the short token and not the full ORE or ISDA code, because
+  =currency_code= already carries the currency half of that pair.
+- =tenor=, which names the floating-rate index's tenor for a term family such
+  as libor or euribor. It is empty for the overnight families, which have no
+  tenor dimension. The literal ="FOMC"= is valid only for =sofr=.
+- =role=, which is =discount=, =projection= or =self_discounting=, with
+  =self_discounting= as the default. The vocabulary is intrinsic to this
+  record, so it is a plain check constraint and not a lookup table.
+- =source_name=, the provenance string and the publish subject suffix. It is
+  namespaced by collection only, so two collections never collide on the same
+  currency and index.
+
+The =FOMC= tenor is the meeting-dated variant of one currency and index pair.
+It gives that variant its own series identity, so it does not collide with
+the standard curve's empty-tenor row.
+
+** The composite validation
+
+The =currency_code= and =index_family= pair is validated as a whole by a
+hand-written composite trigger against =overnight_index_convention= and
+=ibor_index_convention=. Those rows key on the currency plus the upper-case
+index family. The codegen single-argument validation mechanism cannot express
+a two-column lookup, which is why the trigger is written by hand.
+
+=tenor= is a soft foreign key to the tenor catalogue and is not validated in
+the database. It is resolved at the application layer, matching the precedent
+set by the template entry's own tenor columns.
+
+** The process and its parameters
+
+=process_type= references =yield_curve_process_type.code=, a real foreign
+key. The engine's parameters are not columns on this row. Each parameter is
+an =ir_curve_generation_config_process_parameter_value= row, joined at feed
+start onto the =yield_curve_process_parameter_definition= catalogue. Adding
+an engine or a parameter is therefore seed data and not a schema change. See
+[[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]] and
+[[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]].
+
+** The initial rate
+
+=price_source= is ="fixed"= by default and ="vintage"= as the alternative.
+Under ="vintage"= the starting short rate is read from a real observation, and
+three columns say which one. =vintage_source= and =vintage_date= name the
+source and the date, and =vintage_series_uri= names the series as an oresmd
+URI.
+
+The comparison with
+[[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]]
+is worth holding. The FX config defaults to vintage and the curve config
+defaults to fixed, because the curve configs that predate vintage awareness
+migrated in with fixed behaviour. The FX check sentinels the stored initial
+price to zero under vintage and the curve check does not, because a real
+short rate can legitimately be zero or negative and an FX spot price cannot.
+
+** The collision rule
+
+=enabled= and =auto_start= carry the same meaning as they do on the FX spot
+config. Starting a curve feed is refused when another feed already runs for
+the same =currency_code=, =index_family= and =tenor= tuple and the same
+=role=. Two curves of one tuple with different roles may run side by side,
+which is the case a discount curve and a projection curve for the same
+currency and index occupy. Switching a running feed is a Stop followed by a
+Start.
+
+** The fact the code shape does not show
+
+The curve is named by the config and not discovered from the key. The
+=vintage_series_uri= column exists because the dataset that publishes the
+vintage names its own ORE keys, and a series identity is what the catalogue
+is keyed by, so the coupling belongs on the config rather than in a
+decomposition of the key performed at read time.
+
+=description= carries prose on purpose. It records what regime or vintage the
+curve targets, and for a discontinued index such as USD LIBOR it records that
+the curve is historical and why it is still offered.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]], which owns this row.
+- [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the two sets of child rows.
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the foreign key behind =process_type=.
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which starts from this row.
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the first asset class, whose defaults differ.

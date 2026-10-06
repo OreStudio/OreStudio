@@ -90,6 +90,7 @@
 #include "ores.refdata.core/messaging/payment_frequency_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_right_registrar.hpp"
+#include "ores.refdata.core/messaging/producer_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_registrar.hpp"
@@ -183,6 +184,7 @@
 #include "ores.refdata.core/messaging/payment_frequency_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/portfolio_right_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/producer_kind_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/regulatory_book_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/rounding_type_history_provider_registrar.hpp"
@@ -320,6 +322,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_exception_handlers(nats, ctx, verifier));
     append(register_calendar_rule_handlers(nats, ctx, verifier));
     append(register_derivation_kind_handlers(nats, ctx, verifier));
+    append(register_producer_kind_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
     // Asset classes (no codegen model; list-only).
@@ -465,6 +468,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_csa_history_provider(hist_registry);
         register_csa_eligible_currency_history_provider(hist_registry);
         register_derivation_kind_history_provider(hist_registry);
+        register_producer_kind_history_provider(hist_registry);
         register_instrument_code_history_provider(hist_registry);
         register_ir_curve_bootstrap_config_history_provider(hist_registry);
         register_ir_curve_bootstrap_pillar_history_provider(hist_registry);

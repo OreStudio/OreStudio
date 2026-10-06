@@ -38,6 +38,13 @@
  * producers. Setting enabled  false= suspends the subscription without deleting
  * the binding.
  *
+ * A binding also says what kind of producer it names: a real feed (VENDOR) or a
+ * generated one (SYNTHETIC). The ingest loop stamps the series it creates with
+ * the binding's producer_kind, so a reader of a series can tell generated data
+ * from observed data without guessing from the source string. The column
+ * defaults to VENDOR, so every binding a real feed creates carries it without
+ * setting anything.
+ *
  * This model binds to no variability profile. Its features match
  * uuid-surrogate-lookup, but that profile also enables the shell command
  * facet, which feed bindings do not have today. Binding it is a decision about
@@ -50,6 +57,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "source_name" text not null,
+    "producer_kind" text not null,
     "enabled" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -93,6 +101,9 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate producer_kind
+    NEW.producer_kind := ores_refdata_validate_producer_kind_fn(NEW.tenant_id, NEW.producer_kind);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

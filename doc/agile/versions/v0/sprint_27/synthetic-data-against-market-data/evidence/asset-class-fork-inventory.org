@@ -1,0 +1,230 @@
+:PROPERTIES:
+:FILE: asset-class-fork-inventory
+:END:
+#+title: Asset-class fork inventory — synthetic generation pipeline
+#+description: Every FX/IR fork in the synthetic generation and ingest pipeline, classified genuine or spurious against the one-pipeline rule.
+
+* Status after implementation
+
+The inventory is the as-found record at =9c1c4af10e=. Three of its findings
+have since been acted on and must not be quoted as current.
+
+- The binding mode and the producer subject are one builder for every kind
+  now, so a sandboxed IR curve is expressible (=f09d43f5bf=).
+- =ensure_feed_binding= no longer exists anywhere. The FX-only
+  =start(ore_key, ...)= path and its vintage copy are deleted, and
+  =bind_feed= at =feed_controller.hpp:384= is called from both live start
+  paths, so binding auto-creation is reachable (=2e3ca06d17=).
+- The remaining spurious forks, the control-plane duplication, are captured
+  as a backlog task rather than closed.
+
+* Summary
+
+24 forks were found across the factory, the four control-plane handlers, the
+feed controller, the two producers and the marketdata ingest, of which 13 are
+spurious. The producers themselves are not the problem: the datum, the config
+fields and the process maths differ and the factory registry already selects
+between them. The biggest spurious fork is the control plane around the
+factory — =feed_config_handler= and =folder_feed_control_handler= each
+re-implement start/stop/enable/child-loading once per asset class instead of
+once over registered kinds. The second is that binding mode and the producer
+subject are honoured by FX and silently dropped by IR
+(=ir_curve_feed.cpp:301= hardcodes =synthetic_tick_subject=;
+=application.cpp:212= hardcodes =binding_mode::bound=), so a sandboxed IR curve
+is not expressible at all. The third is a dead-code cluster in
+=feed_controller:= the FX-only client-supplied-params =start(ore_key, ...)= has
+no production caller, yet it is the /only/ path that calls
+=ensure_feed_binding=; binding auto-creation was therefore unreachable from the
+live control plane at the time of the survey. =tick_plan=, =market_tick= and
+=feed_ingest_loop::persist= are already one path for every asset class and need
+no change.
+
+* Forks
+
+** producer datum and process — GENUINE
+- What: =fx_spot_feed= advances one scalar process and publishes one =market_tick= per step; =ir_curve_feed= advances one short-rate process and fans it out to N pillar ticks priced by =curve_instrument_pricer= (DEPOSIT/FRA/SWAP). Both implement =IFeed=.
+- Branches on: not a branch — two classes behind one interface, selected by kind string.
+- Evidence: =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:248=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:106=, =projects/ores.marketdata/api/include/ores.marketdata.api/domain/i_feed.hpp:70=
+- Verdict: GENUINE. The datum shape (one scalar vs one curve slice) and the pricing maths are exactly the variation the rule permits.
+
+** generation-config datum fields — GENUINE
+- What: =fx_spot_generation_config= carries base/quote currency, =ore_key=, =gmm_initial_price=; =ir_curve_generation_config= carries =currency_code=, =index_family=, =tenor=, =role=, =fixed_leg_payment_frequency_code=, =vintage_series_uri=, =description=.
+- Branches on: which config row is resolved.
+- Evidence: =projects/ores.synthetic/api/include/ores.synthetic.api/domain/fx_spot_generation_config.hpp:71=, =projects/ores.synthetic/api/include/ores.synthetic.api/domain/ir_curve_generation_config.hpp:78=
+- Verdict: GENUINE. These are the asset class's own identity and instrument grid.
+
+** process-parameter storage and construction — GENUINE
+- What: FX components are =gmm_component= rows (mean/stdev/weight) fed to =process_factory::make_process= as three equal-length vectors; IR parameters are =ir_curve_generation_config_process_parameter_value= rows joined onto the =yield_curve_process_parameter_definition= catalogue by name and fed to =map_parameters_to_yield_curve_process=.
+- Branches on: the build-input variant member.
+- Evidence: =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:132=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:292=, =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/feed_factory.hpp:63=
+- Verdict: GENUINE. Named-catalogue parameters and a fixed-size mixture are different process inputs; a shared encoding would lose the catalogue semantics or the GMM shape.
+
+** IR refdata resolution and curve pricing — GENUINE
+- What: only IR resolves tenor conventions, schedules, the FOMC meeting grid and =curve_role= to turn a short-rate state into a slice; only IR has a =preview_shape= (FX has no tenor grid).
+- Branches on: =curve_role= inside IR (DEPOSIT/FRA/SWAP), and the FOMC/SCHEDULE_STEP convention.
+- Evidence: =projects/ores.synthetic/api/src/feeds/ir_curve_template_resolver.cpp:126=, =projects/ores.synthetic/api/src/feeds/ir_curve_template_resolver.cpp:231=, =projects/ores.synthetic/service/src/ir_curve_preview_handler.hpp:156=
+- Verdict: GENUINE. This is the IR process and IR reference-data dependency; FX has one scalar spot and no equivalent.
+
+** CRM triangulation bridge — GENUINE
+- What: =crm_ingest_bridge= builds a currency-mesh =rate_engine= per (tenant, party, CRM name) from =crm_topology_config=/=crm_driver_pair= and feeds FX spot prints into it.
+- Branches on: whether the tick's datum is an FX spot.
+- Evidence: =projects/ores.marketdata/service/src/app/crm_ingest_bridge.cpp:129=, =projects/ores.marketdata/service/src/app/crm_ingest_bridge.cpp:177=
+- Verdict: GENUINE. Currency cross-rate triangulation is a real FX-only computation; an IR curve point is not a driver quote.
+
+** IR curve republish (bootstrap) — GENUINE
+- What: =curve_republish_service= resolves an =ir_curve_bootstrap_config='s pillars, bootstraps discount factors and writes derived observations plus lineage.
+- Branches on: =curve_family_role= PROJECTION vs not, and SCHEDULE_STEP conventions — within IR.
+- Evidence: =projects/ores.marketdata/service/src/app/curve_republish_service.cpp:215=, =projects/ores.marketdata/service/src/app/curve_republish_service.cpp:236=
+- Verdict: GENUINE. It is a batch curve transform, not the tick remap, and no FX analogue exists.
+
+** feed_factory registry and per-kind build inputs — GENUINE
+- What: a =std::map<std::string, builder>= keyed by kind string, with =feed_build_input= a variant of the two per-kind inputs; each builder =std::get=s its own member and calls its =make_*= function.
+- Branches on: the kind string and the variant member.
+- Evidence: =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/feed_factory.hpp:86=, =projects/ores.synthetic/api/src/feeds/feed_factory.cpp:78=
+- Verdict: GENUINE for the variant (the inputs genuinely differ); this registry is the correct seam and should stay the single dispatch point. Note the registry is rebuilt at every call site (see =make_default_feed_factory rebuilt per call= below).
+
+** market_tick is one type — GENUINE
+- What: one tick struct (=oresmd_uri=, =value=, =observation_time=, =source=) for every asset class; the datum URI carries the asset identity.
+- Branches on: nothing.
+- Evidence: =projects/ores.marketdata/api/include/ores.marketdata.api/messaging/operations_protocol.hpp:534=
+- Verdict: GENUINE / no fork. This is the rule already implemented.
+
+** tick_plan is generic — GENUINE
+- What: =plan_tick()= reads the tick's datum, writes its ORE key, parses the value and emits one target per binding, with no asset-class knowledge.
+- Branches on: nothing but the datum URI.
+- Evidence: =projects/ores.marketdata/service/src/app/tick_plan.cpp:29=
+- Verdict: GENUINE / no fork. Keep as the shared tick-to-datum path.
+
+** feed_ingest_loop::persist is generic — GENUINE
+- What: series lookup-or-create, classification, =market_observation= insert and per-binding fan-out run once for every asset class.
+- Branches on: the datum's series/classification only.
+- Evidence: =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp:192=
+- Verdict: GENUINE / no fork. This is the shared series and observation write.
+
+** ingest CRM hook type dispatch — GENUINE (with a wiring note)
+- What: the shared ingest loop calls the CRM bridge only when =plan->datum.type() == instrument_type::fx_spot=.
+- Branches on: datum instrument type, not on FX-vs-IR as a pipeline branch.
+- Evidence: =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp:167=
+- Verdict: GENUINE. Only an FX spot print can be a currency driver; the check encodes a domain fact. If a third asset class ever needs a post-ingest side effect, replace the hardcoded check with an asset-supplied post-persist hook rather than adding another =if=.
+
+** producer subject ignores binding_mode for IR — SPURIOUS
+- What: FX builds its publish subject as =synthetic_producer_subject(source_name, binding_mode)=, which switches to the sandbox prefix for =binding_mode::sandboxed=. IR calls =synthetic_tick_subject(cfg.source_name)= directly and has no =binding_mode= anywhere on its build path: =ir_curve_feed_build_input= has no such field and =make_ir_curve_feed()= takes no such argument.
+- Branches on: FX vs IR — the binding_mode parameter exists only on the FX side.
+- Evidence: =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_spot_feed.hpp:62=, =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:169=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:301=, =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/feed_factory.hpp:75=
+- Verdict: SPURIOUS. A sandboxed IR curve publishes on the ingested =synthetic.v1.tick.>= subject and is therefore bindable, unlike a sandboxed FX feed.
+- Seam: one =producer_subject(source_name, binding_mode)= used by every producer; add =binding_mode= to =ir_curve_feed_build_input= and thread it into =make_ir_curve_feed()=. The asset class supplies only its =source_name=.
+
+** auto-start drops binding_mode for IR — SPURIOUS
+- What: the boot walk passes =container->second.binding_mode= in the FX candidate but hardcodes =binding_mode::bound= in the IR candidate. The folder cascade and the on-demand handler likewise call the 2-arg =ctrl_->add(feed, ...)= / 1-arg =ctrl_->start(feed)= for IR, which default to bound, while FX passes the container's mode explicitly.
+- Branches on: FX vs IR — the container's =binding_mode= column is read for FX and ignored for IR.
+- Evidence: =projects/ores.synthetic/service/src/app/application.cpp:177=, =projects/ores.synthetic/service/src/app/application.cpp:212=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:207=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:279=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:391=
+- Verdict: SPURIOUS. It is the same plumbing as the subject fork, split across three call sites; the IR config's own container already carries the mode.
+- Seam: carry =binding_mode= on every per-kind build input (as FX already does) and pass it once through =add()=/=start()=; the kind-specific candidate assembly then differs only in which child tables it loads.
+
+** duplicated tick clock — SPURIOUS
+- What: =fx_spot_feed::start()= and =ir_curve_feed::start()= are the same loop: =period_us = hours(1)/ticks_per_hour=, sliced 100 ms sleep, =stop_flag_= checks, =publish_count_= increment and the same catch-and-continue publish guard. Only the body that advances the process and writes ticks differs.
+- Branches on: FX vs IR only in the body; the clock is byte-for-byte the same shape.
+- Evidence: =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:223=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:77=
+- Verdict: SPURIOUS.
+- Seam: one =tick_clock= driver (period, slice, stop flag, publish counter, error handling) taking a =std::function<void()> emit_batch=; each producer supplies only "advance the process and publish the datum(s)". =stop()=, =publish_count_= and =IFeed::start= lifecycle then live in the shared base.
+
+** feed_config_handler resolves kind by probing repositories — SPURIOUS
+- What: the handler probes =fx_spot_generation_config_repository= first, then =ir_curve_generation_config_repository=, for the requested =config_id=; the same probe is repeated in =stop()=. The container =market_data_generation_config= carries no kind discriminator, so the resolution order /is/ the kind.
+- Branches on: FX vs IR, by attempt order.
+- Evidence: =projects/ores.synthetic/service/src/feed_config_handler.hpp:107=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:149=
+- Verdict: SPURIOUS. A new asset class silently changes the meaning of an existing id (FX wins on an id present in both families) and every verb must be edited.
+- Seam: put the producer kind on the =market_data_generation_config= container (or register a =config_resolver= per kind with the factory) and look it up once; =feed_config_handler= then resolves by registry, not by probe order.
+
+** feed_config_handler start_fx / start_ir duplication — SPURIOUS
+- What: two near-identical methods: per-kind permission check, the same enabled + container-enabled gate, per-kind child loading, per-kind refdata/definitions assembly, then the shared =reply_start_outcome=. The literal permission strings and the repository reads are the copies; only which children and which reference-data context are genuinely per-asset.
+- Branches on: FX vs IR.
+- Evidence: =projects/ores.synthetic/service/src/feed_config_handler.hpp:232=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:289=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:386=
+- Verdict: SPURIOUS (the plumbing), GENUINE only for the child/refdata body.
+- Seam: register one =build_input(config_id) -> feed_build_input= per kind alongside the factory builder; the handler does auth, permission, the enabled+container gate, factory-=make=, and =reply_start_outcome= exactly once.
+
+** folder_feed_control_handler per-kind start and stop loops — SPURIOUS
+- What: =start()= has one loop for FX configs and one for IR configs, with the same container-enabled gate, the same =ctrl_->add()= conflict handling and the same logging, differing only in the children and refdata context. =stop()= repeats the split into =fx_source_names= and =ir_source_names= loops, and =by_kind=/=stopped_by_kind= are assembled from two hardcoded entries.
+- Branches on: FX vs IR.
+- Evidence: =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:178=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:230=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:344=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:350=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:304=
+- Verdict: SPURIOUS.
+- Seam: one loop over the registered kinds, each kind supplying (a) its config rows under a folder and (b) a =build_input=. The folder subtree is resolved once already; the response becomes a per-kind count map filled from the registry, so a third asset class adds zero handler code.
+
+** per-kind permission strings at every call site — SPURIOUS
+- What: list and folder verbs hardcode the pair =synthetic::fx_spot_generation_configs:read= + =synthetic::ir_curve_generation_configs:read=; =feed_config_handler= checks one or the other again per kind.
+- Branches on: FX vs IR.
+- Evidence: =projects/ores.synthetic/service/src/feed_config_handler.hpp:196=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:238=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:295=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:381=
+- Verdict: SPURIOUS. A new kind is a new string in four places, and forgetting one silently widens or narrows access.
+- Seam: the registered kind supplies its config-permission string; the shared gate derives the required set from the registry.
+
+** vintage-validity handler is FX-only — SPURIOUS
+- What: =vintage_validity_handler= reads only =fx_spot_generation_config= rows and the response field is literally =fx_spot_generation_config_id=; IR vintage is resolved inside the factory builder instead, with no preview/validate endpoint.
+- Branches on: FX vs IR (IR is absent, not handled).
+- Evidence: =projects/ores.synthetic/service/src/vintage_validity_handler.hpp:95=, =projects/ores.marketdata/api/include/ores.marketdata.api/messaging/operations_protocol.hpp:420=
+- Verdict: SPURIOUS for the plumbing. The anchor choice is genuine (FX uses its single SPOT datum; IR uses the shortest DEPOSIT pillar via =select_vintage_anchor_entry=), but the handler, the request and the response should not be FX-shaped.
+- Seam: register a per-kind =vintage_status(config_row) -> {applicable, valid}= with the kind; one handler iterates every registered kind's configs and returns ={config_id, applicable, valid}=. The anchor logic stays in the asset-supplied function.
+
+** vintage observation lookup triplicated — SPURIOUS
+- What: the same paged =find_series_by_uri= + =list_observations_page(200)= scan matching (source, datum URI, date-part) appears three times: in =feed_controller::vintage_data_available=, in =fx_spot_feed.cpp=, and in =ir_curve_feed.cpp=. The one-line =date_part= helper is copied with each (and a fourth time in =feed_controller.hpp=).
+- Branches on: FX vs IR only in the anchor datum (FX: key-derived SPOT URI; IR: config's =vintage_series_uri= at the anchor pillar).
+- Evidence: =projects/ores.synthetic/service/src/feed_controller.hpp:533=, =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:61=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:176=, =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp:51=, =projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp:163=, =projects/ores.synthetic/service/src/feed_controller.hpp:466=
+- Verdict: SPURIOUS. Three copies of a paging rule (NATS max payload) that must stay in step.
+- Seam: one =vintage_observation(svc_nats, bearer, series_uri, datum_uri, source, date) -> expected<double>= helper plus one =date_part=; the asset class supplies only the anchor datum URI and the missing-data message.
+
+** FX-only ad-hoc start path and its binding creation — SPURIOUS
+- What: =feed_controller::start(ore_key, means, stdevs, weights, ...)= constructs an =fx_spot_feed= directly, performs its own vintage check, and is the only caller of =ensure_feed_binding=. It has no production caller — only =should_ensure_feed_binding= is unit-tested — while =add()= (auto-start and folder cascade) and =start(IFeed)= (on-demand) create no binding. So the "a feed auto-creates its feed_binding" behaviour the story relies on is currently unreachable from the live control plane. It is also the second copy of the process-construction/seed block.
+- Branches on: FX vs IR — an =ore_key=+GMM-parameters entry point that IR cannot express.
+- Evidence: =projects/ores.synthetic/service/src/feed_controller.hpp:201=, =projects/ores.synthetic/service/src/feed_controller.hpp:485=, =projects/ores.synthetic/service/src/feed_controller.hpp:282=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:391=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:207=
+- Verdict: SPURIOUS (and dead). It is FX-only plumbing that the per-config control-plane replaced, and it is the only home of =ensure_feed_binding=.
+- Seam: delete =start(ore_key, ...)=, =vintage_data_available= and the ad-hoc seed block; move =ensure_feed_binding= onto the one start path (=feed_controller::add()=/=start(IFeed)=) gated by the feed's =binding_mode=, so every kind's bound feed is bound and every sandboxed feed is not. =should_ensure_feed_binding= survives as the gate.
+
+** simulate / preview plumbing duplicated — SPURIOUS
+- What: =simulate_handler= (FX) and =ir_curve_preview_handler::simulate_paths= (IR) each decode a request, clamp =(num_ticks, num_paths)=, loop paths, build a process per path with =seed + p=, step =num_ticks= and push the vector; the two protocols carry the same envelope (subject, =max_num_ticks/max_num_paths=, =num_ticks/num_paths/seed=, identical response shape). Only the parameter payload (GMM arrays vs named =parameter_spec=) and the process factory differ. IR additionally has =preview_shape=, which is genuinely IR-only.
+- Branches on: FX vs IR.
+- Evidence: =projects/ores.synthetic/service/src/simulate_handler.hpp:128=, =projects/ores.synthetic/service/src/ir_curve_preview_handler.hpp:136=, =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp:40=, =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp:52=
+- Verdict: SPURIOUS (the sampling loop and envelope), GENUINE (the process and its parameter encoding).
+- Seam: one =simulate_paths= handler parameterised by a per-kind =make_preview_process(process_type, params, seed)= registered with the kind; the request carries the kind plus an opaque/variant process-parameter payload. =preview_shape= stays an IR-only, separately registered verb.
+
+** make_default_feed_factory rebuilt per call site — SPURIOUS
+- What: =make_default_feed_factory()= is invoked independently in =feed_config_handler::start_fx=, =feed_config_handler::start_ir=, =folder_feed_control_handler::start= and =application.cpp::auto_start_feeds=.
+- Branches on: nothing asset-specific, but the registrations are duplicated state.
+- Evidence: =projects/ores.synthetic/service/src/feed_config_handler.hpp:273=, =projects/ores.synthetic/service/src/feed_config_handler.hpp:361=, =projects/ores.synthetic/service/src/folder_feed_control_handler.hpp:126=, =projects/ores.synthetic/service/src/app/application.cpp:216=
+- Verdict: SPURIOUS.
+- Seam: one factory instance built at service start and shared by every handler and the auto-start walk; a new kind is then one registration in =make_default_feed_factory=.
+
+** common config plumbing fields duplicated across the two configs — SPURIOUS
+- What: =source_name=, =ticks_per_hour=, =process_type=, =enabled=, =auto_start=, =price_source=, =vintage_source=, =vintage_date=, =folder_id= and the whole audit block (modified_by/performed_by/change_reason_code/change_commentary/recorded_at), plus version/tenant/party/config_id, appear field-for-field in both entities. Only the doc strings and defaults differ (FX defaults =price_source="vintage"=, IR defaults ="fixed"=; IR has =vintage_series_uri=, FX has =gmm_initial_price=).
+- Branches on: FX vs IR — two copies of the same lifecycle/plumbing columns.
+- Evidence: =projects/ores.synthetic/api/include/ores.synthetic.api/domain/fx_spot_generation_config.hpp:85=, =projects/ores.synthetic/api/include/ores.synthetic.api/domain/fx_spot_generation_config.hpp:99=, =projects/ores.synthetic/api/include/ores.synthetic.api/domain/ir_curve_generation_config.hpp:140=, =projects/ores.synthetic/api/include/ores.synthetic.api/domain/ir_curve_generation_config.hpp:180=
+- Verdict: SPURIOUS for the plumbing fields; GENUINE for the datum/process fields listed above.
+- Seam: a common generation-config contract (a shared embedded base struct, or the =market_data_generation_config= container carrying source/ticks/process/price_source/vintage/folder/audit) that both per-asset configs embed. The per-asset config then adds only its datum identity and its process-parameter linkage. The genuine per-asset default difference (=vintage= vs =fixed=) becomes a per-kind default supplied at construction, not a reason to copy the column.
+
+* The proposed common pipeline
+
+#+begin_example
+market_data_generation_config (container: kind, scope, binding_mode,
+                               enabled, auto_start, folder_id)
+  └── per-kind generation_config (datum fields + process-parameter linkage)
+        │
+        ├─ registry: kind → { config_resolver, build_input_loader,
+        │                      producer_builder, permission,
+        │                      preview_process_maker, vintage_anchor }
+        │
+        ▼
+feed_factory::make(kind, ctx, build_input)   ← the ONE dispatch
+  → producer_subject(source_name, binding_mode)   ← ONE subject builder
+  → IFeed (asset class supplies only: advance process + emit datum batch)
+        ▲
+        │  one tick_clock drives every producer
+        │  one controller owns add/start/stop/conflict/binding
+        ▼
+market_tick (one type) → synthetic.v1.tick.<source>
+        │
+        ▼
+feed_ingest_loop: plan_tick → per-binding persist (series + observation)
+  + one registered post-ingest hook per datum type (CRM bridge today)
+#+end_example
+
+The asset class plugs in at exactly two places: the =build_input_loader= that
+reads its config rows into a typed =feed_build_input=, and the =IFeed=
+producer that advances its process and emits its datum. Everything between the
+config row and the observation write is one path.

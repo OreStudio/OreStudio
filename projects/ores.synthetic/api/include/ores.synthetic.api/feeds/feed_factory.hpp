@@ -69,8 +69,9 @@ struct fx_spot_feed_build_input final {
 
 /**
  * @brief Build inputs for the IR curve producer: its persisted config, the template-entry and
- * parameter-value rows grouped by the caller, the parameter-definitions catalogue, and the
- * refdata context resolved for the config's tenor convention.
+ * parameter-value rows grouped by the caller, the parameter-definitions catalogue, the refdata
+ * context resolved for the config's tenor convention, and the binding mode that decides its
+ * publish subject.
  */
 struct ir_curve_feed_build_input final {
     ores::synthetic::domain::ir_curve_generation_config config;
@@ -78,6 +79,8 @@ struct ir_curve_feed_build_input final {
     std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
     std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition> definitions;
     ir_curve_refdata_context refctx;
+    ores::synthetic::domain::binding_mode binding_mode =
+        ores::synthetic::domain::binding_mode::bound;
 };
 
 /**

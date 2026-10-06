@@ -141,15 +141,15 @@ void market_series_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> "
-        "<derivation_config_version> <reason> <commentary>");
+        "add <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> "
+        "<derivation_config_id> <derivation_config_version> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <oresmd_uri> <series_subclass> <derivation_kind> "
+        "set <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> "
         "<derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,8 +157,9 @@ void market_series_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <derivation_kind> "
-        "<derivation_config_id> <derivation_config_version> <reason> <commentary>");
+        "put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> "
+        "<derivation_kind> <derivation_config_id> <derivation_config_version> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -352,8 +353,8 @@ void market_series_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 6 + 2) {
-            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -362,6 +363,7 @@ void market_series_commands::process_add(std::ostream& out,
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
+        read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
         read_token(
             req.change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
         read_token(req.change.write.derivation_config_id,
@@ -412,8 +414,8 @@ void market_series_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -422,6 +424,7 @@ void market_series_commands::process_set(std::ostream& out,
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
         read_token(
             req.change.write.series_subclass, parsed->positionals[next++], "series_subclass");
+        read_token(req.change.write.producer_kind, parsed->positionals[next++], "producer_kind");
         read_token(
             req.change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
         read_token(req.change.write.derivation_config_id,
@@ -484,8 +487,8 @@ void market_series_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 7 + 2) {
-            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -496,6 +499,7 @@ void market_series_commands::process_put_many(std::ostream& out,
             read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
             read_token(
                 change.write.series_subclass, parsed->positionals[next++], "series_subclass");
+            read_token(change.write.producer_kind, parsed->positionals[next++], "producer_kind");
             read_token(
                 change.write.derivation_kind, parsed->positionals[next++], "derivation_kind");
             read_token(change.write.derivation_config_id,

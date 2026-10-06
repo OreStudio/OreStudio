@@ -42,6 +42,7 @@ render_market_series_fields(const domain::market_series& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Series Subclass", .value = v.series_subclass});
+    fields.push_back({.name = "Producer Kind", .value = v.producer_kind});
     fields.push_back({.name = "Derivation Kind", .value = v.derivation_kind});
     fields.push_back(
         {.name = "Derivation Config ID", .value = boost::uuids::to_string(v.derivation_config_id)});

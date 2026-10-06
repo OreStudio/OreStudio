@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: FB57F761-0FC3-4283-AD32-CCF2FE68AD2E
+:END:
+#+title: The IR curve producer
+#+description: How one short-rate state becomes a slice of pillar ticks, and the refdata resolution a slice needs before the first tick.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:producers:ir:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=ores::synthetic::feed::ir_curve_feed= is the producer that turns an
+=ir_curve_generation_config= into a stream of curve points on NATS. It is
+declared in =ores.synthetic.api/feeds/ir_curve_feed.hpp= and implemented in
+=ores.synthetic.api/src/feeds/ir_curve_feed.cpp=. It implements
+=ores::marketdata::domain::IFeed=, and its =kind()= returns the string
+constant =ir_curve_feed_kind=, spelled ="ir_curve"=.
+
+* Detail
+
+** How the feed is built
+
+=make_ir_curve_feed= is the builder the start paths share, so the auto-start
+pass and an on-demand start cannot drift.
+
+1. It resolves the config's template entries into =ir_curve_resolved_entry=
+   records through =resolve()=.
+2. Under ="vintage"= it overrides the stored =initial_rate= value row with a
+   real observation. The anchor is the resolved deposit entry with the
+   smallest tick distance to its end, chosen by =select_vintage_anchor_entry=,
+   which is a separate function so the selection is unit-testable without a
+   live market data client.
+3. It builds the process through
+   =map_parameters_to_yield_curve_process=, passing the joined definitions and
+   value rows.
+4. It derives the publish subject from =source_name= and the binding mode
+   through =producer_subject=.
+
+** One process step, many ticks
+
+=start()= runs the same fixed-mode clock the FX feed uses. The period is one
+hour divided by =ticks_per_hour=, slept in slices of one hundred milliseconds
+so =stop()= is observed promptly, and =stop_flag_= is left alone at the top
+of the loop for the same reason recorded in the FX feed.
+
+Each pass does this.
+
+1. It advances the process once with =next()=. The new state is read from the
+   process by the pricing step and its return value is discarded.
+2. It takes one timestamp for the whole batch.
+3. For every resolved entry it builds one =market_tick=, each with that same
+   timestamp, and publishes it on the one subject.
+
+** How a pillar tick is named and priced
+
+The tick's datum is not the curve's identity. Each entry names its own
+pillar. The loop builds a quote key through
+=ores::marketdata::core::make_pillar_quote_key= from the currency taken out
+of the qualifier and the entry's own start tenor code, start date and end
+date, then turns that key into a URI through =pillar_datum_uri=. The series
+a point lands in therefore carries the instrument's identity rather than the
+pipeline's vocabulary.
+
+The value comes from =price_ir_curve_entry= in
+=ir_curve_template_resolver.cpp=. That function reads the process's
+=discount_factor()= values and dispatches on the entry's =curve_role= to the
+matching =curve_instrument_pricer= formula, which is a simple rate for a
+deposit, an implied forward for a forward rate agreement, and a par-rate
+solve for a swap. The same function serves the curve shape preview handler,
+so a preview and a run cannot disagree about what a state implies.
+
+** Identity and conflict
+
+The qualifier is built by =ir_curve_qualifier= from the currency and the
+index family, with the FOMC variant marked. The role comes from the config.
+The conflict key is =feed_conflict_key(qualifier, role)=, so two curves of one
+tuple with different roles coexist and two curves with the same tuple and the
+same role cannot.
+
+** The facts the code shape does not show
+
+The process's own time axis is fixed and does not follow the publish cadence.
+The constant =ir_curve_feed_dt= is one over three hundred and sixty five, so
+one model step is one calendar day whatever =ticks_per_hour= says. The
+cadence decides how often a human sees a curve and the daily step decides how
+far the curve's short rate has moved. The two are independent, and the same
+short-rate parameters therefore describe a much slower-looking curve at a low
+cadence than at a high one.
+
+The seed is the literal =42=, passed directly to the process builder. The
+curve path has no entropy draw and no seed column, unlike the FX path, which
+draws from =std::random_device= and logs the result. Two curve feeds started
+with the same config and the same parameter rows therefore produce the same
+sequence of states.
+
+=publish_count()= counts batches, not ticks. One unit of the counter is one
+pass of the loop and therefore one tick per resolved entry. The info-level
+log line says so, spelling the counter as "batch" and printing the number of
+points alongside it.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], which this feed reads.
+- [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the ladder this feed resolves.
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the engines the config may name.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the short-rate process.
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface contract this class implements.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], where =ir_curve_feed_kind= selects this builder.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the message each pillar publishes.

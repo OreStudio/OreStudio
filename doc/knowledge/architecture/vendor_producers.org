@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: AC0C19EF-158C-4766-8661-A1DCECE3D424
+:END:
+#+title: Vendor producers
+#+description: A contract note. What a vendor producer must satisfy to be a producer at all, by symmetry with the synthetic producer, and the plain fact that no vendor producer exists in the tree today.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:vendor:producers:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+This note is a contract. It states what a vendor producer must do to be a
+producer at all, by symmetry with the synthetic producer, and it records
+that no vendor producer exists in the tree today. The vocabulary that names
+one does exist and is settled. =producer_kind= carries the code =VENDOR=
+beside =SYNTHETIC=, and =feed_binding.producer_kind= defaults to =VENDOR=
+so a real feed's binding needs nothing set.
+
+* Detail
+
+** The contract
+
+To be a producer at all, a feed must implement =IFeed= from
+=projects/ores.marketdata/api/include/ores.marketdata.api/domain/i_feed.hpp=.
+That interface is stated in
+[[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]].
+It is the same for every source, generated or real, and it asks for the
+following.
+
+- =source_name()=, the producer's unique identity within a tenant.
+- =qualifier()=, the published market data key consumers look up.
+- =role()=, the series role, empty for a feed that has no role.
+- =nats_subject()=, the subject the feed publishes on.
+- =kind()=, the factory kind string the producer registers under.
+- =conflict_key()=, the identity two feeds must not share while both run.
+- =start()= and =stop()=, the lifecycle.
+- =publish_count()=, the number of ticks published since start.
+
+=start()= blocks the calling thread until =stop()= is called from a
+different thread. The feed publishes its own ticks to NATS and no handler is
+invoked by the loop, so the publishing path sits inside the producer.
+
+** The subject a vendor producer must publish on
+
+Every producer publishes on =synthetic.v1.tick.<source_name>=, built by
+=synthetic_tick_subject= in
+=projects/ores.marketdata/api/include/ores.marketdata.api/domain/tick_subjects.hpp=.
+That subject grammar is stated in
+[[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]]. It is the
+subject the ingest loop subscribes to, through the wildcard
+=synthetic_tick_wildcard()=, which appends =>= because a source name may
+itself contain dots.
+
+A producer that publishes under =synthetic.v1.sandbox.tick.= is invisible to
+ingest. That prefix is the sandbox a generated feed uses when a person wants
+to run it without the data landing anywhere.
+
+** The message a vendor producer must publish
+
+The payload is =messaging::market_tick= from
+=projects/ores.marketdata/api/include/ores.marketdata.api/messaging/operations_protocol.hpp=,
+stated in [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]].
+It carries the datum's =oresmd_uri=, the value as decimal text, the
+=source=, and the observation time. There is one tick type for every asset
+class, so a vendor producer does not define its own.
+
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
+drops a tick in three cases, and a producer must avoid all three. An
+=oresmd_uri= that names no ORE datum is dropped as =unnameable_datum=. A
+value that is not a number is dropped as =not_a_number=. A =source= with no
+enabled binding is dropped as =unbound_source=.
+
+** What a vendor producer must do to be consumed
+
+A consumer reaches a producer only through a binding. A vendor producer
+therefore needs a =feed_binding= row whose =source_name= is the producer's
+own, whose =enabled= is true, and whose =producer_kind= is =VENDOR=. That
+last part costs nothing, because the column defaults to =VENDOR=.
+
+The producer must also be buildable and ownable.
+[[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] runs feeds
+behind =IFeed= and keys them by =source_name=, and it keeps at most one
+running feed per qualifier and role pair. A new kind registers a builder
+with the feed factory, which is
+[[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]],
+so a caller can name the kind as a string. The edits a new kind still
+requires are listed in
+[[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]].
+
+** What exists today
+
+The producer kind vocabulary exists. The codes =VENDOR= and =SYNTHETIC= are
+seeded in =ores_refdata_producer_kinds_tbl=, the =VENDOR= default stands on
+=feed_binding.producer_kind=, the binding table and the ingest loop are
+live, and the subjects and the tick type are the ones a vendor producer
+would use unchanged.
+
+No vendor producer exists. The only two implementers of =IFeed= in
+=projects/= are =fx_spot_feed= and =ir_curve_feed=, both in
+=ores.synthetic.api= and both generated. Their two notes are
+[[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] and
+[[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]]. The
+other classes that implement =IFeed= are test stubs. No code reads a vendor
+protocol, no vendor connection is configured, and no =VENDOR= binding in the
+tree has a publisher behind it.
+
+** Facts the code shape does not show
+
+- The subject prefix reads =synthetic.v1.tick.= and every producer uses it
+  anyway. A vendor producer would publish vendor data on a subject whose
+  name says synthetic. The prefix records the order the work landed in, and
+  not a claim about the source.
+- Nothing validates that a =VENDOR= binding has a producer behind it. A
+  binding with no publisher is legal and silent. The ingest loop shows it as
+  a stats entry whose tick count stays at zero, which is the only visible
+  sign.
+- The symmetric implementation to copy is
+  =projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp=, because it is the
+  simplest producer that satisfies the whole interface.
+- The tick carries its own datum identity in the =oresmd_uri=, so a vendor
+  producer never needs a series id and never touches storage. The loop owns
+  persistence for real and generated sources alike.
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface a vendor producer implements.
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], the subject grammar a vendor producer publishes on.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the one tick payload every producer sends.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the row a consumer reaches a producer through.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the vocabulary the =VENDOR= code belongs to.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]], the vendor notation survey a producer reads.

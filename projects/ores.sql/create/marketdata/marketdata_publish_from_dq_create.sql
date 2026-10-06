@@ -161,12 +161,12 @@ begin
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 oresmd_uri, series_subclass,
-                derivation_kind, derivation_config_id, derivation_config_version,
+                producer_kind, derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
                 r.oresmd_uri, v_series_subclass,
-                'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+                'VENDOR', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             );

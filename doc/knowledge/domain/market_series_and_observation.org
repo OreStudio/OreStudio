@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: E4736D88-03B2-4A40-B7F4-01B06B9B9FD7
+:END:
+#+title: Series and observation
+#+description: What a market series catalogues against what an observation records, the soft update rule for a correction, and why observations carry no audit columns.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:storage:series:observations:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+Two tables hold the stored result of the pipeline. A =market_series=
+catalogues what is being observed and is declared in
+=ores.marketdata.api/domain/market_series.hpp=. A =market_observation=
+records one observed value and is declared in
+=ores.marketdata.api/domain/market_observation.hpp=.
+
+* Detail
+
+** What each one holds
+
+=market_series= holds =oresmd_uri=, the series URI of the datum, plus
+=series_subclass=, a code from reference data for the coarse taxonomy, and
+the set of asset classes in =market_series_asset_classes=. A series is
+identified by its oresmd URI together with its party, and it is unique per
+party. The table keeps no decomposed copy of the key, so a reader that
+wants a part of the key reads it through the codec.
+
+=market_observation= holds =series_id=, =observation_datetime=, =oresmd_uri=
+and =value=. The URI is the row's only identity. The ORE key is not stored,
+because =ore_key_codec= writes it from the datum the URI names, so a row
+cannot hold two identities that disagree.
+
+** The soft update rule
+
+=market_observations_tbl= is a TimescaleDB hypertable partitioned by
+=observation_datetime= with 30 day chunks. A correction replaces the
+previous value through the soft update trigger rather than by a delete and
+an insert. GIST exclusion and DELETE rules are incompatible with
+hypertables, so uniqueness is enforced by a partial unique index and by the
+soft update and soft delete trigger pair.
+
+** Why observations carry no audit columns
+
+The observation type has no =version=, =modified_by=, =performed_by=,
+=change_reason_code= or =change_commentary=. Tick level data volumes make
+those columns impractical. =observation_datetime= is the financial valid
+time, and =valid_from= and =valid_to= carry the transaction time.
+
+** The producer kind stamp
+
+=market_series.producer_kind= defaults to VENDOR. The ingest loop stamps it
+from the binding the tick arrived under when it creates the series, and it
+leaves an existing series alone. The column therefore records the producer
+that created the row rather than the last writer to touch it.
+
+** The derivation marker on the series
+
+=market_series.derivation_kind= defaults to OBSERVED, and a derived series
+carries a named mechanism such as IR_CURVE_BOOTSTRAP. It pairs with
+=derivation_config_id= and =derivation_config_version=, which hold their
+nil and zero sentinels when the kind is OBSERVED. This is a catalog level
+marker, and it is a different thing from the per observation lineage row
+stated in [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]].
+
+* See also
+
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]], the extra row a derived observation carries.
+- [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]], where the stored URIs come from.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the writer of both tables.
+- [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution side snapshot concept, which is not this stored data.

@@ -547,6 +547,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:write',                   'Create and modify derivation kinds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::derivation_kinds:delete',                  'Delete derivation kinds');
 
+    -- Producer kinds permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:read',                      'View producer kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:write',                     'Create and modify producer kinds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::producer_kinds:delete',                    'Delete producer kinds');
+
     -- Diary entry types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:read',                   'View diary entry types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::diary_entry_types:write',                  'Create and modify diary entry types');

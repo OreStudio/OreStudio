@@ -28,7 +28,7 @@ service starts the tick loop automatically at startup (hardcoded EUR/USD, K=3 GM
 seeded parameters, fixed-mode clock) so the generation pipeline and NATS publishing can
 be validated in isolation before start/stop NATS control is added (step 4).
 
-This is implementation step 2 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][architecture doc]].
+This is implementation step 2 from the [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]].
 
 * Status
 

@@ -20,13 +20,13 @@
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cctype>
@@ -263,6 +263,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
+    ores::synthetic::domain::binding_mode binding_mode,
     const std::string& caller_bearer_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
@@ -295,15 +296,14 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(
-        nats,
-        cfg.source_name,
-        ores::marketdata::domain::synthetic_tick_subject(cfg.source_name),
-        ir_curve_qualifier(cfg),
-        cfg.role,
-        std::move(process),
-        static_cast<double>(cfg.ticks_per_hour),
-        std::move(resolved));
+    return std::make_shared<ir_curve_feed>(nats,
+                                           cfg.source_name,
+                                           producer_subject(cfg.source_name, binding_mode),
+                                           ir_curve_qualifier(cfg),
+                                           cfg.role,
+                                           std::move(process),
+                                           static_cast<double>(cfg.ticks_per_hour),
+                                           std::move(resolved));
 }
 
 }

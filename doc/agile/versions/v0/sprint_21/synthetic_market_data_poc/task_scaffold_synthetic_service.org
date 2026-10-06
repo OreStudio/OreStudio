@@ -24,7 +24,7 @@ Produce an =ores.synthetic.service= CMake project that builds and links correctl
 does nothing yet. It registers with the service lifecycle base, starts up cleanly,
 and immediately exits — no NATS handlers, no tick loop, no process implementations.
 This task exists solely to validate build wiring before any behaviour is added.
-It is implementation step 1 from the [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][architecture doc]].
+It is implementation step 1 from the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]].
 
 * Status
 

@@ -51,6 +51,7 @@ domain::feed_binding feed_binding_mapper::map(const feed_binding_entity& v) {
 
     r.source_name = v.source_name;
 
+    r.producer_kind = v.producer_kind;
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -74,6 +75,7 @@ feed_binding_entity feed_binding_mapper::map(const domain::feed_binding& v) {
 
     r.source_name = v.source_name;
 
+    r.producer_kind = v.producer_kind;
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

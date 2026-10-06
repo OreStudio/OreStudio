@@ -60,7 +60,7 @@
 
 insert into ores_marketdata_market_series_tbl (
     id, tenant_id, version, party_id, series_subclass, oresmd_uri,
-    derivation_kind, derivation_config_id, derivation_config_version,
+    producer_kind, derivation_kind, derivation_config_id, derivation_config_version,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
@@ -70,7 +70,7 @@ values
         0,
         ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
         'yield', 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC',
-        'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        'VENDOR', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'Bootstrapped USD SOFR curve (FOMC segment): republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
     )

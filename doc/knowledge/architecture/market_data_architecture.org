@@ -2,224 +2,222 @@
 :ID: DF2B616F-E112-4C57-A73B-69F85BE96EF4
 :END:
 #+title: Market Data Architecture
-#+description: The end-to-end market data architecture: the NATS contract as the interface, autonomous producer services (synthetic, vendor) publishing to their own namespaced channels, the marketdata service as the authority that binds a source via feed config, persists, and remaps onto the official tenant-scoped stream, and source-independent consumers. Covers the synthetic-vs-feed config split, provenance, and tenant scoping.
+#+description: The one structure note for market data. It orders the pipeline and its machinery, synthetic generation, the operation surface, and the vendor and stored data, and it says what a reader is competent at after each section.
 #+type: knowledge
 #+level: cross
-#+filetags: :architecture:marketdata:nats:synthetic:feeds:
+#+filetags: :architecture:marketdata:nats:synthetic:feeds:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-09-26
+#+updated: 2026-10-06
 
 * Summary
 
-Market data in ORE Studio is a *producer / authority / consumer* system glued
-by a NATS contract. The *interface* is the typed NATS contract in
-=ores.marketdata.api= (tick / observation / series schemas + subjects) — not
-any one service. *Producers* (=ores.synthetic= today; =ores.bloomberg= and
-other vendors later) are autonomous services that own *how* they produce and
-publish ticks onto their *own namespaced channels* (e.g.
-=synthetic.v1.tick.fx.rate.eur.usd=). The *=ores.marketdata= service is the
-authority*: a *feed configuration* binds an official series to one active
-source channel; marketdata subscribes to that channel, *persists* each
-observation (stamped with tenant + source) and *remaps* (re-publishes) it onto
-the *official, tenant-scoped* stream (=marketdata.v1.tick.<tenant>.<key>=).
-*Consumers* (the =ores.web= chart, etc.) subscribe only to the official stream and are
-completely source-independent — swapping synthetic for a vendor is a feed-config
-change, nothing else. Configuration is split: the *synthetic generation config*
-(how to generate) lives in =ores.synthetic=; the *feed config* (which source
-feeds which official series) lives in =ores.marketdata=.
+Market data is one pipeline in ORE Studio. A producer publishes a
+=market_tick= on its own subject. The marketdata ingest loop plans that tick
+against the feed bindings of its source, writes one observation per binding,
+and republishes the tick on the per party stream. A consumer subscribes to
+that stream or reads the store.
 
-* Detail
+This page is the structure note for the whole subject. It gists and links
+and it carries no content its cluster already carries. It argues a reading
+order and says what the reader can do at the end of each section. The detail
+lives in exactly one note, and that note is named here.
 
-** The interface is the NATS contract, not a service
+The subject splits into four sections. The first is the pipeline and its
+machinery, which takes a reader from a tick on the wire to a stored
+observation and to the consumer that reads it. The second is synthetic
+generation, which covers the configs and the producers a person authors and
+runs. The third is the operation surface, which covers the verbs and the
+window a person drives. The fourth is the vendor and stored data, which is
+the same pipeline seen from the real source and from the tables it leaves
+behind.
 
-The decoupling layer is the typed NATS contract published by
-[[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]]: the tick payload schema, the observation/series schemas,
-and the subject conventions. A producer "implements a feed" purely by
-publishing conformant ticks; it shares only this API package. Depending on
-=ores.marketdata.api= is depending on the *interface*. Forbidden: marketdata
-consuming a producer as a library, marketdata calling a producer per tick, or a
-producer writing marketdata's tables directly.
+Two boundaries hold. This page does not carry the process mathematics. The
+processes a generator steps are collected under
+[[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], and a
+reader who wants an SDE reads it there. This page also does not carry the
+resolution path from a logical market data requirement to a concrete
+identifier, which is
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]].
+That path is a different pipeline and it has its own structure note.
 
-** Roles and responsibilities
+* The pipeline and its machinery
 
-| Concern | Owner |
-|---------+-------|
-| Tick / observation / series *contract* (the interface) | =ores.marketdata.api= |
-| *How* synthetic produces (generation config) + the generation loop | =ores.synthetic= (a producer) |
-| *How* a vendor produces (future) | =ores.bloomberg= / other producer |
-| *Which* source feeds an official series (feed config / registry) | =ores.marketdata= |
-| Subscribe to source → *persist* → *remap* to official stream | =ores.marketdata= service |
-| Series catalogue + observation *store* + read side | =ores.marketdata= |
-| Source-agnostic control panel (registry + start/stop) | =ores.shell= (~marketdata~ commands) |
-| Synthetic config authoring UI | =ores.shell= (~synthetic~ commands) |
-| Live consumption (charts, …) | any consumer, via the *official* stream (=ores.web= today) |
+Read this section to follow one tick from the wire to the store and to the
+consumer that reads it, and to know where a new asset class plugs in.
 
-** Producers — autonomous, namespaced, config-owning
+1. [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]]. A
+   tick names its datum by a URI, so the datum and its schema row come
+   first. The URI grammar itself is
+   [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]].
+2. [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. The one
+   wire type of every asset class, and the fields it carries.
+3. [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its
+   lifecycle]]. What a producer is before what it publishes, and the
+   blocking start and stop contract.
+4. [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]]. Where
+   a feed publishes, and the token rule that keeps a stray name from routing
+   through a wildcard.
+5. [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]]. Whether what
+   a feed publishes can reach storage at all.
+6. [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]]. The
+   one owner of the running feeds, what each start result means, and the
+   binding rule a start applies.
+7. [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind
+   seam]]. How a kind string selects a producer builder and how the lifecycle
+   stays unchanged as kinds are added.
+8. [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]]. The
+   two places a new asset class plugs in and the edits it still needs
+   outside the seam.
+9. [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]]. Where a
+   live tick finds its owners, and why the enabled flag is a suspend rather
+   than a delete.
+10. [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one
+    pipeline]]. The join of every part above, and the one place an =if=
+    still stands in for a registered hook.
+11. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]],
+    then [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and
+    provenance]]. What the pipeline leaves behind, and the extra row a
+    derived observation carries.
 
-A producer is *a source*, not "the" market data. It:
-- owns its *own* "how to produce" configuration and CRUD/UI for it;
-- generates autonomously (its config carries =enabled=/=auto=);
-- publishes ticks to its *own* namespace: =<producer>.v1.tick.<ore-key-dots>=
-  (e.g. =synthetic.v1.tick.fx.rate.eur.usd=);
-- never claims the official subject and never writes the marketdata store.
+After this section a reader is competent at tracing a tick from a producer
+subject to a stored observation and to the party stream that carries it, at
+saying which table holds what, and at naming the two places a new asset class
+touches.
 
-New producers slot in by (a) publishing conformant ticks on their namespace and
-(b) having a feed config point at them — no consumer or marketdata code change.
+** The gap between a binding and the generation config
 
-** The feed configuration (the switch / registry)
+A =feed_binding= names only its =source_name=. Nothing on the row references
+the =market_data_generation_config= or the feed config that produced that
+source. No foreign key joins them and no column carries a config id. The link
+back is name similarity, and the column comment that says the =source_name=
+matches the =source_name= of the feed config is the whole of the
+relationship.
 
-Owned by =ores.marketdata=. For each *official* series it records the active
-*source binding*: the producer + source channel, a reference to the producer's
-config (e.g. synthetic config =abc=), and =enabled=/=auto=. Switching a series
-from synthetic to a vendor is a feed-config edit — point the binding at
-=bloomberg.v1.tick.…= instead of =synthetic.v1.tick.…=. This is the
-source-agnostic surface the control panel manages.
+The consequence is that a binding cannot show which config authored its
+source. Two configs that share a source name are indistinguishable on the
+binding row, and a config renamed without the matching binding edited leaves
+a binding that names a source nothing is publishing. A reader who wants the
+config behind a binding has to match names by hand.
 
-** The marketdata service — subscribe, persist, remap
+This gap is stated here so a reader sees it rather than inferring a
+relationship the schema does not carry. The binding note records it in full.
 
-On start (and on feed-config / control changes) the marketdata service:
-1. reads its feed registry;
-2. *subscribes* to each bound source channel (=<producer>.v1.tick.<key>=);
-3. on each incoming tick: *persists* the observation into its store (sole
-   writer), stamped with the *tenant* and the *source name* (provenance);
-4. *remaps* — re-publishes the tick onto the *official* stream
-   =marketdata.v1.tick.<tenant>.<key>=.
+* Synthetic generation
 
-There is no per-tick request/reply and no orchestration of producers: pure
-pub/sub. Persistence policy (dedup, downsample, batch) lives here, uniformly
-across all producers.
+Read this section to author a generation config, run its producer, and see
+what the producer would do before it runs.
 
-** Spot rate blending and verification
+1. [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config
+   collection and folders]]. The named container and the folder tree a
+   person browses, which is the tree every later note hangs from.
+2. [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation
+   config]], then [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM
+   component]], then [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot
+   producer]]. One asset class end to end, the simplest first.
+3. [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation
+   config]], then [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve
+   template and its parameters]], then
+   [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type
+   catalogue]], then [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve
+   producer]]. The second asset class, which shows what the first one's
+   shape generalises to.
+4. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The
+   process interface, the process factory and the seeding rule both
+   producers share.
+5. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The
+   mathematics each process states once, which this page and the generator
+   library link to rather than restate.
 
-A feed config binds an official series to *one* active source, but more than
-one source can legitimately be available for the same pair (two synthetic
-producers, or a vendor plus synthetic). Where the authority must reconcile
-several sources into the one official spot, that combination is *spot rate
-blending* — a weighted/consensus average, robust median, or governed waterfall
-— and is a responsibility of =ores.marketdata=, not the producers. Blending is
-*situational*, not always-on: FX spot is an observable Level 1 input, so the
-authority mostly passes a single source through and blends only at the margin
-(stale, illiquid, or disputed feeds, or where governance requires
-defensibility against more than one source). Downstream of blending sits a
-lighter-weight *spot verification* (tolerance check vs reference sources) and,
-for the EOD/IPV cuts, an *approval* step — all owned by the authority and its
-governance, not the producer. This is deliberately distinct from the
-no-arbitrage derivation in the CRM below: blending picks/combines *observed*
-rates for a pair; the CRM *computes* derived crosses from drivers.
+After this section a reader is competent at reading a generation config as a
+recipe, at naming the process a feed steps, and at saying which parts of a
+new asset class are config and which are producer code.
 
-See [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] and its cluster:
-[[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][blending methods]],
-[[id:936BE1EE-89F0-4F82-9064-9AB53E886299][why spot is observable]], and
-[[id:93BF1249-609F-452C-B1EC-FEB493F44273][spot rate governance]] (verification, approval, local vs global).
+* The operation surface
 
-** Cross-rates matrix: drivers in, derived rates out
+Read this section to drive a feed without the Qt client, and to drive it with
+the client.
 
-The "remap" step is more than a passthrough for FX. Producers feed *driver*
-rates (the most-liquid legs); the marketdata authority runs the *cross-rates
-matrix* (CRM) — a no-arbitrage spanning tree — to *compute the derived rates*
-by triangulation and *enforce consistency*, then publishes the full official set
-(remapped drivers + computed crosses). Correlations and derived volatility
-surfaces are owned and computed here too. So producers stay simple (drivers);
-=ores.marketdata= owns derivation, consistency and correlation. See
-[[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] for the full treatment.
+1. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The
+   operations that show an editor what a feed would do, and the bounds on a
+   path count and a tick count.
+2. [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation
+   surface]]. The =synthetic= command group, the folder and feed addressing
+   rule, and the vintage check.
+3. [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator
+   screens]]. The one composite window, the editors behind it, and the
+   cascade start and stop request each tree node sends.
 
-** Consumers — official stream only
+After this section a reader is competent at starting, stopping and inspecting
+a feed from the shell or from the window, and at saying which of the two
+surfaces owns which path.
 
-Charts and other consumers subscribe *only* to =marketdata.v1.tick.<tenant>.<key>=
-and read history from the observation store. They are source-independent: they
-cannot tell (and must not care) whether the data originated synthetic or vendor.
+* The vendor and stored data
 
-** Configuration split
+Read this section to follow the same pipeline from a real source, and to read
+what the store holds. Every note here links into the first section rather
+than copying it, because the tick type, the ingest loop and the store are the
+same for both sources.
 
-Two distinct, separately-owned configs:
-- *Synthetic generation config* (=ores.synthetic=): the recipe — *how* to
-  generate. A named container with typed sub-configs per market-data type (FX
-  spot GMM now; vol surface, IR later). Modelled per [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over
-  NATS]] — one typed struct + subject per concrete sub-config type, with a
-  discriminator on the container; never an untyped JSON blob.
-- *Feed config* (=ores.marketdata=): the binding — *which* source feeds *which*
-  official series. References a producer + its config + enabled/auto.
+1. [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]]. Why
+   real against generated is a property of the producer and not of the data,
+   and how the kind travels from the binding onto the series.
+2. [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor producers]]. The
+   contract a vendor producer must satisfy to be bindable, and the plain
+   fact that none exists in the tree today. The vendor notation survey is
+   [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+   identifiers]].
+3. [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]]. The
+   stored data as of read and the bucketed curve evolution read.
+4. [[id:D1A25B9E-B1A0-4E7C-AB5C-1C7C3EF07F90][ORE import and
+   export]]. How a =market.txt= vintage becomes observations, and how the
+   store is written back out.
 
-** Subjects and naming
+After this section a reader is competent at saying what a vendor producer
+must do to be a producer at all, at telling a real series from a generated
+one, and at reading or writing the store through its own operations.
 
-Built on the ORE key (see [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]:
-=<series_type>/<metric>/<qualifier>[/<point_id>]= → lowercase, ='/'→'.'=):
-- Producer (raw source) stream: =<producer>.v1.tick.<ore-key-dots>=.
-- Official (authoritative) stream: =marketdata.v1.tick.<tenant>.<ore-key-dots>=
-  (tenant-scoped, because storage and entitlement are tenant-scoped).
-- Read/store APIs: =marketdata.v1.series.*=, =marketdata.v1.observations.*=.
+* Excluded from this hub
 
-** Tick identity and provenance
+- The process mathematics, which is
+  [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. It is
+  the process catalogue of this cluster and the one hub reachable from the
+  synthetic section above and from the
+  [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] hub.
+- The requirement to identifier resolution path, which is
+  [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and
+  Resolution]]. Its identifiers are requirement side and are not the stored
+  datum. The requirement side identifier is
+  [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]], and
+  the requirement side snapshot is
+  [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]]. The
+  stored data note says how the two snapshots differ.
 
-For marketdata to persist + remap unambiguously, a producer tick must carry
-enough identity to resolve the official series and tenant — the *feed/config id*
-(or tenant + ore_key) plus the *source name*. Marketdata resolves
-=series_id= + tenant from the feed binding, writes the observation with
-=source = <source name>=, and stamps the official tick with the same source.
-(Today's =fx_spot_tick= carries only =ore_key/datetime/mid=; it needs the feed
-identity + source added.) Provenance is therefore *via the source name* — market
-data stays tenant-scoped; the source name ties each observation to the producing
-config (see [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] for tenant/party scoping).
+* aside
 
-** Lifecycle and control plane
-
-Two independent levers:
-- A *producer* decides whether it is generating (its config's =enabled=/=auto=);
-  it self-manages its loop.
-- A *feed config* decides whether marketdata *consumes + officialises* a source
-  (its =enabled=/=auto=).
-
-Start/stop is a generic, source-agnostic control contract the owning party
-subscribes to; the control panel speaks the registry + control contract and
-needs no producer-specific knowledge.
-
-** Vintage import: reversed-key detection via delegated cross-service lookup
-
-Importing an ORE =market.txt= vintage (=import_service=, distinct from the
-live subscribe/persist/remap path above — a batch operation, not a tick
-consumer) checks each =FX/RATE= spot quote's currency order against
-=ores.refdata='s =currency_pair= reference data, and corrects a reversed
-key before persisting (see [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][the task]] and the pure decision logic in
-=fx_quote_convention_checker=, =ores.ore.core=). The reversed-key case is
-real, not hypothetical: some vendored ORE example =market.txt= files store
-GBP/USD under the key =FX/RATE/USD/GBP=.
-
-=currency_pair= is *tenant- and party-scoped* — each tenant can define its
-own currency-pair conventions — so this lookup cannot run as the
-marketdata service's own identity (which has no tenant) and must instead
-borrow the *importing user's* tenant/party: the On-Behalf-Of half of
-[[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]],
-not a one-off. =import_handler= extracts the caller's bearer token from
-the inbound =import_market_data_request= message and delegates it on the
-service's own =nats_client= before calling =refdata.v1.currency_pairs.list=,
-exactly as =feed_controller= already does for market-data lookups in the
-vintage guard. Best-effort: if the fetch fails (refdata unreachable, etc.),
-the import proceeds with no reversed-key correction rather than failing.
-
-** Current state vs target
-
-Today (PoC): =ores.synthetic= publishes straight to =marketdata.v1.tick.*= *and*
-calls =marketdata.v1.observations.save= per tick; the series + observations are
-written under the *system* tenant from a boot-time hardcoded bootstrap; there is
-no persisted config and the feed is started by a raw NATS request.
-
-Target (this doc): synthetic publishes to =synthetic.v1.tick.*= only; persisted
-synthetic + feed configs drive generation under the correct *tenant*; marketdata
-*subscribes → persists → remaps* to the official tenant-scoped stream; consumers
-use the official stream. See [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] for the
-vertical-slice that seeded this and [[id:8A65240D-C7A2-4F66-860F-97137B03B482][the PoC story]] for the migration tasks.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation, the approach]]. The reasoning behind the method per asset class
+  and the cross asset constraints. A reader reaches it when the question
+  changes from how the code works to why the method is the one it is.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian
+  GenAI, synthetic market data generation]]. The source record that anchors
+  the GMM choice.
 
 * See also
 
-- [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — the NATS contract (the interface).
-- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — typed per-variant configs/instruments.
-- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — ORE keys and subject naming.
-- [[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] — the vertical slice.
-- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — how a producer/marketdata service is built.
-- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant/party scoping of data and subjects.
-- [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — what exists in the stack today.
-- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — derived rates, no-arbitrage, and correlations.
-- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — generation design.
-- [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX spot quotes during market data import]] —
-  worked example of the delegate half of "mint or delegate", for
-  tenant/party-scoped reference data.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]],
+  the curve specific view of provenance, which the lineage note must not
+  restate.
+- [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]], the
+  no-arbitrage spanning tree over driver rates.
+- [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] and its
+  cluster, [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][blending methods]],
+  [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][why spot is observable]] and
+  [[id:93BF1249-609F-452C-B1EC-FEB493F44273][spot rate governance]]. The
+  authority combines observed sources here, and the machinery for that
+  combination is not part of the pipeline in the first section.
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]], how a
+  producer or an authority is built.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over
+  NATS]], the typed per variant config pattern the generation configs use.
+- [[id:F3CB17FB-6472-4DEB-BC5B-EC764C1368F8][Detect and correct reversed FX
+  spot quotes during market data import]], the worked example of a delegated
+  lookup on the import path.

@@ -50,6 +50,13 @@ namespace ores::marketdata::domain {
  * producers. Setting enabled  false= suspends the subscription without deleting
  * the binding.
  *
+ * A binding also says what kind of producer it names: a real feed (VENDOR) or a
+ * generated one (SYNTHETIC). The ingest loop stamps the series it creates with
+ * the binding's producer_kind, so a reader of a series can tell generated data
+ * from observed data without guessing from the source string. The column
+ * defaults to VENDOR, so every binding a real feed creates carries it without
+ * setting anything.
+ *
  * This model binds to no variability profile. Its features match
  * uuid-surrogate-lookup, but that profile also enables the shell command
  * facet, which feed bindings do not have today. Binding it is a decision about
@@ -84,6 +91,15 @@ struct feed_binding final {
      * binding was created from.
      */
     std::string source_name;
+
+    /**
+     * @brief References producer_kind.code -- the kind of producer this binding names: a real feed
+     * (VENDOR, the default) or a generated one (SYNTHETIC). The ingest loop stamps the series it
+     * creates from this code, so the real-versus-generated axis travels from the binding onto the
+     * series an observation lands in. A caller that sets nothing gets VENDOR, so a binding a real
+     * feed creates changes nothing.
+     */
+    std::string producer_kind = "VENDOR";
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

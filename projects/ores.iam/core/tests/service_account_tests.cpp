@@ -50,15 +50,10 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     sut.tenant_id = tenant_id::system();
     sut.account_type = "service";
     sut.username = "ores.service.binary";
-    sut.password_hash = "";
-    sut.password_salt = "";
-    sut.totp_secret = "";
     sut.email = "binary@system.ores";
     BOOST_LOG_SEV(lg, info) << "Service Account: " << sut;
 
     CHECK(sut.account_type == "service");
-    CHECK(sut.password_hash.value().empty());
-    CHECK(sut.password_salt.value().empty());
     CHECK(sut.username == "ores.service.binary");
 }
 
@@ -73,14 +68,10 @@ TEST_CASE("create_algorithm_account", tags) {
     sut.tenant_id = tenant_id::system();
     sut.account_type = "algorithm";
     sut.username = "algo.risk.calc";
-    sut.password_hash = "";
-    sut.password_salt = "";
-    sut.totp_secret = "";
     sut.email = "risk.calc@algorithms.ores";
     BOOST_LOG_SEV(lg, info) << "Algorithm Account: " << sut;
 
     CHECK(sut.account_type == "algorithm");
-    CHECK(sut.password_hash.value().empty());
 }
 
 TEST_CASE("create_llm_account", tags) {
@@ -94,14 +85,10 @@ TEST_CASE("create_llm_account", tags) {
     sut.tenant_id = tenant_id::system();
     sut.account_type = "llm";
     sut.username = "claude.agent";
-    sut.password_hash = "";
-    sut.password_salt = "";
-    sut.totp_secret = "";
     sut.email = "claude@llm.ores";
     BOOST_LOG_SEV(lg, info) << "LLM Account: " << sut;
 
     CHECK(sut.account_type == "llm");
-    CHECK(sut.password_hash.value().empty());
 }
 
 TEST_CASE("user_account_requires_password", tags) {
@@ -114,14 +101,10 @@ TEST_CASE("user_account_requires_password", tags) {
     sut.tenant_id = tenant_id::from_uuid(boost::uuids::random_generator()()).value();
     sut.account_type = "user";
     sut.username = "john.doe";
-    sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
-    sut.password_salt = "salt_value";
-    sut.totp_secret = "";
     sut.email = "john.doe@example.com";
     BOOST_LOG_SEV(lg, info) << "User Account: " << sut;
 
     CHECK(sut.account_type == "user");
-    CHECK(!sut.password_hash.value().empty());
 }
 
 TEST_CASE("account_type_defaults_to_user", tags) {

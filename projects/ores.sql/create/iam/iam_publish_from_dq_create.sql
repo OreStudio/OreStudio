@@ -89,13 +89,25 @@ begin
         v_account_id := gen_random_uuid();
 
         insert into ores_iam_accounts_tbl (
-            id, tenant_id, version, account_type, username, full_name, password_hash,
-            password_salt, totp_secret, email, job_title, picture_code,
+            id, tenant_id, version, account_type, username, full_name, email,
+            job_title, picture_code, modified_by, performed_by,
+            change_reason_code, change_commentary, valid_from, valid_to
+        ) values (
+            v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
+            r.email, r.job_title, nullif(r.photo_key, ''),
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import', 'Published from organisation dataset',
+            current_timestamp, ores_utility_infinity_timestamp_fn()
+        );
+
+        -- The staged hash is the one credential the import carries, and it
+        -- belongs in the account's credential row rather than on the account.
+        insert into ores_iam_account_credentials_tbl (
+            id, tenant_id, version, account_id, password_hash,
             modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         ) values (
-            v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
-            r.password_hash, '', '', r.email, r.job_title, nullif(r.photo_key, ''),
+            gen_random_uuid(), p_target_tenant_id, 0, v_account_id, r.password_hash,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from organisation dataset',
             current_timestamp, ores_utility_infinity_timestamp_fn()

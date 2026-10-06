@@ -30,7 +30,7 @@ A profile write can never change a credential, and the history says which of the
 
 * Acceptance
 
-- Account credentials live in their own entity with their own read and write codes.
+- Account credentials live in their own entity, =ores.iam.account_credential=.
 - A profile update cannot clear a credential, because it cannot reach it.
 - No credential column travels on the wire.
 
@@ -39,10 +39,36 @@ A profile write can never change a credential, and the history says which of the
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | BACKLOG | | | Initial task for: Separate the account's credentials from its profile |
+| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | STARTED | 2026-10-06 | | Initial task for: Separate the account's credentials from its profile |
 
 * Decisions
 
+- *The credential entity is internal.* It renders the SQL schema, the domain
+  type, the generator and the repository, and nothing else. Every wire facet
+  is withdrawn in its * Physical space table, so "no credential column
+  travels on the wire" is structural: there is no wire surface to carry one.
+  =:no_wire:= on each secret column is kept anyway, so a later facet that
+  turns a wire surface back on still cannot serialise one.
+- *There is no credential read code.* No caller reads a credential; a caller
+  proves one it already holds. The paths that touch credential material are
+  the unauthenticated service and password login, and the session-owned
+  change-password, so the only code the resource has is the write. That is
+  the one gating =iam.v1.accounts.reset-password=, and it is deliberately
+  separate from =iam::accounts:reset_password=: a role that may edit a
+  profile cannot thereby change what an account signs in with.
+- *=password_salt= is gone.* The stored hash embeds its own salt, nothing
+  read the column, and every writer wrote it empty. It is not carried into
+  the new entity.
+- *A credential change does not bump the account.* The credential is a child
+  of the account in the SQL sense, but its FK is not =:bump_parent_version:=,
+  so a password change leaves the profile's history alone and the two rows
+  keep independent version streams.
+- *A nullable skipped column reads through =get()=.* The generator emitted
+  =v.secret_hash.empty()= against an =rfl::Skip=, which does not compile. The
+  mapper template now branches on =:no_wire:= and reads the wrapped value.
+  =projects/ores.codegen/tests/test_no_wire_columns.py= holds it.
+
 * Out of scope
 
--
+- =account_type= and =account_status=. They are not secrets, they round-trip
+  through the generated domain type, and moving them is a separate story.

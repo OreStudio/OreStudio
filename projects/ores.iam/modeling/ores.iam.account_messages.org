@@ -69,10 +69,16 @@ from here is what the registrar subscribes with.
 :cpp_type: std::string
 :END:
 
-*** totp_secret
-:PROPERTIES:
-:cpp_type: std::string
-:END:
+#+begin_src cpp :name comment
+/**
+ * @brief The account's initial password, in the clear, to be hashed
+ * server-side.
+ *
+ * The only credential a request carries, and the only direction one
+ * travels. The hash the server derives from it is written to the account's
+ * credential row and never leaves it.
+ */
+#+end_src
 
 *** email
 :PROPERTIES:

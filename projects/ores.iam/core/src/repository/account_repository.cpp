@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
@@ -36,17 +35,12 @@
 #include "ores.iam.core/repository/account_mapper.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <format>
 #include <initializer_list>
-#include <openssl/evp.h>
 #include <optional>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
@@ -421,44 +415,6 @@ std::vector<domain::account> account_repository::read_latest_by_email(context ct
         [](const auto& entities) { return account_mapper::map(entities); },
         lg(),
         "Reading latest account by email");
-}
-
-std::optional<boost::uuids::uuid> account_repository::check_service_credentials(
-    context ctx, const std::string& username, const std::string& password) {
-    BOOST_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
-
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<account_entity>> |
-                       where("username"_c == username && "valid_to"_c == max.value()) | limit(1);
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    if (!r || r->empty())
-        return std::nullopt;
-
-    const auto& entity = r->front();
-    if (entity.account_type == "user") {
-        BOOST_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
-        return std::nullopt;
-    }
-
-    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
-    unsigned int digest_len = 0;
-    EVP_Digest(password.data(), password.size(), digest.data(), &digest_len, EVP_sha256(), nullptr);
-
-    std::string computed_hash;
-    computed_hash.reserve(digest_len * 2);
-    for (unsigned int i = 0; i < digest_len; ++i)
-        computed_hash += std::format("{:02x}", digest[i]);
-
-    if (!entity.service_password_hash.has_value() ||
-        computed_hash != entity.service_password_hash.value()) {
-        BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
-        return std::nullopt;
-    }
-
-    return boost::lexical_cast<boost::uuids::uuid>(entity.id.value());
 }
 
 }

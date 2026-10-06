@@ -396,9 +396,8 @@ const wireAccountSchema = z.object({
  * Translates one wire account into the domain type.
  *
  * The nil UUID is the server's "no value" sentinel on the reference fields, so
- * it becomes `null` here. Every credential field the struct carries --
- * `password_hash`, `password_salt`, `totp_secret` -- is absent from the
- * schema, so it is dropped rather than forwarded.
+ * it becomes `null` here. The account carries no credential field at all: the
+ * secrets live in `iam.account_credential`, which no protocol serves.
  */
 function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
     return {

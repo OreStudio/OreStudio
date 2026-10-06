@@ -28,11 +28,12 @@
 -- function, since pgcrypto is not available in all deployments.
 --
 -- Steps performed:
---   1. Create user account with the supplied pre-hashed password
---   2. Create login tracking entry (login_info)
---   3. Assign SuperAdmin role
---   4. Associate with the system party
---   5. Exit bootstrap mode (clear system.bootstrap_mode flag)
+--   1. Create user account
+--   2. Create the account's credential, holding the supplied pre-hashed password
+--   3. Create login tracking entry (login_info)
+--   4. Assign SuperAdmin role
+--   5. Associate with the system party
+--   6. Exit bootstrap mode (clear system.bootstrap_mode flag)
 --
 -- Prerequisites:
 --   - Must be called in system tenant context
@@ -87,19 +88,31 @@ begin
     -- Create user account
     -- =========================================================================
     insert into ores_iam_accounts_tbl (
-        id, tenant_id, version, account_type, username, full_name,
-        password_hash, password_salt, totp_secret, email,
+        id, tenant_id, version, account_type, username, full_name, email,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     ) values (
-        v_account_id, v_system_tenant_id, 0, 'user', p_principal, p_full_name,
-        p_password_hash, '', '', p_email,
+        v_account_id, v_system_tenant_id, 0, 'user', p_principal, p_full_name, p_email,
         v_actor, v_actor,
         'system.initial_load', 'Initial system admin created during bootstrap',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     );
 
     raise notice 'Created account: %', p_principal;
+
+    -- =========================================================================
+    -- Create the account's credential
+    -- =========================================================================
+    insert into ores_iam_account_credentials_tbl (
+        id, tenant_id, version, account_id, password_hash,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    ) values (
+        gen_random_uuid(), v_system_tenant_id, 0, v_account_id, p_password_hash,
+        v_actor, v_actor,
+        'system.initial_load', 'Initial system admin created during bootstrap',
+        current_timestamp, ores_utility_infinity_timestamp_fn()
+    );
 
     -- =========================================================================
     -- Create login tracking entry

@@ -42,6 +42,23 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Account Credentials
+-- -----------------------------------------------------------------------------
+alter table ores_iam_account_credentials_tbl enable row level security;
+
+drop policy if exists account_credentials_tenant_isolation_policy
+    on ores_iam_account_credentials_tbl;
+
+create policy account_credentials_tenant_isolation_policy
+on ores_iam_account_credentials_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Account Contact Informations
 -- -----------------------------------------------------------------------------
 alter table ores_iam_account_contact_informations_tbl enable row level security;

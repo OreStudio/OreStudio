@@ -76,7 +76,6 @@ TEST_CASE("create_account_with_valid_data", tags) {
     CHECK(a.email == e.email);
 
     CHECK(!a.id.is_nil());
-    CHECK(!a.password_hash.value().empty());
 }
 
 TEST_CASE("create_multiple_accounts", tags) {
@@ -796,9 +795,6 @@ TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", tags) {
     probe.tenant_id = *tid;
     probe.username = "suspended.login.probe";
     probe.account_type = "user";
-    probe.password_hash = ores::security::crypto::password_hasher::hash(password);
-    probe.password_salt = "";
-    probe.totp_secret = "";
     probe.email = "probe@example.com";
     probe.modified_by = h.db_user();
     probe.change_reason_code =
@@ -807,6 +803,20 @@ TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", tags) {
 
     repository::account_repository accounts;
     accounts.write(tenant_ctx, std::vector<domain::account>{probe});
+
+    domain::account_credential probe_credential;
+    probe_credential.version = 0;
+    probe_credential.id = boost::uuids::random_generator()();
+    probe_credential.tenant_id = *tid;
+    probe_credential.account_id = probe.id;
+    probe_credential.password_hash = ores::security::crypto::password_hasher::hash(password);
+    probe_credential.modified_by = h.db_user();
+    probe_credential.change_reason_code =
+        std::string{ores::dq::domain::change_reason_constants::codes::new_record};
+    probe_credential.change_commentary = "suspended tenant login probe";
+
+    repository::account_credential_repository credentials;
+    credentials.write(tenant_ctx, std::vector<domain::account_credential>{probe_credential});
 
     domain::login_info li{.account_id = probe.id,
                           .last_ip = {},

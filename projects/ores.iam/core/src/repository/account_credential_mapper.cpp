@@ -22,11 +22,11 @@
  * Template: cpp_domain_type_mapper.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.iam.core/repository/account_mapper.hpp"
+#include "ores.iam.core/repository/account_credential_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.core/repository/account_entity.hpp"
+#include "ores.iam.api/domain/account_credential.hpp"
+#include "ores.iam.api/domain/account_credential_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/repository/account_credential_entity.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -40,33 +40,18 @@ namespace ores::iam::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::account account_mapper::map(const account_entity& v) {
+domain::account_credential account_credential_mapper::map(const account_credential_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::account r;
+    domain::account_credential r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
 
-    r.username = v.username;
-
-    r.account_type = v.account_type;
-    r.account_status = v.account_status;
-    r.full_name = v.full_name.value_or("");
-    r.email = v.email;
-    r.default_party_id =
-        v.default_party_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.default_party_id)) :
-            std::nullopt;
-    r.image_id = v.image_id.has_value() ?
-                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
-                     std::nullopt;
-    r.picture_code = v.picture_code.value_or("");
-    r.job_title = v.job_title.value_or("");
-    r.reports_to_account_id =
-        v.reports_to_account_id.has_value() ?
-            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id)) :
-            std::nullopt;
+    r.password_hash = v.password_hash.value_or("");
+    r.service_password_hash = v.service_password_hash.value_or("");
+    r.totp_secret = v.totp_secret.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -77,30 +62,21 @@ domain::account account_mapper::map(const account_entity& v) {
     return r;
 }
 
-account_entity account_mapper::map(const domain::account& v) {
+account_credential_entity account_credential_mapper::map(const domain::account_credential& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    account_entity r;
+    account_credential_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.account_id = boost::uuids::to_string(v.account_id);
 
-    r.username = v.username;
-
-    r.account_type = v.account_type;
-    r.account_status = v.account_status;
-    r.full_name = v.full_name.empty() ? std::nullopt : std::optional(v.full_name);
-    r.email = v.email;
-    r.default_party_id = v.default_party_id.has_value() ?
-                             std::optional(boost::uuids::to_string(*v.default_party_id)) :
-                             std::nullopt;
-    r.image_id =
-        v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;
-    r.picture_code = v.picture_code.empty() ? std::nullopt : std::optional(v.picture_code);
-    r.job_title = v.job_title.empty() ? std::nullopt : std::optional(v.job_title);
-    r.reports_to_account_id = v.reports_to_account_id.has_value() ?
-                                  std::optional(boost::uuids::to_string(*v.reports_to_account_id)) :
-                                  std::nullopt;
+    r.password_hash =
+        v.password_hash.get().empty() ? std::nullopt : std::optional(v.password_hash.get());
+    r.service_password_hash = v.service_password_hash.get().empty() ?
+                                  std::nullopt :
+                                  std::optional(v.service_password_hash.get());
+    r.totp_secret = v.totp_secret.get().empty() ? std::nullopt : std::optional(v.totp_secret.get());
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -110,13 +86,15 @@ account_entity account_mapper::map(const domain::account& v) {
     return r;
 }
 
-std::vector<domain::account> account_mapper::map(const std::vector<account_entity>& v) {
-    return map_vector<account_entity, domain::account>(
+std::vector<domain::account_credential>
+account_credential_mapper::map(const std::vector<account_credential_entity>& v) {
+    return map_vector<account_credential_entity, domain::account_credential>(
         v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<account_entity> account_mapper::map(const std::vector<domain::account>& v) {
-    return map_vector<domain::account, account_entity>(
+std::vector<account_credential_entity>
+account_credential_mapper::map(const std::vector<domain::account_credential>& v) {
+    return map_vector<domain::account_credential, account_credential_entity>(
         v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 

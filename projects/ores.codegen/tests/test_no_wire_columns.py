@@ -81,6 +81,15 @@ PLAIN_ENTITY = ENTITY.replace(
     "wire does not.\n\n",
     "")
 
+# A skipped column that is also nullable, which is the shape the account
+# credential's secrets have. It reaches the domain as an rfl::Skip, so the
+# mapper cannot call .empty() on the member itself.
+NULLABLE_ENTITY = ENTITY.replace(
+    "** secret_hash\n:PROPERTIES:\n:type:     text\n:cpp_type: std::string\n"
+    ":no_wire:  true\n:END:",
+    "** secret_hash\n:PROPERTIES:\n:type:     text\n:cpp_type: std::string\n"
+    ":nullable: true\n:no_wire:  true\n:END:")
+
 
 def _generate(tmp_path, template, output, body=ENTITY):
     model_path = tmp_path / "ores.testcomp.probe.org"
@@ -142,3 +151,19 @@ def test_the_generated_entity_still_carries_the_column(tmp_path):
         tmp_path, "cpp_domain_type_entity.hpp.mustache", "probe_entity.hpp")
 
     assert "secret_hash" in entity
+
+
+def test_a_nullable_skipped_column_is_read_through_get(tmp_path):
+    """rfl::Skip carries the value but declares no member functions, so
+    v.secret_hash.empty() does not compile. The mapper reads the value the
+    skip wraps, which is the column's own value and nothing else."""
+    mapper = _generate(
+        tmp_path, "cpp_domain_type_mapper.cpp.mustache", "probe_mapper.cpp",
+        body=NULLABLE_ENTITY)
+
+    assert "v.secret_hash.get().empty()" in mapper
+    assert "std::optional(v.secret_hash.get())" in mapper
+    assert "v.secret_hash.empty()" not in mapper
+    # The plain column is untouched, so the read cannot have spread to it.
+    assert "r.label = v.label;" in mapper
+    assert "label.get()" not in mapper

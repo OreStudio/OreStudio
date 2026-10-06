@@ -50,6 +50,14 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::accounts:unlock', 'Unlock user accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::accounts:reset_password', 'Force password reset on user accounts');
 
+    -- Account credential permissions. A credential is written by the security
+    -- path alone, never by the profile path, so its write is its own code: an
+    -- administrator who may reissue a password holds this one, and holds it
+    -- separately from iam::accounts:update, which reaches the profile and
+    -- nothing else. There is no read code, because no caller reads a
+    -- credential: a caller proves one it already holds.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_credentials:write', 'Set or reissue an account password');
+
     -- Role management permissions. The generated role write checks
     -- iam::roles:write, and the bundle write checks iam::roles:update, whose
     -- description already names the permission list rather than the role.

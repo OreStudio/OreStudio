@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain_account_credential_tests.cpp"
     "domain_account_role_tests.cpp"
     "domain_account_tests.cpp"
     "domain_logins_tests.cpp"

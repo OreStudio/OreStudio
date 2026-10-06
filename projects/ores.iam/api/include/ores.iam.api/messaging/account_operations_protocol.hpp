@@ -65,8 +65,15 @@ struct save_account_request {
      */
     static constexpr bool requires_session = true;
     std::string principal;
+    /**
+     * @brief The account's initial password, in the clear, to be hashed
+     * server-side.
+     *
+     * The only credential a request carries, and the only direction one
+     * travels. The hash the server derives from it is written to the account's
+     * credential row and never leaves it.
+     */
     std::string password;
-    std::string totp_secret;
     std::string email;
     std::string account_type;
 };

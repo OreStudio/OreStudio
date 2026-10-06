@@ -22,12 +22,11 @@
  * Template: cpp_domain_type_repository.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_REPOSITORY_HPP
-#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_REPOSITORY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_CREDENTIAL_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_CREDENTIAL_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -42,11 +41,12 @@
 namespace ores::iam::repository {
 
 /**
- * @brief Reads and writes accounts to data storage.
+ * @brief Reads and writes account credentials to data storage.
  */
-class ORES_IAM_CORE_EXPORT account_repository {
+class ORES_IAM_CORE_EXPORT account_credential_repository {
 private:
-    inline static std::string_view logger_name = "ores.iam.repository.account_repository";
+    inline static std::string_view logger_name =
+        "ores.iam.repository.account_credential_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -63,7 +63,7 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes accounts to database.
+     * @brief Writes account credentials to database.
      *
      * The plain form replaces the row the caller last read: it states the
      * version the row carries now, so the store can tell a replace from a
@@ -71,12 +71,12 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::account& v);
-    void write(context ctx, const std::vector<domain::account>& v);
+    void write(context ctx, const domain::account_credential& v);
+    void write(context ctx, const std::vector<domain::account_credential>& v);
     /**@}*/
 
     /**
-     * @brief Writes a account, honouring the claim it states.
+     * @brief Writes a account credential, honouring the claim it states.
      *
      * The claim is the version the caller read (@c must_match_version), that no
      * current row exists (@c must_not_exist), or neither (@c any, which
@@ -85,44 +85,36 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void
-    write(context ctx, const domain::account& v, const ores::utility::domain::precondition& claim);
+    void write(context ctx,
+               const domain::account_credential& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Writes a set of accounts, each honouring its own
+     * @brief Writes a set of account credentials, each honouring its own
      * claim, as one statement.
      */
     void write(context ctx,
-               const std::vector<domain::account>& v,
+               const std::vector<domain::account_credential>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
-     * @brief Reads latest accounts, possibly filtered by primary key.
+     * @brief Reads latest account credentials, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::account> read_latest(context ctx);
-    std::vector<domain::account> read_latest(context ctx, const std::string& id);
-    std::vector<domain::account> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::account_credential> read_latest(context ctx);
+    std::vector<domain::account_credential> read_latest(context ctx, const std::string& id);
+    std::vector<domain::account_credential> read_latest(context ctx,
+                                                        const std::vector<std::string>& ids);
     /**@}*/
 
+
     /**
-     * @brief Reads the newest accounts filtered by username, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
+     * @brief Reads all account credentials, possibly filtered by primary key.
      */
-    std::vector<domain::account> read_any_by_username(context ctx, const std::string& username);
-
-
-    /**
-     * @brief Reads all accounts, possibly filtered by primary key.
-     */
-    std::vector<domain::account> read_all(context ctx, const std::string& id);
+    std::vector<domain::account_credential> read_all(context ctx, const std::string& id);
 
     /**
-     * @brief Reads a single account as it stood at a specific
+     * @brief Reads a single account credential as it stood at a specific
      * version — the version's own [valid_from, valid_to) window is returned
      * verbatim, so the caller can compose child entities "as of" the same
      * window. See the "Temporal composite entity versioning" architecture
@@ -130,19 +122,40 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::account>
+    std::optional<domain::account_credential>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest account credentials filtered by account_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param account_id The account_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::account_credential>
+    read_latest_by_account_id(context ctx,
+                              const std::string& account_id,
+                              std::uint32_t offset,
+                              std::uint32_t limit,
+                              const ores::utility::domain::order& order = {});
+
+    /**
+     * @brief Gets the total count of active account credentials filtered by account_id.
+     */
+    std::uint32_t get_total_account_credential_count_by_account_id(context ctx,
+                                                                   const std::string& account_id);
 
 
     /**
-     * @brief Whether a list of accounts can be ordered by a field.
+     * @brief Whether a list of account credentials can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.
      */
     static bool is_sortable(std::string_view field);
 
     /**
-     * @brief Reads latest accounts with pagination support.
+     * @brief Reads latest account credentials with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
@@ -150,26 +163,24 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::account>
+    std::vector<domain::account_credential>
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::accounts_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
-     * @brief Gets the total count of active accounts.
+     * @brief Gets the total count of active account credentials.
      * @param ctx Repository context with database connection
-     * @return Total number of active accounts
+     * @return Total number of active account credentials
      */
     std::uint32_t
-    get_total_account_count(context ctx,
-                            const std::optional<messaging::accounts_filter>& filter = std::nullopt,
-                            const std::optional<std::string>& as_of = std::nullopt);
+    get_total_account_credential_count(context ctx,
+                                       const std::optional<std::string>& as_of = std::nullopt);
 
     /**
-     * @brief Deletes a account by closing its temporal validity.
+     * @brief Deletes a account credential by closing its temporal validity.
      */
     void remove(context ctx, const std::string& id);
 
@@ -185,7 +196,7 @@ public:
     enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Removes a account, refusing a row that moved on.
+     * @brief Removes a account credential, refusing a row that moved on.
      *
      * A stated version is the version the caller read. The removal is refused
      * with @c conflicting when the current row carries another, so a caller
@@ -196,31 +207,27 @@ public:
     remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
-     * @brief Deletes accounts by closing their temporal validity.
+     * @brief Deletes account credentials by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
-    std::vector<domain::account> read_all(context ctx);
-
-    std::vector<domain::account> read_latest_by_username(context ctx, const std::string& username);
-
-    std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::account& v);
+    ores::utility::domain::precondition replace_claim(context ctx,
+                                                      const domain::account_credential& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::account apply_claim(context ctx,
-                                const domain::account& v,
-                                const ores::utility::domain::precondition& claim);
+    domain::account_credential apply_claim(context ctx,
+                                           const domain::account_credential& v,
+                                           const ores::utility::domain::precondition& claim);
 };
 
 }

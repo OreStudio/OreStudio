@@ -35,9 +35,6 @@ iam::domain::account generate_synthetic_account(utility::generation::generation_
     r.change_reason_code = "SYNTHETIC";
     r.change_commentary = "Synthetic test data";
     r.username = std::string(faker::internet::username());
-    r.password_hash = ctx.alphanumeric(64);
-    r.password_salt = ctx.alphanumeric(32);
-    r.totp_secret = ctx.alphanumeric(32);
     r.email = std::string(faker::internet::email());
     r.recorded_at = ctx.past_timepoint();
     return r;

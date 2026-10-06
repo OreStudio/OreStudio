@@ -1085,9 +1085,9 @@ public:
             return;
         }
         try {
-            repository::account_repository account_repo;
+            service::account_operations_service account_svc(ctx_);
             const auto account_id =
-                account_repo.check_service_credentials(ctx_, req->username, req->password);
+                account_svc.verify_service_credentials(req->username, req->password);
             if (!account_id) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Service login failed: invalid credentials for " << req->username;

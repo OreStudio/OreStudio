@@ -147,11 +147,6 @@ signup_result signup_service::register_user(const std::string& username,
     new_account.version = 0;
     new_account.id = id;
     new_account.username = username;
-    new_account.password_hash = password_hash;
-    // The hash carries its own salt, so nothing reads this column; the model
-    // still declares it and it is written empty.
-    new_account.password_salt = "";
-    new_account.totp_secret = "";
     new_account.email = email;
     new_account.account_status = account_status;
     new_account.change_reason_code = std::string{reason::codes::new_record};
@@ -160,6 +155,19 @@ signup_result signup_service::register_user(const std::string& username,
 
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(ctx_, accounts);
+
+    // The password is the account's credential, held in its own row.
+    domain::account_credential credential;
+    credential.version = 0;
+    credential.id = uuid_generator_();
+    credential.account_id = id;
+    credential.password_hash = password_hash;
+    credential.modified_by = username;
+    credential.change_reason_code = std::string{reason::codes::new_record};
+    credential.change_commentary = "Self-registration credential";
+
+    std::vector<domain::account_credential> credentials{credential};
+    credential_repo_.write(ctx_, credentials);
 
     // Create login tracking entry
     domain::login_info li{.account_id = id,

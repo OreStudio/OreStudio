@@ -25,13 +25,19 @@
  * Account Table
  *
  * An account that can authenticate against the system: one row per user,
- * service, algorithm or LLM identity, carrying the password material, the
- * TOTP secret, the email address and the optional profile and reporting
- * links. The table is bi-temporal and audited (see
+ * service, algorithm or LLM identity, carrying the name it signs in with,
+ * the email address and the optional profile and reporting links. The table
+ * is bi-temporal and audited (see
  * projects/ores.sql/create/iam/iam_accounts_create.sql): it carries
  * version, the four audit columns and the valid_from/valid_to pair
  * with the GIST exclusion, so the model takes the ordinary audited shape
  * and needs no shape flag.
+ *
+ * The secret material lives apart, in [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]].
+ * Held here, a profile write replaced the whole row, and the column the
+ * domain type could not carry came back empty. Every column this model
+ * declares reaches the domain type, so a whole-row write is lossless, and
+ * no write through this entity can touch a credential.
  *
  * The table is a composite parent: ores_iam_accounts_touch_version_fn
  * lets a child entity (account contact information, party association)
@@ -39,21 +45,16 @@
  * declares :generate_touch_function: true, which renders that function
  * under its existing name rather than leaving it hand-written.
  *
- * The model describes the table and nothing else. Two columns need care:
- *
- * - service_password_hash is a real column with no domain member: it is
- *   reached only by check_service_credentials and never travels on the
- *   wire, so it is declared :sql_only: true and the generated domain
- *   struct omits it while the entity struct and the mapper keep it.
- * - image_id and reports_to_account_id are nullable UUID soft
- *   references. The hand-written domain struct represented both as a plain
- *   boost::uuids::uuid with a nil sentinel, on the claim that a second
- *   std::optional<boost::uuids::uuid> member corrupts reflect-cpp
- *   aggregate serialisation for multi-element vectors. Re-verified under
- *   the generated estate: all three nullable UUIDs are modelled as
- *   std::optional<boost::uuids::uuid>, and the api suite's multi-element
- *   JSON and table tests plus the core repository's five-account round trip
- *   pass, so the workaround is not needed here.
+ * The model describes the table and nothing else. image_id and
+ * reports_to_account_id are nullable UUID soft references. The hand-written
+ * domain struct represented both as a plain boost::uuids::uuid with a nil
+ * sentinel, on the claim that a second
+ * std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+ * aggregate serialisation for multi-element vectors. Re-verified under
+ * the generated estate: all three nullable UUIDs are modelled as
+ * std::optional<boost::uuids::uuid>, and the api suite's multi-element
+ * JSON and table tests plus the core repository's five-account round trip
+ * pass, so the workaround is not needed here.
  *
  * The generated read surface is live, and it does not collide with the
  * hand-written one. The hand-written
@@ -66,9 +67,9 @@
  * :read_only: true, so the generated half carries no write verb and the split
  * falls out of the flag rather than out of a suppression.
  *
- * The row holds the password material, the TOTP seed and the account holder's
- * own name and mail address, so the generated reads are not open to every
- * signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get
+ * The row holds the account holder's own name and mail address, so the
+ * generated reads are not open to every signed-in caller: the generated
+ * iam.v1.accounts.list and iam.v1.accounts.get
  * handlers require iam::accounts:read before they serve anything, as every
  * generated read requires its resource's read code. See
  * [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
@@ -93,10 +94,6 @@ create table if not exists "ores_iam_accounts_tbl" (
     "account_type" text not null default 'user',
     "account_status" text not null default 'active',
     "full_name" text null,
-    "password_hash" text not null,
-    "password_salt" text not null,
-    "service_password_hash" text null,
-    "totp_secret" text not null,
     "email" text not null,
     "default_party_id" uuid null,
     "image_id" uuid null,

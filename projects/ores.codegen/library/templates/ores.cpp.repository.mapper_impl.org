@@ -390,7 +390,15 @@ domain::{{entity_singular}}
     r.{{name}} = v.{{{group_prefix}}}{{name}};
 {{/render_is_optional_string}}
 {{^render_is_optional_string}}
+{{#no_wire}}
+    {{! An rfl::Skip domain member carries the value but declares no member functions, so read through get(). }}
+    r.{{name}} = v.{{{group_prefix}}}{{name}}.get().empty()
+                     ? std::nullopt
+                     : std::optional(v.{{{group_prefix}}}{{name}}.get());
+{{/no_wire}}
+{{^no_wire}}
     r.{{name}} = v.{{{group_prefix}}}{{name}}.empty() ? std::nullopt : std::optional(v.{{{group_prefix}}}{{name}});
+{{/no_wire}}
 {{/render_is_optional_string}}
 {{/is_nullable_string}}
 {{/render_is_enum}}

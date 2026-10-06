@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: E5862EF4-9286-4CA6-8E37-D7611F406585
+:END:
+#+title: Task: Implement Hotfix: Domain generator omits the Boost UUID I/O include
+#+description: Initial task for: Hotfix: Domain generator omits the Boost UUID I/O include
+#+type: task
+#+level: s1
+#+filetags: :domain-generator-omits-uuid-io-include:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/domain-generator-omits-uuid-io-include
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated synthetic generator for an entity whose =generator_expr=
+calls =boost::uuids::to_string= must compile. Today it fails because the
+domain-entity generator template emits no =<boost/uuid/uuid_io.hpp>=
+include. =run_grant= is the first entity to hit this.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] |
+| Now          | Fix verified locally; ready to commit. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit and open the PR.                |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- =run_grant_generator.cpp= includes =<boost/uuid/uuid_io.hpp>= and compiles.
+- The include appears only when a =generator_expr= calls =boost::uuids::to_string=.
+- The tangle reproduces the edit and no other mustache changes.
+- =projects/ores.codegen/tests= passes.
+
+* Plan
+
+1. Diagnose: the failing file is generated from
+   =cpp_domain_type_generator.cpp.mustache=, which tangles from
+   =ores.cpp.generator.generator_impl.org=. The =domain_entity= section
+   never includes =<boost/uuid/uuid_io.hpp>=; the =junction= section
+   already gates that include on =has_uuid_left_or_right=.
+2. Add =has_uuid_to_string_generator= in
+   =projects/ores.codegen/src/codegen/core.py=. The flag is true when
+   any =generator_expr= -- the primary key, its extra columns, a natural
+   key, or a column -- calls =boost::uuids::to_string=.
+3. Gate =#include <boost/uuid/uuid_io.hpp>= on the flag in the org source.
+4. Re-tangle the mustache with
+   =compass build --direct tangle_codegen_templates=.
+5. Regenerate the entity with =compass codegen regenerate --component iam
+   --entity run_grant --address ores.cpp.generator=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.iam.api.lib= build | success, includes =run_grant_generator.cpp.o= | =cmake --build --preset linux-clang-debug-make --target ores.iam.api.lib -j 3= | this branch |
+| Codegen suite | 1158 passed | =pytest projects/ores.codegen/tests -q= | this branch |
+| =iam= component drift, dry run | no drift | =check_component_drift.py --component iam --dry-run= | this branch |
+
+* Notes
+
+Root cause: =cpp_domain_type_generator.cpp.mustache= renders a model's
+=generator_expr= into the domain-entity section, but that section lists
+no =<boost/uuid/uuid_io.hpp>= include. The =junction= section of the same
+template already gates that include, because a junction's generator
+expressions call =boost::uuids::to_string=. The =run_grant= model's
+=resource= column is the first domain-entity =generator_expr= to call it.
+
+Fix: the new =has_uuid_to_string_generator= flag in =core.py= mirrors the
+junction's =has_uuid_left_or_right= gate. The template emits the include
+only for an entity that needs it, so no unrelated include lands in the
+other generated generator files.
+
+The mustache is tangled output. The durable edits are in
+=ores.cpp.generator.generator_impl.org= and =core.py=; the mustache was
+re-tangled, not hand-edited.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

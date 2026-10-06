@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: FAE71466-DC08-40EC-8911-18AA4E348C2D
+:END:
+#+title: Story: Hotfix: Domain generator omits the Boost UUID I/O include
+#+description: The domain-entity generator template emits generator expressions that call boost::uuids::to_string without including <boost/uuid/uuid_io.hpp>, so the generated ores.iam run_grant generator fails to compile.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:hotfix:codegen:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The CI build fails in
+=projects/ores.iam/api/src/generators/run_grant_generator.cpp= with
+=error: 'to_string' is not a member of 'boost::uuids'=. The
+domain-entity synthetic-generator template emits a model's
+=generator_expr= verbatim, but it never includes
+=<boost/uuid/uuid_io.hpp>=, the header that declares
+=boost::uuids::to_string=. Any entity whose =generator_expr= renders a
+UUID as text therefore fails to compile. =run_grant= is the first such
+entity. This hotfix emits the include when a =generator_expr= calls
+=boost::uuids::to_string=, and regenerates the affected file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Fix verified locally: =ores.iam.api.lib= builds and the codegen suite passes. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit and open the PR.                |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- =ores.iam.api.lib= builds with the regenerated =run_grant_generator.cpp=.
+- The generated file includes =<boost/uuid/uuid_io.hpp>= only when a =generator_expr= calls =boost::uuids::to_string=.
+- No other generated file changes.
+- =projects/ores.codegen/tests= passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2A0F255C-DEA9-4752-AD60-6A39E53D825A][Scaffold story: Hotfix: Domain generator omits the Boost UUID I/O include]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E5862EF4-9286-4CA6-8E37-D7611F406585][Implement Hotfix: Domain generator omits the Boost UUID I/O include]] | STARTED | 2026-10-06 | | Initial task for: Hotfix: Domain generator omits the Boost UUID I/O include |
+
+* Decisions
+
+* Out of scope
+
+-

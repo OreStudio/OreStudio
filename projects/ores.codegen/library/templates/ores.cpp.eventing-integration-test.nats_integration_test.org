@@ -42,13 +42,13 @@ The full template source. Edit here and re-tangle with
 // needed.
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/has_system_tenant_fks}}
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
@@ -116,16 +116,25 @@ The full template source. Edit here and re-tangle with
 {{#parent_entity_singular}}
 {{^parent_is_party}}
 // Soft-FK parent seeding ({{table}}): the parent may live in another
-// component, so its own component names the headers.
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
+{{^use_system_tenant}}
 #include "ores.{{parent_component_include}}/{{parent_generator_facet_name}}/{{parent_entity_singular}}_generator.hpp"
+{{/use_system_tenant}}
 #include "ores.{{parent_component_core}}/repository/{{parent_entity_singular}}_repository.hpp"
+{{^use_system_tenant}}
 {{#parent_required_fks}}
 // Grand-parent seeding ({{table}}): the parent's own mandatory soft FKs
 // reference rows the test seeds before the parent, so their generator
-// and repository headers are needed too.
+// and repository headers are needed too. A system-tenant parent is read
+// rather than seeded, so its grand-parents need nothing, and a
+// system-tenant grand-parent is read rather than generated.
+{{^use_system_tenant}}
 #include "ores.{{parent_component_include}}/{{parent_generator_facet_name}}/{{parent_entity_singular}}_generator.hpp"
+{{/use_system_tenant}}
 #include "ores.{{parent_component_core}}/repository/{{parent_entity_singular}}_repository.hpp"
 {{/parent_required_fks}}
+{{/use_system_tenant}}
 {{/parent_is_party}}
 {{/parent_entity_singular}}
 {{#parent_seed_snippet}}
@@ -142,12 +151,19 @@ The full template source. Edit here and re-tangle with
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+{{#party_scoped_writes}}
+#include "ores.utility/generation/generation_context.hpp"
+{{/party_scoped_writes}}
+#include <boost/log/sources/severity_feature.hpp>
+{{#primary_key.is_uuid}}
 #include <boost/uuid/uuid_io.hpp>
+{{/primary_key.is_uuid}}
 #include <catch2/catch_test_macros.hpp>
-{{#primary_key.is_compound}}
-#include <algorithm>
-{{/primary_key.is_compound}}
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for {{entity_singular}} -- the

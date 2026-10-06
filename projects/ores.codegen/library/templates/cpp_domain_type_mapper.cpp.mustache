@@ -2,19 +2,25 @@
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.{{component_core}}/repository/{{entity_singular}}_mapper.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_entity.hpp"
 
 {{#has_uuid_columns}}
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 {{/has_uuid_columns}}
-{{#has_date_or_timestamp_natural_keys}}
+{{#mapper_uses_datetime}}
 #include "ores.platform/time/datetime.hpp"
+{{/mapper_uses_datetime}}
+{{#has_date_or_timestamp_natural_keys}}
 #include <chrono>
+{{/has_date_or_timestamp_natural_keys}}
+{{#has_date_natural_keys}}
 #include <format>
 #include <sstream>
-{{/has_date_or_timestamp_natural_keys}}
+{{/has_date_natural_keys}}
 {{#has_plain_date_columns}}
-#include "ores.platform/time/datetime.hpp"
 #include <chrono>
 {{/has_plain_date_columns}}
 {{#has_decimal_columns}}
@@ -23,6 +29,9 @@
 {{#has_enum_columns}}
 #include <rfl/enums.hpp>
 {{/has_enum_columns}}
+{{#mapper_enum_includes}}
+#include "{{path}}"
+{{/mapper_enum_includes}}
 {{#has_inet_columns}}
 #include <boost/asio/ip/address.hpp>
 {{/has_inet_columns}}
@@ -30,6 +39,18 @@
 #include "ores.utility/convert/base64_converter.hpp"
 {{/has_base64_columns}}
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
+{{#mapper_uses_optional}}
+#include <optional>
+{{/mapper_uses_optional}}
+{{#mapper_uses_string}}
+#include <string>
+{{/mapper_uses_string}}
+{{#mapper_uses_string_view}}
+#include <string_view>
+{{/mapper_uses_string_view}}
 #include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::{{component}}::repository {
@@ -410,15 +431,30 @@ std::vector<{{entity_singular}}_entity>
 {{/domain_entity}}
 {{#junction}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_mapper.hpp"
+#include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+#include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
 
 {{#has_uuid_left_or_right}}
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 {{/has_uuid_left_or_right}}
-{{#has_date_left_or_right_or_column}}
+{{#mapper_uses_datetime}}
 #include "ores.platform/time/datetime.hpp"
-{{/has_date_left_or_right_or_column}}
+{{/mapper_uses_datetime}}
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
+{{#mapper_uses_optional}}
+#include <optional>
+{{/mapper_uses_optional}}
+{{#mapper_uses_string}}
+#include <string>
+{{/mapper_uses_string}}
+{{#mapper_uses_string_view}}
+#include <string_view>
+{{/mapper_uses_string_view}}
 #include "ores.{{component_include}}/domain/{{name_singular}}_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::{{component}}::repository {

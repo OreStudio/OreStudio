@@ -23,19 +23,40 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/repository/stress_test_shift_repository.hpp"
+#include "ores.analytics.api/domain/stress_test_shift.hpp"
 #include "ores.analytics.api/domain/stress_test_shift_json_io.hpp" // IWYU pragma: keep.
+#include "ores.analytics.api/messaging/stress_test_shift_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_entity.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
-#include <sqlgen/postgres.hpp>
+#include <optional>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::analytics::repository {
 

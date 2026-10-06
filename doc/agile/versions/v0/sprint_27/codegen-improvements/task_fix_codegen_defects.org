@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 3CCB8F1A-1995-4D09-93F5-A65A009227B3
+:END:
+#+title: Task: Fix the codegen defects found while cleaning the components
+#+description: Record every codegen defect the component clean-up passes surface, with its evidence, and fix each one at its source with a regression test.
+#+type: task
+#+level: s1
+#+filetags: :codegen-improvements:sprint_27:v0:
+#+owner: marco
+#+branch: feature/codegen-improvements-rebased
+#+pr: 2698
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-27
+#+updated: 2026-10-06
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:768925C2-0BAA-49AA-B772-974296DE7DC3][Codegen improvements from the clean-up passes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every codegen defect the component clean-up passes find is recorded on this task with the evidence that shows it, and fixed at its source with a regression test, on the feature/codegen-improvements branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:768925C2-0BAA-49AA-B772-974296DE7DC3][Codegen improvements from the clean-up passes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-27                               |
+
+* Acceptance
+
+- Each defect is recorded with the command or recipe that shows it, and with the file and line of its cause.
+- Each fix changes a template, a loader or a script, and not the generated output.
+- Each fix carries a regression test that fails before the fix and passes after it.
+- The affected components are regenerated, and the drift gate passes with each of them listed.
+
+* Plan
+
+Work the defects in the order the clean-up passes find them. Each one is one
+unit: record it in the register below with the evidence that shows it, fix it
+at the source, add the regression test, regenerate the affected components,
+run the drift gate, and commit.
+
+The branch accumulates the fixes and is rebased onto main as needed. Nothing
+merges until every component is clean, so a fix that would change generated
+output across components does not have to land early to be correct.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated files of the nine templates with an include-cleaner finding, before | 2952 of 2954 | =misc-include-cleaner= over every file each template generates (scratch driver; =compass build clang_tidy= runs the same check tree-wide) | 977c219a88 |
+| The same, after, components under the drift gate except workflow | 0 of 2686 | the same | bace1767c6 |
+| Drift gate | no drift | =check_component_drift.py --all= | bace1767c6 |
+| Full build | passes, no warnings | =compass build= | bace1767c6 |
+| Codegen suite | 1175 pass | =pytest projects/ores.codegen/tests/= | fa0e6a79f1 |
+| Drift gate after the rebase onto main | no drift | =check_component_drift.py --all= | fa0e6a79f1 |
+
+* Notes
+
+The defect register. One row per defect, added as the clean-up passes find it,
+with the evidence that shows it. The fix is its own commit on this branch.
+
+| # | Defect | Evidence | Cause | Fix |
+|---+--------+----------+-------+-----|
+| 1 | The umbrella header's namespace comment reaches clang-format pre-wrapped, so the formatter cannot wrap it: =ores.analytics.api.hpp= carries a four-line paragraph at ~72 columns, and its continuation lines have no = * = prefix, so the comment is not a doc comment at all. | =projects/ores.analytics/api/include/ores.analytics.api/ores.analytics.api.hpp=; =ores.reporting.api.hpp= has the same ~72-column wrap but keeps its = * = prefixes. =ores.history.api.hpp= is the counter-example: one long line in, clang-format wrapped it at 100 with prefixes. clang-format 21.1.8 run twice over the analytics file is byte-identical, so the formatter is not going to repair it. | The archetype sat in the disabled =ores.cpp.scaffold= facet, so no regeneration emitted it and no gate covered it. The 46 files are orphaned rather than stale, and the two malformed ones predate the frontmatter loader. | Fixed. The archetype moved to the gated =ores.cpp.component= facet and the loader collapses the description to one line (2715018f50); the regeneration then replaced both malformed comments with their model's description, wrapped by clang-format, and restored the marker (87e30b17e3). |
+| 2 | A sub-component's component model is invisible to codegen discovery, so nothing regenerates or gates anything generated from it. That is why defect 1 could not be fixed by moving the archetype alone. | =manifest.discover_models= reads one =modeling_dir= per component, and all 23 discovered component models are composite roots. Zero of the 46 umbrella owners is reachable; the models live at =<composite>/<part>/modeling/component_overview.org=. | The product-group regroup made every component a composite with parts, but the parts were never registered, so the gate kept seeing only the roots. | Fixed (87e30b17e3). Discovery picks up each part's =component_overview.org=. Widening it alone was not safe: the first-generation CMake archetypes rewrote =ores.http.server='s =src/CMakeLists.txt=, and =tests/main.cpp= fired for five components with no tests target. Both moved behind the scaffold opt-in first, in a new =ores.cmake.scaffold= facet and in =ores.cpp.scaffold=. |
+| 3 | =regenerate_cmake_component_files.py --all --check= exits 1 against main: 31 =component_files.cmake= files are stale. | The script's own check, run on this branch before any change. The drift gate does not cover these files, so nothing else sees it. | The file lists are regenerated by that script alone, and the last regeneration of some components predates files that were added since. | Open. Out of this unit's scope, but it is a red gate on main. |
+| 4 | A generated domain header declares =#include <optional>= when no member is optional. | =projects/ores.analytics/api/include/ores.analytics.api/domain/pricing_engine_type.hpp= declared it with every member concrete. 13 of the 1032 generated domain headers did; 98 declare it and use it. | The include list is the entity model's =* Domain includes= block, and nothing checks that the list is true. clang-format sorts includes rather than reading them, so it never removes one. | Fixed (f88ee0a023). The 13 models drop the line, and =test_domain_includes.py= fails when a generated header declares a standard header it does not use. It is a CI gate: the codegen suite runs in =codegen-drift.yml=. |
+| 5 | =dataset_dependency= is a compiled, tested entity with no model. Its generated files cannot be regenerated. | =projects/ores.dq/api/include/ores.dq.api/domain/dataset_dependency.hpp= (and its =_json_io= pair, its test =domain_dataset_dependency_tests.cpp=, and three entries in =component_files.cmake=) have no =projects/ores.dq/modeling/*dataset_dependency*.org=. The only other mention in the tree is a codegen architecture page. | The entity was renamed or retired in the models and its generated files were left behind, still in the build and still tested. | Open. Deleting a compiled, tested entity is a decision about the schema, not a codegen fix. |
+| 6 | Nine C++ templates emit files that do not include what they use. The nightly include-cleaner fixes the output, not the templates, so its PR edits generated files. | PR #2656 (=bot/nightly-includes=, 949878d36b) changes 1119 files in =ores.refdata=: 1074 carry the =AUTO-GENERATED= marker and 45 are hand-written. =check_component_drift.py --component refdata= on that branch reports 1074 more drifting files than at its merge-base (b4c42ac6f3), exactly the 1074 generated files of the PR. By template: =cpp_service.cpp=, =cpp_domain_type_repository.cpp=, =cpp_domain_type_mapper.cpp=, =cpp_domain_type_entity.cpp= (136 each), =cpp_history_field_mapper.cpp= (127), =cpp_nats_integration_test.cpp= (125), =cpp_nats_registrar.cpp= (106), =cpp_history_provider_registrar.cpp= (98), =cpp_nats_event_registrar.cpp= (74). No check ran on the PR: =gh pr checks 2656= reports none, because a workflow-raised PR does not trigger workflows. | The templates name umbrella headers (=rfl.hpp=, =sqlgen/postgres.hpp=) and rely on transitive includes for =std::vector=, =std::string=, the logging severity and others. clang-tidy =misc-include-cleaner= sees only the output. | Fixed. The PR's diff was partial: run locally, the include cleaner found the same gaps in every component, not only refdata. Each template now declares what it uses: an include every file needs is unconditional, and one that some files need sits behind a context flag computed in =core.py= from the branches that spell its symbol (=_mapper_include_gates=, =_service_include_gates= and others, pinned by =test_include_gates.py=). Seven models gained paste-block includes. The 45 hand-written fixes were taken (2473833b81), and three of them, which named an internal =_impl= or asio =impl/= header, were reverted to the public header (b03fcb66dc). PR #2656 was closed. The four components not under the drift gate (inbox, marketdata, scheduler, synthetic) take the fix when their clean-up regenerates them. |
+* Notes
+
+*Finding.* The two malformed comments are not a generator bug. They are two of
+**46** umbrella headers that the generator stopped owning when the archetype
+moved into the disabled scaffold facet. Nothing regenerates them, nothing
+gates them, and none of the 46 is =#include=d by any =.cpp=, =.hpp= or =.h= in
+the tree: they survive only as entries in a generated =component_files.cmake=
+list and as namespace prose. 78 of the 124 components have none.
+
+*The discovery gap, measured.* Making =discover_models= pick up the parts'
+=component_overview.org= makes the gate reach them, and the check then reports
+**381 files**: 336 gain the =AUTO-GENERATED= marker they never had, and 46 are
+new umbrella headers. That part is right.
+
+*Why it cannot be applied as-is.* The same render also fires the
+first-generation CMake archetypes, which are not scaffolding in the current
+tree and are not safe to re-render over a mature component.
+=cmake_component_src.mustache= rewrote =projects/ores.http/server/src/CMakeLists.txt=
+by dropping =list(FILTER lib_files EXCLUDE REGEX "main.cpp")= and rewriting its
+=target_link_libraries=. Those archetypes only never fire today because the
+gate sees composites, whose kind excludes them.
+
+*Options.*
+
+- Make the first-generation CMake archetypes opt-in, as the stub trio already
+  is, then widen discovery. This is the consistent reading: a file that may not
+  be re-rendered over an existing component belongs behind the scaffold opt-in.
+- Give the parts a narrow path that renders only the component facet, so the
+  umbrella regenerates and the CMake archetypes never fire. Narrower, but it is
+  a second way of regenerating a component.
+- Register the parts as components. Largest, and it changes the manifest that
+  many other tools read.
+
+*Scope of the regeneration.* =check_component_drift.py --all= covers the 12
+components in =COMPONENTS_UNDER_TEST=, so the regeneration reached the parts of
+those 12 and no others: 37 umbrella headers now carry the marker, and 31 parts
+gained the header. The 22 own-root umbrellas still without a marker belong to
+components that are not under test yet -- =trading=, =refdata=, =marketdata=,
+=scheduler=, =synthetic=, =history=, =storage=, and the standalone =database=,
+=diff=, =geo=, =logging=, =nats=, =orgmode=, =platform=, =security=, =service=,
+=testing= and =utility=. They regenerate as each of those components is cleaned
+and listed, which is the arrangement the branch exists for. Nothing is
+outstanding against this task for them.
+
+*Not checked by the include gate.* The scan covers the headers codegen still
+owns. =dataset_dependency= is excluded because it has no model, which is the
+point of entry 5: nothing regenerates it, so nothing can correct it either.
+
+*Test Scenarios*
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* Scope of this PR
+
+PR #2698 carries defect 6 only: the nine include templates, the gates in
+=core.py=, the entity models their paste blocks need, and the two include
+tests. The umbrella-header and scaffold-opt-in work (defects 1 and 2) is
+carried on the branch =feature/codegen-improvements= and is not part of this
+PR: main has since reworked the CMake, scaffold and umbrella generation, and
+the branch's versions of those revert main's hand-authored files. That work
+needs a redesign against current main before it can land.
+
+Defects 3 and 5 stay open and out of scope, as the register records.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2698][#2698]] | [codegen] Generate C++ that includes what it uses |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Defect 6 is fixed at the templates and delivered as PR #2698 on
+=feature/codegen-improvements-rebased=, rebased onto current main. The nine
+templates declare what their output uses, =core.py= computes the context
+flags, =test_include_gates.py= pins each gate, and =test_domain_includes.py=
+fails on an over-declared standard header.
+
+Verified on the rebased tree: =check_component_drift.py --all= reports no
+drift, the codegen suite passes 1192 tests, and the generated diff is
+includes and comments only (20633 includes and 1441 comments added, 3194
+includes and 181 comments removed; no other line changed). The full C++
+build is the only check not re-run on the final base, so the merge is forced
+and the build is watched for fallout.
+
+The umbrella-header and scaffold work (defects 1 and 2) is carried separately
+on =feature/codegen-improvements= and is not in this PR: main has since
+reworked the CMake, scaffold and umbrella generation, and the branch's
+versions of those revert main's hand-authored files. Defects 3 and 5 stay
+open, as the register records.

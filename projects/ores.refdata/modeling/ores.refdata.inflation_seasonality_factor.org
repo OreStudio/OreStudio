@@ -139,7 +139,6 @@ The factor's place in the list, which the export restores.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>

@@ -360,9 +360,16 @@ here, over the generated entity and mapper, rather than forcing the
 consumers onto full-row upserts.
 
 #+begin_src cpp :name includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/update.hpp>
 #+end_src
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB

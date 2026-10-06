@@ -23,8 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/presentation/book_purpose_type_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/book_purpose_type.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::presentation {
 

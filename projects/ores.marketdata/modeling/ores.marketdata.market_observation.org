@@ -389,7 +389,6 @@ market_observation_repository::read_as_of_buckets(
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
 #+end_src
 

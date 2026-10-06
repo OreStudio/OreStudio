@@ -24,9 +24,17 @@
  */
 #include "ores.workflow.core/repository/workflow_step_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
+#include "ores.workflow.core/repository/workflow_step_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::workflow::repository {
 

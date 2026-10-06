@@ -25,7 +25,9 @@
 #include "ores.compute.core/messaging/host_history_provider_registrar.hpp"
 #include "ores.compute.core/presentation/host_history_field_mapper.hpp"
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::compute::messaging {
 

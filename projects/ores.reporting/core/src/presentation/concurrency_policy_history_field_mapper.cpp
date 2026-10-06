@@ -23,8 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/presentation/concurrency_policy_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::reporting::presentation {
 

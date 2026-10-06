@@ -304,7 +304,10 @@ drop function if exists ores_refdata_validate_country_fn;
 
 #+begin_src cpp :name includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
 #include <algorithm>
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid.hpp>
+// Log lines stream the party id with uuid_io's operator<<, which the include
+// check does not count as a use.
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 #include <unordered_set>
 #+end_src
 

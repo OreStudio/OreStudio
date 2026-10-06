@@ -23,13 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -43,9 +43,13 @@
 #include "ores.trading.core/repository/average_type_repository.hpp"
 #include "ores.trading.core/service/average_type_service.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for average_type -- the

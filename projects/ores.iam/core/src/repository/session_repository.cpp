@@ -23,23 +23,53 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/repository/session_entity.hpp"
 #include "ores.iam.core/repository/session_mapper.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
+#include <optional>
 #include <set>
-#include <sqlgen/postgres.hpp>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/begin_transaction.hpp>
+#include <sqlgen/commit.hpp>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+#include <sqlgen/insert.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/update.hpp>
+#include <sqlgen/where.hpp>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 namespace ores::iam::repository {
 

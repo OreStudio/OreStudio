@@ -27,13 +27,13 @@
 // :use_system_tenant:), so its row is forced to the system tenant and
 // written under a system-scoped context, and the tenant_id helpers are
 // needed.
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -47,30 +47,32 @@
 #include "ores.reporting.core/service/configuration_parameter_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_reporting_configurations_tbl): the parent may live in another
-// component, so its own component names the headers.
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.reporting.api/generators/configuration_generator.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 // Grand-parent seeding (ores_reporting_configuration_types_tbl): the parent's own mandatory soft
 // FKs reference rows the test seeds before the parent, so their generator and repository headers
-// are needed too.
-#include "ores.reporting.api/generators/configuration_type_generator.hpp"
+// are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
+// nothing, and a system-tenant grand-parent is read rather than generated.
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 // Soft-FK parent seeding (ores_reporting_parameter_definitions_tbl): the parent may live in another
-// component, so its own component names the headers.
-#include "ores.reporting.api/generators/parameter_definition_generator.hpp"
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.reporting.core/repository/parameter_definition_repository.hpp"
-// Grand-parent seeding (ores_reporting_parameter_value_domains_tbl): the parent's own mandatory
-// soft FKs reference rows the test seeds before the parent, so their generator and repository
-// headers are needed too.
-#include "ores.reporting.api/generators/parameter_value_domain_generator.hpp"
-#include "ores.reporting.core/repository/parameter_value_domain_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for configuration_parameter -- the

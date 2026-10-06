@@ -23,11 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/lei_relationship_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/lei_relationship.hpp"
+#include "ores.dq.api/messaging/lei_relationship_protocol.hpp"
+#include "ores.dq.core/repository/lei_relationship_repository.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <algorithm>
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <cstdint>
-#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>

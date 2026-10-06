@@ -26,7 +26,6 @@
 #define ORES_REFDATA_API_DOMAIN_ZERO_INFLATION_INDEX_CONVENTION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <optional>
 #include <string>
 #include <string_view>
 

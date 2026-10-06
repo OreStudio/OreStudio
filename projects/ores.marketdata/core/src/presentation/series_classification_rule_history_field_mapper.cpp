@@ -23,8 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/presentation/series_classification_rule_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::marketdata::presentation {
 

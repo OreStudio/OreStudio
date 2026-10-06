@@ -24,8 +24,13 @@
  */
 #include "ores.refdata.core/repository/calendar_date_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_date_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/calendar_date_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 

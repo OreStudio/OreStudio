@@ -24,7 +24,12 @@
  */
 #include "ores.marketdata.core/repository/series_classification_rule_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.core/repository/series_classification_rule_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::marketdata::repository {
 

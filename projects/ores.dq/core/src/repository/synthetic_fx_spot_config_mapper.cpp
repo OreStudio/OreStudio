@@ -24,9 +24,15 @@
  */
 #include "ores.dq.core/repository/synthetic_fx_spot_config_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq.api/domain/synthetic_fx_spot_config.hpp"
 #include "ores.dq.api/domain/synthetic_fx_spot_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.core/repository/synthetic_fx_spot_config_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::dq::repository {
 

@@ -23,15 +23,28 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_mapper.hpp"
-#include <cstddef>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include <stdexcept>
+#include <boost/log/sources/severity_feature.hpp>
+#include <cstdint>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/where.hpp>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ores::refdata::repository {
 

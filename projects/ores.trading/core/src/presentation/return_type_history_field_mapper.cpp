@@ -23,8 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/presentation/return_type_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.trading.api/domain/return_type.hpp"
+#include <vector>
 
 namespace ores::trading::presentation {
 

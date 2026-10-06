@@ -176,7 +176,6 @@ std::string("GBP")
 
 #+begin_src cpp :name includes
 #include <string>
-#include <optional>
 #+end_src
 
 ** Entity includes

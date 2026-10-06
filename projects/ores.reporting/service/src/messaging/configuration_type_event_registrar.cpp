@@ -24,9 +24,13 @@
  */
 #include "ores.reporting.service/messaging/configuration_type_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
-#include "ores.reporting.api/eventing/configuration_type_event.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.reporting.api/eventing/configuration_type_event.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/configuration_type_protocol.hpp"
 
 namespace ores::reporting::service::messaging {

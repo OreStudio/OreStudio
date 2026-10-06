@@ -98,6 +98,7 @@ struct list_lifecycle_events_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<lifecycle_events_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_lifecycle_events_response {

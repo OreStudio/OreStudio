@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/curve_global_report_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/curve_global_report_entity.hpp"
 #include "ores.refdata.core/repository/curve_global_report_mapper.hpp"
@@ -273,36 +274,40 @@ std::vector<domain::curve_global_report> curve_global_report_repository::read_la
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::curve_global_reports_filter>& filter) {
+    const std::optional<messaging::curve_global_reports_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve global reports with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<curve_global_report_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<curve_global_report_entity, domain::curve_global_report>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return curve_global_report_mapper::map(entities); },
         lg(),
         "Reading latest curve global reports with pagination.");
 }
 
 std::uint32_t curve_global_report_repository::get_total_global_report_count(
-    context ctx, const std::optional<messaging::curve_global_reports_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::curve_global_reports_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve global report count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<curve_global_report_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<curve_global_report_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<curve_global_report_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting curve global reports");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting curve global reports");
 }
 
 std::vector<domain::curve_global_report>

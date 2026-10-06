@@ -52,6 +52,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/ores.database.repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/repository_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/stated_order.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/valid_at.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/version_conflict_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/service/context_factory.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/service/health_monitor.hpp"

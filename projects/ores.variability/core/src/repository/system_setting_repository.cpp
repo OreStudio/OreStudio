@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.core/repository/system_setting_entity.hpp"
@@ -301,36 +302,40 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::system_settings_filter>& filter) {
+    const std::optional<messaging::system_settings_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest system settings with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<system_setting_entity, domain::system_setting>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return system_setting_mapper::map(entities); },
         lg(),
         "Reading latest system settings with pagination.");
 }
 
 std::uint32_t system_setting_repository::get_total_setting_count(
-    context ctx, const std::optional<messaging::system_settings_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::system_settings_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active system setting count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<system_setting_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<system_setting_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting system settings");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting system settings");
 }
 
 std::vector<domain::system_setting>

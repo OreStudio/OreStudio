@@ -105,6 +105,7 @@ export interface ListSwaptionVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: SwaptionVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSwaptionVolatilityConfigsResponse {

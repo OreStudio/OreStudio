@@ -88,6 +88,7 @@ export interface ListPortfolioRightsRequest {
     limit: number;
     order: Order;
     filter: PortfolioRightsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPortfolioRightsResponse {

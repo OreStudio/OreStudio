@@ -90,6 +90,7 @@ export interface ListReportConfigurationsRequest {
     limit: number;
     order: Order;
     filter: ReportConfigurationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportConfigurationsResponse {

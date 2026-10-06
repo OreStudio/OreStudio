@@ -151,17 +151,20 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::bond_leg> read_latest(context ctx,
-                                              std::uint32_t offset,
-                                              std::uint32_t limit,
-                                              const ores::utility::domain::order& order = {});
+    std::vector<domain::bond_leg>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active bond legs.
      * @param ctx Repository context with database connection
      * @return Total number of active bond legs
      */
-    std::uint32_t get_total_bond_leg_count(context ctx);
+    std::uint32_t get_total_bond_leg_count(context ctx,
+                                           const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a bond leg by closing its temporal validity.

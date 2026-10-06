@@ -81,6 +81,7 @@ export interface ListFpmlEventTypesRequest {
     limit: number;
     order: Order;
     filter: FpmlEventTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFpmlEventTypesResponse {

@@ -82,6 +82,7 @@ export interface ListSwapIndexConventionsRequest {
     limit: number;
     order: Order;
     filter: SwapIndexConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSwapIndexConventionsResponse {

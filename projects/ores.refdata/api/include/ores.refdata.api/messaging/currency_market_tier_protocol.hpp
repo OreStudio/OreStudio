@@ -99,6 +99,7 @@ struct list_currency_market_tiers_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<currency_market_tiers_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_currency_market_tiers_response {

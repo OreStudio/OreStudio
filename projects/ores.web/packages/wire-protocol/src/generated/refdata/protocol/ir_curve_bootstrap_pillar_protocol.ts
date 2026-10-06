@@ -86,6 +86,7 @@ export interface ListIrCurveBootstrapPillarsRequest {
     limit: number;
     order: Order;
     filter: IrCurveBootstrapPillarsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListIrCurveBootstrapPillarsResponse {

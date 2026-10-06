@@ -94,6 +94,7 @@ export interface ListSwapLegsRequest {
     limit: number;
     order: Order;
     filter: SwapLegsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSwapLegsResponse {

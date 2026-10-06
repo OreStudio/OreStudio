@@ -146,7 +146,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::trade_id_types_filter>& filter = std::nullopt);
+                const std::optional<messaging::trade_id_types_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active trade ID types.
@@ -154,7 +155,9 @@ public:
      * @return Total number of active trade ID types
      */
     std::uint32_t get_total_id_type_count(
-        context ctx, const std::optional<messaging::trade_id_types_filter>& filter = std::nullopt);
+        context ctx,
+        const std::optional<messaging::trade_id_types_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a trade ID type by closing its temporal validity.

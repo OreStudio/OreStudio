@@ -147,7 +147,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::amortization_types_filter>& filter = std::nullopt);
+                const std::optional<messaging::amortization_types_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active amortization types.
@@ -156,7 +157,8 @@ public:
      */
     std::uint32_t get_total_amortization_type_count(
         context ctx,
-        const std::optional<messaging::amortization_types_filter>& filter = std::nullopt);
+        const std::optional<messaging::amortization_types_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a amortization type by closing its temporal validity.

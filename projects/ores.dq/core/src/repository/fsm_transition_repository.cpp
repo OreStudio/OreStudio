@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/fsm_transition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/fsm_transition_entity.hpp"
 #include "ores.dq.core/repository/fsm_transition_mapper.hpp"
@@ -290,34 +291,37 @@ std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::fsm_transitions_filter>& filter) {
+    const std::optional<messaging::fsm_transitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm transitions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
         lg(),
         "Reading latest fsm transitions with pagination.");
 }
 
 std::uint32_t fsm_transition_repository::get_total_transition_count(
-    context ctx, const std::optional<messaging::fsm_transitions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::fsm_transitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active fsm transition count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<fsm_transition_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<fsm_transition_entity>>;
 
     return execute_count_query<fsm_transition_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting fsm transitions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting fsm transitions");
 }
 
 std::vector<domain::fsm_transition>

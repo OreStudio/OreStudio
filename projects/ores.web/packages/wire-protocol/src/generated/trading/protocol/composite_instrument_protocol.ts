@@ -83,6 +83,7 @@ export interface ListCompositeInstrumentsRequest {
     limit: number;
     order: Order;
     filter: CompositeInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCompositeInstrumentsResponse {

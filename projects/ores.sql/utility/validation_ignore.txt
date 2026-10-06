@@ -216,6 +216,12 @@ TENANT_001 ores_compute_app_version_platforms_tbl
 TENANT_001 ores_telemetry_service_samples_tbl
 
 # =============================================================================
+# Expected services - the installation's roster, generated from the service
+# registry. Services belong to the installation, not to a tenant.
+# =============================================================================
+TENANT_001 ores_telemetry_expected_services_tbl
+
+# =============================================================================
 # Trade classification lookups - closed, immutable code sets.
 # The codes are the enumerators of C++ enums and are the same for every tenant.
 # The trade anchor references each with a database foreign key, which needs an

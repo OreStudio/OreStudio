@@ -82,6 +82,7 @@ export interface ListTagsRequest {
     limit: number;
     order: Order;
     filter: TagsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTagsResponse {

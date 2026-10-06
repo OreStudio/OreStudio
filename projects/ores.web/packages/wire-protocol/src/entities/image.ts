@@ -93,6 +93,7 @@ export async function readImages(
         offset: 0,
         limit: imageIds.length,
         order: { field: '', descending: false },
+        as_of: null,
         filter: { id_one_of: [...imageIds], search: null },
     };
     const reply = await caller.callAuthenticated(

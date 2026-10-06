@@ -83,6 +83,7 @@ export interface ListConcurrencyPoliciesRequest {
     limit: number;
     order: Order;
     filter: ConcurrencyPoliciesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListConcurrencyPoliciesResponse {

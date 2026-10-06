@@ -66,3 +66,9 @@ select * from ores_assets_publish_images_from_dq_fn(
     ores_utility_system_tenant_id_fn(),
     'upsert'
 );
+
+-- =============================================================================
+-- Service Account Pictures
+-- =============================================================================
+
+\ir ../iam/iam_service_account_pictures_populate.sql

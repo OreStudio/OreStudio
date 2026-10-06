@@ -86,6 +86,7 @@ export interface ListEquityPositionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityPositionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityPositionInstrumentsResponse {

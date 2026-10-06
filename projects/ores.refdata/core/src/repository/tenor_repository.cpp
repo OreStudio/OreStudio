@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/tenor_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_entity.hpp"
 #include "ores.refdata.core/repository/tenor_mapper.hpp"
@@ -263,20 +264,19 @@ tenor_repository::read_latest(context ctx,
                               std::uint32_t offset,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
-                              const std::optional<messaging::tenors_filter>& filter) {
+                              const std::optional<messaging::tenors_filter>& filter,
+                              const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenors with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+    const auto query = sqlgen::read<std::vector<tenor_entity>> | where("tenant_id"_c == tid) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<tenor_entity, domain::tenor>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return tenor_mapper::map(entities); },
         lg(),
         "Reading latest tenors with pagination.");
@@ -284,16 +284,15 @@ tenor_repository::read_latest(context ctx,
 
 std::uint32_t
 tenor_repository::get_total_tenor_count(context ctx,
-                                        const std::optional<messaging::tenors_filter>& filter) {
+                                        const std::optional<messaging::tenors_filter>& filter,
+                                        const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<tenor_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<tenor_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<tenor_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting tenors");
+        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting tenors");
 }
 
 std::vector<domain::tenor> tenor_repository::read_latest(context ctx,

@@ -89,6 +89,7 @@ export interface ListNotificationDeliveriesRequest {
     limit: number;
     order: Order;
     filter: NotificationDeliveriesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNotificationDeliveriesResponse {

@@ -83,6 +83,7 @@ export interface ListCreditSimulationMatrixConfigsRequest {
     limit: number;
     order: Order;
     filter: CreditSimulationMatrixConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditSimulationMatrixConfigsResponse {

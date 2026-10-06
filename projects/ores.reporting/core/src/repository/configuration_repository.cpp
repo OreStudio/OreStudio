@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/configuration_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/configuration_entity.hpp"
 #include "ores.reporting.core/repository/configuration_mapper.hpp"
@@ -355,41 +356,45 @@ void configuration_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::configuration> configuration_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::configurations_filter>& filter) {
+std::vector<domain::configuration>
+configuration_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::configurations_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configurations with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<configuration_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<configuration_entity, domain::configuration>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return configuration_mapper::map(entities); },
         lg(),
         "Reading latest configurations with pagination.");
 }
 
 std::uint32_t configuration_repository::get_total_configuration_count(
-    context ctx, const std::optional<messaging::configurations_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::configurations_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active configuration count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<configuration_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<configuration_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<configuration_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting configurations");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting configurations");
 }
 
 std::vector<domain::configuration>

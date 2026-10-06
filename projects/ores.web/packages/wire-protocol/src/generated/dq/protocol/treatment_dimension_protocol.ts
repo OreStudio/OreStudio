@@ -82,6 +82,7 @@ export interface ListTreatmentDimensionsRequest {
     limit: number;
     order: Order;
     filter: TreatmentDimensionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTreatmentDimensionsResponse {

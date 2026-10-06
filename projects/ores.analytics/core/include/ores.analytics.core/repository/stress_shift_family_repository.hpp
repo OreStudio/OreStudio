@@ -142,12 +142,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::stress_shift_family> read_latest(
-        context ctx,
-        std::uint32_t offset,
-        std::uint32_t limit,
-        const ores::utility::domain::order& order = {},
-        const std::optional<messaging::stress_shift_families_filter>& filter = std::nullopt);
+    std::vector<domain::stress_shift_family>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::stress_shift_families_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active stress shift families.
@@ -156,7 +157,8 @@ public:
      */
     std::uint32_t get_total_family_count(
         context ctx,
-        const std::optional<messaging::stress_shift_families_filter>& filter = std::nullopt);
+        const std::optional<messaging::stress_shift_families_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a stress shift family by closing its temporal validity.

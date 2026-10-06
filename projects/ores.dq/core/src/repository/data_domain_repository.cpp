@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/data_domain_entity.hpp"
 #include "ores.dq.core/repository/data_domain_mapper.hpp"
@@ -258,34 +259,37 @@ data_domain_repository::read_latest(context ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
-                                    const std::optional<messaging::data_domains_filter>& filter) {
+                                    const std::optional<messaging::data_domains_filter>& filter,
+                                    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domains with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<data_domain_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<data_domain_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<data_domain_entity, domain::data_domain>(
         ctx,
         query,
         list_order(order, {"name"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return data_domain_mapper::map(entities); },
         lg(),
         "Reading latest data domains with pagination.");
 }
 
 std::uint32_t data_domain_repository::get_total_domain_count(
-    context ctx, const std::optional<messaging::data_domains_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::data_domains_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active data domain count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<data_domain_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<data_domain_entity>>;
 
     return execute_count_query<data_domain_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting data domains");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting data domains");
 }
 
 std::vector<domain::data_domain>

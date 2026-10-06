@@ -102,6 +102,7 @@ struct list_notification_preferences_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_preferences_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_notification_preferences_response {

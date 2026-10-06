@@ -151,7 +151,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::equity_variance_swap_instruments_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active equity variance swap instruments.
@@ -161,7 +162,8 @@ public:
     std::uint32_t get_total_equity_variance_swap_instrument_count(
         context ctx,
         const std::optional<messaging::equity_variance_swap_instruments_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a equity variance swap instrument by closing its temporal validity.

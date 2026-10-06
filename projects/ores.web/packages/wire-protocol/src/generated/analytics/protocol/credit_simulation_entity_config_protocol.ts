@@ -90,6 +90,7 @@ export interface ListCreditSimulationEntityConfigsRequest {
     limit: number;
     order: Order;
     filter: CreditSimulationEntityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditSimulationEntityConfigsResponse {

@@ -62,164 +62,188 @@
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
     'ddl@system.ores',
-    'System service account for DDL operations and schema migrations'
+    'System service account for DDL operations and schema migrations',
+    p_full_name => 'DDL Account'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'cli_user',
     'cli@system.ores',
-    'System service account for CLI operations'
+    'System service account for CLI operations',
+    p_full_name => 'CLI Account'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'shell_user',
     'shell@system.ores',
-    'System service account for interactive shell'
+    'System service account for interactive shell',
+    p_full_name => 'Shell Account'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'http_user',
     'http@system.ores',
     'System service account for HTTP REST API server',
-    :'http_service_pw'
+    :'http_service_pw',
+    p_full_name => 'HTTP Server'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'test_ddl_user',
     'test_ddl@system.ores',
-    'System service account for test DDL operations'
+    'System service account for test DDL operations',
+    p_full_name => 'Test DDL Account'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'test_dml_user',
     'test_dml@system.ores',
-    'System service account for test DML operations'
+    'System service account for test DML operations',
+    p_full_name => 'Test DML Account'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'iam_service_user',
     'iam_service@system.ores',
     'System service account for IAM NATS domain service',
-    :'iam_service_pw'
+    :'iam_service_pw',
+    p_full_name => 'IAM Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'refdata_service_user',
     'refdata_service@system.ores',
     'System service account for Reference Data NATS domain service',
-    :'refdata_service_pw'
+    :'refdata_service_pw',
+    p_full_name => 'Reference Data Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'workspace_service_user',
     'workspace_service@system.ores',
     'System service account for Workspace NATS domain service',
-    :'workspace_service_pw'
+    :'workspace_service_pw',
+    p_full_name => 'Workspace Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'dq_service_user',
     'dq_service@system.ores',
     'System service account for Data Quality NATS domain service',
-    :'dq_service_pw'
+    :'dq_service_pw',
+    p_full_name => 'Data Quality Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'variability_service_user',
     'variability_service@system.ores',
     'System service account for Variability NATS domain service',
-    :'variability_service_pw'
+    :'variability_service_pw',
+    p_full_name => 'Variability Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'assets_service_user',
     'assets_service@system.ores',
     'System service account for Assets NATS domain service',
-    :'assets_service_pw'
+    :'assets_service_pw',
+    p_full_name => 'Assets Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'scheduler_service_user',
     'scheduler_service@system.ores',
     'System service account for Scheduler NATS domain service',
-    :'scheduler_service_pw'
+    :'scheduler_service_pw',
+    p_full_name => 'Scheduler Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'reporting_service_user',
     'reporting_service@system.ores',
     'System service account for Reporting NATS domain service',
-    :'reporting_service_pw'
+    :'reporting_service_pw',
+    p_full_name => 'Reporting Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'telemetry_service_user',
     'telemetry_service@system.ores',
     'System service account for Telemetry NATS domain service',
-    :'telemetry_service_pw'
+    :'telemetry_service_pw',
+    p_full_name => 'Telemetry Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'trading_service_user',
     'trading_service@system.ores',
     'System service account for Trading NATS domain service',
-    :'trading_service_pw'
+    :'trading_service_pw',
+    p_full_name => 'Trading Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'compute_service_user',
     'compute_service@system.ores',
     'System service account for Compute Grid NATS domain service',
-    :'compute_service_pw'
+    :'compute_service_pw',
+    p_full_name => 'Compute Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'synthetic_service_user',
     'synthetic_service@system.ores',
     'System service account for Synthetic NATS domain service',
-    :'synthetic_service_pw'
+    :'synthetic_service_pw',
+    p_full_name => 'Synthetic Data Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'workflow_service_user',
     'workflow_service@system.ores',
     'System service account for Workflow Orchestration NATS domain service',
-    :'workflow_service_pw'
+    :'workflow_service_pw',
+    p_full_name => 'Workflow Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'ore_service_user',
     'ore_service@system.ores',
     'System service account for ORE Import NATS domain service',
-    :'ore_service_pw'
+    :'ore_service_pw',
+    p_full_name => 'ORE Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'marketdata_service_user',
     'marketdata_service@system.ores',
     'System service account for Market Data NATS domain service',
-    :'marketdata_service_pw'
+    :'marketdata_service_pw',
+    p_full_name => 'Market Data Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'analytics_service_user',
     'analytics_service@system.ores',
     'System service account for Analytics NATS domain service',
-    :'analytics_service_pw'
+    :'analytics_service_pw',
+    p_full_name => 'Analytics Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'storage_service_user',
     'storage_service@system.ores',
     'System service account for Object Storage NATS domain service',
-    :'storage_service_pw'
+    :'storage_service_pw',
+    p_full_name => 'Storage Service'
 );
 
 select ores_iam_service_accounts_upsert_fn(
     :'inbox_service_user',
     'inbox_service@system.ores',
     'System service account for Inbox NATS domain service',
-    :'inbox_service_pw'
+    :'inbox_service_pw',
+    p_full_name => 'Inbox Service'
 );
 
 -- Summary

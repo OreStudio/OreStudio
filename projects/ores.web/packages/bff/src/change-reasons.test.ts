@@ -141,6 +141,7 @@ describe('GET /api/change-reasons', () => {
                     limit: 200,
                     order: { field: '', descending: false },
                     filter: null,
+                    as_of: null,
                 },
             },
         ]);

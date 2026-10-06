@@ -86,6 +86,7 @@ export interface ListCsaEligibleCurrenciesRequest {
     limit: number;
     order: Order;
     filter: CsaEligibleCurrenciesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCsaEligibleCurrenciesResponse {

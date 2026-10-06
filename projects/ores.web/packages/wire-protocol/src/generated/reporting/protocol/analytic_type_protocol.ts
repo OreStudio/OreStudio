@@ -84,6 +84,7 @@ export interface ListAnalyticTypesRequest {
     limit: number;
     order: Order;
     filter: AnalyticTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAnalyticTypesResponse {

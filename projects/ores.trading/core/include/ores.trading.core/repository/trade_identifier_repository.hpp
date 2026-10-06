@@ -151,14 +151,16 @@ public:
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active trade identifiers.
      * @param ctx Repository context with database connection
      * @return Total number of active trade identifiers
      */
-    std::uint32_t get_total_identifier_count(context ctx);
+    std::uint32_t
+    get_total_identifier_count(context ctx, const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a trade identifier by closing its temporal validity.

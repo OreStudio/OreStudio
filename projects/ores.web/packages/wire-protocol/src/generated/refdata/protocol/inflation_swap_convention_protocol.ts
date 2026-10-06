@@ -96,6 +96,7 @@ export interface ListInflationSwapConventionsRequest {
     limit: number;
     order: Order;
     filter: InflationSwapConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInflationSwapConventionsResponse {

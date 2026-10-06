@@ -150,7 +150,8 @@ public:
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
-        const std::optional<messaging::callable_swap_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::callable_swap_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active callable swap instruments.
@@ -159,7 +160,8 @@ public:
      */
     std::uint32_t get_total_callable_swap_instrument_count(
         context ctx,
-        const std::optional<messaging::callable_swap_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::callable_swap_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a callable swap instrument by closing its temporal validity.

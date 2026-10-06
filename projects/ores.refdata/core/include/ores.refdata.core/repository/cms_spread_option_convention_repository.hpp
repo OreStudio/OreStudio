@@ -143,13 +143,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::cms_spread_option_convention>
-    read_latest(context ctx,
-                std::uint32_t offset,
-                std::uint32_t limit,
-                const ores::utility::domain::order& order = {},
-                const std::optional<messaging::cms_spread_option_conventions_filter>& filter =
-                    std::nullopt);
+    std::vector<domain::cms_spread_option_convention> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::cms_spread_option_conventions_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active CMS spread option conventions.
@@ -158,8 +158,8 @@ public:
      */
     std::uint32_t get_total_cms_spread_option_convention_count(
         context ctx,
-        const std::optional<messaging::cms_spread_option_conventions_filter>& filter =
-            std::nullopt);
+        const std::optional<messaging::cms_spread_option_conventions_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a CMS spread option convention by closing its temporal validity.

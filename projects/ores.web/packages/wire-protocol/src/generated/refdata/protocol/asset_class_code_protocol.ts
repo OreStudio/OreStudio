@@ -83,6 +83,7 @@ export interface ListAssetClassCodesRequest {
     limit: number;
     order: Order;
     filter: AssetClassCodesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAssetClassCodesResponse {

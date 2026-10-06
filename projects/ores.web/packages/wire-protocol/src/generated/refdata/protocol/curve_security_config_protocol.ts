@@ -86,6 +86,7 @@ export interface ListCurveSecurityConfigsRequest {
     limit: number;
     order: Order;
     filter: CurveSecurityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveSecurityConfigsResponse {

@@ -88,6 +88,7 @@ export interface ListSwaptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: SwaptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSwaptionInstrumentsResponse {

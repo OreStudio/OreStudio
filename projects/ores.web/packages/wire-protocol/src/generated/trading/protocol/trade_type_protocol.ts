@@ -84,6 +84,7 @@ export interface ListTradeTypesRequest {
     limit: number;
     order: Order;
     filter: TradeTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradeTypesResponse {

@@ -94,6 +94,7 @@ export interface ListEquityAccumulatorInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityAccumulatorInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityAccumulatorInstrumentsResponse {

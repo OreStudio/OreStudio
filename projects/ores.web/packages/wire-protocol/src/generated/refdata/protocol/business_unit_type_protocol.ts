@@ -85,6 +85,7 @@ export interface ListBusinessUnitTypesRequest {
     limit: number;
     order: Order;
     filter: BusinessUnitTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBusinessUnitTypesResponse {

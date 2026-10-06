@@ -83,6 +83,7 @@ export interface ListBookPurposeTypesRequest {
     limit: number;
     order: Order;
     filter: BookPurposeTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBookPurposeTypesResponse {

@@ -83,6 +83,7 @@ export interface ListStressTestLibrariesRequest {
     limit: number;
     order: Order;
     filter: StressTestLibrariesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListStressTestLibrariesResponse {

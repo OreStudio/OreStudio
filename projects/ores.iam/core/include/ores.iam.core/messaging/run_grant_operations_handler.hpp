@@ -35,7 +35,8 @@ namespace ores::iam::messaging {
 
 namespace {
 inline auto& run_grant_operations_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.iam.messaging.run_grant_operations_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.iam.messaging.run_grant_operations_handler");
     return instance;
 }
 }
@@ -53,24 +54,24 @@ public:
     run_grant_operations_handler(ores::nats::service::client& nats,
                                  ores::database::context ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     /**
      * @brief Serves iam.v1.run_grants.create.
      */
     void create(ores::nats::message msg) {
-        handle<create_run_grant_request>(std::move(msg), [](auto& svc, const auto& req) {
-            return svc.create_run_grant(req);
-        });
+        handle<create_run_grant_request>(
+            std::move(msg), [](auto& svc, const auto& req) { return svc.create_run_grant(req); });
     }
 
     /**
      * @brief Serves iam.v1.run_grants.revoke.
      */
     void revoke(ores::nats::message msg) {
-        handle<revoke_run_grant_request>(std::move(msg), [](auto& svc, const auto& req) {
-            return svc.revoke_run_grant(req);
-        });
+        handle<revoke_run_grant_request>(
+            std::move(msg), [](auto& svc, const auto& req) { return svc.revoke_run_grant(req); });
     }
 
 private:

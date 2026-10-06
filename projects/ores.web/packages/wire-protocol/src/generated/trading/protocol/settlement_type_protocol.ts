@@ -81,6 +81,7 @@ export interface ListSettlementTypesRequest {
     limit: number;
     order: Order;
     filter: SettlementTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSettlementTypesResponse {

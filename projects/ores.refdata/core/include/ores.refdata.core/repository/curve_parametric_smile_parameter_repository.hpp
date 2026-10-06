@@ -151,7 +151,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::curve_parametric_smile_parameters_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active curve parametric smile parameters.
@@ -161,7 +162,8 @@ public:
     std::uint32_t get_total_smile_parameter_count(
         context ctx,
         const std::optional<messaging::curve_parametric_smile_parameters_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a curve parametric smile parameter by closing its temporal validity.

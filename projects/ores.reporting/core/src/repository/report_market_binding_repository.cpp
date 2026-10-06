@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/report_market_binding_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_market_binding_entity.hpp"
 #include "ores.reporting.core/repository/report_market_binding_mapper.hpp"
@@ -276,36 +277,40 @@ std::vector<domain::report_market_binding> report_market_binding_repository::rea
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::report_market_bindings_filter>& filter) {
+    const std::optional<messaging::report_market_bindings_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report market bindings with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<report_market_binding_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<report_market_binding_entity, domain::report_market_binding>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return report_market_binding_mapper::map(entities); },
         lg(),
         "Reading latest report market bindings with pagination.");
 }
 
 std::uint32_t report_market_binding_repository::get_total_binding_count(
-    context ctx, const std::optional<messaging::report_market_bindings_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::report_market_bindings_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report market binding count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<report_market_binding_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<report_market_binding_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<report_market_binding_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting report market bindings");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting report market bindings");
 }
 
 std::vector<domain::report_market_binding>

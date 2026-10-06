@@ -84,6 +84,7 @@ export interface ListCapFloorInstrumentsRequest {
     limit: number;
     order: Order;
     filter: CapFloorInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCapFloorInstrumentsResponse {

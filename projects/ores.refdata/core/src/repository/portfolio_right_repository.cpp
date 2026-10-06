@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/portfolio_right_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/portfolio_right_entity.hpp"
 #include "ores.refdata.core/repository/portfolio_right_mapper.hpp"
@@ -405,36 +406,40 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::portfolio_rights_filter>& filter) {
+    const std::optional<messaging::portfolio_rights_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio rights with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<portfolio_right_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights with pagination.");
 }
 
 std::uint32_t portfolio_right_repository::get_total_portfolio_right_count(
-    context ctx, const std::optional<messaging::portfolio_rights_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::portfolio_rights_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio right count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<portfolio_right_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<portfolio_right_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<portfolio_right_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting portfolio rights");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting portfolio rights");
 }
 
 std::vector<domain::portfolio_right>

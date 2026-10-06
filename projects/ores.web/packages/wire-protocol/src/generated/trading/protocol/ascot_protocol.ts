@@ -81,6 +81,7 @@ export interface ListAscotsRequest {
     limit: number;
     order: Order;
     filter: AscotsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAscotsResponse {

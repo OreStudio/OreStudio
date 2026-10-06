@@ -84,6 +84,7 @@ export interface ListReportTypesRequest {
     limit: number;
     order: Order;
     filter: ReportTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportTypesResponse {

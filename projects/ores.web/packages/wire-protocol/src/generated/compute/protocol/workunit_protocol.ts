@@ -90,6 +90,7 @@ export interface ListWorkunitsRequest {
     limit: number;
     order: Order;
     filter: WorkunitsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListWorkunitsResponse {

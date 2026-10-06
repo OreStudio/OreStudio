@@ -83,6 +83,7 @@ export interface ListCurrencyPairClassificationsRequest {
     limit: number;
     order: Order;
     filter: CurrencyPairClassificationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurrencyPairClassificationsResponse {

@@ -94,6 +94,7 @@ export interface ListCreditSimulationConfigsRequest {
     limit: number;
     order: Order;
     filter: CreditSimulationConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditSimulationConfigsResponse {

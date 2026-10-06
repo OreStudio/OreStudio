@@ -87,6 +87,7 @@ export interface ListPlatformsRequest {
     limit: number;
     order: Order;
     filter: PlatformsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPlatformsResponse {

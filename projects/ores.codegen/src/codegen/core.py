@@ -2711,6 +2711,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # 'component' is the short key some templates need (e.g. the
             # env-var-mirror generator), always psql_var with its "_service"
             # suffix stripped -- psql_var is always "<component>_service".
+            svc['summary_sql'] = _sql_literal(svc.get('summary', ''))
+            svc['display_name_sql'] = _sql_literal(svc.get('display_name', ''))
+            svc['image_code'] = svc.get('name', '').replace('.', '_')
+            if not svc.get('account_var') and psql_var:
+                svc['account_var'] = f"{psql_var}_user"
             if psql_var.endswith('_service'):
                 svc['component'] = psql_var[: -len('_service')]
             elif psql_var:
@@ -4073,6 +4078,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['current_state'] = bool(
             sql_section.get('current_state', False))
         current_state = domain_entity['current_state']
+        # Every entity with a validity window offers the point-in-time read:
+        # its list takes an as_of and answers with the rows valid then. A model
+        # turns it off only by saying so; a current-state table has no window,
+        # and the guard below turns it off for that.
+        as_of = domain_entity.get('has_as_of_lookup')
+        domain_entity['has_as_of_lookup'] = (
+            True if as_of is None
+            else str(as_of).strip().lower() not in ('false', 'no', '0'))
         domain_entity['immutable'] = bool(sql_section.get('immutable', False))
         # Append-only series: a repository insert that writes rows without the
         # per-row claim write() makes. A current-state table replaces its rows,
@@ -4293,6 +4306,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # reads the row itself, so the fragment is empty.
         domain_entity['temporal_filter'] = (
             '' if current_state else ' && "valid_to"_c == max.value()')
+        # The paged list and its count of an entity with a point-in-time read
+        # leave the window out of their typed where(): the window joins as a
+        # run-time condition, the current row or the row valid at the
+        # request's as_of, because which one is only known when it arrives.
+        domain_entity['list_temporal_filter'] = (
+            '' if domain_entity.get('has_as_of_lookup')
+            else domain_entity['temporal_filter'])
         # The same fragment for a removal that names the version the caller
         # read. A table with no version column cannot be addressed that way,
         # so the fragment is empty and the repository refuses the request

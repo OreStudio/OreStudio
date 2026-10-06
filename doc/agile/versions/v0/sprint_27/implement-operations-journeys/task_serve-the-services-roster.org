@@ -2,13 +2,13 @@
 :ID: D495FB06-E711-4DCB-A4C6-2E4722FF973F
 :END:
 #+title: Task: Serve the services roster
-#+description: Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing.
+#+description: Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, lost or missing.
 #+type: task
 #+level: s1
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/serve-the-services-roster
-#+pr:
+#+pr: 2682
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -36,11 +36,11 @@ with the age of its last report.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -48,7 +48,9 @@ with the age of its last report.
 - A read serves the installation's expected services and their replica
   counts, from the service registry.
 - A read serves the last report of every instance at any age, so running,
-  stopped and missing each have a source.
+  lost and missing each have a source. Telling a graceful stop from a lost
+  instance moved to [[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service
+  starts and stops]] on 2026-10-06, because heartbeats alone cannot.
 - The reads carry the permission the journey records, or the task says why
   not and links the tree-wide capture.
 - The capture [[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]
@@ -56,9 +58,55 @@ with the age of its last report.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*The data shape.* The screen reads one list of roster slots, ordered by
+service name and then slot. A slot is one expected instance of one service:
+
+| Field | Meaning |
+|-------+---------|
+| =service_name= | the registry name, for example =ores.iam.service= |
+| =slot= | 1 to the service's =replicas= |
+| =state= | =running=, =lost= or =missing= |
+| =instance_id=, =host_id=, =version=, =sampled_at= | the slot's last report; empty when the state is =missing= |
+
+A service expects =replicas= slots. Its instances are ranked by their last
+report, newest first, and the newest =replicas= of them fill the slots. An
+instance that reported within the running window is =running=; one that
+reported earlier is =lost=; a slot no instance fills is =missing=. The
+instance id is a fresh UUID at every start, so an older instance ranked past
+=replicas= is a restart's leftover and is not shown.
+
+*Where the roster comes from.* The registry is a codegen model, and codegen
+already renders its database identity into SQL (users, grants, accounts,
+roles). The expected services follow the same path. A new archetype,
+=ores.sql.service.expected_services_populate=, renders every enabled registry
+entry into =ores_telemetry_expected_services_tbl= (=service_name=,
+=replicas=). The table name falls under the telemetry service's existing
+=ores_telemetry_= grant. A compiled table in the telemetry binary was the
+alternative; the database keeps the roster queryable from =psql= and follows
+the registry's existing precedent.
+
+*The read.* A new subject, =telemetry.v1.services.roster=, carries the slots.
+One SQL function ranks the latest report per instance at any age against the
+expected table, so the ranking runs where the index is. =telemetry.v1.services.list=
+keeps its five-minute meaning, and the running window becomes one named
+constant that both reads share.
+
+*The permission.* Both reads check =telemetry::samples:read=. The seed grants
+it to SuperAdmin (through =*=) and to service roles only, which matches the
+access model: the installation screens are the system administrator's alone.
+
+*Units, each ending in a check:*
+
+1. The table, the archetype and the generated populate. Check: codegen renders
+   the populate byte-stable; the drift checks pass.
+2. The roster messages in the telemetry model; regenerate the C++ and
+   TypeScript protocol. Check: generated code compiles; the drift sweep is
+   clean.
+3. The SQL function, the repository read, the handler, the subscription, and
+   the permission on both reads. Check: repository tests for running,
+   lost, missing and a restart's leftover; a refused caller.
+4. Build and ctest. The schema change moves the database fingerprint, so the
+   live check needs a database recreate, which is the operator's call.
 
 * Measurements
 
@@ -72,9 +120,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Roster SQL against Postgres 18 | restart leftover dropped; running, quiet and unfilled slots correct; unexpected service excluded | =compass db sql -f= on a rolled-back proof script | b989af04eb |
+| Expected services seeded | 21 rows, each with display name, description and service account (web BFF: none) | =compass db recreate -y -k=, then a select | c9d6ffe37a |
+| Service accounts named | 25 of 25 non-user accounts carry a full name | select on =ores_iam_accounts_tbl= | c9d6ffe37a |
+| Service accounts pictured | 20 of 20 registry accounts carry an SVG picture, each at version 2 | select joining accounts to images | 150d441156 |
+| Administrator pictures | =super_admin_avatar= and =tenant_admin_avatar= published as =image/svg+xml= | select on =ores_assets_images_tbl= | 150d441156 |
+| Codegen suite | 1156 passed | =pytest projects/ores.codegen/tests= | 150d441156 |
+| Schema validation | 0 warnings | =validate_schemas.sh= | 150d441156 |
+| Telemetry build | =ores.telemetry.service.exe= and =ores.telemetry.database.tests= linked | =compass build ores.telemetry.service.exe ores.telemetry.database.tests= | 0ba504752f |
+| Telemetry repository tests | 14 cases, 92 assertions, 0 failures; the roster case passes | =compass test run -- -R ores.telemetry.database= | 0ba504752f |
+| Full build | every target built | =compass build= | 0ba504752f |
+| Live roster, 40 seconds after =compass services start= | 23 of 25 expected instances running; all five compute wrappers on five hosts; =ores.storage.service= and =ores.web.service= missing because neither publishes a heartbeat | =ores_telemetry_service_roster_fn()= on the running fleet | 0ba504752f |
 
 * Notes
+
+*The table that came before.* The decommissioned controller kept a service
+table, =ores_controller_service_definitions_tbl=, with =desired_replicas=,
+=enabled=, =args_template= and a restart policy. Story
+[[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Process supervisor config
+passthrough gap]] dropped it on 2026-08-07 (commit =6610f847fd=), once
+systemd owned supervision. The reason was duplication: its rows were seeded by
+hand beside the registry, so a new setting had to be fixed in several places,
+and =service_registry.org= became the one source that =compass systemd
+generate= reads. The expected-services table does not restore that: it holds
+only the service name and its replicas, codegen renders it from the registry,
+and nothing but the roster read uses it. The registry stays the one source.
+
+*Stale inventories on main.* Regenerating the physical-space inventories for
+the new archetype also rewrote nine other inventory pages whose archetypes
+landed without a regeneration. Those rewrites are left out of this change,
+because they belong to the components that added the archetypes.
 
 The capture names the two candidates for the state source — a state read, or
 the latest sample per instance at any age — and the task settles which. The
@@ -96,12 +171,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2682][#2682]] | [telemetry] Serve the services roster |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two create and drop includes lost their CRLF endings, so the diff showed whole-file rewrites | =telemetry_create.sql=, =telemetry_drop.sql= | Accept | Restored CRLF; each diff is now its two added lines. A scan of every changed file found no other lost CRLF. |
+| 2 | The state compares the database's =sampled_at= with the C++ clock, so clock skew could misreport | =telemetry_repository.cpp= | Decline | The telemetry service stamps =sampled_at= with its own clock on receipt (=telemetry_handler.hpp:151=) and the roster compares it with the same clock; the database only stores it. |
+| 3 | A short roster row is dropped silently | =telemetry_repository.cpp= | Accept | Logs a warning naming the column count. |
+| 4 | Tie-break and unexpected services | roster function | No change | The review found both correct. |
+| 5 | No handler-level test of the permission | =telemetry_handler.hpp= | Decline | The refusal is =has_permission=, unit-tested in =ores.service= (=handler_helpers_tests.cpp:69=, =:100=); telemetry has no handler harness, and the screens task is the subject's first client. |
+| 6 | Storage and the web BFF read missing until the start and stop task lands | — | No change | Recorded on that task's acceptance. |
+| 7 | The pictures step's idempotence was not re-run | =iam_service_account_pictures_populate.sql= | Accept | Re-ran it on the live database: 20 inserts of 0 rows, 45 service account rows before and after, highest version 2. |
+| 8 | =misspell-fixer= was not run | — | No change | Ran it at this review round: it exits 1 on an upstream identifier that sibling review tables quote verbatim. No file in this change set trips it. |
 
 * Result
+
+The roster is served. =telemetry.v1.services.roster= answers with one slot per
+expected instance of every enabled registry service, and each slot says
+running, lost or missing, with the instance's last report at any age. The
+expected services come from the registry: a generated table carries each
+service's replicas, its display name, one sentence on what it does, and its
+service account. Both liveness reads check =telemetry::samples:read=.
+
+Four changes joined the task at the operator's word on 2026-10-06. Every
+service account carries a human-readable name (for example /Analytics
+Service/) in place of its username. Every registry service account carries a
+picture, a Fluent UI icon from the system avatars dataset, and the two
+administrators' PNG pictures became icons from the same set. The roster's
+quiet state is called lost rather than stopped, because heartbeats cannot tell
+the two apart.
+
+On the running fleet the roster read 23 of 25 expected instances as running.
+The other two are real findings: =ores.storage.service= and the web BFF
+publish no heartbeat, so they read as missing while systemd runs them.
+[[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]]
+owns that fix, beside the graceful stop.
+
+Not proven here: a NATS request to =telemetry.v1.services.roster= from a
+signed-in client, and a refused caller. The handler is built and the shared
+=authorise= helper refuses a caller without the permission, but no test drives
+the subject; the screens task is its first client.

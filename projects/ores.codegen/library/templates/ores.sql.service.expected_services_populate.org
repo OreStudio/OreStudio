@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 3147D526-C6E4-4D8E-9267-0AFDA7A6BC8F
+:END:
+#+title: ores.sql.service.expected_services_populate
+#+description: The installation's expected services, one row per enabled registry entry, with its replica count, what it does and its service account. Output =projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql=.
+#+type: archetype
+#+output: projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql
+#+facet: ores.sql.service
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+The installation's expected services, one row per enabled registry entry:
+the replica count, what the service does, and the IAM service account it
+signs in as. Output
+=projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql=.
+
+The services roster reads these rows, so a service the registry expects keeps
+its row on the services screen whether or not it reports. A disabled entry is
+not expected and has no row.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/sql_service_expected_services_populate.mustache=.
+
+#+begin_src mustache :tangle sql_service_expected_services_populate.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.service.expected_services_populate.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_expected_services_populate.mustache
+ *
+ * Expected Services
+ *
+ * The installation's expected services and their replica counts, from the
+ * service registry. The services roster reads these rows.
+ *
+ * This script is idempotent.
+ */
+
+\echo '--- Expected Services ---'
+
+{{#service_registry.services}}
+{{#enabled}}
+insert into ores_telemetry_expected_services_tbl
+    (service_name, replicas, display_name, description, service_account)
+values ('{{name}}', {{replicas}}, '{{display_name_sql}}', '{{summary_sql}}',
+        {{#account_var}}:'{{account_var}}'{{/account_var}}{{^account_var}}null{{/account_var}})
+on conflict (service_name) do update set
+    replicas = excluded.replicas,
+    display_name = excluded.display_name,
+    description = excluded.description,
+    service_account = excluded.service_account;
+
+{{/enabled}}
+{{/service_registry.services}}
+-- Summary
+select 'Expected Services' as entity, count(*) as count
+from ores_telemetry_expected_services_tbl;
+#+end_src
+
+* See also
+
+- Parent facet: [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

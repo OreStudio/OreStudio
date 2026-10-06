@@ -166,7 +166,8 @@ public:
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
-        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt);
+        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active pricing model products.
@@ -175,7 +176,8 @@ public:
      */
     std::uint32_t get_total_product_count(
         context ctx,
-        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt);
+        const std::optional<messaging::pricing_model_products_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a pricing model product by closing its temporal validity.

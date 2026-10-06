@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/service/trade_additional_field_service.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
@@ -106,9 +107,22 @@ trade_additional_field_service::list_trade_additional_fields(
             "A list of trade additional fields cannot be ordered by " + request.order.field + ".";
         return response;
     }
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
     response.trade_additional_fields =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_trade_additional_field_count(ctx_);
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
+    response.total = repo_.get_total_trade_additional_field_count(ctx_, as_of);
     return response;
 }
 

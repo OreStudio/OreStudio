@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/nature_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/nature_dimension_entity.hpp"
 #include "ores.dq.core/repository/nature_dimension_mapper.hpp"
@@ -263,34 +264,37 @@ std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::nature_dimensions_filter>& filter) {
+    const std::optional<messaging::nature_dimensions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest nature dimensions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<nature_dimension_entity, domain::nature_dimension>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return nature_dimension_mapper::map(entities); },
         lg(),
         "Reading latest nature dimensions with pagination.");
 }
 
 std::uint32_t nature_dimension_repository::get_total_dimension_count(
-    context ctx, const std::optional<messaging::nature_dimensions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::nature_dimensions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active nature dimension count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<nature_dimension_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<nature_dimension_entity>>;
 
     return execute_count_query<nature_dimension_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting nature dimensions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting nature dimensions");
 }
 
 std::vector<domain::nature_dimension>

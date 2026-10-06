@@ -221,7 +221,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::counterparty_contact_informations_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active counterparty contact informations.
@@ -231,7 +232,8 @@ public:
     std::uint32_t get_total_counterparty_contact_information_count(
         context ctx,
         const std::optional<messaging::counterparty_contact_informations_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a counterparty contact information by closing its temporal validity.

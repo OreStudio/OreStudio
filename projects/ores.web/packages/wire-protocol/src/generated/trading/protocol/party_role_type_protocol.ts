@@ -81,6 +81,7 @@ export interface ListPartyRoleTypesRequest {
     limit: number;
     order: Order;
     filter: PartyRoleTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPartyRoleTypesResponse {

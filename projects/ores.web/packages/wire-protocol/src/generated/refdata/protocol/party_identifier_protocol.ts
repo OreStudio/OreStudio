@@ -87,6 +87,7 @@ export interface ListPartyIdentifiersRequest {
     limit: number;
     order: Order;
     filter: PartyIdentifiersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPartyIdentifiersResponse {

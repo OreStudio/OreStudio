@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_rule_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/calendar_rule_entity.hpp"
@@ -340,41 +341,45 @@ void calendar_rule_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::calendar_rules_filter>& filter) {
+std::vector<domain::calendar_rule>
+calendar_rule_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::calendar_rules_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rules with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_rule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<calendar_rule_entity, domain::calendar_rule>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return calendar_rule_mapper::map(entities); },
         lg(),
         "Reading latest calendar rules with pagination.");
 }
 
 std::uint32_t calendar_rule_repository::get_total_calendar_rule_count(
-    context ctx, const std::optional<messaging::calendar_rules_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::calendar_rules_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar rule count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_rule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<calendar_rule_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<calendar_rule_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting calendar rules");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting calendar rules");
 }
 
 std::vector<domain::calendar_rule>

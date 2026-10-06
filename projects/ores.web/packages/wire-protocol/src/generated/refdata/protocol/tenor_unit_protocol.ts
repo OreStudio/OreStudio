@@ -83,6 +83,7 @@ export interface ListTenorUnitsRequest {
     limit: number;
     order: Order;
     filter: TenorUnitsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorUnitsResponse {

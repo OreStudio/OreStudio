@@ -99,6 +99,7 @@ export interface ListDatasetsRequest {
     limit: number;
     order: Order;
     filter: DatasetsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDatasetsResponse {

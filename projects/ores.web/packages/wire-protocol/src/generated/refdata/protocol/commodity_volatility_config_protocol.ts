@@ -94,6 +94,7 @@ export interface ListCommodityVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: CommodityVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityVolatilityConfigsResponse {

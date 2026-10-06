@@ -84,6 +84,7 @@ export interface ListReportMarketBindingsRequest {
     limit: number;
     order: Order;
     filter: ReportMarketBindingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportMarketBindingsResponse {

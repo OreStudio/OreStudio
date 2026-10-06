@@ -87,6 +87,7 @@ export interface ListCdsVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: CdsVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCdsVolatilityConfigsResponse {

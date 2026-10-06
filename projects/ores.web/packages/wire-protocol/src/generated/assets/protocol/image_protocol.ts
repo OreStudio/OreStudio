@@ -85,6 +85,7 @@ export interface ListImagesRequest {
     limit: number;
     order: Order;
     filter: ImagesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListImagesResponse {

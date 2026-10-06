@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.inbox.api/domain/notification_delivery_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/notification_delivery_entity.hpp"
 #include "ores.inbox.core/repository/notification_delivery_mapper.hpp"
@@ -334,36 +335,40 @@ std::vector<domain::notification_delivery> notification_delivery_repository::rea
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::notification_deliveries_filter>& filter) {
+    const std::optional<messaging::notification_deliveries_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification deliveries with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<notification_delivery_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<notification_delivery_entity, domain::notification_delivery>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return notification_delivery_mapper::map(entities); },
         lg(),
         "Reading latest notification deliveries with pagination.");
 }
 
 std::uint32_t notification_delivery_repository::get_total_delivery_count(
-    context ctx, const std::optional<messaging::notification_deliveries_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::notification_deliveries_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification delivery count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_delivery_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<notification_delivery_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<notification_delivery_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting notification deliveries");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting notification deliveries");
 }
 
 std::vector<domain::notification_delivery>

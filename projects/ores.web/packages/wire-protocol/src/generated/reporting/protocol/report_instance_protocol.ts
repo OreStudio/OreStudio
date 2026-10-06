@@ -88,6 +88,7 @@ export interface ListReportInstancesRequest {
     limit: number;
     order: Order;
     filter: ReportInstancesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportInstancesResponse {

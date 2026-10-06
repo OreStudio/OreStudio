@@ -103,6 +103,7 @@ struct list_inflation_swap_instruments_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<inflation_swap_instruments_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_inflation_swap_instruments_response {

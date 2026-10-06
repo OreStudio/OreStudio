@@ -93,6 +93,7 @@ export interface ListEquityAsianOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityAsianOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityAsianOptionInstrumentsResponse {

@@ -87,6 +87,7 @@ export interface ListBondTrsRequest {
     limit: number;
     order: Order;
     filter: BondTrsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondTrsResponse {

@@ -328,6 +328,7 @@ describe('OresClient seed profiles', () => {
             limit: 50,
             order: { field: '', descending: false },
             filter: null,
+            as_of: null,
         });
         // The child read names the profile the answer listed first, which is
         // the key order the server returned rather than the card order.

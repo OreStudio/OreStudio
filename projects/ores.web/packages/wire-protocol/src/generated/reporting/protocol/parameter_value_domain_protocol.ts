@@ -83,6 +83,7 @@ export interface ListParameterValueDomainsRequest {
     limit: number;
     order: Order;
     filter: ParameterValueDomainsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListParameterValueDomainsResponse {

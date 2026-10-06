@@ -90,6 +90,7 @@ struct list_market_fixings_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_fixings_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_market_fixings_response {

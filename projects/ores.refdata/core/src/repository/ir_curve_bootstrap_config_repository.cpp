@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_entity.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_mapper.hpp"
@@ -280,37 +281,41 @@ std::vector<domain::ir_curve_bootstrap_config> ir_curve_bootstrap_config_reposit
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::ir_curve_bootstrap_configs_filter>& filter) {
+    const std::optional<messaging::ir_curve_bootstrap_configs_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve bootstrap configs with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_bootstrap_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<ir_curve_bootstrap_config_entity,
                                       domain::ir_curve_bootstrap_config>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return ir_curve_bootstrap_config_mapper::map(entities); },
         lg(),
         "Reading latest IR curve bootstrap configs with pagination.");
 }
 
 std::uint32_t ir_curve_bootstrap_config_repository::get_total_bootstrap_config_count(
-    context ctx, const std::optional<messaging::ir_curve_bootstrap_configs_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::ir_curve_bootstrap_configs_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IR curve bootstrap config count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<ir_curve_bootstrap_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<ir_curve_bootstrap_config_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<ir_curve_bootstrap_config_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting IR curve bootstrap configs");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting IR curve bootstrap configs");
 }
 
 std::vector<domain::ir_curve_bootstrap_config>

@@ -99,6 +99,7 @@ struct list_tenor_kinds_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_kinds_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_tenor_kinds_response {

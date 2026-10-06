@@ -1,0 +1,44 @@
+System avatars
+==============
+
+Source: Fluent UI System Icons, Microsoft (MIT licence, see LICENSE).
+Each picture is the icon's 24px regular SVG, copied unchanged from
+assets/<Icon Name>/SVG/ic_fluent_<icon_name>_24_regular.svg in the upstream
+repository. The fill is the upstream #212121, so every picture is a single
+dark shape on a clear background.
+
+The file name without its extension is the image code. The provisioning
+handler attaches the two administrator pictures by their codes, and
+iam_service_account_pictures_populate.sql attaches each service account's
+picture by the code derived from its service registry name, the dots
+replaced by underscores.
+
+Code                      Icon
+------------------------  ----------------
+super_admin_avatar        Person Star
+tenant_admin_avatar       Person Shield
+ores_iam_service          Person Key
+ores_refdata_service      Book Database
+ores_workspace_service    Board
+ores_dq_service           Shield Checkmark
+ores_variability_service  Settings
+ores_assets_service       Image Multiple
+ores_scheduler_service    Calendar Clock
+ores_reporting_service    Document Table
+ores_telemetry_service    Pulse
+ores_trading_service      Arrow Swap
+ores_compute_service      Server
+ores_synthetic_service    Beaker
+ores_workflow_service     Flowchart
+ores_ore_service          Calculator
+ores_marketdata_service   Data Line
+ores_analytics_service    Data Histogram
+ores_http_server          Globe
+ores_web_service          Window
+ores_storage_service      Storage
+ores_inbox_service        Mail Inbox
+ores_compute_wrapper      Developer Board
+
+To regenerate the SQL after a change here:
+
+    python3 projects/ores.codegen/src/images_generate_sql.py --config system_avatars

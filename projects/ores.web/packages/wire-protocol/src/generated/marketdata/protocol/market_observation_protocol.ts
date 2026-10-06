@@ -78,6 +78,7 @@ export interface ListMarketObservationsRequest {
     limit: number;
     order: Order;
     filter: MarketObservationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMarketObservationsResponse {

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/origin_dimension_entity.hpp"
 #include "ores.dq.core/repository/origin_dimension_mapper.hpp"
@@ -263,34 +264,37 @@ std::vector<domain::origin_dimension> origin_dimension_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::origin_dimensions_filter>& filter) {
+    const std::optional<messaging::origin_dimensions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest origin dimensions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<origin_dimension_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<origin_dimension_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<origin_dimension_entity, domain::origin_dimension>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return origin_dimension_mapper::map(entities); },
         lg(),
         "Reading latest origin dimensions with pagination.");
 }
 
 std::uint32_t origin_dimension_repository::get_total_dimension_count(
-    context ctx, const std::optional<messaging::origin_dimensions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::origin_dimensions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active origin dimension count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<origin_dimension_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<origin_dimension_entity>>;
 
     return execute_count_query<origin_dimension_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting origin dimensions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting origin dimensions");
 }
 
 std::vector<domain::origin_dimension>

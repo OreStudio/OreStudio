@@ -84,6 +84,7 @@ export interface ListMethodologiesRequest {
     limit: number;
     order: Order;
     filter: MethodologiesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMethodologiesResponse {

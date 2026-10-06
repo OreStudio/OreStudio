@@ -94,6 +94,7 @@ export interface ListEquityCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: EquityCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityCurveConfigsResponse {

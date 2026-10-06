@@ -95,6 +95,7 @@ export interface ListEquityBarrierOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityBarrierOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityBarrierOptionInstrumentsResponse {

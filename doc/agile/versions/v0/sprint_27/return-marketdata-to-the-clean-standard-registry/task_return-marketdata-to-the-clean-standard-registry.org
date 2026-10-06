@@ -5,15 +5,15 @@
 #+description: Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST.
 #+type: task
 #+level: s1
-#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_26:v0:
+#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/return-marketdata-to-the-clean-standard-registry
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ marketdata passes every item of the component clean standard, or holds an except
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,24 @@ marketdata passes every item of the component clean standard, or holds an except
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided with the owner on 2026-10-05:
+
+- P01 is done here, not accepted as an exception: every marketdata entity
+  offers the canonical point-in-time read. Backlog story =F15A8480= is a
+  different shape (the latest row per key across ticking rows), so it does not
+  retire P01. Codegen's =:has_as_of_lookup:= only puts =as_of= on the list
+  request today, and nothing reads it, so the generated read comes first, as
+  [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]].
+- H03 waits for the template task, so marketdata is re-listed with no H03
+  exception.
+
+The order, one PR each:
+
+1. Remove the namespace closer comments from the templates.
+2. Honour =as_of= on every generated list read.
+3. This task: set =:has_as_of_lookup:= on every marketdata entity, refresh the
+   part diagrams through both passes and give the root a component diagram
+   (H01), re-measure the 49 items at one commit, and re-list marketdata.
 
 * Measurements
 

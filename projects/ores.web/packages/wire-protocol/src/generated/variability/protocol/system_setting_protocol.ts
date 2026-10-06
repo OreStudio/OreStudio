@@ -85,6 +85,7 @@ export interface ListSystemSettingsRequest {
     limit: number;
     order: Order;
     filter: SystemSettingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSystemSettingsResponse {

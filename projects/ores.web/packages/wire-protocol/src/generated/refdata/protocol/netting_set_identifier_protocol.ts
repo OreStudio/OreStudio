@@ -87,6 +87,7 @@ export interface ListNettingSetIdentifiersRequest {
     limit: number;
     order: Order;
     filter: NettingSetIdentifiersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNettingSetIdentifiersResponse {

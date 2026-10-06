@@ -42,6 +42,27 @@ worst way: the shorter the list, the less the reader can tell. The registry
 already holds the truth a screen needs — the expected services and their
 replica counts — and it is one read away.
 
+* Resolution
+
+Done in task [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services
+roster]], under story [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the
+operations journeys in ores.web]]. Both candidates became reads.
+
+The registry's expected services reach the database the way its IAM identity
+already does: an archetype in the =ores.sql.service= facet renders every
+enabled entry into =ores_telemetry_expected_services_tbl= with its replica
+count. =telemetry.v1.services.roster= then answers with one slot per expected
+instance. The newest instances to report, at any age, fill the slots; an
+instance that reported within the running window is running, one that
+reported earlier is lost, and a slot nothing fills is missing. A restart's
+leftover instance fills no slot, because an instance id is new at every start.
+
+Heartbeats cannot tell a service somebody stopped from one that fell over,
+so the roster says *lost* rather than *stopped*. Telling the two apart is
+[[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]]. Both liveness reads now check =telemetry::samples:read=.
+
+Verification lives on the task.
+
 * References
 
 - =projects/modeling/service_registry.org= — the registry: every service, =replicas=, =enabled=, dependencies

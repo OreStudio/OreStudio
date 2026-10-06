@@ -83,6 +83,7 @@ export interface ListDerivationKindsRequest {
     limit: number;
     order: Order;
     filter: DerivationKindsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDerivationKindsResponse {

@@ -46,6 +46,9 @@ The full template source. Edit here and re-tangle with
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_include}}
 <<paste:A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E>>
+{{#domain_entity.has_as_of_lookup}}
+#include "ores.database/repository/valid_at.hpp"
+{{/domain_entity.has_as_of_lookup}}
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 
@@ -177,9 +180,30 @@ messaging::{{response}}
     }
 {{/domain_entity.has_search}}
 {{/has_filter}}
+{{#domain_entity.has_as_of_lookup}}
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
+    response.{{entity_plural_short}} = repo_.read_latest(
+        ctx_, request.offset, request.limit, {{#has_order}}request.order{{/has_order}}{{^has_order}}{}{{/has_order}}{{#domain_entity.has_filter_record}}, {{#has_filter}}request.filter{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
+    response.total = repo_.get_total_{{entity_singular_short}}_count(
+        ctx_{{#domain_entity.has_filter_record}}, {{#has_filter}}request.filter{{/has_filter}}{{^has_filter}}std::nullopt{{/has_filter}}{{/domain_entity.has_filter_record}}, as_of);
+{{/domain_entity.has_as_of_lookup}}
+{{^domain_entity.has_as_of_lookup}}
     response.{{entity_plural_short}} = repo_.read_latest(
         ctx_, request.offset, request.limit{{#has_order}}, request.order{{/has_order}}{{#has_filter}}{{^has_order}}, {}{{/has_order}}, request.filter{{/has_filter}});
     response.total = repo_.get_total_{{entity_singular_short}}_count(ctx_{{#has_filter}}, request.filter{{/has_filter}});
+{{/domain_entity.has_as_of_lookup}}
     return response;
 }
 

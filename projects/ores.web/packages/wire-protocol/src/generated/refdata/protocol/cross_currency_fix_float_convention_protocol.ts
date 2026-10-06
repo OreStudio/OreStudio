@@ -97,6 +97,7 @@ export interface ListCrossCurrencyFixFloatConventionsRequest {
     limit: number;
     order: Order;
     filter: CrossCurrencyFixFloatConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCrossCurrencyFixFloatConventionsResponse {

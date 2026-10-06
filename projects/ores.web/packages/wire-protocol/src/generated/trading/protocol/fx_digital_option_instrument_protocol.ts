@@ -93,6 +93,7 @@ export interface ListFxDigitalOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxDigitalOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxDigitalOptionInstrumentsResponse {

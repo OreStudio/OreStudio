@@ -81,6 +81,7 @@ export interface ListAmortizationTypesRequest {
     limit: number;
     order: Order;
     filter: AmortizationTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAmortizationTypesResponse {

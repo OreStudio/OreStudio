@@ -104,6 +104,7 @@ export interface ListCrossCurrencyBasisConventionsRequest {
     limit: number;
     order: Order;
     filter: CrossCurrencyBasisConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCrossCurrencyBasisConventionsResponse {

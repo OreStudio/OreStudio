@@ -85,6 +85,7 @@ export interface ListBalanceGuaranteedSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: BalanceGuaranteedSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBalanceGuaranteedSwapInstrumentsResponse {

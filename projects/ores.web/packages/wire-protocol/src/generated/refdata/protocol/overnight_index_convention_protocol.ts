@@ -83,6 +83,7 @@ export interface ListOvernightIndexConventionsRequest {
     limit: number;
     order: Order;
     filter: OvernightIndexConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListOvernightIndexConventionsResponse {

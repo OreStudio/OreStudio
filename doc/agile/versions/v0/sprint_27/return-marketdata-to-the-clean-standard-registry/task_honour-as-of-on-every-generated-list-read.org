@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 78F3062A-B833-4BC7-B1D2-5A037C8FF88B
+:END:
+#+title: Task: Honour as_of on every generated list read
+#+description: The :has_as_of_lookup: flag adds an as_of field to an entity's list request, but no generated handler, service or repository reads it. Make the generated list read return the rows valid at the stated instant, so every entity can offer the canonical point-in-time read P01 asks for.
+#+type: task
+#+level: s1
+#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_27:v0:
+#+owner: marco
+#+branch: feature/honour-as-of-on-every-generated-list-read
+#+pr: 2683
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-06
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An entity that sets :has_as_of_lookup: answers a list request carrying as_of with the rows whose validity window holds that instant, paged and counted on the same predicate, and with the current rows when as_of is absent.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The generated handler, service and repository carry the list request's as_of through to the query.
+- With as_of, the list and its total use valid_from <= as_of < valid_to; without it, the current rows as today.
+- The four refdata entities that set the flag honour it, and a test proves a past instant returns the old version of a row.
+- Every entity with a validity window offers the read by default; scheduler and synthetic, whose generated files drift too far to merge, get it when their clean-up regenerates them.
+- Codegen drift is clean for every component the change regenerates.
+
+* Plan
+
+Decided with the owner on 2026-10-06: every entity offers the point-in-time
+read, not only those that ask, and the change must not drag any component's
+unrelated drift along.
+
+1. =ores.database/repository/valid_at.hpp=: the run-time window condition. With
+   an instant, =valid_from <= t AND valid_to > t=; without one,
+   =valid_to = infinity=. It is its own header, so only the repositories that
+   use it recompile.
+2. Codegen: =:has_as_of_lookup:= defaults to on, turned off only by a model that
+   says so, and by the existing guard for a current-state table. The paged read
+   and the count of such an entity leave the window out of their typed
+   =where()= and take =valid_at(as_of)=, narrowed by the filter, as their
+   run-time condition. The generated service parses =as_of= and refuses one that
+   is not a UTC timestamp with =as_of_invalid=.
+3. Apply the change to the generated files by a three-way merge, with the
+   render before the change as the base: =evidence/apply_codegen_change_by_merge.py=.
+   A file that drifts keeps its drift and gains only the change.
+4. The web clients state =as_of= on the list requests they build, since the
+   TypeScript twin types it as a required string or null.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated files the change touches, catalogue-wide | 1,675 | =evidence/apply_codegen_change_by_merge.py --base origin/main --dry-run= | =893c106637= |
+| Of those, merging cleanly, conflicting, missing from the tree | 1,624; 40, all in scheduler and synthetic; 11 TypeScript twins those two never generated | the same dry run | =893c106637= |
+| Applied, with scheduler and synthetic excluded | 1,624 merged, 0 conflicts | the script with =--exclude ores.scheduler --exclude ores.synthetic= | =893c106637= |
+| List protocols that gained =as_of=, and services that read it | 305 protocols; 309 services, the 4 extra being the refdata entities that had the field | =git diff= on the protocol headers, =grep as_of_invalid= on the services | =3ed65fae08= |
+| Hand-written handlers whose generated protocol gained =as_of= | 0 of 6 | =git diff= on each of the six protocols | =3ed65fae08= |
+| Registry drift, catalogue sweep, protocol twin coverage | clean, clean, 361 headers twinned | =check_component_drift.py --all=, =--sweep=, =check_protocol_twin_coverage.py= | =3a9e74d3b1= |
+| Full C++ build | clean, no warnings, over two two-hour runs on the shared lock | =compass build --preset linux-clang-debug-make= | =eabef63af6= |
+| Full C++ test suite | 93 of 94; the one failure is =ores.scheduler.api.tests=, broken on main by its =vcpkg= update and captured | =compass test run= on a recreated database | =eabef63af6= |
+| Web type-check and tests | 0 errors; 658 of 658 tests pass | =npm run typecheck=, =npm test= in =projects/ores.web= | =727417d178= |
+
+* Notes
+
+** Why a merge rather than a regeneration
+
+79 generated files outside the registry already drift from their templates.
+Regenerating them would bring that drift along: one scheduler service would
+call repository functions its header does not declare yet. The merge script
+renders the catalogue twice, before and after the change, and applies only the
+difference to each checked-in file. All 40 conflicts were in =ores.scheduler=
+and =ores.synthetic=, the two components whose generated files predate the
+ordering and filter templates, so both are left out; their sprint 27 clean-up
+stories regenerate them, and the default gives them =as_of= then.
+
+** The rounding the test run found
+
+The first full test run failed the new currency case: a list at an instant
+between two versions returned nothing. The service had rewritten =as_of=
+through =to_iso8601_utc=, which writes whole seconds, so an instant at 08.6s
+became 08.0s, before the first version began. The test only caught it because
+the two versions lived about 100 ms apart; it now writes its instants to the
+microsecond. =parse_as_of= in =valid_at.hpp= checks the text against the UTC
+timestamp form, a fraction allowed, proves the date and time exist, and returns
+the text as the caller wrote it. Text after the time, which the platform parser
+silently ignored, is refused.
+
+The same run failed =ores.scheduler.api.tests=. Nothing in this change reaches
+scheduler; main's =vcpkg= update of 2026-10-05 lets =croncpp= accept the
+expression the test expects refused, recorded as
+[[id:C92DB57D-B4CC-4D50-8BC1-4AE3B630792E][Cron expression accepts six fields after the vcpkg update]].
+
+** The web side
+
+The TypeScript twin types =as_of= as a required =string | null=, so thirteen
+hand-built list requests and request schemas in =wire-protocol=, and one in the
+BFF, now state it as =null=, the current rows, as the four refdata entities'
+callers already did. The per-resource =asOf= flags in =records.ts= and
+=classifications.ts= still decide whether the generic list sends the field; a
+list without it is answered with the current rows, so they are not wrong, but
+every resource could now set them.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2683][#2683]] | [codegen] Honour as_of on every generated list read |
+
+* Review
+
+Round of 2026-10-06, the @claude review of PR #2683 (conversation-level, no
+line comments). All four points were non-blocking.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The =+00= and =+00:00= offset forms have no test | [[proj:projects/ores.refdata/core/tests/repository_currency_repository_tests.cpp][repository_currency_repository_tests.cpp]] | Applied | The list is now asked at one instant in all four UTC forms the parser takes (=fc09c3bbea=). |
+| 2 | The mustache branches repeat; a computed =list_extra_condition= would cut the nesting | codegen templates | Deferred | The review calls it not needed for this PR; the templates work as they are. |
+| 3 | The two gaps must have tracked follow-ups | inbox | Applied | Filed as captures (=51d52d1d1f=): [[id:949C2A80-533A-461D-B92C-C7B37CACA662][scheduler and synthetic lists]] and [[id:9382EC38-7BB8-456A-AA23-D26C62B9C231][the web list registries]]. |
+| 4 | Review size: read the templates, =core.py= and =valid_at.hpp=, not the generated files | the diff | Noted | The PR body and the task's Notes say the same. |
+
+* Result
+
+Every entity with a validity window offers the point-in-time read: its list
+request takes =as_of=, and the list and its total answer with the rows valid
+then, or the current rows without it. A malformed instant is refused, and a
+fraction of a second is kept. The change reached 1,624 generated files by a
+three-way merge, so no component's other drift came with it; scheduler and
+synthetic get it when their clean-up regenerates them.

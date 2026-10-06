@@ -87,6 +87,7 @@ export interface ListCmsSpreadOptionConventionsRequest {
     limit: number;
     order: Order;
     filter: CmsSpreadOptionConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCmsSpreadOptionConventionsResponse {

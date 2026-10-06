@@ -82,6 +82,7 @@ export interface ListIntradayPowerLoadConventionsRequest {
     limit: number;
     order: Order;
     filter: IntradayPowerLoadConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListIntradayPowerLoadConventionsResponse {

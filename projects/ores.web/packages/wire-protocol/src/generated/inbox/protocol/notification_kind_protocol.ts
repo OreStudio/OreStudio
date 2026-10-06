@@ -85,6 +85,7 @@ export interface ListNotificationKindsRequest {
     limit: number;
     order: Order;
     filter: NotificationKindsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNotificationKindsResponse {

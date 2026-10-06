@@ -34,20 +34,23 @@ BEGIN
 
     PERFORM ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'OreStudio System Avatar Artwork',
-        'Default administrator avatar artwork vendored with the platform',
-        null,
+        'Default administrator and service avatars vendored with the platform',
+        'https://github.com/microsoft/fluentui-system-icons',
         'Data Sourcing and Generation Steps:
 
     1. ARTWORK
-       The PNG files are product artwork provided by the project owner
-       (no external download). The delivered files are vendored as they
-       are, with no re-encoding and no cropping.
+       Fluent UI System Icons (Microsoft, MIT licence): the 24px regular
+       SVG of each chosen icon, copied unchanged. external/avatars/
+       methodology.txt lists which icon each code takes.
 
     2. SAVE TO REPOSITORY
        Target directory: external/avatars/
-       The key is the filename without extension (super_admin_avatar,
-       tenant_admin_avatar). The provisioning handler attaches the
-       pictures by those codes, so a rename changes what it looks up.
+       The key is the filename without extension. The provisioning handler
+       attaches the administrator pictures by their codes
+       (super_admin_avatar, tenant_admin_avatar), and each service account
+       takes the code of its registry name with the dots replaced by
+       underscores (ores_iam_service), so a rename changes what is looked
+       up.
 
     3. GENERATE SQL POPULATE SCRIPT
        Script: projects/ores.codegen/src/images_generate_sql.py

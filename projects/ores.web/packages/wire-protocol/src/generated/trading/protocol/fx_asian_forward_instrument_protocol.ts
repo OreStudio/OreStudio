@@ -93,6 +93,7 @@ export interface ListFxAsianForwardInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxAsianForwardInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxAsianForwardInstrumentsResponse {

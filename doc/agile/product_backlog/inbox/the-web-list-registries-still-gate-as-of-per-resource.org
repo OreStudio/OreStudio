@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 9382EC38-7BB8-456A-AA23-D26C62B9C231
+:END:
+#+title: The web's generic list registries still decide per resource …
+#+description: The web's generic list registries still decide per resource whether a list sends as_of. records.ts and classifications.ts carry an asOf flag and add as_of only where it is set. Since PR 2683 every generated entity list accepts as_of, so the flag describes nothing: a resource without it cannot ask for a past instant, though the server would answer. Retire the flag, or set it everywhere, and let every list offer the point-in-time read.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=records.ts= and =classifications.ts= in =projects/ores.web/packages/wire-protocol=
+carry an =asOf= flag per resource, and the generic list adds =as_of= to its
+request only where the flag is set. Since PR 2683 every generated entity list
+accepts =as_of=, so the flag no longer says anything about the server.
+
+* Why
+
+A resource without the flag cannot ask for a past instant, though the server
+would answer. A list without =as_of= still gets the current rows, so nothing is
+wrong today; the gap is a capability the web does not offer. Retire the flag,
+or set it everywhere, so every list can offer the point-in-time read.
+
+* References
+
+- [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]] -- the change that made every list accept =as_of=.
+
+* See also
+
+-

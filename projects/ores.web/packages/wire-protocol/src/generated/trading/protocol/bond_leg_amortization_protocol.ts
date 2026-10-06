@@ -87,6 +87,7 @@ export interface ListBondLegAmortizationsRequest {
     offset: number;
     limit: number;
     order: Order;
+    as_of: string | null;
 }
 
 export interface ListBondLegAmortizationsResponse {

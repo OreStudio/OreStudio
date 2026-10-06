@@ -89,6 +89,7 @@ export interface ListEquityVarianceSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityVarianceSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityVarianceSwapInstrumentsResponse {

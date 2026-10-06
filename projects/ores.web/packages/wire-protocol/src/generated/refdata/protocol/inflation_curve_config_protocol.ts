@@ -98,6 +98,7 @@ export interface ListInflationCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: InflationCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInflationCurveConfigsResponse {

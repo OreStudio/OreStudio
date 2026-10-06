@@ -607,10 +607,10 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
-    // Fetch all rows from the last 5 minutes so we can pick
+    // Fetch all rows inside the running window so we can pick
     // the most recent per (service_name, instance_id) in C++.
     // This avoids a DISTINCT ON which sqlgen doesn't model directly.
-    const auto cutoff = std::chrono::system_clock::now() - std::chrono::minutes(5);
+    const auto cutoff = std::chrono::system_clock::now() - service_running_window;
     const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
 
     const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
@@ -633,6 +633,50 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
         result.push_back(std::move(sample));
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " active service instance(s)";
+    return result;
+}
+
+std::vector<messaging::service_roster_slot>
+telemetry_repository::list_service_roster(context ctx,
+                                          std::chrono::system_clock::time_point now) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
+
+    const std::string sql = "SELECT service_name, display_name, description, service_account, slot, "
+                            "instance_id, host_id, version, sampled_at "
+                            "FROM ores_telemetry_service_roster_fn()";
+    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading the services roster");
+
+    std::vector<messaging::service_roster_slot> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 9) {
+            BOOST_LOG_SEV(lg(), warn) << "Skipping a roster row with " << row.size()
+                                      << " column(s); the roster reads 9";
+            continue;
+        }
+
+        messaging::service_roster_slot slot;
+        slot.service_name = row[0].value_or("");
+        slot.display_name = row[1].value_or("");
+        slot.description = row[2].value_or("");
+        slot.service_account = row[3];
+        slot.slot = std::stoi(row[4].value_or("0"));
+        if (row[8].has_value() && !row[8]->empty()) {
+            slot.instance_id = row[5];
+            slot.host_id = row[6];
+            slot.version = row[7];
+            slot.sampled_at = datetime::from_db_string(*row[8]);
+            slot.state = now - *slot.sampled_at <= service_running_window ?
+                             ores::telemetry::domain::service_state::running :
+                             ores::telemetry::domain::service_state::lost;
+        } else {
+            slot.state = ores::telemetry::domain::service_state::missing;
+        }
+        result.push_back(std::move(slot));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Roster has " << result.size() << " expected instance(s)";
     return result;
 }
 

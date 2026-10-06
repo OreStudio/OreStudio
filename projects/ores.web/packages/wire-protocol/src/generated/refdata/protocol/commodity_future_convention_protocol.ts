@@ -130,6 +130,7 @@ export interface ListCommodityFutureConventionsRequest {
     limit: number;
     order: Order;
     filter: CommodityFutureConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityFutureConventionsResponse {

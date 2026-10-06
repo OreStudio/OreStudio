@@ -142,12 +142,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::series_subclass_code> read_latest(
-        context ctx,
-        std::uint32_t offset,
-        std::uint32_t limit,
-        const ores::utility::domain::order& order = {},
-        const std::optional<messaging::series_subclass_codes_filter>& filter = std::nullopt);
+    std::vector<domain::series_subclass_code>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::series_subclass_codes_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active series subclass codes.
@@ -156,7 +157,8 @@ public:
      */
     std::uint32_t get_total_series_subclass_count(
         context ctx,
-        const std::optional<messaging::series_subclass_codes_filter>& filter = std::nullopt);
+        const std::optional<messaging::series_subclass_codes_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a series subclass code by closing its temporal validity.

@@ -115,6 +115,7 @@ struct list_datasets_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<datasets_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_datasets_response {

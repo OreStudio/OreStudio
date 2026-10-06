@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
 #include "ores.marketdata.core/repository/market_fixing_mapper.hpp"
@@ -236,41 +237,45 @@ void market_fixing_repository::remove(context ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
-std::vector<domain::market_fixing> market_fixing_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::market_fixings_filter>& filter) {
+std::vector<domain::market_fixing>
+market_fixing_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::market_fixings_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixings with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_fixing_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<market_fixing_entity, domain::market_fixing>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return market_fixing_mapper::map(entities); },
         lg(),
         "Reading latest market fixings with pagination.");
 }
 
 std::uint32_t market_fixing_repository::get_total_market_fixing_count(
-    context ctx, const std::optional<messaging::market_fixings_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::market_fixings_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market fixing count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<market_fixing_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<market_fixing_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<market_fixing_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting market fixings");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting market fixings");
 }
 
 std::vector<domain::market_fixing>

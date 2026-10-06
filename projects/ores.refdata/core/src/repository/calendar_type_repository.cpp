@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/calendar_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/calendar_type_entity.hpp"
 #include "ores.refdata.core/repository/calendar_type_mapper.hpp"
@@ -262,41 +263,45 @@ void calendar_type_repository::remove(context ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::calendar_type> calendar_type_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::calendar_types_filter>& filter) {
+std::vector<domain::calendar_type>
+calendar_type_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::calendar_types_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar types with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<calendar_type_entity, domain::calendar_type>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return calendar_type_mapper::map(entities); },
         lg(),
         "Reading latest calendar types with pagination.");
 }
 
 std::uint32_t calendar_type_repository::get_total_type_count(
-    context ctx, const std::optional<messaging::calendar_types_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::calendar_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar type count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<calendar_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<calendar_type_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<calendar_type_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting calendar types");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting calendar types");
 }
 
 std::vector<domain::calendar_type>

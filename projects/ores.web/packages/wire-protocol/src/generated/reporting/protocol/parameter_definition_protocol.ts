@@ -89,6 +89,7 @@ export interface ListParameterDefinitionsRequest {
     limit: number;
     order: Order;
     filter: ParameterDefinitionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListParameterDefinitionsResponse {

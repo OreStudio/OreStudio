@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow.core/repository/workflow_instance_entity.hpp"
@@ -262,34 +263,37 @@ std::vector<domain::workflow_instance> workflow_instance_repository::read_latest
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::workflow_instances_filter>& filter) {
+    const std::optional<messaging::workflow_instances_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow instances with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<workflow_instance_entity, domain::workflow_instance>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return workflow_instance_mapper::map(entities); },
         lg(),
         "Reading latest workflow instances with pagination.");
 }
 
 std::uint32_t workflow_instance_repository::get_total_instance_count(
-    context ctx, const std::optional<messaging::workflow_instances_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::workflow_instances_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow instance count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<workflow_instance_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>>;
 
     return execute_count_query<workflow_instance_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting workflow instances");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting workflow instances");
 }
 
 std::vector<domain::workflow_instance>

@@ -84,6 +84,7 @@ export interface ListAppVersionsRequest {
     limit: number;
     order: Order;
     filter: AppVersionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAppVersionsResponse {

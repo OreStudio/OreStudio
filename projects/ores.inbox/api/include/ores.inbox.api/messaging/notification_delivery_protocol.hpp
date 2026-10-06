@@ -104,6 +104,7 @@ struct list_notification_deliveries_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<notification_deliveries_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_notification_deliveries_response {

@@ -107,6 +107,7 @@ struct list_seed_profile_parameters_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<seed_profile_parameters_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_seed_profile_parameters_response {

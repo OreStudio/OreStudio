@@ -199,7 +199,8 @@ public:
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
         const std::optional<messaging::todays_market_configuration_bindings_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active today's market configuration bindings.
@@ -209,7 +210,8 @@ public:
     std::uint32_t get_total_binding_count(
         context ctx,
         const std::optional<messaging::todays_market_configuration_bindings_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a today's market configuration binding by closing its temporal validity.

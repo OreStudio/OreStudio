@@ -89,6 +89,7 @@ export interface ListStressTestShiftsRequest {
     limit: number;
     order: Order;
     filter: StressTestShiftsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListStressTestShiftsResponse {

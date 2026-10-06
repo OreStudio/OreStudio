@@ -186,6 +186,14 @@ select ores_utility_allow_version_replace_fn();
 \ir reporting/reporting_populate.sql
 
 -- =============================================================================
+-- Telemetry Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Telemetry Layer ---'
+\ir telemetry/telemetry_expected_services_populate.sql
+
+-- =============================================================================
 -- Synthetic Layer
 -- =============================================================================
 

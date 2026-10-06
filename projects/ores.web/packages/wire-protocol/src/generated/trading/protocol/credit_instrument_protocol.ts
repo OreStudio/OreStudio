@@ -102,6 +102,7 @@ export interface ListCreditInstrumentsRequest {
     limit: number;
     order: Order;
     filter: CreditInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditInstrumentsResponse {

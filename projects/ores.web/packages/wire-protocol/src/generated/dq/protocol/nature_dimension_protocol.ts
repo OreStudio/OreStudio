@@ -82,6 +82,7 @@ export interface ListNatureDimensionsRequest {
     limit: number;
     order: Order;
     filter: NatureDimensionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNatureDimensionsResponse {

@@ -162,6 +162,7 @@ describe('the party page', () => {
             offset: 20,
             limit: 2,
             order: { field: '', descending: false },
+            as_of: null,
             filter: null,
         });
         expect(page.totalCount).toBe(40);
@@ -197,6 +198,7 @@ describe('the party page', () => {
             offset: 0,
             limit: 2,
             order: { field: '', descending: false },
+            as_of: null,
             filter: { id_one_of: [SYSTEM_PARTY, ACME] },
         });
         // The system party is not visible to this session, so it is not answered.

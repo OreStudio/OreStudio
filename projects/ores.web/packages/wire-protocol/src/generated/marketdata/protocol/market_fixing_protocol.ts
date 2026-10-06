@@ -74,6 +74,7 @@ export interface ListMarketFixingsRequest {
     limit: number;
     order: Order;
     filter: MarketFixingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMarketFixingsResponse {

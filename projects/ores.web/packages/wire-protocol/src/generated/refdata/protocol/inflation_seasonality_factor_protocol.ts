@@ -83,6 +83,7 @@ export interface ListInflationSeasonalityFactorsRequest {
     limit: number;
     order: Order;
     filter: InflationSeasonalityFactorsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInflationSeasonalityFactorsResponse {

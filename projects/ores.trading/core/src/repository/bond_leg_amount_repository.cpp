@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/bond_leg_amount_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
 #include "ores.trading.core/repository/bond_leg_amount_mapper.hpp"
@@ -323,36 +324,35 @@ std::vector<domain::bond_leg_amount>
 bond_leg_amount_repository::read_latest(context ctx,
                                         std::uint32_t offset,
                                         std::uint32_t limit,
-                                        const ores::utility::domain::order& order) {
+                                        const ores::utility::domain::order& order,
+                                        const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond leg amounts with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
         ctx,
         query,
         list_order(
             order, {"trade_id", "leg_role", "leg_number", "amount_role", "sequence_number"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
         lg(),
         "Reading latest bond leg amounts with pagination.");
 }
 
-std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(context ctx) {
+std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(
+    context ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amount count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<bond_leg_amount_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<bond_leg_amount_entity>(
-        ctx, query, std::nullopt, lg(), "Counting bond leg amounts");
+        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting bond leg amounts");
 }
 
 std::vector<domain::bond_leg_amount>

@@ -84,6 +84,7 @@ export interface ListTenantTypesRequest {
     limit: number;
     order: Order;
     filter: TenantTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenantTypesResponse {

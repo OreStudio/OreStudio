@@ -60,6 +60,7 @@ export const listTenantStatusesRequestSchema = z.object({
     limit: z.int().positive().max(1000).default(100),
     order: orderSchema.default({ field: '', descending: false }),
     filter: z.null().default(null),
+    as_of: z.string().nullable().default(null),
 }) satisfies z.ZodType<GeneratedListTenantStatusesRequest>;
 
 /** Every tenant status, in the order the rows declare. */

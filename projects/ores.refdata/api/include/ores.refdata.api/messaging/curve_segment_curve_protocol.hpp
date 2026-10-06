@@ -102,6 +102,7 @@ struct list_curve_segment_curves_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_segment_curves_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_curve_segment_curves_response {

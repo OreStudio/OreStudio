@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.inbox.api/domain/notification_preference_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/notification_preference_entity.hpp"
 #include "ores.inbox.core/repository/notification_preference_mapper.hpp"
@@ -367,37 +368,41 @@ std::vector<domain::notification_preference> notification_preference_repository:
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::notification_preferences_filter>& filter) {
+    const std::optional<messaging::notification_preferences_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification preferences with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<notification_preference_entity,
                                       domain::notification_preference>(
         ctx,
         query,
         list_order(order, {"account_id", "kind_code", "channel_code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return notification_preference_mapper::map(entities); },
         lg(),
         "Reading latest notification preferences with pagination.");
 }
 
 std::uint32_t notification_preference_repository::get_total_preference_count(
-    context ctx, const std::optional<messaging::notification_preferences_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::notification_preferences_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification preference count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<notification_preference_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<notification_preference_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<notification_preference_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting notification preferences");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting notification preferences");
 }
 
 std::vector<domain::notification_preference>

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/contact_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/contact_type_entity.hpp"
 #include "ores.refdata.core/repository/contact_type_mapper.hpp"
@@ -267,36 +268,39 @@ contact_type_repository::read_latest(context ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
-                                     const std::optional<messaging::contact_types_filter>& filter) {
+                                     const std::optional<messaging::contact_types_filter>& filter,
+                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest contact types with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<contact_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<contact_type_entity, domain::contact_type>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return contact_type_mapper::map(entities); },
         lg(),
         "Reading latest contact types with pagination.");
 }
 
 std::uint32_t contact_type_repository::get_total_type_count(
-    context ctx, const std::optional<messaging::contact_types_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::contact_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active contact type count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<contact_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<contact_type_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<contact_type_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting contact types");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting contact types");
 }
 
 std::vector<domain::contact_type>

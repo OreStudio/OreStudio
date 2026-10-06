@@ -8,6 +8,9 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/stated_order.hpp"
+{{#domain_entity.has_as_of_lookup}}
+#include "ores.database/repository/valid_at.hpp"
+{{/domain_entity.has_as_of_lookup}}
 {{#system_tenant_visible}}
 #include "ores.database/service/tenant_context.hpp"
 {{/system_tenant_visible}}
@@ -762,23 +765,26 @@ void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
     const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
-    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+    const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_plural_words}} with offset: " << offset
                                << " and limit: " << limit;
 {{^current_state}}
+{{^domain_entity.has_as_of_lookup}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/domain_entity.has_as_of_lookup}}
 {{/current_state}}
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
+                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.list_temporal_filter}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}}{{domain_entity.temporal_filter}}) |
+                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
@@ -786,13 +792,15 @@ std::vector<domain::{{entity_singular}}>
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}}) |
+                       where("workspace_id"_c == wid{{domain_entity.list_temporal_filter}}) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
 {{^domain_entity.current_state}}
+{{^domain_entity.has_as_of_lookup}}
                        where("valid_to"_c == max.value()) |
+{{/domain_entity.has_as_of_lookup}}
 {{/domain_entity.current_state}}
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_workspace_id}}
@@ -801,7 +809,7 @@ std::vector<domain::{{entity_singular}}>
     return execute_ordered_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         list_order(order, {{{domain_entity.default_order_columns}}}, {{domain_entity.default_order_desc}}),
-        {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}},
+        {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}},
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading latest {{entity_plural_words}} with pagination.");
 }
@@ -831,10 +839,13 @@ std::optional<domain::{{entity_singular}}>
 {{/domain_entity.has_newest_read}}
 
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
-    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
+    const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+    const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
 {{^current_state}}
+{{^domain_entity.has_as_of_lookup}}
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{/domain_entity.has_as_of_lookup}}
 {{/current_state}}
 
 {{#read_tenant_filtered}}
@@ -842,23 +853,28 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.temporal_filter}});
+                       where({{{tenant_where}}} && "workspace_id"_c == wid{{domain_entity.list_temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where({{{tenant_where}}}{{domain_entity.temporal_filter}});
+                       where({{{tenant_where}}}{{domain_entity.list_temporal_filter}});
 {{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
-                       where("workspace_id"_c == wid{{domain_entity.temporal_filter}});
+                       where("workspace_id"_c == wid{{domain_entity.list_temporal_filter}});
 {{/has_workspace_id}}
 {{^has_workspace_id}}
 {{^domain_entity.current_state}}
+{{^domain_entity.has_as_of_lookup}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
                        where("valid_to"_c == max.value());
+{{/domain_entity.has_as_of_lookup}}
+{{#domain_entity.has_as_of_lookup}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+{{/domain_entity.has_as_of_lookup}}
 {{/domain_entity.current_state}}
 {{#domain_entity.current_state}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
@@ -867,7 +883,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{/read_tenant_filtered}}
 
     return execute_count_query<{{entity_singular}}_entity>(
-        ctx, query, {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}, lg(), "Counting {{entity_plural_words}}");
+        ctx, query, {{#domain_entity.has_as_of_lookup}}narrowed(valid_at(as_of), {{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}){{/domain_entity.has_as_of_lookup}}{{^domain_entity.has_as_of_lookup}}{{#domain_entity.has_filter_record}}filter_condition(filter){{/domain_entity.has_filter_record}}{{^domain_entity.has_filter_record}}std::nullopt{{/domain_entity.has_filter_record}}{{/domain_entity.has_as_of_lookup}}, lg(), "Counting {{entity_plural_words}}");
 }
 
 std::vector<domain::{{entity_singular}}>

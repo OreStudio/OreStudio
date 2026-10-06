@@ -103,6 +103,7 @@ struct list_bond_trs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<bond_trs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_bond_trs_response {

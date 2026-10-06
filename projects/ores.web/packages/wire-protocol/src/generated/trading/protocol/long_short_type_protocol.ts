@@ -81,6 +81,7 @@ export interface ListLongShortTypesRequest {
     limit: number;
     order: Order;
     filter: LongShortTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListLongShortTypesResponse {

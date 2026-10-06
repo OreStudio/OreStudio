@@ -88,6 +88,7 @@ export interface ListNettingAgreementsRequest {
     limit: number;
     order: Order;
     filter: NettingAgreementsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNettingAgreementsResponse {

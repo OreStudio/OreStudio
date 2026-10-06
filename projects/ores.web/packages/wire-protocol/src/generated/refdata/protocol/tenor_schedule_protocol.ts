@@ -91,6 +91,7 @@ export interface ListTenorSchedulesRequest {
     limit: number;
     order: Order;
     filter: TenorSchedulesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorSchedulesResponse {

@@ -5,7 +5,7 @@
 #+description: Fourteen shared C++ templates end each namespace with an end-of-line comment, which H03 forbids; remove it from the templates and from the 2,873 files they generated, in one mechanical PR.
 #+type: task
 #+level: s1
-#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_26:v0:
+#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_27:v0:
 #+owner: marco
 #+branch: feature/remove-the-namespace-closer-comments-from-the-templates
 #+pr: 2678

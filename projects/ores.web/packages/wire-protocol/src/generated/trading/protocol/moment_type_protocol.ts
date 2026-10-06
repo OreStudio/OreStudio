@@ -81,6 +81,7 @@ export interface ListMomentTypesRequest {
     limit: number;
     order: Order;
     filter: MomentTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMomentTypesResponse {

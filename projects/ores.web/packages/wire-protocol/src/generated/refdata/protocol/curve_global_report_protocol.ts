@@ -96,6 +96,7 @@ export interface ListCurveGlobalReportsRequest {
     limit: number;
     order: Order;
     filter: CurveGlobalReportsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveGlobalReportsResponse {

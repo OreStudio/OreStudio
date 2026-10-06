@@ -99,6 +99,7 @@ export interface ListInstrumentSchedulesRequest {
     offset: number;
     limit: number;
     order: Order;
+    as_of: string | null;
 }
 
 export interface ListInstrumentSchedulesResponse {

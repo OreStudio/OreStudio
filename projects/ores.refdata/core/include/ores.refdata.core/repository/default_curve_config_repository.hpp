@@ -143,12 +143,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::default_curve_config> read_latest(
-        context ctx,
-        std::uint32_t offset,
-        std::uint32_t limit,
-        const ores::utility::domain::order& order = {},
-        const std::optional<messaging::default_curve_configs_filter>& filter = std::nullopt);
+    std::vector<domain::default_curve_config>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::default_curve_configs_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active default curve configs.
@@ -157,7 +158,8 @@ public:
      */
     std::uint32_t get_total_default_curve_config_count(
         context ctx,
-        const std::optional<messaging::default_curve_configs_filter>& filter = std::nullopt);
+        const std::optional<messaging::default_curve_configs_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a default curve config by closing its temporal validity.

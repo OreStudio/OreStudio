@@ -98,6 +98,7 @@ struct list_apps_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<apps_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_apps_response {

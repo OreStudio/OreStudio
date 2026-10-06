@@ -23,3 +23,5 @@
 \ir ./nats_server_samples_create.sql
 \ir ./nats_stream_samples_create.sql
 \ir ./service_samples_create.sql
+\ir ./expected_services_create.sql
+\ir ./service_roster_functions_create.sql

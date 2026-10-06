@@ -63,7 +63,8 @@ bool is_active(const domain::run_grant& g) {
            (g.not_after == never || g.not_after > std::chrono::system_clock::now());
 }
 
-bool same_consent(const domain::run_grant& g, const boost::uuids::uuid& role_id,
+bool same_consent(const domain::run_grant& g,
+                  const boost::uuids::uuid& role_id,
                   const messaging::create_run_grant_request& request) {
     return g.role_id == role_id && g.audience == request.audience &&
            g.max_runs == request.max_runs && request.valid_seconds == 0 &&
@@ -147,8 +148,8 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
     if (existing) {
         grant = *existing;
         grant.change_reason_code = std::string(update);
-        grant.change_commentary = is_active(*existing) ? "Replaced by a new consent."
-                                                       : "Re-activated by a new consent.";
+        grant.change_commentary =
+            is_active(*existing) ? "Replaced by a new consent." : "Re-activated by a new consent.";
     } else {
         grant.id = boost::uuids::random_generator()();
         grant.change_reason_code = std::string(new_record);
@@ -158,9 +159,9 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
     grant.role_id = role->id;
     grant.audience = request.audience;
     grant.max_runs = request.max_runs;
-    grant.not_after = request.valid_seconds > 0
-        ? std::chrono::system_clock::now() + std::chrono::seconds(request.valid_seconds)
-        : std::chrono::system_clock::time_point{};
+    grant.not_after = request.valid_seconds > 0 ? std::chrono::system_clock::now() +
+                                                      std::chrono::seconds(request.valid_seconds) :
+                                                  std::chrono::system_clock::time_point{};
     grant.revoked_at = {};
     grant.revoked_by.clear();
     grant.revoke_reason.clear();
@@ -214,9 +215,10 @@ run_grant_operations_service::revoke_run_grant(const messaging::revoke_run_grant
     // has_permission() passes a context that carries no permission list: IAM's
     // own base context, for internal callers. Create refuses such a context,
     // because a grant needs a person's permissions; a revoke only removes one.
-    if (!has_permission(ctx_, revoke_permission) && session_account(ctx_) != grant->grantor_account_id)
-        return refuse<response>("Only the grantor, or a holder of " + std::string(revoke_permission) +
-                                ", may revoke a run grant.");
+    if (!has_permission(ctx_, revoke_permission) &&
+        session_account(ctx_) != grant->grantor_account_id)
+        return refuse<response>("Only the grantor, or a holder of " +
+                                std::string(revoke_permission) + ", may revoke a run grant.");
 
     response r;
     r.success = true;
@@ -233,8 +235,8 @@ run_grant_operations_service::revoke_run_grant(const messaging::revoke_run_grant
     // A save stamps the session's party on the row, so an administrator acting
     // for another party saves through a context narrowed to the grant's party,
     // keeping their identity and permissions, or the revoke would move it.
-    run_grant_service(ctx_.with_party(ctx_.tenant_id(), grant->party_id, ctx_.visible_party_ids(),
-                                      ctx_.actor()))
+    run_grant_service(
+        ctx_.with_party(ctx_.tenant_id(), grant->party_id, ctx_.visible_party_ids(), ctx_.actor()))
         .save_grant(*grant);
 
     BOOST_LOG_SEV(lg(), info) << "Run grant " << grant->id << " revoked by " << grant->revoked_by

@@ -90,6 +90,7 @@ export interface ListCurveQuotesRequest {
     limit: number;
     order: Order;
     filter: CurveQuotesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveQuotesResponse {

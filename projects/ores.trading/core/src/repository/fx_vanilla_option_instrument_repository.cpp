@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_entity.hpp"
 #include "ores.trading.core/repository/fx_vanilla_option_instrument_mapper.hpp"
@@ -292,37 +293,41 @@ fx_vanilla_option_instrument_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::fx_vanilla_option_instruments_filter>& filter) {
+    const std::optional<messaging::fx_vanilla_option_instruments_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX vanilla option instruments with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_vanilla_option_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<fx_vanilla_option_instrument_entity,
                                       domain::fx_vanilla_option_instrument>(
         ctx,
         query,
         list_order(order, {"trade_id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return fx_vanilla_option_instrument_mapper::map(entities); },
         lg(),
         "Reading latest FX vanilla option instruments with pagination.");
 }
 
 std::uint32_t fx_vanilla_option_instrument_repository::get_total_fx_vanilla_option_instrument_count(
-    context ctx, const std::optional<messaging::fx_vanilla_option_instruments_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::fx_vanilla_option_instruments_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX vanilla option instrument count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_vanilla_option_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<fx_vanilla_option_instrument_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting FX vanilla option instruments");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting FX vanilla option instruments");
 }
 
 std::vector<domain::fx_vanilla_option_instrument>

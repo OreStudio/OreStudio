@@ -83,6 +83,7 @@ export interface ListCodeDomainsRequest {
     limit: number;
     order: Order;
     filter: CodeDomainsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCodeDomainsResponse {

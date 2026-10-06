@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/subject_area_entity.hpp"
 #include "ores.dq.core/repository/subject_area_mapper.hpp"
@@ -257,33 +258,32 @@ std::vector<domain::subject_area>
 subject_area_repository::read_latest(context ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
-                                     const ores::utility::domain::order& order) {
+                                     const ores::utility::domain::order& order,
+                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject areas with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<subject_area_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<subject_area_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<subject_area_entity, domain::subject_area>(
         ctx,
         query,
         list_order(order, {"name", "domain_name"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return subject_area_mapper::map(entities); },
         lg(),
         "Reading latest subject areas with pagination.");
 }
 
-std::uint32_t subject_area_repository::get_total_area_count(context ctx) {
+std::uint32_t
+subject_area_repository::get_total_area_count(context ctx,
+                                              const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<subject_area_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<subject_area_entity>>;
 
     return execute_count_query<subject_area_entity>(
-        ctx, query, std::nullopt, lg(), "Counting subject areas");
+        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting subject areas");
 }
 
 std::vector<domain::subject_area>

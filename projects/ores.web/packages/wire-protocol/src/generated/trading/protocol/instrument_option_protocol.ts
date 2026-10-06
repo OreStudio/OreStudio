@@ -112,6 +112,7 @@ export interface ListInstrumentOptionsRequest {
     limit: number;
     order: Order;
     filter: InstrumentOptionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInstrumentOptionsResponse {

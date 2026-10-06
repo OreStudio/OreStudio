@@ -82,6 +82,7 @@ export interface ListBatchesRequest {
     limit: number;
     order: Order;
     filter: BatchesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBatchesResponse {

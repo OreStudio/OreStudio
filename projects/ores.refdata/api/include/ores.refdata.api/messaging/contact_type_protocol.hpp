@@ -99,6 +99,7 @@ struct list_contact_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<contact_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_contact_types_response {

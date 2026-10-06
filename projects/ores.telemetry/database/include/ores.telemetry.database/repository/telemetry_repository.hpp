@@ -29,12 +29,18 @@
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.telemetry.database/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
 
 namespace ores::telemetry::database::repository {
+
+/**
+ * @brief How recent a heartbeat must be for its instance to count as running.
+ */
+inline constexpr std::chrono::minutes service_running_window{5};
 
 /**
  * @brief Repository for telemetry log persistence and querying.
@@ -196,6 +202,18 @@ public:
      * currently running and when they were last seen.
      */
     std::vector<messaging::service_sample> list_service_samples(context ctx);
+
+    /**
+     * @brief Returns the services roster: every expected instance and its
+     * state as of @p now.
+     *
+     * One slot per expected instance, ordered by service name and then slot.
+     * A slot whose instance reported within service_running_window of @p now
+     * is running, one that reported earlier is lost, and one no instance
+     * fills is missing.
+     */
+    std::vector<messaging::service_roster_slot>
+    list_service_roster(context ctx, std::chrono::system_clock::time_point now);
 };
 
 }

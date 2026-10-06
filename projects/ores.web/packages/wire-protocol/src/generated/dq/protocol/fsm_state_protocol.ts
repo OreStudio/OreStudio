@@ -84,6 +84,7 @@ export interface ListFsmStatesRequest {
     limit: number;
     order: Order;
     filter: FsmStatesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFsmStatesResponse {

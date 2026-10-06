@@ -94,6 +94,7 @@ export interface ListSeedProfilesRequest {
     limit: number;
     order: Order;
     filter: SeedProfilesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSeedProfilesResponse {

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_entity.hpp"
@@ -326,22 +327,21 @@ tenant_repository::read_latest(context ctx,
                                std::uint32_t offset,
                                std::uint32_t limit,
                                const ores::utility::domain::order& order,
-                               const std::optional<messaging::tenants_filter>& filter) {
+                               const std::optional<messaging::tenants_filter>& filter,
+                               const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenants with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<tenant_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<tenant_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<tenant_entity, domain::tenant>(
         ctx,
         query,
         list_order(order, {"name"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
         "Reading latest tenants with pagination.");
@@ -349,18 +349,17 @@ tenant_repository::read_latest(context ctx,
 
 std::uint32_t
 tenant_repository::get_total_tenant_count(context ctx,
-                                          const std::optional<messaging::tenants_filter>& filter) {
+                                          const std::optional<messaging::tenants_filter>& filter,
+                                          const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenant count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<tenant_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<tenant_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return execute_count_query<tenant_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting tenants");
+        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting tenants");
 }
 
 std::vector<domain::tenant> tenant_repository::read_latest(context ctx,

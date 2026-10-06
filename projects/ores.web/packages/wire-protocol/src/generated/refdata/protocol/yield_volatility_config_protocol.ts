@@ -90,6 +90,7 @@ export interface ListYieldVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: YieldVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListYieldVolatilityConfigsResponse {

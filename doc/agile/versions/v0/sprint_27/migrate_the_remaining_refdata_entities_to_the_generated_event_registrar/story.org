@@ -26,11 +26,11 @@ events, and a gate keeps it that way.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Promoted from capture BA5BCF3B into Sprint 27; the migration is not started. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Compose every generated event registrar and retire the hand-wired path. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -44,10 +44,24 @@ events, and a gate keeps it that way.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:85908C64-31A3-4899-8EF8-7DC1C5D5A70D][Compose every generated event registrar]] | STARTED | 2026-10-06 | | Eighty-five refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path. |
+| [[id:85908C64-31A3-4899-8EF8-7DC1C5D5A70D][Compose every generated event registrar]] | DONE | 2026-10-06 | 2026-10-06 | Eighty-five refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path. |
 
 * Decisions
 
 * Out of scope
 
--
+- The same defect in components other than refdata. A census at close found 16
+  uncomposed registrars in ores.analytics, 2 in ores.iam, and nine components
+  that generate registrars with no composition point at all. Each needs its own
+  story; the new composition gate covers the components that are complete.
+
+* Result
+
+Every refdata entity that generates an event-mapping registrar is composed, so
+a change to any of them reaches the caches and the audit trail on that entity's
+own subjects. application.cpp carries no hand-wired eventing, and a gate fails
+when a checked component leaves a registrar uncomposed.
+
+Verified: the service builds clean and starts with 127 canonical event mappings
+and 127 entity subscriptions and no errors; the six refdata suites pass; the
+codegen suite passes 1181 tests; the gate and its five tests pass.

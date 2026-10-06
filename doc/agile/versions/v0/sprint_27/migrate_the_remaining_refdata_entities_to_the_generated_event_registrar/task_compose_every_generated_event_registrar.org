@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate the remaining refdata entities to the generated event registrar]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -83,3 +83,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every generated refdata event registrar is composed. 85 of 127 were not, so
+those entities published nothing and their consumers followed stale records.
+application.cpp no longer registers an entity mapping or subscribes to a
+changed event, and the namespace alias and publish helper that only those
+blocks used are gone.
+
+Verified: the service builds clean and starts with 127 canonical event
+mappings and 127 entity subscriptions and no errors; the six refdata suites
+pass; the codegen suite passes 1181 tests; the new composition gate and its
+five tests pass. A census found the same defect outside refdata, which this
+task does not cover.

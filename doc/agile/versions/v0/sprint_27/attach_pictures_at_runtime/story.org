@@ -25,11 +25,11 @@ and =ores.web= can run it.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded; the work is broken into four tasks.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with the ensure-image operation.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -52,7 +52,7 @@ and =ores.web= can run it.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AA7E5CCF-BE50-40E1-8B00-16F21964EADE][Scaffold story: Attach pictures at runtime through one seam]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:AA7E5CCF-BE50-40E1-8B00-16F21964EADE][Scaffold story: Attach pictures at runtime through one seam]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6E40EE56-4297-4FBE-9B8E-327A14D2FA0A][Add the ensure-image operation]] | DONE | 2026-10-06 | 2026-10-06 | One assets operation copies a system-tenant template image into a tenant and returns its id, idempotently; the three existing copiers use it. |
 | [[id:A66E10E1-D60A-4545-904C-99B0853F133A][Reconcile account pictures]] | DONE | 2026-10-06 | 2026-10-06 | One IAM operation reconciles each account's picture from a scope; attach_photos delegates to it. |
 | [[id:0AE594AB-8474-49A0-A169-CFE062F0D331][Model the picture code on the account]] | DONE | 2026-10-06 | 2026-10-06 | The wanted picture code rides the account API, so the handler stops reading the DQ artefact table. |
@@ -82,3 +82,37 @@ and =ores.web= can run it.
   decision, and it changes the idempotence rule.
 - The dead =attach_staff_photos_best_effort= wrapper. It has no callers and
   retires with the legacy synchronous handler, not here.
+
+* Result
+
+One seam per concern, both at runtime, both reachable from either client.
+
+=assets.v1.images.ensure= copies a system-tenant template image into a tenant
+and returns its id, idempotently, with no workflow context. The three places
+that copied templates now call it; no copy logic is duplicated.
+
+=iam.v1.accounts.attach-pictures= reconciles the accounts a scope names, and
+the wanted picture code rides the account API, so the handler no longer reads
+=ores_dq_accounts_artefact_tbl=. =attach_photos= stays the place a tenant's
+pictures are attached and became a caller of those operations rather than an
+owner of the copy logic.
+
+The service accounts name their pictures from the service registry: the upsert
+function gained =p_picture_code= and the accounts archetype passes the derived
+image code. =attach_photos= reconciles the system tenant's accounts where it
+attaches the administrators' pictures. A recreate writes 20 picture codes, the
+same 20 the deleted script covered, and every one of those codes has a matching
+system avatar. =iam_service_account_pictures_populate.sql=, its archetype, its
+tangled mustache, its facet row and its =validation_ignore.txt= entry are gone.
+
+The suite passes 94 of 94 after a full recreate.
+
+* Not verified
+
+The pictures could not be watched appear end to end. The ACME provisioning run
+aborts before =attach_photos= at =fpml.supervisory_body=: the publish asks for
+coding scheme =FPML_SUPERVISORY_BODY=, which does not exist for the target
+tenant, because =fpml.coding_schemes= is deliberately not a bundle member. That
+failure belongs outside this story, whose files do not touch it. Until it is
+fixed, the reconcile is proven by the seed, the avatar join and the suite, not
+by a live bring-up.

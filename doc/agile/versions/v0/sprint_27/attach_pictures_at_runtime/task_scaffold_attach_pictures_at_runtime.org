@@ -29,9 +29,9 @@ the sprint.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
-| Now          | Done.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

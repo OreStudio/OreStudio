@@ -25,13 +25,16 @@
 #include "ores.assets.core/messaging/tag_history_provider_registrar.hpp"
 #include "ores.assets.core/presentation/tag_history_field_mapper.hpp"
 #include "ores.assets.core/service/tag_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::assets::messaging {
 
 void register_tag_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.assets.tag",
+        "assets::tags:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tag_service svc(scoped_ctx);
             auto versions = svc.get_tag_history(entity_id);

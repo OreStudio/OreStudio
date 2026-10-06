@@ -23,10 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/service/report_definition_service.hpp"
-#include "ores.database/repository/valid_at.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>
@@ -34,6 +37,14 @@
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.database/domain/context.hpp"
+#include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
 
@@ -92,6 +103,7 @@ domain::report_definition to_domain(const messaging::report_definition_write& wr
     v.schedule_expression = write.schedule_expression;
     v.concurrency_policy = write.concurrency_policy;
     v.scheduler_job_id = write.scheduler_job_id;
+    v.run_grant_id = write.run_grant_id;
     v.pre_processing = write.pre_processing;
     v.prepared_input_key = write.prepared_input_key;
     v.post_processing = write.post_processing;

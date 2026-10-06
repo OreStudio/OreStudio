@@ -24,9 +24,15 @@
  */
 #include "ores.refdata.core/repository/bond_yield_convention_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/bond_yield_convention.hpp"
 #include "ores.refdata.api/domain/bond_yield_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/bond_yield_convention_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -40,7 +46,6 @@ bond_yield_convention_mapper::map(const bond_yield_convention_entity& v) {
     domain::bond_yield_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.compounding = v.compounding;
@@ -66,7 +71,6 @@ bond_yield_convention_mapper::map(const domain::bond_yield_convention& v) {
     bond_yield_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.compounding = v.compounding;

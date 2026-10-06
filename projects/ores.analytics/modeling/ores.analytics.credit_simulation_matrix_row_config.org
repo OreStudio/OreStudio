@@ -26,7 +26,6 @@ rows, and a row reads the way the matrix is written in the document.
 :product:   ores
 :component: analytics
 :has_tenant_id:    true
-:has_workspace_id: true
 :profile:   fk-scoped-child
 :tablename: ores_analytics_credit_simulation_matrix_rows_tbl
 :END:

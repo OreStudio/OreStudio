@@ -23,8 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.core/repository/pricing_engine_type_mapper.hpp"
+#include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.analytics.core/repository/pricing_engine_type_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::analytics::repository {
 

@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: A85B6C4E-0F93-4410-BF2E-7167722849ED
+:END:
+#+title: User Journey: Decide a publish
+#+description: An approver holding the kind's decide permission reads a curve-publish request, weighs the change and the checks, and approves, refuses or holds it with a comment.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An approver holding the kind's decide permission reads a curve-publish request, weighs the change and the checks, and approves, refuses or holds it with a comment.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I am the second pair of eyes. I want to see what this curve was before and
+what it would become, and to say yes, no or not yet, on the record." The
+journey is done when the request carries the approver's decision and a comment,
+and the request's state shows what that decision did to it.
+
+* Actor and trigger
+
+The actor is the approver: the checker, an account other than the one that
+raised the request, holding the permission the request's kind names in
+=decide_permission_code=. The trigger is a request that is waiting. The journey
+starts at the approval queue and ends when the request is approved, refused or
+held, or when the approver leaves it for somebody else to decide. It picks up
+the request raised in
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]];
+an approved request is applied in
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]].
+
+How many approvals the request needs is a rule of its kind, not of this screen.
+=approval_kind.approvals_required= is the count — zero, one or n — and
+=approval_kind.decide_permission_code= says who may decide. Each approval must
+come from a different person, so an n-approval request stays open until n
+distinct people have approved it. A hold is available only when the kind's
+=allows_hold= is true, and a comment on approval is required only when
+=comment_on_approve= is true; a refusal always needs one.
+
+A request waits on a person, so the queue is one paged read over the shared
+record, filtered to the kinds the approver may decide. Two people may open the
+same request; the second decision is refused by its version, and the screen
+says who decided.
+
+* Steps
+
+1. *Open the queue.* The approver opens *Approvals* and reads the requests
+   waiting in the tenant, oldest first: the kind, the curve, how long it has
+   waited, and its state. The read is scoped by the decide permission, so the
+   approver sees only the kinds they may decide.
+2. *Open one request.* The approver opens a request. The system reads its
+   header — who asked, when, and why — and the kind's detail that names what is
+   asked. No market-data kind exists yet, so a curve publish never appears in
+   the queue; see /What is missing/.
+3. *Read the delta against the last published.* The approver reads the
+   candidate points beside the curve the system last published, point by point,
+   so the decision is about a change and not about a number. Nothing marks a
+   curve published, so there is no delta to read; see /What is missing/.
+4. *Read the QA and validation checks.* The approver reads the checks that were
+   run over the candidates — all pillars priced, discount factors monotonic, no
+   arbitrage — with each result. No operation returns these; see /What is
+   missing/. Until then the panel names the checks and marks each result
+   unknown.
+5. *Read the rule that decides this request.* The system shows how many
+   approvals the kind needs, the permission it takes to decide, and when the
+   request expires. The approver sees whether they are one of several.
+6. *Read the decisions so far.* The system lists every decision already taken
+   on the request, with who took it, when, and the comment. An approval by the
+   asker is refused, so a request cannot be waved through by the person who
+   raised it.
+7. *Decide.* The approver chooses *Approve*, *Refuse* or *Hold* and writes a
+   comment. A refusal always needs the comment, because the asker reads it. The
+   system records the decision against the request and moves the request to the
+   state the decisions reach: an approval closes it only once
+   =approvals_required= approvals stand, a hold parks it, and a refusal closes
+   it.
+8. *Leave.* The approver returns to the queue. The request is gone from the
+   waiting list if it is final, and still there, held, if it is not. The system
+   tells the asker what was decided; nothing does that today.
+
+Step 7 is the step whose effect outlives the screen: the decision is written
+down, and the component that owns the kind applies it later. Approving this
+request does not itself publish a curve.
+
+* Screens and wireframes
+
+One screen. The queue sits at the top, the selected request and the change it
+proposes sit in the middle, and the checks, the decisions so far and the
+decision panel sit at the bottom. The approver reads what is asked and what
+would change before the answer controls, so the act of deciding comes last.
+
+#+caption: Decide a publish: the tenant's waiting requests, one request with its proposed change and checks, and the decision panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_decide-a-publish.png]]
+
+The queue is the market-data approval screen, beside the curve screens rather
+than inside one curve, because the approver's work is the tenant's requests and
+not one curve's points.
+
+* Prototype
+
+A static page at =doc/prototypes/decide-a-publish/index.html=: mock data only, no backend,
+no build step and no session. It argues that the checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes.
+
+- Variants :: a the queue beside the request, b the request first, c a group inbox
+- States :: waiting, held, decided, multi (two approvals required, one given)
+- Source :: =doc/prototypes/decide-a-publish/index.html=
+- Open :: =/OreStudio/doc/prototypes/decide-a-publish/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =approval_request= | The request under decision: who asked, which kind, why, when it expires, and its state | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | How many approvals are needed, the permission to decide, whether a hold is allowed, whether an approval needs a comment, and the expiry | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | Each decision taken on the request, with who, when and the comment | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =approval_decision_type= | The decisions on offer — approve, refuse, hold, resume — and which need a comment | [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] |
+| =approval_request_state= | The state the request is in, and which states are final | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
+| =market_series= | The curve the request is about, and how it was derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The candidate points and the published points the delta compares | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The recipe and source as-of behind each derived point, so the approver sees where the change came from | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+
+The request's own detail — which curve, which candidate set — does not exist
+yet. The kind's detail table is what would name the subject, keyed by the
+request's id; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the queue | List the requests this approver may decide | =inbox.v1.approval-requests.queue= | exists |
+| Open one request | Read the request header | =inbox.v1.approval_requests.get= | exists |
+| Open one request | Read the requests of one kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
+| Read the delta | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
+| Read the checks | Run and return the QA checks over the candidates | =marketdata.v1.curve_bootstrap.validate= | missing |
+| Read the rule | Read how many approvals and who decides | =inbox.v1.approval_kinds.list= | exists |
+| Read the decisions so far | List the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
+| Decide | Approve, refuse, hold or resume | =inbox.v1.approval-requests.decide= | exists |
+| Leave | Read the curve the request is about | =marketdata.v1.market_series.get= | exists |
+| Leave | Read the candidate points | =marketdata.v1.market_observations.list_by_series_id= | exists |
+
+The queue, the read and the decision are generic: they are defined in
+[[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]]. A
+kind is what the queue and the decision are filtered by, and no market-data
+kind exists to filter by.
+
+* What is missing
+
+1. *There is no market-data approval kind.* The queue can only show kinds that
+   exist, and only =iam.role_grant= is seeded. The candidate is a kind,
+   =marketdata.curve_publish=, whose =decide_permission_code= is a market-data
+   publish permission and whose =approvals_required= is the tenant's chosen
+   count. Until then the queue lists no curve publish, and the screen says a
+   market-data approval kind is missing rather than showing an empty queue for
+   no reason.
+2. *There is no delta against the last published.* Nothing marks a curve
+   published, so there is no baseline and no subject returns the difference.
+   The candidate is a published marker on the series or the build, plus a read
+   such as =marketdata.v1.curve_candidates.diff=. Until then the delta panel is
+   shown empty, with the reason stated, and the approver cannot see what the
+   request would change.
+3. *There is no QA or validation check operation.* No subject runs the checks
+   over a candidate set and returns the results; the fit checks the desk
+   speaks of are not an operation. The candidate is
+   =marketdata.v1.curve_bootstrap.validate=, returning one row per check. Until
+   then the panel names the checks and marks each result unknown, so the
+   approver reads it as "not checked" and not as "passed".
+4. *No kind's detail names the subject.* An approval request is a header; the
+   kind keeps its detail in a table of its own, keyed by the request's id, in
+   the component that owns the kind. No such table exists for a curve publish,
+   so the queue row has no curve to show. The candidate is a detail table in
+   =ores.marketdata= keyed by =request_id=, naming the series and the candidate
+   set's as-of. Until then the queue shows the kind and the state and no
+   subject.
+5. *The deciding group is not a field.* =approval_kind= names a permission code,
+   not a group; which people may decide follows from who holds the code. The
+   screen cannot say "Market data approvers" from the model. The candidate is a
+   group named by the kind, or a permission bound to a group. Until then the
+   screen shows the permission code and does not claim a group name.
+6. *A hold has no reason list.* The approval design puts hold reasons in a
+   lookup keyed from the kind's detail table, and the only seeded kind does not
+   hold. The candidate is the kind's hold reason lookup, seeded when the kind
+   allows holding. Until then a hold takes only the free-text comment.
+
+* Related journeys
+
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the request this screen decides.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — what an approval leads to, once the owning component applies it.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the review whose result the approver wants before deciding; the panel that would carry it is the QA checks here.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — where the candidates being decided were built.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the other market-data request an approver decides, after a curve is already published.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the trail of the decisions this screen writes.
+
+* Related knowledge
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, the lifecycle, four-eyes, who may decide, comments and expiry
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — why a decision is metadata, and the four-eyes principle
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the request under decision
+- [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] — the count, the permission and the rules this screen reads
+- [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] — the decisions on offer
+- [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] — the decision this journey writes

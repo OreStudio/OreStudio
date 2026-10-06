@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protect my account prototype — Credentials journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The member's Security screen: the password form, the sign-in state and the
+  places the account is signed in. Ported from
+  projects/ores.web/packages/web/src/prototype/ProtectMyAccountPrototype.tsx,
+  which the journey doc records as accepted as variant B, sessions first
+  (doc/knowledge/journeys/credentials/journey_protect_my_account.org).
+
+  Three structural variants, switchable with ?variant=a|b|c, and a state
+  preset switchable with ?state=rest|policy|changed. The typed password and
+  the confirmation are seedable too, so a state can be linked:
+  ?current=&new=&confirm=. Nothing here reads a service.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state" hidden></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

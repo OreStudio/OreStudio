@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: F2E3F72C-60B9-4D23-A51F-B426B481470D
+:END:
+#+title: User Journey: Inspect a surface's slices
+#+description: A trader or quant inspects a candidate surface's smiles across tenors and its mesh, and checks the calendar and butterfly arbitrage between them.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant inspects a candidate surface's smiles across tenors and its mesh, and checks the calendar and butterfly arbitrage between them.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see the smiles this surface produces at each tenor, the mesh they
+make together, and whether the surface has an arbitrage in it." The journey is
+done when the person has read the smile at each tenor of interest, seen the
+mesh, and read the calendar and butterfly arbitrage checks. The person does not
+publish here.
+
+* Actor and trigger
+
+The actor is the trader or the quant. The trader owns the candidate surface;
+the quant owns the model and reads the same screen. Neither decides to publish
+here: an approver does that in a different journey. The trigger is a calibration
+just run, a smile that looks odd at one tenor, a mesh that folds, or a
+pricing question about an expiry and a strike. The journey starts at a
+candidate surface and ends when the person leaves it, still a candidate.
+
+This journey reads and diagnoses; it changes nothing. It is the surface-shaped
+check the maker runs before the candidate goes to a second pair of eyes.
+
+* Steps
+
+1. *Open the candidate surface.* The person opens *Curves and surfaces* and
+   selects the candidate surface. The system reads the =market_series= row and
+   its =derivation_kind=/config/version, which says the surface is derived and
+   by which recipe.
+2. *Read the surface.* The person chooses *Read surface*. There is no surface
+   read: =marketdata.v1.curve-snapshot.get= is keyed by an =oresmd_uri= and
+   reconstructs curve or grid points, and it has no surface shape. The system
+   lists the surface series row and the quotes it holds, and marks the surface
+   itself as not served. See /What is missing/.
+3. *Read the smiles across tenors.* The person picks a set of tenors and reads
+   the smile at each. Each smile is a slice: the vol at a fixed expiry across
+   strikes, from the low-strike put wing through the at-the-money point to the
+   high-strike call wing. There is no slice read, so no smile can be drawn. See
+   /What is missing/.
+4. *Overlay the quotes on a smile.* The person reads each raw quote of that
+   tenor against the fitted smile. The quotes come from
+   =marketdata.v1.market_observations.list_by_series_id=, one row per
+   =oresmd_uri=, but the fitted smile does not exist to overlay them on.
+5. *Read the mesh.* The person reads the mesh: the vol across expiry and
+   strike at once, either as a grid or as a shaded total-variance view. The
+   mesh needs the surface read of step 2 and a mesh read, and neither exists.
+   See /What is missing/.
+6. *Check calendar arbitrage.* The person checks that total variance does not
+   fall as expiry grows, at a fixed strike. No operation returns total
+   variance along an expiry axis and no check runs, so the screen states the
+   check it needs and marks it as absent. See /What is missing/.
+7. *Check butterfly arbitrage.* The person checks that the risk-neutral
+   density implied by each smile is non-negative, which fails when a smile is
+   too concave. No operation returns a density or a butterfly check, so the
+   screen states the check it needs and marks it as absent. See /What is
+   missing/.
+8. *Leave.* The person returns to the list. The candidate surface is unchanged;
+   the person did not write or publish anything.
+
+Every read here would be server-side and synchronous, so the journey carries no
+state of its own.
+
+* Screens and wireframes
+
+One screen. The surface and the tenor picker sit at the top, the smiles and the
+mesh sit in the middle, and the two arbitrage checks sit at the foot, so the
+person reads the slices, then the whole surface, then its faults.
+
+#+caption: Surface slices: the smiles across tenors, the surface mesh, and the calendar and butterfly arbitrage checks.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_inspect-a-surfaces-slices.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/inspect-a-surfaces-slices/index.html=: mock data only, no backend,
+no build step and no session. It argues that a surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy.
+
+- Variants :: a one slice at a tenor, b the mesh, c the arbitrage report
+- States :: clean, butterfly (a negative implied density); =?tenor== picks the slice
+- Source :: =doc/prototypes/inspect-a-surfaces-slices/index.html=
+- Open :: =/OreStudio/doc/prototypes/inspect-a-surfaces-slices/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The surface identity: the =oresmd_uri=, its asset class, and its =derivation_kind=/config/version | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The quotes each smile is calibrated from and checked against, one per =oresmd_uri= and =observation_datetime= | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The provenance of each derived surface point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =market_series_asset_class= | The asset class the surface list filters on | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
+| =tenor= | The expiry axis labels the slices are named by | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =currency= | The currency the surface is quoted in | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+
+There is no surface model and no slice model, so the smiles, the mesh and the
+two arbitrage checks have no entity to compose. The screen can read the series
+row and its quotes only; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the candidate surface | List the series that may be a surface | =marketdata.v1.market_series.list= | exists |
+| Open the candidate surface | Read one series | =marketdata.v1.market_series.get= | exists |
+| Read the surface | Read the surface | =marketdata.v1.surface.get= | missing |
+| Read the smiles | Read one smile (slice) | =marketdata.v1.surface-slice.get= | missing |
+| Overlay the quotes | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the mesh | Read the surface mesh | =marketdata.v1.surface-mesh.get= | missing |
+| Check calendar arbitrage | Read the calendar-arbitrage check | =marketdata.v1.surface.arbitrage= | missing |
+| Check butterfly arbitrage | Read the butterfly-arbitrage check | =marketdata.v1.surface.arbitrage= | missing |
+| Read the recipe lineage | Read the lineage of a derived point | =marketdata.v1.observation_lineages.list= | exists |
+| Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
+
+No surface subject exists. Every surface read above is a candidate subject, not
+a subject the server serves today. Only the series and observation reads, the
+lineage read and the generic history read are real. The generic history read is
+=marketdata.v1.history.get= with =entity_type= =ores.marketdata.market_series=;
+=market_series= and =observation_lineage= register history providers.
+
+* What is missing
+
+1. *There is no surface read.* The subject =marketdata.v1.surface.get= would
+   have to be added to return the fitted surface for an =oresmd_uri= and an
+   as-of. Until then the screen shows the series row and marks the surface
+   panel as not served. A surface model is the precondition: there is no table
+   that carries the surface's axes, its quoting convention or its
+   parameterisation.
+2. *There is no slice read.* The subject =marketdata.v1.surface-slice.get=
+   would have to be added to return the smile at one expiry: the vol at each
+   strike, with the strike labels. Until then no smile can be drawn and the
+   screen shows the raw quotes of that tenor alone. A strike-label vocabulary
+   does not exist, so a strike axis cannot yet be labelled.
+3. *There is no mesh read.* The subject =marketdata.v1.surface-mesh.get= would
+   have to be added, or the surface read extended, to return the vol across
+   expiry and strike as a grid. Until then the mesh panel is empty and
+   labelled.
+4. *There is no arbitrage check of any kind.* No operation exposes a residual,
+   a slice, a total variance or a density, so neither the calendar check nor
+   the butterfly check can run. The candidate is a subject such as
+   =marketdata.v1.surface.arbitrage=, returning the total variance along an
+   expiry axis and the implied density along a smile. Until then the screen
+   names both checks and marks them as absent, and it does not compute them on
+   the client, because the client has no fitted surface to check.
+5. *The surface has no typed identity at the wire.* Every read is keyed by the
+   =oresmd_uri= string, so a caller cannot ask for "the USD swaption surface"
+   without knowing the URI spelling, and a slice cannot be addressed by expiry
+   and strike. The candidate is a typed surface and slice read,
+   =marketdata.v1.surfaces.*=. Until then the screen shows the URI as the
+   identity.
+6. *A read cannot be taken as of a time in the past.* The snapshot read always
+   reads now, so the person cannot inspect the surface as of the instant it
+   was calibrated. The candidate is an =as_of= parameter on the surface read.
+   Until then the screen reads the current surface only.
+
+* Related journeys
+
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — build the candidate surface these slices come from.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a smile where the market is thin.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the curve-shaped sibling of this check.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — send a sound surface to a second pair of eyes.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — see how the published surface moved over the day.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] — set the axes and the model the slices are read in.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the approver reads a similar picture before deciding.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

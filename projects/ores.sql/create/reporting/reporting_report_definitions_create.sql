@@ -54,11 +54,11 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "schedule_expression" text not null,
     "concurrency_policy" text not null,
     "scheduler_job_id" uuid null,
+    "run_grant_id" uuid null,
     "pre_processing" text not null,
     "prepared_input_key" text null,
     "post_processing" text not null,
     "is_official" boolean not null default true,
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -93,10 +93,6 @@ create index if not exists report_definitions_tenant_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists report_definitions_workspace_idx
-on "ores_reporting_report_definitions_tbl" (workspace_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_reporting_report_definitions_insert_fn()
 returns trigger as $$
 declare
@@ -104,9 +100,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
     -- Validate report_type (soft FK to ores_reporting_report_types_tbl)
     if not exists (

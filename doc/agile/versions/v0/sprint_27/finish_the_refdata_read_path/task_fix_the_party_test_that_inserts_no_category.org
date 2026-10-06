@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: FF746B22-DC1F-45A7-BA3D-CBF6C613E946
+:END:
+#+title: Task: Fix the party test that inserts no category
+#+description: refdata_party_test.sql inserts a party with no party_category, so the test aborts before its first assertion. Give the fixture its category and make the file pass.
+#+type: task
+#+level: s1
+#+filetags: :finish_the_refdata_read_path:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-tenant-and-party-search-order-and-history
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+refdata_party_test.sql now passes 12 of 12. The fixture inserts supply the
+party_category (Operational), a valid business centre (WRLD) and a status
+(Active), which the table's insert trigger validates and the schema does not
+default. Test 3 asserts the category that was stored rather than a default the
+schema does not apply, and Test 10 asserts the key that is actually unique,
+short_code, rather than full_name, which carries a plain index.
+
+Verified with pg_prove against the recreated database.

@@ -40,6 +40,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/random_generator.hpp>
+#include <vector>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
@@ -65,6 +66,17 @@ using ores::utility::domain::outcome;
 using ores::utility::generation::generation_context;
 using namespace ores::logging;
 namespace permissions = ores::iam::domain::permissions;
+
+/**
+ * @brief The access a read reports, without Member.
+ *
+ * Every person account holds Member from its first version, so the roles a
+ * test assigned are what is left once Member is set aside.
+ */
+ores::iam::service::account_access assigned(ores::iam::service::account_access access) {
+    std::erase_if(access.roles, [](const auto& entry) { return entry.role.name == "Member"; });
+    return access;
+}
 
 account write_account(database_helper& h, generation_context& gen) {
     account_repository repo;
@@ -126,7 +138,7 @@ TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", 
     assign(h, gen, caller, r);
 
     authorization_service svc(h.context());
-    const auto access = svc.read_own_access(caller.id);
+    const auto access = assigned(svc.read_own_access(caller.id));
 
     BOOST_LOG_SEV(lg, debug) << "Own access rows: " << access.roles.size();
 
@@ -156,7 +168,7 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
     assign(h, gen, other, r);
 
     authorization_service svc(h.context());
-    const auto access = svc.read_account_access(caller.id, other.id);
+    const auto access = assigned(svc.read_account_access(caller.id, other.id));
 
     BOOST_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
 
@@ -181,7 +193,7 @@ TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permissi
     assign(h, gen, other, other_role);
 
     authorization_service svc(h.context());
-    const auto access = svc.read_account_access(caller.id, other.id);
+    const auto access = assigned(svc.read_account_access(caller.id, other.id));
 
     BOOST_LOG_SEV(lg, debug) << "Privileged access rows: " << access.roles.size();
 
@@ -205,7 +217,7 @@ TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", tags
     auto caller = write_account(h, gen);
 
     authorization_service svc(h.context());
-    const auto access = svc.read_own_access(caller.id);
+    const auto access = assigned(svc.read_own_access(caller.id));
 
     BOOST_LOG_SEV(lg, debug) << "Empty own access rows: " << access.roles.size();
 
@@ -394,7 +406,7 @@ TEST_CASE("assign_role_records_the_reason_it_was_given_for", tags) {
     svc.assign_role(
         member.id, r.id, h.db_user(), "Covers the settlement desk", "access.cover_for_absence");
 
-    const auto access = svc.read_own_access(member.id);
+    const auto access = assigned(svc.read_own_access(member.id));
     REQUIRE(access.roles.size() == 1);
     CHECK(access.roles.front().assigned_by == h.db_user());
     CHECK(access.roles.front().change_reason_code == "access.cover_for_absence");
@@ -411,7 +423,7 @@ TEST_CASE("assign_role_without_a_reason_records_a_new_record", tags) {
     authorization_service svc(h.context());
     svc.assign_role(member.id, r.id, h.db_user());
 
-    const auto access = svc.read_own_access(member.id);
+    const auto access = assigned(svc.read_own_access(member.id));
     REQUIRE(access.roles.size() == 1);
     CHECK(access.roles.front().change_reason_code == "system.new_record");
 }
@@ -426,7 +438,7 @@ TEST_CASE("assign_role_refuses_a_reason_nobody_defined", tags) {
     authorization_service svc(h.context());
     CHECK_THROWS_WITH(svc.assign_role(member.id, r.id, h.db_user(), "", "access.because_i_said_so"),
                       Catch::Matchers::ContainsSubstring("change_reason_code"));
-    CHECK(svc.read_own_access(member.id).roles.empty());
+    CHECK(assigned(svc.read_own_access(member.id)).roles.empty());
 }
 
 TEST_CASE("nobody_takes_a_role_away_from_themselves", tags) {

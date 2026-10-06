@@ -73,6 +73,7 @@ struct party_lookup {
 
 struct parties_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::string> search;
 };
 
 struct party_event {

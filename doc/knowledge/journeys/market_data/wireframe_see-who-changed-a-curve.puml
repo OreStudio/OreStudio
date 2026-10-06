@@ -1,0 +1,79 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>CURVE TRAIL: oresmd://ir/USD?type=series&instrument=ir_swap</b> | [ Back to market data ]
+  --
+  {#
+    Series | Value
+    Subclass | yield
+    Derivation | IR_CURVE_BOOTSTRAP (config ...a41f, v3)
+    Modified by | a.reyes | Performed by | a.reyes
+    Change reason | curve.recalibrate | Commentary | "Fed repricing"
+  }
+  --
+  <b>BLUEPRINT CHANGES</b>
+  {#
+    Version | When | Actor | Field | From | To
+    v3 | 2026-10-06 13:40 | a.reyes | derivation_config_version | 2 | 3
+    v2 | 2026-10-05 09:12 | m.oduya | derivation_config_id | ...9b02 | ...a41f
+  }
+  [ Compare with previous version ]
+  --
+  <b>BUILDS</b> | one observation time, one source, many points
+  {#
+    Observation time | Source | Points | Actor
+    2026-10-06 14:00 | ir_curve.usd | 34 | -
+    2026-10-06 13:30 | ir_curve.usd | 34 | -
+    2026-10-06 11:00 | manual | 1 | -
+  }
+  --
+  <b>PER-POINT PROVENANCE</b> | fwd_start=0D&tenor=2Y
+  {#
+    Field | Value
+    Derivation config | ...a41f (v3)
+    Source as-of | 2026-10-06 13:58
+    Source series | raw_ir_usd_swap_grid
+  }
+  --
+  <b>MANUAL ADJUSTMENTS</b>
+  {#
+    Node | Value | Source | Reason
+    fwd_start=0D&tenor=2Y | 4.405 | manual | -
+  }
+  --
+  <b>APPROVALS</b>
+  {#
+    State | Requested by | Requested at | Decided by | Decided at | Decision
+    (none for this object) | - | - | - | - | -
+  }
+  --
+  <b>PUBLISHES</b>
+  {#
+    Published version | Published by | Published at
+    (no publish operation exists) | - | -
+  }
+  --
+  Observations carry no actor, so a point has no version and no history. No
+  market-data approval kind and no publish operation exist, so the last two
+  panels are empty by construction. See the journey's What is missing.
+}
+
+@enduml

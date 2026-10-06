@@ -23,9 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/messaging/badge_definition_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
 #include "ores.dq.core/service/badge_definition_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 
@@ -33,6 +35,7 @@ void register_badge_definition_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.badge_definition",
+        "dq::badge_definitions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::badge_definition_service svc(scoped_ctx);
             auto versions = svc.get_definition_history(entity_id);

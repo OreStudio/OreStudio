@@ -54,13 +54,6 @@ struct cross_currency_basis_convention final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
      * @brief Unique cross-currency basis swap identifier.
      */
     std::string id;

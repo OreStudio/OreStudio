@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.trading.core/presentation/trade_type_history_field_mapper.hpp"
 #include "ores.trading.core/service/trade_type_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::trading::messaging {
 void register_trade_type_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.trade_type",
+        "trading::trade_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::trade_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

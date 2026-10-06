@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 53F31919-86FA-4E35-8594-9E72197C4A3B
+:END:
+#+title: User Journey: Publish the approved set
+#+description: A trader applies an approved candidate set so that the curve the system uses becomes the new one, and pricing and reporting see it from that moment.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader applies an approved candidate set so that the curve the system uses becomes the new one, and pricing and reporting see it from that moment.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The decision has been made. I want the curve the desk uses to be this one now,
+and I want it to say who published it." The journey is done when the candidate
+set is the published curve, priced and reported from, and the act carries the
+name of the person who published it.
+
+* Actor and trigger
+
+The actor is the trader who owns the curve. The trigger is a request that has
+reached its required number of approvals. The journey starts at the approved
+set and ends when the published version is visible to pricing and reporting.
+It follows
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]; the request it
+applies was raised in
+[[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]].
+
+Publishing is a named, attributable act. The person who applies the approval is
+recorded, and the moment the new version becomes visible is the moment of that
+act. When the kind's =approvals_required= is zero, there is nobody to decide:
+the raise is the publish, and the same operation applies it at once. When the
+count is n, the publish applies only once n distinct approvals stand.
+
+* Steps
+
+1. *Open the approved set.* The trader opens *Approvals* or the curve and reads
+   the set the approver said yes to. The system lists the approved requests
+   with the curve each one is about.
+2. *Read the approval.* The system shows the request, who approved it, when,
+   and the comment. The trader confirms that the required number of approvals
+   stands before publishing.
+3. *Read the points that will be published.* The system lists the candidate
+   points the approval covers: each =oresmd_uri=, its value and its source as
+   the derivation wrote them. The trader reads exactly what is about to become
+   live.
+4. *Apply the approved set.* The trader chooses *Publish approved set*. The
+   system records the act, marked with the signed-in trader and the time, and
+   makes this version the published curve. There is no publish operation today;
+   see /What is missing/.
+5. *Watch the moment it becomes visible.* The published version becomes the one
+   pricing and reporting read, from the published time. Nothing marks a curve
+   published, so a reader cannot tell a candidate from the live curve; see
+   /What is missing/.
+6. *Record who published.* The act carries the publisher's name and the time.
+   The approval record already names who decided; the publish does not yet name
+   who applied it.
+7. *Publish immediately when no approval is needed.* When the kind's
+   =approvals_required= is zero, the raise is the publish and the set becomes
+   live at once. No path applies a zero-approval request today; see /What is
+   missing/.
+8. *Tell the consumers.* The system tells the people and services that read
+   this curve that a new version is live. No notification kind exists for a
+   publish; see /What is missing/.
+9. *Leave.* The trader goes back to the curve, now showing the published
+   version.
+
+Step 4 is the moment. Before it, the candidate set is evidence the market or
+the recipe produced; after it, it is what the system uses. Nothing in the data
+distinguishes the two states yet, which is the gap this journey and the two
+before it exist to close.
+
+* Screens and wireframes
+
+One screen. The approval sits at the top, the points it covers sit beneath it,
+and the publish act and its effect on consumers sit at the bottom, so the trader
+reads what was approved and what would go live before the publishing control.
+
+#+caption: Publish the approved set: the approval, the points it covers, the publish act with its publisher, and the consumers that will see it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_publish-the-approved-set.png]]
+
+The publish control is disabled while no publish operation exists, and the
+panel says why, so the trader is never left wondering whether the click failed.
+
+* Prototype
+
+A static page at =doc/prototypes/publish-the-approved-set/index.html=: mock data only, no backend,
+no build step and no session. It argues that publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it.
+
+- Variants :: a the set summary, b a per-curve list, c the publish with its notifications
+- States :: zero (no approval configured), one, failed
+- Source :: =doc/prototypes/publish-the-approved-set/index.html=
+- Open :: =/OreStudio/doc/prototypes/publish-the-approved-set/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =approval_request= | The approval being applied: the kind, who asked, and the state that says it is approved | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | How many approvals publish the set, and whether zero approvals publish at once | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | Who approved, when and with what comment | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =market_series= | The curve that becomes the published one, and how it was derived | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The points the approval covers, and the rows the published version is read from | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The recipe and source as-of the published points were built from | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =notification_kind= | What kind of notice a publish sends, so consumers are told | [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] |
+| =notification= | The notice itself: who it is for and where it points | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
+
+There is no entity for a published curve. The candidate set has no identity of
+its own, and the published marker has no field; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the approved set | List the approved requests of a kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
+| Read the approval | Read the request and its decisions | =inbox.v1.approval_requests.get=, =inbox.v1.approval_decisions.list_by_request_id= | exists |
+| Read the points | Read the candidates and the latest snapshot | =marketdata.v1.market_observations.list_by_series_id=, =marketdata.v1.curve-snapshot.get= | exists |
+| Apply the approved set | Publish the approved set as the curve the system uses | =marketdata.v1.curve_bootstrap.publish= | missing |
+| Apply the approved set | Write the derived observations unconditionally | =marketdata.v1.curve_bootstrap.republish= | partial |
+| Watch the moment | Read the published version a consumer sees | =marketdata.v1.curve-snapshot.get= | partial |
+| Record who published | Name the publisher and the time on the published version | a field on the published record | missing |
+| Publish with zero approvals | Raise a request that is approved at once, then apply it | =inbox.v1.approval-requests.raise= with =approvals_required= 0 | missing |
+| Tell the consumers | Raise a publish notice to the consumers | =inbox.v1.notifications.raise= | partial |
+
+=marketdata.v1.curve_bootstrap.republish= exists and writes the derived
+observations, but its own contract says there is no review or approval gate: it
+always auto-publishes. That is the opposite of what this journey needs, so it
+is =partial= rather than the operation this step calls for.
+=inbox.v1.notifications.raise= exists and is generic, but no market-data
+notification kind tells it what a publish notice is.
+
+* What is missing
+
+1. *There is no publish operation.* Nothing applies an approval to a curve, so
+   a decided request cannot become a live curve. The candidate is
+   =marketdata.v1.curve_bootstrap.publish=, which takes the approved request
+   and the candidate set and makes it the published version under the
+   publisher's name. Until then the only write is
+   =marketdata.v1.curve_bootstrap.republish=, which publishes unconditionally
+   and ignores the approval.
+2. *There is no published marker on a series or a build.* Nothing says which
+   candidate set is the live one, so a reader cannot tell a candidate from the
+   curve in use, and no delta or withdrawal has a baseline. The candidate is a
+   published state on =market_series= — =published_at=, =published_by= and the
+   as-of published — or a publish record of its own. Until then the publish
+   control is disabled and the screen shows the latest observations without
+   claiming they are published.
+3. *There is no notification kind for a publish.* Consumers are not told a new
+   version is live. The candidate is an =ores.inbox.notification_kind= such as
+   =marketdata.curve_published=, with =message_key= and =mail_optional=, seeded
+   beside the kind that raises it. Until then the consumers panel states that
+   nobody is told.
+4. *Zero approvals have no path.* =approvals_required= is a count the kind
+   carries, including zero, but nothing moves a zero-approval request to
+   approved without a person. The candidate is the rule in the inbox service
+   that a raise with =approvals_required= 0 closes the request approved at
+   once, which then lets the owning publish apply it. Until then a kind that
+   publishes immediately cannot be expressed.
+5. *The act names no publisher.* The approval records who decided, and this
+   journey promises the person who publishes is named too. Nothing carries that
+   name. The candidate is a =published_by= field beside the published marker.
+   Until then the screen reads the name from the signed-in account and says it
+   is not yet stored.
+6. *There is no candidate set to publish.* The thing published would be a set
+   of points with one as-of, and no entity holds it. The candidate is the
+   candidate set of the first journey. Until then the publish has to name the
+   series and the as-of and take whatever the derivation wrote under it.
+
+* Related journeys
+
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — where the request this journey applies was raised.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — where the approval this journey applies was given.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — what happens when the published version turns out to be wrong.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the consumer's view of the version this journey publishes.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the record of the publish, with the name on it.
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — where the candidates that are published were built.
+
+* Related knowledge
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — how an approval is applied through the owning component's own operation
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] — the curve that becomes the published one
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] — the points the approval covers
+- [[id:76a0467e-3dd0-4516-924b-5c16a10b9bf7][ores.marketdata.operations]] — where the compute, republish and snapshot subjects are defined
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the approval this journey applies

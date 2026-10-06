@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: A1A1617E-BD47-4BA4-B4C8-A9306DF69EF7
+:END:
+#+title: Task: Implement Hotfix: scheduler accepts six-field cron expressions
+#+description: Initial task for: Hotfix: scheduler accepts six-field cron expressions
+#+type: task
+#+level: s1
+#+filetags: :scheduler_accepts_six_field_cron:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/scheduler-accepts-six-field-cron
+#+pr: 2681
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047EE39-7C69-46D8-80CF-F6B75B9851A2][Hotfix: scheduler accepts six-field cron expressions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=cron_expression::from_string= counts the fields itself and refuses any
+count but five, and the tests pin both the refusal and the day rule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6047EE39-7C69-46D8-80CF-F6B75B9851A2][Hotfix: scheduler accepts six-field cron expressions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- Six-field and four-field expressions are refused, with the count in the
+  error.
+- =next_occurrence("0 9 1 * 1")= after Tuesday 2026-10-06 is Monday
+  2026-10-12 at 09:00 local time.
+- =ores.scheduler.api.tests= passes.
+
+* Plan
+
+- In =croncpp.h= of the 2026-08-12 port, =make_cron= accepts six fields,
+  or seven when the traits declare a year range, and
+  =cron_standard_traits= declares one (lines 1445 to 1452). The parser
+  sends ="0 " + expr=, so =* * * * * *= becomes seven fields and passes.
+- Add =count_fields= beside =to_croncpp_expr= and refuse any count but
+  five before calling croncpp.
+- Tests: two more invalid inputs (a Quartz-style six-field expression and
+  a four-field one), a check that the error names the count, and a
+  =next_occurrence= case that restricts both day fields. The old port's
+  loop (=croncpp.h= 711 to 712) required both fields to match, so that
+  case also detects a return to the old rule.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ores.scheduler.api.tests before the fix | 1 case fails: =* * * * * *= accepted | =compass test run --preset linux-clang-debug-make=, full run on the column-drop branch, twice | main's croncpp 2026-08-12 |
+| ores.scheduler.api.tests after the fix | 51 assertions in 10 cases pass | =publish/bin/ores.scheduler.api.tests= | branch head before commit |
+| Scheduler suites, api, core and service | 3/3 pass | =compass test run --preset linux-clang-debug-make -- -R ores.scheduler= on a database recreated from this branch | branch head before commit |
+
+* Notes
+
+- A seeded report definition, Intercompany Exposure Matrix, has the
+  schedule =0 6 * * 1,15=: 15 in the weekday field, which is out of
+  range under both croncpp versions. Its intended cadence is not clear
+  from the seed, so it is filed as a capture rather than guessed here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2681][#2681]] | [scheduler] Refuse cron expressions that are not five fields |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=cron_expression::from_string= counts the fields and refuses any count
+but five, naming the count in its error, before croncpp sees the input.
+The tests add a Quartz-style six-field expression and a four-field one
+to the refused set, check the error text, and pin =next_occurrence= for
+an expression that restricts both day fields to the POSIX either rule
+the new croncpp applies.

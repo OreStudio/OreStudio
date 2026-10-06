@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A6472918-1412-4456-B80A-922EEA6795C9
+:END:
+#+title: A curve pillar's tenor codes are unvalidated
+#+description: ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code are undeclared soft references to refdata_tenors. The only database check validates curve_role_code, so a typo in a tenor code saves and then throws at bootstrap time inside curve_republish_resolver, where the end tenor doubles as the quote point id. Validate the codes at save time against the tenor catalogue, as the pillars already validate their curve role.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

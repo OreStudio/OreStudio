@@ -157,6 +157,14 @@ public:
     process_update_self_account_contact_information(std::ostream& out,
                                                     ores::nats::service::nats_client& session,
                                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief get-my-account-contact-information
+     */
+    static void
+    process_get_my_account_contact_information(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
 };
 
 }

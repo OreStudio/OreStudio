@@ -33,7 +33,6 @@
 export interface ZeroConvention {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     tenor_based: boolean;

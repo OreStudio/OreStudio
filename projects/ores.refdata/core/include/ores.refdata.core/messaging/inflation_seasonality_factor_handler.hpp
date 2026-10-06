@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::inflation_seasonality_factors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_inflation_seasonality_factors_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(inflation_seasonality_factor_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::inflation_seasonality_factors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_inflation_seasonality_factor_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(inflation_seasonality_factor_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::inflation_seasonality_factors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_inflation_seasonality_factors_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(inflation_seasonality_factor_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::inflation_seasonality_factors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_inflation_seasonality_factor_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(inflation_seasonality_factor_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::inflation_seasonality_factors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_inflation_seasonality_factor_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(inflation_seasonality_factor_handler_lg(), warn)

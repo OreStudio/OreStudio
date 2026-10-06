@@ -746,3 +746,39 @@ from here is what the registrar subscribes with.
  */
 #+end_src
 
+** get_my_account_contact_information_request
+:PROPERTIES:
+:subject: iam.v1.account_contact_informations.mine
+:response: get_my_account_contact_information_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief A member's read of their own contact record.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's record. The read needs no permission: it is
+ * a self read on the allow-list of Authorised reads. Reading a colleague's
+ * record is list_by_account_id, which needs
+ * iam::account_contact_informations:read.
+ */
+#+end_src
+
+** get_my_account_contact_information_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** account_contact_information
+:PROPERTIES:
+:cpp_type: std::optional<ores::iam::domain::account_contact_information>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's contact record, or nothing when they have none yet.
+ * The first update-self creates it.
+ */
+#+end_src

@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/messaging/report_analytic_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.reporting.core/presentation/report_analytic_history_field_mapper.hpp"
 #include "ores.reporting.core/service/report_analytic_service.hpp"
 
@@ -33,6 +35,7 @@ void register_report_analytic_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_analytic",
+        "reporting::report_analytics:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_analytic_service svc(scoped_ctx);
             auto versions = svc.get_analytic_history(entity_id);

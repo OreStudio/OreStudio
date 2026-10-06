@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/inflation_seasonality_factor_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/inflation_seasonality_factor_history_field_mapper.hpp"
 #include "ores.refdata.core/service/inflation_seasonality_factor_service.hpp"
 
@@ -33,6 +35,7 @@ void register_inflation_seasonality_factor_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.inflation_seasonality_factor",
+        "refdata::inflation_seasonality_factors:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::inflation_seasonality_factor_service svc(scoped_ctx);
             auto versions = svc.get_seasonality_factor_history(entity_id);

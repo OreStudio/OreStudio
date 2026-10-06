@@ -60,11 +60,10 @@ falls out of the flag rather than out of a suppression.
 
 The row holds the password material, the TOTP seed and the account holder's
 own name and mail address, so the generated reads are not open to every
-signed-in caller: the model sets =:guard_reads: true=, and the generated
-=iam.v1.accounts.list= and =iam.v1.accounts.get= handlers require
-=iam::accounts:read= before they serve anything. The default in this estate
-is that a read needs authentication alone, which is why the guard is stated
-per entity rather than assumed.
+signed-in caller: the generated =iam.v1.accounts.list= and =iam.v1.accounts.get=
+handlers require =iam::accounts:read= before they serve anything, as every
+generated read requires its resource's read code. See
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
 
 Two behavioural facets are switched off, each with a reason:
 
@@ -84,7 +83,6 @@ Two behavioural facets are switched off, each with a reason:
 :component: iam
 :has_tenant_id:    true
 :read_only:       true
-:guard_reads:     true
 :generate_touch_function: true
 :default_order: username
 :END:
@@ -613,10 +611,12 @@ or nullopt when the account is absent, is a user account, or the SHA-256
 of the supplied password does not match.
 
 #+begin_src cpp :name includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include <array>
 #include <format>
 #include <openssl/evp.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #+end_src
 

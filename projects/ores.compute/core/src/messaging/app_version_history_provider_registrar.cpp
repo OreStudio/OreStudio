@@ -25,13 +25,16 @@
 #include "ores.compute.core/messaging/app_version_history_provider_registrar.hpp"
 #include "ores.compute.core/presentation/app_version_history_field_mapper.hpp"
 #include "ores.compute.core/service/app_version_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::compute::messaging {
 
 void register_app_version_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.compute.app_version",
+        "compute::app_versions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::app_version_service svc(scoped_ctx);
             auto versions = svc.get_app_version_history(entity_id);

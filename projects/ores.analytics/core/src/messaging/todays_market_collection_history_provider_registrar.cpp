@@ -25,7 +25,9 @@
 #include "ores.analytics.core/messaging/todays_market_collection_history_provider_registrar.hpp"
 #include "ores.analytics.core/presentation/todays_market_collection_history_field_mapper.hpp"
 #include "ores.analytics.core/service/todays_market_collection_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -33,6 +35,7 @@ void register_todays_market_collection_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.todays_market_collection",
+        "analytics::todays_market_collections:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::todays_market_collection_service svc(scoped_ctx);
             auto versions = svc.get_collection_history(entity_id);

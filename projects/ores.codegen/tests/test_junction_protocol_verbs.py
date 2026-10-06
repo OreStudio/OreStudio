@@ -386,15 +386,15 @@ def test_the_handler_renders_every_canonical_decode_type(tmp_path):
         assert f"void {method}(ores::nats::message msg)" in handler, method
         assert f"decode<{request}>(msg)" in handler, request
         assert f"svc.{method}(*req)" in handler, method
-    # The write verbs prove a permission; the reads need authentication alone.
+    # Every verb proves a permission: a write its write or delete code, and a
+    # read the resource's read code.
     starts = [handler.index(f"void {method}(ores::nats::message msg)")
               for method, _, _ in CANONICAL_OPERATIONS]
     starts.append(len(handler))
     for (method, _, _), start, end in zip(CANONICAL_OPERATIONS, starts,
                                           starts[1:]):
         block = handler[start:end]
-        wants_permission = method.startswith(("put_", "delete_"))
-        assert ("has_permission(" in block) is wants_permission, method
+        assert "has_permission(" in block, method
     for retired in RETIRED_JUNCTION_TOKENS:
         assert retired not in handler, retired
     # A transport failure answers with the canonical result envelope rather

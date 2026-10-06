@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.trading.core/presentation/trade_state_history_field_mapper.hpp"
 #include "ores.trading.core/service/trade_state_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::trading::messaging {
 void register_trade_state_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.trade_state",
+        "trading::trade_states:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::trade_state_service svc(scoped_ctx);
             auto versions = svc.get_trade_state_history(entity_id);

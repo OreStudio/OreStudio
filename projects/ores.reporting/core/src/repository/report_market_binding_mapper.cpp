@@ -24,9 +24,15 @@
  */
 #include "ores.reporting.core/repository/report_market_binding_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.api/domain/report_market_binding.hpp"
 #include "ores.reporting.api/domain/report_market_binding_json_io.hpp" // IWYU pragma: keep.
+#include "ores.reporting.core/repository/report_market_binding_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::reporting::repository {
 

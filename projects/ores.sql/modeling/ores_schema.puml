@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T09:10:58.147069Z
+' Generated: 2026-10-06T15:43:15.665866Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -82,6 +82,14 @@ package "iam" #E8F4FD {
     contact record per account (unlike party contact information, which
     allows several by contact_type — a person doesn't need a Legal/
     Operations/Settlement/Billing split).
+    The record is personal data, so the generated reads are not open to every
+    signed-in caller: iam.v1.account_contact_informations.list, get and
+    list_by_account_id require iam::account_contact_informations:read, as every
+    generated read requires its resource's read code. A person reads their own
+    record through iam.v1.account_contact_informations.mine, which takes no
+    account id, and writes it through update-self; both are in
+    [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
     entity ores_iam_account_parties_tbl <<junction>> #ECECEC {
@@ -257,11 +265,10 @@ package "iam" #E8F4FD {
     falls out of the flag rather than out of a suppression.
     The row holds the password material, the TOTP seed and the account holder's
     own name and mail address, so the generated reads are not open to every
-    signed-in caller: the model sets :guard_reads: true, and the generated
-    iam.v1.accounts.list and iam.v1.accounts.get handlers require
-    iam::accounts:read before they serve anything. The default in this estate
-    is that a read needs authentication alone, which is why the guard is stated
-    per entity rather than assumed.
+    signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get
+    handlers require iam::accounts:read before they serve anything, as every
+    generated read requires its resource's read code. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     Two behavioural facets are switched off, each with a reason:
     - The entity's CRUD handler and sub-registrar, because the hand-written
     account_operations_handler already owns the write verbs.
@@ -321,9 +328,9 @@ package "iam" #E8F4FD {
     indexes so none is lost.
     The row states when and from where each account signed in, how many attempts
     failed and whether the account is locked, so it is not open to every
-    signed-in caller: the model sets :guard_reads: true, and the generated
-    iam.v1.login_info.list and iam.v1.login_info.get handlers require
-    iam::login_info:read before they serve anything.
+    signed-in caller: the generated iam.v1.login_info.list and
+    iam.v1.login_info.get handlers require iam::login_info:read before they
+    serve anything, as every generated read requires its resource's read code.
     end note
 
     entity ores_iam_permissions_tbl <<temporal>> #C6F0D8 {
@@ -355,6 +362,10 @@ package "iam" #E8F4FD {
     the four audit columns while keeping the transaction-time window. The
     :skip_uuid_check: suppression on id drops the nil-UUID check the
     hand-written table never had.
+    The list is open to every signed-in member: a member reads a role's codes in
+    words, and asks "Can I…?". The model opens it by subject with
+    :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists it. The other reads need iam::permissions:read.
     end note
 
     entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
@@ -410,6 +421,11 @@ package "iam" #E8F4FD {
     The account is usually the person who asked, but a system may ask on a
     person's behalf, so it is a column of its own rather than the request's
     requested_by.
+    Who asked for which role is not every member's business, so the generated
+    reads require iam::role_grant_requests:read, as every generated read
+    requires its resource's read code. The person who asked reads their own requests
+    through the inbox's inbox.v1.approval-requests.mine. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
     entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
@@ -473,6 +489,11 @@ package "iam" #E8F4FD {
     prefix -- iam.v1.roles.assign, .revoke, .by-account,
     .permissions and .suggest-commands -- so the two coexist rather than
     compete, and no handler is suppressed here.
+    The list and the get are open to every signed-in member: a member reads the
+    tenant's roles to choose the one to ask for. The model opens them by subject
+    with :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists both. The other reads, such as the versions, need
+    iam::roles:read.
     end note
 
     entity ores_iam_run_grants_tbl <<temporal>> #C6F0D8 {
@@ -1018,7 +1039,6 @@ package "refdata" #FFF3E0 {
         * index : text
         * on_tenor : text
         * rate_cutoff : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1119,7 +1139,6 @@ package "refdata" #FFF3E0 {
           index_settlement_days : integer
           index_payment_period : text
           overnight_lockout_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1193,7 +1212,6 @@ package "refdata" #FFF3E0 {
           accuracy : double
           max_evaluations : integer
           guess : double
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1296,7 +1314,6 @@ package "refdata" #FFF3E0 {
         * is_sweepable : boolean
         * rates_centre_code : text
           sandbox_id : uuid <<FK>>
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1825,7 +1842,6 @@ package "refdata" #FFF3E0 {
         * pays_at_default_time : boolean
           upfront_settlement_days : integer
           last_period_day_count_fraction : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1921,7 +1937,6 @@ package "refdata" #FFF3E0 {
         * calendar : text
         * day_count_fraction : text
         * roll_convention : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2012,7 +2027,6 @@ package "refdata" #FFF3E0 {
           delivery_location : text
           business_day_convention : text
           outright : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2092,7 +2106,6 @@ package "refdata" #FFF3E0 {
           prohibited_expiries : text
           future_continuation_mappings : text
           option_continuation_mappings : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2477,7 +2490,6 @@ package "refdata" #FFF3E0 {
           flat_rate_cutoff : integer
           flat_is_averaged : boolean
           flat_observation_shift : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2521,7 +2533,6 @@ package "refdata" #FFF3E0 {
           rate_cutoff : integer
           is_averaged : boolean
           observation_shift : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3724,7 +3735,6 @@ package "refdata" #FFF3E0 {
           end_of_month : boolean
           day_count_fraction : text
           settlement_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3955,7 +3965,6 @@ package "refdata" #FFF3E0 {
         --
         * version : integer
         * index : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3985,7 +3994,6 @@ package "refdata" #FFF3E0 {
           netting_type : text
           calendar : text
           overnight_index_tenor : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4018,7 +4026,6 @@ package "refdata" #FFF3E0 {
           long_term_delta_type : text
           risk_reversal_in_favor_of : text
           butterfly_style : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4095,7 +4102,6 @@ package "refdata" #FFF3E0 {
         * settlement_days : integer
         * business_day_convention : text
         * end_of_month : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4256,7 +4262,6 @@ package "refdata" #FFF3E0 {
           publication_schedule_rules : text
           publication_schedule_dates : text
           publication_schedule_derived_groups : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4374,7 +4379,6 @@ package "refdata" #FFF3E0 {
         * version : integer
           explicit_load_profile : text
           business_day_load_rules : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4750,7 +4754,6 @@ package "refdata" #FFF3E0 {
           rule : text
           payment_calendar : text
           rate_cutoff : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4777,7 +4780,6 @@ package "refdata" #FFF3E0 {
         * fixing_calendar : text
         * day_count_fraction : text
         * settlement_days : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5222,7 +5224,6 @@ package "refdata" #FFF3E0 {
         * is_virtual : boolean
           sandbox_id : uuid <<FK>>
         * status : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5505,7 +5506,6 @@ package "refdata" #FFF3E0 {
         * index : text
           float_frequency : text
           sub_periods_coupon_type : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5532,7 +5532,6 @@ package "refdata" #FFF3E0 {
         * version : integer
         * conventions : text
           fixing_calendar : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5656,7 +5655,6 @@ package "refdata" #FFF3E0 {
           short_index : text
           short_pay_tenor : text
           spread_on_short : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5698,7 +5696,6 @@ package "refdata" #FFF3E0 {
         * short_fixed_day_count_fraction : text
         * short_index : text
           long_minus_short : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6071,7 +6068,6 @@ package "refdata" #FFF3E0 {
           spot_calendar : text
           roll_convention : text
           end_of_month : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6102,7 +6098,6 @@ package "refdata" #FFF3E0 {
         * frequency : text
         * availability_lag : text
         * currency : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -6157,7 +6152,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_account_contact_informations_artefact_tbl
-    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). - Artefact Table
+    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.account_contact_informations.mine, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
     end note
 
     entity ores_dq_account_types_artefact_tbl  #F7E5FF {
@@ -6193,7 +6188,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_accounts_artefact_tbl
-    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the password material, the TOTP secret, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. Two columns need care: - service_password_hash is a real column with no domain member: it is reached only by check_service_credentials and never travels on the wire, so it is declared :sql_only: true and the generated domain struct omits it while the entity struct and the mapper keep it. - image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the password material, the TOTP seed and the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the model sets :guard_reads: true, and the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything. The default in this estate is that a read needs authentication alone, which is why the guard is stated per entity rather than assumed. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
+    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the password material, the TOTP secret, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. Two columns need care: - service_password_hash is a real column with no domain member: it is reached only by check_service_credentials and never travels on the wire, so it is declared :sql_only: true and the generated domain struct omits it while the entity struct and the mapper keep it. - image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the password material, the TOTP seed and the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything, as every generated read requires its resource's read code. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
     end note
 
     entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {
@@ -11803,11 +11798,11 @@ package "reporting" #E0F7FA {
         * schedule_expression : text
         * concurrency_policy : text
           scheduler_job_id : uuid <<FK>>
+          run_grant_id : uuid <<FK>>
         * pre_processing : text
           prepared_input_key : text
         * post_processing : text
         * is_official : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11873,7 +11868,6 @@ package "reporting" #E0F7FA {
         * output_message : text
           started_at : timestamptz
           completed_at : timestamptz
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -12656,7 +12650,6 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * source_name : text
         * enabled : boolean
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -12670,39 +12663,22 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Feed Binding Table
-    A feed binding records that a party consumes one producer source, in one
-    workspace. It is the one place a live tick finds its owners, for every feed and
-    every asset class: a tick names its own datum by its oresmd quote URI and its
-    producer by source, and the ingest loop stores it once for each enabled
-    binding of that source, under the binding's tenant and party, and republishes
-    it on the per-party realtime stream
-    marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
-    key is the datum's canonical ORE key.
-    workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
-    which resolves in every tenant. It is the seam where the future workspaces
-    feature binds scenario data: a binding reads "party P consumes source S in
-    workspace W" (see
-    [[file:../../../doc/llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]]).
-    Bindings are created by provisioning against the system party's config, not
-    per office: each party consumes the shared stream into its own per-party
-    series.
+    A feed binding records that a party consumes one producer source. It is the
+    one place a live tick finds its owners, for every feed and every asset class: a
+    tick names its own datum by its oresmd quote URI and its producer by source,
+    and the ingest loop stores it once for each enabled binding of that source,
+    under the binding's tenant and party, and republishes it on the per-party
+    realtime stream marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>, where the
+    key is the datum's canonical ORE key. Bindings are created by provisioning
+    against the system party's config, not per office: each party consumes the
+    shared stream into its own per-party series.
     Rebinding (editing source_name) switches the ingest source without restarting
     producers. Setting enabled  false= suspends the subscription without deleting
     the binding.
-    This model binds to no variability profile, and the omission is
-    deliberate rather than unfinished. A binding is workspace-scoped
-    (has_workspace_id  true=), keyed by a surrogate UUID
-    (has_uuid_primary_key  true=), and carries the standard presentation
-    tier (has_pagination  true=, has_change_reason_cache  true=,
-    has_tenant_id  true=). No profile in the catalogue has that
-    combination: workspace-scoped-lookup fixes
-    has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
-    has_workspace_id  false=, so every candidate contradicts one of the
-    two features that define this entity. Binding to the nearest profile
-    would move a false promise rather than remove it.
-    The gap is a profile the catalogue lacks, not a defect in this model.
-    ores.reporting.report_definition has the same shape and is recorded
-    in KNOWN_MODEL_DRIFT for the same reason.
+    This model binds to no variability profile. Its features match
+    uuid-surrogate-lookup, but that profile also enables the shell command
+    facet, which feed bindings do not have today. Binding it is a decision about
+    the shell surface, not about the model.
     end note
 
     entity ores_marketdata_market_fixings_tbl <<temporal>> #C6F0D8 {
@@ -12987,7 +12963,6 @@ package "analytics" #E8F5E9 {
         * transition_matrix_id : uuid <<FK>>
         * initial_state : integer
           factor_loadings : text
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -13052,7 +13027,6 @@ package "analytics" #E8F5E9 {
         * p_b : double
         * p_c : double
         * p_default : double
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -13083,7 +13057,6 @@ package "analytics" #E8F5E9 {
         * credit_simulation_config_id : uuid <<FK>>
         * netting_set_id : text <<FK>>
         * position : integer
-        * workspace_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

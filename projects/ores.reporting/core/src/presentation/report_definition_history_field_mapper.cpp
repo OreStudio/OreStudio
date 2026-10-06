@@ -23,9 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/presentation/report_definition_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::presentation {
 
@@ -47,6 +51,9 @@ render_report_definition_fields(const domain::report_definition& v) {
     fields.push_back({.name = "Scheduler Job ID",
                       .value = v.scheduler_job_id ? boost::uuids::to_string(*v.scheduler_job_id) :
                                                     std::string{}});
+    fields.push_back(
+        {.name = "Run Grant ID",
+         .value = v.run_grant_id ? boost::uuids::to_string(*v.run_grant_id) : std::string{}});
     fields.push_back({.name = "Pre Processing", .value = v.pre_processing});
     fields.push_back({.name = "Prepared Input Key", .value = v.prepared_input_key});
     fields.push_back({.name = "Post Processing", .value = v.post_processing});

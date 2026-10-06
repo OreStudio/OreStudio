@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rescue access prototype — Credentials journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The tenant administrator's Rescue access screen: one colleague's account, its
+  security state, the recovery link and the lock control. Ported from
+  projects/ores.web/packages/web/src/prototype/RescueAccessPrototype.tsx, which
+  the journey doc records as accepted as variant B, diagnose then act
+  (doc/knowledge/journeys/credentials/journey_rescue_access.org).
+
+  Three structural variants, switchable with ?variant=a|b|c, a roster selection
+  switchable with ?account=, a sent state switchable with ?state=rest|sent, and
+  the lock control drawn as ?lock=locked|unlocked. Nothing here reads or writes
+  a service.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state" hidden></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

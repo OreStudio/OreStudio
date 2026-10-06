@@ -22,7 +22,7 @@ The rule field governs IMM dates and standard CDS roll dates.
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

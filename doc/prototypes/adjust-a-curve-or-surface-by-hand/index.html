@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adjust a curve or surface by hand prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's "Adjust a curve or surface by hand" screen
+  (doc/knowledge/journeys/market_data/journey_adjust-a-curve-or-surface-by-hand.org):
+  the candidate and its points at the top, the correction forms in the middle,
+  and the state of every correction at the foot, so the person reads what the
+  feed gave, keys a correction with a reason, then reads what survives a tick.
+
+  Variants with ?variant=a|b|c. The variant is how the adjustment is applied,
+  which is the journey's central design question: a keys one node, b applies a
+  spread overlay over a segment, c pastes a set of nodes. Each variant also
+  changes the candidate table it reads against.
+  ?state=none|some|overwrite switches the mock market: no manual points, some
+  manual points, and a manual point a feed has since tried to overwrite.
+  Nothing here is published. Nothing reads a service.
+
+  Variants b and c carry the curve chart above the correction forms. The chart
+  plots the mock feed's own numeric curve over its pillars, and draws a
+  hand-keyed point as a separate amber marker so a manual point reads as
+  distinct from a market point. The chart needs no derived numbers.
+  The mock has no numeric surface: the surface form holds one value and the
+  strike is not modelled, so this screen draws no surface heat map.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'some';
+
+const reasons = ['Desk mark', 'Bad print', 'Thin market', 'Stale quote', 'Missing quote', 'What-if'];
+const SEGMENT = ['2Y', '5Y', '10Y'];
+const PASTED = ['1Y', '2Y', '5Y', '10Y'];
+const SHIFT = 0.0005;
+
+const feed = [
+  {c:'1M',  role:'DEPOSIT', value:4.3120, source:'synthetic.v1.tick', at:'13:58'},
+  {c:'3M',  role:'DEPOSIT', value:4.3450, source:'synthetic.v1.tick', at:'13:58'},
+  {c:'6M',  role:'DEPOSIT', value:4.3760, source:'synthetic.v1.tick', at:'13:59'},
+  {c:'1Y',  role:'SWAP',    value:4.4020, source:'ir_curve.usd',      at:'13:59'},
+  {c:'2Y',  role:'SWAP',    value:4.3550, source:'ir_curve.usd',      at:'13:59'},
+  {c:'5Y',  role:'SWAP',    value:4.2480, source:'ir_curve.usd',      at:'14:00'},
+  {c:'10Y', role:'SWAP',    value:4.1850, source:'ir_curve.usd',      at:'14:00'},
+  {c:'30Y', role:'SWAP',    value:3.9110, source:'ir_curve.usd',      at:'14:01'}
+];
+
+const overrides = {
+  none: [],
+  some: [
+    {c:'5Y', value:3.8800, reason:'Desk mark', actor:'a.reyes', at:'14:02', feedTry:null},
+    {c:'10Y', value:4.1920, reason:'Thin market', actor:'a.reyes', at:'14:03', feedTry:null}
+  ],
+  overwrite: [
+    {c:'5Y', value:3.8800, reason:'Desk mark', actor:'a.reyes', at:'14:02',
+     feedTry:{value:3.8825, source:'synthetic.v1.tick', at:'14:07'}}
+  ]
+}[state];
+
+const overlays = state === 'none' ? [] : [
+  {kind:'Twist', applies:'segment 2Y-10Y', shift:SHIFT, reason:'Thin market', actor:'m.oduya', at:'14:04'}
+];
+
+const overrideAt = c => overrides.find(o => o.c === c) || null;
+
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+function valu(v){ return v.toFixed(4); }
+
+function header(){
+  return `
+  <div class="top">
+    <h1>Candidate: USD OIS curve (USD.RATES.OIS.3M)</h1>
+    <span class="muted">candidate · not published</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_adjust-a-curve-or-surface-by-hand.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Candidate and as-of</h2>
+    <div class="row">
+      <div class="field"><label>Output series</label><div class="value mono">${urlButton('oresmd://ir/USD?…&amp;curve_id=USD.RATES.OIS.3M')}</div></div>
+      <div class="field"><label>Derivation</label><div class="value mono">IR_CURVE_BOOTSTRAP · config …a41f v3</div></div>
+      <div class="field"><label>As-of</label><input type="datetime-local" value="2026-10-06T14:00"></div>
+      <button class="btn" data-act="refresh">Refresh points</button>
+    </div>
+  </div>`;
+}
+
+function pointsPanel(){
+  const cols = variant === 'b' ? '<th class="num">Overlay</th>' : variant === 'c' ? '<th class="num">Pasted</th>' : '<th>Reads as</th>';
+  const rows = feed.map(p => {
+    const o = overrideAt(p.c);
+    const kind = o ? tag('◆ manual', 'warn') : tag('feed');
+    const conf = o && o.feedTry
+      ? ` ${tag('feed wrote ' + valu(o.feedTry.value) + ' at ' + o.feedTry.at, 'bad')}` : '';
+    const src = o && o.feedTry ? o.feedTry.source : (o ? 'by hand' : p.source);
+    const actor = o ? o.actor : '—';
+    const extra = variant === 'b'
+      ? (SEGMENT.includes(p.c) ? '<td class="num">+' + SHIFT.toFixed(4) + '</td>' : '<td class="num faint">—</td>')
+      : variant === 'c'
+      ? (PASTED.includes(p.c) ? '<td class="num">+0.0015</td>' : '<td class="num faint">—</td>')
+      : `<td>${o ? tag('override', 'warn') : tag('as fed')}</td>`;
+    return `<tr><td class="mono">${o ? '◆ ' : ''}${p.c}</td><td>${p.role}</td><td>${kind}${conf}</td>
+      <td class="num">${valu(o ? o.value : p.value)}</td><td>${src}</td><td>${actor}</td>${extra}</tr>`;
+  }).join('');
+  const note = state === 'overwrite'
+    ? 'A feed tick wrote 5Y at 14:07. No precedence rule exists, so the screen cannot promise the hand value won. The candidate is a rule: a manual point wins for its coordinate until it is cleared.'
+    : 'A point carries no actor and no marker that a person wrote it, so the Kind column is the screen\u2019s own guess. The candidate is a source kind on the point.';
+  return `
+  <div class="panel">
+    <h2>Candidate points</h2>
+    <table>
+      <thead><tr><th>Point</th><th>Role</th><th>Kind</th><th class="num">Value</th><th>Source</th><th>Actor</th>${cols}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="notice">${note}</div>
+  </div>`;
+}
+
+// The curve the person is changing. The mock feed already carries a numeric
+// value per pillar, so the chart reads those values directly and derives none.
+// A pillar a person keyed by hand leaves the market series and becomes its own
+// amber marker, which is the point the screen argues for: a manual point is a
+// first-class point with an actor and a reason.
+function curveChart(){
+  const n = feed.length;
+  const x = feed.map((_, i) => n === 1 ? 0 : i / (n - 1));
+  const at = c => { const i = feed.findIndex(p => p.c === c); return i < 0 ? null : x[i]; };
+  const effective = feed.map(p => { const o = overrideAt(p.c); return o ? o.value : p.value; });
+  const hand = feed.map(p => { const o = overrideAt(p.c); return o ? o.value : null; });
+  const series = [
+    {name:'candidate curve', color:PC.colours.accent, points:effective, markers:true},
+    {name:'hand-keyed point', color:PC.colours.warn, points:hand, markers:true, r:5}
+  ];
+  const notes = ['hand-keyed, with actor and reason'].concat(overrides.length
+    ? overrides.map(o => `${o.c} keyed by ${o.actor} · ${o.reason} · ${o.at}`)
+    : ['no hand-keyed point in this state']);
+  const bands = [];
+  if (variant === 'b') bands.push({from:at('2Y'), to:at('10Y'), color:PC.colours.warn, label:'overlay segment 2Y-10Y'});
+  if (variant === 'c') bands.push({from:at('1Y'), to:at('10Y'), color:PC.colours.warn, label:'pasted nodes 1Y-10Y'});
+  return PC.line({
+    title:'USD OIS curve over its pillars',
+    series, x, bands, notes,
+    ticks: feed.map((p, i) => ({at:x[i], label:p.c})),
+    yFmt: v => v.toFixed(4),
+    yLabel: 'rate (% p.a.)',
+    h: 260,
+    caption: 'Values come straight from this screen\u2019s mock feed; nothing is derived. '+
+      'The blue line is the candidate curve, with the hand value at every keyed pillar. '+
+      'An amber marker marks a pillar a person keyed by hand, so it reads as distinct from a market point.'
+  });
+}
+
+function curvePanel(){
+  return `
+  <div class="panel">
+    <h2>The curve being changed — pillar by pillar</h2>
+    ${curveChart()}
+    <div class="notice">The blue line is the candidate curve. An amber marker is a point a person keyed by hand: it carries an actor and a reason, and its value does not come from the feed.</div>
+  </div>`;
+}
+
+function form(){
+  const controls = `<div class="field"><label>Reason</label><select>${reasons.map(r => `<option>${r}</option>`).join('')}</select></div>`;
+  if (variant === 'a') return `
+  <div class="panel">
+    <h2>Set manual point — edit one node</h2>
+    <div class="row">
+      <div class="field"><label>Tenor</label><select>${feed.map(p => `<option${p.c === '5Y' ? ' selected' : ''}>${p.c}</option>`).join('')}</select></div>
+      <div class="field"><label>Value</label><input value="3.8850"></div>
+      ${controls}
+      <button class="btn primary" data-act="manual">Set manual point</button>
+    </div>
+    <div class="notice">There is no override operation: <span class="mono">marketdata.v1.market_observations.override</span> is missing. The button names the subject it needs and writes nothing; it does not fall back to <span class="mono">.put</span>.</div>
+  </div>`;
+  if (variant === 'b') return `
+  <div class="panel">
+    <h2>Apply spread overlay — over a segment</h2>
+    <div class="row">
+      <div class="field"><label>Kind</label><select><option>Parallel</option><option selected>Twist</option></select></div>
+      <div class="field"><label>Applies to</label><select><option selected>segment 2Y-10Y</option><option>segment 5Y-30Y</option><option>all nodes</option></select></div>
+      <div class="field"><label>Shift</label><input value="0.0005"></div>
+      ${controls}
+      <button class="btn primary" data-act="overlay">Apply spread overlay</button>
+    </div>
+    <div class="notice"><span class="mono">marketdata.v1.curve.shift</span> is missing, so the overlay names its kind, its segment, its shift and its reason and writes nothing. A twist over 2Y-10Y has no operation today.</div>
+  </div>`;
+  return `
+  <div class="panel">
+    <h2>Paste a set of nodes</h2>
+    <div class="row">
+      <div class="field" style="min-width:360px"><label>Nodes (tenor, value — one per line)</label><textarea rows="4" class="mono" style="background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px">1Y 4.4050
+2Y 4.3600
+5Y 3.8850
+10Y 4.1920</textarea></div>
+      ${controls}
+      <button class="btn primary" data-act="paste">Paste nodes</button>
+    </div>
+    <div class="notice">A pasted block is several manual points in one act. Nothing writes a reason per node, so the reason above is one reason for the whole paste, and it too has nowhere to go.</div>
+  </div>`;
+}
+
+function surfacePanel(){
+  return `
+  <div class="panel">
+    <h2>Set manual surface point</h2>
+    <div class="row">
+      <div class="field"><label>Expiry</label><select><option>1Y</option><option>2Y</option><option selected>5Y</option><option>10Y</option></select></div>
+      <div class="field"><label>Strike</label><select disabled><option>(not modelled)</option></select></div>
+      <div class="field"><label>Value</label><input value="19.8"></div>
+      <div class="field"><label>Reason</label><select><option selected>Thin smile</option>${reasons.map(r => `<option>${r}</option>`).join('')}</select></div>
+      <button class="btn" data-act="surface">Set manual surface point</button>
+    </div>
+    <div class="notice">No strike-label vocabulary and no surface point coordinate, so a point cannot be addressed by (expiry, strike) and the strike picker is absent.</div>
+  </div>`;
+}
+
+function correctionsPanel(){
+  const rows = overlays.concat(overrides).map(o => {
+    const point = o.c || o.applies;
+    const kind = o.kind ? 'overlay' : 'manual';
+    const survives = state === 'overwrite' && o.c === '5Y'
+      ? tag('held, hand wins until cleared', 'ok')
+      : state === 'none'
+      ? tag('no precedence rule', 'bad')
+      : tag('no precedence rule', 'bad');
+    return `<tr><td class="mono">${point}</td><td>${tag(kind, 'warn')}</td><td>${o.reason}</td><td>${o.actor} · ${o.at}</td><td>${survives}</td></tr>`;
+  }).join('');
+  const body = rows || '<tr><td colspan="5" class="faint">(none written) — the feed values stand and nothing is published</td></tr>';
+  return `
+  <div class="panel">
+    <h2>Corrections</h2>
+    <table>
+      <thead><tr><th>Point</th><th>Kind</th><th>Reason</th><th>Actor · at</th><th>Survives a feed write</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    <div class="row">
+      <button class="btn" data-act="clear">Clear manual point</button>
+      <button class="btn" data-act="approval">Arrange approval</button>
+      <button class="btn" data-act="leave">Leave unpublished</button>
+    </div>
+    <div class="notice">A manual point survives later feed updates until it is cleared. There is no clear operation and no history provider on <span class="mono">market_observation</span>, so a correction leaves no trail.</div>
+  </div>`;
+}
+
+// Prototype plotting helper. Throwaway, dependency-free, dark-theme SVG.
+// Each function returns an HTML string, so a page calls host.innerHTML = PC.line({...}).
+// Prefixed PC to stay clear of page-local names; the pages also define `tag`.
+const PC = (() => {
+  const C = {grid:'#21262d', axis:'#30363d', text:'#71717a', dim:'#a1a1aa',
+             ink:'#e3e3e6', accent:'#58a6ff', ok:'#3fb950', warn:'#d29922', bad:'#f85149'};
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt = (v, d) => v == null ? '—' : (typeof v === 'number' ? v.toFixed(d ?? 2) : String(v));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // A blue -> amber ramp for a heat cell, t in 0..1.
+  function heatColour(t){
+    const stops = [[13,23,38],[21,60,110],[32,110,170],[88,166,255],[210,153,34],[248,81,73]];
+    const p = clamp(t, 0, 1) * (stops.length - 1), i = Math.floor(p), f = p - i;
+    const a = stops[i], b = stops[Math.min(stops.length - 1, i + 1)];
+    return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(',')})`;
+  }
+
+  // Shared frame: margins, y gridlines and labels for a value axis.
+  function frame(o){
+    const w = o.w || 940, h = o.h || 300;
+    const pad = Object.assign({l:64, r:18, t:16, b:40}, o.pad || {});
+    const x0 = pad.l, x1 = w - pad.r, y0 = h - pad.b, y1 = pad.t;
+    const vals = (o.series || []).flatMap(s => s.points || []).filter(v => v != null)
+      .concat(o.extra || []);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (o.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, l2 = lo - span * 0.08, h2 = hi + span * 0.08;
+    const y = v => y0 - (v - l2) * (y0 - y1) / (h2 - l2);
+    const X = o.x ? (i => x0 + o.x[i] * (x1 - x0))
+                  : (i => x0 + i * (x1 - x0) / Math.max(1, (o.ticks ? o.ticks.length : 1) - 1));
+    const yTicks = [];
+    const steps = o.ySteps || 4;
+    for (let k = 0; k <= steps; k++) {
+      const v = l2 + (h2 - l2) * k / steps;
+      yTicks.push(`<line x1="${x0}" y1="${y(v).toFixed(1)}" x2="${x1}" y2="${y(v).toFixed(1)}" stroke="${C.grid}"/>
+        <text x="${x0 - 8}" y="${(y(v) + 3.5).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc((o.yFmt || (v => fmt(v)))(v))}</text>`);
+    }
+    const xTicks = (o.ticks || []).map(t => {
+      const px = o.x ? x0 + t.at * (x1 - x0) : X(t.at);
+      return `<text x="${px.toFixed(1)}" y="${h - pad.b + 15}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(t.label)}</text>`;
+    }).join('');
+    const grid = (o.xticks || []).map(t => {
+      const px = o.x ? x0 + t.at * (x1 - x0) : X(t.at);
+      return `<line x1="${px.toFixed(1)}" y1="${y1}" x2="${px.toFixed(1)}" y2="${y0}" stroke="${C.grid}" stroke-dasharray="2 3"/>`;
+    }).join('');
+    return {w, h, x0, x1, y0, y1, y, X, l2, h2, frame: yTicks.join('') + grid + xTicks};
+  }
+
+  function line(o){
+    const f = frame(o);
+    const bands = (o.bands || []).map(b => {
+      const xa = f.x0 + b.from * (f.x1 - f.x0), xb = f.x0 + b.to * (f.x1 - f.x0);
+      return `<rect x="${xa.toFixed(1)}" y="${f.y1}" width="${(xb - xa).toFixed(1)}" height="${(f.y0 - f.y1).toFixed(1)}"
+        fill="${b.color || C.accent}" opacity=".08"/>` +
+        (b.label ? `<text x="${((xa + xb) / 2).toFixed(1)}" y="${f.y1 + 11}" fill="${C.text}" font-size="9" text-anchor="middle">${esc(b.label)}</text>` : '');
+    }).join('');
+    const paths = (o.series || []).map(s => {
+      let d = '', pen = false;
+      s.points.forEach((v, i) => {
+        if (v == null) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + f.X(i).toFixed(1) + ',' + f.y(v).toFixed(1) + ' ';
+        pen = true;
+      });
+      const marks = s.markers ? s.points.map((v, i) => v == null ? '' :
+        `<circle cx="${f.X(i).toFixed(1)}" cy="${f.y(v).toFixed(1)}" r="${s.r || 3.4}" fill="${s.color}"/>`).join('') : '';
+      return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width || 2}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}/>${marks}`;
+    }).join('');
+    const legend = o.legend === false ? '' : `<div class="pc-legend">${(o.series || []).map(s =>
+      `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${(o.notes || []).map(n =>
+      `<span class="faint">${n}</span>`).join('')}</div>`;
+    return `<figure class="pc"><svg viewBox="0 0 ${f.w} ${f.h}" width="100%" height="${f.h}" role="img" aria-label="${esc(o.title || 'chart')}">
+      ${bands}${f.frame}${paths}
+      ${o.yLabel ? `<text x="14" y="${(f.y0 + f.y1) / 2}" fill="${C.text}" font-size="10" transform="rotate(-90 14 ${(f.y0 + f.y1) / 2})" text-anchor="middle">${esc(o.yLabel)}</text>` : ''}
+    </svg>${legend}${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  function bars(o){
+    const f = frame(Object.assign({zero: true}, o));
+    const n = o.bars.length, bw = (f.x1 - f.x0) / n;
+    const zero = f.y(0);
+    const body = o.bars.map((b, i) => {
+      const v = b.value == null ? null : b.value;
+      const x = f.x0 + i * bw + bw * 0.18, w = bw * 0.64;
+      const yv = v == null ? zero : f.y(v);
+      const top = Math.min(yv, zero), hgt = Math.abs(zero - yv);
+      const col = b.color || (v == null ? C.text : v >= 0 ? C.warn : C.accent);
+      return `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1, hgt).toFixed(1)}" fill="${col}" opacity=".85"><title>${esc(b.label)}: ${esc(fmt(v))}</title></rect>
+        <text x="${(x + w / 2).toFixed(1)}" y="${(f.h - 24)}" fill="${C.text}" font-size="9" text-anchor="middle">${esc(b.label)}</text>`;
+    }).join('');
+    return `<figure class="pc"><svg viewBox="0 0 ${f.w} ${f.h}" width="100%" height="${f.h}" role="img" aria-label="${esc(o.title || 'bars')}">
+      ${f.frame}<line x1="${f.x0}" y1="${zero}" x2="${f.x1}" y2="${zero}" stroke="${C.axis}"/>${body}</svg>
+      ${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  // A surface as a shaded mesh grid: one cell per (row, column).
+  function heat(o){
+    const rows = o.rows, cols = o.cols;
+    const cw = o.cell || 54, ch = o.cellH || 30, l = 58, t = 26;
+    const w = l + cols.length * cw + (o.legend === false ? 14 : 92);
+    const h = t + rows.length * ch + 34;
+    const vals = [];
+    rows.forEach((_, i) => cols.forEach((_, j) => { const v = o.value(i, j); if (v != null) vals.push(v); }));
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
+    const cells = [];
+    rows.forEach((r, i) => cols.forEach((c, j) => {
+      const v = o.value(i, j);
+      const x = l + j * cw, y = t + i * ch;
+      const col = v == null ? '#161619' : heatColour((v - lo) / span);
+      cells.push(`<rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2" fill="${col}"><title>${esc(r.label)} · ${esc(c.label)}: ${esc(fmt(v, o.dp))}</title></rect>`);
+      if (o.showValues !== false) cells.push(`<text x="${(x + (cw - 2) / 2).toFixed(1)}" y="${(y + ch / 2 + 3.5).toFixed(1)}" fill="${(v != null && (v - lo) / span > 0.55) ? '#0d1117' : C.ink}" font-size="9.5" text-anchor="middle">${esc(fmt(v, o.dp ?? 1))}</text>`);
+    }));
+    const rowLabels = rows.map((r, i) => `<text x="${l - 8}" y="${(t + i * ch + ch / 2 + 3.5).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc(r.label)}</text>`).join('');
+    const colLabels = cols.map((c, j) => `<text x="${(l + j * cw + (cw - 2) / 2).toFixed(1)}" y="${t - 8}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(c.label)}</text>`).join('');
+    const legend = o.legend === false ? '' : (() => {
+      const bx = l + cols.length * cw + 14, by = t, bh = rows.length * ch - 2;
+      const steps = 24, sh = bh / steps;
+      let g = '';
+      for (let k = 0; k < steps; k++) g += `<rect x="${bx}" y="${(by + k * sh).toFixed(1)}" width="12" height="${(sh + 1).toFixed(1)}" fill="${heatColour(1 - k / (steps - 1))}"/>`;
+      return `<g>${g}<text x="${bx + 18}" y="${by + 8}" fill="${C.text}" font-size="9">${esc(fmt(hi, o.dp))}</text>
+        <text x="${bx + 18}" y="${by + bh}" fill="${C.text}" font-size="9">${esc(fmt(lo, o.dp))}</text></g>`;
+    })();
+    return `<figure class="pc"><svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="${esc(o.title || 'heat map')}">
+      ${cells.join('')}${rowLabels}${colLabels}${legend}
+      ${o.xLabel ? `<text x="${(l + cols.length * cw / 2).toFixed(1)}" y="${h - 6}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(o.xLabel)}</text>` : ''}
+      ${o.yLabel ? `<text x="12" y="${(t + rows.length * ch / 2).toFixed(1)}" fill="${C.text}" font-size="10" transform="rotate(-90 12 ${(t + rows.length * ch / 2).toFixed(1)})" text-anchor="middle">${esc(o.yLabel)}</text>` : ''}
+    </svg>${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  // A surface as an isometric wireframe: rows and columns joined over a height.
+  function mesh(o){
+    const w = o.w || 940, h = o.h || 420;
+    const rows = o.z.length, cols = o.z[0].length;
+    const vals = o.z.flat().filter(v => v != null);
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
+    const ox = o.ox ?? w * 0.52;
+    const sy = o.sy ?? Math.min(22, h / (2 * Math.max(1, (rows - 1) + (cols - 1))));
+    const sx = o.sx ?? Math.min(46, (w * 0.6) / Math.max(1, (rows - 1) + (cols - 1)));
+    const sz = o.sz ?? h * 0.34;
+    const oy = o.oy ?? h - 26 - ((rows - 1) + (cols - 1)) * sy;
+    const P = (i, j) => {
+      const v = o.z[i][j];
+      const z = v == null ? 0 : (v - lo) / span;
+      return [ox + (j - i) * sx, oy + (i + j) * sy - z * sz, z];
+    };
+    const lines = [];
+    for (let i = 0; i < rows; i++) {
+      let d = '';
+      for (let j = 0; j < cols; j++) { const p = P(i, j); d += (j ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' '; }
+      lines.push(`<path d="${d}" fill="none" stroke="${C.accent}" stroke-width="1.4" opacity=".75"/>`);
+    }
+    for (let j = 0; j < cols; j++) {
+      let d = '';
+      for (let i = 0; i < rows; i++) { const p = P(i, j); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' '; }
+      lines.push(`<path d="${d}" fill="none" stroke="${C.warn}" stroke-width="1" opacity=".5"/>`);
+    }
+    const rowL = (o.rows || []).map((r, i) => { const p = P(i, 0); return `<text x="${(p[0] - 12).toFixed(1)}" y="${(p[1] + 4).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc(r.label)}</text>`; }).join('');
+    const colL = (o.cols || []).map((c, j) => { const p = P(rows - 1, j); return `<text x="${(p[0] + 10).toFixed(1)}" y="${(p[1] + 4).toFixed(1)}" fill="${C.text}" font-size="10">${esc(c.label)}</text>`; }).join('');
+    const axis = `<text x="14" y="${h - 12}" fill="${C.text}" font-size="10">height: ${esc(o.zLabel || 'value')} ${esc(fmt(lo, o.dp))}–${esc(fmt(hi, o.dp))}</text>`;
+    return `<figure class="pc"><svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="${esc(o.title || 'surface mesh')}">
+      ${lines.join('')}${rowL}${colL}${axis}</svg>
+      <div class="pc-legend"><span><i style="background:${C.accent}"></i>expiry</span><span><i style="background:${C.warn}"></i>strike</span>${(o.notes || []).map(n => `<span class="faint">${n}</span>`).join('')}</div>
+      ${o.caption ? `<figcaption class="faint">${esc(o.caption)}</figcaption>` : ''}</figure>`;
+  }
+
+  return {line, bars, heat, mesh, colours: C, heatColour};
+})();
+function render(){
+  const showCurve = variant === 'b' || variant === 'c';
+  document.getElementById('app').innerHTML = header() + pointsPanel() + (showCurve ? curvePanel() : '') + form() + surfacePanel() + correctionsPanel();
+  document.getElementById('note').textContent =
+    `Prototype · adjust a curve or surface by hand · variant ${variant.toUpperCase()} · corrections: ${state} · candidate, nothing published`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Apply</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'one node' : v === 'b' ? 'spread' : 'paste'}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Corrections</span>` +
+    ['none','some','overwrite'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    document.getElementById('note').textContent = `${b.textContent}: inert in this prototype — the subject it needs is missing`;
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

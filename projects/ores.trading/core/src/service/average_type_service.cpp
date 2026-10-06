@@ -23,10 +23,17 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/service/average_type_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/domain/average_type.hpp"
+#include "ores.trading.api/messaging/average_type_protocol.hpp"
+#include "ores.trading.core/repository/average_type_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

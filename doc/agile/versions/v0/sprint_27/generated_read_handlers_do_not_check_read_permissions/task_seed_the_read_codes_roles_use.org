@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: ED8035BF-475C-4F8A-B899-5DB479E0B86A
+:END:
+#+title: Task: Seed the read codes each role uses
+#+description: Each person role and service role holds the read codes its journeys and calls use, checked live as each role.
+#+type: task
+#+level: s1
+#+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Member's codes come from what the member screens read, traced on
+2026-10-06: the reference data record routes (=REFDATA_RECORDS= in
+=wire-protocol/src/records.ts=, 15 resources), the classification lists
+(=wire-protocol/src/classifications.ts=, 28 lookups), and the furniture every
+screen uses: badge definitions and mappings, change reasons, images and
+feature flags. 48 codes. All are vocabulary or screen furniture; none names a
+firm or a person except =assets::images:read=, which serves colleagues'
+pictures and is in Member on purpose, as a workplace directory shows them.
+
+=refdata::calendar_dates:read= is not seeded: the entity is read-only, so no
+write code was ever defined, and nothing checked a read. It must be seeded
+before the default guards it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Member exists, with 48 explicit codes traced from what the member screens
+read, and a trigger gives it to every person account when its first version
+is written; a service account gets nothing, and Member taken away is not given
+back. Three database tests prove the three cases. All 59 person accounts in
+Acme hold it after a fresh provisioning (=evidence/who_holds_member.sql=).
+
+134 read codes are seeded that no seed defined, each beside its write code
+where it has one. The service roles are granted the reads they make on other
+components, traced from the protocol headers each component includes: IAM
+provisioning, the marketdata import, ORE, and reporting's template list.
+Provisioning a tenant ran all seven steps under the guards.
+
+Through the BFF, =ashley.moore= reads 51 of the 53 member routes
+(=evidence/member_screens.py=). The two that answer 403, her sessions and her
+picture, were guarded before this story and are captured as missing self
+reads.
+
+Support's description promises read access to everything, but it holds five
+codes and Member; widening it is a product decision and is left open.

@@ -576,6 +576,18 @@ account_operations_service::update_self_account_contact_information(
     return response;
 }
 
+messaging::get_my_account_contact_information_response
+account_operations_service::get_my_account_contact_information(
+    const boost::uuids::uuid& account_id) {
+    const auto account_id_text = boost::uuids::to_string(account_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading own account contact information: " << account_id_text;
+    messaging::get_my_account_contact_information_response response;
+    auto records = contact_repo_.read_latest_by_account_id(ctx_, account_id_text, 0, 1);
+    if (!records.empty())
+        response.account_contact_information = records.front();
+    return response;
+}
+
 std::optional<domain::account>
 account_operations_service::find_account_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Finding account by username: " << username;

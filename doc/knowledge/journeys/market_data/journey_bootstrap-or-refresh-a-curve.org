@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: F55B08E3-0ADA-4267-8CB9-127FF1814549
+:END:
+#+title: User Journey: Bootstrap or refresh a curve
+#+description: A trader builds or refreshes a candidate curve from the day's market, reads its points and its health, and leaves it unpublished.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader builds or refreshes a candidate curve from the day's market, reads its points and its health, and leaves it unpublished.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to turn today's market into a curve I can check before anyone
+publishes it." The journey is done when the candidate's points answer every
+pillar of the blueprint and the person can see which market points it read, and
+nothing has been published.
+
+* Actor and trigger
+
+The actor is a trader who holds the market-data management role. The trigger is
+the start of a trading day, a material market move, or a correction to the
+curve's inputs. The journey starts at a blueprint and an as-of time, and ends
+with a candidate curve the person has read and not published.
+
+The candidate is a proposal, not an object. It is what the person reads and
+tests before the publish journey asks a checker to approve it. Nothing the
+person sees here reaches pricing: pricing reads only a published curve.
+
+* Steps
+
+1. *Find the blueprint.* The person opens *Market data*, then *Curves*, chooses
+   a currency and selects a blueprint. The system shows the blueprint: its
+   family role, its output series, its discount curve and its pillars in order.
+2. *Choose the as-of.* The person names the snapshot time the build reads, with
+   now as the default. The system shows what the market holds for the
+   blueprint's pillars at that time: which points exist, their age and their
+   source. It reads them by the as-of the person names. An observation may come
+   from a market feed or from the synthetic generator; the build treats both as
+   a point with a source, so a generated rate is marked generated rather than
+   observed, and the same bootstrap serves either.
+3. *Run the bootstrap.* The person chooses *Compute candidate*. The system calls
+   =marketdata.v1.curve_bootstrap.compute=, which bootstraps the config's
+   pillars from the observations at that as-of and replies with the computed
+   points: a point id, a date and a discount factor. Nothing is written.
+4. *Read the points.* The system shows the computed pillars in short-to-long
+   order with their discount factors, beside the market value each came from.
+   The person checks the shape of the curve and the ends.
+5. *Read the health.* The system shows a health panel: how many pillars the
+   build computed, which input points were missing, which were stale, and
+   whether the discount curve a projection needs was present. The server returns
+   no diagnostics, so the screen derives all of this from the point list and the
+   pillars it read.
+6. *Refresh.* The person changes the as-of, or corrects an input and runs
+   *Compute candidate* again. The compute is stateless, so a re-run replaces
+   the points on the screen and writes nothing.
+7. *Leave the candidate unpublished.* The person leaves the screen without
+   pressing anything that writes. The candidate exists on the screen only; see
+   /What is missing/.
+8. *The publish act, in a later journey.* A publish is a named act with an
+   owner and, where the desk configures it, an approval. The operation that
+   exists today, =marketdata.v1.curve_bootstrap.republish=, writes the
+   bootstrap's observations and lineage straight into the output series and
+   stamps it. It has no candidate step and no approval gate, so this journey
+   does not offer it.
+
+* Screens and wireframes
+
+Three screens, one build. *Result* shows the observations the build read and
+the pillars it solved; *Curves* shows the input rate, the zero rate, the
+discount factor and the forward; *Checks* shows the reprice residual, the
+convergence, and the missing or stale inputs. All three read the same build,
+so the curve never differs between them — only the question the reader is
+asking does. The blueprint and the as-of sit above all three.
+
+#+caption: Curve bootstrap: the blueprint and as-of, the candidate points, and the health of the build, with the candidate unpublished.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_bootstrap-or-refresh-a-curve.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=: mock data only, no backend,
+no build step and no session. It argues that a build produces a candidate, not a curve the system uses: the observations, their provenance and the health read together, unpublished.
+
+- Screens :: =?variant=a= Result (observations and solved pillars), =?variant=b= Curves (the four curves), =?variant=c= Checks (residual, convergence, missing and stale)
+- Input source :: =?source=real= market observations, =?source=synthetic= a generated feed; the same bootstrap either way, so only the provenance differs
+- States :: clean, missing (inputs absent), projection (a projection whose discount curve is absent)
+- Source :: =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/bootstrap-or-refresh-a-curve/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =ir_curve_bootstrap_config= | The recipe the build reads: currency, output series, family role, discount curve, interpolation, day count, split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillar list the build answers, and its order | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =market_observation= | The input market points at the as-of, and the rows a republish writes | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =market_series= | The output series, and the derivation stamp a republish writes on it | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =observation_lineage= | The per-point provenance a republish writes: config, version, source as-of and source series | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+
+The computed candidate points are not an entity. They are a reply and a screen;
+the only curve the data can hold is the one a republish writes.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the blueprint | List or read a blueprint | =refdata.v1.ir_curve_bootstrap_configs.list=, =.get= | exists |
+| Find the blueprint | List its pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Choose the as-of | Read observations at an as-of | =marketdata.v1.market_observations.list= | exists |
+| Choose the as-of | Read one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Choose the as-of | Read a snapshot of the series | =marketdata.v1.curve-snapshot.get= | exists |
+| Run the bootstrap | Bootstrap the curve and echo its points | =marketdata.v1.curve_bootstrap.compute= | exists |
+| Refresh | Bootstrap again at a new as-of | =marketdata.v1.curve_bootstrap.compute= | exists |
+| Read the health | Read per-pillar diagnostics | none | missing |
+| Read the evolution | Read the curve over buckets | =marketdata.v1.curve-snapshot.buckets= | exists |
+| Leave unpublished | Store the candidate | none | missing |
+| Publish later | Bootstrap and publish the output | =marketdata.v1.curve_bootstrap.republish= | partial |
+| Publish later | Ask for the publish to be approved | =inbox.v1.approval-requests.raise= | partial |
+| Read the trail | Read every version with its diff | =marketdata.v1.history.get= | exists |
+
+The two curve operations exist server-side: the handlers and the subjects are
+in the tree. No caller sends them. The history request is the component's
+generic one, =marketdata.v1.history.get=, with =entity_type=
+=ores.marketdata.market_series= or =ores.marketdata.observation_lineage=; both
+register a history provider. =market_observation= registers none, because it
+carries no audit columns, so a point has no readable trail.
+
+* What is missing
+
+1. *Nothing calls the curve operations.* =marketdata.v1.curve_bootstrap.compute=,
+   =.republish=, =marketdata.v1.curve-snapshot.get= and =.buckets= have subjects
+   and handlers, and no caller sends any of them. There is no web page, HTTP
+   route or shell verb for a curve operation. The candidate is a page and a
+   route, and a verb for the shell. Until then the whole journey runs only from
+   the shell, and today no command reaches it.
+2. *There is no candidate curve.* =compute= echoes its points in the reply and
+   touches no table; =republish= writes the results straight to
+   =market_observation=. Nothing sits between them: no candidate entity and no
+   candidate state. So a candidate that is "not yet published" exists only on
+   the screen, and the person cannot return to it, compare it, or hand it to a
+   checker. The candidate is a candidate object, or a candidate state on the
+   output series. Until then the screen holds the points for its own session and
+   says so.
+3. *=republish= publishes with no approval and no named publisher.* Its own
+   model comment calls the review and approval gate "a separate, later layer on
+   top of this always-auto-publishing mechanism". No approval kind covers a
+   curve publish: the only concrete kind is =iam.role_grant=. Publishing is
+   meant to be a named, attributable act; today the operation is anonymous and
+   immediate. The candidate is a market-data approval kind, with how many
+   approvals it needs, the group that decides and the comment it requires, and a
+   publish that waits for it. Until then a screen must not offer =republish=.
+4. *A candidate has no marker.* =market_series= carries
+   =derivation_kind=, =derivation_config_id= and =derivation_config_version=,
+   and a republish stamps them; before that the series reads =OBSERVED=, exactly
+   like a series the market sent. Two series that differ only by being proposed
+   or observed look the same. The candidate is a stamp at candidate creation,
+   not at publish. Until then the screen labels the candidate itself.
+5. *The build reports no health.* =compute= returns success, a message and the
+   points. It does not say which pillar failed, which input was missing or
+   stale, or where it interpolated across a gap. The candidate is a diagnostic
+   per pillar in the response. Until then the screen derives the health panel
+   from the points it received and the pillars it read, and guesses at the
+   causes.
+6. *The reads cannot name a time.* =curve-snapshot.get= is always now: it takes
+   no as-of. =curve-snapshot.buckets= is fixed at five half-hour buckets ending
+   now, unaligned to any observation time. So the person can name a time on the
+   compute and cannot read that time back. The candidate is an as-of parameter
+   and a range on the read. Until then the screen shows only the compute's
+   reply and the series' latest state.
+7. *The curve has no typed identity at the wire.* The build is keyed by
+   =bootstrap_config_id= and the reads are keyed by the oresmd URI. Nothing
+   names the curve itself. The candidate is a typed curve identity. Until then
+   the screen joins the config to its output series by the id it read.
+
+* Related journeys
+
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — author or amend the recipe this journey builds from.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — clear the inputs before the build reads them.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — read the candidate against the quotes it came from.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — put the candidate to a second pair of eyes.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — make the candidate the curve the system uses.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

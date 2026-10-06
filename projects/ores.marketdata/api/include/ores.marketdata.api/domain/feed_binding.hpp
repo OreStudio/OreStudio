@@ -33,46 +33,27 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Persisted mapping that binds one producer source (source_name) to the party and workspace
- * that consume it; enables/disables the ingest loop subscription.
+ * @brief Persisted mapping that binds one producer source (source_name) to the party that consumes
+ * it; enables/disables the ingest loop subscription.
  *
- * A feed binding records that a party consumes one producer source, in one
- * workspace. It is the one place a live tick finds its owners, for every feed and
- * every asset class: a tick names its own datum by its oresmd quote URI and its
- * producer by source, and the ingest loop stores it once for each enabled
- * binding of that source, under the binding's tenant and party, and republishes
- * it on the per-party realtime stream
- * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>, where the
- * key is the datum's canonical ORE key.
- *
- * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
- * which resolves in every tenant. It is the seam where the future workspaces
- * feature binds scenario data: a binding reads "party P consumes source S in
- * workspace W" (see
- * [[file:../../../doc/llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]]).
- * Bindings are created by provisioning against the system party's config, not
- * per office: each party consumes the shared stream into its own per-party
- * series.
+ * A feed binding records that a party consumes one producer source. It is the
+ * one place a live tick finds its owners, for every feed and every asset class: a
+ * tick names its own datum by its oresmd quote URI and its producer by source,
+ * and the ingest loop stores it once for each enabled binding of that source,
+ * under the binding's tenant and party, and republishes it on the per-party
+ * realtime stream marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>, where the
+ * key is the datum's canonical ORE key. Bindings are created by provisioning
+ * against the system party's config, not per office: each party consumes the
+ * shared stream into its own per-party series.
  *
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
  * the binding.
  *
- * This model binds to no variability profile, and the omission is
- * deliberate rather than unfinished. A binding is workspace-scoped
- * (has_workspace_id  true=), keyed by a surrogate UUID
- * (has_uuid_primary_key  true=), and carries the standard presentation
- * tier (has_pagination  true=, has_change_reason_cache  true=,
- * has_tenant_id  true=). No profile in the catalogue has that
- * combination: workspace-scoped-lookup fixes
- * has_uuid_primary_key  false= and uuid-surrogate-lookup fixes
- * has_workspace_id  false=, so every candidate contradicts one of the
- * two features that define this entity. Binding to the nearest profile
- * would move a false promise rather than remove it.
- *
- * The gap is a profile the catalogue lacks, not a defect in this model.
- * ores.reporting.report_definition has the same shape and is recorded
- * in KNOWN_MODEL_DRIFT for the same reason.
+ * This model binds to no variability profile. Its features match
+ * uuid-surrogate-lookup, but that profile also enables the shell command
+ * facet, which feed bindings do not have today. Binding it is a decision about
+ * the shell surface, not about the model.
  */
 struct feed_binding final {
     /**
@@ -84,13 +65,6 @@ struct feed_binding final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief Surrogate UUID uniquely identifying this feed binding.

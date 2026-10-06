@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: F439271D-F8CD-4A6E-A9FE-E523A4419846
+:END:
+#+title: User Journey: Author a surface's framework
+#+description: A trader or quant defines how a volatility surface is parameterised and quoted: its expiry and strike axes, its grid, its quoting convention, its interpolation across both axes, its extrapolation and any parametric model.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant defines how a volatility surface is parameterised and quoted: its expiry and strike axes, its grid, its quoting convention, its interpolation across both axes, its extrapolation and any parametric model.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+This journey is written against a model that does not exist yet. It records the
+framework the desk needs, so that the surface model, when it is built, starts
+from the screen the person works on rather than from a table.
+
+* Goal
+
+"I want the desk's surface to be quoted and interpolated the way we agreed, so
+the calibrator reads the quotes we mean and not the ones it guesses." The
+journey is done when the framework is saved and the grid preview shows the
+expiry and strike labels the desk quotes, with the conventions the desk uses.
+
+* Actor and trigger
+
+The actor is a trader or a quant acting for the desk. The trigger is a new
+surface, a change in how the desk quotes a delta, or a calibration that read a
+label the wrong way. The journey starts at the surface list, for an asset class
+and an underlying, and ends when the person leaves the framework. The framework
+is not a published object: it is the recipe the calibration reads, and it
+changes nothing until a surface is calibrated from it.
+
+* Steps
+
+1. *Find the surface.* The person opens *Market data*, then *Surfaces*, and
+   chooses an asset class and an underlying. No surface entity exists, so the
+   system shows the volatility series it can infer: the =market_series= rows
+   whose subclass is =volatility=, grouped by their oresmd URI. The screen says
+   that no framework is stored for any of them.
+2. *Open or start a framework.* The person selects a series and the system
+   shows the framework screen, empty. There is nothing to read from the server,
+   because no surface record exists; the screen states the intended framework
+   and reads the quoted cells it can find under the series.
+3. *Set the two axes.* The person names the expiry axis as a list of tenors
+   (=1M=, =3M=, =6M=, =1Y=, =2Y=, =5Y=, =10Y=, =30Y=) and the second axis as a
+   strike or delta label axis (=ATM=, =25RR=, =25BF=, =10RR=, =10BF=). The label
+   vocabulary does not exist; the screen shows the intended labels read-only and
+   names the gap.
+4. *Define the grid.* The person says which (=expiry=, =label=) cells the desk
+   quotes, the quote type (=volatility=, =price=, =normal volatility=), the
+   expiry dates (=IMM=, tenor dates) and the day count. The system previews the
+   grid: how many cells the axes produce, which the series holds a point for,
+   and which are missing.
+5. *Set the quoting convention.* The person says whether a label is a strike, a
+   delta or an ATM/risk-reversal/butterfly combination, then the delta
+   convention (forward, spot, premium-adjusted) and the ATM type (forward,
+   delta-neutral). Nothing stores these values; the screen lists them as the
+   intended convention.
+6. *Set the interpolation across both axes.* The person chooses the time
+   interpolation (across expiries) and the strike interpolation (across the
+   second axis), such as linear in variance over time and cubic across strikes.
+7. *Set the extrapolation.* The person chooses how the surface extends past its
+   last expiry and past its last strike: flat, linear or none.
+8. *Choose the parametric model where one is used.* Where the desk fits a model
+   rather than interpolating the grid, the person chooses it (=SABR=, =SVI=) and
+   names its parameters. The screen shows the choice; there is no model to fit
+   and no parameter store.
+9. *Save the framework.* The person chooses *Save framework*. Nothing is
+   written, because no surface entity exists. The screen keeps the framework in
+   the page session and says so.
+10. *Leave.* The person goes back to the surface list. No framework survives the
+    screen; see /What is missing/.
+
+* Screens and wireframes
+
+One screen. The two axes sit at the top, the grid and the quoting convention
+that read from them sit in the middle, and the interpolation, the extrapolation
+and the parametric model sit at the bottom, so the person reads the shape
+before the maths.
+
+#+caption: Surface framework: the expiry and strike axes, the grid, the quoting convention, the two interpolation axes, the extrapolation and the parametric model.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_author-a-surfaces-framework.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/author-a-surfaces-framework/index.html=: mock data only, no backend,
+no build step and no session. It argues that a surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold.
+
+- Variants :: a the two label ladders, b the full grid preview, c a convention-first form
+- States :: proposed, nostrike (no strike-label vocabulary, so the grid cannot be laid out)
+- Source :: =doc/prototypes/author-a-surfaces-framework/index.html=
+- Open :: =/OreStudio/doc/prototypes/author-a-surfaces-framework/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The surface's identity as a volatility series, by its oresmd URI and subclass | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The quoted cells: one point per oresmd URI under the surface's series | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The provenance of a derived volatility point: which config and which source series produced it | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =series_classification_rule= | The rule that maps an ORE series key to its asset class and subclass | [[id:78CCF7BC-7D0A-437C-9E4B-395DB3CB03E9][ores.marketdata.series_classification_rule]] |
+| =market_series_asset_class= | The asset classes the surface's series belongs to | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
+
+Only the generic market-data store exists. The surface's axes, its grid, its
+quoting convention and its model are not modelled anywhere; the screen stands
+in for them.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the surface | List the volatility series | =marketdata.v1.market_series.list= | partial |
+| Find the surface | List the asset classes | =marketdata.v1.market_series_asset_classes.list_by_market_series_id= | exists |
+| Open a framework | Read the surface framework | none | missing |
+| Set the two axes | Fill the tenor picker | =refdata.v1.tenors.list= | exists |
+| Set the two axes | Read the strike or delta labels | none | missing |
+| Define the grid | Read the quoted cells | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Define the grid | Read the expiry dates and the day count | =refdata.v1.day_count_fraction_types.list= | exists |
+| Set the quoting convention | Read or write the convention | none | missing |
+| Set the interpolation | Read or write the two interpolation axes | none | missing |
+| Set the extrapolation | Read or write the two extrapolations | none | missing |
+| Choose a parametric model | Read or write the model and its parameters | none | missing |
+| Read the current surface | Read a snapshot of the grid | =marketdata.v1.curve-snapshot.get= | partial |
+| Read the current surface | Read the grid over time | =marketdata.v1.curve-snapshot.buckets= | partial |
+| Check the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.get= | exists |
+| Save the framework | Write the surface framework | none | missing |
+
+The snapshot reads take an oresmd URI and return one observation per point, so
+they read a surface's cells as a grid; they do not know that the points are a
+surface, and they carry no axis order, no label vocabulary and no as-of in the
+past.
+
+* What is missing
+
+1. *There is no surface model.* Nothing is keyed by a surface identity, and no
+   subject names one. There is no =marketdata.v1.surfaces.*= or a surface
+   config. The candidate is a surface entity with its axes, its grid and its
+   quoting convention. Until then the screen shows the volatility series it
+   can infer and states that no framework is stored.
+2. *There is no axis or grid storage.* The expiries and the strike or delta
+   labels are not rows, and a grid cell is only an =oresmd_uri= point under the
+   series. The candidate is an axis table and a grid-cell table, or a shape
+   table the cells resolve against. Until then the screen decodes the point
+   URIs through =oresmd_uri_codec= and shows the distinct labels it finds; it
+   cannot store them or fix their order.
+3. *There is no strike-label vocabulary.* No code list or table names =ATM=,
+   =25RR= or =25BF=, so a label is free text inside a URI. The candidate is a
+   reference-data strike or delta label list. Until then the screen names a
+   label as the text it decoded and cannot validate or order it.
+4. *The quoting convention has no fields.* Nothing records whether a label is a
+   strike or a delta, the delta convention, the ATM type or the premium
+   adjustment. The candidate is fields on the surface. Until then the screen
+   lists the intended values and writes none of them.
+5. *The parametric model has no storage.* No model kind and no parameters are
+   stored, so a fitted =SABR= or =SVI= surface cannot be re-read. The candidate
+   is a model kind and a parameter set per expiry. Until then the screen shows
+   the choice and no fit.
+6. *No screen exists.* No web page, HTTP route or shell verb reaches any
+   surface operation. The candidate is a page and a route. Until then the
+   journey runs only from the shell.
+7. *A volatility series is not a typed surface scope.* =market_series.list=
+   filters generically; no operation lists surfaces by underlying, currency or
+   asset class. The candidate is a typed scope. Until then the person picks a
+   series from the series list.
+
+An ORE volatility configuration family exists in =ores.refdata= (for example
+=curve_volatility_config=, which carries ORE's own =StrikeSurface= and
+=DeltaSurface= kinds). That is one ORE input document's settings, not a
+market-data surface: it holds no market points, no identity in
+=ores.marketdata= and no published object. This journey's screen does not read
+or edit it.
+
+* Related journeys
+
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — fit a candidate surface from this framework and the day's quotes.
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — read the smiles and the mesh this framework produces.
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the curve-side equivalent, which does have a stored model today.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

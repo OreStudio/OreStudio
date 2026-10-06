@@ -23,9 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/presentation/equity_position_instrument_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::presentation {
 

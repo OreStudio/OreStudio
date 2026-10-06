@@ -24,9 +24,13 @@
  */
 #include "ores.trading.service/messaging/bond_issue_leg_schedule_date_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
-#include "ores.trading.api/eventing/bond_issue_leg_schedule_date_event.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.trading.api/eventing/bond_issue_leg_schedule_date_event.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_issue_leg_schedule_date_protocol.hpp"
 
 namespace ores::trading::service::messaging {

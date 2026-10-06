@@ -51,13 +51,6 @@ struct credit_simulation_entity_config final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
      * @brief Surrogate key for the entity.
      */
     boost::uuids::uuid id;

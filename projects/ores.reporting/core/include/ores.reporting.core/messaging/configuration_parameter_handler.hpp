@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_configuration_parameters_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -125,6 +129,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_configuration_parameter_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -169,6 +177,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_configuration_parameters_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -405,6 +417,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_configuration_id_configuration_parameters_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -449,6 +465,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_parameter_definition_id_configuration_parameters_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -493,6 +513,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_configuration_parameter_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)
@@ -537,6 +561,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::configuration_parameters:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_configuration_parameter_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(configuration_parameter_handler_lg(), warn)

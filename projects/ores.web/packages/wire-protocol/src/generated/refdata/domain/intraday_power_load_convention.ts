@@ -33,7 +33,6 @@
 export interface IntradayPowerLoadConvention {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     explicit_load_profile: string | null;

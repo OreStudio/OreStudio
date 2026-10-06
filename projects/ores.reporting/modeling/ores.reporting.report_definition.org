@@ -35,7 +35,6 @@ It is cleared when the definition is suspended or archived.
 :schema:           public
 :product:          ores
 :component:        reporting
-:has_workspace_id: true
 :profile:           uuid-identified-lookup
 :END:
 
@@ -151,6 +150,22 @@ std::string("skip")
 :END:
 
 Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when status is active.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** run_grant_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The IAM run grant the definition's scheduled runs act under. Created when a
+person schedules the definition, with their consent, and revoked when it is
+unscheduled. It is not a credential: a step exchanges it for a run token. IAM
+owns the grant, so this column is not a checked foreign key.
 
 #+begin_src cpp :name generator
 std::nullopt

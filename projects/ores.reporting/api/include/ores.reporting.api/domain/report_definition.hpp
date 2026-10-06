@@ -65,13 +65,6 @@ struct report_definition final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
      * @brief UUID uniquely identifying this report definition.
      */
     boost::uuids::uuid id;
@@ -116,6 +109,14 @@ struct report_definition final {
      * status is active.
      */
     std::optional<boost::uuids::uuid> scheduler_job_id;
+
+    /**
+     * @brief The IAM run grant the definition's scheduled runs act under. Created when a person
+     * schedules the definition, with their consent, and revoked when it is unscheduled. It is not a
+     * credential: a step exchanges it for a run token. IAM owns the grant, so this column is not a
+     * checked foreign key.
+     */
+    std::optional<boost::uuids::uuid> run_grant_id;
 
     /**
      * @brief What a run does to prepare the engine's input: execute generates it from the

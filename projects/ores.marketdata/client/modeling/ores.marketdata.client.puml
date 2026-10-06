@@ -24,24 +24,50 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
         namespace client #F2F2F2 {
-            class fx_spot_subscription {
-                +handler : function<void(const domain::fx_spot_tick&)>
-                +error_handler : function<void(const string&)>
-                -sub_ : ores::nats::service::subscription
-            }
             class market_data_client {
                 -nats_ : ores::nats::service::nats_client&
-            }
-            namespace detail #F2F2F2 {
-                class ore_key_to_subject <<function>> {
-                    +call(ore_key : string, tenant_id : string, workspace_id : string, party_id : string) : string
-                }
+                +market_data_client(ores::nats::service::nats_client& nats)
+                +save_series(const vector<domain::market_series>& series) : [[nodiscard]] expected<int, string>
+                +save_observations(const vector<domain::market_observation>& observations) : [[nodiscard]] expected<int, string>
+                +list_observations(const string& series_id) : [[nodiscard]] expected<vector<domain::market_observation>, string>
+                +list_observations_page(const string& series_id, uint32_t offset, uint32_t limit) : [[nodiscard]] expected<vector<domain::market_observation>, string>
+                +list_feed_bindings() : [[nodiscard]] expected<vector<domain::feed_binding>, string>
+                +save_feed_binding(const domain::feed_binding& binding) : [[nodiscard]] expected<bool, string>
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+' No component-local edges: this part names only its own types and types from other components.
+
+' The parser drops a declaration whose parameter default carries braces. Both
+' public methods below have one, so the generated box omits them.
+
+class ores::marketdata::client::market_data_client {
+    +list_series(series_type : const string&) : [[nodiscard]] expected<vector<domain::market_series>, string>
+    +find_series_by_uri(oresmd_uri : const string&, party_id : const string&) : [[nodiscard]] expected<optional<domain::market_series>, string>
+}
+note right of "ores::marketdata::client::market_data_client"
+Every call goes through the authenticated nats_client that the
+constructor stores by reference, so that client must outlive this
+object. Each method returns std::expected: the decoded response, or
+an error string on transport, authorisation, or decode failure.
+list_series() accepts series_type and ignores it, because the
+canonical list request carries no series-type filter.
+find_series_by_uri() reads one generous page (limit 10000) and matches
+the identity client-side; with no party_id the first id-ordered match
+wins.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.client.puml"

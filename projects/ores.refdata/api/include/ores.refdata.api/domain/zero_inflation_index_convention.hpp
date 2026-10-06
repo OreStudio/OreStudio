@@ -26,7 +26,6 @@
 #define ORES_REFDATA_API_DOMAIN_ZERO_INFLATION_INDEX_CONVENTION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <optional>
 #include <string>
 #include <string_view>
 
@@ -62,13 +61,6 @@ struct zero_inflation_index_convention final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief Unique zero-coupon inflation index identifier.

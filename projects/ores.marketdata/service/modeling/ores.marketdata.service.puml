@@ -23,11 +23,107 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
+        namespace messaging #F2F2F2 {
+            class crm_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -bridge_ : shared_ptr<service::app::crm_ingest_bridge>
+                +rate(ores::nats::message msg) : void
+                +rates(ores::nats::message msg) : void
+            }
+            class curve_republish_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +republish(ores::nats::message msg) : void
+                +compute(ores::nats::message msg) : void
+            }
+        }
         namespace service #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
+                    -lg() : auto&
+                    +application()
+                    -make_context(const ores::database::database_options& db_opts) : ores::database::context
+                    +run(boost::asio::io_context& io_ctx, const config::options& cfg) : boost::asio::awaitable<void>
+                }
+                class application_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
+                }
+                class named_rate <<struct>> {
+                    +crm_name : string
+                    +rate : quant::domain::derived_rate
+                }
+                class named_rate_view <<struct>> {
+                    +crm_name : string
+                    +view : quant::domain::crm_rate_view
+                }
+                class crm_ingest_bridge {
+                    -ctx_ : ores::database::context
+                    -engines_mutex_ : mutable mutex
+                    -engines_ : shared_ptr<const engines_map>
+                    -lg() : [[nodiscard]] static auto&
+                    +crm_ingest_bridge(ores::database::context ctx)
+                    +refresh() : void
+                    +update(const string& tenant_id_str, const string& base_currency_code, const string& quote_currency_code, double rate, chrono::system_clock::time_point observed_at) : void
+                    +rate(const string& tenant_id_str, const string& party_id_str, const string& crm_name, const string& base_currency_code, const string& quote_currency_code) : [[nodiscard]] optional<quant::domain::derived_rate>
+                    +rates(const string& tenant_id_str, const string& party_id_str, const string& crm_name) : [[nodiscard]] vector<quant::domain::derived_rate>
+                    +rates(const string& tenant_id_str, const string& party_id_str) : [[nodiscard]] vector<named_rate>
+                    +resolved_rates(const string& tenant_id_str, const string& party_id_str, const string& crm_name, bool reciprocal) : [[nodiscard]] vector<quant::domain::crm_rate_view>
+                    +resolved_rates(const string& tenant_id_str, const string& party_id_str, bool reciprocal) : [[nodiscard]] vector<named_rate_view>
+                    -snapshot() : [[nodiscard]] shared_ptr<const engines_map>
+                    -resolve(const named_engine& engine, bool reciprocal) : [[nodiscard]] static vector<quant::domain::crm_rate_view>
+                }
+                class curve_republish_service {
+                    -lg() : [[nodiscard]] static auto&
+                    +compute(context ctx, const boost::uuids::uuid& bootstrap_config_id, chrono::system_clock::time_point as_of) : vector<ores::analytics::quant::service::bootstrapped_point>
+                    +republish(context ctx, const boost::uuids::uuid& bootstrap_config_id, chrono::system_clock::time_point as_of) : void
+                }
+                class feed_ingest_loop {
+                    -nats_ : ores::nats::service::client&
+                    -ctx_ : ores::database::context
+                    -crm_bridge_ : shared_ptr<crm_ingest_bridge>
+                    -mu_ : mutable mutex
+                    -tick_sub_ : optional<ores::nats::service::subscription>
+                    -bindings_by_source_ : map<string, vector<domain::feed_binding>>
+                    -stats_ : map<binding_key, shared_ptr<feed_stats>>
+                    -classifiers_ : map<string, shared_ptr<const core::series_classifier>>
+                    -unbound_warned_ : set<string>
+                    -unnameable_warned_ : set<string>
+                    -bad_value_warned_ : set<string>
+                    -status_interval_ : static constexpr chrono::minutes
+                    -stop_flag_ : atomic<bool>
+                    -status_thread_ : thread
+                    -lg() : [[nodiscard]] static auto&
+                    +feed_ingest_loop(ores::nats::service::client& nats, ores::database::context ctx, shared_ptr<crm_ingest_bridge> crm_bridge)
+                    +~feed_ingest_loop()
+                    +start() : void
+                    +refresh() : void
+                    -on_tick(const ores::nats::message& msg) : void
+                    -persist(const domain::feed_binding& binding, const datum::market_datum& tick_datum, const messaging::market_tick& tick) : bool
+                    -classifier_for(const ores::database::context& tenant_ctx) : shared_ptr<const core::series_classifier>
+                    -status_loop() : void
+                    -log_status() : void
                 }
                 class host {
+                    -lg() : auto&
+                    +execute(const vector<string>& args, ostream& std_output, ostream& error_output, boost::asio::io_context& io_ctx) : boost::asio::awaitable<int>
+                }
+                enum tick_drop {
+                    unbound_source
+                    unnameable_datum
+                    not_a_number
+                }
+                class tick_target <<struct>> {
+                    +binding : domain::feed_binding
+                    +subject : string
+                }
+                class tick_plan <<struct>> {
+                    +datum : datum::market_datum
+                    +value : double
+                    +targets : vector<tick_target>
                 }
             }
             namespace config #F2F2F2 {
@@ -38,6 +134,11 @@ namespace ores #F2F2F2 {
                     +http_base_url : string
                 }
                 class parser {
+                    +parse(const vector<string>& arguments, ostream& info, ostream& error) : optional<options>
+                }
+                class parser_exception {
+                    -message_ : string
+                    +what() : [[nodiscard]] const char*
                 }
             }
         }
@@ -45,6 +146,119 @@ namespace ores #F2F2F2 {
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::marketdata::messaging::crm_handler *-- ores::marketdata::service::app::crm_ingest_bridge
+ores::marketdata::service::app::application ..> ores::marketdata::service::config::options
+ores::marketdata::service::app::crm_ingest_bridge ..> ores::marketdata::service::app::named_rate
+ores::marketdata::service::app::crm_ingest_bridge ..> ores::marketdata::service::app::named_rate_view
+ores::marketdata::service::app::feed_ingest_loop *-- ores::marketdata::service::app::crm_ingest_bridge
+ores::marketdata::service::app::tick_plan *-- ores::marketdata::service::app::tick_target
+ores::marketdata::service::config::parser ..> ores::marketdata::service::config::options
+
+' Free functions and nested types.
+'
+' The generator reads types and the members and methods they declare at
+' namespace scope. A free function and a type declared inside another type
+' leave no trace in the boxes above. A free function belongs to a namespace
+' rather than a class, so it is drawn as a note; a nested type is noted
+' against the box that declares it.
+
+note as OresMarketdataPlanTick
+    Free function in ores::marketdata::service::app:
+    plan_tick(tick : const messaging::market_tick&, bindings : const vector<domain::feed_binding>&) : expected<tick_plan, tick_drop>
+    Decides what happens to one tick, in the order the ingest loop
+    reports it: an empty bindings is unbound_source, then the oresmd
+    URI must name a datum the ORE key codec can write, then the value
+    must parse as a number. A tick that passes gets one tick_target
+    per binding, carrying the republish subject for that binding's
+    tenant, workspace and party.
+end note
+
+note as OresMarketdataConfigOutput
+    Free function in ores::marketdata::service::config:
+    operator<<(s : ostream&, v : const options&) : ostream&
+    Writes the whole configuration as JSON. The shared host runner
+    streams it at debug level.
+end note
+
+note as OresMarketdataEventRegistrars
+    Free functions in ores::marketdata::service::messaging, one per table
+    that publishes a change event:
+    register_feed_binding_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    register_market_fixing_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    register_market_observation_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    register_market_series_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    register_observation_lineage_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    register_series_classification_rule_event_mapping(event_source : postgres_event_source&, event_bus : event_bus&, nats : client&) : subscription
+    Each registers the table's own Postgres channel against the entity's
+    event and returns the event_bus subscription that republishes each
+    notification to NATS; one payload is addressed by three subjects, so
+    the event's action completes the subject. application::run calls all
+    six and keeps the returned subscriptions alive.
+end note
+
+note as OresMarketdataHandlerHelpers
+    File-local free functions, declared in an unnamed namespace in the
+    two handler headers:
+    crm_handler.hpp -- crm_handler_lg(), rate_status_to_string(rate_status) : string,
+    as_of_to_string(system_clock::time_point) : string, and two
+    to_item(crm_name, derived_rate | crm_rate_view) : crm_rate_item
+    overloads that fill a crm_rate_item.
+    curve_republish_handler.hpp -- curve_republish_handler_lg().
+    Both _lg() functions return the handler's own logger singleton.
+end note
+
+note right of "ores::marketdata::service::app::feed_ingest_loop"
+Two private nested types, so neither is drawn above:
+binding_key -- source_name, tenant_id, party_id and workspace_id,
+all string, ordered by that tuple; the key of stats_.
+feed_stats -- tick_count : atomic<uint64_t> and last_tick_rep :
+atomic<system_clock::time_point::rep>; one per binding_key.
+end note
+
+note right of "ores::marketdata::service::app::crm_ingest_bridge"
+Three private nested types, so none is drawn above:
+pair_key -- pair<string, string>, the (tenant_id_str, party_id_str)
+key of engines_map.
+named_engine -- name : string, engine : shared_ptr<rate_engine>,
+configured_pairs : vector<pair<string, string>> and deltas :
+shared_ptr<rate_delta_tracker>; one per (tenant, party, CRM name).
+engines_map -- map<pair_key, vector<named_engine>>. The atomic-swap
+snapshot holds a shared_ptr to it.
+end note
+
+note right of "ores::marketdata::service::app::curve_republish_service"
+context is a public nested alias: using context =
+ores::database::context.
+end note
+
+class ores::marketdata::service::app::application_exception {
+    +application_exception(message : string_view = "")
+}
+note right of "ores::marketdata::service::app::application_exception"
+The explicit constructor is the one member the box above omits.
+application_exception derives from std::exception and boost::exception,
+stores the message and defaults it to the empty string, and what()
+returns it. No source in the component throws it.
+end note
+
+class ores::marketdata::service::config::parser_exception {
+    +parser_exception(message : string_view = "")
+}
+note right of "ores::marketdata::service::config::parser_exception"
+The explicit constructor is the one member the box above omits.
+parser::parse throws it on a program_options failure and on a nested
+parser_exception, after the usage line has reached the error stream.
+main() catches it and returns a plain failure code.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.service.puml"

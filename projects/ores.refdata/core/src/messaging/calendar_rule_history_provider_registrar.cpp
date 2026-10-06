@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/calendar_rule_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/calendar_rule_history_field_mapper.hpp"
 #include "ores.refdata.core/service/calendar_rule_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::refdata::messaging {
 void register_calendar_rule_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.calendar_rule",
+        "refdata::calendar_rules:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::calendar_rule_service svc(scoped_ctx);
             auto versions = svc.get_calendar_rule_history(entity_id);

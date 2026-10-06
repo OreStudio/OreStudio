@@ -768,6 +768,34 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.account_contact_informations.mine.
+     *
+     * The account comes from the validated token, so the read can answer only
+     * the caller's own record and needs no permission. It is a self read on
+     * the allow-list of Authorised reads.
+     */
+    void get_my_account_contact_information(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        try {
+            auto scope = self_request_scope(msg);
+            if (!scope)
+                return;
+            const auto& [account_id, ctx] = *scope;
+            service::account_operations_service svc(ctx);
+            auto response = svc.get_my_account_contact_information(account_id);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_my_account_contact_information_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The read failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
     void select_party(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);

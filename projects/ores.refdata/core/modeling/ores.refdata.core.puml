@@ -445,7 +445,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +party_id : string
                 +name : string
@@ -752,7 +751,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +settlement_days : int
                 +calendar : string
@@ -1233,7 +1231,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +index_based : bool
                 +index : optional<string>
@@ -1320,7 +1317,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +index : string
                 +modified_by : string
@@ -1340,7 +1336,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -1499,7 +1494,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +spot_lag : int
                 +index : string
@@ -1530,7 +1524,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +fixing_calendar : string
                 +day_count_fraction : string
@@ -1779,7 +1772,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +party_id : string
                 +name : string
@@ -1891,7 +1883,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +fixed_calendar : optional<string>
                 +fixed_frequency : string
@@ -2093,7 +2084,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +tenor_based : bool
                 +day_count_fraction : string

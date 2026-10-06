@@ -25,15 +25,6 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
-#include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
-#include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
-#include "ores.refdata.api/eventing/currency_market_tier_changed_event.hpp"
-#include "ores.refdata.api/eventing/monetary_nature_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_status_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -47,7 +38,6 @@ namespace ores::refdata::service::app {
 
 using namespace ores::logging;
 namespace ev = ores::eventing;
-namespace rdev = ores::refdata::eventing;
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -68,14 +58,6 @@ namespace {
 constexpr std::string_view service_name = "ores.refdata.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-void publish_entity_event(ores::nats::service::client& nats,
-                          const std::string& subject,
-                          const ev::domain::entity_change_event& notif) {
-    // Delegate to the shared hardened publisher: it rethrows on failure so
-    // the event_bus surfaces the lost notification at error.
-    ev::service::publish_entity_event(nats, subject, notif);
-}
-
 } // namespace
 
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
@@ -93,142 +75,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::event_bus event_bus;
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
-    // Generated per-entity event mappings (book, business_day_convention_type,
-    // business_unit, business_unit_type, country, currency, party_id_scheme,
-    // party_type, portfolio, purpose_type). See event_registrar.cpp for why
-    // not every entity is migrated here yet.
+    // Every entity's event mapping comes from the generated per-entity registrars.
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
-
-    ev::service::registrar::register_mapping<rdev::business_centre_changed_event>(
-        event_source, "ores.refdata.business_centre", "ores_refdata_business_centres");
-    ev::service::registrar::register_mapping<rdev::counterparty_contact_information_changed_event>(
-        event_source,
-        "ores.refdata.counterparty_contact_information",
-        "ores_refdata_counterparty_contact_informations");
-    ev::service::registrar::register_mapping<rdev::counterparty_identifier_changed_event>(
-        event_source,
-        "ores.refdata.counterparty_identifier",
-        "ores_refdata_counterparty_identifiers");
-    ev::service::registrar::register_mapping<rdev::currency_market_tier_changed_event>(
-        event_source, "ores.refdata.currency_market_tier", "ores_refdata_currency_market_tiers");
-    ev::service::registrar::register_mapping<rdev::monetary_nature_changed_event>(
-        event_source, "ores.refdata.monetary_nature", "ores_refdata_monetary_natures");
-    ev::service::registrar::register_mapping<rdev::party_changed_event>(
-        event_source, "ores.refdata.party", "ores_refdata_parties");
-    ev::service::registrar::register_mapping<rdev::party_contact_information_changed_event>(
-        event_source,
-        "ores.refdata.party_contact_information",
-        "ores_refdata_party_contact_informations");
-    ev::service::registrar::register_mapping<rdev::party_identifier_changed_event>(
-        event_source, "ores.refdata.party_identifier", "ores_refdata_party_identifiers");
-    ev::service::registrar::register_mapping<rdev::party_status_changed_event>(
-        event_source, "ores.refdata.party_status", "ores_refdata_party_statuses");
-
-    auto business_centre_sub = event_bus.subscribe<rdev::business_centre_changed_event>(
-        [&nats](const rdev::business_centre_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::business_centre_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.business_centre",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto counterparty_contact_sub =
-        event_bus.subscribe<rdev::counterparty_contact_information_changed_event>(
-            [&nats](const rdev::counterparty_contact_information_changed_event& e) {
-                publish_entity_event(
-                    nats,
-                    std::string(ev::domain::event_traits<
-                                rdev::counterparty_contact_information_changed_event>::name),
-                    ev::domain::entity_change_event{
-                        .entity = "ores.refdata.counterparty_contact_information",
-                        .timestamp = e.timestamp,
-                        .entity_ids = e.counterparty_contact_information_ids,
-                        .tenant_id = e.tenant_id});
-            });
-
-    auto counterparty_id_sub = event_bus.subscribe<rdev::counterparty_identifier_changed_event>(
-        [&nats](const rdev::counterparty_identifier_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<rdev::counterparty_identifier_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.counterparty_identifier",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.counterparty_identifier_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto currency_market_tier_sub = event_bus.subscribe<rdev::currency_market_tier_changed_event>(
-        [&nats](const rdev::currency_market_tier_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<rdev::currency_market_tier_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.currency_market_tier",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto monetary_nature_sub = event_bus.subscribe<rdev::monetary_nature_changed_event>(
-        [&nats](const rdev::monetary_nature_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::monetary_nature_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.monetary_nature",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto party_sub =
-        event_bus.subscribe<rdev::party_changed_event>([&nats](const rdev::party_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::party_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.party_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto party_contact_sub = event_bus.subscribe<rdev::party_contact_information_changed_event>(
-        [&nats](const rdev::party_contact_information_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(
-                    ev::domain::event_traits<rdev::party_contact_information_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party_contact_information",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.party_contact_information_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto party_id_sub = event_bus.subscribe<rdev::party_identifier_changed_event>(
-        [&nats](const rdev::party_identifier_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::party_identifier_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party_identifier",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.party_identifier_ids,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto party_status_sub = event_bus.subscribe<rdev::party_status_changed_event>(
-        [&nats](const rdev::party_status_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::party_status_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party_status",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

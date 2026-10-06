@@ -45,7 +45,6 @@ generate_synthetic_report_instance(utility::generation::generation_context& ctx)
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.name = std::string(faker::word::noun()) + "_instance" + "-" + std::to_string(idx);

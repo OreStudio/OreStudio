@@ -44,7 +44,6 @@ struct bond_yield_convention_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
-    std::string workspace_id;
     int version = 0;
     std::string party_id;
     std::string compounding;

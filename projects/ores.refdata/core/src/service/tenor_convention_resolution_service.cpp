@@ -23,11 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <cstddef>
-#include <cstdint>
+#include "ores.utility/domain/protocol.hpp"
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

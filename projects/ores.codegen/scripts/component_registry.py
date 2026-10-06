@@ -110,9 +110,17 @@ from dataclasses import dataclass
 # it out until every item passes rather than accept the eleven, so the drift and
 # protocol twin gates do not cover it until it returns. The measurement and the
 # task that removes each failure are on
-# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_correct-the-clean-standard-record.org,
-# and the task that puts marketdata back is
-# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_return-marketdata-to-the-clean-standard-registry.org.
+# doc/agile/versions/v0/sprint_26/oresmd-handwritten-grammar/task_correct-the-clean-standard-record.org.
+#
+# marketdata rejoins here at the end of its return task. Every one of the eleven
+# failures is closed by the task that owned it: W02 by the permission gate,
+# P02, G02 and H03 by the code clean, S01, S02 and V04 by the shell commands,
+# G04 and V08 by the test coverage, and P01 by the generated point-in-time list
+# read. H01 is met for the four part diagrams, which are authored in two passes;
+# the composite root carries a hand-authored component diagram, whose reason is
+# recorded on
+# doc/agile/versions/v0/sprint_27/return-marketdata-to-the-clean-standard-registry/task_return-marketdata-to-the-clean-standard-registry.org.
+# The whole record is re-measured at one commit there.
 @dataclass(frozen=True)
 class AcceptedException:
     """One checklist item a listed component does not pass.
@@ -227,6 +235,26 @@ ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
             accepted_on="2026-09-27",
         ),
     ),
+    "marketdata": (
+        AcceptedException(
+            item="H01",
+            reason=(
+                "The four part diagrams are authored in two passes: the "
+                "automated pass refreshed every box and the manual section "
+                "below each sentinel carries the derived edges and the notes "
+                "for what the parser cannot read, with each rendered image "
+                "read. The composite root is the one exception: it owns no "
+                "code, so the automated pass, which reads C++ headers, has "
+                "nothing to contribute to it, and the root carries a "
+                "hand-authored component diagram of the four parts and their "
+                "measured dependencies, with the oresmd data-model diagram "
+                "kept beside it. This is the position every other listed "
+                "composite takes."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-10-06",
+        ),
+    ),
 }
 
 
@@ -250,4 +278,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")

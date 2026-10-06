@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations: services prototype — see the running services</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  See the running services, from
+  doc/knowledge/journeys/operations/journey_see_the_running_services.org:
+  the roster the registry expects, met by the instances that report, so a
+  service that stopped keeps its row and a version that lags behind is visible.
+
+  Two variants, switchable with ?variant=reporting|nothing. The reporting
+  variant is the roster met by the samples; the nothing variant is the cold
+  start, where no instance reported in five minutes and the screen cannot say
+  why. The variant bar at the foot of the page prints the screen's whole state.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

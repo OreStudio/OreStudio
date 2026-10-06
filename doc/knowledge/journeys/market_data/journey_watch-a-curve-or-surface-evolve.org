@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: 28D1545F-1BE8-4C14-8B69-292DC12BC45F
+:END:
+#+title: User Journey: Watch a curve or surface evolve
+#+description: A market data consumer watches how one curve or surface changed over time, reading one instant or a range and naming the nodes that appeared or dropped.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market data consumer watches how one curve or surface changed over time, reading one instant or a range and naming the nodes that appeared or dropped.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see how this curve or surface moved, so I can tell whether today's
+shape is where it should be." The journey is done when the consumer has read
+one instant, has read a range at the zoom they need, and can name the nodes
+that appeared or dropped between two instants.
+
+* Actor and trigger
+
+The actor is the market data consumer: a signed-in person inside their tenant
+who holds a market data read permission. No role is called consumer today;
+read comes from the market data read permissions, such as
+=marketdata::market_series:read= or =marketdata::*=. The trigger is a question
+from a desk about a move, a report that looks wrong, or a curve the person is
+asked to judge. The journey starts at the market data series list, or at a
+curve or surface link from a report or a pricing screen, and ends when the
+person leaves the evolution view.
+
+A curve and a surface are not types at the wire. A curve is one of the market
+series the =oresmd_uri= names, and the screen is keyed by that URI: the
+snapshot reads carry an =oresmd_uri=, not a curve id. See /What is missing/.
+
+* Steps
+
+1. *Choose the object.* The person opens *Market data* and finds the series by
+   its =oresmd_uri=, its subclass or its asset classes. The system lists the
+   tenant's series: the URI, the subclass, the derivation kind, and the asset
+   classes it belongs to. The person filters by subclass or asset class.
+2. *Pick an instant.* The person picks an instant, or leaves the latest one.
+   The system resolves the latest observation per node at or before that
+   instant, so the screen holds one value per =oresmd_uri=. Today the read
+   answers for now only; see /What is missing/.
+3. *Pick a range and a zoom.* The person asks for a range: a span of time and a
+   step. The system resolves one snapshot per bucket, one every step, so the
+   screen holds the curve at each boundary. Today the read ends at now and
+   takes a step and a count, not a start and an end; see /What is missing/.
+4. *Read the aligned view.* The system lines the instants up by node, so each
+   row is one =oresmd_uri= across every instant and each column is one instant.
+   The alignment is the screen's own: the read hands back each bucket's
+   observations unaligned and with text values; see /What is missing/.
+5. *Name the added and dropped nodes.* The person asks what changed between two
+   instants. The system compares their node sets and labels every node that
+   appeared or dropped, beside the value change per node. A node the series
+   identity names but an instant does not carry cannot be told from a node that
+   was never part of the shape; see /What is missing/.
+6. *Compare two instants.* The person selects two instants. The system shows
+   them side by side, the signed difference per node, and the added and dropped
+   set from step 5.
+7. *Leave.* The person goes back to the series list or to the report they came
+   from.
+
+The reads in steps 2 and 3 are answered inside the reply. The journey carries
+no state of its own; leaving it and returning re-reads the series.
+
+* Screens and wireframes
+
+One screen. The object and the time control sit at the top, the aligned grid of
+instants by nodes sits in the middle, and the added, dropped and two-instant
+comparison sit at the bottom, so the person reads the object, then the range,
+then what changed.
+
+#+caption: Curve evolution: the series and its time control, the aligned grid of instants by nodes, and the nodes that appeared or dropped between two instants.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_watch-a-curve-or-surface-evolve.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/watch-a-curve-or-surface-evolve/index.html=: mock data only, no backend,
+no build step and no session. It argues that one instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument.
+
+- Variants :: a the matrix of instants by nodes, b a per-node sparkline list, c a two-instant compare
+- States :: stable, churn, surface; =?show== picks one instant or a range
+- Source :: =doc/prototypes/watch-a-curve-or-surface-evolve/index.html=
+- Open :: =/OreStudio/doc/prototypes/watch-a-curve-or-surface-evolve/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The object chosen: the =oresmd_uri= identity, the subclass, and the derivation kind that marks a derived series | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | Each point at each instant: the point's =oresmd_uri=, the observation time, the value as text, and the source | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | Marks a derived point and names the config, the version and the source as-of behind it | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =market_series_asset_class= | The asset classes a series belongs to, for the picker and its filter | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
+| =series_classification_rule= | How an ORE series type maps onto the subclass the picker shows | [[id:78CCF7BC-7D0A-437C-9E4B-395DB3CB03E9][ores.marketdata.series_classification_rule]] |
+
+The series is the identity. Every point is one =market_observation= row keyed
+by its own =oresmd_uri=, and the point carries no tenors or axis of its own: its
+coordinate lives inside the URI. A derived point is marked by an
+=observation_lineage= row, and nothing on the observation itself says it was
+derived.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the object | List the series | =marketdata.v1.market_series.list= | exists |
+| Choose the object | Read one series | =marketdata.v1.market_series.get= | exists |
+| Choose the object | List a series' asset classes | =marketdata.v1.market_series_asset_classes.list= | exists |
+| Choose the object | List the classification rules | =marketdata.v1.series_classification_rules.list= | exists |
+| Pick an instant | Read the latest value per node, as of now | =marketdata.v1.curve-snapshot.get= | partial |
+| Pick a range | Read one snapshot per bucket, ending now | =marketdata.v1.curve-snapshot.buckets= | partial |
+| Read the aligned view | List the raw observations of a series | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the aligned view | Read one observation | =marketdata.v1.market_observations.get= | exists |
+| Read the aligned view | Read the lineage of a derived point | =marketdata.v1.observation_lineages.get= | partial |
+| Name the added and dropped nodes | Compare two instants' node sets | no subject | missing |
+| Compare two instants | Read the difference between two instants | no subject | missing |
+
+Both snapshot reads are keyed by the =oresmd_uri=, not by an internal series id,
+so the screen never needs the id the registry holds. The bucket read returns
+=bucket_count= snapshots, oldest to newest, in one round trip, and a bucket with
+no observation at or before its boundary comes back empty. The lineage read is
+keyed by the lineage row's id, not by the observation, so the screen can read it
+only when it already has the id; see /What is missing/.
+
+* What is missing
+
+1. *No as-of and no time range.* =marketdata.v1.curve-snapshot.get= always
+   answers for now and carries no time, and
+   =marketdata.v1.curve-snapshot.buckets= takes a step and a count that end at
+   now, not a start and an end. The candidate is an as-of field on the get and
+   a start and an end on the buckets. Until then the screen offers the latest
+   instant, and a range that always ends at the latest.
+2. *No set-of-instants request.* No request names two or more instants and
+   returns one snapshot per instant, so a comparison is two or more reads that
+   the client stitches. The candidate is a request that carries a list of
+   instants. Until then the screen compares buckets taken from one bucket read.
+3. *No alignment.* The response is =vector<vector<market_observation>>=, one
+   vector per bucket, with text values and no node order, so the grid is aligned
+   in the browser on the =oresmd_uri= and each value is parsed from text. The
+   candidate is an aligned, typed response that names the series' nodes once.
+   Until then the screen groups and sorts client-side, and a node absent from a
+   bucket is a gap, not a typed null.
+4. *No declared shape.* No shape, axis or tenor-set table exists, so a series
+   names its nodes only through the =oresmd_uri= values its observations happen
+   to carry. A node that should be there and is not cannot be told from a node
+   that is not part of the curve at all. The candidate is a declared node set
+   per series. Until then the screen shows the union of the nodes it read, marks
+   the gaps, and says the shape is not declared.
+5. *No typed identity at the wire.* The series read is keyed by a UUID id and
+   its list filter takes ids only, so the picker cannot ask the server for one
+   =oresmd_uri=; it lists the tenant's series and matches the URI in the
+   browser. The candidate is a URI filter on =marketdata.v1.market_series.list=,
+   or a get by URI. Until then the screen pages the list and searches it.
+6. *No candidate-against-published marker.* No field on an observation says
+   whether it is the market's value or a published one, and no publish operation
+   exists, so the evolution view cannot separate the two. The candidate is a
+   published version or a published flag. Until then the screen reads the
+   market's values and states that the published set is not distinguished.
+
+* Related journeys
+
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — when the move needs an explanation, not just a shape
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the raw quotes behind the curve, and the ones that failed
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the candidate against the quotes it came from
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — the surface at one instant, when the shape matters more than the move
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act that makes a candidate the object this screen reads
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]]
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

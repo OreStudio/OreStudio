@@ -18,6 +18,7 @@
  *
  */
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include <string>
 #include <croncpp.h>
 
 namespace ores::scheduler::domain {
@@ -36,6 +37,28 @@ std::string to_croncpp_expr(std::string_view expr) {
     return "0 " + std::string(expr);
 }
 
+/**
+ * @brief Count the fields the way croncpp splits them.
+ *
+ * croncpp splits on the space character alone and drops the empty parts, so a
+ * run of spaces separates once and a tab does not separate at all. Counting
+ * the same way keeps this check and the library from disagreeing about how
+ * many fields an expression holds.
+ */
+std::size_t count_fields(std::string_view expr) {
+    std::size_t fields = 0;
+    bool in_field = false;
+    for (const char c : expr) {
+        if (c == ' ')
+            in_field = false;
+        else if (!in_field) {
+            ++fields;
+            in_field = true;
+        }
+    }
+    return fields;
+}
+
 } // anonymous namespace
 
 cron_expression::cron_expression()
@@ -45,8 +68,13 @@ cron_expression::cron_expression(std::string validated_expr)
     : expr_(std::move(validated_expr)) {}
 
 std::expected<cron_expression, std::string> cron_expression::from_string(std::string_view expr) {
-    // croncpp requires 6 fields, so validation prepends "0 " for the
-    // seconds field.
+    // croncpp also accepts a trailing year field, so a six-field input would
+    // pass its validation with every field shifted one place. The field count
+    // is checked here rather than left to the library.
+    if (const auto fields = count_fields(expr); fields != 5)
+        return std::unexpected(std::string("Invalid cron expression '") + std::string(expr) +
+                               "': expected 5 fields (minute hour day month weekday), found " +
+                               std::to_string(fields) + ".");
     try {
         cron::make_cron(to_croncpp_expr(expr));
         return cron_expression(std::string(expr));

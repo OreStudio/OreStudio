@@ -565,12 +565,34 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.roles.suggest-commands.
+     *
+     * The answer names an account's id and its tenant's hostname, so it is an
+     * administrator's read: the caller needs iam::roles:assign, and naming a
+     * tenant other than the caller's own, or naming one by hostname, needs
+     * iam::tenants:read as well, which only system administration holds.
+     */
     void suggest_commands(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(authorization_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         auto req = decode<suggest_role_commands_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(authorization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        const auto& caller = *ctx_expected;
+        const bool own_tenant =
+            !req->tenant_id.empty() && req->tenant_id == caller.tenant_id().to_string();
+        if (!ores::service::messaging::has_permission(caller, "iam::roles:assign") ||
+            (!own_tenant && !ores::service::messaging::has_permission(caller, "iam::tenants:read"))) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         try {

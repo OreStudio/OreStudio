@@ -1,0 +1,256 @@
+/* Versions and database prototype. Self-contained: published by the site build
+ * through its existing css project, so there is no import to wire.
+ *
+ * The tokens are the application's own, copied from
+ * projects/ores.web/packages/web/src/styles.css so a reviewer sees the
+ * prototype in the colours the real screens use. The operations furniture --
+ * cards, detail grids, notices, tags and tables -- follows the existing static
+ * prototypes beside this one. */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --radius: 0.5rem;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 7px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    max-width: 95vw;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.proto-bar button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 13px;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 999px;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar button.on { background: var(--accent-dim); color: var(--ink); }
+.proto-bar .label { padding: 0 8px; color: var(--ink); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+.proto-bar .sep { color: var(--line); padding: 0 2px; }
+
+/* The state readout the React VariantBar printed, kept as prototype chrome. */
+.proto-state {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 74px;
+    z-index: 55;
+    width: min(1100px, 94vw);
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 14px 16px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+}
+
+.proto-state[hidden] { display: none; }
+.proto-state .gist { margin: 0 0 10px; color: var(--ink-dim); }
+.proto-state .gist b { color: var(--ink); }
+.proto-state .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px 24px;
+    color: var(--ink-dim);
+}
+.proto-state .grid span { min-width: 0; }
+.proto-state .grid .v { color: var(--ink); font-family: var(--mono); }
+.proto-state .note { margin: 8px 0 0; color: var(--ink-faint); }
+.proto-state ol { margin: 8px 0 0; padding-left: 22px; color: var(--ink-dim); font-family: var(--mono); }
+.proto-state ol li { margin: 0 0 2px; }
+
+/* ------------------------------------------------------------------ */
+/* Shared page furniture                                               */
+/* ------------------------------------------------------------------ */
+
+.page { padding: 78px 24px 45vh; max-width: 1200px; margin: 0 auto; }
+
+.pageheader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+.pageheader .sub { margin: 4px 0 0; color: var(--ink-dim); font-size: 13px; }
+.head-actions { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-dim); }
+.field .flabel { font-size: 12px; }
+
+select, input {
+    background: #0e1218;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    padding: 8px 12px;
+    font: inherit;
+    font-size: 13px;
+}
+select { cursor: pointer; }
+select:focus, input:focus { outline: none; border-color: var(--accent); }
+input::placeholder { color: var(--ink-faint); }
+
+.btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn.secondary { background: var(--panel-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.notice { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin: 0 0 24px; }
+.notice.warn { background: #2a2113; border: 1px solid #4a3a17; color: #efd39a; }
+.card + .notice { margin-top: 24px; }
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+}
+.card + .card { margin-top: 24px; }
+.card > header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.card h2 { font-size: 17px; font-weight: 500; margin: 0; }
+.card > h2 { margin: 0 0 12px; }
+.card .meta { font-size: 12px; color: var(--ink-faint); }
+
+.details { display: grid; gap: 12px 32px; }
+.details.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.details.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.details.c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+    .details.c3, .details.c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+    .details.c2, .details.c3, .details.c4 { grid-template-columns: 1fr; }
+}
+.detail { min-width: 0; }
+.detail .k {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.detail .v { display: block; margin-top: 2px; font-size: 13px; overflow-wrap: anywhere; }
+.detail .v.mono { font-family: var(--mono); font-size: 12px; }
+.span2 { grid-column: 1 / -1; margin: 0; color: var(--ink-dim); font-size: 13px; }
+
+.tag {
+    display: inline-block;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    padding: 2px 8px;
+    font-size: 11px;
+    line-height: 1.25;
+    color: var(--ink-dim);
+}
+.tag.accent { border-color: rgba(88, 166, 255, 0.5); color: var(--accent-bright); background: rgba(88, 166, 255, 0.1); }
+.tag.warn { border-color: rgba(210, 153, 34, 0.5); color: var(--warn); background: rgba(210, 153, 34, 0.1); }
+.tag.muted { border-color: var(--line-soft); color: var(--ink-faint); }
+
+.table-wrap { overflow-x: auto; }
+.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data th { text-align: left; font-weight: 400; font-size: 12px; color: var(--ink-faint); padding: 4px 0; white-space: nowrap; }
+.data td { padding: 9px 0; border-top: 1px solid var(--line-soft); vertical-align: top; }
+.data td.mono, .data th.mono { font-family: var(--mono); font-size: 12px; }
+.data th + th, .data td + td { padding-left: 16px; }
+
+.note { margin: 14px 0 0; font-size: 12px; color: var(--ink-faint); }
+.empty { margin: 0; font-size: 13px; color: var(--ink-dim); }
+
+.spark { display: block; width: 100%; height: 96px; color: var(--accent); }
+
+.gaps { margin: 0; }
+.gap { margin: 0 0 12px; }
+.gap:last-child { margin-bottom: 0; }
+.gap dt { font-weight: 500; color: var(--ink); font-size: 13px; }
+.gap dd { margin: 2px 0 0; color: var(--ink-dim); font-size: 13px; }
+
+/* The database panel's "not carried yet" line. */
+.tagrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.tagrow .note { margin: 0; }
+
+.card .notice:last-child { margin-bottom: 0; }

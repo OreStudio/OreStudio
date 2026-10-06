@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/account_contact_information_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/account_contact_information_history_field_mapper.hpp"
 #include "ores.iam.core/service/account_contact_information_service.hpp"
 
@@ -33,6 +35,7 @@ void register_account_contact_information_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.account_contact_information",
+        "iam::account_contact_informations:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::account_contact_information_service svc(scoped_ctx);
             auto versions = svc.get_account_contact_information_history(entity_id);

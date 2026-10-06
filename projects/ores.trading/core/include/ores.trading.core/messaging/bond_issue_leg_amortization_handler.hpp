@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_leg_amortizations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_bond_issue_leg_amortizations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_issue_leg_amortization_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_leg_amortizations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_bond_issue_leg_amortization_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_issue_leg_amortization_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_leg_amortizations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_bond_issue_leg_amortizations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_issue_leg_amortization_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_leg_amortizations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_bond_issue_leg_amortization_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_issue_leg_amortization_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_issue_leg_amortizations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_bond_issue_leg_amortization_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_issue_leg_amortization_handler_lg(), warn)

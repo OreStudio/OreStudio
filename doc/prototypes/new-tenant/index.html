@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New tenant journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The accepted variant A of the New tenant journey: a flat step rail on the
+  left, one step on the right. The states are chosen from the query string,
+  the same way the navigation prototype chooses its own:
+
+    ?state=profile|details|review|provisioning|handoff
+    ?profile=empty_operational|acme_demo   a starting point, already chosen
+    ?open=1                                the details form, not the summary
+    ?fail=1                                make the third provisioning step fail once
+    ?run=pending|running|done|failed       a snapshot of the provisioning run
+
+  The bar at the foot mirrors the same states as buttons.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

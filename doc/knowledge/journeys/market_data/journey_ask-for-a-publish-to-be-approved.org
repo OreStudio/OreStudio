@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 239E4C3C-12E7-4A87-9DE3-16B9F093BC14
+:END:
+#+title: User Journey: Ask for a publish to be approved
+#+description: A trader who owns a curve puts the day's candidate set in front of a second pair of eyes, so that only an approved curve can become the one the system uses.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader who owns a curve puts the day's candidate set in front of a second pair of eyes, so that only an approved curve can become the one the system uses.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I built today's curve from the market, and I want it to be the curve the desk
+prices from. Somebody else has to say yes first." The journey is done when the
+system holds a raised approval request that names the candidate set, and the
+trader can read it back as waiting.
+
+* Actor and trigger
+
+The actor is the trader who owns the curve: the maker. This is the person who
+holds the market-data management role, updated the series from the feed or by
+hand, and holds the raise permission. The trigger is a candidate curve that has
+been built or refreshed and reviewed, and is now ready to leave the trader's
+hands. The journey starts at the curve's candidates for a value date and ends
+when the request is raised and visible under *My requests*. It does not end
+with a published curve: a second person decides that in
+[[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]], and the approved
+set becomes usable in
+[[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]].
+
+A request waits on a person, so the ask is written down rather than kept in the
+browser. The trader leaves the screen after raising it; the request carries the
+state. The trader must not decide their own request. That rule is a rule of the
+approval record, not of this screen; see /What is missing/.
+
+* Steps
+
+1. *Open the curve.* The trader opens the curve by its =oresmd_uri=. The system
+   reads the series and shows its identity, how it was derived, and the recipe
+   that produced it.
+2. *Read the candidates for a date.* The system lists the observation rows the
+   derivation wrote for the value date: each point named by its =oresmd_uri=,
+   with its value, its =observation_datetime= and its =source= tag. The trader
+   reads the day's points as one set, keyed by the identity the points carry.
+3. *See what changed against the last published.* The trader asks for the
+   difference between these candidates and the curve the system last published.
+   The system has no published version to compare against; see /What is
+   missing/. Until then the panel shows each point beside a note that no
+   published marker exists, and the trader compares by eye against the previous
+   snapshot they choose.
+4. *Read the provenance.* For each derived point the system shows the
+   =observation_lineage= row: the derivation config, its version and the source
+   as-of the point was built from. Beside it the trader reads the recipe's
+   config and pillars, so the set can be named point by point.
+5. *Write the reason.* The trader writes why the set should be published, in
+   their own words. The system keeps the reason on the request; there is no
+   candidate-set entity to hang it on yet.
+6. *Raise the request.* The trader chooses *Raise publish request*. The system
+   raises an approval request for the signed-in trader, waiting, with the kind
+   the request names. No market-data kind is seeded today; see /What is
+   missing/.
+7. *Confirm the separation of duties.* The system does not offer decision
+   controls to the person who raised the request, and refuses a decision by the
+   asker. The trader reads the request back as waiting, under *My requests*.
+8. *Leave.* The trader goes back to the curve. The request stays waiting until
+   somebody decides it, or until its kind's expiry closes it.
+
+Step 6 is the step that leaves somebody waiting, so the journey carries state
+from that step on: the request is a record, and both this screen and the
+approver's screen read the same one.
+
+* Screens and wireframes
+
+One screen. The curve and its recipe sit at the top, the candidate points sit
+in the middle — with the change against the last published beside them — and the
+ask and the trader's requests sit at the bottom, so the trader reads what they
+are asking about above the act of asking.
+
+#+caption: Ask for a publish: the curve and its recipe, the candidate points and their proposed change, the ask, and the trader's own requests.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_ask-for-a-publish-to-be-approved.png]]
+
+The raise control is disabled while no market-data kind exists, and the panel
+says why, so an empty action is never mistaken for a broken one.
+
+* Prototype
+
+A static page at =doc/prototypes/ask-for-a-publish-to-be-approved/index.html=: mock data only, no backend,
+no build step and no session. It argues that a publish is a request, not a save: the maker raises it with the delta and cannot decide it.
+
+- Variants :: a a per-curve changed list, b a node-level diff, c a summary by currency
+- States :: nothing, ready, raised
+- Source :: =doc/prototypes/ask-for-a-publish-to-be-approved/index.html=
+- Open :: =/OreStudio/doc/prototypes/ask-for-a-publish-to-be-approved/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The curve's identity, its derivation kind, and the recipe it was built under | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The candidate points: value, observation time and source, each identified by its =oresmd_uri= | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | Which config and version produced each derived point, and which source as-of it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =ir_curve_bootstrap_config= | The recipe named on the request | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillars the recipe asks for, so the set can be named point by point | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =approval_request= | The ask itself: who asked, which kind, why, and where it waits | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | How many approvals the ask needs, and the permission a decider must hold | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | The decisions others have taken, read back under /My requests/ | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =approval_request_state= | The state the request is in, so the trader reads "waiting" rather than a code | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
+
+A market observation is evidence: nobody signs it off. What this journey asks
+for is a decision about a set of those observations, and the decision is the
+=approval_request=, which is why the ask is an =ores.inbox= record and not a
+column on =market_series=.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the curve | List and read the series | =marketdata.v1.market_series.list=, =.get= | exists |
+| Read the candidates | List one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the candidates | Read the latest snapshot of the curve | =marketdata.v1.curve-snapshot.get= | exists |
+| Compare to the last published | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
+| Read the provenance | Read the config and its pillars | =refdata.v1.ir_curve_bootstrap_configs.get=, =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Read the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.list= | exists |
+| Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
+| Raise the request | Raise the request | =inbox.v1.approval-requests.raise= | exists |
+| Raise the request | Apply the decision when it comes (the kind's owning operation) | =marketdata.v1.curve_bootstrap.publish= | missing |
+| Confirm the separation of duties | Read my own requests and their state | =inbox.v1.approval-requests.mine= | exists |
+| Confirm the separation of duties | Read the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
+
+=inbox.v1.approval-requests.raise= is generic: it is defined in
+[[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] and
+takes a =kind_code= and a =reason=. It will raise a market-data ask the day a
+market-data kind exists. The kind's owning operation, which applies an approval,
+does not exist; that is the publish operation the third journey needs.
+
+* What is missing
+
+1. *There is no market-data approval kind.* One kind is seeded today,
+   =iam.role_grant=, and nothing registers a kind for a curve publish. The
+   candidate is a kind, =marketdata.curve_publish=, with its own
+   =decide_permission_code=, its =comment_on_approve= rule and its
+   =approvals_required= count, seeded beside the IAM kind. Until then the raise
+   cannot be given a kind, so *Raise publish request* is disabled and the panel
+   says a market-data approval kind is missing.
+2. *There is no candidate set.* A point of the curve is held by
+   =market_observation=, whose identity is the =oresmd_uri= and which has no
+   =point_id= and no tenor column; nothing groups the day's points into the one
+   thing a publish is about. The candidate is a set marker, or a detail table
+   keyed by the request's id that names the series and the as-of the set was
+   built at. Until then the screen lists the points for one as-of and the
+   trader names the set in the reason.
+3. *There is no change against the last published.* Nothing marks a series or a
+   build as published, so there is no version to diff against, and no subject
+   returns a delta. The candidate is a published marker on the series or the
+   build, plus a read such as =marketdata.v1.curve_candidates.diff=. Until then
+   the delta column is shown empty, with the reason stated, and the trader
+   compares against a snapshot they choose.
+4. *The approval has nothing to apply it.* The decision is generic, but the
+   component that owns the kind applies it through an operation of its own, and
+   no publish operation exists. The candidate is
+   =marketdata.v1.curve_bootstrap.publish=. Until then a market-data request
+   could be decided and still nothing would change, which is why the kind
+   cannot be seeded before the operation is.
+5. *No permission pair separates maker from checker.* The approval record
+   refuses a decision by the person who asked, so four-eyes holds at the
+   record. Nothing in market data yet splits the raise permission from the
+   decide permission, so one account can hold both. The candidate is a pair of
+   permission codes on the kind, one to raise and one to decide. Until then the
+   screen shows the decide permission as read-only text and cannot warn the
+   trader that they hold it.
+6. *Nothing tells the approver that a request waits.* No notification kind
+   exists for a market-data request, so the queue is the only signal. The
+   candidate is an =ores.inbox.notification_kind= such as
+   =marketdata.curve_publish_requested=. Until then the screen says the request
+   was raised and does not promise anybody is told.
+
+* Related journeys
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — where the candidate set this request is about is built.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — a candidate point written by hand rather than derived, and carried in the same set.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — the review the trader finishes before raising the request.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — where a second person answers the request this screen raises.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — where the approved candidates become the curve the system uses.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — the trail the trader checks before asking, and the auditor reads after.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, the kinds, the lifecycle and the rules every kind shares
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group hub
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] — the curve asked about
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] — the candidate points
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — the ask the journey raises
+- [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] — how many approvals, and who may decide

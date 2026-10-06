@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/tenant_status_history_field_mapper.hpp"
 #include "ores.iam.core/service/tenant_status_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::iam::messaging {
 void register_tenant_status_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.tenant_status",
+        "iam::tenant_statuses:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tenant_status_service svc(scoped_ctx);
             auto versions = svc.get_status_history(entity_id);

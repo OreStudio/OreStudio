@@ -26,7 +26,6 @@ import { AppProviders, SessionProvider, createQueryClient } from './session/Sess
 import { BootstrapProvider } from './session/BootstrapProvider.js';
 import { TranslationProvider } from './i18n/Provider.js';
 import { ConnectedApp } from './AppRoutes.js';
-import { isPrototypePath, PrototypeApp } from './prototype/PrototypeApp.js';
 import './styles.css';
 
 /**
@@ -55,16 +54,7 @@ createRoot(container).render(
                         client, because asking is a query. */}
                     <BootstrapProvider>
                         <BrowserRouter>
-                            {/* PROTOTYPE. Kept as the journeys' design record.
-                                A prototype path is answered in place of the
-                                application, so a reviewer opens one URL. The
-                                providers above it still mount; nothing on a
-                                prototype path reads them. */}
-                            {isPrototypePath(window.location.pathname) ? (
-                                <PrototypeApp pathname={window.location.pathname} />
-                            ) : (
-                                <ConnectedApp />
-                            )}
+                            <ConnectedApp />
                         </BrowserRouter>
                     </BootstrapProvider>
                 </SessionProvider>

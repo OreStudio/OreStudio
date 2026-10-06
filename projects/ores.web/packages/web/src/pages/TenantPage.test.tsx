@@ -108,10 +108,10 @@ describe('TenantPage', () => {
      * The tenant's data is a tab like its details. Nothing offers to enter or
      * leave the tenant: the read inside it is the server's, for the tab.
      */
-    it('offers the details, parties and people as tabs, read only, and no way in or out', () => {
+    it('offers the details, parties, people and history as tabs, read only, and no way in or out', () => {
         const html = renderLoaded(loaded);
 
-        for (const tab of ['Details', 'Parties', 'People']) {
+        for (const tab of ['Details', 'Parties', 'People', 'History']) {
             expect(html).toContain(`>${tab}</button>`);
         }
         expect(html).toContain('aria-selected="true"');

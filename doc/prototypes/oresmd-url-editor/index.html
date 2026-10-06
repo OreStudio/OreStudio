@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oresmd URL editor prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+body.embed{padding:.75rem}body.embed .proto-note,body.embed .proto-bar{display:none}
+.radio{display:inline-flex;gap:5px;align-items:center;font-size:.85rem}
+.chk{display:inline-flex;gap:6px;align-items:center;color:var(--ink-dim);font-size:.78rem;white-space:nowrap}
+.hint{font-size:.72rem;margin-top:3px}
+.form td{vertical-align:top}.form input,.form select{width:100%}
+.preview{word-break:break-all;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.msgs{display:grid;gap:6px}
+.msg{border-radius:6px;padding:6px 9px;border:1px solid var(--line);font-size:.82rem}
+.msg.bad{color:var(--bad);border-color:#5a2320;background:#1d1414}.msg.ok{color:var(--ok);border-color:#1f4d29;background:#111a13}
+.modal{position:fixed;inset:0;z-index:80;display:none;background:rgba(6,8,12,.72);overflow:auto;padding:3.5rem 1rem}
+.modal.on{display:block}.modal-card{width:min(920px,100%);margin:0 auto;display:grid;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+tr.click{cursor:pointer}tr.click:hover{background:var(--panel-2)}</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The oresmd URL editor. A valid oresmd URI is hard to write by hand, so every
+  screen that shows one calls this editor: a quote or a series from a schema
+  row, a fixing from an index family (doc/knowledge/domain/market_data_urn.org).
+  The composer offers the codes the system already keeps -- currencies, day
+  counters, tenors, curve ids, index names, security ids -- so the user picks
+  rather than types, and names the source of each set: the table and list
+  subject, or ORE's own vocabulary where no table exists. A closed set is a
+  select; a catalogue or grammar is a suggested list the user may overtype,
+  because ORE accepts values the catalogue omits. ?variant=a|b|c|d selects the
+  composer, the managed-URL list, a blueprint dialog that opens the editor in a
+  modal and writes the URI back, or the field-source view. ?state=NAME seeds a
+  state, ?url=URI parses a URI, ?embed=1 renders only the editor.
+  The consts below were embedded by a throwaway generator: SCHEMA from the
+  schema table and codes_of, ORIGIN from the field-to-source map, OPTIONS from
+  the refdata populate scripts and the ORE catalogue. The extract holds no power
+  index fields where market_index.hpp names delivery/start/end; the mock list
+  uses the schema's zc_inflation_swap, not the record's zc_inflationswap. Both
+  gaps are reported, not patched here.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || '';
+const embed = params.get('embed') === '1';
+const HOST = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-OIS';
+// tmp/oresmd_schema.json, verbatim.
+const SCHEMA = {"fields":["ccy","curve_id","day_counter","term","index_name","fwd_start","contract_month","contract","tenor","imm1","imm2","flat_term","maturity","identifier","flat_ccy","float_ccy","float_tenor","fixed_ccy","fixed_tenor","underlying_name","seniority","doc_clause","running_spread","cds_index_name","attachment_point","detachment_point","unit_ccy","quote_tag","expiry","dimension","strike_level","payer_receiver","index_tenor","atm","relative","cap_floor","strike_label","index","seasonality_type","month","eq_name","strike","option_type","security_id","future_contract","qualifier","contract_name","index_term","side","commodity_name","offset","index1","index2","quote_name","delivery_date","start_time_in_sec","time_unit","dst","rating_name","from_rating","to_rating"],"instrument_types":["zero","discount","mm","mm_future","oi_future","fra","imm_fra","ir_swap","basis_swap","bma_swap","cc_basis_swap","cc_fix_float_swap","cds","cds_index","fx_spot","fx_fwd","hazard_rate","recovery_rate","assumed_recovery_rate","swaption","capfloor","fx_option","zc_inflation_swap","zc_inflation_capfloor","yy_inflation_swap","yy_inflation_capfloor","seasonality","equity_spot","equity_fwd","equity_dividend","equity_option","bond","bond_future","bond_option","bond_future_option","index_cds_option","index_cds_tranche","commodity_spot","commodity_fwd","correlation","commodity_option","commodity_calendar_spread_option","shape_profile","cpr","rating"],"quote_types":["basis_spread","credit_spread","conv_credit_spread","yield_spread","hazard_rate","rate","ratio","price","rate_lnvol","rate_nvol","rate_slnvol","base_correlation","shift","transition_probability","conversion_factor","shape_factor","none"],"rows":[{"type":"zero","fields":[["ccy","id"],["curve_id","id"],["day_counter","id"],["term","at"]],"asset_class":"ir","subject":"ccy"},{"type":"discount","fields":[["ccy","id"],["curve_id","id"],["term","at"]],"asset_class":"ir","subject":"ccy"},{"type":"mm","fields":[["ccy","id"],["index_name","id_or_none"],["fwd_start","id"],["term","at"]],"asset_class":"ir","subject":"ccy"},{"type":"mm_future","fields":[["ccy","id"],["contract_month","at"],["contract","id"],["tenor","id"]],"asset_class":"ir","subject":"ccy"},{"type":"oi_future","fields":[["ccy","id"],["contract_month","at"],["contract","id"],["tenor","id"]],"asset_class":"ir","subject":"ccy"},{"type":"fra","fields":[["ccy","id"],["fwd_start","at"],["term","at"]],"asset_class":"ir","subject":"ccy"},{"type":"imm_fra","fields":[["ccy","id"],["imm1","at"],["imm2","at"]],"asset_class":"ir","subject":"ccy"},{"type":"ir_swap","fields":[["ccy","id"],["index_name","id_or_none"],["fwd_start","id"],["tenor","id"],["term","at"]],"asset_class":"ir","subject":"ccy"},{"type":"basis_swap","fields":[["flat_term","id"],["term","id"],["ccy","id"],["identifier","id_or_none"],["maturity","at"]],"asset_class":"ir","subject":"ccy"},{"type":"bma_swap","fields":[["ccy","id"],["term","id"],["maturity","at"]],"asset_class":"ir","subject":"ccy"},{"type":"cc_basis_swap","fields":[["flat_ccy","id"],["flat_term","id"],["ccy","id"],["term","id"],["maturity","at"]],"asset_class":"ir","subject":"ccy"},{"type":"cc_fix_float_swap","fields":[["float_ccy","id"],["float_tenor","id"],["fixed_ccy","id"],["fixed_tenor","id"],["maturity","at"]],"asset_class":"ir","subject":"fixed_ccy"},{"type":"cds","fields":[["underlying_name","id"],["seniority","id_or_none"],["ccy","id"],["doc_clause","id_or_none"],["term","at_or_none"],["running_spread","id_or_none"]],"asset_class":"credit","subject":"underlying_name"},{"type":"cds_index","fields":[["cds_index_name","id"],["term","id"],["detachment_point","at"]],"asset_class":"credit","subject":"cds_index_name"},{"type":"fx_spot","fields":[["unit_ccy","id"],["ccy","id"]],"asset_class":"fx","subject":"unit_ccy"},{"type":"fx_fwd","fields":[["unit_ccy","id"],["ccy","id"],["term","at"]],"asset_class":"fx","subject":"unit_ccy"},{"type":"hazard_rate","fields":[["underlying_name","id"],["seniority","id"],["ccy","id"],["doc_clause","id_or_none"],["term","at"]],"asset_class":"credit","subject":"underlying_name"},{"type":"recovery_rate","fields":[["underlying_name","id"],["seniority","id_or_none"],["ccy","id_or_none"],["doc_clause","id_or_none"]],"asset_class":"credit","subject":"underlying_name"},{"type":"assumed_recovery_rate","fields":[["underlying_name","id"],["seniority","id_or_none"],["ccy","id_or_none"],["doc_clause","id_or_none"]],"asset_class":"credit","subject":"underlying_name"},{"type":"swaption","fields":[["ccy","id"],["quote_tag","id_or_none"],["expiry","at_or_none"],["term","at"],["dimension","at_or_none"],["strike_level","at_or_none"],["payer_receiver","id_or_none"]],"asset_class":"ir","subject":"ccy"},{"type":"capfloor","fields":[["ccy","id"],["index_name","id_or_none"],["term","at_or_none"],["index_tenor","id"],["atm","id_or_none"],["relative","id_or_none"],["strike_level","at_or_none"],["cap_floor","id_or_none"]],"asset_class":"ir","subject":"ccy"},{"type":"fx_option","fields":[["unit_ccy","id"],["ccy","id"],["expiry","at"],["strike_label","at"]],"asset_class":"fx","subject":"unit_ccy"},{"type":"zc_inflation_swap","fields":[["index","id"],["term","at"]],"asset_class":"inflation","subject":"index"},{"type":"zc_inflation_capfloor","fields":[["index","id"],["term","at"],["cap_floor","id"],["strike_level","at"]],"asset_class":"inflation","subject":"index"},{"type":"yy_inflation_swap","fields":[["index","id"],["term","at"]],"asset_class":"inflation","subject":"index"},{"type":"yy_inflation_capfloor","fields":[["index","id"],["term","at"],["cap_floor","id"],["strike_level","at"]],"asset_class":"inflation","subject":"index"},{"type":"seasonality","fields":[["seasonality_type","id"],["index","id"],["month","at"]],"asset_class":"inflation","subject":"index"},{"type":"equity_spot","fields":[["eq_name","id"],["ccy","id"]],"asset_class":"equity","subject":"eq_name"},{"type":"equity_fwd","fields":[["eq_name","id"],["ccy","id"],["expiry","at"]],"asset_class":"equity","subject":"eq_name"},{"type":"equity_dividend","fields":[["eq_name","id"],["ccy","id"],["expiry","at"]],"asset_class":"equity","subject":"eq_name"},{"type":"equity_option","fields":[["eq_name","id"],["ccy","id"],["expiry","at"],["strike","at"],["option_type","id_or_none"]],"asset_class":"equity","subject":"eq_name"},{"type":"bond","fields":[["security_id","id"]],"asset_class":"security","subject":"security_id"},{"type":"bond_future","fields":[["security_id","id"],["future_contract","id_or_none"]],"asset_class":"security","subject":"security_id"},{"type":"bond_option","fields":[["qualifier","id"],["expiry","at_or_none"],["term","at"],["dimension","at_or_none"]],"asset_class":"security","subject":"qualifier"},{"type":"bond_future_option","fields":[["contract_name","id"],["expiry","at"],["strike","at"],["option_type","id_or_none"]],"asset_class":"security","subject":"contract_name"},{"type":"index_cds_option","fields":[["index_name","id"],["index_term","id_or_none"],["expiry","at"],["strike","at_or_none"],["side","id_or_none"]],"asset_class":"credit","subject":"index_name"},{"type":"index_cds_tranche","fields":[["cds_index_name","id"],["term","id"],["attachment_point","at_or_none"],["detachment_point","at"]],"asset_class":"credit","subject":"cds_index_name"},{"type":"commodity_spot","fields":[["commodity_name","id"],["ccy","id"]],"asset_class":"commodity","subject":"commodity_name"},{"type":"commodity_fwd","fields":[["commodity_name","id"],["ccy","id"],["expiry","at"]],"asset_class":"commodity","subject":"commodity_name"},{"type":"correlation","fields":[["index1","id"],["index2","id"],["expiry","at"],["strike_label","at"]],"asset_class":"correlation","subject":"index1"},{"type":"commodity_option","fields":[["commodity_name","id"],["ccy","id_or_none"],["expiry","at_or_none"],["strike","at_or_none"],["option_type","id_or_none"]],"asset_class":"commodity","subject":"commodity_name"},{"type":"commodity_calendar_spread_option","fields":[["commodity_name","id"],["offset","id"],["ccy","id"],["expiry","at"],["strike","at"]],"asset_class":"commodity","subject":"commodity_name"},{"type":"shape_profile","fields":[["quote_name","id"],["delivery_date","at"],["start_time_in_sec","at"],["time_unit","id"],["dst","id_or_none"]],"asset_class":"shape_profile","subject":"quote_name"},{"type":"cpr","fields":[["security_id","id"]],"asset_class":"security","subject":"security_id"},{"type":"rating","fields":[["rating_name","id"],["from_rating","at"],["to_rating","at"]],"asset_class":"rating","subject":"rating_name"}],"index_families":[{"family":"ibor","asset_class":"ir","subject":"ccy","fields":[["name",false],["tenor",true]]},{"family":"swap","asset_class":"ir","subject":"ccy","fields":[["tag",true],["tenor",false]]},{"family":"inflation","asset_class":"inflation","subject":"name","fields":[]},{"family":"fx","asset_class":"fx","subject":"unit","fields":[["source",false],["ccy",false]]},{"family":"equity","asset_class":"equity","subject":"name","fields":[]},{"family":"commodity","asset_class":"commodity","subject":"name","fields":[["expiry",true]]},{"family":"power","asset_class":"commodity","subject":"name","fields":[]},{"family":"bond","asset_class":"security","subject":"security","fields":[["expiry",true]]},{"family":"bond_future","asset_class":"security","subject":"contract","fields":[]},{"family":"cmb","asset_class":"security","subject":"family","fields":[["tenor",false]]},{"family":"generic","asset_class":"generic","subject":"name","fields":[]}],"value_kind":{"ccy":"text","curve_id":"text","day_counter":"text","term":"term","index_name":"text","fwd_start":"term","contract_month":"text","contract":"text","tenor":"term","imm1":"decimal","imm2":"decimal","flat_term":"term","maturity":"term","identifier":"text","flat_ccy":"text","float_ccy":"text","float_tenor":"term","fixed_ccy":"text","fixed_tenor":"term","underlying_name":"text","seniority":"text","doc_clause":"text","running_spread":"decimal","cds_index_name":"text","attachment_point":"decimal","detachment_point":"decimal","unit_ccy":"text","quote_tag":"text","expiry":"term","dimension":"code","strike_level":"decimal","payer_receiver":"code","index_tenor":"term","atm":"code","relative":"code","cap_floor":"code","strike_label":"text","index":"text","seasonality_type":"text","month":"text","eq_name":"text","strike":"strike","option_type":"code","security_id":"text","future_contract":"text","qualifier":"text","contract_name":"text","index_term":"term","side":"code","commodity_name":"text","offset":"decimal","index1":"text","index2":"text","quote_name":"text","delivery_date":"term","start_time_in_sec":"decimal","time_unit":"code","dst":"code","rating_name":"text","from_rating":"text","to_rating":"text"},"codes":{"dimension":["ATM","Smile"],"payer_receiver":["P","R"],"atm":["Y","YES","TRUE","True","true","1","N","NO","FALSE","False","false","0"],"relative":["Y","YES","TRUE","True","true","1","N","NO","FALSE","False","false","0"],"cap_floor":["C","F"],"option_type":["C","P"],"side":["Buyer","Seller","B","S","Payer","Receiver"],"time_unit":["HOUR","HOURS","H","HR","HRS","SECOND","SECONDS","S","SEC","SECS"],"dst":["DST"]}};
+// field -> the existing table that enumerates its values. Read from the
+// domain types and the SQL populate scripts; tmp/oresmd_origin.json.
+const ORIGIN = {"ccy":{"table":"ores_refdata_currencies_tbl","column":"iso_code","list":"refdata.v1.currencies.list","options":"currency"},"flat_ccy":{"table":"ores_refdata_currencies_tbl","column":"iso_code","list":"refdata.v1.currencies.list","options":"currency"},"float_ccy":{"table":"ores_refdata_currencies_tbl","column":"iso_code","list":"refdata.v1.currencies.list","options":"currency"},"fixed_ccy":{"table":"ores_refdata_currencies_tbl","column":"iso_code","list":"refdata.v1.currencies.list","options":"currency"},"unit_ccy":{"table":"ores_refdata_currencies_tbl","column":"iso_code","list":"refdata.v1.currencies.list","options":"currency"},"day_counter":{"table":"ores_refdata_day_counters_tbl","column":"code","list":"refdata.v1.day_counters.list","options":"day_counter"},"curve_id":{"table":"ores_refdata_curve_definitions_tbl","column":"curve_id","list":"refdata.v1.curve_definitions.list","options":"curve_id","free":true},"index_name":{"table":"ores_refdata_floating_index_types_tbl","column":"code","list":"refdata.v1.floating_index_types.list","options":"floating_index","free":true,"note":"MM, IR_SWAP and CAPFLOOR carry a full index name; INDEX_CDS_OPTION carries a credit index the same field, which has no table."},"index":{"table":"ores_refdata_zero_inflation_index_conventions_tbl","column":"id","list":"refdata.v1.zero_inflation_index_conventions.list","options":"inflation_index","free":true},"security_id":{"table":"ores_trading_bond_issues_tbl","column":"security_id","list":"trading.v1.bond_issues.list","options":"security_id","free":true},"future_contract":{"table":"ores_trading_bond_futures_tbl","column":"contract_name","list":"trading.v1.bond_futures.list","options":"bond_future_contract","free":true},"contract_name":{"table":"ores_trading_bond_futures_tbl","column":"contract_name","list":"trading.v1.bond_futures.list","options":"bond_future_contract","free":true},"quote_name":{"table":"ores_refdata_intraday_power_curve_configs_tbl","column":"shape_quote_name","list":"refdata.v1.intraday_power_curve_configs.list","options":"shape_quote_name","free":true},"term":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true,"note":"A label catalogue, not a validator: ORE also reads bare dates, c<N> continuations and periods the catalogue omits."},"tenor":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"fwd_start":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"flat_term":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"float_tenor":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"fixed_tenor":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"expiry":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"index_tenor":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"index_term":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"maturity":{"table":"ores_refdata_tenors_tbl","column":"code","list":"refdata.v1.tenors.list","options":"tenor","free":true},"month":{"ore":"ORE's seasonality month token","options":"month","free":true},"seasonality_type":{"ore":"ORE's seasonality type token","options":"seasonality_type","free":true},"strike_label":{"ore":"ORE's FX and correlation strike labels","options":"strike_label","free":true},"seniority":{"ore":"ORE's cdsTierType","options":"seniority","free":true,"note":"No refdata table: the codec accepts any text."},"doc_clause":{"ore":"ORE's cdsDocClauseType","options":"doc_clause","free":true,"note":"No refdata table: the codec accepts any text."},"from_rating":{"ore":"the rating scale ORE's keys use","options":"rating","free":true},"to_rating":{"ore":"the rating scale ORE's keys use","options":"rating","free":true},"eq_name":{"ore":"values ORE keys carry; no master table","options":"equity_name","free":true},"commodity_name":{"ore":"values ORE keys carry; no master table","options":"commodity_name","free":true},"underlying_name":{"ore":"reference entities ORE keys carry; no master table","options":"reference_entity","free":true}};
+// The mock reads of those tables: iso_currencies, day_counters, tenors,
+// floating_index_types, ibor/overnight index conventions.
+const OPTIONS = {"currency":["USD","CAD","MXN","BRL","ARS","CLP","COP","PEN","UYU","PYG","BOB","VES","CRC","PAB","GTQ","HNL","NIO","DOP","CUP","JMD","TTD","BBD","BSD","HTG","SRD","GYD","BZD","AWG","ANG","XCD","KYD","BMD","FKP","EUR","GBP","CHF","NOK","SEK","DKK","ISK","PLN","CZK","HUF","RON","BGN","HRK","RSD","BAM","MKD","ALL","MDL","UAH","BYN","RUB","GEL","AMD","AZN","TRY","GIP","JPY","CNY","HKD","TWD","KRW","KPW","SGD","MYR","IDR","THB","VND","PHP","INR","PKR","BDT","LKR","NPR","MMK","KHR","LAK","MNT","KZT","UZS","KGS","TJS","TMT","AFN","AUD","NZD","FJD","PGK","SBD","VUV","WST","TOP","MOP","BND","BTN","MVR","SAR","AED","QAR","KWD","BHD","OMR","JOD","ILS","LBP","SYP","IQD","IRR","YER","ZAR","EGP","NGN","KES","GHS","TZS","UGX","ETB","MAD","TND","DZD","LYD","SDG","SSP","AOA","XAF","XOF","ZMW","MZN","BWP","NAD","SZL","LSL","MWK","ZWL","RWF","BIF","CDF","DJF","ERN","SOS","GMD","GNF","SLL","LRD","CVE","STN","MRU","MGA","MUR","SCR","KMF","XAU","XAG","XPT","XPD","XDR"],"day_counter":["A360","Actual/360","ACT/360","Act/360","A360 (Incl Last)","Actual/360 (Incl Last)","ACT/360 (Incl Last)","A365","A365F","Actual/365 (Fixed)","Actual/365 (fixed)","ACT/365.FIXED","ACT/365","ACT/365L","Act/365","Act/365L","Act/365 (Canadian Bond)","T360","30/360","30/360 US","30/360 (US)","30/360 NASD","30U/360","30US/360","30/360 (Bond Basis)","ACT/nACT","30E/360 (Eurobond Basis)","30/360 AIBD (Euro)","30E/360.ICMA","30E/360 ICMA","30E/360","30E/360E","30E/360.ISDA","30E/360 ISDA","30/360 German","30/360 (German)","30/360 Italian","30/360 (Italian)","ActActISDA","ACT/ACT.ISDA","Actual/Actual (ISDA)","ActualActual (ISDA)","ACT/ACT","Act/Act","ACT29","ACT","ActActISMA","Actual/Actual (ISMA)","ActualActual (ISMA)","ACT/ACT.ISMA","ActActICMA","Actual/Actual (ICMA)","ActualActual (ICMA)","ACT/ACT.ICMA","ActActAFB","ACT/ACT.AFB","Actual/Actual (AFB)","1/1","BUS/252","Business/252","Actual/365 (No Leap)","Act/365 (NL)","NL/365","Actual/365 (JGB)","Simple","Year","A364","Actual/364","Act/364","ACT/364","Month"],"tenor":["O/N","T/N","S/N","S/W","SPOT","1F","2F","3F","4F","5F","6F","7F","8F","1Y","1D","2D","3D","1W","2W","3W","4W","1M","2M","3M","4M","5M","6M","7M","8M","9M","12M","18M","2Y","3Y","4Y","5Y","6Y","7Y","8Y","9Y","10Y","12Y","15Y","20Y","25Y","30Y"],"floating_index":["EUR-EURIBOR-6M","EUR-EURIBOR-3M","EUR-EURIBOR-1M","EUR-ESTR","EUR-ESTER","EUR-EONIA","USD-SOFR","USD-SOFR-3M","USD-LIBOR-1M","USD-LIBOR-3M","USD-LIBOR-6M","GBP-SONIA","GBP-LIBOR-3M","GBP-LIBOR-6M","CHF-SARON","JPY-TONAR","JPY-LIBOR-6M","AUD-AONIA","CAD-CORRA","CNY-SHIBOR-ON","HKD-HONIA","SGD-SORA","SEK-SWESTR","NOK-NOWA","NZD-NZIONA","KRW-KOFR","INR-MIBOR","MXN-TIIE-ON","ZAR-ZARONIA","DKK-DESTR","PLN-POLONIA","TWD-TAIBOR-ON"],"ibor_convention":["USD-LIBOR","GBP-LIBOR","JPY-LIBOR","EUR-EURIBOR","CNY-SHIBOR","MXN-TIIE","TWD-TAIBOR"],"overnight_convention":["USD-SOFR","EUR-ESTR","JPY-TONA","GBP-SONIA","CHF-SARON","AUD-AONIA","CAD-CORRA","HKD-HONIA","SGD-SORA","SEK-SWESTR","NOK-NOWA","KRW-KOFR","INR-MIBOR","DKK-DESTR","PLN-POLONIA","ZAR-ZARONIA","NZD-NZONIA"],"curve_id":["EUR1D","EONIA_ESTER_SPREAD","EUR-ESTR","USD-SOFR-OIS"],"inflation_index":["EUHICPXT","UKRPI","USCPI"],"security_id":["ISIN0001","TYM26"],"bond_future_contract":["TYM26"],"shape_quote_name":["PJM_WH_RT","SHAPE"],"equity_name":["SP5"],"commodity_name":["GOLD","NG","WTI"],"reference_entity":["ACME","ISIN0001","MDX"],"seniority":["SNRFOR","SUBLT2","SNRLAC","SECDOM","JRSUBUT2","PREFT1"],"doc_clause":["CR","MM","MR","XR","CR14","MM14","MR14","XR14"],"month":["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"],"seasonality_type":["MULT"],"strike_label":["ATM","25RR","25BF"],"rating":["AAA","AA","A","BBB","BB","B","CCC","CC","C","D"]};
+const ROW = {}; SCHEMA.rows.forEach(r => ROW[r.type] = r);
+const FAM = {}; SCHEMA.index_families.forEach(f => FAM[f.family] = f);
+const TERM = new Set(['term','tenor','fwd_start','expiry','flat_term','index_tenor','float_tenor','fixed_tenor','imm1','imm2','index_term']);
+const DATE = new Set(['delivery_date','contract_month','maturity']);
+const NUM = new Set(['strike','strike_level','detachment_point','attachment_point','running_spread','delta','moneyness','start_time_in_sec','end_time_in_sec','weight','spread']);
+// Fixed words the record itself names. Every other code-like field takes free text.
+// The closed token sets, from codes_of in schema.cpp: the composer offers
+// exactly these and nothing else, because the codec accepts exactly these.
+const VOCAB = SCHEMA.codes;
+const PH = {ccy:'USD',unit_ccy:'EUR',flat_ccy:'EUR',float_ccy:'EUR',fixed_ccy:'EUR',curve_id:'EUR1D',index_name:'EURIBOR',contract:'XICE:FEI',contract_name:'TYM26',future_contract:'TYM26',security_id:'ISIN0001',underlying_name:'ACME',cds_index_name:'CDXIG',commodity_name:'GOLD',eq_name:'SP5',index:'EUHICPXT',index1:'INDEX1',index2:'INDEX2',rating_name:'MASTER',from_rating:'AA',to_rating:'A',quote_name:'PJM_WH_RT',qualifier:'ISIN0001',month:'JAN',doc_clause:'XR14',seniority:'SNRFOR',dimension:'ATM',strike_label:'ATM',seasonality_type:'MULT',time_unit:'HOUR',term:'6M',tenor:'6M',fwd_start:'2D',expiry:'1Y',flat_term:'6M',index_tenor:'6M',float_tenor:'3M',fixed_tenor:'6M',index_term:'5Y',imm1:'IMM1',imm2:'IMM2',contract_month:'2024-04',maturity:'2030-01',delivery_date:'2027-02-02'};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tag = (t, k) => `<span class="tag ${k||''}">${esc(t)}</span>`;
+// RFC 3986 lets these stand in a path segment, and the record's own examples keep them.
+const enc = s => encodeURIComponent(s).replace(/%(3A|40|24|2B|2C|3B|3D)/gi, (m, c) => String.fromCharCode(parseInt(c, 16)));
+let C;
+function defaults(){
+  return {k:'quote', type:'ir_swap', quote:'rate', family:'ibor', subject:'EUR',
+    values:{}, omit:{}, extras:[], errors:[]};
+}
+// The schema the current kind reads.
+function active(){
+  if (C.k === 'fixing'){
+    const f = FAM[C.family];
+    return {asset:f.asset_class, subject:f.subject, fields:f.fields.map(([n,o]) => [n, o ? 'id_or_none' : 'id'])};
+  }
+  const r = ROW[C.type];
+  return {asset:r.asset_class, subject:r.subject, fields:r.fields.filter(f => f[0] !== r.subject)};
+}
+// The query, in the schema's order. Known keys that the composer cannot hold
+// (a coordinate in a series, an unknown or repeated key) ride in extras.
+function entries(){
+  const a = active(), q = [['type', C.k]];
+  if (C.k === 'fixing') q.push(['index', C.family]);
+  else q.push(['instrument', C.type], ['quote', C.quote]);
+  const ex = {}; C.extras.forEach(e => (ex[e.key] = ex[e.key] || []).push(e.value));
+  const flush = k => { if (ex[k]) { ex[k].forEach(v => q.push([k, v])); delete ex[k]; } };
+  for (const [n, role] of a.fields){
+    const coord = role === 'at' || role === 'at_or_none', opt = role === 'id_or_none' || role === 'at_or_none';
+    const v = C.values[n] ?? '';
+    if (C.k === 'series' && coord) { flush(n); continue; }
+    const omit = C.omit[n] !== undefined ? C.omit[n] : v === '';
+    if (omit || (!opt && v === '')) { flush(n); continue; }
+    q.push([n, v]); flush(n);
+  }
+  for (const k in ex) ex[k].forEach(v => q.push([k, v]));
+  return q;
+}
+function validate(q, a){
+  const known = new Set(['type']), seen = new Set(), errs = [];
+  if (C.k === 'fixing') known.add('index'); else { known.add('instrument'); known.add('quote'); }
+  a.fields.forEach(([n]) => known.add(n));
+  for (const [k, v] of q){
+    if (!known.has(k)) errs.push(`unknown key "${k}"`);
+    if (seen.has(k)) errs.push(`repeated key "${k}"`);
+    seen.add(k);
+    if (v === '') errs.push(`empty value for "${k}"`);
+  }
+  const present = new Set(q.map(x => x[0]));
+  for (const [n, role] of a.fields){
+    const coord = role === 'at' || role === 'at_or_none', opt = role === 'id_or_none' || role === 'at_or_none';
+    if (C.k === 'series' && coord){
+      if (present.has(n)) errs.push(`coordinate field "${n}" is not allowed in a series`);
+      continue;
+    }
+    if (!opt && !present.has(n)) errs.push(`missing required field "${n}"`);
+  }
+  if (!C.subject) errs.push(C.k === 'fixing' ? 'a fixing with no subject is not valid' : 'the path (subject) is empty');
+  return [...new Set(errs)];
+}
+function compose(){
+  const a = active(), q = entries();
+  const path = enc(C.subject);
+  const url = `oresmd://${a.asset}/${path}?` + q.map(([k, v]) => `${k}=${enc(v)}`).join('&');
+  return {url, errors:[...new Set([...C.errors, ...validate(q, a)])]};
+}
+// Split a URI into its parts without touching the composer.
+function split(url){
+  const out = {kind:'', asset:'', subject:'', path:'', name:'', query:[]};
+  const m = /^oresmd:\/\/([^/?]*)(?:\/([^?]*))?(?:\?(.*))?$/.exec(url);
+  if (!m) return out;
+  out.asset = m[1] || ''; out.path = m[2] || '';
+  out.subject = dec(out.path);
+  (m[3] || '').split('&').filter(Boolean).forEach(p => {
+    const i = p.indexOf('=');
+    out.query.push([dec(i < 0 ? p : p.slice(0, i)), dec(i < 0 ? '' : p.slice(i + 1))]);
+  });
+  const g = k => { const f = out.query.find(x => x[0] === k); return f ? f[1] : ''; };
+  out.kind = g('type'); out.name = out.kind === 'fixing' ? g('index') : g('instrument');
+  return out;
+}
+function dec(s){ try { return decodeURIComponent(s); } catch (e) { return s; } }
+function redundant(path){
+  return (path.match(/%[0-9A-Fa-f]{2}/g) || []).some(e => /^[A-Za-z0-9\-._~]$/.test(String.fromCharCode(parseInt(e.slice(1), 16))));
+}
+function loadURI(url){
+  C = defaults();
+  const s = split(url), errs = [];
+  C.subject = s.subject;
+  if (!/^oresmd:\/\//i.test(url)) { C.errors = [`not an oresmd:// URI`]; return; }
+  if (!['quote','series','fixing'].includes(s.kind)) { C.errors = [`unknown or missing type "${s.kind}"`]; return; }
+  C.k = s.kind;
+  const g = k => { const f = s.query.find(x => x[0] === k); return f ? f[1] : ''; };
+  if (s.kind === 'fixing'){
+    const f = FAM[g('index')];
+    if (!f) { C.errors = [`unknown index family "${g('index')}"`]; return; }
+    C.family = f.family;
+    if (f.asset_class !== s.asset) errs.push(`asset class "${s.asset}" is not ${f.family}'s "${f.asset_class}"`);
+  } else {
+    const r = ROW[g('instrument')];
+    if (!r) { C.errors = [`unknown instrument type "${g('instrument')}"`]; return; }
+    C.type = r.type; C.quote = g('quote');
+    if (r.asset_class !== s.asset) errs.push(`asset class "${s.asset}" is not ${r.type}'s "${r.asset_class}"`);
+  }
+  if (redundant(s.path)) errs.push('the path is percent-encoded; write the subject plainly');
+  const a = active();
+  const known = new Set(['type']); if (C.k === 'fixing') known.add('index'); else { known.add('instrument'); known.add('quote'); }
+  const fields = new Set(a.fields.map(x => x[0])); a.fields.forEach(([n]) => known.add(n));
+  const coord = new Set(a.fields.filter(x => x[1] === 'at' || x[1] === 'at_or_none').map(x => x[0]));
+  const order = ['type', ...(C.k === 'fixing' ? ['index'] : ['instrument','quote']), ...a.fields.map(x => x[0])];
+  let last = -1, broken = false;
+  for (const [k] of s.query){ const i = order.indexOf(k); if (i >= 0){ if (i <= last) broken = true; last = i; } }
+  if (broken) errs.push('the query is not in canonical schema order');
+  const seen = new Set();
+  for (const [k, v] of s.query){
+    if (!known.has(k) || seen.has(k)) { C.extras.push({key:k, value:v}); continue; }
+    seen.add(k);
+    if (k === 'type' || k === 'instrument' || k === 'quote' || k === 'index') continue;
+    if (v === ''){ if (fields.has(k)){ C.values[k] = ''; C.omit[k] = false; } else C.extras.push({key:k, value:v}); continue; }
+    if (C.k === 'series' && coord.has(k)){ C.extras.push({key:k, value:v}); continue; }
+    C.values[k] = v;
+  }
+  C.errors = errs;
+}
+// The options an existing table offers for n, so the user picks rather than
+// types. A value already in the URI that the mock read does not hold stays an
+// option, so a load never drops it.
+function optionList(n){
+  const o = ORIGIN[n]; if (!o) return null;
+  const list = (OPTIONS[o.options] || []).slice();
+  const v = C.values[n] ?? '';
+  return v && !list.includes(v) ? [v, ...list] : list;
+}
+function selectTag(n, list, v){
+  return `<select data-f="${n}"><option value=""></option>` +
+    list.map(o => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('') + `</select>`;
+}
+function inputFor(n){
+  const v = C.values[n] ?? '';
+  if (VOCAB[n]) return selectTag(n, VOCAB[n], v);
+  const list = optionList(n);
+  if (list && !ORIGIN[n].free) return selectTag(n, list, v);
+  if (list)
+    return `<input list="dl-${n}" data-f="${n}" value="${esc(v)}"${PH[n] ? ` placeholder="${esc(PH[n])}"` : ''}>` +
+      `<datalist id="dl-${n}">${list.map(o => `<option value="${esc(o)}">`).join('')}</datalist>`;
+  const t = NUM.has(n) ? 'number' : 'text';
+  return `<input type="${t}" data-f="${n}" value="${esc(v)}"${PH[n] ? ` placeholder="${esc(PH[n])}"` : ''}>`;
+}
+function hint(n){
+  const o = ORIGIN[n];
+  if (o && o.table) return `<div class="hint faint">${o.free ? 'suggestions' : 'options'} from ` +
+    `<span class="mono">${o.table}</span>.<span class="mono">${o.column}</span> &middot; ` +
+    `<span class="mono">${o.list}</span> (${(OPTIONS[o.options] || []).length})</div>`;
+  if (o) return `<div class="hint faint">suggestions from ${esc(o.ore)} ` +
+    `(${(OPTIONS[o.options] || []).length})</div>`;
+  if (VOCAB[n]) return `<div class="hint faint">one of ${VOCAB[n].join(', ')}</div>`;
+  if (DATE.has(n)) return `<div class="hint faint">a date: YYYY-MM-DD or YYYY-MM</div>`;
+  if (TERM.has(n)) return `<div class="hint faint">an ORE period: ON, 2D, 6M, 1Y</div>`;
+  if (NUM.has(n)) return `<div class="hint faint">a number</div>`;
+  if (PH[n]) return `<div class="hint faint">e.g. ${esc(PH[n])}</div>`;
+  return '';
+}
+function fieldRow(n, role){
+  const coord = role === 'at' || role === 'at_or_none', opt = role === 'id_or_none' || role === 'at_or_none';
+  const off = C.k === 'series' && coord, v = C.values[n] ?? '';
+  const left = C.omit[n] !== undefined ? C.omit[n] : v === '';
+  const val = off ? '<span class="faint">— not in a series</span>' : inputFor(n) + hint(n);
+  const ctl = off ? '<span class="faint">—</span>' : opt ? `<label class="chk"><input type="checkbox" data-o="${n}"${left ? ' checked' : ''}> leave out</label>` : '<span class="faint">—</span>';
+  return `<tr${off ? ' class="muted"' : ''}><td class="mono">${n}</td><td>${tag(coord ? 'coordinate' : 'identity', coord ? 'warn' : '')}</td><td class="faint">${opt ? 'optional' : 'required'}</td><td>${val}</td><td>${ctl}</td></tr>`;
+}
+function selectFor(name, list, value){
+  return `<select data-sel="${name}">${list.map(x => `<option${x === value ? ' selected' : ''}>${x}</option>`).join('')}</select>`;
+}
+function editorPanel(){
+  const a = active();
+  const pick = C.k === 'fixing'
+    ? `<div class="field"><label>Index family</label>${selectFor('family', SCHEMA.index_families.map(f => f.family), C.family)}</div>`
+    : `<div class="field"><label>Instrument type</label>${selectFor('type', SCHEMA.instrument_types, C.type)}</div>
+       <div class="field"><label>Quote type</label>${selectFor('quote', SCHEMA.quote_types, C.quote)}</div>`;
+  return `<div class="panel">
+  <h2>Composer</h2>
+  <div class="row">
+    <div class="field"><label>Kind</label><div>${['quote','series','fixing'].map(k => `<label class="radio"><input type="radio" name="k" value="${k}"${k === C.k ? ' checked' : ''} data-kind> ${k}</label>`).join(' ')}</div></div>
+    ${pick}
+    <div class="field"><label>Asset class</label><div class="value mono" id="asset">${a.asset}</div></div>
+  </div>
+  <div class="row">
+    <div class="field" style="min-width:min(420px,100%)"><label>Subject · path · <span class="mono">${a.subject}</span></label><input data-sub value="${esc(C.subject)}"${PH[a.subject] ? ` placeholder="${esc(PH[a.subject])}"` : ''}></div>
+    <div class="faint" style="padding-bottom:8px">the path holds the ${a.subject} value with its case kept; the query does not repeat it</div>
+  </div>
+  <table class="form">
+    <thead><tr><th>Field</th><th>Role</th><th>Presence</th><th>Value</th><th></th></tr></thead>
+    <tbody>${a.fields.map(([n, r]) => fieldRow(n, r)).join('')}</tbody>
+  </table>
+  <div class="panel" style="background:#161619">
+    <h2>Preview</h2>
+    <div class="mono preview" id="preview"></div>
+    <div class="row"><button class="btn" id="copy">Copy</button><button class="btn primary" id="apply">Apply</button><span class="faint" id="applynote"></span></div>
+    <div class="msgs" id="msgs"></div>
+  </div>
+  </div>`;
+}
+function manageRows(q){
+  const s = MOCK.map(([url, quotes, series]) => ({url, quotes, series, dup:nearDup(url)}))
+    .filter(r => !q || r.url.toLowerCase().includes(q) || split(r.url).subject.toLowerCase().includes(q) || split(r.url).name.toLowerCase().includes(q));
+  return s.map(r => { const p = split(r.url);
+    return `<tr class="click" data-row="${esc(r.url)}"><td>${p.kind}</td><td class="mono">${esc(p.asset)}</td><td class="mono">${esc(p.subject)}</td><td class="mono">${esc(p.name)}</td><td class="num">${r.quotes}</td><td class="num">${r.series}</td><td class="mono">${esc(r.url)} ${r.dup ? tag('near-duplicate', 'warn') : ''}</td></tr>`;
+  }).join('');
+}
+const manage = () => `<div class="panel">
+  <h2>Managed oresmd URLs</h2>
+  <div class="row">
+    <div class="field"><label>Search</label><input id="q" placeholder="subject, instrument, family, field…"></div>
+    <span class="faint">Click a row to load it into the composer below. A near-duplicate differs from another row in exactly one query field.</span>
+  </div>
+  <table id="mtable"><thead><tr><th>Kind</th><th>Asset class</th><th>Subject</th><th>Instrument / family</th><th class="num">Quotes</th><th class="num">Series</th><th>URL</th></tr></thead>
+  <tbody id="mtbody">${manageRows('')}</tbody></table>
+  <div class="notice">Mock data. The counts are how many stored quotes or series use the URL.</div>
+</div>`;
+// A valid URI needs a code, and a code is hard to remember. The composer reads
+// the tables the system already keeps, so the user picks the value. This view
+// names each table and which fields it serves.
+function sourceGroups(){
+  const byKey = {};
+  SCHEMA.fields.forEach(f => {
+    const o = ORIGIN[f]; if (!o || !o.table) return;
+    const k = `${o.table}.${o.column}`;
+    (byKey[k] = byKey[k] || {...o, fields: []}).fields.push(f);
+  });
+  return Object.values(byKey).map(g => `<tr>
+    <td class="mono">${g.table}</td><td class="mono">${g.column}</td>
+    <td class="mono">${g.list}</td><td class="mono">${g.fields.join(', ')}</td>
+    <td class="num">${(OPTIONS[g.options] || []).length}</td></tr>`).join('');
+}
+function fieldSources(){
+  const kind = SCHEMA.value_kind || {};
+  return SCHEMA.fields.map(f => {
+    const o = ORIGIN[f];
+    let src;
+    if (VOCAB[f]) src = `<span class="tag">code</span> <span class="faint">${VOCAB[f].length} tokens, from codes_of</span>`;
+    else if (o && o.table) src = `<span class="mono">${o.table}.${o.column}</span>${o.free ? ' <span class="tag">suggests</span>' : ''}`;
+    else if (o) src = `<span class="faint">${esc(o.ore)}</span> <span class="tag">suggests</span>`;
+    else src = '<span class="faint">free text, as ORE wrote it</span>';
+    if (o && o.note) src += `<div class="hint faint">${esc(o.note)}</div>`;
+    return `<tr><td class="mono">${f}</td><td>${kind[f] || 'text'}</td><td>${src}</td></tr>`;
+  }).join('');
+}
+const sources = () => `<div class="panel">
+  <h2>Existing tables the editor reads</h2>
+  <div class="notice">The composer offers these values instead of asking the user to type a code. The counts are the mock reads; a real screen calls the list subject.</div>
+  <table><thead><tr><th>Table</th><th>Column</th><th>List subject</th><th>Fields</th><th class="num">Options</th></tr></thead>
+  <tbody>${sourceGroups()}</tbody></table>
+</div>
+<div class="panel">
+  <h2>Every field</h2>
+  <div class="notice">A field with no table is free text: ORE keeps the case it wrote, as a curve id or a ticker must.</div>
+  <table><thead><tr><th>Field</th><th>Kind</th><th>Options come from</th></tr></thead>
+  <tbody>${fieldSources()}</tbody></table>
+</div>`;
+function invocation(){
+  return `<div class="panel">
+  <h2>Curve blueprint — USD SOFR FOMC</h2>
+  <div class="row">
+    <div class="field"><label>Blueprint</label><div class="value">USD SOFR FOMC</div></div>
+    <div class="field"><label>Discount curve</label><div class="value">USD-SOFR-OIS</div></div>
+    <div class="field" style="min-width:min(440px,100%)"><label>Output series</label><div class="value mono" id="host">${esc(HOST)}</div></div>
+    <button class="btn primary" id="open">Edit URL…</button>
+  </div>
+  <div class="notice">The blueprint stores one series URI. "Edit URL…" opens the oresmd URL editor in a modal over this dialog; Apply writes the URI back into the field. A real screen iframes the same editor with <span class="mono">?embed=1</span>.</div>
+</div>
+<div class="modal" id="modal"><div class="modal-card">
+  <div class="top"><h1>oresmd URL editor</h1><span class="muted">opened by the blueprint dialog</span><span style="flex:1"></span><button class="btn" id="close">Close</button></div>
+  <div id="editor">${editorPanel()}</div>
+</div></div>`;
+}
+function update(){
+  const {url, errors} = compose();
+  const pv = document.getElementById('preview'); if (pv) pv.textContent = url;
+  const ms = document.getElementById('msgs');
+  if (ms) ms.innerHTML = errors.length
+    ? errors.map(e => `<div class="msg bad">${esc(e)}</div>`).join('')
+    : `<div class="msg ok">The URI holds to the strict contract.</div>`;
+  const ap = document.getElementById('apply'); if (ap) ap.disabled = errors.length > 0;
+  const cp = document.getElementById('copy'); if (cp) cp.disabled = errors.length > 0;
+}
+function note(t){ const n = document.getElementById('applynote'); if (n) n.textContent = t; }
+function apply(){
+  const {url, errors} = compose();
+  if (errors.length){ note('Fix the messages first.'); return; }
+  if (embed){ try { parent.postMessage({type:'oresmd-url', url}, '*'); } catch (e) {} note('Posted to the host page.'); return; }
+  if (variant === 'c'){ const h = document.getElementById('host'); if (h) h.textContent = url; const m = document.getElementById('modal'); if (m) m.classList.remove('on'); return; }
+  try { navigator.clipboard.writeText(url); } catch (e) {}
+  note('Copied to the clipboard.');
+}
+function wire(){
+  document.querySelectorAll('[data-kind]').forEach(el => el.onchange = () => { if (el.checked){ C.k = el.value; C.errors = []; render(); } });
+  document.querySelectorAll('[data-sel]').forEach(el => el.onchange = () => { C[el.dataset.sel] = el.value; C.errors = []; render(); });
+  document.querySelectorAll('[data-f]').forEach(el => el.oninput = () => {
+    const n = el.dataset.f; C.values[n] = el.value;
+    if (C.omit[n] === true && el.value !== ''){ C.omit[n] = false; const cb = document.querySelector(`[data-o="${n}"]`); if (cb) cb.checked = false; }
+    update();
+  });
+  document.querySelectorAll('[data-o]').forEach(cb => cb.onchange = () => {
+    const n = cb.dataset.o; C.omit[n] = cb.checked;
+    if (cb.checked){ C.values[n] = ''; const i = document.querySelector(`[data-f="${n}"]`); if (i) i.value = ''; }
+    update();
+  });
+  const sub = document.querySelector('[data-sub]'); if (sub) sub.oninput = () => { C.subject = sub.value; update(); };
+  const cp = document.querySelector('#copy'); if (cp) cp.onclick = apply;
+  const ap = document.querySelector('#apply'); if (ap) ap.onclick = apply;
+  const q = document.querySelector('#q'); if (q) q.oninput = () => { const b = document.querySelector('#mtbody'); if (b) b.innerHTML = manageRows(q.value.toLowerCase()); };
+  const tb = document.querySelector('#mtable'); if (tb) tb.onclick = e => { const tr = e.target.closest('[data-row]'); if (tr) go({url:tr.dataset.row, state:null, variant:'b'}); };
+  const op = document.querySelector('#open'); if (op) op.onclick = () => document.getElementById('modal').classList.add('on');
+  const cl = document.querySelector('#close'); if (cl) cl.onclick = () => document.getElementById('modal').classList.remove('on');
+  const mo = document.getElementById('modal'); if (mo && variant === 'c') mo.classList.add('on');
+}
+function go(patch){
+  const p = new URLSearchParams(location.search);
+  for (const k in patch){ if (patch[k] === null) p.delete(k); else p.set(k, patch[k]); }
+  location.search = p.toString();
+}
+function bar(){
+  const labels = {'series-with-coordinate':'series+coord'};
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Variant</span>` + ['a','b','c','d'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">State</span>` +
+    Object.keys(STATES).map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${labels[s] || s}</button>`).join('') +
+    `<span class="sep">|</span><button data-embed="1">Embed</button>`;
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => go({variant:b.dataset.v}));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => go({state:b.dataset.s, url:null}));
+  const e = document.querySelector('#bar [data-embed]'); if (e) e.onclick = () => go({embed:'1'});
+}
+function render(){
+  const app = document.getElementById('app');
+  if (embed){
+    document.body.classList.add('embed');
+    document.getElementById('note').hidden = true;
+    app.innerHTML = `<div id="editor">${editorPanel()}</div>`;
+    wire(); update(); return;
+  }
+  const head = `<div class="top"><h1>oresmd URL editor</h1><span class="muted">prototype · mock data · nothing is stored</span><a style="text-align:right;flex:1" href="../../knowledge/domain/market_data_urn.html">the grammar &rarr;</a></div>`;
+  if (variant === 'b') app.innerHTML = head + manage() + `<div id="editor">${editorPanel()}</div>`;
+  else if (variant === 'c') app.innerHTML = head + invocation();
+  else if (variant === 'd') app.innerHTML = head + sources();
+  else app.innerHTML = head + `<div id="editor">${editorPanel()}</div>`;
+  document.getElementById('note').textContent = `Prototype · oresmd URL editor · variant ${variant.toUpperCase()}${state ? ` · state: ${state}` : ''} · mock data · nothing is stored`;
+  bar(); wire(); update();
+}
+const MOCK = [
+  ['oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD', 412, 1],   ['oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD', 1, 1],
+  ['oresmd://fx/EUR?type=quote&instrument=fx_fwd&quote=rate&ccy=USD&term=6M', 180, 1],   ['oresmd://fx/EUR?type=quote&instrument=fx_fwd&quote=rate&ccy=USD&term=1Y', 174, 1],
+  ['oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=ATM', 96, 1],   ['oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=2D&tenor=6M&term=10Y', 260, 1],
+  ['oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=2D&tenor=6M', 1, 1],   ['oresmd://ir/EUR?type=quote&instrument=discount&quote=rate&curve_id=EUR1D&term=1Y', 88, 1],
+  ['oresmd://ir/EUR?type=quote&instrument=mm_future&quote=price&contract_month=2024-04&contract=XICE:FEI&tenor=3M', 44, 1],   ['oresmd://ir/EUR?type=quote&instrument=swaption&quote=rate_nvol&expiry=5Y&term=2Y&dimension=ATM', 120, 1],
+  ['oresmd://ir/EUR?type=quote&instrument=capfloor&quote=rate_lnvol&term=5Y&index_tenor=6M&atm=0&relative=0&strike_level=0.03', 66, 1],   ['oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M', 0, 1],
+  ['oresmd://ir/USD?type=fixing&index=ibor&name=SOFR', 0, 1],   ['oresmd://ir/EUR?type=fixing&index=swap&tenor=10Y', 0, 1],
+  ['oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y', 240, 1],   ['oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=10Y', 238, 1],
+  ['oresmd://credit/CDXIG?type=quote&instrument=cds_index&quote=base_correlation&term=5Y&detachment_point=0.03', 52, 1],   ['oresmd://equity/SP5?type=quote&instrument=equity_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike=3000', 140, 1],
+  ['oresmd://equity/RIC:.SPX?type=fixing&index=equity', 0, 1],   ['oresmd://commodity/GOLD?type=quote&instrument=commodity_fwd&quote=price&ccy=USD&expiry=1Y', 210, 0],
+  ['oresmd://commodity/NYMEX:CL?type=fixing&index=commodity&expiry=2025-01', 0, 1],   ['oresmd://commodity/ICE:PDQ?type=fixing&index=power', 0, 1],
+  ['oresmd://inflation/EUHICPXT?type=quote&instrument=zc_inflation_swap&quote=rate&term=5Y', 40, 1],   ['oresmd://inflation/UKRPI?type=fixing&index=inflation', 0, 1],
+  ['oresmd://security/ISIN0001?type=quote&instrument=bond&quote=price', 17, 1],   ['oresmd://security/TYM26?type=fixing&index=bond_future', 0, 1],
+  ['oresmd://correlation/INDEX1?type=quote&instrument=correlation&quote=rate&index2=INDEX2&expiry=1Y&strike_label=ATM', 30, 1],   ['oresmd://rating/MASTER?type=quote&instrument=rating&quote=transition_probability&from_rating=AA&to_rating=A', 12, 1],
+  ['oresmd://shape_profile/PJM_WH_RT?type=quote&instrument=shape_profile&quote=shape_factor&delivery_date=2027-02-02&start_time_in_sec=0&time_unit=HOUR', 24, 1],   ['oresmd://generic/JuniorNote?type=fixing&index=generic', 0, 1]
+];
+function paramMap(url){
+  const i = url.indexOf('?'), head = i < 0 ? url : url.slice(0, i), m = {};
+  (i < 0 ? '' : url.slice(i + 1)).split('&').filter(Boolean).forEach(p => { const j = p.indexOf('='); m[p.slice(0, j)] = p.slice(j + 1); });
+  return {head, m};
+}
+// A near-duplicate shares the base and every key but one, and is the same kind.
+function nearDup(url){
+  const a = paramMap(url);
+  return MOCK.find(([other]) => {
+    if (other === url) return false;
+    const b = paramMap(other);
+    if (a.head !== b.head || a.m.type !== b.m.type) return false;
+    const ka = Object.keys(a.m);
+    if (ka.length !== Object.keys(b.m).length || ka.some(k => !(k in b.m))) return false;
+    return ka.filter(k => a.m[k] !== b.m[k]).length === 1;
+  });
+}
+const STATES = {
+  valid: 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&fwd_start=2D&tenor=6M&term=10Y',
+  'missing-required': 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&tenor=6M&term=10Y',
+  'series-with-coordinate': 'oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=2D&tenor=6M&term=10Y',
+  'empty-value': 'oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate&index_name=&fwd_start=2D&tenor=6M&term=10Y',
+  fixing: 'oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M',
+  'unknown-key': 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD&foo=bar'
+};
+const src = params.get('url') || (state && STATES[state]) || (variant === 'c' ? HOST : variant === 'b' ? MOCK[0][0] : '');
+if (src) loadURI(src); else { C = defaults(); C.values = {fwd_start:'2D', tenor:'6M', term:'10Y'}; }
+render();
+</script>
+</body>
+</html>

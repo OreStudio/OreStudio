@@ -25,7 +25,9 @@
 #include "ores.analytics.core/messaging/stress_shift_family_history_provider_registrar.hpp"
 #include "ores.analytics.core/presentation/stress_shift_family_history_field_mapper.hpp"
 #include "ores.analytics.core/service/stress_shift_family_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -33,6 +35,7 @@ void register_stress_shift_family_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.stress_shift_family",
+        "analytics::stress_shift_families:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::stress_shift_family_service svc(scoped_ctx);
             auto versions = svc.get_family_history(entity_id);

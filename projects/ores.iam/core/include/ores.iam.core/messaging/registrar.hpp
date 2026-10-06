@@ -35,17 +35,13 @@ public:
     /**
      * @brief Wires every IAM subject handler, including the generated
      * party_cache warm-up/subscribe.
-     *
-     * @param service_password IAM's own service-account DB password (the
-     * account name is ctx.service_account()), used to authenticate the
-     * party_cache's read_parties_for_cache calls back to refdata — that
-     * subject requires a valid signed JWT.
+     * Each party_cache partition is read inside its own tenant with a token
+     * IAM issues itself, so no password and no bus sign-in is needed.
      */
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::database::context ctx,
-                      ores::security::jwt::jwt_authenticator signer,
-                      std::string service_password);
+                      ores::security::jwt::jwt_authenticator signer);
 };
 
 }

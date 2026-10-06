@@ -78,6 +78,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!ores::service::messaging::has_permission(ctx, "compute::grid_samples:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         get_grid_stats_response resp;
         try {

@@ -23,11 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.analytics.service/messaging/credit_simulation_entity_config_event_registrar.hpp"
-#include "ores.analytics.api/eventing/credit_simulation_entity_config_event.hpp"
-#include "ores.analytics.api/messaging/credit_simulation_entity_config_protocol.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.analytics.api/eventing/credit_simulation_entity_config_event.hpp" // IWYU pragma: keep.
+#include "ores.analytics.api/messaging/credit_simulation_entity_config_protocol.hpp"
 
 namespace ores::analytics::service::messaging {
 

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 0CBC3DD8-9A7A-4C59-A44F-B8A04047FF9E
+:END:
+#+title: Task: Give the event cache facet a partition-scoped identity
+#+description: Initial task for: Read each tenant's cache partition inside its tenant
+#+type: task
+#+level: s1
+#+filetags: :read-each-tenant-cache-partition-inside-its-tenant:sprint_27:v0:
+#+owner: marco
+#+branch: feature/read-each-tenant-cache-partition-inside-its-tenant
+#+pr: 2679
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every tenant's partition of a generated event cache loads inside that tenant, with a token for that tenant obtained by Token Exchange, so no cache needs a policy that lets the system tenant read every tenant; the parties policy and read are strict again and the root tenant sees only its own parties.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The generated event caches take a token provider per partition, keep one token per tenant, renew it before expiry and re-exchange once on token_expired.
+- IAM mints each partition token in-process: tenant, the tenant's system party, IAM as the actor, read on parties only, a short lifetime, and every issue logged.
+- The parties policy scopes to the current tenant alone, the party read uses the default tenant scope, and a database test shows the root tenant lists only its own parties.
+- The sign-in party chooser still shows party names, and the root tenant's Parties tab shows only its own parties.
+- The Cache-Aside pattern page states the use, including the per-partition identity rule.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2679][#2679]] | [iam,refdata] Read each cache partition inside its tenant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | One lock covers all partitions, held during the exchange | partition_token_cache.hpp | Not changed | The class doc states that one exchange is shared, and the lock is what shares it. Revisit per-key locking if the tenant count grows. |
+| 2 | A forced renewal can mint twice | partition_token_cache.hpp | Not changed | Two renewals for one expiry cost a few queries and are harmless; every caller still receives a token that acts inside the tenant. |
+| 3 | The retry path ignores a failed renewal | cpp_nats_event_cache.hpp.mustache | Not changed | The load still fails safely and logs a warning; a refusal is not decoded as a token_expired reply. A clearer message is a follow-up. |
+| 4 | The registrar can fall back to unauthenticated loads | registrar.cpp | Not changed | The error names the missing service account, and the failing loads make the gap visible. Skipping the warm-up is a follow-up. |
+| 5 | The widening checker covers only two spellings | check_rls_system_tenant_widenings.py | Fixed | 990ab219a5 — the docstring states that the check is a guard, not a proof. |
+| 6 | The party repository filters by tenant in code | ores.refdata.party.org | Fixed | 990ab219a5 — the model states that the scope sits in the query as well as the policy. |
+| 7 | Test coverage for the renew path and read_inside refusal | tests | Not changed | Both paths are worth a test; the live sign-in covers the read_inside path. A test for the renew path needs the generated-cache harness. |
+
+* Result
+
+The nats-event-cache facet takes a partition_token_provider and renews once on token_expired; partition_token_cache in ores.eventing.core holds one token per tenant. Both generated caches were regenerated. Six codegen tests and six Catch2 test cases (17 assertions) pass.

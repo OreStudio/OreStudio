@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 7778DFC7-2F89-41AB-B06E-EBC01E16E828
+:END:
+#+title: Represent permissions as bitsets
+#+description: Map each permission code to a bit, hold a caller's grants as one bitset per permission group, and check a permission with boolean logic instead of string comparison; measure first to see whether it is justified.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:performance:authorisation:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Permissions are strings today, and a role holds a list of them. Every check
+walks the caller's list and compares strings, including the wildcard forms
+=*= and =component::*=.
+
+The idea is to give each permission code a bit position:
+
+- Each permission group, such as one component's codes, becomes a fixed bitset,
+  for example 64 or 128 bits, in the C++ structure that carries the grants.
+- A caller's grants become an array of bitsets, one per permission group.
+- A check is boolean logic: the required bit is set in the caller's bitset for
+  that group. A component wildcard is the group's bitset with every bit set.
+
+The approach needs fleshing out before it is built:
+
+- Where the code-to-bit mapping lives, and how it stays stable when codes are
+  added or removed. Bit positions must not move under a running service or a
+  token issued earlier.
+- What the token carries: today the =roles= claim holds the codes, and a bitset
+  claim would need a version of the mapping it was built against.
+- How the database-backed check
+  (=authorization_service::has_permission=) would use it.
+- Groups with more codes than one bitset holds.
+
+* Why
+
+Speed, if the string checks cost enough to matter. That is not known yet, so
+the first step is measurement, and the idea is built only if the numbers
+justify it:
+
+- Time per check today, for a typical caller and for one holding many codes,
+  in =ores::security::authorization::grants= and in the database-backed check.
+- How many checks a request makes, and their share of request latency.
+- The same numbers for a bitset prototype.
+
+The guard-every-read story will add a read check to about 360 handlers, so the
+number of checks per request will rise. That makes the measurement worth
+taking soon.
+
+* References
+
+- =projects/ores.security/include/ores.security/authorization/grants.hpp= — the
+  string check: a linear walk with =*= and =component::*= wildcards.
+- =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp= —
+  =has_permission=, which reads the token's codes.
+- =projects/ores.iam/core/include/ores.iam.core/service/authorization_service.hpp= —
+  the database-backed =has_permission=.
+
+* See also
+
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — the two permission checks and when each is used.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the role and permission model.
+- [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] — the story that adds a read check to every read.

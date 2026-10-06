@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/run_grant_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/run_grant_history_field_mapper.hpp"
 #include "ores.iam.core/service/run_grant_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::iam::messaging {
 void register_run_grant_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.run_grant",
+        "iam::run_grants:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::run_grant_service svc(scoped_ctx);
             auto versions = svc.get_grant_history(entity_id);

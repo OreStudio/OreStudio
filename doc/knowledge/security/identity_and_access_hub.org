@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:security:structure_note:identity:access:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-10-06
 
 * Summary
 
@@ -70,7 +70,9 @@ screen.
 ** What a read may return
 
 [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — how a read
-decides whether to answer, which of the tree's two permission checks it uses,
+decides whether to answer: every read checks its read permission unless the page's
+allow-list names it with a reason. It also says which of the tree's two
+permission checks a read uses,
 why a self read and a privileged read are different subjects rather than one
 subject with a parameter, and where a refusal travels. Read it before adding a
 read, and especially before changing one that answers about somebody else's

@@ -24,7 +24,12 @@
  */
 #include "ores.refdata.core/repository/currency_currency_group_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/domain/currency_currency_group_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/currency_currency_group_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 

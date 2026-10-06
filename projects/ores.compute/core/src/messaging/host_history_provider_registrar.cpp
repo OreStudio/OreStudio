@@ -25,13 +25,16 @@
 #include "ores.compute.core/messaging/host_history_provider_registrar.hpp"
 #include "ores.compute.core/presentation/host_history_field_mapper.hpp"
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::compute::messaging {
 
 void register_host_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.compute.host",
+        "compute::hosts:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::host_service svc(scoped_ctx);
             auto versions = svc.get_host_history(entity_id);

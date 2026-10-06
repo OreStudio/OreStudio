@@ -1,0 +1,68 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>PUBLISHED CURVE: USD IRS</b> | [ Back to curves ] | [ History ]
+  --
+  {#
+    Curve | Value
+    Identity | oresmd://ir/USD?type=quote&instrument=ir_swap
+    Derivation | IR_CURVE_BOOTSTRAP
+    Recipe | USD-SOFR-3M (version 4)
+    Latest observations | 2026-10-06 16:00
+    Published | (no published state)
+  }
+  --
+  {#
+    Published versions | Published at | By | As of | State
+    . | (no published marker) | - | - | -
+  }
+  Nothing records which version is published, or who published it.
+  --
+  {
+    Reason | "4pm pillar was stale; reloading from the corrected feed"
+    Action | (X) Withdraw  ( ) Replace
+    Replacement as of | "2026-10-06 17:00"
+    Withdrawal approvals | "1 (Market data approvers)"
+  }
+  --
+  {#
+    Change to publish | Point | Current | Replacement | Change
+    . | tenor=1M | 0.04125 | 0.04140 | +0.00015
+    . | tenor=5Y | 0.04210 | 0.04218 | +0.00008
+  }
+  --
+  {
+    [ Raise withdrawal request ] | [ Raise replacement request ]
+  }
+  Refused: no market-data withdrawal or replacement kind exists.
+  --
+  {#
+    Consumers affected | Consumer | Effect | Notified
+    . | Pricing | next run uses the withdrawn curve | no
+    . | Reporting | already-published reports unchanged | no
+  }
+  {#
+    Decisions | When | By | Decision | Comment
+    . | 2026-10-06 17:05 | b.approver | approve | Stale pillar confirmed
+  }
+}
+
+@enduml

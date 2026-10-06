@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 2E7D5FD0-E63B-4803-85B7-4ABB120E1E56
+:END:
+#+title: Task: Add prototypes for all market data journeys
+#+description: Give every market data journey a plain-HTML prototype, build the oresmd URL editor every screen with a URL calls, add the plotting the term structures and surfaces need, and register and publish them.
+#+type: task
+#+level: s2
+#+filetags: :v0:marketdata:curves:prototype:product_backlog:inbox:
+#+owner: marco
+#+branch: chore/analyse-curve-support
+#+pr: https://github.com/OreStudio/OreStudio/pull/2694
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and the result.
+
+* Goal
+
+Every market data journey is reviewable without a session. Each journey gets
+one self-contained plain-HTML prototype under =doc/prototypes/=, in the
+agreed design tokens, with variants and states driven by query parameters. A
+screen that shows an oresmd URL calls one shared editor rather than asking a
+person to type a URI. A term structure or a surface is plotted, because a
+curve cannot be argued without seeing its shape. Each prototype is listed in
+the one inventory and published by the site build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-06                             |
+
+* Acceptance
+
+- One prototype per market data journey, self-contained and openable as a
+  file, with no framework, no build step and no session.
+- The oresmd URL editor composes, parses and validates a URL from the schema,
+  offers the codes the existing reference data keeps as pickers, and is called
+  from every dialog that shows a URL.
+- Term structures and surfaces are plotted with the shared chart helper.
+- Every prototype is listed in =doc/prototypes/index.org=, deployed by
+  =ores-build-site.el=, and the inventory check is green.
+- The story's proposed acceptance is exercised where a prototype can: the
+  composite object, its evolution, its declared shape and a hand-keyed point.
+
+* Result
+
+Closed by the work on =chore/analyse-curve-support=, in PR
+[[https://github.com/OreStudio/OreStudio/pull/2694][#2694]]:
+
+- 15 market data journey prototypes, plus the synthetic data generation
+  screens, the oresmd URL editor and the oresmd URL editor source view.
+- =doc/prototypes/oresmd-url-editor/index.html=: the composer, the managed-URL
+  list, the blueprint modal and the field-source view, with 23 fields backed
+  by an existing table and 10 by ORE's own vocabulary.
+- A shared, dependency-free SVG chart helper embedded in the curve and
+  surface prototypes: line, bars, heat map and isometric mesh.
+- =check_prototype_inventory.py= reports 40 prototypes, all listed and
+  published; =compass lint= is green.
+
+Commits: =4ec5d490ce= (journeys and prototypes), =344153dd5e= and
+=1b5d469bca= (the editor and its table-backed options), =3e9e0c84f5= (the
+term-structure and surface plotting), =8be205a136= (the synthetic screens),
+=87d68f6024= and =e9a0469aac= (one bootstrap, three named screens).
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the one inventory.
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data]] — the journey group hub.
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]] — the synthetic prototypes.

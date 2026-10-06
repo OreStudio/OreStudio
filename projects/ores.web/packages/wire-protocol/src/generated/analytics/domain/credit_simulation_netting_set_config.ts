@@ -33,7 +33,6 @@
 export interface CreditSimulationNettingSetConfig {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     party_id: string;
     credit_simulation_config_id: string;

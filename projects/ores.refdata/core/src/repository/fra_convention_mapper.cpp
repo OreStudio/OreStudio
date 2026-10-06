@@ -24,9 +24,15 @@
  */
 #include "ores.refdata.core/repository/fra_convention_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/fra_convention.hpp"
 #include "ores.refdata.api/domain/fra_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/fra_convention_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -39,7 +45,6 @@ domain::fra_convention fra_convention_mapper::map(const fra_convention_entity& v
     domain::fra_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.index = v.index;
@@ -59,7 +64,6 @@ fra_convention_entity fra_convention_mapper::map(const domain::fra_convention& v
     fra_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.index = v.index;

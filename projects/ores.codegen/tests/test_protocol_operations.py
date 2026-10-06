@@ -134,11 +134,13 @@ def test_grouping_by_verb_keeps_every_operation_exactly_once():
     assert len(grouped["list_versions"]) == 1
 
 
-def test_a_read_names_no_permission_and_a_write_names_the_one_it_needs():
+def test_a_read_names_its_read_code_and_a_write_names_the_one_it_needs():
     by_method = _by_method(_operations())
     assert by_method["list_account_contact_informations"]["is_write"] is False
-    assert by_method["list_account_contact_informations"]["permission"] == ""
+    assert by_method["list_account_contact_informations"]["permission"] == "read"
+    assert by_method["list_account_contact_informations"]["is_guarded"] is True
     assert by_method["get_account_contact_information"]["is_write"] is False
+    assert by_method["get_account_contact_information"]["permission"] == "read"
     assert by_method["put_account_contact_information"]["is_write"] is True
     assert by_method["put_account_contact_information"]["permission"] == "write"
     assert by_method["put_many_account_contact_informations"]["permission"] == "write"

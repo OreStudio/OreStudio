@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/csa_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/csa_history_field_mapper.hpp"
 #include "ores.refdata.core/service/csa_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::refdata::messaging {
 void register_csa_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.csa",
+        "refdata::csas:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::csa_service svc(scoped_ctx);
             auto versions = svc.get_csa_history(entity_id);

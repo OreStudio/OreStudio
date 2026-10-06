@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>SURFACE SLICES: USD SWAPTION VOL (CANDIDATE)</b> | [ Back to curves and surfaces ]
+  --
+  {
+    Surface | ^USD.RATES.VOL^ | Derivation | volatility
+    As of | now (no past read) | Quotes | 42 held
+  }
+  [ Read surface ]
+  --
+  {
+    Tenors shown | ^1Y, 2Y, 5Y, 10Y^ | [ Read smiles ]
+  }
+  {#
+    Smiles across tenors | Tenor | 10d put | 25d put | ATM | 25d call | 10d call
+    . | 1Y | - | - | - | - | - | no slice read
+    . | 5Y | - | - | - | - | - | no slice read
+  }
+  --
+  {
+    Mesh | View | ^Expiry x strike^ | Shading | ^Total variance^
+  }
+  {#
+    Mesh grid | Expiry / Strike | 1% | 2% | 3% | 4%
+    . | (no mesh read) | - | - | - | -
+  }
+  --
+  {#
+    Calendar arbitrage | Strike | Expiry pair | Total variance | Flag
+    . | (no arbitrage check) | - | - | -
+  }
+  --
+  {#
+    Butterfly arbitrage | Tenor | Implied density | Flag
+    . | (no arbitrage check) | - | -
+  }
+  --
+  Candidate only | not published — this screen reads and diagnoses only
+  --
+  [ Arrange approval ] | [ Leave candidate ]
+}
+
+@enduml

@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.variability.core/messaging/system_setting_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.variability.core/presentation/system_setting_history_field_mapper.hpp"
 #include "ores.variability.core/service/system_setting_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::variability::messaging {
 void register_system_setting_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.variability.system_setting",
+        "variability::system_settings:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::system_setting_service svc(scoped_ctx);
             auto versions = svc.get_setting_history(entity_id);

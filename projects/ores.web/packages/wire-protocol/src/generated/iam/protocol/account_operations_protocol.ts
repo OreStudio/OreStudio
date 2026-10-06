@@ -310,6 +310,26 @@ export interface UpdateSelfAccountContactInformationResponse {
     account_contact_information: AccountContactInformation | null;
 }
 
+/**
+ * @brief A member's read of their own contact record.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's record. The read needs no permission: it is
+ * a self read on the allow-list of Authorised reads. Reading a colleague's
+ * record is list_by_account_id, which needs
+ * iam::account_contact_informations:read.
+ */
+export interface GetMyAccountContactInformationRequest {}
+
+export interface GetMyAccountContactInformationResponse {
+    result: Result;
+    /**
+     * @brief The caller's contact record, or nothing when they have none yet.
+     * The first update-self creates it.
+     */
+    account_contact_information: AccountContactInformation | null;
+}
+
 export const subjects = {
     publish_accounts_from_dq_request: 'iam.v1.accounts.publish-from-dq',
     save_account_request: 'iam.v1.accounts.save',
@@ -326,6 +346,7 @@ export const subjects = {
     update_self_account_request: 'iam.v1.accounts.update-self',
     update_self_account_contact_information_request:
         'iam.v1.account_contact_informations.update-self',
+    get_my_account_contact_information_request: 'iam.v1.account_contact_informations.mine',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -347,4 +368,5 @@ export const requiresSession = {
     change_password_request_typed: true,
     update_self_account_request: true,
     update_self_account_contact_information_request: true,
+    get_my_account_contact_information_request: true,
 } as const;

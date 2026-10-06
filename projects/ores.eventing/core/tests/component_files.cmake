@@ -22,5 +22,6 @@
 set(files
     "entity_event_publisher_tests.cpp"
     "main.cpp"
+    "partition_token_cache_tests.cpp"
     "partitioned_cache_tests.cpp"
 )

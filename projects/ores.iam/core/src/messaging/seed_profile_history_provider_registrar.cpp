@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/seed_profile_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/seed_profile_history_field_mapper.hpp"
 #include "ores.iam.core/service/seed_profile_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::iam::messaging {
 void register_seed_profile_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.seed_profile",
+        "iam::seed_profiles:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::seed_profile_service svc(scoped_ctx);
             auto versions = svc.get_seed_profile_history(entity_id);

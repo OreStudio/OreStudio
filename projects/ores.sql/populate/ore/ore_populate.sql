@@ -22,9 +22,8 @@
 -- ORE Component Master Population File
 --
 -- Seeds ORE-specific reference data: catalog, coding scheme dataset, and asset
--- class artefacts. After staging, publishes ORE (and FpML) asset classes to
--- ores_refdata_asset_classes_tbl so that market data series validation works
--- from initial database setup.
+-- class artefacts. Publication to ores_refdata_asset_classes_tbl is a runtime
+-- act, driven by the bundle publish.
 -- =============================================================================
 
 \echo '--- ORE Catalog ---'
@@ -37,35 +36,6 @@
 \echo ''
 \echo '--- ORE Asset Class Artefacts ---'
 \ir ore_asset_class_artefact_populate.sql
-
--- =============================================================================
--- Publish FpML asset classes to production
--- (ensures production table is populated for market data validation)
--- =============================================================================
-
-\echo ''
-\echo '--- Publishing FpML Asset Classes ---'
-select * from ores_refdata_publish_asset_classes_from_dq_fn(
-    (select id from ores_dq_datasets_tbl
-     where code = 'fpml.asset_class'
-     and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_utility_system_tenant_id_fn(),
-    'upsert'
-);
-
--- =============================================================================
--- Publish ORE asset classes to production
--- =============================================================================
-
-\echo ''
-\echo '--- Publishing ORE Asset Classes ---'
-select * from ores_refdata_publish_asset_classes_from_dq_fn(
-    (select id from ores_dq_datasets_tbl
-     where code = 'ore.asset_class'
-     and valid_to = ores_utility_infinity_timestamp_fn()),
-    ores_utility_system_tenant_id_fn(),
-    'upsert'
-);
 
 -- =============================================================================
 -- Summary

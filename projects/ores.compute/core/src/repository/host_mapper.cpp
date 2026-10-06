@@ -23,14 +23,19 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.core/repository/host_mapper.hpp"
+#include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
+#include "ores.compute.core/repository/host_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <format>
-#include <sstream>
+#include <optional>
+#include <vector>
 
 namespace ores::compute::repository {
 

@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/messaging/market_series_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.core/presentation/market_series_history_field_mapper.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::marketdata::messaging {
 void register_market_series_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.marketdata.market_series",
+        "marketdata::market_series:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::market_series_service svc(scoped_ctx);
             auto versions = svc.get_market_series_history(entity_id);

@@ -384,6 +384,7 @@ export {
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
+    readMyContactInformation,
     updateAccount,
     updateSelfAccount,
     updateSelfContactInformation,

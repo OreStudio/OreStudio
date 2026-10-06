@@ -150,8 +150,8 @@ private:
         const auto tenant = boost::uuids::to_string(req.tenant_id);
         const auto definition_id = boost::uuids::to_string(req.report_definition_id);
         // Scoped from the authenticated context, not the base one: the
-        // authenticated context carries the workspace the request resolved
-        // to, and the generated reads filter on it.
+        // authenticated context carries the actor, roles and visible parties
+        // the request resolved to.
         const auto tenant_ctx =
             ores::database::service::tenant_context::with_tenant(req_ctx, tenant);
 

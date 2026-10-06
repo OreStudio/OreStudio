@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>SURFACE FRAMEWORK: USD / 5Y SWAPTION (proposed)</b> | [ Back to surfaces ]
+  --
+  No surface model is stored today. This page states the framework the desk needs.
+  --
+  {#
+    Axis | Kind | Values
+    Expiry | tenor | 1M, 3M, 6M, 1Y, 2Y, 5Y, 10Y, 30Y
+    Strike or delta | label | ATM, 25RR, 25BF, 10RR, 10BF
+  }
+  --
+  {#
+    Grid | Value
+    Cells (expiry x label) | 8 x 5 = 40
+    Quote type | ^volatility^
+    Cell status | 34 quoted, 6 missing
+  }
+  --
+  {
+    Quoting convention | ^delta, forward, premium-adjusted^
+    ATM type | ^forward, delta-neutral^
+    Expiry dates | ^IMM^
+    Day count | ^A365^
+  }
+  --
+  {
+    Time interpolation | ^linear in variance^
+    Strike interpolation | ^cubic^
+    Extrapolation, expiry | ^flat^
+    Extrapolation, strike | ^none^
+  }
+  --
+  {
+    Parametric model | ^SABR^
+    Parameters | alpha, beta, rho, nu per expiry
+  }
+  [ Save framework (not available) ] | [ Preview grid ]
+  --
+  Nothing on this page is written: no surface entity, no axis rows, no grid cells.
+}
+
+@enduml

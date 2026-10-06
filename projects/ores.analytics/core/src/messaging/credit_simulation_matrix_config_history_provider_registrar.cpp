@@ -25,7 +25,9 @@
 #include "ores.analytics.core/messaging/credit_simulation_matrix_config_history_provider_registrar.hpp"
 #include "ores.analytics.core/presentation/credit_simulation_matrix_config_history_field_mapper.hpp"
 #include "ores.analytics.core/service/credit_simulation_matrix_config_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
@@ -33,6 +35,7 @@ void register_credit_simulation_matrix_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.credit_simulation_matrix_config",
+        "analytics::credit_simulation_matrix_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::credit_simulation_matrix_config_service svc(scoped_ctx);
             auto versions = svc.get_matrix_history(entity_id);

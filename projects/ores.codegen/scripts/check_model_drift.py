@@ -49,13 +49,6 @@ PROFILE_DIR = REPO_ROOT / "projects" / "modeling"
 # reason it cannot simply be corrected, and removing entries is the
 # point of the list.
 #
-# report_definition is uuid-keyed AND workspace-scoped.
-# uuid-identified-lookup fixes has_workspace_id=false and
-# workspace-scoped-lookup fixes has_uuid_primary_key=false, so no
-# profile in the catalogue describes it. Re-binding would move the false
-# promise rather than remove it; the combination needs either a profile
-# of its own or a decision that it should not exist.
-#
 # result states has_change_reason_cache=false and documents it as
 # "overriding the profile default". The profile does not offer a
 # default: its Assignments section says it fixes the value. The two
@@ -66,8 +59,6 @@ PROFILE_DIR = REPO_ROOT / "projects" / "modeling"
 # parent_entity_singular, nor any parent foreign key. Either it is not
 # a child entity or the binding is incomplete.
 KNOWN_MODEL_DRIFT = {
-    ("projects/ores.reporting/modeling/ores.reporting.report_definition.org",
-     "has_workspace_id"),
     ("projects/ores.reporting/modeling/ores.reporting.report_instance.org",
      "parent_entity_singular"),
 }

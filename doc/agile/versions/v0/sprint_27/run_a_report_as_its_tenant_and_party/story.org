@@ -32,10 +32,10 @@ configuration, which needs a run token to call the owners.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Run grants and the schedule grant/revoke are done; the exchange is next. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-05                               |
+| Next          | Implement the run grant exchange.      |
+| Last touched  | 2026-10-06                               |
 
 * Acceptance
 
@@ -59,13 +59,17 @@ configuration, which needs a run token to call the owners.
 | [[id:0F9B325F-8812-423B-969C-B9A7C0E9D28B][Store run grants in IAM]] | DONE | 2026-10-05 | 2026-10-06 | The run grant entity, its create, revoke and get operations, the checks at create, and the permission codes and seeds. |
 | [[id:A148F6BA-3EDE-4CF9-80C4-FCF1B6BB681C][Exchange a run grant for a run token]] | BACKLOG | | | The exchange operation with its five checks, the actor, grant and run claims, the computed permissions, the issue log, and the per-service and per-tenant limits. |
 | [[id:FAAE99F3-0C98-4265-BFD6-4BD8A052B2F2][Cache run tokens in the step services]] | BACKLOG | | | One shared run token cache in ores.service, keyed by grant and run, with refresh at 80 percent, one retry on token_expired, eviction at the end of a run and a bounded size. |
-| [[id:DBE4A3A1-8A4F-470B-A9B0-4573940C04E8][Grant and revoke with the report schedule]] | BACKLOG | | | Reporting creates a grant when a person schedules or triggers a definition, revokes it on unschedule, delete or change of party, and suspends the definition on grant_lapsed; the ReportRun role is seeded across the owners. |
+| [[id:DBE4A3A1-8A4F-470B-A9B0-4573940C04E8][Grant and revoke with the report schedule]] | DONE | 2026-10-06 | 2026-10-06 | Reporting creates a grant when a person schedules or triggers a definition, revokes it on unschedule, delete or change of party, and suspends the definition on grant_lapsed; the ReportRun role is seeded across the owners. |
 
 * Decisions
 
 - *The design is settled.* [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] and [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] state the entity, the checks, the
   claims and the cache rules; this story implements them and records only
   departures from them here.
+- *Reporting acts on schedule and unschedule now.* A manual run's grant, the
+  suspension on =grant_lapsed=, the revoke on delete and the re-grant on a
+  change of party each need the exchange or a person's token reporting does not
+  hold, so they move to the exchange task.
 
 * Out of scope
 

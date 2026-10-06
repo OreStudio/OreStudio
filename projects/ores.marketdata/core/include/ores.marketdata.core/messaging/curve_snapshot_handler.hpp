@@ -78,6 +78,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!ores::service::messaging::has_permission(req_ctx, "marketdata::curve_snapshots:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         get_curve_snapshot_response resp;
         if (auto req = decode<get_curve_snapshot_request>(msg)) {
             try {
@@ -113,6 +117,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!ores::service::messaging::has_permission(req_ctx, "marketdata::curve_snapshots:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         get_curve_snapshot_buckets_response resp;
         if (auto req = decode<get_curve_snapshot_buckets_request>(msg)) {
             if (req->bucket_count == 0 || req->bucket_count > max_bucket_count ||

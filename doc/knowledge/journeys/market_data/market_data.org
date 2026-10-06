@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: EF205EF7-4413-4315-818C-6118F9A40DBD
+:END:
+#+title: Market data journeys
+#+description: Curves and surfaces: their blueprints, the market they are built from, their manual adjustments, their approval and publication, and how they are read over time.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+A curve or a surface is a composite object the desk is responsible for: it is
+built from what the market sends, corrected by hand where the market is wrong
+or thin, approved by a second pair of eyes, and published so that pricing and
+reporting can use it. This group holds the journeys that author those objects,
+watch and clear the market data they are built from, build and diagnose them,
+adjust them by hand, and govern their publication.
+
+Market observations and published curves are two different things. An
+observation is what the market sends and nobody signs it off; a published
+curve is what the system uses, and it exists only once a person has published
+it. Nothing a feed writes is used until then.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] | trader, quant | The curve's identity, pillars, bootstrap and conventions |
+| [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] | trader, quant | The surface's axes, quoting convention and model |
+| [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] | trader, operations | The raw quotes, and the fallbacks for the ones that fail |
+| [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] | trader | A candidate curve from the day's market |
+| [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] | trader | A candidate surface from the day's market |
+| [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] | trader | A manual point or a spread overlay, with a reason |
+| [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] | trader, quant | The candidate against the quotes it came from |
+| [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] | trader, quant | The smiles and the mesh, and their arbitrage |
+| [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] | trader | The candidate set put to a second pair of eyes |
+| [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] | approver | Approve, refuse or hold, with a comment |
+| [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] | trader | The candidates the system now uses |
+| [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] | trader, approver | Undo a publish, with the reason kept |
+| [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] | consumer | One instant, or a range, over time |
+| [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] | auditor | The trail of a published curve |
+
+* Related
+
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

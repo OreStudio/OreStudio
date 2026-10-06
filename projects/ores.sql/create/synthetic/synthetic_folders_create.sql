@@ -272,17 +272,21 @@ begin
 
     if p_from_root then
         with recursive ancestors as (
-            select t.id, t.parent_id as parent_id
+            select t.id, t.parent_id as parent_id,
+                   array[t.id] as path
             from "ores_synthetic_folders_tbl" t
             where t.tenant_id = p_tenant_id
               and t.id = p_root_id
               and t.valid_to = ores_utility_infinity_timestamp_fn()
             union all
-            select t.id, t.parent_id as parent_id
+            select t.id, t.parent_id as parent_id,
+                   a.path || t.id
             from "ores_synthetic_folders_tbl" t
             join ancestors a on t.id = a.parent_id
             where t.tenant_id = p_tenant_id
               and t.valid_to = ores_utility_infinity_timestamp_fn()
+              -- A parent cycle walks forever; stop when a row repeats.
+              and not t.id = any(a.path)
         )
         select a.id into v_root_id
         from ancestors a
@@ -297,18 +301,22 @@ begin
     return query
     with recursive descendants as (
         select t.id, t.parent_id as parent_id,
-               t.name::text as name
+               t.name::text as name,
+               array[t.id] as path
         from "ores_synthetic_folders_tbl" t
         where t.tenant_id = p_tenant_id
           and t.id = v_root_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
         union all
         select t.id, t.parent_id as parent_id,
-               t.name::text as name
+               t.name::text as name,
+               d.path || t.id
         from "ores_synthetic_folders_tbl" t
         join descendants d on t.parent_id = d.id
         where t.tenant_id = p_tenant_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
+          -- A parent cycle walks forever; stop when a row repeats.
+          and not t.id = any(d.path)
     )
     select d.id, d.parent_id, d.name from descendants d;
 end;

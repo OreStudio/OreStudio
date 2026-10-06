@@ -23,8 +23,9 @@
 #include "ores.reporting.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <map>
-#include <optional>
+#include <set>
 #include <string>
+#include <vector>
 
 namespace ores::reporting::service {
 
@@ -40,16 +41,26 @@ namespace ores::reporting::service {
 scheduler_job_name(const boost::uuids::uuid& definition_id);
 
 /**
- * @brief The job the scheduler already holds for a definition, if any.
+ * @brief Whether a scheduler job name belongs to a report definition.
  *
- * Reconciliation adopts what it finds rather than insisting on creating its
- * own: a job that exists under the definition's name is the job for that
- * definition, whatever id it was given, and reusing its id is what makes the
- * pass converge instead of colliding on the name index.
+ * The scheduler holds every component's jobs in one table, so reconciliation
+ * reads a job's name before it touches the job. A name outside this namespace
+ * is another component's and is never a report orphan.
  */
-[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::optional<boost::uuids::uuid>
-existing_job_for(const std::map<std::string, boost::uuids::uuid>& jobs_by_name,
-                 const boost::uuids::uuid& definition_id);
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT bool
+is_report_definition_job_name(const std::string& job_name);
+
+/**
+ * @brief The report scheduler jobs no definition accounts for.
+ *
+ * A job is accounted for when a definition records its id as the job its runs
+ * fire from, and records the grant those runs act under. Any other report job
+ * must go: it is either a schedule that did not finish, or a job whose runs no
+ * person consented to. Jobs of other components are not returned.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::vector<boost::uuids::uuid>
+unaccounted_report_jobs(const std::map<std::string, boost::uuids::uuid>& scheduler_jobs_by_name,
+                        const std::set<boost::uuids::uuid>& accounted_job_ids);
 
 }
 

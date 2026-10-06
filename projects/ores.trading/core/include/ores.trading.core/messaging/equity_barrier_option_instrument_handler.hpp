@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::equity_barrier_option_instruments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_equity_barrier_option_instruments_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(equity_barrier_option_instrument_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::equity_barrier_option_instruments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_equity_barrier_option_instrument_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(equity_barrier_option_instrument_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::equity_barrier_option_instruments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_equity_barrier_option_instruments_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(equity_barrier_option_instrument_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::equity_barrier_option_instruments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_equity_barrier_option_instrument_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(equity_barrier_option_instrument_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::equity_barrier_option_instruments:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_equity_barrier_option_instrument_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(equity_barrier_option_instrument_handler_lg(), warn)

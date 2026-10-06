@@ -31,12 +31,12 @@ two tasks moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Take P01 and H01 first, then re-measure the record and restore the registry entry. |
-| Last touched  | 2026-10-05                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
 
 * Acceptance
 
@@ -58,12 +58,26 @@ two tasks moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | BACKLOG | | | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
+| [[id:A89A0010-E2BC-410B-967A-76D032017CD7][Return marketdata to the clean-standard registry]] | DONE | 2026-10-06 | 2026-10-06 | Fix the two failing items no other task owns, P01 and H01, then re-measure every item and put marketdata back in COMPONENTS_UNDER_TEST. |
 | [[id:D0883E40-B0F8-49B5-8AEA-DFBB5F19834D][Remove the namespace closer comments from the templates]] | DONE | 2026-10-05 | 2026-10-06 | Fourteen shared C++ templates end each namespace with an end-of-line comment, which H03 forbids; remove it from the templates and from the 2,873 files they generated, in one mechanical PR. |
 | [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]] | DONE | 2026-10-06 | 2026-10-06 | The :has_as_of_lookup: flag adds an as_of field to an entity's list request, but no generated handler, service or repository reads it. Make the generated list read return the rows valid at the stated instant, so every entity can offer the canonical point-in-time read P01 asks for. |
+| [[id:00300B86-C3B9-43B5-9BC0-1122FD3893A3][Close the marketdata registry story]] | DONE | 2026-10-06 | 2026-10-06 | Close the story now that its final task merged: mark the story and its sprint row DONE and write the story Result. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+marketdata passes every item of the component clean standard and is back in
+=COMPONENTS_UNDER_TEST=, so the drift and protocol twin gates cover it again.
+P01 is met by the generated point-in-time read, which landed with
+[[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]]
+and lets the six marketdata entity lists answer for a past instant. H03 is met
+by the template task. The return task re-measured all 49 items at one commit,
+refreshed the four part diagrams in two passes, drew the composite root as a
+component diagram with its oresmd data model kept beside it, and recorded the
+root's missing sentinel as the one accepted H01 exception. Its PR is
+[[https://github.com/OreStudio/OreStudio/pull/2688][#2688]].

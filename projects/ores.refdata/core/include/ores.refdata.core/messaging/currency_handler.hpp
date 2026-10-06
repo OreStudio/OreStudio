@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_currencies_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_currency_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_currencies_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -383,6 +395,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_currency_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -424,6 +440,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currencies:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_currency_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_handler_lg(), warn) << "Failed to decode: " << msg.subject;

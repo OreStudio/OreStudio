@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: AB04B01E-7EAA-4C98-97A9-681194AB0395
+:END:
+#+title: User Journey: Manage a curve's blueprint
+#+description: A trader or quant defines a curve's blueprint for a currency: its identity and family role, its output series, its pillar list and order, and its bootstrap and tenor conventions.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant defines a curve's blueprint for a currency: its identity and family role, its output series, its pillar list and order, and its bootstrap and tenor conventions.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this curve to be built the way the desk agreed, so every bootstrap of
+it reads the same pillars and the same conventions." The journey is done when
+the blueprint is saved and reads back with its pillars in order, and with the
+discount curve set if the family role is PROJECTION.
+
+* Actor and trigger
+
+The actor is a trader who holds the market-data management role, or a quant
+acting for the desk. The trader is the maker: the blueprint is theirs to
+author. The trigger is a new currency, a new curve the desk must publish, a
+changed pillar list, or a changed convention. The journey starts at the curve
+list for a currency and ends when the person leaves the saved blueprint.
+
+A saved blueprint is a candidate. It changes nothing that pricing reads until a
+curve is bootstrapped from it and that output curve is published; the blueprint
+itself is never published. The model calls this record the IR curve bootstrap
+config, and the screen calls it the curve's blueprint.
+
+* Steps
+
+1. *Find the currency's curves.* The person opens *Market data*, then
+   *Curves*, and chooses a currency. The system lists that currency's
+   blueprints: the output series' oresmd URI, the family role, the discount
+   curve, the interpolation method, the day count, the split tenor and the
+   version. The person filters by URI or by family role.
+2. *Open or start a blueprint.* The person selects a row and the system shows
+   the blueprint screen, or the person chooses *New blueprint* and the system
+   shows the same screen empty. The currency comes from the list; it is not
+   typed again.
+3. *Set the identity and the family role.* The person chooses the family role,
+   =FUNDING= or =PROJECTION=, and names the output series. The output series is
+   a =market_series= row: the person either links an existing one or the system
+   mints a new one with the blueprint's oresmd URI. The series reads
+   =OBSERVED= until the first bootstrap stamps it =IR_CURVE_BOOTSTRAP= with
+   this blueprint's id and version.
+4. *Choose the discount curve for a projection.* If the role is =PROJECTION=,
+   the person chooses the =FUNDING= blueprint this curve discounts off. The
+   system offers only this currency's =FUNDING= blueprints. The server refuses a
+   projection that points at another projection, or at itself.
+5. *Define the pillars.* The person adds, changes, removes and reorders pillar
+   rows. Each row carries a zero-based sequence, a start tenor, an end tenor and
+   a curve role (=DEPOSIT=, =FRA= or =SWAP=). The system offers the tenor codes
+   from the reference data and the curve roles from their code list, and it
+   resolves each tenor label through the tenor machinery.
+6. *Set the bootstrap method and the conventions.* The person chooses the
+   interpolation method (=LOG_LINEAR_DISCOUNT=, =CUBIC_SPLINE= or
+   =FLAT_FORWARD_THEN_LOG_LINEAR=), the day count, the tenor convention
+   (=RATES_SPOT_FORWARD= or =RATES_SPOT_FOMC=) and the split tenor. For a
+   single-segment method the split tenor is the last pillar's end tenor; the
+   system offers it from the same tenor list.
+7. *Save the blueprint.* The person chooses *Save blueprint*. The system writes
+   the config, then the pillar rows, each as a new bitemporal version, and
+   replies with the version it wrote. The screen shows the saved blueprint; a
+   candidate that publishes nothing.
+8. *Check the history.* The person opens the history of the config or of one
+   pillar. The system shows every version with the field-level difference from
+   the one before. A revert is a new version, not a deletion.
+9. *Leave.* The person goes back to the curve list. Nothing has been published,
+   and no curve has been built yet.
+
+Steps 7 is two writes, not one: the config and its pillars are separate
+resources, so a failure between them leaves a config whose pillar list is
+partly updated; see /What is missing/.
+
+* Screens and wireframes
+
+One screen. The blueprint's identity sits at the top, the pillars and the
+conventions that produce the curve sit in the middle, and the publication state
+sits at the bottom, so the person reads cause above effect.
+
+#+caption: Curve blueprint: the curve's identity, its pillars and their order, and the bootstrap and tenor conventions.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_manage-a-curves-blueprint.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/manage-a-curves-blueprint/index.html=: mock data only, no backend,
+no build step and no session. It argues that a curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits.
+
+- Variants :: a flat pillared table, b grouped by instrument kind (deposit, future, swap), c a drag-ordered list
+- States :: funding, projection (a projection with no discount curve, which the screen refuses), empty
+- Source :: =doc/prototypes/manage-a-curves-blueprint/index.html=
+- Open :: =/OreStudio/doc/prototypes/manage-a-curves-blueprint/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =ir_curve_bootstrap_config= | The blueprint row: currency, output series, family role, discount curve, interpolation, day count, tenor convention, split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillar list and its order: sequence, start and end tenor, curve role | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =market_series= | The output series the blueprint publishes into, and its derivation stamp | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =currency= | The currency the curve is quoted in, and the picker the list reads | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+| =tenor= | The tenor labels the pillars and the split tenor pick from | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =tenor_convention= | The convention the pillars resolve their dates under | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =curve_role= | The instrument-pricing role a pillar carries | [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][ores.refdata.curve_role]] |
+| =day_count_fraction_type= | The day count the bootstrap applies per pillar | [[id:D639B3AB-7421-4A7C-A17A-02000709E22F][ores.refdata.day_count_fraction_type]] |
+| =derivation_kind= | The marker that says a series is derived, and by which mechanism | [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][ores.refdata.derivation_kind]] |
+
+The config and its pillars are versioned, so each has a history. The output
+series is a =market_series= row; the blueprint references it softly, across
+components, and never hard-links it.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the currency's curves | List the blueprints | =refdata.v1.ir_curve_bootstrap_configs.list= | exists |
+| Find the currency's curves | List the currencies | =refdata.v1.currencies.list= | exists |
+| Open or start a blueprint | Read one blueprint | =refdata.v1.ir_curve_bootstrap_configs.get= | exists |
+| Open or start a blueprint | List the blueprint's pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Set the identity | List or mint the output series | =marketdata.v1.market_series.list=, =.put= | exists |
+| Choose the discount curve | List the currency's FUNDING blueprints | =refdata.v1.ir_curve_bootstrap_configs.list= | exists |
+| Define the pillars | Fill the tenor and curve-role pickers | =refdata.v1.tenors.list=, =refdata.v1.curve_roles.list= | exists |
+| Define the pillars | Write, reorder or remove pillars | =refdata.v1.ir_curve_bootstrap_pillars.put=, =.put_many=, =.delete= | exists |
+| Set the conventions | Fill the convention pickers | =refdata.v1.tenor_conventions.list=, =refdata.v1.day_count_fraction_types.list= | exists |
+| Save the blueprint | Write the config | =refdata.v1.ir_curve_bootstrap_configs.put= | exists |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= | exists |
+| Check the history | Revert by writing the old values | the entity's =put= | exists |
+
+The history request is the generic one, with =entity_type=
+=ores.refdata.ir_curve_bootstrap_config= or
+=ores.refdata.ir_curve_bootstrap_pillar=; both register a history provider.
+Saving the config and the pillars is two calls, not one: the subjects above are
+the generated resource verbs, and no operation writes both together.
+
+* What is missing
+
+1. *A blueprint has no name.* The config carries an output series, a currency
+   and a role, and no name or description column. The screen titles a blueprint
+   by its output series' oresmd URI, which is long and identical for two
+   currencies only in their URI text. The candidate is a name or a label
+   column. Until then the screen shows the URI and the currency.
+2. *A curve has no typed identity at the wire.* The blueprint is keyed by the
+   output series UUID, and every curve read is keyed by the oresmd URI. No
+   subject names a curve by (currency, family role). The candidate is a typed
+   curve identity. Until then the person matches on the URI.
+3. *Saving a blueprint is not atomic.* The config and its pillars are separate
+   generated resources with separate =put= subjects, and no operation writes
+   both. A failure between the two writes leaves a config with a partly updated
+   pillar list, and the save is a transaction the caller must compose. The
+   candidate is an apply operation that writes the config and its pillars
+   together. Until then the screen saves the config first, then the pillars,
+   and says what it wrote.
+4. *No approval kind covers a blueprint change.* The inbox models a generic
+   approval kind, but only =iam.role_grant= is seeded. A blueprint change is
+   written with no second pair of eyes, and no comment. The candidate is an
+   approval kind for the blueprint, with its decide permission and its required
+   approvals. Until then a save takes effect at once and the history names the
+   writer alone.
+5. *The tenor references are undeclared.* The pillar's start and end tenors,
+   the split tenor and the tenor convention are soft references: the screen
+   offers the reference-data list, but the database holds only text, and the
+   application layer validates it. The screen cannot tell a stored code the list
+   does not hold. The candidate is a declared reference. Until then the screen
+   marks a value it cannot find in the list.
+6. *No screen exists.* No web page, HTTP route or shell verb reaches any curve
+   operation. The generated detail dialog and controller for this config are
+   disabled, and the hand-written workbench went with the removed desktop
+   client. The candidate is a web page and a route. Until then the journey runs
+   only from the shell.
+7. *A currency's blueprints are not a typed scope.* The list filter is generic;
+   nothing names "the curves of this currency" as a scope the server resolves.
+   The candidate is a filter on currency and family role, or a scoped read.
+   Until then the screen lists all the tenant's blueprints and filters on the
+   page.
+
+* Related journeys
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build a candidate curve from this blueprint and the day's market.
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — the surface equivalent of this blueprint, once a surface model exists.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a built curve when a pillar's market input is wrong or thin.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — read the candidate against the quotes the pillars name.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

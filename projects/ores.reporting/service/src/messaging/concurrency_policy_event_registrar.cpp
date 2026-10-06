@@ -24,9 +24,13 @@
  */
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
-#include "ores.reporting.api/eventing/concurrency_policy_event.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.reporting.api/eventing/concurrency_policy_event.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 
 namespace ores::reporting::service::messaging {

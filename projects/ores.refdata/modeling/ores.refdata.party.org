@@ -52,6 +52,8 @@ Surrogate key for the party record.
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
+:sortable:    true
+:searchable:  true
 :END:
 
 Full legal name of the party.
@@ -67,6 +69,8 @@ std::string(faker::company::companyName())
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable:    true
+:searchable:  true
 :END:
 
 Short code for quick reference.
@@ -79,9 +83,10 @@ std::string(faker::string::alpha(6))
 
 ** codename
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:searchable: true
 :END:
 
 Globally unique human-readable codename (adjective_noun).
@@ -115,6 +120,7 @@ std::nullopt
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "Operational"
+:sortable:      true
 :END:
 
 Structural classification of this party.
@@ -136,6 +142,7 @@ std::string("Operational")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Classification of this party.
@@ -167,6 +174,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Business center location code.
@@ -189,6 +197,7 @@ std::string("WRLD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Current lifecycle status.
@@ -427,21 +436,20 @@ Everything below is consumed by the C++ codegen pipeline only.
 
 ** Repository
 :PROPERTIES:
-:tenant_read_scope:      shared
 :entity_singular_short: party
 :entity_plural_short:   parties
 :entity_singular_words: party
 :entity_plural_words:   parties
 :END:
 
-Reads are left to row level security rather than filtered again in the
-query. IAM resolves a party's name while authenticating -- the chooser a
-caller picks from -- and it authenticates as its own service account, which
-lives in the system tenant. A party row belongs to the tenant that created
-it, so an app-level filter of =tenant_id = the caller= admits none of them,
-and every name in the chooser comes back empty. The policy on this table
-admits the owning tenant or the system tenant, and that is the statement
-that should decide it. Every other tenant still sees only its own rows.
+Reads are scoped to the caller's tenant, as for every tenant-scoped entity,
+the system tenant included. IAM's party cache, which names parties in the
+sign-in chooser, reads each tenant's partition inside that tenant with a
+token it issues itself, so it needs no wider read.
+
+The scope sits in the code as well as in the policy: the list read and the
+count name the caller's tenant in the query. A read that must cross tenants
+therefore changes the query and the policy, not the policy alone.
 
 ** Domain includes
 
@@ -548,6 +556,7 @@ read_system_party(context ctx, const std::string& tenant_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <array>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -787,6 +796,10 @@ the workflow engine rather than replying to the caller directly.
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::parties:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_party_composite_as_of_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;

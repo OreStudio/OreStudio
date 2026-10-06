@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/moment_type_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.trading.core/presentation/moment_type_history_field_mapper.hpp"
 #include "ores.trading.core/service/moment_type_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::trading::messaging {
 void register_moment_type_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.moment_type",
+        "trading::moment_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::moment_type_service svc(scoped_ctx);
             auto versions = svc.get_moment_type_history(entity_id);

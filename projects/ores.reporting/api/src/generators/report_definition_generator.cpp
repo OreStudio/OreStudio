@@ -45,7 +45,6 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.name = std::string(faker::word::noun()) + "_report" + "-" + std::to_string(idx);
@@ -56,6 +55,7 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
     r.schedule_expression = std::string("0 6 * * 1");
     r.concurrency_policy = std::string("skip");
     r.scheduler_job_id = std::nullopt;
+    r.run_grant_id = std::nullopt;
     r.pre_processing = std::string("execute");
     r.prepared_input_key = std::string{};
     r.post_processing = std::string("execute");

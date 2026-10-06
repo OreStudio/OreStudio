@@ -397,7 +397,7 @@ describe('the tenant roster', () => {
 });
 
 describe('the tenant roster read', () => {
-    it('sends the search, the filters and the bounds of the page', () => {
+    it('sends the search, the order, the filters and the bounds of the page', () => {
         expect(
             tenantQuery({
                 ...FIRST_PAGE,
@@ -410,6 +410,8 @@ describe('the tenant roster read', () => {
             type: 'operational',
             status: 'active',
             includeTest: true,
+            sort: '',
+            descending: false,
             offset: 30,
             limit: 15,
         });

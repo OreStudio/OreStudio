@@ -30,7 +30,7 @@ each form, and between them they hold every shape the element can take.
 :schema:           public
 :product:          ores
 :component:        refdata
-:profile:   workspace-scoped-lookup
+:profile:   simple-lookup
 :END:
 
 * Columns

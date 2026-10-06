@@ -33,7 +33,6 @@
 export interface IborIndexConvention {
     version: number;
     tenant_id: string;
-    workspace_id: string;
     id: string;
     fixing_calendar: string;
     day_count_fraction: string;

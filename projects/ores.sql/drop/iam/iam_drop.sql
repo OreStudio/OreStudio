@@ -42,6 +42,7 @@
 \ir ./iam_run_grants_drop.sql
 
 -- RBAC
+\ir ./iam_member_role_drop.sql
 \ir ./iam_rbac_functions_drop.sql
 \ir ./iam_account_roles_drop.sql
 \ir ./iam_role_permissions_drop.sql

@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/messaging/configuration_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.reporting.core/presentation/configuration_history_field_mapper.hpp"
 #include "ores.reporting.core/service/configuration_service.hpp"
 
@@ -32,6 +34,7 @@ namespace ores::reporting::messaging {
 void register_configuration_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.configuration",
+        "reporting::configurations:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::configuration_service svc(scoped_ctx);
             auto versions = svc.get_configuration_history(entity_id);

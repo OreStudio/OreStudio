@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 23A93147-E669-4F3B-A756-18632A489122
+:END:
+#+title: Story: Finish the refdata read path
+#+description: The tenant roster has no order and a tenant has no history; the party read takes only offset and limit, so parties cannot be searched or sorted. IAM's party cache does not follow party events, the party pgTAP test inserts no category, and the party hierarchy has no cycle guard. Close these gaps on the two screens the record-screen standard names.
+#+type: story
+#+level: s2
+#+filetags: :refdata:iam:read-path:record-standard:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every refdata list the record-screen standard names searches and sorts on the server, a tenant has a history, a party event refreshes the cache that names parties, the party test inserts a category, and a parent cycle in the party hierarchy is reported rather than silently dropped.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- The tenant roster orders on every column it shows, and a tenant page has a History tab.
+- The party read takes a search and an order, and the parties list searches and sorts on the server.
+- A party event reloads IAM's party cache partition for that party's tenant.
+- refdata_party_test.sql inserts a party with its category and passes.
+- A parent cycle in the party hierarchy is reported, and a test covers it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3AB024D6-8EBC-4CC9-B894-8FBFA0601548][Scaffold story: Finish the refdata read path]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5A4DBF63-BD35-4B98-BD10-926C97705906][Serve tenant and party search, order and history]] | DONE | 2026-10-06 | 2026-10-06 | Initial task for: Finish the refdata read path |
+| [[id:8187FA88-3AF0-49A2-A1FD-88848672B867][Reload the party cache on party events]] | DONE | 2026-10-06 | 2026-10-06 | IAM's party cache does not follow party events during provisioning, so a partition holds stale names until a sign-in misses it. Make the party events reload the affected tenant's partition. |
+| [[id:FF746B22-DC1F-45A7-BA3D-CBF6C613E946][Fix the party test that inserts no category]] | DONE | 2026-10-06 | 2026-10-06 | refdata_party_test.sql inserts a party with no party_category, so the test aborts before its first assertion. Give the fixture its category and make the file pass. |
+| [[id:D06C64C4-966E-4A8F-B56A-8B0097C609BF][Guard the party hierarchy against cycles]] | DONE | 2026-10-06 | 2026-10-06 | A parent_id cycle in the party or counterparty hierarchy either spins the recursive CTE or silently drops both nodes from build_tree(). Report the cycle and cover it with a test. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+All four tasks are DONE. The tenant and party lists search and sort on the
+server and the tenant page has a History tab; party events reload IAM's party
+cache; the party pgTAP test passes; and the party hierarchy survives a parent
+cycle in both build_tree and the generated recursive CTE.
+
+Verified: refdata regeneration is drift-free; 670 web tests pass; the six
+refdata C++ suites and the utility hierarchy tests pass; and the party pgTAP
+tests pass 14 of 14 against a recreated database.

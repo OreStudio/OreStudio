@@ -23,27 +23,373 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
+        namespace datum #F2F2F2 {
+            class field_value <<struct>> {
+                +name : field
+                +held : value
+            }
+            class market_datum {
+                -type_ : instrument_type
+                -quote_ : quote_type
+                -series_ : bool
+                -fields_ : vector<field_value>
+                +make(instrument_type type, quote_type quote, vector<field_value> fields) : [[nodiscard]] static expected<market_datum, string>
+                +make_series(instrument_type type, quote_type quote, vector<field_value> fields) : [[nodiscard]] static expected<market_datum, string>
+                +type() : [[nodiscard]] instrument_type
+                +quote() : [[nodiscard]] quote_type
+                +is_series() : [[nodiscard]] bool
+                +fields() : [[nodiscard]] span<const field_value>
+                +holds(field f) : [[nodiscard]] bool
+                +at(field f) : [[nodiscard]] const value&
+                +get() : [[nodiscard]] const field_value_t<F>*
+                -market_datum(instrument_type type, quote_type quote, bool series, vector<field_value> fields)
+                -checked(instrument_type type, quote_type quote, bool series, vector<field_value> fields) : expected<market_datum, string>
+            }
+            enum index_family {
+                ibor
+                swap
+                inflation
+                fx
+                equity
+                commodity
+                power
+                bond
+                bond_future
+                cmb
+                generic
+            }
+            class index_field_spec <<struct>> {
+                +name : string_view
+                +optional : bool
+            }
+            class index_row <<struct>> {
+                +family : index_family
+                +asset : asset_class
+                +subject : string_view
+                +fields : span<const index_field_spec>
+            }
+            class market_index {
+                -family_ : index_family
+                -subject_ : string
+                -fields_ : vector<field_text>
+                +make(index_family family, string subject, vector<field_text> fields) : [[nodiscard]] static expected<market_index, string>
+                +family() : [[nodiscard]] index_family
+                +subject() : [[nodiscard]] const string&
+                +fields() : [[nodiscard]] span<const field_text>
+                +get(string_view name) : [[nodiscard]] const string*
+                -market_index(index_family family, string subject, vector<field_text> fields)
+            }
+            enum instrument_type {
+                zero
+                discount
+                mm
+                mm_future
+                oi_future
+                fra
+                imm_fra
+                ir_swap
+                basis_swap
+                bma_swap
+                cc_basis_swap
+                cc_fix_float_swap
+                cds
+                cds_index
+                fx_spot
+                fx_fwd
+                hazard_rate
+                recovery_rate
+                assumed_recovery_rate
+                swaption
+                capfloor
+                fx_option
+                zc_inflation_swap
+                zc_inflation_capfloor
+                yy_inflation_swap
+                yy_inflation_capfloor
+                seasonality
+                equity_spot
+                equity_fwd
+                equity_dividend
+                equity_option
+                bond
+                bond_future
+                bond_option
+                bond_future_option
+                index_cds_option
+                index_cds_tranche
+                commodity_spot
+                commodity_fwd
+                correlation
+                commodity_option
+                commodity_calendar_spread_option
+                shape_profile
+                cpr
+                rating
+            }
+            enum quote_type {
+                basis_spread
+                credit_spread
+                conv_credit_spread
+                yield_spread
+                hazard_rate
+                rate
+                ratio
+                price
+                rate_lnvol
+                rate_nvol
+                rate_slnvol
+                base_correlation
+                shift
+                transition_probability
+                conversion_factor
+                shape_factor
+                none
+            }
+            enum field {
+                ccy
+                curve_id
+                day_counter
+                term
+                index_name
+                fwd_start
+                contract_month
+                contract
+                tenor
+                imm1
+                imm2
+                flat_term
+                maturity
+                identifier
+                flat_ccy
+                float_ccy
+                float_tenor
+                fixed_ccy
+                fixed_tenor
+                underlying_name
+                seniority
+                doc_clause
+                running_spread
+                cds_index_name
+                attachment_point
+                detachment_point
+                unit_ccy
+                quote_tag
+                expiry
+                dimension
+                strike_level
+                payer_receiver
+                index_tenor
+                atm
+                relative
+                cap_floor
+                strike_label
+                index
+                seasonality_type
+                month
+                eq_name
+                strike
+                option_type
+                security_id
+                future_contract
+                qualifier
+                contract_name
+                index_term
+                side
+                commodity_name
+                offset
+                index1
+                index2
+                quote_name
+                delivery_date
+                start_time_in_sec
+                time_unit
+                dst
+                rating_name
+                from_rating
+                to_rating
+            }
+            enum value_kind {
+                text
+                term
+                decimal
+                strike
+                code
+            }
+            enum field_role {
+                identity
+                coordinate
+            }
+            class field_spec <<struct>> {
+                +name : field
+                +role : field_role
+                +may_be_none : bool
+            }
+            enum asset_class {
+                ir
+                fx
+                credit
+                equity
+                commodity
+                inflation
+                security
+                correlation
+                rating
+                shape_profile
+                generic
+            }
+            class schema_row <<struct>> {
+                +type : instrument_type
+                +fields : span<const field_spec>
+                +asset : asset_class
+                +subject : field
+            }
+            class none_t <<struct>> {
+            }
+            class term {
+                -kind_ : kind
+                -text_ : string
+                +parse(string_view text) : [[nodiscard]] static expected<term, string>
+                +which() : [[nodiscard]] kind
+                +text() : [[nodiscard]] const string&
+                -term(kind k, string text)
+            }
+            class decimal {
+                -text_ : string
+                +parse(string_view text) : [[nodiscard]] static expected<decimal, string>
+                +text() : [[nodiscard]] const string&
+                -decimal(string text)
+            }
+            class code {
+                -text_ : string
+                +parse(string_view text) : [[nodiscard]] static expected<code, string>
+                +text() : [[nodiscard]] const string&
+                -code(string text)
+            }
+            class absolute_strike <<struct>> {
+                +level : decimal
+            }
+            class atm_strike <<struct>> {
+                +atm_type : string
+                +delta_type : optional<string>
+                +shorthand : bool
+            }
+            class delta_strike <<struct>> {
+                +delta_type : string
+                +option_type : string
+                +delta : decimal
+            }
+            class moneyness_strike <<struct>> {
+                +moneyness_type : string
+                +moneyness : decimal
+            }
+            class strike {
+                -form_ : form
+                +parse(string_view text) : [[nodiscard]] static expected<strike, string>
+                +which() : [[nodiscard]] const form&
+                +text() : [[nodiscard]] string
+                -strike(form f)
+            }
+        }
         namespace domain #F2F2F2 {
-            class market_fixing <<struct>> {
-                +fixing_date : chrono::year_month_day
-                +value : string
-                +source : optional<string>
+            class feed_binding <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +workspace_id : boost::uuids::uuid
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +source_name : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class market_observation <<struct>> {
-                +observation_datetime : chrono::system_clock::time_point
-                +point_id : string
+            class IFeed {
+                +IFeed()
+                +~IFeed()
+                +source_name() : const string&
+                +qualifier() : const string&
+                +role() : const string&
+                +kind() : string_view
+                +conflict_key() : string
+                +start() : void
+                +stop() : void
+                +publish_count() : uint64_t
+            }
+            class market_fixing <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +fixing_date : chrono::year_month_day
                 +value : string
-                +source : optional<string>
-                +recorded_at : chrono::system_clock::time_point
+                +source : string
+            }
+            class market_observation <<struct>> {
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +observation_datetime : chrono::system_clock::time_point
+                +oresmd_uri : string
+                +value : string
+                +source : string
             }
             class market_series <<struct>> {
                 +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +oresmd_uri : string
+                +series_subclass : string
+                +derivation_kind : string
+                +derivation_config_id : boost::uuids::uuid
+                +derivation_config_version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class market_series_asset_class <<struct>> {
+                +version : int
+                +tenant_id : string
+                +market_series_id : boost::uuids::uuid
+                +asset_class_code : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class observation_lineage <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +observation_datetime : chrono::system_clock::time_point
+                +oresmd_uri : string
+                +derivation_config_id : boost::uuids::uuid
+                +derivation_config_version : int
+                +source_as_of : chrono::system_clock::time_point
+                +source_series_ids : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class series_classification_rule <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
                 +series_type : string
                 +metric : string
-                +qualifier : string
-                +asset_class : string
-                +series_subclass : string
+                +asset_class_source : string
+                +asset_class_code : optional<string>
+                +series_subclass_code : string
+                +description : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -52,9 +398,726 @@ namespace ores #F2F2F2 {
             }
         }
         namespace messaging #F2F2F2 {
+            class feed_binding_key <<struct>> {
+                +source_name : string
+            }
+            class feed_binding_write <<struct>> {
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +source_name : string
+                +enabled : bool
+            }
+            class feed_binding_change <<struct>> {
+                +write : feed_binding_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class feed_binding_removal <<struct>> {
+                +key : feed_binding_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class feed_binding_lookup <<struct>> {
+                +key : feed_binding_key
+                +feed_binding : optional<ores::marketdata::domain::feed_binding>
+            }
+            class feed_bindings_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class feed_binding_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : feed_binding_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class feed_binding_version_key <<struct>> {
+                +feed_binding : feed_binding_key
+                +version : uint32_t
+            }
+            class feed_binding_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_feed_bindings_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<feed_bindings_filter>
+                +as_of : optional<string>
+            }
+            class list_feed_bindings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +feed_bindings : vector<ores::marketdata::domain::feed_binding>
+                +total : uint64_t
+            }
+            class get_feed_binding_request <<struct>> {
+                +key : feed_binding_key
+            }
+            class get_feed_binding_response <<struct>> {
+                +result : ores::utility::domain::result
+                +feed_binding : optional<ores::marketdata::domain::feed_binding>
+            }
+            class get_many_feed_bindings_request <<struct>> {
+                +keys : vector<feed_binding_key>
+            }
+            class get_many_feed_bindings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<feed_binding_lookup>
+            }
+            class put_feed_binding_request <<struct>> {
+                +change : feed_binding_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_feed_binding_response <<struct>> {
+                +result : ores::utility::domain::result
+                +feed_binding : optional<ores::marketdata::domain::feed_binding>
+            }
+            class put_many_feed_bindings_request <<struct>> {
+                +changes : vector<feed_binding_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_feed_bindings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +feed_bindings : vector<ores::marketdata::domain::feed_binding>
+            }
+            class delete_feed_binding_request <<struct>> {
+                +removal : feed_binding_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_feed_binding_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_feed_bindings_request <<struct>> {
+                +removals : vector<feed_binding_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_feed_bindings_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_feed_binding_versions_request <<struct>> {
+                +key : feed_binding_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<feed_binding_versions_filter>
+            }
+            class list_feed_binding_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::marketdata::domain::feed_binding>
+                +total : uint64_t
+            }
+            class get_feed_binding_version_request <<struct>> {
+                +key : feed_binding_version_key
+            }
+            class get_feed_binding_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::marketdata::domain::feed_binding>
+            }
+            class market_fixing_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class market_fixing_write <<struct>> {
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +fixing_date : chrono::year_month_day
+                +value : string
+                +source : string
+            }
+            class market_fixing_change <<struct>> {
+                +write : market_fixing_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_fixing_removal <<struct>> {
+                +key : market_fixing_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_fixing_lookup <<struct>> {
+                +key : market_fixing_key
+                +market_fixing : optional<ores::marketdata::domain::market_fixing>
+            }
+            class market_fixings_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class market_fixing_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : market_fixing_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_market_fixings_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_fixings_filter>
+                +as_of : optional<string>
+            }
+            class list_market_fixings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_fixings : vector<ores::marketdata::domain::market_fixing>
+                +total : uint64_t
+            }
+            class get_market_fixing_request <<struct>> {
+                +key : market_fixing_key
+            }
+            class get_market_fixing_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_fixing : optional<ores::marketdata::domain::market_fixing>
+            }
+            class get_many_market_fixings_request <<struct>> {
+                +keys : vector<market_fixing_key>
+            }
+            class get_many_market_fixings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<market_fixing_lookup>
+            }
+            class put_market_fixing_request <<struct>> {
+                +change : market_fixing_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_market_fixing_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_fixing : optional<ores::marketdata::domain::market_fixing>
+            }
+            class put_many_market_fixings_request <<struct>> {
+                +changes : vector<market_fixing_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_market_fixings_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_fixings : vector<ores::marketdata::domain::market_fixing>
+            }
+            class delete_market_fixing_request <<struct>> {
+                +removal : market_fixing_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_market_fixing_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_market_fixings_request <<struct>> {
+                +removals : vector<market_fixing_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_market_fixings_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class market_observation_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class market_observation_write <<struct>> {
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +observation_datetime : chrono::system_clock::time_point
+                +oresmd_uri : string
+                +value : string
+                +source : string
+            }
+            class market_observation_change <<struct>> {
+                +write : market_observation_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_observation_removal <<struct>> {
+                +key : market_observation_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_observation_lookup <<struct>> {
+                +key : market_observation_key
+                +market_observation : optional<ores::marketdata::domain::market_observation>
+            }
+            class market_observations_filter <<struct>> {
+                +series_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +series_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class market_observation_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : market_observation_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class list_market_observations_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_observations_filter>
+                +as_of : optional<string>
+            }
+            class list_market_observations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_observations : vector<ores::marketdata::domain::market_observation>
+                +total : uint64_t
+            }
+            class get_market_observation_request <<struct>> {
+                +key : market_observation_key
+            }
+            class get_market_observation_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_observation : optional<ores::marketdata::domain::market_observation>
+            }
+            class get_many_market_observations_request <<struct>> {
+                +keys : vector<market_observation_key>
+            }
+            class get_many_market_observations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<market_observation_lookup>
+            }
+            class put_market_observation_request <<struct>> {
+                +change : market_observation_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_market_observation_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_observation : optional<ores::marketdata::domain::market_observation>
+            }
+            class put_many_market_observations_request <<struct>> {
+                +changes : vector<market_observation_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_market_observations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_observations : vector<ores::marketdata::domain::market_observation>
+            }
+            class delete_market_observation_request <<struct>> {
+                +removal : market_observation_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_market_observation_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_market_observations_request <<struct>> {
+                +removals : vector<market_observation_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_market_observations_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_series_id_market_observations_request <<struct>> {
+                +series_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_observations_filter>
+            }
+            class list_by_series_id_market_observations_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_observations : vector<ores::marketdata::domain::market_observation>
+                +total : uint64_t
+            }
+            class market_series_asset_class_key <<struct>> {
+                +market_series_id : boost::uuids::uuid
+                +asset_class_code : string
+            }
+            class market_series_asset_class_write <<struct>> {
+                +market_series_id : boost::uuids::uuid
+                +asset_class_code : string
+            }
+            class market_series_asset_class_change <<struct>> {
+                +write : market_series_asset_class_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_series_asset_class_removal <<struct>> {
+                +key : market_series_asset_class_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_series_asset_class_lookup <<struct>> {
+                +key : market_series_asset_class_key
+                +market_series_asset_class : optional<ores::marketdata::domain::market_series_asset_class>
+            }
+            class market_series_asset_classes_filter <<struct>> {
+                +market_series_id : optional<boost::uuids::uuid>
+                +market_series_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class list_market_series_asset_classes_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_series_asset_classes_filter>
+            }
+            class list_market_series_asset_classes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series_asset_classes : vector<ores::marketdata::domain::market_series_asset_class>
+                +total : uint64_t
+            }
+            class get_market_series_asset_class_request <<struct>> {
+                +key : market_series_asset_class_key
+            }
+            class get_market_series_asset_class_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series_asset_class : optional<ores::marketdata::domain::market_series_asset_class>
+            }
+            class get_many_market_series_asset_classes_request <<struct>> {
+                +keys : vector<market_series_asset_class_key>
+            }
+            class get_many_market_series_asset_classes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<market_series_asset_class_lookup>
+            }
+            class put_market_series_asset_class_request <<struct>> {
+                +change : market_series_asset_class_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_market_series_asset_class_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series_asset_class : optional<ores::marketdata::domain::market_series_asset_class>
+            }
+            class put_many_market_series_asset_classes_request <<struct>> {
+                +changes : vector<market_series_asset_class_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_market_series_asset_classes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series_asset_classes : vector<ores::marketdata::domain::market_series_asset_class>
+            }
+            class delete_market_series_asset_class_request <<struct>> {
+                +removal : market_series_asset_class_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_market_series_asset_class_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_market_series_asset_classes_request <<struct>> {
+                +removals : vector<market_series_asset_class_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_market_series_asset_classes_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_by_market_series_id_market_series_asset_classes_request <<struct>> {
+                +market_series_id : boost::uuids::uuid
+                +scope : ores::utility::domain::scope
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_series_asset_classes_filter>
+            }
+            class list_by_market_series_id_market_series_asset_classes_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series_asset_classes : vector<ores::marketdata::domain::market_series_asset_class>
+                +total : uint64_t
+            }
+            class market_series_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class market_series_write <<struct>> {
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +oresmd_uri : string
+                +series_subclass : string
+                +derivation_kind : string
+                +derivation_config_id : boost::uuids::uuid
+                +derivation_config_version : int
+            }
+            class market_series_change <<struct>> {
+                +write : market_series_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_series_removal <<struct>> {
+                +key : market_series_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class market_series_lookup <<struct>> {
+                +key : market_series_key
+                +market_series : optional<ores::marketdata::domain::market_series>
+            }
+            class market_series_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class market_series_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : market_series_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class market_series_version_key <<struct>> {
+                +market_series : market_series_key
+                +version : uint32_t
+            }
+            class market_series_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_market_series_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_series_filter>
+                +as_of : optional<string>
+            }
+            class list_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series : vector<ores::marketdata::domain::market_series>
+                +total : uint64_t
+            }
+            class get_market_series_request <<struct>> {
+                +key : market_series_key
+            }
+            class get_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series : optional<ores::marketdata::domain::market_series>
+            }
+            class get_many_market_series_request <<struct>> {
+                +keys : vector<market_series_key>
+            }
+            class get_many_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<market_series_lookup>
+            }
+            class put_market_series_request <<struct>> {
+                +change : market_series_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series : optional<ores::marketdata::domain::market_series>
+            }
+            class put_many_market_series_request <<struct>> {
+                +changes : vector<market_series_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+                +market_series : vector<ores::marketdata::domain::market_series>
+            }
+            class delete_market_series_request <<struct>> {
+                +removal : market_series_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_market_series_request <<struct>> {
+                +removals : vector<market_series_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_market_series_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_market_series_versions_request <<struct>> {
+                +key : market_series_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<market_series_versions_filter>
+            }
+            class list_market_series_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::marketdata::domain::market_series>
+                +total : uint64_t
+            }
+            class get_market_series_version_request <<struct>> {
+                +key : market_series_version_key
+            }
+            class get_market_series_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::marketdata::domain::market_series>
+            }
+            class observation_lineage_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class observation_lineage_write <<struct>> {
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +series_id : boost::uuids::uuid
+                +observation_datetime : chrono::system_clock::time_point
+                +oresmd_uri : string
+                +derivation_config_id : boost::uuids::uuid
+                +derivation_config_version : int
+                +source_as_of : chrono::system_clock::time_point
+                +source_series_ids : string
+            }
+            class observation_lineage_change <<struct>> {
+                +write : observation_lineage_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class observation_lineage_removal <<struct>> {
+                +key : observation_lineage_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class observation_lineage_lookup <<struct>> {
+                +key : observation_lineage_key
+                +observation_lineage : optional<ores::marketdata::domain::observation_lineage>
+            }
+            class observation_lineages_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class observation_lineage_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : observation_lineage_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class observation_lineage_version_key <<struct>> {
+                +observation_lineage : observation_lineage_key
+                +version : uint32_t
+            }
+            class observation_lineage_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_observation_lineages_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<observation_lineages_filter>
+                +as_of : optional<string>
+            }
+            class list_observation_lineages_response <<struct>> {
+                +result : ores::utility::domain::result
+                +observation_lineages : vector<ores::marketdata::domain::observation_lineage>
+                +total : uint64_t
+            }
+            class get_observation_lineage_request <<struct>> {
+                +key : observation_lineage_key
+            }
+            class get_observation_lineage_response <<struct>> {
+                +result : ores::utility::domain::result
+                +observation_lineage : optional<ores::marketdata::domain::observation_lineage>
+            }
+            class get_many_observation_lineages_request <<struct>> {
+                +keys : vector<observation_lineage_key>
+            }
+            class get_many_observation_lineages_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<observation_lineage_lookup>
+            }
+            class put_observation_lineage_request <<struct>> {
+                +change : observation_lineage_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_observation_lineage_response <<struct>> {
+                +result : ores::utility::domain::result
+                +observation_lineage : optional<ores::marketdata::domain::observation_lineage>
+            }
+            class put_many_observation_lineages_request <<struct>> {
+                +changes : vector<observation_lineage_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_observation_lineages_response <<struct>> {
+                +result : ores::utility::domain::result
+                +observation_lineages : vector<ores::marketdata::domain::observation_lineage>
+            }
+            class delete_observation_lineage_request <<struct>> {
+                +removal : observation_lineage_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_observation_lineage_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_observation_lineages_request <<struct>> {
+                +removals : vector<observation_lineage_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_observation_lineages_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_observation_lineage_versions_request <<struct>> {
+                +key : observation_lineage_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<observation_lineage_versions_filter>
+            }
+            class list_observation_lineage_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::marketdata::domain::observation_lineage>
+                +total : uint64_t
+            }
+            class get_observation_lineage_version_request <<struct>> {
+                +key : observation_lineage_version_key
+            }
+            class get_observation_lineage_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::marketdata::domain::observation_lineage>
+            }
+            class crm_rate_item <<struct>> {
+                +crm_name : string
+                +base_currency_code : string
+                +quote_currency_code : string
+                +rate : double
+                +status : string
+                +as_of : string
+                +reciprocal : bool
+                +delta_pct : optional<double>
+            }
+            class get_crm_rate_request <<struct>> {
+                +party_id : string
+                +crm_name : string
+                +base_currency_code : string
+                +quote_currency_code : string
+            }
+            class get_crm_rate_response <<struct>> {
+                +success : bool
+                +message : string
+                +rate : crm_rate_item
+            }
+            class get_crm_rates_request <<struct>> {
+                +party_id : string
+                +crm_name : string
+                +reciprocal : bool
+            }
+            class get_crm_rates_response <<struct>> {
+                +success : bool
+                +message : string
+                +rates : vector<crm_rate_item>
+            }
+            class republish_curve_request <<struct>> {
+                +bootstrap_config_id : string
+                +as_of : chrono::system_clock::time_point
+            }
+            class republish_curve_response <<struct>> {
+                +success : bool
+                +message : string
+            }
+            class compute_curve_request <<struct>> {
+                +bootstrap_config_id : string
+                +as_of : chrono::system_clock::time_point
+            }
+            class computed_curve_point <<struct>> {
+                +point_id : string
+                +date : chrono::year_month_day
+                +discount_factor : double
+            }
+            class compute_curve_response <<struct>> {
+                +success : bool
+                +message : string
+                +points : vector<computed_curve_point>
+            }
+            class get_curve_snapshot_request <<struct>> {
+                +oresmd_uri : string
+            }
+            class get_curve_snapshot_response <<struct>> {
+                +observations : vector<ores::marketdata::domain::market_observation>
+                +success : bool
+                +message : string
+            }
+            class get_curve_snapshot_buckets_request <<struct>> {
+                +oresmd_uri : string
+                +bucket_seconds : int64_t
+                +bucket_count : uint32_t
+            }
+            class get_curve_snapshot_buckets_response <<struct>> {
+                +buckets : vector<vector<ores::marketdata::domain::market_observation>>
+                +success : bool
+                +message : string
+            }
             class import_market_data_request <<struct>> {
                 +market_data_content : string
                 +fixings_content : string
+                +source : string
+                +duplicates_are_errors : bool
             }
             class import_market_data_response <<struct>> {
                 +success : bool
@@ -62,78 +1125,45 @@ namespace ores #F2F2F2 {
                 +series_count : int
                 +observation_count : int
                 +fixing_count : int
+                +warnings : vector<string>
+                +errors : vector<string>
             }
-            class get_market_fixings_request <<struct>> {
-                +series_id : string
-                +from_date : string
-                +to_date : string
+            class feed_kind_counts <<struct>> {
+                +started : int
+                +already_running : int
+                +skipped : int
             }
-            class get_market_fixings_response <<struct>> {
-                +fixings : vector<domain::market_fixing>
-                +total_available_count : int
+            class start_feeds_under_folder_request <<struct>> {
+                +folder_id : string
             }
-            class save_market_fixings_request <<struct>> {
-                +fixings : vector<domain::market_fixing>
-            }
-            class save_market_fixings_response <<struct>> {
+            class start_feeds_under_folder_response <<struct>> {
                 +success : bool
                 +message : string
-                +saved_count : int
+                +started : int
+                +already_running : int
+                +skipped : int
+                +by_kind : map<string, feed_kind_counts>
             }
-            class delete_market_fixings_request <<struct>> {
-                +series_id : string
+            class stop_feeds_under_folder_request <<struct>> {
+                +folder_id : string
             }
-            class delete_market_fixings_response <<struct>> {
+            class stop_feeds_under_folder_response <<struct>> {
                 +success : bool
                 +message : string
+                +stopped : int
+                +stopped_by_kind : map<string, int>
             }
-            class get_market_observations_request <<struct>> {
-                +series_id : string
-                +from_date : string
-                +to_date : string
+            class vintage_validity_entry <<struct>> {
+                +fx_spot_generation_config_id : string
+                +applicable : bool
+                +valid : bool
             }
-            class get_market_observations_response <<struct>> {
-                +observations : vector<domain::market_observation>
-                +total_available_count : int
+            class get_vintage_validity_request <<struct>> {
             }
-            class save_market_observations_request <<struct>> {
-                +observations : vector<domain::market_observation>
-            }
-            class save_market_observations_response <<struct>> {
+            class get_vintage_validity_response <<struct>> {
                 +success : bool
                 +message : string
-                +saved_count : int
-            }
-            class delete_market_observations_request <<struct>> {
-                +series_id : string
-            }
-            class delete_market_observations_response <<struct>> {
-                +success : bool
-                +message : string
-            }
-            class get_market_series_request <<struct>> {
-                +offset : int
-                +limit : int
-                +series_type : string
-            }
-            class get_market_series_response <<struct>> {
-                +series : vector<domain::market_series>
-                +total_available_count : int
-            }
-            class save_market_series_request <<struct>> {
-                +series : vector<domain::market_series>
-            }
-            class save_market_series_response <<struct>> {
-                +success : bool
-                +message : string
-                +saved_count : int
-            }
-            class delete_market_series_request <<struct>> {
-                +id : string
-            }
-            class delete_market_series_response <<struct>> {
-                +success : bool
-                +message : string
+                +entries : vector<vintage_validity_entry>
             }
             class export_market_data_to_storage_request <<struct>> {
                 +storage_bucket : string
@@ -145,11 +1175,471 @@ namespace ores #F2F2F2 {
                 +series_count : int
                 +storage_key : string
             }
+            class export_market_data_request <<struct>> {
+            }
+            class export_market_data_response <<struct>> {
+                +success : bool
+                +message : string
+                +market_data_content : string
+                +fixings_content : string
+                +series_count : int
+                +observation_count : int
+                +fixing_count : int
+            }
+            class market_tick <<struct>> {
+                +oresmd_uri : string
+                +value : string
+                +observation_time : chrono::system_clock::time_point
+                +source : string
+            }
+            class series_classification_rule_key <<struct>> {
+                +series_type : string
+                +metric : string
+            }
+            class series_classification_rule_write <<struct>> {
+                +series_type : string
+                +metric : string
+                +asset_class_source : string
+                +asset_class_code : optional<string>
+                +series_subclass_code : string
+                +description : string
+            }
+            class series_classification_rule_change <<struct>> {
+                +write : series_classification_rule_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_classification_rule_removal <<struct>> {
+                +key : series_classification_rule_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class series_classification_rule_lookup <<struct>> {
+                +key : series_classification_rule_key
+                +series_classification_rule : optional<ores::marketdata::domain::series_classification_rule>
+            }
+            class series_classification_rule_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : series_classification_rule_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class series_classification_rule_version_key <<struct>> {
+                +series_classification_rule : series_classification_rule_key
+                +version : uint32_t
+            }
+            class series_classification_rule_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_series_classification_rules_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +as_of : optional<string>
+            }
+            class list_series_classification_rules_response <<struct>> {
+                +result : ores::utility::domain::result
+                +rules : vector<ores::marketdata::domain::series_classification_rule>
+                +total : uint64_t
+            }
+            class get_series_classification_rule_request <<struct>> {
+                +key : series_classification_rule_key
+            }
+            class get_series_classification_rule_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_classification_rule : optional<ores::marketdata::domain::series_classification_rule>
+            }
+            class get_many_series_classification_rules_request <<struct>> {
+                +keys : vector<series_classification_rule_key>
+            }
+            class get_many_series_classification_rules_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<series_classification_rule_lookup>
+            }
+            class put_series_classification_rule_request <<struct>> {
+                +change : series_classification_rule_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_series_classification_rule_response <<struct>> {
+                +result : ores::utility::domain::result
+                +series_classification_rule : optional<ores::marketdata::domain::series_classification_rule>
+            }
+            class put_many_series_classification_rules_request <<struct>> {
+                +changes : vector<series_classification_rule_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_series_classification_rules_response <<struct>> {
+                +result : ores::utility::domain::result
+                +rules : vector<ores::marketdata::domain::series_classification_rule>
+            }
+            class delete_series_classification_rule_request <<struct>> {
+                +removal : series_classification_rule_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_series_classification_rule_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_series_classification_rules_request <<struct>> {
+                +removals : vector<series_classification_rule_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_series_classification_rules_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_series_classification_rule_versions_request <<struct>> {
+                +key : series_classification_rule_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<series_classification_rule_versions_filter>
+            }
+            class list_series_classification_rule_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::marketdata::domain::series_classification_rule>
+                +total : uint64_t
+            }
+            class get_series_classification_rule_version_request <<struct>> {
+                +key : series_classification_rule_version_key
+            }
+            class get_series_classification_rule_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::marketdata::domain::series_classification_rule>
+            }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::marketdata::datum::absolute_strike *-- ores::marketdata::datum::decimal
+ores::marketdata::datum::delta_strike *-- ores::marketdata::datum::decimal
+ores::marketdata::datum::field_spec *-- ores::marketdata::datum::field
+ores::marketdata::datum::field_spec *-- ores::marketdata::datum::field_role
+ores::marketdata::datum::field_value *-- ores::marketdata::datum::field
+ores::marketdata::datum::index_row *-- ores::marketdata::datum::asset_class
+ores::marketdata::datum::index_row *-- ores::marketdata::datum::index_family
+ores::marketdata::datum::index_row *-- ores::marketdata::datum::index_field_spec
+ores::marketdata::datum::market_datum *-- ores::marketdata::datum::field_value
+ores::marketdata::datum::market_datum *-- ores::marketdata::datum::instrument_type
+ores::marketdata::datum::market_datum *-- ores::marketdata::datum::quote_type
+ores::marketdata::datum::market_datum ..> ores::marketdata::datum::field
+ores::marketdata::datum::market_index *-- ores::marketdata::datum::index_family
+ores::marketdata::datum::moneyness_strike *-- ores::marketdata::datum::decimal
+ores::marketdata::datum::schema_row *-- ores::marketdata::datum::asset_class
+ores::marketdata::datum::schema_row *-- ores::marketdata::datum::field
+ores::marketdata::datum::schema_row *-- ores::marketdata::datum::field_spec
+ores::marketdata::datum::schema_row *-- ores::marketdata::datum::instrument_type
+ores::marketdata::messaging::compute_curve_response *-- ores::marketdata::messaging::computed_curve_point
+ores::marketdata::messaging::delete_feed_binding_request *-- ores::marketdata::messaging::feed_binding_removal
+ores::marketdata::messaging::delete_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_removal
+ores::marketdata::messaging::delete_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_removal
+ores::marketdata::messaging::delete_many_market_observations_request *-- ores::marketdata::messaging::market_observation_removal
+ores::marketdata::messaging::delete_many_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_class_removal
+ores::marketdata::messaging::delete_many_market_series_request *-- ores::marketdata::messaging::market_series_removal
+ores::marketdata::messaging::delete_many_observation_lineages_request *-- ores::marketdata::messaging::observation_lineage_removal
+ores::marketdata::messaging::delete_many_series_classification_rules_request *-- ores::marketdata::messaging::series_classification_rule_removal
+ores::marketdata::messaging::delete_market_fixing_request *-- ores::marketdata::messaging::market_fixing_removal
+ores::marketdata::messaging::delete_market_observation_request *-- ores::marketdata::messaging::market_observation_removal
+ores::marketdata::messaging::delete_market_series_asset_class_request *-- ores::marketdata::messaging::market_series_asset_class_removal
+ores::marketdata::messaging::delete_market_series_request *-- ores::marketdata::messaging::market_series_removal
+ores::marketdata::messaging::delete_observation_lineage_request *-- ores::marketdata::messaging::observation_lineage_removal
+ores::marketdata::messaging::delete_series_classification_rule_request *-- ores::marketdata::messaging::series_classification_rule_removal
+ores::marketdata::messaging::feed_binding_change *-- ores::marketdata::messaging::feed_binding_write
+ores::marketdata::messaging::feed_binding_event *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::feed_binding_lookup *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::feed_binding_lookup *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::feed_binding_removal *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::feed_binding_version_key *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::get_crm_rate_response *-- ores::marketdata::messaging::crm_rate_item
+ores::marketdata::messaging::get_crm_rates_response *-- ores::marketdata::messaging::crm_rate_item
+ores::marketdata::messaging::get_curve_snapshot_buckets_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::get_curve_snapshot_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::get_feed_binding_request *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::get_feed_binding_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::get_feed_binding_version_request *-- ores::marketdata::messaging::feed_binding_version_key
+ores::marketdata::messaging::get_feed_binding_version_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::get_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::get_many_feed_bindings_response *-- ores::marketdata::messaging::feed_binding_lookup
+ores::marketdata::messaging::get_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_key
+ores::marketdata::messaging::get_many_market_fixings_response *-- ores::marketdata::messaging::market_fixing_lookup
+ores::marketdata::messaging::get_many_market_observations_request *-- ores::marketdata::messaging::market_observation_key
+ores::marketdata::messaging::get_many_market_observations_response *-- ores::marketdata::messaging::market_observation_lookup
+ores::marketdata::messaging::get_many_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_class_key
+ores::marketdata::messaging::get_many_market_series_asset_classes_response *-- ores::marketdata::messaging::market_series_asset_class_lookup
+ores::marketdata::messaging::get_many_market_series_request *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::get_many_market_series_response *-- ores::marketdata::messaging::market_series_lookup
+ores::marketdata::messaging::get_many_observation_lineages_request *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::get_many_observation_lineages_response *-- ores::marketdata::messaging::observation_lineage_lookup
+ores::marketdata::messaging::get_many_series_classification_rules_request *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::get_many_series_classification_rules_response *-- ores::marketdata::messaging::series_classification_rule_lookup
+ores::marketdata::messaging::get_market_fixing_request *-- ores::marketdata::messaging::market_fixing_key
+ores::marketdata::messaging::get_market_fixing_response *-- ores::marketdata::domain::market_fixing
+ores::marketdata::messaging::get_market_observation_request *-- ores::marketdata::messaging::market_observation_key
+ores::marketdata::messaging::get_market_observation_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::get_market_series_asset_class_request *-- ores::marketdata::messaging::market_series_asset_class_key
+ores::marketdata::messaging::get_market_series_asset_class_response *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::get_market_series_request *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::get_market_series_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::get_market_series_version_request *-- ores::marketdata::messaging::market_series_version_key
+ores::marketdata::messaging::get_market_series_version_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::get_observation_lineage_request *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::get_observation_lineage_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::get_observation_lineage_version_request *-- ores::marketdata::messaging::observation_lineage_version_key
+ores::marketdata::messaging::get_observation_lineage_version_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::get_series_classification_rule_request *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::get_series_classification_rule_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::get_series_classification_rule_version_request *-- ores::marketdata::messaging::series_classification_rule_version_key
+ores::marketdata::messaging::get_series_classification_rule_version_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::get_vintage_validity_response *-- ores::marketdata::messaging::vintage_validity_entry
+ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_classes_filter
+ores::marketdata::messaging::list_by_market_series_id_market_series_asset_classes_response *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::list_by_series_id_market_observations_request *-- ores::marketdata::messaging::market_observations_filter
+ores::marketdata::messaging::list_by_series_id_market_observations_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::list_feed_binding_versions_request *-- ores::marketdata::messaging::feed_binding_key
+ores::marketdata::messaging::list_feed_binding_versions_request *-- ores::marketdata::messaging::feed_binding_versions_filter
+ores::marketdata::messaging::list_feed_binding_versions_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::list_feed_bindings_request *-- ores::marketdata::messaging::feed_bindings_filter
+ores::marketdata::messaging::list_feed_bindings_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::list_market_fixings_request *-- ores::marketdata::messaging::market_fixings_filter
+ores::marketdata::messaging::list_market_fixings_response *-- ores::marketdata::domain::market_fixing
+ores::marketdata::messaging::list_market_observations_request *-- ores::marketdata::messaging::market_observations_filter
+ores::marketdata::messaging::list_market_observations_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::list_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_classes_filter
+ores::marketdata::messaging::list_market_series_asset_classes_response *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::list_market_series_request *-- ores::marketdata::messaging::market_series_filter
+ores::marketdata::messaging::list_market_series_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::list_market_series_versions_request *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::list_market_series_versions_request *-- ores::marketdata::messaging::market_series_versions_filter
+ores::marketdata::messaging::list_market_series_versions_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::list_observation_lineage_versions_request *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::list_observation_lineage_versions_request *-- ores::marketdata::messaging::observation_lineage_versions_filter
+ores::marketdata::messaging::list_observation_lineage_versions_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::list_observation_lineages_request *-- ores::marketdata::messaging::observation_lineages_filter
+ores::marketdata::messaging::list_observation_lineages_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::list_series_classification_rule_versions_request *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::list_series_classification_rule_versions_request *-- ores::marketdata::messaging::series_classification_rule_versions_filter
+ores::marketdata::messaging::list_series_classification_rule_versions_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::list_series_classification_rules_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::market_fixing_change *-- ores::marketdata::messaging::market_fixing_write
+ores::marketdata::messaging::market_fixing_event *-- ores::marketdata::messaging::market_fixing_key
+ores::marketdata::messaging::market_fixing_lookup *-- ores::marketdata::domain::market_fixing
+ores::marketdata::messaging::market_fixing_lookup *-- ores::marketdata::messaging::market_fixing_key
+ores::marketdata::messaging::market_fixing_removal *-- ores::marketdata::messaging::market_fixing_key
+ores::marketdata::messaging::market_observation_change *-- ores::marketdata::messaging::market_observation_write
+ores::marketdata::messaging::market_observation_event *-- ores::marketdata::messaging::market_observation_key
+ores::marketdata::messaging::market_observation_lookup *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::market_observation_lookup *-- ores::marketdata::messaging::market_observation_key
+ores::marketdata::messaging::market_observation_removal *-- ores::marketdata::messaging::market_observation_key
+ores::marketdata::messaging::market_series_asset_class_change *-- ores::marketdata::messaging::market_series_asset_class_write
+ores::marketdata::messaging::market_series_asset_class_lookup *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::market_series_asset_class_lookup *-- ores::marketdata::messaging::market_series_asset_class_key
+ores::marketdata::messaging::market_series_asset_class_removal *-- ores::marketdata::messaging::market_series_asset_class_key
+ores::marketdata::messaging::market_series_change *-- ores::marketdata::messaging::market_series_write
+ores::marketdata::messaging::market_series_event *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::market_series_lookup *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::market_series_lookup *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::market_series_removal *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::market_series_version_key *-- ores::marketdata::messaging::market_series_key
+ores::marketdata::messaging::observation_lineage_change *-- ores::marketdata::messaging::observation_lineage_write
+ores::marketdata::messaging::observation_lineage_event *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::observation_lineage_lookup *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::observation_lineage_lookup *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::observation_lineage_removal *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::observation_lineage_version_key *-- ores::marketdata::messaging::observation_lineage_key
+ores::marketdata::messaging::put_feed_binding_request *-- ores::marketdata::messaging::feed_binding_change
+ores::marketdata::messaging::put_feed_binding_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::put_many_feed_bindings_request *-- ores::marketdata::messaging::feed_binding_change
+ores::marketdata::messaging::put_many_feed_bindings_response *-- ores::marketdata::domain::feed_binding
+ores::marketdata::messaging::put_many_market_fixings_request *-- ores::marketdata::messaging::market_fixing_change
+ores::marketdata::messaging::put_many_market_fixings_response *-- ores::marketdata::domain::market_fixing
+ores::marketdata::messaging::put_many_market_observations_request *-- ores::marketdata::messaging::market_observation_change
+ores::marketdata::messaging::put_many_market_observations_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::put_many_market_series_asset_classes_request *-- ores::marketdata::messaging::market_series_asset_class_change
+ores::marketdata::messaging::put_many_market_series_asset_classes_response *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::put_many_market_series_request *-- ores::marketdata::messaging::market_series_change
+ores::marketdata::messaging::put_many_market_series_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::put_many_observation_lineages_request *-- ores::marketdata::messaging::observation_lineage_change
+ores::marketdata::messaging::put_many_observation_lineages_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::put_many_series_classification_rules_request *-- ores::marketdata::messaging::series_classification_rule_change
+ores::marketdata::messaging::put_many_series_classification_rules_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::put_market_fixing_request *-- ores::marketdata::messaging::market_fixing_change
+ores::marketdata::messaging::put_market_fixing_response *-- ores::marketdata::domain::market_fixing
+ores::marketdata::messaging::put_market_observation_request *-- ores::marketdata::messaging::market_observation_change
+ores::marketdata::messaging::put_market_observation_response *-- ores::marketdata::domain::market_observation
+ores::marketdata::messaging::put_market_series_asset_class_request *-- ores::marketdata::messaging::market_series_asset_class_change
+ores::marketdata::messaging::put_market_series_asset_class_response *-- ores::marketdata::domain::market_series_asset_class
+ores::marketdata::messaging::put_market_series_request *-- ores::marketdata::messaging::market_series_change
+ores::marketdata::messaging::put_market_series_response *-- ores::marketdata::domain::market_series
+ores::marketdata::messaging::put_observation_lineage_request *-- ores::marketdata::messaging::observation_lineage_change
+ores::marketdata::messaging::put_observation_lineage_response *-- ores::marketdata::domain::observation_lineage
+ores::marketdata::messaging::put_series_classification_rule_request *-- ores::marketdata::messaging::series_classification_rule_change
+ores::marketdata::messaging::put_series_classification_rule_response *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::series_classification_rule_change *-- ores::marketdata::messaging::series_classification_rule_write
+ores::marketdata::messaging::series_classification_rule_event *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::series_classification_rule_lookup *-- ores::marketdata::domain::series_classification_rule
+ores::marketdata::messaging::series_classification_rule_lookup *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::series_classification_rule_removal *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::series_classification_rule_version_key *-- ores::marketdata::messaging::series_classification_rule_key
+ores::marketdata::messaging::start_feeds_under_folder_response *-- ores::marketdata::messaging::feed_kind_counts
+
+' What the automated pass cannot see.
+'
+' The generator reads data members and nothing else. A facet of free functions
+' has no class to hang off, a type declared inside another type has no box of
+' its own, and static and using members are skipped. The notes below fill those
+' in. Each names its class fully qualified rather than reopening a namespace,
+' because this PlantUML version crashes when a namespace that already holds
+' classes is declared a second time. Redeclaring a class merges the members
+' below into the box the automated pass drew, so a refresh keeps both.
+
+note as OresMarketdataDatumHelpers
+    Free functions in ores::marketdata::datum:
+    ore_name(instrument_type t) : string_view
+    ore_name(quote_type t) : string_view
+    instrument_type_named(name) : optional<instrument_type>
+    quote_type_named(name) : optional<quote_type>
+    name_of(field f) : string_view
+    field_named(name) : optional<field>
+    codes_of(field f) : span<const string_view>
+    name_of(asset_class a) : string_view
+    asset_class_named(name) : optional<asset_class>
+    name_of(index_family f) : string_view
+    index_family_named(name) : optional<index_family>
+    kind_of(field f) : value_kind
+    schema_of(instrument_type t) : const schema_row&
+    index_row_of(index_family f) : const index_row&
+    series_of(d) : market_datum
+    datum_at(series, coordinates) : expected<market_datum, string>
+    datum_at_point(series, point) : expected<market_datum, string>
+    parse_value(field f, text) : expected<value, string>
+    text_of(const value& v) : string
+    The enums and the text a key carries meet here and nowhere else.
+    A name_of / *_named pair reads one enum both ways; codes_of gives
+    a code field's accepted tokens; kind_of gives a field's value
+    type. schema_of and index_row_of index the two tables by the
+    enum's own value, so each table's order is its enum's order.
+    series_of keeps a datum's identity fields; datum_at and
+    datum_at_point put coordinates back. text_of writes a value as
+    the key spells it, or the empty string for none.
+
+    Free functions in ores::marketdata::datum::detail:
+    id(f), id_or_none(f), at(f), at_or_none(f) : field_spec
+    rows_follow_the_enum(), no_row_repeats_a_field(),
+    every_row_has_an_identity(), every_subject_always_names_the_series(),
+    index_rows_follow_the_enum() : bool
+    The four id/at forms mark a field as identity or coordinate and
+    say whether the key may leave it out. The predicates are
+    constexpr and run in static_asserts: a schema row out of enum
+    order, a repeated field, a row with no identity, or a subject
+    that can be none fails the build.
+end note
+
+class ores::marketdata::datum::term {
+}
+note right of "ores::marketdata::datum::term"
+Declares a nested enum class kind in its own body: period, date,
+fx_tenor, continuation. The automated pass draws namespace-scope
+types only, so kind has no box of its own. which() returns it.
+end note
+
+class ores::marketdata::datum::strike {
+}
+note right of "ores::marketdata::datum::strike"
+Declares a nested using form = variant<absolute_strike, atm_strike,
+delta_strike, moneyness_strike> in its own body. The automated pass
+draws namespace-scope types only, so form has no box of its own.
+which() returns it and text() writes it back as the key carried it.
+end note
+
+class ores::marketdata::datum::market_index {
+}
+note right of "ores::marketdata::datum::market_index"
+Declares a nested struct field_text in its own body, holding one
+index-name field's name and text. The automated pass draws
+namespace-scope types only, so field_text has no box of its own.
+fields() returns a span of them and get() finds one by name.
+end note
+
+note as OresMarketdataDomainHelpers
+    Free functions in ores::marketdata::domain:
+    asset_class_for_authority(authority) : optional<string_view>
+    feed_conflict_key(qualifier, role) : string
+    synthetic_tick_wildcard() : string
+    market_tick_wildcard() : string
+    synthetic_tick_subject(source_name) : string
+    market_tick_subject(tenant_id, workspace_id, party_id, ore_key) : string
+    asset_class_for_authority maps an oresmd authority to the refdata
+    asset class the catalogue declares; an authority that maps to
+    none, such as a pairwise correlation or the generic wrapper,
+    answers nullopt. feed_conflict_key joins a feed's qualifier and
+    role with a unit separator, so two feeds conflict when the key is
+    equal: a discount curve and a projection curve for one qualifier
+    coexist, and a feed with no role still has a deterministic key.
+    synthetic_tick_subject builds synthetic.v1.tick.<source>.
+    market_tick_subject extends market_tick's subject with the
+    consumer and the datum's canonical ORE key, lower-cased with its
+    slashes turned to dots. The two wildcards subscribe to every
+    producer's or every consumer's ticks.
+end note
+
+note as OresMarketdataDomainIo
+    Free functions in ores::marketdata::domain, one triple per
+    generated entity, emitted into its own *_json_io.hpp, *_table.hpp
+    and *_table_io.hpp:
+    operator<<(ostream& s, const T& v) : ostream&
+    convert_to_table(const vector<T>& v) : string
+    operator<<(ostream& s, const vector<T>& v) : ostream&
+    Uniform codegen boilerplate, and not drawn. T is feed_binding,
+    market_fixing, market_observation, market_series,
+    market_series_asset_class, observation_lineage or
+    series_classification_rule.
+end note
+
+note as OresMarketdataGenerators
+    Free functions in ores::marketdata::generators:
+    generate_synthetic_feed_binding(ctx) : domain::feed_binding
+    generate_synthetic_feed_bindings(n, ctx) : vector<domain::feed_binding>
+    generate_synthetic_market_fixing(ctx) : domain::market_fixing
+    generate_synthetic_market_fixings(n, ctx) : vector<domain::market_fixing>
+    generate_synthetic_market_observation(ctx) : domain::market_observation
+    generate_synthetic_market_observations(n, ctx) : vector<domain::market_observation>
+    generate_synthetic_market_series(ctx) : domain::market_series
+    generate_synthetic_market_series(n, ctx) : vector<domain::market_series>
+    generate_synthetic_market_series_asset_class(ctx) : domain::market_series_asset_class
+    generate_synthetic_market_series_asset_classes(n, ctx) : vector<domain::market_series_asset_class>
+    generate_synthetic_observation_lineage(ctx) : domain::observation_lineage
+    generate_synthetic_observation_lineages(n, ctx) : vector<domain::observation_lineage>
+    generate_synthetic_series_classification_rule(ctx) : domain::series_classification_rule
+    generate_synthetic_series_classification_rules(n, ctx) : vector<domain::series_classification_rule>
+    Every random value comes from the generation_context, so the same
+    seed rebuilds the same rows. The namespace holds no type, so the
+    automated pass draws no part of it.
+end note
+
+class ores::marketdata::messaging::list_market_series_request <<struct>> {
+    {static} +nats_subject : string_view
+}
+note right of "ores::marketdata::messaging::list_market_series_request"
+Every one of the 71 request structs carries a using response_type
+alias naming its reply and a static nats_subject, both declared
+inside the request; the automated pass skips using and static lines,
+so neither reaches the box and the alias has no box of its own.
+Subjects read marketdata.v1.<resource>.<verb>, and a version family
+adds _versions. Each request also carries static requires_session,
+true wherever a call must establish a session first. The market_tick
+payload carries nats_subject and requires_session = false, and no
+response_type, because nothing replies to it.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.api.puml"

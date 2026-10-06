@@ -57,18 +57,17 @@ inline std::string synthetic_tick_subject(std::string_view source_name) {
 
 /**
  * @brief The subject a consumer reads one datum's ticks on:
- * "marketdata.v1.tick.<tenant>.<workspace>.<party>.<key>", where the key is the
+ * "marketdata.v1.tick.<tenant>.<party>.<key>", where the key is the
  * datum's canonical ORE key, lower-cased, with its slashes turned to dots.
  */
 inline std::string market_tick_subject(std::string_view tenant_id,
-                                       std::string_view workspace_id,
                                        std::string_view party_id,
                                        std::string ore_key) {
     std::ranges::transform(ore_key, ore_key.begin(), [](unsigned char c) {
         return c == '/' ? '.' : static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
     });
     std::string subject(messaging::market_tick::nats_subject);
-    for (const auto part : {tenant_id, workspace_id, party_id, std::string_view(ore_key)})
+    for (const auto part : {tenant_id, party_id, std::string_view(ore_key)})
         subject.append(".").append(part);
     return subject;
 }

@@ -70,6 +70,7 @@ import {
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
+    readMyContactInformation,
     readImageUploadPolicy,
     updateAccount,
     updateSelfAccount,
@@ -199,8 +200,11 @@ const POLICY_READS_PER_MINUTE = 120;
  */
 const TENANT_IMAGE_CACHE_BYTES = 64 * 1024 * 1024;
 
-/** One page of parties, as the browser asks for it. */
+/** One page of parties, as the browser asks for it: a search, an order and the bounds. */
 const partyPageQuerySchema = z.object({
+    search: z.string().max(200),
+    sort: z.string().max(100),
+    descending: z.boolean(),
     offset: z.int().nonnegative(),
     limit: z.int().min(1).max(1000),
 });
@@ -1086,7 +1090,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/me/contact-information', async (request) => {
         const session = requireSession(request);
         return contactViewSchema.parse({
-            contact: await readContactInformation(session.client, session.accountId),
+            contact: await readMyContactInformation(session.client),
         });
     });
 
@@ -1132,9 +1136,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /**
      * One account's contact record, as a tenant administrator reads it.
      *
-     * The server's read carries no permission guard, and this mirrors the
-     * access pair: the member's own record is the route without an id, and
-     * this is the administrator's.
+     * The server's read needs iam::account_contact_informations:read, and this
+     * mirrors the access pair: the member's own record is the route without an
+     * id, served by the self read, and this is the administrator's.
      */
     server.get('/api/accounts/:accountId/contact-information', async (request) => {
         const session = requireSession(request);
@@ -1268,12 +1272,14 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         };
     });
 
-    /** What the roster may ask for: a search and one page of the matches. */
+    /** What the roster may ask for: a search, an order and one page of the matches. */
     const tenantRosterQuerySchema = z.object({
         search: z.string().max(200),
         type: z.string().max(100),
         status: z.string().max(100),
         includeTest: z.boolean(),
+        sort: z.string().max(100),
+        descending: z.boolean(),
         offset: z.int().nonnegative(),
         limit: z.int().positive().max(1000),
     });
@@ -1313,6 +1319,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             type: query['type'] ?? '',
             status: query['status'] ?? '',
             includeTest: query['includeTest'] === 'true',
+            sort: query['sort'] ?? '',
+            descending: query['descending'] === 'true',
             offset: Number(query['offset'] ?? 0),
             limit: Number(query['limit'] ?? 100),
         });
@@ -1334,6 +1342,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             type: page.data.type,
             status: page.data.status,
             types: shown,
+            sort: page.data.sort,
+            descending: page.data.descending,
             offset: page.data.offset,
             limit: page.data.limit,
         });
@@ -1697,6 +1707,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/tenants/:code/parties', async (request) => {
         const query = request.query as Record<string, string | undefined>;
         const page = partyPageQuerySchema.safeParse({
+            search: query['search'] ?? '',
+            sort: query['sort'] ?? '',
+            descending: query['descending'] === 'true',
             offset: Number(query['offset'] ?? 0),
             limit: Number(query['limit'] ?? 20),
         });
@@ -1860,6 +1873,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         const query = request.query as Record<string, string | undefined>;
         const page = partyPageQuerySchema.safeParse({
+            search: query['search'] ?? '',
+            sort: query['sort'] ?? '',
+            descending: query['descending'] === 'true',
             offset: Number(query['offset'] ?? 0),
             limit: Number(query['limit'] ?? 20),
         });

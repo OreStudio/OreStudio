@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :knowledge:security:iam:rbac:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-10-06
 
 /Role-Based Access Control (RBAC)/ restricts system access to
 authorised users based on their job roles, rather than individual
@@ -36,6 +36,35 @@ their assignments live in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.co
   prevents conflicts of interest by requiring multiple people to
   complete high-risk tasks.
 
+* Roles in ORE Studio
+
+A role holds explicit permission codes. There is no read wildcard such as
+=refdata::*:read=: a wildcard grants resources that do not exist yet, so an
+entity added later would be readable by every role that holds it without
+anybody deciding so. =*= and =component::*= exist, for the administrator roles
+only.
+
+Every person account holds *Member*. Member holds the reads every person's
+screens need and nothing more: the reference data vocabulary, and the
+furniture every screen uses, such as badges, change reasons, feature flags and
+pictures. A job role, such as Trading or Operations, holds only what its job
+adds. An account without Member sees empty screens; that fails closed, and an
+administrator gives Member back.
+
+A read is classified before it is granted:
+
+| Class | Examples | Granted to |
+|-------+----------+------------|
+| Vocabulary | Currencies, countries, calendars, day counts, tenors, the status and type lookups | Member |
+| Screen furniture | Badge definitions, change reasons, feature flags, pictures | Member |
+| Business fact | Parties, counterparties, books, business units, trades | The job roles that need it |
+| Personal data | Contact information, sign-ins, sessions | The person, through a self read; administrators |
+
+Which reads are open to every member without any role is decided separately,
+in [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Member is not
+an exception to that rule: it is a role, stored on the account, that an
+administrator can see and withhold.
+
 * Benefits of RBAC
 
 - *Simplified Management*: reduces the overhead of managing
@@ -51,3 +80,5 @@ their assignments live in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.co
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the security subsystem that
   applies this model.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — where the role/permission entities live.
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — the rule that every read is guarded unless allowed, and the allow-list.
+- [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] — the story that adds Member.

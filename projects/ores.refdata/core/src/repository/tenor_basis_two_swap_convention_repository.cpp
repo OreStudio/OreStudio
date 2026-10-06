@@ -25,17 +25,37 @@
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/messaging/tenor_basis_two_swap_convention_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_entity.hpp"
 #include "ores.refdata.core/repository/tenor_basis_two_swap_convention_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
-#include <sqlgen/postgres.hpp>
+#include <optional>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -173,27 +193,9 @@ std::vector<domain::tenor_basis_two_swap_convention>
 tenor_basis_two_swap_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<tenor_basis_two_swap_convention_entity,
-                                  domain::tenor_basis_two_swap_convention>(
-            ctx,
-            query,
-            [](const auto& entities) {
-                return tenor_basis_two_swap_convention_mapper::map(entities);
-            },
-            lg(),
-            "Reading latest two-tenor basis swap conventions (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<tenor_basis_two_swap_convention_entity,
                               domain::tenor_basis_two_swap_convention>(
@@ -210,10 +212,8 @@ tenor_basis_two_swap_convention_repository::read_latest(context ctx, const std::
                                << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<tenor_basis_two_swap_convention_entity,
                               domain::tenor_basis_two_swap_convention>(
@@ -230,9 +230,8 @@ tenor_basis_two_swap_convention_repository::read_all(context ctx, const std::str
     BOOST_LOG_SEV(lg(), debug) << "Reading all two-tenor basis swap convention versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_basis_two_swap_convention_entity,
@@ -251,10 +250,8 @@ tenor_basis_two_swap_convention_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading two-tenor basis swap convention at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<tenor_basis_two_swap_convention_entity,
@@ -288,10 +285,9 @@ tenor_basis_two_swap_convention_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<tenor_basis_two_swap_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(
         ctx, query, lg(), "Removing two-tenor basis swap convention from database.");
@@ -318,10 +314,8 @@ tenor_basis_two_swap_convention_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest two-tenor basis swap conventions with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<tenor_basis_two_swap_convention_entity,
                                       domain::tenor_basis_two_swap_convention>(
@@ -342,9 +336,8 @@ tenor_basis_two_swap_convention_repository::get_total_tenor_basis_two_swap_conve
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active two-tenor basis swap convention count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<tenor_basis_two_swap_convention_entity>(
         ctx,
@@ -361,10 +354,8 @@ tenor_basis_two_swap_convention_repository::read_latest(context ctx,
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<tenor_basis_two_swap_convention_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<tenor_basis_two_swap_convention_entity,
                                      domain::tenor_basis_two_swap_convention>(
         ctx,
@@ -387,10 +378,8 @@ void tenor_basis_two_swap_convention_repository::remove(context ctx,
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<tenor_basis_two_swap_convention_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing two-tenor basis swap conventions.");
 }
 

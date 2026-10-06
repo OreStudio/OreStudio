@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD
+:END:
+#+title: User Journey: See who changed a curve, and when
+#+description: An auditor reads the trail of a published curve: its blueprint changes, its builds, its manual adjustments, its approvals and its publishes, each with an actor and a time.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An auditor reads the trail of a published curve: its blueprint changes, its builds, its manual adjustments, its approvals and its publishes, each with an actor and a time.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to be able to say who changed this published curve, what they changed,
+and who approved it, so I can answer a challenge and show the trail." The
+journey is done when the auditor holds the trail of one curve: every blueprint
+change, every build, every manual adjustment and every publish, each with an
+actor and a time, and can put one version beside the one before it.
+
+* Actor and trigger
+
+The actor is the auditor, or reviewer: a signed-in person inside their tenant
+who holds a read permission on the market data entities and on the approval
+records. No dedicated auditor role holds only those reads today; see /What is
+missing/. The trigger is an internal or external challenge to a number a run
+used, a periodic review of how curves are governed, or a publication the person
+must attest. The journey starts at a market series, or from the evolution view,
+and ends when the person leaves the trail.
+
+The record is bitemporal: each row carries the transaction time of its versions
+beside the financial time of the thing it describes. What the trail can show,
+and what it cannot, follows from which entities keep those versions; see /What
+is missing/.
+
+* Steps
+
+1. *Open the trail.* The person opens *Market data*, finds the series by its
+   =oresmd_uri=, and chooses *Trail*. The system shows the series row: the URI,
+   the subclass, the derivation kind, the derivation config and its version,
+   and the provenance of the row, which is who modified it, who performed it,
+   the change reason code and the change commentary.
+2. *Read the blueprint changes.* The system lists every version of the series
+   row, newest first, with the field-level difference from the version before:
+   when the derivation config or its version changed, and who changed it and
+   why.
+3. *Read the builds.* The person opens the points. The system lists the series'
+   observations by observation time, with each point's =oresmd_uri=, value,
+   observation time and source. A build is many points written at one
+   observation time under one source.
+4. *Read the per-point provenance.* For a derived point the person reads its
+   lineage: the derivation config and version, the source as-of, and the source
+   series it read. Only a derived point has a lineage row; an observed point has
+   none, and that absence is the observed marker.
+5. *Read the manual adjustments.* The person asks which points a person wrote
+   rather than a feed. The system shows the points whose source names no
+   producer channel, beside the change reason on the record. No column marks a
+   point as manual; see /What is missing/.
+6. *Read the approvals.* The person opens the approval requests and their
+   decisions for the object: who asked, when and why, and who decided what and
+   when. The generic approval record exists; no market-data approval kind does;
+   see /What is missing/.
+7. *Read the publishes.* The system shows every publish of the curve: the
+   version published, the person who published it, and the time. No publish
+   operation exists, so this panel is empty by construction; see /What is
+   missing/.
+8. *Put one version against the one before.* The person selects a version and
+   the system shows it beside the version before, with the field-level
+   difference. This exists for the series row; it does not exist for a point;
+   see /What is missing/.
+9. *Leave.* The person goes back to the series or to the evolution view.
+
+Every read is answered inside the reply. The trail carries no state of its own;
+it is a reading of the versions the server already keeps.
+
+* Screens and wireframes
+
+One screen. The object and its provenance sit at the top, the blueprint
+versions and their differences sit under it, the builds, the per-point
+provenance and the manual adjustments sit in the middle, and the approvals and
+publishes sit at the bottom, so the person reads the object, then what was
+built, then who signed it off.
+
+#+caption: Curve trail: the series and its provenance, its blueprint versions with their differences, its builds and their lineage, its manual adjustments, and its approvals and publishes.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_see-who-changed-a-curve.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/see-who-changed-a-curve/index.html=: mock data only, no backend,
+no build step and no session. It argues that the trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor.
+
+- Variants :: a one merged timeline, b one table per kind, c a two-version compare
+- States :: rich, empty (nothing published yet), manual (a hand adjustment with its actor)
+- Source :: =doc/prototypes/see-who-changed-a-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/see-who-changed-a-curve/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The curve's identity and its derivation marker; its versions carry the blueprint changes | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The built and manually adjusted points, with observation time, value and source; the row carries no actor | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The per-point provenance: the config and version, the source as-of, and the source series a derived point read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =feed_binding= | The producer behind a source tag, so a build's feed can be named | [[id:D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890][ores.marketdata.feed_binding]] |
+| =approval_request= | Who asked for an approval, when and why, and where the request is | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_decision= | Who decided what and when, and the comment they left | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =approval_kind= | The rules of a kind: the decide permission, whether a comment is needed, how many approvals close it; no market-data kind exists | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision_type= | What a decision does: approve, refuse, hold, resume, withdraw or reverse | [[id:2F7C5A19-8D36-4E0B-9A41-6C3E8B2D7F05][ores.inbox.approval_decision_type]] |
+| =approval_request_state= | Where a request is in its life, and whether that state is final | [[id:8E4B1F27-5C93-4A6D-B0E8-3F7A2D9C1B54][ores.inbox.approval_request_state]] |
+
+The series, the lineage and the binding are versioned, so each has a history
+and an actor per version. The observation rows are not: they are the tick-level
+table, and they carry no actor. The approval records are versioned and each
+decision is a row of its own.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the trail | Read the series | =marketdata.v1.market_series.get= | exists |
+| Open the trail | List the series' versions | =marketdata.v1.market_series_versions.list= | exists |
+| Read the blueprint changes | Read every version with its field diff | =marketdata.v1.history.get= | exists |
+| Read the builds | List a series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the builds | Read one observation | =marketdata.v1.market_observations.get= | exists |
+| Read the per-point provenance | Read the lineage of a point | =marketdata.v1.observation_lineages.get= | partial |
+| Read the per-point provenance | Name the feed of a source | =marketdata.v1.feed_bindings.list= | exists |
+| Read the manual adjustments | Read the change reasons | =dq.v1.change_reasons.list= | exists |
+| Read the approvals | List the requests of a kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
+| Read the approvals | List a request's decisions | =inbox.v1.approval_decisions.list_by_request_id= | exists |
+| Read the publishes | Read the publish acts | no subject | missing |
+| Put a version beside the one before | Read a version's diff | =marketdata.v1.history.get= | exists |
+| Read the history of a point | Read a point's versions | no subject | missing |
+
+The history request is the generic one, addressed at the owning component's
+subject, so the market data one is =marketdata.v1.history.get= with
+=entity_type= =ores.marketdata.market_series=,
+=ores.marketdata.observation_lineage=, =ores.marketdata.feed_binding= or
+=ores.marketdata.series_classification_rule=. Those four register a history
+provider. =ores.marketdata.market_observation= does not, because it has no
+audit columns and a version must carry an actor as well as a time; see
+/What is missing/. The lineage read is keyed by the lineage row's id, not by
+the observation, so the screen needs the id before it can ask.
+
+* What is missing
+
+1. *Observations carry no actor.* =market_observation= has no =version=,
+   =modified_by=, =performed_by=, =change_reason_code= or =change_commentary=,
+   because tick-level volumes made them impractical, so the market data
+   registrar withholds a history provider for it. The candidate is a provider
+   over the observation rows, or an actor and a change reason carried on the
+   write. Until then the screen shows each point's observation time and source,
+   and it cannot say who wrote a point or when it changed.
+2. *No publish operation and no publish event.* Nothing publishes a curve, so
+   the trail holds no publish acts. The bootstrap's republish writes the output
+   series' observations directly, and its own protocol says the review and
+   approval gate is a separate, later layer. The candidate is a publish
+   operation with a published version, and a publish event. Until then the
+   publishes panel is empty and the screen says that nothing is published.
+3. *No market-data approval kind.* The inbox holds one kind,
+   =iam.role_grant=; no kind names a curve publish or a manual adjustment, so
+   no approval request can be raised for this object. The candidate is a
+   market-data approval kind with its decide permission, its approvals-required
+   count and its comment rule, and the operation that applies an approval. Until
+   then the approvals panel can show only requests of another kind, and none
+   names this object.
+4. *No candidate-against-published distinction.* No field on an observation
+   says whether it is a candidate or a published value, so the trail cannot
+   separate the two. The candidate is a published version or a published flag.
+   Until then the screen reads the market's values and does not claim which of
+   them were published.
+5. *No field diff for a point, and no lineage read by observation.* The history
+   read returns versions with their difference for the four entities that
+   register a provider. It does not for =market_observation=, and
+   =marketdata.v1.observation_lineages.get= takes the lineage row's id, not the
+   series, observation time and URI the repository's own lookup accepts. The
+   candidate is a lineage read keyed by the observation. Until then the screen
+   reads a lineage row by id when it has one, and matches the rest by hand.
+6. *The manual adjustments are not marked.* =market_observation= carries a
+   free-text =source=, so a point a person wrote cannot be told from a point a
+   feed wrote except by that string, and the write's change reason does not
+   travel with the row because the entity keeps no version. The candidate is a
+   manual marker, or a source convention the column validates. Until then the
+   screen treats a source that names no producer channel as manual, and says the
+   classification is a convention.
+7. *No auditor role.* No role holds only the market data reads and the inbox
+   reads this journey needs; a person reaches it through the read permissions
+   they already hold. The candidate is an auditor role.
+
+* Related journeys
+
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the values the trail explains
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the blueprint whose changes the trail shows
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — the manual points the trail must name
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the request the approvals panel reads
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the decision the approvals panel reads
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the act the publishes panel must record
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the act that follows a publish, and must stay in the trail
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the market side of every build
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]]
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]]
+- [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

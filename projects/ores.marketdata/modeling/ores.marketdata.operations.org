@@ -1017,7 +1017,7 @@ bodies are what the round-trip test compares against the file it imported.
 One live observation of one market datum, whatever its asset class. A producer
 publishes it on its own feed subject, and the ingest loop stores it and
 republishes it to each consumer under this subject, extended with the
-consumer's tenant, workspace and party and the datum's canonical ORE key. The
+consumer's tenant and party and the datum's canonical ORE key. The
 tick carries no owner: its =source= finds the consumers through their feed
 bindings.
 

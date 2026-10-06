@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 64415938-135B-4E32-AC30-FB64801B7A81
+:END:
+#+title: Task: Implement Hotfix: Site build needs live GNU ELPA
+#+description: Cache the Emacs package tree in both site workflows, add a GNU ELPA mirror fallback, and make the archive-refresh retry detect a failed refresh.
+#+type: task
+#+level: s1
+#+filetags: :site-build-needs-live-gnu-elpa:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/site-build-needs-live-gnu-elpa
+#+pr: 2693
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F49BC762-0B5E-48F6-8F82-F5C8C932591A][Hotfix: Site build needs live GNU ELPA]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The site package bootstrap must survive an =elpa.gnu.org= outage, and
+site CI must not install the packages on every run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F49BC762-0B5E-48F6-8F82-F5C8C932591A][Hotfix: Site build needs live GNU ELPA]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- A cold run with unreachable GNU archives installs all five site packages.
+- A warm =.packages= tree makes =ores-site-ensure-packages= a no-op.
+- Both site workflows restore and save =./.packages=.
+
+* Plan
+
+1. Add =ores-site--archives-usable-p=. It reads the refresh outcome from
+   =package-archive-contents=, because =package-refresh-contents= only
+   warns on a failed archive and never signals.
+2. Add =ores-site--refresh-once= and =ores-site--use-archive-mirrors=.
+3. Rewrite =ores-site--refresh-with-retries= to try the primary GNU
+   archives first, then the mirrors.
+4. Cache =./.packages= in =build-site.yml= and =site-cdash.yml=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cold bootstrap, GNU archives unreachable | =queue=, =compat=, =citeproc=, =org-roam=, =htmlize= all installed | =emacs -Q --batch -l ores-site-packages.el= with gnu/nongnu on =elpa.invalid= | this branch |
+| Warm cache | no-op; all five installed, no network | =emacs -Q --batch -l ores-site-packages.el --eval "(ores-site-ensure-packages)"= | this branch |
+| Workflow YAML | parses | =python3 -c "import yaml; yaml.safe_load(...)"= | this branch |
+
+* Notes
+
+Root cause: the site packages need =queue= and =compat=, which exist only
+on GNU ELPA. The bootstrap fetched them on every run with no CI cache,
+and =package-refresh-contents= only warns on a failed archive, so the
+three-attempt retry never ran and the =queue= guard failed on the first
+pass. An =elpa.gnu.org= outage therefore failed the build for its whole
+duration.
+
+Fix: the refresh now reads its outcome from =package-archive-contents=
+and retries, then falls back to the BFSU mirrors. Both site workflows
+cache =./.packages=, so a warm cache removes the network dependency
+entirely.
+
+The mirror is a supply-chain input, so it matters that Emacs checks the
+archive signatures against the GNU keyring; a mirror cannot serve
+different content.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2693][#2693]] | [ci] Make the site package bootstrap survive a GNU ELPA outage |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The bootstrap reads the refresh outcome, retries, and falls back to the
+BFSU mirrors. Both site workflows cache =./.packages=. A cold run with
+unreachable GNU archives installed all five packages; a warm run was a
+no-op. Merging PR #2693 makes site CI survive the next GNU ELPA outage.

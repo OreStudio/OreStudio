@@ -66,6 +66,7 @@ export interface PartyLookup {
 
 export interface PartiesFilter {
     id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface PartyEvent {

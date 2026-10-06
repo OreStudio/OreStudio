@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations: compute grid prototype — watch the compute grid</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Watch the compute grid, from
+  doc/knowledge/journeys/operations/journey_watch_the_compute_grid.org: the
+  installation's host and work summary, one row per node, and the compute
+  wrappers that report for those nodes.
+
+  Two variants, switchable with ?variant=sampled|nosample: the newest stored
+  grid sample, or the state before the sampler's first pass, where the node
+  table stands alone. The variant bar at the foot of the page prints the
+  screen's whole state.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

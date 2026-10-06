@@ -140,8 +140,9 @@ function mapContact(row: z.infer<typeof wireContactSchema>): AccountContactInfor
 }
 
 /**
- * `update_self_account_contact_information_response`, and the administered
- * put's reply: what the write decided, and the record as written.
+ * `update_self_account_contact_information_response`, the administered put's
+ * reply, and `get_my_account_contact_information_response`: the result, and
+ * the one record it names.
  *
  * The record is stated only when the outcome is ok. The result keeps its
  * field failures because the panel branches on them.
@@ -291,10 +292,35 @@ export async function updateAccount(
 }
 
 /**
+ * The signed-in person's own contact record, or nothing when they have none.
+ *
+ * The request names no account: the server reads it from the session, so the
+ * read cannot answer about anybody else. It is a self read and needs no
+ * permission.
+ */
+export async function readMyContactInformation(
+    caller: AuthenticatedCaller,
+): Promise<AccountContactInformation | null> {
+    const reply = await caller.callAuthenticated(
+        accountSubjects.get_my_account_contact_information_request,
+        {},
+        contactWriteReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(
+            accountSubjects.get_my_account_contact_information_request,
+            reply.result.message,
+        );
+    }
+    return reply.contact;
+}
+
+/**
  * One account's contact record, or nothing when it has none.
  *
  * The read names the account because an administrator reads a colleague's
- * record; the self route passes the session's own account id.
+ * record, and it needs iam::account_contact_informations:read. A person reads
+ * their own with readMyContactInformation.
  */
 export async function readContactInformation(
     caller: AuthenticatedCaller,

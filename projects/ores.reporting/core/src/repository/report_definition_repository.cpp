@@ -25,17 +25,38 @@
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_entity.hpp"
 #include "ores.reporting.core/repository/report_definition_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <initializer_list>
-#include <sqlgen/postgres.hpp>
+#include <optional>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
 #include <stdexcept>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::reporting::repository {
 
@@ -166,24 +187,9 @@ void report_definition_repository::write(
 std::vector<domain::report_definition> report_definition_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto& chain = ctx.workspace_resolution();
-    if (!chain.empty()) {
-        const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
-                                 "valid_to"_c == max.value()) |
-                           order_by("id"_c);
-        return execute_read_query<report_definition_entity, domain::report_definition>(
-            ctx,
-            query,
-            [](const auto& entities) { return report_definition_mapper::map(entities); },
-            lg(),
-            "Reading latest report definitions (workspace resolution chain).");
-    }
-    const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_definition_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<report_definition_entity, domain::report_definition>(
         ctx,
@@ -198,10 +204,8 @@ report_definition_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report definition. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<report_definition_entity, domain::report_definition>(
         ctx,
@@ -216,10 +220,9 @@ report_definition_repository::read_latest_by_name(context ctx, const std::string
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report definition by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name &&
-                             "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<report_definition_entity>> |
+        where("tenant_id"_c == tid && "name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<report_definition_entity, domain::report_definition>(
         ctx,
@@ -233,9 +236,8 @@ std::vector<domain::report_definition>
 report_definition_repository::read_any_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any report definition by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "name"_c == name) |
+                       where("tenant_id"_c == tid && "name"_c == name) |
                        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
     return execute_read_query<report_definition_entity, domain::report_definition>(
@@ -251,9 +253,8 @@ std::vector<domain::report_definition>
 report_definition_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report definition versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<report_definition_entity, domain::report_definition>(
@@ -269,10 +270,8 @@ std::optional<domain::report_definition> report_definition_repository::read_at_v
     BOOST_LOG_SEV(lg(), debug) << "Reading report definition at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<report_definition_entity, domain::report_definition>(
@@ -304,10 +303,9 @@ report_definition_repository::remove_status report_definition_repository::remove
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<report_definition_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
+                             "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing report definition from database.");
     // The delete reports no affected-row count, so the row is read back: a row
@@ -332,10 +330,8 @@ std::vector<domain::report_definition> report_definition_repository::read_latest
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report definitions with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<report_definition_entity, domain::report_definition>(
         ctx,
@@ -354,9 +350,8 @@ std::uint32_t report_definition_repository::get_total_definition_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report definition count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
+    const auto query =
+        sqlgen::read<std::vector<report_definition_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<report_definition_entity>(
         ctx,
@@ -372,10 +367,8 @@ report_definition_repository::read_latest(context ctx, const std::vector<std::st
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<report_definition_entity>> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<report_definition_entity, domain::report_definition>(
         ctx,
         query,
@@ -396,10 +389,8 @@ void report_definition_repository::remove(context ctx, const std::vector<std::st
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<report_definition_entity> |
-                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing report definitions.");
 }
 

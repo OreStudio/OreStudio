@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: D06C64C4-966E-4A8F-B56A-8B0097C609BF
+:END:
+#+title: Task: Guard the party hierarchy against cycles
+#+description: A parent_id cycle in the party or counterparty hierarchy either spins the recursive CTE or silently drops both nodes from build_tree(). Report the cycle and cover it with a test.
+#+type: task
+#+level: s1
+#+filetags: :finish_the_refdata_read_path:sprint_27:v0:
+#+owner: marco
+#+branch: feature/serve-tenant-and-party-search-order-and-history
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+build_tree now places every row: a child already placed is not descended into
+again, and every row left unreached by the roots is promoted to a root in input
+order, so a parent cycle no longer vanishes from the forest. The generated
+hierarchy function's ancestors and descendants CTEs carry the path they have
+walked and stop when a row repeats; refdata, synthetic and workspace-cpp were
+regenerated from the template.
+
+Verified: ores.utility.tests passes, 7 test cases and 29 assertions, including
+a two-row ring and a self-parented row; a new pgTAP test builds a real party
+cycle and the function returns both rows and terminates, both from the given
+node and from the root walk, 2 of 2 passing; SQL hygiene is clean and refdata
+regeneration shows no drift.

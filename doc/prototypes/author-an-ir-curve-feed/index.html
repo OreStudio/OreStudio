@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Author an IR curve feed prototype — Synthetic data generation</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  Author an IR curve feed: the ores.qt "Edit IR Curve" dialog
+  (IrCurveEditor.cpp; spec in
+  doc/agile/versions/v0/sprint_23/ir-rates-synthetic-generation/task_tick-batch-publishing.org).
+  Four tabs. Instrument holds the curve's identity -- currency, index name,
+  tenor, role (Discount / Projection / Self-discounting), the derived ORE key,
+  description, enabled, fixed-leg frequency and the price source (a fixed r0, or
+  a starting rate from a market-data vintage). Process holds the seeded
+  short-rate process and one row per parameter definition, with a curve-shape
+  preview and sampled short-rate paths. Curve Template holds the ordered
+  [start, end) instrument ladder the curve is bootstrapped from. Provenance
+  holds the vintage source and date, who changed it, and the version history.
+  Nothing here reads a service; every value is a mock of what the screen shows.
+
+  Variants with ?variant=a|b|c. a is the Curve Template tab with the
+  curve-shape chart it implies. b is the Process tab: the parameter rows, the
+  curve-shape chart and the sampled paths (Reseed button and path spin). c is
+  the combined editor, with the Process and Curve Template panels side by side.
+  The tabs stay clickable, so the Instrument and Provenance tabs are reachable
+  from every variant.
+
+  ?state=vasicek|cir|hull_white|incomplete switches the mock. vasicek and cir
+  give an upward curve, hull_white an inverted one; each state carries its own
+  parameter values. incomplete has no Curve Template entries, so the screen can
+  draw no curve shape and refuses the save.
+
+  Mock-only: the curve shape and the sample paths are closed-form stand-in
+  numbers generated in the page, not the server's preview endpoints.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || '';
+
+// Prototype plotting helper. Throwaway, dependency-free, dark-theme SVG.
+// Each function returns an HTML string, so a page calls host.innerHTML = PC.line({...}).
+// Prefixed PC to stay clear of page-local names; the pages also define `tag`.
+const PC = (() => {
+  const C = {grid:'#21262d', axis:'#30363d', text:'#71717a', dim:'#a1a1aa',
+             ink:'#e3e3e6', accent:'#58a6ff', ok:'#3fb950', warn:'#d29922', bad:'#f85149'};
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fmt = (v, d) => v == null ? '—' : (typeof v === 'number' ? v.toFixed(d ?? 2) : String(v));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // A blue -> amber ramp for a heat cell, t in 0..1.
+  function heatColour(t){
+    const stops = [[13,23,38],[21,60,110],[32,110,170],[88,166,255],[210,153,34],[248,81,73]];
+    const p = clamp(t, 0, 1) * (stops.length - 1), i = Math.floor(p), f = p - i;
+    const a = stops[i], b = stops[Math.min(stops.length - 1, i + 1)];
+    return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(',')})`;
+  }
+
+  // Shared frame: margins, y gridlines and labels for a value axis.
+  function frame(o){
+    const w = o.w || 940, h = o.h || 300;
+    const pad = Object.assign({l:64, r:18, t:16, b:40}, o.pad || {});
+    const x0 = pad.l, x1 = w - pad.r, y0 = h - pad.b, y1 = pad.t;
+    const vals = (o.series || []).flatMap(s => s.points || []).filter(v => v != null)
+      .concat(o.extra || []);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (o.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    if (!(hi > lo)) { hi = lo + 1; }
+    const span = hi - lo, l2 = lo - span * 0.08, h2 = hi + span * 0.08;
+    const y = v => y0 - (v - l2) * (y0 - y1) / (h2 - l2);
+    const X = o.x ? (i => x0 + o.x[i] * (x1 - x0))
+                  : (i => x0 + i * (x1 - x0) / Math.max(1, (o.ticks ? o.ticks.length : 1) - 1));
+    const yTicks = [];
+    const steps = o.ySteps || 4;
+    for (let k = 0; k <= steps; k++) {
+      const v = l2 + (h2 - l2) * k / steps;
+      yTicks.push(`<line x1="${x0}" y1="${y(v).toFixed(1)}" x2="${x1}" y2="${y(v).toFixed(1)}" stroke="${C.grid}"/>
+        <text x="${x0 - 8}" y="${(y(v) + 3.5).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc((o.yFmt || (v => fmt(v)))(v))}</text>`);
+    }
+    const xTicks = (o.ticks || []).map(t => {
+      const px = o.x ? x0 + t.at * (x1 - x0) : X(t.at);
+      return `<text x="${px.toFixed(1)}" y="${h - pad.b + 15}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(t.label)}</text>`;
+    }).join('');
+    const grid = (o.xticks || []).map(t => {
+      const px = o.x ? x0 + t.at * (x1 - x0) : X(t.at);
+      return `<line x1="${px.toFixed(1)}" y1="${y1}" x2="${px.toFixed(1)}" y2="${y0}" stroke="${C.grid}" stroke-dasharray="2 3"/>`;
+    }).join('');
+    return {w, h, x0, x1, y0, y1, y, X, l2, h2, frame: yTicks.join('') + grid + xTicks};
+  }
+
+  function line(o){
+    const f = frame(o);
+    const bands = (o.bands || []).map(b => {
+      const xa = f.x0 + b.from * (f.x1 - f.x0), xb = f.x0 + b.to * (f.x1 - f.x0);
+      return `<rect x="${xa.toFixed(1)}" y="${f.y1}" width="${(xb - xa).toFixed(1)}" height="${(f.y0 - f.y1).toFixed(1)}"
+        fill="${b.color || C.accent}" opacity=".08"/>` +
+        (b.label ? `<text x="${((xa + xb) / 2).toFixed(1)}" y="${f.y1 + 11}" fill="${C.text}" font-size="9" text-anchor="middle">${esc(b.label)}</text>` : '');
+    }).join('');
+    const paths = (o.series || []).map(s => {
+      let d = '', pen = false;
+      s.points.forEach((v, i) => {
+        if (v == null) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + f.X(i).toFixed(1) + ',' + f.y(v).toFixed(1) + ' ';
+        pen = true;
+      });
+      const marks = s.markers ? s.points.map((v, i) => v == null ? '' :
+        `<circle cx="${f.X(i).toFixed(1)}" cy="${f.y(v).toFixed(1)}" r="${s.r || 3.4}" fill="${s.color}"/>`).join('') : '';
+      return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.width || 2}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}/>${marks}`;
+    }).join('');
+    const legend = o.legend === false ? '' : `<div class="pc-legend">${(o.series || []).map(s =>
+      `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}${(o.notes || []).map(n =>
+      `<span class="faint">${n}</span>`).join('')}</div>`;
+    return `<figure class="pc"><svg viewBox="0 0 ${f.w} ${f.h}" width="100%" height="${f.h}" role="img" aria-label="${esc(o.title || 'chart')}">
+      ${bands}${f.frame}${paths}
+      ${o.yLabel ? `<text x="14" y="${(f.y0 + f.y1) / 2}" fill="${C.text}" font-size="10" transform="rotate(-90 14 ${(f.y0 + f.y1) / 2})" text-anchor="middle">${esc(o.yLabel)}</text>` : ''}
+    </svg>${legend}${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  function bars(o){
+    const f = frame(Object.assign({zero: true}, o));
+    const n = o.bars.length, bw = (f.x1 - f.x0) / n;
+    const zero = f.y(0);
+    const body = o.bars.map((b, i) => {
+      const v = b.value == null ? null : b.value;
+      const x = f.x0 + i * bw + bw * 0.18, w = bw * 0.64;
+      const yv = v == null ? zero : f.y(v);
+      const top = Math.min(yv, zero), hgt = Math.abs(zero - yv);
+      const col = b.color || (v == null ? C.text : v >= 0 ? C.warn : C.accent);
+      return `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1, hgt).toFixed(1)}" fill="${col}" opacity=".85"><title>${esc(b.label)}: ${esc(fmt(v))}</title></rect>
+        <text x="${(x + w / 2).toFixed(1)}" y="${(f.h - 24)}" fill="${C.text}" font-size="9" text-anchor="middle">${esc(b.label)}</text>`;
+    }).join('');
+    return `<figure class="pc"><svg viewBox="0 0 ${f.w} ${f.h}" width="100%" height="${f.h}" role="img" aria-label="${esc(o.title || 'bars')}">
+      ${f.frame}<line x1="${f.x0}" y1="${zero}" x2="${f.x1}" y2="${zero}" stroke="${C.axis}"/>${body}</svg>
+      ${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  // A surface as a shaded mesh grid: one cell per (row, column).
+  function heat(o){
+    const rows = o.rows, cols = o.cols;
+    const cw = o.cell || 54, ch = o.cellH || 30, l = 58, t = 26;
+    const w = l + cols.length * cw + (o.legend === false ? 14 : 92);
+    const h = t + rows.length * ch + 34;
+    const vals = [];
+    rows.forEach((_, i) => cols.forEach((_, j) => { const v = o.value(i, j); if (v != null) vals.push(v); }));
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
+    const cells = [];
+    rows.forEach((r, i) => cols.forEach((c, j) => {
+      const v = o.value(i, j);
+      const x = l + j * cw, y = t + i * ch;
+      const col = v == null ? '#161619' : heatColour((v - lo) / span);
+      cells.push(`<rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2" fill="${col}"><title>${esc(r.label)} · ${esc(c.label)}: ${esc(fmt(v, o.dp))}</title></rect>`);
+      if (o.showValues !== false) cells.push(`<text x="${(x + (cw - 2) / 2).toFixed(1)}" y="${(y + ch / 2 + 3.5).toFixed(1)}" fill="${(v != null && (v - lo) / span > 0.55) ? '#0d1117' : C.ink}" font-size="9.5" text-anchor="middle">${esc(fmt(v, o.dp ?? 1))}</text>`);
+    }));
+    const rowLabels = rows.map((r, i) => `<text x="${l - 8}" y="${(t + i * ch + ch / 2 + 3.5).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc(r.label)}</text>`).join('');
+    const colLabels = cols.map((c, j) => `<text x="${(l + j * cw + (cw - 2) / 2).toFixed(1)}" y="${t - 8}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(c.label)}</text>`).join('');
+    const legend = o.legend === false ? '' : (() => {
+      const bx = l + cols.length * cw + 14, by = t, bh = rows.length * ch - 2;
+      const steps = 24, sh = bh / steps;
+      let g = '';
+      for (let k = 0; k < steps; k++) g += `<rect x="${bx}" y="${(by + k * sh).toFixed(1)}" width="12" height="${(sh + 1).toFixed(1)}" fill="${heatColour(1 - k / (steps - 1))}"/>`;
+      return `<g>${g}<text x="${bx + 18}" y="${by + 8}" fill="${C.text}" font-size="9">${esc(fmt(hi, o.dp))}</text>
+        <text x="${bx + 18}" y="${by + bh}" fill="${C.text}" font-size="9">${esc(fmt(lo, o.dp))}</text></g>`;
+    })();
+    return `<figure class="pc"><svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="${esc(o.title || 'heat map')}">
+      ${cells.join('')}${rowLabels}${colLabels}${legend}
+      ${o.xLabel ? `<text x="${(l + cols.length * cw / 2).toFixed(1)}" y="${h - 6}" fill="${C.text}" font-size="10" text-anchor="middle">${esc(o.xLabel)}</text>` : ''}
+      ${o.yLabel ? `<text x="12" y="${(t + rows.length * ch / 2).toFixed(1)}" fill="${C.text}" font-size="10" transform="rotate(-90 12 ${(t + rows.length * ch / 2).toFixed(1)})" text-anchor="middle">${esc(o.yLabel)}</text>` : ''}
+    </svg>${o.caption ? `<figcaption class="faint">${o.caption}</figcaption>` : ''}</figure>`;
+  }
+
+  // A surface as an isometric wireframe: rows and columns joined over a height.
+  function mesh(o){
+    const w = o.w || 940, h = o.h || 420;
+    const rows = o.z.length, cols = o.z[0].length;
+    const vals = o.z.flat().filter(v => v != null);
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
+    const ox = o.ox ?? w * 0.52;
+    const sy = o.sy ?? Math.min(22, h / (2 * Math.max(1, (rows - 1) + (cols - 1))));
+    const sx = o.sx ?? Math.min(46, (w * 0.6) / Math.max(1, (rows - 1) + (cols - 1)));
+    const sz = o.sz ?? h * 0.34;
+    const oy = o.oy ?? h - 26 - ((rows - 1) + (cols - 1)) * sy;
+    const P = (i, j) => {
+      const v = o.z[i][j];
+      const z = v == null ? 0 : (v - lo) / span;
+      return [ox + (j - i) * sx, oy + (i + j) * sy - z * sz, z];
+    };
+    const lines = [];
+    for (let i = 0; i < rows; i++) {
+      let d = '';
+      for (let j = 0; j < cols; j++) { const p = P(i, j); d += (j ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' '; }
+      lines.push(`<path d="${d}" fill="none" stroke="${C.accent}" stroke-width="1.4" opacity=".75"/>`);
+    }
+    for (let j = 0; j < cols; j++) {
+      let d = '';
+      for (let i = 0; i < rows; i++) { const p = P(i, j); d += (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' '; }
+      lines.push(`<path d="${d}" fill="none" stroke="${C.warn}" stroke-width="1" opacity=".5"/>`);
+    }
+    const rowL = (o.rows || []).map((r, i) => { const p = P(i, 0); return `<text x="${(p[0] - 12).toFixed(1)}" y="${(p[1] + 4).toFixed(1)}" fill="${C.text}" font-size="10" text-anchor="end">${esc(r.label)}</text>`; }).join('');
+    const colL = (o.cols || []).map((c, j) => { const p = P(rows - 1, j); return `<text x="${(p[0] + 10).toFixed(1)}" y="${(p[1] + 4).toFixed(1)}" fill="${C.text}" font-size="10">${esc(c.label)}</text>`; }).join('');
+    const axis = `<text x="14" y="${h - 12}" fill="${C.text}" font-size="10">height: ${esc(o.zLabel || 'value')} ${esc(fmt(lo, o.dp))}–${esc(fmt(hi, o.dp))}</text>`;
+    return `<figure class="pc"><svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="${esc(o.title || 'surface mesh')}">
+      ${lines.join('')}${rowL}${colL}${axis}</svg>
+      <div class="pc-legend"><span><i style="background:${C.accent}"></i>expiry</span><span><i style="background:${C.warn}"></i>strike</span>${(o.notes || []).map(n => `<span class="faint">${n}</span>`).join('')}</div>
+      ${o.caption ? `<figcaption class="faint">${esc(o.caption)}</figcaption>` : ''}</figure>`;
+  }
+
+  return {line, bars, heat, mesh, colours: C, heatColour};
+})();
+
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+
+// ==== page data and panels ====
+// Mock state. Every value stands in for what ores.qt's IrCurveEditor would read
+// from refdata, the process-definition catalogue and the config record.
+
+const SELECT_STYLE = 'background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px';
+
+const IDENT = {
+  currency: 'USD', indexFamily: 'sofr', indexLabel: 'SOFR',
+  role: 'self_discounting', enabled: true, fixedLegFrequency: 'Annual',
+  oreKey: 'synthetic.realistic.usdsofr',
+  description: 'Overnight RFR curve for USD. Single-curve and self-discounting; the feed publishes a raw DEPO/FRA/IRS grid derived from one internally consistent curve.',
+  vintageSource: 'ore.samples.2016-02-05',
+  vintageDate: '2016-02-05',
+  vintageUri: 'oresmd://ir/USD?type=series&instrument=mm&quote=rate&fwd_start=2D'
+};
+
+const TENORS = ['SPOT', '1M', '3M', '6M', '1Y', '2Y', '5Y', '10Y', '30Y'];
+const INSTRUMENTS = ['DEPO', 'FRA', 'IRS', 'OIS'];
+const TENOR_YEARS = { SPOT:0, '1M':1/12, '3M':0.25, '6M':0.5, '1Y':1, '2Y':2, '5Y':5, '10Y':10, '30Y':30 };
+
+// One row per yield_curve_process_parameter_definition, as seeded in
+// synthetic_yield_curve_process_parameter_definitions_populate.sql.
+const PARAM_DEFS = {
+  VASICEK: [
+    { name:'kappa', symbol:'κ', label:'Mean reversion speed', def:0.5, min:0, max:null, desc:'How strongly the short rate is pulled back toward the long-term mean. Non-negative.' },
+    { name:'theta', symbol:'θ', label:'Long-term mean', def:0.03, min:null, max:null, desc:'The level the short rate reverts to, and the level the generated curve anchors on.' },
+    { name:'sigma', symbol:'σ', label:'Volatility', def:0.01, min:0, max:null, desc:'Annualised standard deviation of the short-rate increments. Non-negative.' },
+    { name:'initial_rate', symbol:'r0', label:'Initial short rate', def:0.03, min:null, max:null, desc:'The short rate at the simulation start date.' }
+  ],
+  COX_INGERSOLL_ROSS: [
+    { name:'kappa', symbol:'κ', label:'Mean reversion speed', def:0.5, min:0, max:null, desc:'How strongly the short rate is pulled back toward the long-term mean. Non-negative.' },
+    { name:'theta', symbol:'θ', label:'Long-term mean', def:0.03, min:null, max:null, desc:'With kappa and sigma it fixes the long-run stationary distribution of the rate.' },
+    { name:'sigma', symbol:'σ', label:'Volatility', def:0.01, min:0, max:null, desc:'Annualised standard deviation, scaled by the square root of the current rate. Non-negative.' },
+    { name:'initial_rate', symbol:'r0', label:'Initial short rate', def:0.03, min:0, max:null, desc:'The square-root diffusion keeps the rate non-negative, so r0 must be non-negative.' }
+  ],
+  HULL_WHITE: [
+    { name:'kappa', symbol:'κ', label:'Mean reversion speed', def:0.5, min:0, max:null, desc:'How strongly the short rate is pulled back toward the time-dependent target theta(t). Non-negative.' },
+    { name:'theta', symbol:'θ', label:'Long-term mean', def:0.03, min:null, max:null, desc:'The mean-reversion target the short rate evolves around, held constant for the generated curve.' },
+    { name:'sigma', symbol:'σ', label:'Volatility', def:0.01, min:0, max:null, desc:'Annualised standard deviation of the short-rate increments. Non-negative.' },
+    { name:'initial_rate', symbol:'r0', label:'Initial short rate', def:0.03, min:null, max:null, desc:'The short rate at the simulation start date.' }
+  ],
+  TWO_FACTOR_GAUSSIAN: [
+    { name:'kappa_x', symbol:'κ₁', label:'Mean reversion speed, first factor', def:0.5, min:0, max:null, desc:'How strongly factor x is pulled back toward zero. Non-negative.' },
+    { name:'kappa_y', symbol:'κ₂', label:'Mean reversion speed, second factor', def:0.3, min:0, max:null, desc:'Usually smaller than kappa_x, giving the second factor a longer memory. Non-negative.' },
+    { name:'theta', symbol:'θ', label:'Long-term mean', def:0.03, min:null, max:null, desc:'The level the short rate (the sum of both factors plus theta) reverts to.' },
+    { name:'sigma_x', symbol:'σ₁', label:'Volatility, first factor', def:0.01, min:0, max:null, desc:'Annualised standard deviation of factor x increments. Non-negative.' },
+    { name:'sigma_y', symbol:'σ₂', label:'Volatility, second factor', def:0.005, min:0, max:null, desc:'Annualised standard deviation of factor y increments. Non-negative.' },
+    { name:'rho', symbol:'ρ', label:'Factor correlation', def:0, min:-1, max:1, desc:'How closely the two Ornstein-Uhlenbeck factors move together.' },
+    { name:'initial_rate', symbol:'r0', label:'Initial short rate', def:0.03, min:null, max:null, desc:'The short rate at the simulation start date.' }
+  ],
+  BLACK_KARASINSKI: [
+    { name:'kappa', symbol:'κ', label:'Mean reversion speed of ln r', def:0.5, min:null, max:null, desc:'How strongly ln r is pulled back toward its long-run level. kappa <= 0 is a degenerate driftless walk.' },
+    { name:'theta', symbol:'θ', label:'Long-run level of ln r', def:-3.218876, min:null, max:null, desc:'A logarithm, not a rate: a 4% long-run rate is log(0.04) = -3.218876.' },
+    { name:'sigma', symbol:'σ', label:'Volatility of ln r', def:0.01, min:0, max:null, desc:'Annualised standard deviation of the log-rate increments. Non-negative.' },
+    { name:'initial_rate', symbol:'r0', label:'Initial short rate', def:0.03, min:0.000001, max:null, desc:'The model runs on the logarithm of the rate, so r0 must be strictly positive.' }
+  ]
+};
+
+const PROCESS_TYPES = [
+  { code:'VASICEK', name:'Vasicek', desc:'Mean-reverting Gaussian short rate with constant volatility; admits a closed-form affine zero-coupon bond price.' },
+  { code:'COX_INGERSOLL_ROSS', name:'Cox-Ingersoll-Ross', desc:'Square-root volatility keeps the simulated rate non-negative; admits a closed-form affine zero-coupon bond price.' },
+  { code:'HULL_WHITE', name:'Hull-White', desc:'Vasicek extended with a time-dependent mean-reversion target.' },
+  { code:'TWO_FACTOR_GAUSSIAN', name:'Two-Factor Gaussian', desc:'Two correlated Ornstein-Uhlenbeck factors around a long-term mean, giving a richer (humped) term structure.' },
+  { code:'BLACK_KARASINSKI', name:'Black-Karasinski', desc:'The logarithm of the short rate is mean-reverting, so the simulated rate stays positive.' }
+];
+
+// The ladder the screen ships with: a deposit strip, one FRA, then swaps.
+const DEFAULT_LADDER = [
+  { start:'1M', end:'3M', instrument:'DEPO' },
+  { start:'3M', end:'6M', instrument:'DEPO' },
+  { start:'6M', end:'1Y', instrument:'FRA' },
+  { start:'1Y', end:'2Y', instrument:'IRS' },
+  { start:'2Y', end:'5Y', instrument:'IRS' },
+  { start:'5Y', end:'10Y', instrument:'IRS' },
+  { start:'10Y', end:'30Y', instrument:'IRS' }
+];
+
+// ?state= switches the whole mock. vasicek and cir curve up, hull_white down,
+// incomplete has no template entries at all.
+const STATES = {
+  vasicek: { process:'VASICEK', values:{ kappa:0.5, theta:0.038, sigma:0.010, initial_rate:0.026 } },
+  cir: { process:'COX_INGERSOLL_ROSS', values:{ kappa:0.7, theta:0.044, sigma:0.020, initial_rate:0.028 } },
+  hull_white: { process:'HULL_WHITE', values:{ kappa:0.15, theta:0.026, sigma:0.008, initial_rate:0.049 } },
+  incomplete: { process:'VASICEK', values:{ kappa:0.5, theta:0.038, sigma:0.010, initial_rate:0.026 }, template:[] }
+};
+
+const HISTORY = [
+  { v:7, when:'2026-07-24 09:41', by:'marco', what:'Process parameters re-calibrated' },
+  { v:6, when:'2026-07-18 16:02', by:'marco', what:'Curve Template: added IRS 10Y–30Y' },
+  { v:5, when:'2026-07-14 11:27', by:'joey', what:'Price source set to vintage ore.samples.2016-02-05' },
+  { v:4, when:'2026-07-03 08:15', by:'system', what:'Initial population from the 2016 ORE Samples theme' }
+];
+
+function defsFor(type){ return PARAM_DEFS[type] || PARAM_DEFS.VASICEK; }
+function metaFor(type){ return PROCESS_TYPES.find(p => p.code === type) || PROCESS_TYPES[0]; }
+function defaultsFor(type){ const o = {}; defsFor(type).forEach(d => { o[d.name] = d.def; }); return o; }
+function endYears(row){ return TENOR_YEARS[row.end] != null ? TENOR_YEARS[row.end] : 1; }
+function pct(v){ return (v * 100).toFixed(2) + '%'; }
+
+// With no ?state= the page shows the upward Vasicek mock; a bare
+// catalogue default would put r0 on top of theta and draw a flat curve.
+const ST = STATES[state] || STATES.vasicek;
+let chosenType = ST.process || 'VASICEK';
+let paramValues = Object.assign(defaultsFor(chosenType), ST.values || {});
+let templateRows = (ST.template !== undefined ? ST.template : DEFAULT_LADDER).map(r => Object.assign({}, r));
+let priceSource = 'vintage';
+let seed = 20260724;
+let pathCount = 5;
+let view = variant === 'a' ? 'template' : variant === 'b' ? 'process' : 'combined';
+let saveNote = '';
+
+// The process parameters imply a curve shape. Mock closed form: mean reversion
+// from r0 toward theta, plus one hump term for the two-factor model.
+function shapeParams(){
+  const v = paramValues;
+  if (chosenType === 'TWO_FACTOR_GAUSSIAN') {
+    return { r0:v.initial_rate, theta:v.theta, kappa:v.kappa_x, sigma:v.sigma_x,
+             hump:(v.sigma_y || 0) * 3, humpT:1 / Math.max(0.05, v.kappa_y || 0.3) };
+  }
+  if (chosenType === 'BLACK_KARASINSKI') {
+    return { r0:v.initial_rate, theta:Math.exp(v.theta), kappa:v.kappa, sigma:v.sigma, hump:0, humpT:1 };
+  }
+  return { r0:v.initial_rate, theta:v.theta, kappa:v.kappa, sigma:v.sigma, hump:0, humpT:1 };
+}
+function rateAt(t, sp){
+  const base = sp.theta + (sp.r0 - sp.theta) * Math.exp(-sp.kappa * t);
+  return base + sp.hump * (t / sp.humpT) * Math.exp(-t / sp.humpT);
+}
+
+function shapeChart(){
+  const sp = shapeParams();
+  const ts = [0].concat(templateRows.map(endYears));
+  const tmax = Math.max.apply(null, ts) || 1;
+  const x = ts.map(t => Math.log1p(t) / Math.log1p(tmax));
+  const implied = ts.map(t => rateAt(t, sp));
+  const mean = ts.map(() => sp.theta);
+  const ticks = ts.map((t, i) => ({ at:x[i], label:i === 0 ? 'SPOT' : templateRows[i - 1].end }));
+  return PC.line({
+    series: [
+      { name:'Implied rate (mock)', color:PC.colours.accent, points:implied, markers:true, width:2.2 },
+      { name:chosenType === 'BLACK_KARASINSKI' ? 'Long-run mean exp(θ)' : 'Long-term mean θ',
+        color:PC.colours.dim, points:mean, dash:'4 4', width:1.4 }
+    ],
+    x, ticks, h:260, yFmt:pct, yLabel:'Rate',
+    notes:[`${templateRows.length} template entries`, metaFor(chosenType).name],
+    caption:'Rate against tenor implied by the process parameters and the current Curve Template rows: one marker per template entry, at its end tenor, plus the starting rate. Tenors sit on a log scale so the short end stays readable. This is a closed-form mock; the real chart comes from synthetic.v1.ir_curve.preview_shape.'
+  });
+}
+
+function shapePanel(){
+  return `<div class="panel">
+    <h2>Curve shape — rate vs tenor</h2>
+    ${templateRows.length
+      ? shapeChart()
+      : `<div class="notice">No Curve Template entries, so there is no tenor grid to draw a shape against. The screen refuses to save an empty ladder; add at least one entry to see the shape the process would imply.</div>`}
+  </div>`;
+}
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function pathsChart(){
+  const sp = shapeParams();
+  const years = 5, steps = 60, dt = years / steps;
+  const rnd = mulberry32(seed);
+  const palette = [PC.colours.accent, PC.colours.ok, PC.colours.warn, PC.colours.bad,
+                   '#a371f7', '#39c5cf', '#db6d28', '#8b949e'];
+  const series = [];
+  for (let p = 0; p < pathCount; p++) {
+    let r = sp.r0;
+    const pts = [];
+    for (let k = 0; k <= steps; k++) {
+      pts.push(r);
+      const dW = Math.sqrt(dt) * (rnd() + rnd() + rnd() + rnd() - 2) * 1.7320508;
+      let vol = sp.sigma;
+      if (chosenType === 'COX_INGERSOLL_ROSS') vol = sp.sigma * Math.sqrt(Math.max(r, 0));
+      if (chosenType === 'BLACK_KARASINSKI') vol = sp.sigma * Math.max(r, 0);
+      r = r + sp.kappa * (sp.theta - r) * dt + vol * dW;
+      if (chosenType === 'COX_INGERSOLL_ROSS' || chosenType === 'BLACK_KARASINSKI') r = Math.max(0, r);
+    }
+    series.push({ name:`draw ${p + 1}`, color:palette[p % palette.length], points:pts, width:1.3, dash:p === 0 ? null : '3 3' });
+  }
+  const x = []; for (let k = 0; k <= steps; k++) x.push(k / steps);
+  const ticks = [0, 1, 2, 3, 4, 5].map(y => ({ at:y / years, label:`${y}Y` }));
+  return PC.line({
+    series, x, ticks, h:230, yFmt:pct, yLabel:'Short rate',
+    notes:[`${pathCount} draws`, `seed ${seed}`, metaFor(chosenType).name],
+    caption:'Closed-form Euler-Maruyama draws of the short rate (dr = κ(θ − r)dt + σdW; CIR scales σ by √r, Black-Karasinski by r). The draws are generated in the page — the server endpoint synthetic.v1.ir_curve.simulate_paths returns this shape from the real engine at the matching seed.'
+  });
+}
+
+function pathsPanel(){
+  return `<div class="panel">
+    <h2>Sample short-rate paths</h2>
+    <div class="row">
+      <button class="btn" data-seed>Reseed</button>
+      <div class="field" style="min-width:130px"><label>Paths</label><input type="number" min="1" max="8" value="${pathCount}" data-pc style="${SELECT_STYLE}"></div>
+      <span class="faint">mock draws · seed ${seed} · ${metaFor(chosenType).name}</span>
+    </div>
+    ${pathsChart()}
+  </div>`;
+}
+
+function processPanel(){
+  const meta = metaFor(chosenType);
+  return `<div class="panel">
+    <h2>Process — curve shape and short-rate paths</h2>
+    <div class="row">
+      <div class="field"><label>Process</label><select data-proc style="${SELECT_STYLE}">${PROCESS_TYPES.map(p => `<option value="${p.code}" ${p.code === chosenType ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
+      <div class="field"><label>Definition source</label><div class="value mono">yield_curve_process_type</div></div>
+    </div>
+    <div class="notice">${meta.desc}</div>
+    <table>
+      <thead><tr><th>Symbol</th><th>Parameter</th><th>Value</th><th>Min</th><th>Max</th><th>Default</th></tr></thead>
+      <tbody>${defsFor(chosenType).map(d => `<tr>
+        <td class="mono">${d.symbol || '—'}</td>
+        <td>${d.label}<div class="faint">${d.desc}</div></td>
+        <td class="num"><input type="number" step="any" data-p="${d.name}" value="${paramValues[d.name]}" ${d.min != null ? `min="${d.min}"` : ''} ${d.max != null ? `max="${d.max}"` : ''} style="width:7rem;text-align:right;${SELECT_STYLE}"></td>
+        <td class="num faint">${d.min == null ? '—' : d.min}</td>
+        <td class="num faint">${d.max == null ? '—' : d.max}</td>
+        <td class="num faint">${d.def}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <div class="notice">One row per parameter definition of the chosen process; a new process type or parameter is seed data, not a schema change. r0 is set on the Process tab, used as entered when the price source is Fixed. The min and max bounds come from the definition catalogue and are enforced by the inputs.</div>
+  </div>`;
+}
+
+function tenorSelect(value, attr, i){
+  return `<select ${attr}="${i}" style="${SELECT_STYLE}">${TENORS.map(t => `<option ${t === value ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+}
+function instSelect(value, i){
+  return `<select data-inst="${i}" style="${SELECT_STYLE}">${INSTRUMENTS.map(t => `<option ${t === value ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+}
+
+function templatePanel(){
+  const empty = templateRows.length === 0;
+  const table = empty ? '' : `<table>
+      <thead><tr><th style="width:2.5rem">#</th><th>Start tenor</th><th>End tenor</th><th>Instrument</th><th style="width:16rem">Order</th></tr></thead>
+      <tbody>${templateRows.map((r, i) => `<tr>
+        <td class="mono">${i}</td>
+        <td>${tenorSelect(r.start, 'data-start', i)}</td>
+        <td>${tenorSelect(r.end, 'data-end', i)}</td>
+        <td>${instSelect(r.instrument, i)}</td>
+        <td><button class="btn" data-up="${i}" ${i === 0 ? 'disabled' : ''}>↑</button>
+            <button class="btn" data-down="${i}" ${i === templateRows.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="btn" data-rm="${i}">Remove</button></td>
+      </tr>`).join('')}</tbody></table>`;
+  return `<div class="panel">
+    <h2>Curve Template — the ladder the curve is bootstrapped from</h2>
+    ${empty
+      ? `<div class="notice">No entries yet. ${tag('refused', 'bad')} “At least one Curve Template entry is required.” The screen will not save an empty ladder, and the curve-shape chart has no tenor grid to draw against.</div>`
+      : table}
+    <div class="row">
+      <button class="btn" data-add>+ Add tenor entry</button>
+      <span class="faint">${empty ? '0 entries' : templateRows.length + ' entries'} · one [start, end) period each · sequence order is the bootstrap order</span>
+    </div>
+    <div class="notice">A point instrument (DEPO, IRS) sets its start to SPOT; an interval instrument (FRA) sets it to the period's own front tenor. The tenor-collision validator rejects overlapping windows. At least one Curve Template entry is required.</div>
+  </div>`;
+}
+
+function instrumentPanel(){
+  const vintage = priceSource === 'vintage';
+  return `<div class="panel">
+    <h2>Instrument — curve identity</h2>
+    <div class="row">
+      <div class="field"><label>Currency</label><select style="${SELECT_STYLE}"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
+      <div class="field"><label>Index name</label><select style="${SELECT_STYLE}"><option>sofr</option><option>estr</option><option>sonia</option><option>tona</option></select></div>
+      <div class="field"><label>Tenor</label><select style="${SELECT_STYLE}"><option>— (overnight)</option><option>1M</option><option>3M</option><option>6M</option></select></div>
+      <div class="field"><label>Role</label><select style="${SELECT_STYLE}"><option value="discount">Discount</option><option value="projection">Projection</option><option value="self_discounting" selected>Self-discounting</option></select></div>
+      <div class="field"><label>Fixed leg frequency</label><select style="${SELECT_STYLE}"><option>Annual</option><option>Quarterly</option><option>Semi-annual</option></select></div>
+      <div class="field"><label>Enabled</label><div class="value mono">${IDENT.enabled ? 'true' : 'false'} ${tag(IDENT.enabled ? 'enabled' : 'retired', IDENT.enabled ? 'ok' : 'bad')}</div></div>
+    </div>
+    <div class="row">
+      <div class="field" style="min-width:340px"><label>ORE key (derived)</label><div class="value mono">${IDENT.oreKey}</div></div>
+      <div class="field" style="min-width:120px"><label>Status</label><div class="value">${tag('not published')}</div></div>
+    </div>
+    <div class="field"><label>Description</label><div class="value muted">${IDENT.description}</div></div>
+    <div class="field"><label>Price source</label>
+      <div class="row" style="gap:18px">
+        <label style="text-transform:none;letter-spacing:0;display:flex;gap:6px;align-items:center"><input type="radio" name="price" data-ps="fixed" ${vintage ? '' : 'checked'}> Fixed — r0 entered</label>
+        <label style="text-transform:none;letter-spacing:0;display:flex;gap:6px;align-items:center"><input type="radio" name="price" data-ps="vintage" ${vintage ? 'checked' : ''}> From vintage data</label>
+      </div>
+    </div>
+    ${vintage ? `<div class="row">
+        <div class="field"><label>Vintage source</label><div class="value mono">${IDENT.vintageSource}</div></div>
+        <div class="field"><label>Vintage date</label><div class="value mono">${IDENT.vintageDate}</div></div>
+        <div class="field" style="min-width:440px"><label>Vintage series</label>${urlButton(IDENT.vintageUri)}</div>
+      </div>`
+      : `<div class="notice">Fixed: r0 is set on the Process tab, used as entered. Switching to “From vintage data” resolves the starting rate from a market-data observation instead.</div>`}
+    <div class="notice">Browse vintages is scoped by currency and index name; with either unset the vintage option is greyed and reads <span class="mono">Pick currency and index name first.</span> Role: <b>Discount</b> discounts cashflows; <b>Projection</b> projects a floating index's forward rate; <b>Self-discounting</b> is one curve that does both — the default for an overnight RFR.</div>
+  </div>`;
+}
+
+function provenancePanel(){
+  const vintage = priceSource === 'vintage';
+  return `<div class="panel">
+    <h2>Provenance</h2>
+    <div class="row">
+      <div class="field"><label>Price source</label><div class="value mono">${priceSource}</div></div>
+      <div class="field"><label>Vintage source</label><div class="value mono">${vintage ? IDENT.vintageSource : '—'}</div></div>
+      <div class="field"><label>Vintage date</label><div class="value mono">${vintage ? IDENT.vintageDate : '—'}</div></div>
+      <div class="field"><label>Changed by</label><div class="value">marco</div></div>
+      <div class="field"><label>Changed when</label><div class="value mono">2026-07-24 09:41 UTC</div></div>
+    </div>
+    ${vintage
+      ? `<div class="field" style="min-width:520px"><label>Vintage series</label>${urlButton(IDENT.vintageUri)}</div>`
+      : `<div class="notice">Vintage source, date and series stay empty because the price source is fixed; the SQL check pairs them with price_source.</div>`}
+    <table><thead><tr><th>Version</th><th>Written</th><th>By</th><th>Change from the one before</th></tr></thead>
+      <tbody>${HISTORY.map(h => `<tr><td class="mono">v${h.v}</td><td class="faint">${h.when}</td><td>${h.by}</td><td class="muted">${h.what}</td></tr>`).join('')}</tbody></table>
+    <div class="notice">A revert is a new version, not a deletion. The history names the writer alone.</div>
+  </div>`;
+}
+
+function headerPanel(){
+  return `<div class="panel">
+    <div class="top">
+      <h1>IR Curve: ${IDENT.currency} ${IDENT.indexLabel}</h1>
+      ${tag(IDENT.role.replace('_', '-'), 'ok')}
+      ${tag(IDENT.enabled ? 'enabled' : 'retired', IDENT.enabled ? 'ok' : 'bad')}
+      ${tag(IDENT.oreKey)}
+    </div>
+    <div class="row">
+      <span class="faint">${metaFor(chosenType).name} · ${templateRows.length} template ${templateRows.length === 1 ? 'entry' : 'entries'} · ${priceSource === 'vintage' ? 'starting rate from vintage ' + IDENT.vintageSource : 'starting rate fixed, r0 as entered'}</span>
+    </div>
+  </div>`;
+}
+
+function tabStrip(){
+  const tabs = [['instrument', 'Instrument'], ['process', 'Process'], ['template', 'Curve Template'], ['provenance', 'Provenance']];
+  return `<div class="panel"><div class="row" style="align-items:center;gap:6px">
+    ${tabs.map(([k, label]) => {
+      const on = view === k || (view === 'combined' && (k === 'process' || k === 'template'));
+      return `<button class="btn ${on ? 'primary' : ''}" data-tab="${k}">${label}</button>`;
+    }).join('')}
+    <span class="faint" style="margin-left:auto">DetailDialogBase · ${tabs.length} tabs</span>
+  </div></div>`;
+}
+
+function footerPanel(){
+  const blocked = templateRows.length === 0;
+  return `<div class="panel">
+    <div class="row">
+      <button class="btn primary" id="save" ${blocked ? 'disabled' : ''}>Save</button>
+      <button class="btn" id="cancel">Cancel</button>
+      <span class="faint" id="save-note">${saveNote}</span>
+    </div>
+    <div class="notice">${blocked
+      ? 'Refused: at least one Curve Template entry is required. The screen will not save a curve with an empty ladder.'
+      : 'Not published: Save writes the config fields, then diff-syncs the template entries. A running feed keeps its old parameters until it is stopped and restarted.'}</div>
+  </div>`;
+}
+
+function body(){
+  if (view === 'instrument') return instrumentPanel();
+  if (view === 'provenance') return provenancePanel();
+  if (view === 'template') return templatePanel() + shapePanel();
+  if (view === 'process') return processPanel() + shapePanel() + pathsPanel();
+  return `<div class="grid2">${processPanel()}${templatePanel()}</div>` + shapePanel() + pathsPanel();
+}
+
+function render(){
+  document.getElementById('app').innerHTML = headerPanel() + tabStrip() + body() + footerPanel();
+
+  document.querySelectorAll('#app [data-tab]').forEach(b => b.onclick = () => { view = b.dataset.tab; saveNote = ''; render(); });
+  document.querySelectorAll('#app [data-proc]').forEach(s => s.onchange = () => { chosenType = s.value; paramValues = defaultsFor(chosenType); saveNote = ''; render(); });
+  document.querySelectorAll('#app [data-p]').forEach(inp => inp.onchange = () => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) paramValues[inp.dataset.p] = v;
+    render();
+  });
+  document.querySelectorAll('#app [data-ps]').forEach(r => r.onchange = () => { priceSource = r.dataset.ps; render(); });
+  document.querySelectorAll('#app [data-add]').forEach(b => b.onclick = () => {
+    const last = templateRows[templateRows.length - 1];
+    templateRows.push({ start:last ? last.end : 'SPOT', end:'30Y', instrument:'IRS' });
+    saveNote = ''; render();
+  });
+  document.querySelectorAll('#app [data-rm]').forEach(b => b.onclick = () => { templateRows.splice(+b.dataset.rm, 1); saveNote = ''; render(); });
+  document.querySelectorAll('#app [data-up]').forEach(b => b.onclick = () => { const i = +b.dataset.up; [templateRows[i - 1], templateRows[i]] = [templateRows[i], templateRows[i - 1]]; render(); });
+  document.querySelectorAll('#app [data-down]').forEach(b => b.onclick = () => { const i = +b.dataset.down; [templateRows[i + 1], templateRows[i]] = [templateRows[i], templateRows[i + 1]]; render(); });
+  document.querySelectorAll('#app [data-start]').forEach(s => s.onchange = () => { templateRows[+s.dataset.start].start = s.value; render(); });
+  document.querySelectorAll('#app [data-end]').forEach(s => s.onchange = () => { templateRows[+s.dataset.end].end = s.value; render(); });
+  document.querySelectorAll('#app [data-inst]').forEach(s => s.onchange = () => { templateRows[+s.dataset.inst].instrument = s.value; render(); });
+  document.querySelectorAll('#app [data-seed]').forEach(b => b.onclick = () => { seed = (seed * 48271) % 2147483647; render(); });
+  document.querySelectorAll('#app [data-pc]').forEach(inp => inp.onchange = () => {
+    pathCount = Math.max(1, Math.min(8, parseInt(inp.value, 10) || 1));
+    render();
+  });
+  const save = document.getElementById('save');
+  if (save) save.onclick = () => {
+    const note = document.getElementById('save-note');
+    if (note) note.textContent = `mock save: config v${HISTORY[0].v + 1} and ${templateRows.length} template entries written`;
+  };
+
+  document.getElementById('note').textContent = `Prototype · Author an IR curve feed · variant ${variant.toUpperCase()} · ${state || 'vasicek'} · mock data, nothing stored`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">View</span>` +
+    ['a', 'b', 'c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">State</span>` +
+    ['vasicek', 'cir', 'hull_white', 'incomplete'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

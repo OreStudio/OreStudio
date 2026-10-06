@@ -102,11 +102,10 @@ private:
         std::string source_name;
         std::string tenant_id;
         std::string party_id;
-        std::string workspace_id;
 
         bool operator<(const binding_key& other) const {
-            return std::tie(source_name, tenant_id, party_id, workspace_id) <
-                   std::tie(other.source_name, other.tenant_id, other.party_id, other.workspace_id);
+            return std::tie(source_name, tenant_id, party_id) <
+                   std::tie(other.source_name, other.tenant_id, other.party_id);
         }
     };
 

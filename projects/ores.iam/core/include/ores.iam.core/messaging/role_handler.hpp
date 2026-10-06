@@ -162,6 +162,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -383,6 +387,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_role_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -424,6 +432,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_role_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;

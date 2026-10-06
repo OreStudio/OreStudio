@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/commodity_curve_config_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/commodity_curve_config_history_field_mapper.hpp"
 #include "ores.refdata.core/service/commodity_curve_config_service.hpp"
 
@@ -33,6 +35,7 @@ void register_commodity_curve_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.commodity_curve_config",
+        "refdata::commodity_curve_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::commodity_curve_config_service svc(scoped_ctx);
             auto versions = svc.get_commodity_curve_config_history(entity_id);

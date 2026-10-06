@@ -26,13 +26,22 @@ std::string scheduler_job_name(const boost::uuids::uuid& definition_id) {
     return "report_definition." + boost::uuids::to_string(definition_id);
 }
 
-std::optional<boost::uuids::uuid>
-existing_job_for(const std::map<std::string, boost::uuids::uuid>& jobs_by_name,
-                 const boost::uuids::uuid& definition_id) {
-    const auto found = jobs_by_name.find(scheduler_job_name(definition_id));
-    if (found == jobs_by_name.end())
-        return std::nullopt;
-    return found->second;
+bool is_report_definition_job_name(const std::string& job_name) {
+    return job_name.starts_with("report_definition.");
+}
+
+std::vector<boost::uuids::uuid>
+unaccounted_report_jobs(const std::map<std::string, boost::uuids::uuid>& scheduler_jobs_by_name,
+                        const std::set<boost::uuids::uuid>& accounted_job_ids) {
+    std::vector<boost::uuids::uuid> orphans;
+    for (const auto& [name, id] : scheduler_jobs_by_name) {
+        if (!is_report_definition_job_name(name))
+            continue;
+        if (accounted_job_ids.contains(id))
+            continue;
+        orphans.push_back(id);
+    }
+    return orphans;
 }
 
 }

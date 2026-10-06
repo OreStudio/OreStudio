@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 00300B86-C3B9-43B5-9BC0-1122FD3893A3
+:END:
+#+title: Task: Close the marketdata registry story
+#+description: Close the story now that its final task merged: mark the story and its sprint row DONE and write the story Result.
+#+type: task
+#+level: s1
+#+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_27:v0:
+#+owner: marco
+#+branch: feature/close-the-marketdata-registry-story
+#+pr: 2692
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The marketdata registry story is closed: the story and its sprint row read
+=DONE=, and its =* Result= names what the three tasks delivered.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- =story.org= reads =DONE= with its =* Result= written.
+- The =sprint.org= story row reads =DONE= with the end date.
+- The three tasks of the story all read =DONE=.
+
+* Plan
+
+The story closed in its final task's PR, but that PR was merged before the
+story row followed. This task is the recovery: the story state, the sprint row
+and the =* Result= land in one docs PR, with nothing else on the branch.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2692][#2692]] | [agile] Close the marketdata registry story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story and its sprint row read DONE. The three tasks delivered: the
+namespace closer comments left the templates, the generated list read honours
+=as_of= for every entity with a validity window, and marketdata re-measured all
+49 clean-standard items and returned to =COMPONENTS_UNDER_TEST=. The story's
+=* Result= records the last of these and names the accepted H01 exception for
+the composite root.

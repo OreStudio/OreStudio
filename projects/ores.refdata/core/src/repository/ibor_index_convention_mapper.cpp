@@ -24,9 +24,12 @@
  */
 #include "ores.refdata.core/repository/ibor_index_convention_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -40,7 +43,6 @@ ibor_index_convention_mapper::map(const ibor_index_convention_entity& v) {
     domain::ibor_index_convention r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = v.id.value();
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;
@@ -64,7 +66,6 @@ ibor_index_convention_mapper::map(const domain::ibor_index_convention& v) {
     ibor_index_convention_entity r;
     r.id = v.id;
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.fixing_calendar = v.fixing_calendar;
     r.day_count_fraction = v.day_count_fraction;

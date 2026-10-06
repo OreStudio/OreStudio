@@ -51,6 +51,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y emacs-nox
+      - name: Cache Emacs packages
+        # A warm cache makes ores-site-ensure-packages a no-op, so the build
+        # does not depend on a live GNU ELPA on every run.
+        uses: actions/cache@v6
+        with:
+          path: .packages
+          key: emacs-site-packages-${{ runner.os }}-${{ hashFiles('projects/ores.lisp/src/ores-site-packages.el') }}
+          restore-keys: |
+            emacs-site-packages-${{ runner.os }}-
       - name: Build site
         run: |
           emacs -Q --script projects/ores.lisp/src/ores-build-site.el

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408
+:END:
+#+title: Story: Implement synthetic data generation against the new market data model
+#+description: Prove that a synthetic feed produces data the new ores.marketdata model consumes natively: oresmd identity, market_series registration, per-point provenance marked generated, and feed bindings. Fix what does not hold and record what is missing. Curves are paused until this delivers data to drive them.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:marketdata:oresmd:integration:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the synthetic feeds first-class producers in the new market data model. A feed already speaks oresmd and can auto-create a feed_binding, but nothing yet proves the whole path end to end: that its series is registered under the oresmd identity, that each observation it publishes carries per-point provenance and is marked generated rather than observed, that the ingest loop lands it in market_observation under the right tenant and source, and that a consumer such as the curve bootstrap reads it and says where it came from. This story proves that path, fixes the gaps it finds, and leaves the synthetic feeds able to drive the curve and surface work with data that can be plotted.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- A synthetic feed ticks and a market_series row exists whose oresmd_uri is the series identity the feed publishes, registered before any observation lands.
+- Every observation the feed publishes reaches market_observation with its point identity in the oresmd URI, its source, and provenance that says generated rather than observed.
+- The path is exercised end to end against a running service: start a feed, see the series and observations appear, and read them back by oresmd URI.
+- The curve bootstrap consumes a synthetic feed's observations the same way it consumes market observations, and the resulting points record the synthetic provenance.
+- The gaps found are fixed or captured as their own tasks, and the story states what a workspace-scoped or scenario feed would still need.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ABEC9FC0-A354-4AC7-9982-B5AAC1292614][Scaffold story: Implement synthetic data generation against the new market data model]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement Implement synthetic data generation against the new market data model]] | BACKLOG | | | Initial task for: Implement synthetic data generation against the new market data model |
+
+* Decisions
+
+* Out of scope
+
+-

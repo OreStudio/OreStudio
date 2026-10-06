@@ -1,0 +1,219 @@
+:PROPERTIES:
+:ID: 478EFA03-AB47-4286-A3CE-583C7438632D
+:END:
+#+title: User Journey: Adjust a curve or surface by hand
+#+description: A trader corrects a candidate curve or surface by hand where the market is wrong or thin, with a manual point or a spread overlay, and each correction carries a reason.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader corrects a candidate curve or surface by hand where the market is wrong or thin, with a manual point or a spread overlay, and each correction carries a reason.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to override the parts of this candidate the market got wrong or never
+gave me, and I want the hand value to stay put while the feeds keep ticking."
+The journey is done when every correction the trader intended is on the
+candidate, each carries a reason, and the candidate still reads as a candidate:
+nothing has been published.
+
+The trader keys a point for three reasons. The market is wrong, so the hand
+value corrects it. The market is thin or absent, so the hand value stands in
+for it. The trader wants a what-if, so the hand value is a candidate only.
+
+* Actor and trigger
+
+The actor is the trader, acting as maker: the person who holds the market-data
+management role for this party and owns the candidate. An approver owns the
+decision to publish, in a different journey. The trigger is a bad print, a
+stale or missing quote, a thin tenor, a broken pillar, or a request from
+pricing to mark a point by hand. The journey starts at a candidate curve or
+surface and ends when the trader leaves it, still a candidate.
+
+A manual point is a candidate correction. It stays a candidate until it is
+approved and published; see /What is missing/ for the override and shift
+operations and the precedence rule that do not exist yet.
+
+* Steps
+
+1. *Open the candidate.* The person opens *Curves and surfaces* and selects
+   the candidate curve or surface. The system reads the =market_series= row
+   and lists its points with =marketdata.v1.market_observations.list_by_series_id=.
+2. *Read the points.* The system shows one row per =oresmd_uri= with its
+   value, its =source= tag and its =observation_datetime=. The row carries no
+   actor and no marker that says the value was written by hand, so the screen
+   cannot yet tell a manual point from a feed point. See /What is missing/.
+3. *Key a curve point.* The person chooses *Set manual point*, picks a tenor,
+   types a value and states a reason, and confirms. For a curve the coordinate
+   is the tenor. The system has no override operation, so the button names the
+   subject it needs and changes nothing. See /What is missing/.
+4. *Key a surface point.* For a surface the coordinate is an expiry and a
+   strike. The person picks both, types a value and states a reason. There is
+   no strike-label vocabulary and no surface point coordinate, so the screen
+   cannot address the point; it marks the strike picker as absent.
+5. *Clear a manual point.* The person selects a manual point and chooses
+   *Clear manual point*. The system would drop the override so the feed value
+   shows again. There is no way to identify which point is manual and no
+   operation to clear one, so the button is inert. See /What is missing/.
+6. *Apply a spread overlay.* The person chooses *Apply spread overlay*, picks a
+   parallel shift or a twist, picks a node or a segment to apply it over, types
+   the shift and states a reason, and confirms. The system has no shift
+   operation, so the button names the subject it needs and changes nothing.
+   See /What is missing/.
+7. *Read the corrected candidate.* The system would redraw the curve or
+   surface with the manual points and the overlay applied, and mark each
+   correction with its reason. Because no correction was written, the screen
+   shows the feed values unchanged.
+8. *Confirm the hand value survives a feed update.* The person waits for, or
+   forces, a feed update. The hand value should stay until it is cleared: a
+   feed tick writes the point again and the manual value must win. No
+   precedence rule exists, so a feed write is indistinguishable from a hand
+   write and either can overwrite the other. See /What is missing/.
+9. *Leave unpublished.* The person chooses *Leave unpublished* and returns to
+   the list. The corrected candidate is still a candidate.
+
+Writing a correction, if it existed, would be immediate: the reply would carry
+the corrected candidate, so the journey carries no state of its own. The only
+state it would leave is the row on the candidate, which stays until it is
+cleared.
+
+* Screens and wireframes
+
+One screen. The candidate and its points sit at the top, the two correction
+forms sit in the middle, and the state of every correction sits at the foot.
+Each correction form asks for its reason, and the foot states that a manual
+point survives later feed updates until it is cleared.
+
+#+caption: Manual adjustment: the candidate's points, a manual point, a surface point, and a spread overlay, each with a reason.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_adjust-a-curve-or-surface-by-hand.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/adjust-a-curve-or-surface-by-hand/index.html=: mock data only, no backend,
+no build step and no session. It argues that a hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send.
+
+- Variants :: a edit one node, b a spread overlay over a segment (parallel or twist), c paste a set of nodes
+- States :: none, some, overwrite (a feed tick tried to take a manual point back)
+- Source :: =doc/prototypes/adjust-a-curve-or-surface-by-hand/index.html=
+- Open :: =/OreStudio/doc/prototypes/adjust-a-curve-or-surface-by-hand/= once the site is built, or the
+  file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The candidate's identity: the =oresmd_uri= and its =derivation_kind=/config/version | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The points the person reads and corrects, one per =oresmd_uri= and =observation_datetime=, with its =value= and =source= | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The provenance of a derived point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =ir_curve_bootstrap_config= | The recipe whose id/version the candidate series carries | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillars, and their tenors and roles, a manual curve point sits against | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =curve_role= | The pillar's role (deposit, FRA, swap) that a curve point corrects | [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][ores.refdata.curve_role]] |
+| =tenor= | The tenor coordinate a manual curve point is keyed by | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+
+A manual point is not a separate entity today: the screen reads and would
+write =market_observation= rows. Because those rows carry no actor and no
+hand-written marker, the correction has no entity of its own; see /What is
+missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the candidate | Read one series | =marketdata.v1.market_series.get= | exists |
+| Read the points | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Read the recipe | Read the pillars a point sits against | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Key a curve point | Write a manual point | =marketdata.v1.market_observations.put= | partial |
+| Key a point | Offer the reasons | =dq.v1.change_reasons.list= | exists |
+| Key a surface point | Write a manual surface point | =marketdata.v1.market_observations.put= | partial |
+| Clear a manual point | Remove the manual point | =marketdata.v1.market_observations.override.clear= | missing |
+| Apply a spread overlay | Apply a parallel or twist shift | =marketdata.v1.curve.shift= | missing |
+| Apply a spread overlay | Apply a surface shift | =marketdata.v1.surface.shift= | missing |
+| Confirm survival | Keep the manual point against a feed write | (no precedence rule) | missing |
+| Leave unpublished | Arrange the approval later | =inbox.v1.approval-requests.raise= | exists |
+
+=marketdata.v1.market_observations.put= exists, but it writes a row
+indistinguishable from a feed write: the =market_observation= table has no
+actor, no source kind and no reason, and its =source= column is a producer
+channel tag, not a marker that a person wrote the value. The subject is
+therefore =partial= as an override. The generic history read is
+=marketdata.v1.history.get= with =entity_type= =ores.marketdata.market_series=;
+=market_observation= registers no history provider, so an override would
+leave no readable trail.
+
+* What is missing
+
+1. *Observations carry no actor and no source kind.* The
+   =market_observation= table is append-only, bitemporal and deliberately
+   carries no audit columns; its =source= column names the producer channel,
+   so a row cannot say that a person wrote it. The candidate is a source kind
+   on the point, or a separate override entity that records the actor, the
+   value and the reason. Until then the screen cannot mark a row as manual and
+   shows every row as a feed value.
+2. *There is no override operation.* The subject
+   =marketdata.v1.market_observations.override= (with a matching clear) would
+   have to be added to write a manual point and to remove one. Until then
+   *Set manual point* and *Clear manual point* name the step and stay inert;
+   the screen does not fall back to =.put=, because that would write a feed
+   row with no reason and no actor.
+3. *There is no precedence rule between a manual point and a later feed
+   write.* Nothing decides whether a hand value or the next tick wins, so a
+   manual point cannot be promised to survive. The candidate is a stated
+   precedence: a manual point wins for its coordinate until it is cleared,
+   and a feed write to that coordinate is held or rejected. Until then the
+   screen warns that a feed update may overwrite a hand value.
+4. *There is no spread overlay operation.* The subjects
+   =marketdata.v1.curve.shift= and =marketdata.v1.surface.shift= would have to
+   be added, each naming the kind (parallel or twist), the node or segment it
+   applies over, the shift and the reason. Until then *Apply spread overlay*
+   names the step and stays inert.
+5. *There is no strike-label vocabulary and no surface point coordinate.* A
+   surface point is an expiry and a strike, and nothing says whether a strike
+   is an absolute level, a delta or a moneyness, so a surface override cannot
+   be addressed. The candidate is a vol quoting convention, and with it a
+   strike coordinate in the =oresmd_uri=. Until then the screen shows the
+   expiry and marks the strike picker as absent.
+6. *A correction cannot carry a reason.* The change reasons exist
+   (=dq.v1.change_reasons.list=), but a point has no field to hold one, so the
+   reason the person types has nowhere to go. The candidate is a reason field
+   on the override entity from item 1, or a reason on the observation. Until
+   then the reason field is shown but not stored.
+7. *The correction leaves no history.* =market_observation= registers no
+   history provider, so even if a manual point were written, =marketdata.v1.history.get=
+   could not show when it was made or by whom. The candidate is a history
+   provider for the override entity. Until then the screen cannot show the
+   trail of a by-hand correction.
+
+* Related journeys
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build the candidate this journey corrects.
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — build the surface candidate this journey corrects.
+- [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] — see how a manual point moves the candidate against its quotes.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — put the corrected candidate to a second pair of eyes.
+- [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] — read the trail of a correction once it exists.
+
+* Related knowledge
+
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — the feed side of the same quotes.
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — where a corrected candidate becomes what the system uses.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

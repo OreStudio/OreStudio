@@ -24,7 +24,12 @@
  */
 #include "ores.dq.core/repository/change_reason_category_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.core/repository/change_reason_category_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::dq::repository {
 

@@ -24,9 +24,16 @@
  */
 #include "ores.reporting.core/repository/report_definition_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
+#include "ores.reporting.core/repository/report_definition_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::reporting::repository {
 
@@ -39,7 +46,6 @@ domain::report_definition report_definition_mapper::map(const report_definition_
     domain::report_definition r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
     r.name = v.name;
@@ -57,6 +63,9 @@ domain::report_definition report_definition_mapper::map(const report_definition_
         v.scheduler_job_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
             std::nullopt;
+    r.run_grant_id = v.run_grant_id.has_value() ?
+                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.run_grant_id)) :
+                         std::nullopt;
     r.pre_processing = v.pre_processing;
     r.prepared_input_key = v.prepared_input_key.value_or("");
     r.post_processing = v.post_processing;
@@ -77,7 +86,6 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     report_definition_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
 
     r.name = v.name;
@@ -94,6 +102,9 @@ report_definition_entity report_definition_mapper::map(const domain::report_defi
     r.scheduler_job_id = v.scheduler_job_id.has_value() ?
                              std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
                              std::nullopt;
+    r.run_grant_id = v.run_grant_id.has_value() ?
+                         std::optional(boost::uuids::to_string(*v.run_grant_id)) :
+                         std::nullopt;
     r.pre_processing = v.pre_processing;
     r.prepared_input_key =
         v.prepared_input_key.empty() ? std::nullopt : std::optional(v.prepared_input_key);

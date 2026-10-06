@@ -24,8 +24,8 @@
 -- The GLEIF banks the ORE sample documents' placeholder counterparty names map
 -- onto. The ORE examples name their counterparties CPTY_A, CPTY_B, CPTY and the
 -- like; an ORE import resolves an envelope's CounterParty through an ORE
--- identifier, so each placeholder is an alias of one of these banks (see
--- ore_sample_counterparties_publish_populate.sql).
+-- identifier, so each placeholder is an alias of one of these banks. The
+-- aliases are staged here and published at runtime by the bundle publish.
 --
 -- The rows are the banks' own GLEIF records, selected from the small GLEIF
 -- dataset rather than copied, so they stay what GLEIF publishes. Loaded after

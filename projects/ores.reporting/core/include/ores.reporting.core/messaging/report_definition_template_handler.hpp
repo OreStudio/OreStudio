@@ -77,6 +77,10 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         ores::dq::messaging::list_dq_report_definition_templates_response resp;
         try {
             std::string bundle_code = "risk_management";

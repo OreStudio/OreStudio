@@ -31,12 +31,18 @@ the four audit columns while keeping the transaction-time window. The
 =:skip_uuid_check:= suppression on =id= drops the nil-UUID check the
 hand-written table never had.
 
+The list is open to every signed-in member: a member reads a role's codes in
+words, and asks "Can I…?". The model opens it by subject with
+=:open_reads:=, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+reads]] allow-lists it. The other reads need =iam::permissions:read=.
+
 * Flags
 :PROPERTIES:
 :schema:        public
 :product:       ores
 :component:     iam
 :has_tenant_id: true
+:open_reads:    iam.v1.permissions.list
 :END:
 
 * Natural keys

@@ -1394,26 +1394,23 @@ def _format_columns_for_doxygen(columns):
 
 def derive_tenant_read_flags(domain_entity):
     """
-    Derive the two read-scope booleans every repository and cache template
-    reads, from has_tenant_id and tenant_read_scope.
+    Derive the read-scope boolean every repository template reads, from
+    has_tenant_id and tenant_read_scope.
 
-    A tenant-scoped read carries the app-level tenant filter, so a cache over
-    it needs nothing more. A shared read is governed by RLS alone, which allows
-    the system-tenant fallback, so its result set spans tenants; a per-tenant
-    cache over it must re-apply the filter or it files another tenant's rows
-    under this partition's key.
+    A tenant-scoped read carries the app-level tenant filter. A shared read is
+    governed by row-level security alone. A generated cache needs neither
+    flag: it reads each partition inside that partition's tenant, so the
+    policy returns exactly the rows the tenant may see.
 
     Args:
         domain_entity (dict): mutated in place.
 
     Returns:
-        dict: the same dict, with read_tenant_filtered and cache_tenant_filter
-        set to bools.
+        dict: the same dict, with read_tenant_filtered set to a bool.
     """
     has_tenant = bool(domain_entity.get('has_tenant_id', False))
     shared = domain_entity.get('tenant_read_scope', 'tenant') == 'shared'
     domain_entity['read_tenant_filtered'] = has_tenant and not shared
-    domain_entity['cache_tenant_filter'] = has_tenant and shared
     return domain_entity
 
 
@@ -2134,6 +2131,101 @@ _NUMERIC_CPP_TYPES = frozenset({
     "std::int16_t", "std::int32_t", "std::int64_t",
     "std::uint16_t", "std::uint32_t", "std::uint64_t", "std::size_t",
 })
+
+
+def _mapper_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
+    """The domain entity mapper's conditional standard includes.
+
+    Each gate mirrors the branches of cpp_domain_type_mapper.cpp.mustache that
+    spell the header's symbol, so the header is included exactly when one of
+    them is rendered. misc-include-cleaner checks the result.
+    """
+    columns = [c for c in entity.get('columns', []) if not c.get('sql_only')]
+    pk_columns = entity.get('primary_key', {}).get('columns', [])
+    natural_keys = entity.get('natural_keys', [])
+    enum_wrapped = [c for c in columns if c.get('render_is_enum') and not c.get('is_enum')]
+    # An enum column's mapper branch names its type, which lives in its own
+    # domain header: ores::<c>::domain::<name> is ores.<c>.api/domain/<name>.hpp.
+    enum_types = [c.get('cpp_type') for c in columns if c.get('is_enum')] + [
+        c.get('render_cpp_type') for c in enum_wrapped]
+    enum_headers = sorted({
+        f'ores.{m.group(1)}.api/domain/{m.group(2)}.hpp'
+        for t in enum_types
+        if (m := re.fullmatch(r'ores::(\w+)::domain::(\w+)', t or ''))
+    })
+    return {
+        'mapper_enum_includes': [{'path': h} for h in enum_headers],
+        'mapper_uses_optional': any(
+            c.get('is_optional_uuid') or c.get('is_optional_timestamp')
+            or (c.get('is_date') and c.get('is_optional_date'))
+            or (c.get('is_date') and c.get('is_required_date')
+                and c.get('render_is_optional_date'))
+            or (c.get('is_decimal') and c.get('is_optional_decimal'))
+            or (not c.get('render_is_enum') and c.get('is_nullable_string')
+                and not c.get('render_is_optional_string'))
+            or c.get('is_nullable_numeric')
+            for c in columns
+        ) or bool(enum_wrapped),
+        'mapper_uses_string': any(c.get('is_int') for c in pk_columns) or any(
+            c.get('is_date') and c.get('is_required_date')
+            and c.get('render_is_optional_date')
+            for c in columns
+        ) or bool(enum_wrapped),
+        'mapper_uses_datetime': (
+            any(c.get('is_date') or c.get('is_required_timestamp')
+                or (c.get('is_optional_timestamp')
+                    and (c.get('render_is_optional_timestamp') or c.get('render_is_timestamp')))
+                for c in columns)
+            or any(c.get('is_timestamp') for c in pk_columns)
+            or any(k.get('is_timestamp') for k in natural_keys)
+        ),
+        'mapper_uses_string_view': (
+            any(c.get('is_timestamp') for c in pk_columns)
+            or any(k.get('is_timestamp') for k in natural_keys)
+            or any(c.get('is_required_timestamp') for c in columns)
+        ),
+    }
+
+
+def _service_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
+    """The domain entity service's conditional includes.
+
+    Each gate mirrors the branches of cpp_service.cpp.mustache that spell the
+    header's symbol. Call it once the operation lists and protocol_derived are
+    set, since several branches are guarded by them.
+    """
+    derived = entity.get('protocol_derived', False)
+    pk_columns = entity.get('primary_key', {}).get('columns', [])
+    foreign_keys = entity.get('foreign_keys', [])
+    find_by_code = entity.get('service_find_by_code') or {}
+    return {
+        # std::min, std::make_move_iterator and std::size_t page the versions.
+        'service_pages_versions': derived and bool(entity.get('list_versions_operations')),
+        # The write record's date fields, and a timestamp key's text.
+        'service_uses_datetime': (derived and bool(entity.get('put_operations')) and any(
+            f.get('date_from_string') or f.get('timestamp_from_string')
+            for f in entity.get('write_fields', []))) or bool(
+                entity.get('primary_key', {}).get('has_timestamp_key')),
+        # A declared uuid key is parsed with boost::lexical_cast.
+        'service_parses_declared_uuid': bool(
+            not entity.get('key_is_primary') and entity.get('declared_key_is_uuid')),
+        # A single uuid primary key is addressed as a uuid (typed_params).
+        'service_uses_uuid': bool(
+            entity.get('has_uuid_include')
+            or entity.get('primary_key', {}).get('is_single_uuid')
+            or (not entity.get('key_is_primary') and entity.get('declared_key_is_uuid'))),
+        'service_lists_by_as_of': any(fk.get('list_by_as_of') for fk in foreign_keys),
+        # boost::uuids::to_string, or a uuid streamed into a log line.
+        'service_uses_uuid_io': bool(
+            any(c.get('is_uuid') for c in pk_columns)
+            or (derived and any(o.get('leading_is_uuid')
+                                for o in entity.get('list_scoped_operations', [])))
+            or any(fk.get('list_by') and fk.get('list_by_uuid') for fk in foreign_keys)
+            or entity.get('service_find_by_uuid')
+            or find_by_code.get('parent_column')
+            or (not entity.get('key_is_primary') and entity.get('declared_key_is_uuid'))
+            or entity.get('has_parent_id')),
+    }
 
 
 def _key_as_text(expression: str, column: dict[str, Any]) -> str:
@@ -3624,6 +3716,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             or domain_entity['has_text_natural_keys']
             or domain_entity['has_unique_suffix_columns']
         )
+        # The Boost UUID I/O header supplies boost::uuids::to_string, which a
+        # hand-written generator_expr may call (e.g. run_grant's resource
+        # renders a fresh UUID as text). Gate the include on an actual call so
+        # entities that never render a UUID as text keep it out.
+        generator_exprs = [
+            item.get('generator_expr') or ''
+            for item in [
+                domain_entity.get('primary_key', {}),
+                *domain_entity.get('natural_keys', []),
+                *domain_entity.get('columns', []),
+                *domain_entity.get('primary_key', {}).get('extra_columns', []),
+            ]
+        ]
+        domain_entity['has_uuid_to_string_generator'] = any(
+            'boost::uuids::to_string' in expr for expr in generator_exprs
+        )
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])
         if 'validations' in domain_entity:
@@ -5042,6 +5150,45 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             has_render_uuid_cols or has_uuid_nat_keys
             or domain_entity.get('primary_key', {}).get('is_uuid', False)
         )
+        # The history field mapper's <string> gate. It mirrors the mapper's
+        # dispatch: these are the branches that spell std::string or
+        # std::to_string, so the include is declared exactly when one fires.
+        string_render_kinds = (
+            'render_is_optional_uuid', 'render_is_optional_timestamp',
+            'render_is_optional_date', 'render_is_optional_decimal',
+            'render_is_optional_string', 'render_is_optional_bool',
+            'render_is_optional_int', 'render_is_optional_double',
+            'render_is_int', 'render_is_double',
+        )
+        # The history field mapper reaches the datetime helpers from the audit
+        # block and from these column branches.
+        datetime_render_kinds = (
+            'render_is_timestamp', 'render_is_optional_timestamp',
+            'render_is_date', 'render_is_optional_date',
+        )
+        domain_entity['has_render_datetime_columns'] = bool(
+            domain_entity.get('has_audit_columns')
+            or any(k.get('is_timestamp') and not k.get('is_uuid') and not k.get('is_date')
+                   for k in domain_entity.get('natural_keys', []))
+            or any(any(col.get(k) for k in datetime_render_kinds)
+                   for col in domain_entity.get('columns', [])
+                   if not col.get('sql_only') and not col.get('no_wire')))
+        domain_entity['has_render_string_columns'] = any(
+            any(col.get(k) for k in string_render_kinds)
+            for col in domain_entity.get('columns', [])
+            if not col.get('sql_only') and not col.get('no_wire')
+        ) or any(
+            (key.get('is_uuid') and key.get('render_is_optional_uuid'))
+            or (not key.get('is_uuid') and not key.get('is_date')
+                and not key.get('is_timestamp') and key.get('is_int'))
+            for key in domain_entity.get('natural_keys', [])
+        )
+        domain_entity.update(_mapper_include_gates(domain_entity))
+        # The repository spells boost::uuids::to_string in a uuid key's text
+        # and in the hierarchy walk.
+        domain_entity['repository_uses_uuid_io'] = bool(
+            any(c.get('is_uuid') for c in domain_entity.get('primary_key', {}).get('columns', []))
+            or domain_entity.get('has_parent_id'))
         # cpp_service.hpp's <boost/uuid/uuid.hpp> gate: needed by both the
         # existing has_parent_id hierarchy methods and the additive
         # service_find_by_uuid overloads (find_X/remove_X/get_X_history).
@@ -5076,6 +5223,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_shell_plan,
             entity_http_route_plan,
             http_recipe_document,
+            open_reads_of,
             operations_by_verb,
             protocol_operations,
             response_payload_member,
@@ -5197,7 +5345,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # state their methods from: one name per operation, so the subject,
         # the service method and the handler method cannot drift apart.
         _ops = protocol_operations(
-            domain_entity['messages'], domain_entity.get('guard_reads', False))
+            domain_entity['messages'], open_reads_of(domain_entity))
         domain_entity['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             domain_entity[f'{_verb}_operations'] = _verb_ops
@@ -5237,6 +5385,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # reads it, so one decision gates both.
         domain_entity['protocol_derived'] = not _protocol_owned_by_operation(
             model_path, domain_entity)
+        domain_entity.update(_service_include_gates(domain_entity))
+        # std::move moves filter conditions, hierarchy rows and compound keys.
+        domain_entity['repository_uses_utility'] = bool(
+            domain_entity.get('has_filter_record') or domain_entity.get('has_parent_id')
+            or domain_entity.get('primary_key', {}).get('is_compound'))
         # The subjects this entity's changes are announced on. An event's last
         # segment is the action it reports, so one payload is addressed by
         # three subjects and both protocol twins state them.
@@ -5333,6 +5486,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction.get('right', {}).get('is_date', False) or
             any(c.get('is_date') for c in junction.get('columns', []))
         )
+        # The junction mapper spells std::optional only for an optional
+        # timestamp column, and std::string_view only for a required one.
+        junction['mapper_uses_optional'] = any(
+            c.get('is_optional_timestamp') for c in junction.get('columns', []))
+        junction['mapper_uses_string_view'] = any(
+            c.get('is_required_timestamp') for c in junction.get('columns', []))
+        junction['repository_uses_chrono'] = any(
+            junction.get(side, {}).get('is_date') for side in ('left', 'right'))
+        junction['mapper_uses_datetime'] = junction['has_date_left_or_right_or_column'] or any(
+            c.get('is_timestamp') for c in junction.get('columns', []))
+        # query_needs_str is also true for a uuid side, which converts with
+        # boost::uuids::to_string rather than the datetime helpers.
+        junction['repository_uses_datetime'] = any(
+            junction.get(side, {}).get('query_needs_str')
+            and not junction.get(side, {}).get('is_uuid')
+            for side in ('left', 'right'))
         # Mirrors domain_entity's needs_counter: only declare the
         # generator's counter/idx local when some generator_expr actually
         # references it -- otherwise it's an unused variable for every
@@ -5363,6 +5532,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             http_recipe_document,
             junction_entity_shape,
             junction_protocol_messages,
+            open_reads_of,
             operations_by_verb,
             protocol_operations,
             shell_menu_name,
@@ -5393,12 +5563,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The same list as operations, exactly as a domain entity states it:
         # a junction addresses the same verbs and its handler is the same
         # adapter, so the two are projected from one derivation.
-        _ops = protocol_operations(junction['messages'])
+        _ops = protocol_operations(
+            junction['messages'], open_reads_of(junction))
         junction['operations'] = _ops
         for _verb, _verb_ops in operations_by_verb(_ops).items():
             junction[f'{_verb}_operations'] = _verb_ops
         junction['protocol_derived'] = not _protocol_owned_by_operation(
             model_path, junction)
+        # Only the derived put and delete paths spell std::uint32_t.
+        junction['service_uses_cstdint'] = junction['protocol_derived'] and bool(
+            junction.get('put_operations') or junction.get('delete_operations'))
         junction['event_prefix'] = entity_event_prefix(
             junction.get('component', ''), junction.get('name', ''))
         junction['events'] = entity_events(

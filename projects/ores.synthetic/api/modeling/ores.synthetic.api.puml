@@ -1683,15 +1683,17 @@ price_ir_curve_entry() is shared by the feed's tick loop and by the stateless
 shape-preview handler, so the two can never disagree on a rate.
 end note
 
-class ores::synthetic::feed::synthetic_producer_subject {
-    {static} +synthetic_producer_subject(source_name : string, binding_mode : binding_mode) : string
+class ores::synthetic::feed::producer_subject {
+    {static} +producer_subject(source_name : string, binding_mode : binding_mode) : string
 }
-note top of "ores::synthetic::feed::synthetic_producer_subject"
-Free function. It scrubs source_name into a safe NATS token and returns the
-unified subject synthetic.v1.tick.<kind>.<source>. A sandboxed binding instead
-publishes under synthetic.v1.sandbox.tick.<source>, which the ingest loop's
-bound-feed subscription never matches, so a sandboxed feed is structurally
-unreachable from the bound-feed resolution path.
+note top of "ores::synthetic::feed::producer_subject"
+Free function, the one subject builder for every asset class. It scrubs
+source_name into a safe NATS token and returns the unified subject
+synthetic.v1.tick.<source>. A sandboxed binding instead publishes under
+synthetic.v1.sandbox.tick.<source>, which the ingest loop's bound-feed
+subscription never matches, so a sandboxed feed is structurally unreachable
+from the bound-feed resolution path. A producer supplies only its source_name
+and binding_mode; FX and IR share this and have no subject logic of their own.
 end note
 
 class ores::synthetic::feed::make_fx_spot_feed {
@@ -1707,7 +1709,7 @@ the same config differ.
 end note
 
 class ores::synthetic::feed::make_ir_curve_feed {
-    {static} +make_ir_curve_feed(nats : client&, auth_nats : nats_client&, cfg : ir_curve_generation_config, entries : vector<ir_curve_template_entry>, values : vector<ir_curve_generation_config_process_parameter_value>, definitions : vector<yield_curve_process_parameter_definition>, refctx : ir_curve_refdata_context, caller_bearer_token : string) : shared_ptr<ir_curve_feed>
+    {static} +make_ir_curve_feed(nats : client&, auth_nats : nats_client&, cfg : ir_curve_generation_config, entries : vector<ir_curve_template_entry>, values : vector<ir_curve_generation_config_process_parameter_value>, definitions : vector<yield_curve_process_parameter_definition>, refctx : ir_curve_refdata_context, binding_mode : binding_mode, caller_bearer_token : string) : shared_ptr<ir_curve_feed>
 }
 note top of "ores::synthetic::feed::make_ir_curve_feed"
 Free function. Shared by auto-start and the on-demand start path, so the two
@@ -1905,8 +1907,8 @@ ores::synthetic::feed::make_ir_curve_feed ..> ores::synthetic::feed::select_vint
 ores::synthetic::feed::make_default_feed_factory ..> ores::synthetic::feed::feed_factory : returns
 ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::fx_spot_feed : builds
 ores::synthetic::feed::feed_factory ..> ores::synthetic::feed::ir_curve_feed : builds
-ores::synthetic::feed::fx_spot_feed ..> ores::synthetic::feed::synthetic_producer_subject : publishes on the derived subject
-ores::synthetic::feed::ir_curve_feed ..> ores::synthetic::feed::synthetic_producer_subject : publishes on the derived subject
+ores::synthetic::feed::fx_spot_feed ..> ores::synthetic::feed::producer_subject : publishes on the derived subject
+ores::synthetic::feed::ir_curve_feed ..> ores::synthetic::feed::producer_subject : publishes on the derived subject
 ores::synthetic::feed::ir_curve_feed o-- ores::synthetic::feed::ir_curve_resolved_entry : entries
 ores::synthetic::feed::ir_curve_resolved_entry o-- ores::synthetic::feed::ir_curve_schedule_step : fixed_leg_schedule
 ores::synthetic::feed::ir_curve_template_resolver ..> ores::synthetic::feed::ir_curve_refdata_context : reads

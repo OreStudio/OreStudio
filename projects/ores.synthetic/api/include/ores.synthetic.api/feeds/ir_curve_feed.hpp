@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
@@ -75,7 +76,8 @@ public:
  *      curve_instrument_pricer (deposit/FRA/par-rate solve, dispatched by curve_role) — so the
  *      whole batch is, by construction, a slice of one internally consistent latent curve.
  *   3. Publishes each entry as its own market_tick, named by its pillar's oresmd quote URI and
- *      all sharing one observation time, on synthetic.v1.tick.<source>.
+ *      all sharing one observation time, on the producer subject for its source_name and
+ *      binding_mode (synthetic.v1.tick.<source>, or the sandbox prefix).
  *
  * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which stores one
  * market_observation per tick for each consumer the source's feed bindings name. The synthetic
@@ -102,6 +104,9 @@ public:
     }
     const std::string& source_name() const override {
         return source_name_;
+    }
+    const std::string& nats_subject() const override {
+        return nats_subject_;
     }
     /**
      * @brief The published market-data key (series_type/metric implied, ir_curve_qualifier(cfg))
@@ -163,6 +168,10 @@ private:
  * is "fixed" (the default), @p auth_nats and @p caller_bearer_token are unused and the
  * initial_rate parameter value is used as-is.
  *
+ * The publish subject is derived from cfg.source_name under @p binding_mode via
+ * producer_subject(): a bound curve publishes on "synthetic.v1.tick.<source>", a sandboxed
+ * one on the sandbox prefix the marketdata ingest loop never subscribes to.
+ *
  * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()
  * and map_parameters_to_yield_curve_process()).
  * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
@@ -178,6 +187,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
+    ores::synthetic::domain::binding_mode binding_mode =
+        ores::synthetic::domain::binding_mode::bound,
     const std::string& caller_bearer_token = {});
 
 /**

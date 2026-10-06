@@ -360,11 +360,15 @@ private:
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
         const auto factory = ores::synthetic::feed::make_default_feed_factory();
         try {
-            const auto feed =
-                factory.make(std::string(ores::synthetic::feed::ir_curve_feed_kind),
-                             bctx,
-                             ores::synthetic::feed::ir_curve_feed_build_input{
-                                 cfg, std::move(entries), std::move(values), definitions, *refctx});
+            const auto feed = factory.make(
+                std::string(ores::synthetic::feed::ir_curve_feed_kind),
+                bctx,
+                ores::synthetic::feed::ir_curve_feed_build_input{cfg,
+                                                                 std::move(entries),
+                                                                 std::move(values),
+                                                                 definitions,
+                                                                 *refctx,
+                                                                 containers.front().binding_mode});
             reply_start_outcome(msg, resp, std::move(feed));
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;

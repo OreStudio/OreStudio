@@ -26,6 +26,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -166,7 +167,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     return std::make_shared<fx_spot_feed>(nats,
                                           cfg.ore_key,
                                           cfg.source_name,
-                                          synthetic_producer_subject(cfg.source_name, binding_mode),
+                                          producer_subject(cfg.source_name, binding_mode),
                                           std::move(process),
                                           static_cast<double>(cfg.ticks_per_hour));
 }

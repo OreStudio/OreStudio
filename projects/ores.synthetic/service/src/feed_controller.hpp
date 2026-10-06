@@ -28,6 +28,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -47,7 +48,7 @@
 namespace ores::synthetic::service {
 
 using ores::synthetic::feed::fx_spot_feed;
-using ores::synthetic::feed::synthetic_producer_subject;
+using ores::synthetic::feed::producer_subject;
 
 /**
  * @brief Whether start() should auto-create a marketdata feed_binding for
@@ -256,13 +257,12 @@ public:
                     std::move(weights),
                     initial_price,
                     seed);
-                auto feed =
-                    std::make_shared<fx_spot_feed>(nats_,
-                                                   ore_key,
-                                                   key,
-                                                   synthetic_producer_subject(key, binding_mode),
-                                                   std::move(process),
-                                                   ticks_per_hour);
+                auto feed = std::make_shared<fx_spot_feed>(nats_,
+                                                           ore_key,
+                                                           key,
+                                                           producer_subject(key, binding_mode),
+                                                           std::move(process),
+                                                           ticks_per_hour);
                 if (const auto conflict = find_conflict(*feed, key)) {
                     if (out_conflicting_source_name)
                         *out_conflicting_source_name = *conflict;

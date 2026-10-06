@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -30,26 +31,27 @@ namespace {
 const std::string tags("[feed_controller]");
 
 using ores::synthetic::domain::binding_mode;
-using ores::synthetic::feed::synthetic_producer_subject;
+using ores::synthetic::feed::producer_subject;
 using ores::synthetic::service::feeds_conflict;
 using ores::synthetic::service::should_ensure_feed_binding;
 
 }
 
-TEST_CASE("synthetic_producer_subject: bound publishes on the source's tick subject", tags) {
-    CHECK(synthetic_producer_subject("EUR_USD_GBM", binding_mode::bound) ==
-          "synthetic.v1.tick.EUR_USD_GBM");
+TEST_CASE("producer_subject: bound publishes on the source's tick subject, for every kind", tags) {
+    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) == "synthetic.v1.tick.EUR_USD_GBM");
+    CHECK(producer_subject("usd.sofr", binding_mode::bound) == "synthetic.v1.tick.usd.sofr");
 }
 
-TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject the "
-          "marketdata ingest loop never subscribes to",
+TEST_CASE("producer_subject: sandboxed publishes on a distinct subject the "
+          "marketdata ingest loop never subscribes to, for every kind",
           tags) {
-    const auto bound_subject = synthetic_producer_subject("EUR_USD_GBM", binding_mode::bound);
-    const auto sandboxed_subject =
-        synthetic_producer_subject("EUR_USD_GBM", binding_mode::sandboxed);
+    const auto bound_subject = producer_subject("EUR_USD_GBM", binding_mode::bound);
+    const auto sandboxed_subject = producer_subject("EUR_USD_GBM", binding_mode::sandboxed);
 
     CHECK(sandboxed_subject == "synthetic.v1.sandbox.tick.EUR_USD_GBM");
     CHECK(sandboxed_subject != bound_subject);
+    CHECK(producer_subject("usd.sofr", binding_mode::sandboxed) ==
+          "synthetic.v1.sandbox.tick.usd.sofr");
     // The ingest loop's one wildcard is "synthetic.v1.tick.>" (see
     // feed_ingest_loop.cpp) -- the sandboxed subject must not collide with
     // that prefix under any source_name, or the exclusion isn't real.
@@ -57,21 +59,21 @@ TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject
     CHECK_FALSE(bound_subject.starts_with("synthetic.v1.sandbox.tick."));
 }
 
-TEST_CASE("synthetic_producer_subject: same source_name never collides across binding modes, "
+TEST_CASE("producer_subject: same source_name never collides across binding modes, "
           "for a variety of source names",
           tags) {
     const std::vector<std::string> sources{"eur.usd", "eur-usd", "EUR_USD_2", "weird name!*>"};
     for (const auto& source : sources) {
-        const auto bound = synthetic_producer_subject(source, binding_mode::bound);
-        const auto sandboxed = synthetic_producer_subject(source, binding_mode::sandboxed);
+        const auto bound = producer_subject(source, binding_mode::bound);
+        const auto sandboxed = producer_subject(source, binding_mode::sandboxed);
         CHECK(bound != sandboxed);
     }
 }
 
-TEST_CASE("synthetic_producer_subject: unsafe characters are still replaced under sandboxed "
+TEST_CASE("producer_subject: unsafe characters are still replaced under sandboxed "
           "binding mode, matching bound's sanitisation",
           tags) {
-    CHECK(synthetic_producer_subject("weird name!*>", binding_mode::sandboxed) ==
+    CHECK(producer_subject("weird name!*>", binding_mode::sandboxed) ==
           "synthetic.v1.sandbox.tick.weird_name___");
 }
 

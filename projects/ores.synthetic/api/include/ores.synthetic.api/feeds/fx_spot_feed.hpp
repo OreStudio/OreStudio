@@ -22,7 +22,6 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
@@ -30,7 +29,6 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include <atomic>
-#include <cctype>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -46,33 +44,6 @@ namespace ores::synthetic::feed {
  * listings by it.
  */
 inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
-
-/**
- * @brief Build the producer subject from source_name and binding_mode. '.'
- * is kept (it is the NATS hierarchy separator and source names are dotted),
- * but any character that is not a safe subject token — whitespace, wildcards
- * ('*', '>'), or non-alphanumerics other than '.', '_', '-' — is replaced
- * with '_' so a stray value cannot produce surprise routing or a publish
- * error.
- *
- * A sandboxed feed publishes under "synthetic.v1.sandbox.tick." rather than
- * "synthetic.v1.tick.<source>", which the marketdata ingest loop never
- * subscribes to, so its ticks cannot be stored whatever bindings exist.
- */
-inline std::string synthetic_producer_subject(const std::string& source_name,
-                                              ores::synthetic::domain::binding_mode binding_mode) {
-    std::string token;
-    token.reserve(source_name.size());
-    for (unsigned char c : source_name) {
-        const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
-        token += safe ? static_cast<char>(c) : '_';
-    }
-    const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ?
-               std::string(ores::marketdata::domain::synthetic_sandbox_tick_subject_prefix) +
-                   token :
-               ores::marketdata::domain::synthetic_tick_subject(token);
-}
 
 /**
  * @brief Concrete FX spot feed: fixed-mode tick clock + stochastic process.
@@ -117,6 +88,9 @@ public:
     const std::string& source_name() const override;
     const std::string& qualifier() const override;
     const std::string& role() const override;
+    const std::string& nats_subject() const override {
+        return nats_subject_;
+    }
     std::string_view kind() const override {
         return fx_spot_feed_kind;
     }
@@ -145,7 +119,7 @@ private:
  * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
  * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
  * stdevs/weights via process_factory, seeded from random_device; the publish subject is derived
- * from the config's source_name under @p binding_mode via synthetic_producer_subject().
+ * from the config's source_name under @p binding_mode via producer_subject().
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation
  * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --

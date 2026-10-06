@@ -21,11 +21,11 @@ Every refdata list the record-screen standard names searches and sorts on the se
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Scaffolded: the story, its four tasks and the sprint wiring are in place. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Serve tenant and party search, order and history, then the cache reload, the test fix and the cycle guard. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -44,10 +44,21 @@ Every refdata list the record-screen standard names searches and sorts on the se
 | [[id:5A4DBF63-BD35-4B98-BD10-926C97705906][Serve tenant and party search, order and history]] | DONE | 2026-10-06 | 2026-10-06 | Initial task for: Finish the refdata read path |
 | [[id:8187FA88-3AF0-49A2-A1FD-88848672B867][Reload the party cache on party events]] | DONE | 2026-10-06 | 2026-10-06 | IAM's party cache does not follow party events during provisioning, so a partition holds stale names until a sign-in misses it. Make the party events reload the affected tenant's partition. |
 | [[id:FF746B22-DC1F-45A7-BA3D-CBF6C613E946][Fix the party test that inserts no category]] | DONE | 2026-10-06 | 2026-10-06 | refdata_party_test.sql inserts a party with no party_category, so the test aborts before its first assertion. Give the fixture its category and make the file pass. |
-| [[id:D06C64C4-966E-4A8F-B56A-8B0097C609BF][Guard the party hierarchy against cycles]] | STARTED | 2026-10-06 | | A parent_id cycle in the party or counterparty hierarchy either spins the recursive CTE or silently drops both nodes from build_tree(). Report the cycle and cover it with a test. |
+| [[id:D06C64C4-966E-4A8F-B56A-8B0097C609BF][Guard the party hierarchy against cycles]] | DONE | 2026-10-06 | 2026-10-06 | A parent_id cycle in the party or counterparty hierarchy either spins the recursive CTE or silently drops both nodes from build_tree(). Report the cycle and cover it with a test. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+All four tasks are DONE. The tenant and party lists search and sort on the
+server and the tenant page has a History tab; party events reload IAM's party
+cache; the party pgTAP test passes; and the party hierarchy survives a parent
+cycle in both build_tree and the generated recursive CTE.
+
+Verified: refdata regeneration is drift-free; 670 web tests pass; the six
+refdata C++ suites and the utility hierarchy tests pass; and the party pgTAP
+tests pass 14 of 14 against a recreated database.

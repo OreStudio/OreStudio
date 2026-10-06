@@ -35,6 +35,9 @@ The full template source. Edit here and re-tangle with
 #include <cstdint>
 #include <vector>
 {{/has_base64_columns}}
+{{#has_uuid_to_string_generator}}
+#include <boost/uuid/uuid_io.hpp>
+{{/has_uuid_to_string_generator}}
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 {{#has_tenant_id}}
 #include "ores.utility/uuid/tenant_id.hpp"

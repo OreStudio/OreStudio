@@ -193,7 +193,7 @@ publish_service::resolve_publication_order(const std::vector<boost::uuids::uuid>
     std::vector<graph_t::vertex_descriptor> sorted;
     try {
         boost::topological_sort(g, std::back_inserter(sorted));
-    } catch (const boost::not_a_dag& e) {
+    } catch (const boost::not_a_dag&) {
         BOOST_LOG_SEV(lg(), error) << "Circular dependency detected in datasets";
         throw std::runtime_error("Circular dependency detected in datasets");
     }

@@ -603,7 +603,7 @@ component carries it today.
 | Holiday calendars | Conform, except recency and the whole-kind pickers; the business days follow the server's rebuild, which never rewrites a built day and does not read QuantLib holidays (both captured) |
 | Classifications | Conform, under the classification list exception: a list is read whole once and paged in the browser |
 | People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
-| Tenants | Conform, except that the page has no History tab yet, though the server serves the tenant's versions; the tenant's parties and people are shared record tables in its tabs, and the parties tab searches and sorts |
+| Tenants | Conforms: the roster searches and sorts, the page has a History tab, and the tenant's parties and people are shared record tables in its tabs that search and sort |
 | Parties | The list searches and sorts on the server; a party has no page of its own yet, and the party journeys build it |
 | Roles | Their own list and page layout; the list reads every role, and the role page reads every account with its roles |
 

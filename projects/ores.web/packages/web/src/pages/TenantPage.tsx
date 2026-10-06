@@ -31,6 +31,7 @@ import {
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { RecordTable, type ListSource } from '../refdata/RecordList.js';
 import { RecordDetails, RecordHeader } from '../refdata/records.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
@@ -80,7 +81,7 @@ function TenantBody({ detail }: { readonly detail: TenantDetailResponse }): Reac
     const [removing, setRemoving] = useState(false);
     const { tab, bar } = useTabs({
         label: tenant.name,
-        tabs: ['details', 'parties', 'people'],
+        tabs: ['details', 'parties', 'people', 'history'],
         titleOf: (candidate) => t(`tenants.detail.tab.${candidate}`),
     });
     const text = (value: string): ReactNode =>
@@ -160,6 +161,9 @@ function TenantBody({ detail }: { readonly detail: TenantDetailResponse }): Reac
             )}
             {tab === 'parties' && <TenantParties code={tenant.code} />}
             {tab === 'people' && <TenantPeople code={tenant.code} />}
+            {tab === 'history' && (
+                <HistoryPanel entityType="ores.iam.tenant" entityId={tenant.code} />
+            )}
             {removing && (
                 <RemoveTenantDialog
                     tenant={tenant}

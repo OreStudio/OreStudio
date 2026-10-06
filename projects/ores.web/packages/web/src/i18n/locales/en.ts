@@ -293,7 +293,7 @@ export const en: SourceCatalogue = {
         detail: {
             viewOnlyHint:
                 "Changes to this tenant's parties and people are made by its own administrators.",
-            tab: { details: 'Details', parties: 'Parties', people: 'People' },
+            tab: { details: 'Details', parties: 'Parties', people: 'People', history: 'History' },
             person: 'Name',
             username: 'Username',
             email: 'Email',

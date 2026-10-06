@@ -295,7 +295,12 @@ const fr: SourceCatalogue = {
         detail: {
             viewOnlyHint:
                 'Les parties et les personnes de ce locataire sont modifiées par ses propres administrateurs.',
-            tab: { details: 'Détails', parties: 'Parties', people: 'Personnes' },
+            tab: {
+                details: 'Détails',
+                parties: 'Parties',
+                people: 'Personnes',
+                history: 'Historique',
+            },
             person: 'Nom',
             username: "Nom d'utilisateur",
             email: 'E-mail',

@@ -517,6 +517,23 @@ describe('GET /api/history', () => {
         expect(calls[0]?.subject).toBe('refdata.v1.history.get');
     });
 
+    it('answers the versions of a tenant on the IAM subject', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'iam.v1.history.get': {
+                success: true,
+                versions: [{ version: 2, modified_by: 'admin', recorded_at: 't2' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/history?entityType=ores.iam.tenant&entityId=acme',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.subject).toBe('iam.v1.history.get');
+    });
+
     it('answers 404 for an entity type no served list has', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(

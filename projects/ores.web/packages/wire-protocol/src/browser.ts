@@ -210,3 +210,36 @@ export type { LoginInfo, LoginInfoPage } from './domain.js';
 // ones on their own. An empty endTime is what makes a row active.
 export { sessionPageSchema, sessionSchema } from './domain.js';
 export type { Session, SessionPage } from './domain.js';
+
+// The inbox: the requests screen, the requests queue and the notification
+// bell. The BFF drives the transports, so the browser receives only the
+// answers these schemas describe, the operations that name them, and the
+// subjects, so a browser-side module can name one without importing the
+// transport that would know how to reach it.
+export {
+    INBOX_JOIN_SUBJECTS,
+    INBOX_SUBJECTS,
+    askForRoles,
+    clearNotifications,
+    decideRequest,
+    inboxNotificationPageSchema,
+    inboxNotificationViewSchema,
+    inboxPageSchema,
+    inboxRequestDecisionViewSchema,
+    inboxRequestPageSchema,
+    inboxRequestRoleViewSchema,
+    inboxRequestViewSchema,
+    markNotificationsRead,
+    readMyNotifications,
+    readMyRequests,
+    readRequestQueue,
+    readUnreadNotificationCount,
+    withdrawRequest,
+} from './inbox.js';
+export type {
+    InboxNotificationView,
+    InboxPage,
+    InboxRequestDecisionView,
+    InboxRequestRoleView,
+    InboxRequestView,
+} from './inbox.js';

@@ -449,3 +449,33 @@ export type {
 
 export { readImageMap } from './image-map.js';
 export type { ImageMap } from './image-map.js';
+
+// The inbox. The BFF calls these; the browser parses what the BFF answers with
+// the schemas they are built from.
+export {
+    INBOX_JOIN_SUBJECTS,
+    INBOX_SUBJECTS,
+    askForRoles,
+    clearNotifications,
+    decideRequest,
+    inboxNotificationPageSchema,
+    inboxNotificationViewSchema,
+    inboxPageSchema,
+    inboxRequestDecisionViewSchema,
+    inboxRequestPageSchema,
+    inboxRequestRoleViewSchema,
+    inboxRequestViewSchema,
+    markNotificationsRead,
+    readMyNotifications,
+    readMyRequests,
+    readRequestQueue,
+    readUnreadNotificationCount,
+    withdrawRequest,
+} from './inbox.js';
+export type {
+    InboxNotificationView,
+    InboxPage,
+    InboxRequestDecisionView,
+    InboxRequestRoleView,
+    InboxRequestView,
+} from './inbox.js';

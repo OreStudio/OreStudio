@@ -43,6 +43,10 @@ namespace ores::shell::app::commands {
  * so exchange the token before storing it. Mirrors the Qt client's
  * ClientManager::selectParty().
  *
+ * The stored default party is the session's party-scoped party, taken from
+ * whichever field the answer carries it in: the account's stored default when
+ * the account holds one, and otherwise the party the server selected.
+ *
  * @return the selected party name when an exchange happened, an empty
  * string when the login token already carried a party scope, and
  * std::nullopt when no party could be selected. Failures are reported
@@ -59,6 +63,8 @@ inline std::optional<std::string> complete_login(std::ostream& out,
     info.tenant_id = response.tenant_id;
     info.tenant_name = response.tenant_name;
     info.default_party_id = response.default_party_id;
+    if (info.default_party_id.empty())
+        info.default_party_id = response.selected_party_id;
 
     if (!response.selected_party_id.empty() || response.available_parties.empty()) {
         session.set_auth(std::move(info));
@@ -85,6 +91,12 @@ inline std::optional<std::string> complete_login(std::ostream& out,
         return std::nullopt;
     }
 
+    /*
+     * The token just issued is scoped to the party the server selected, so
+     * the session records that party; the answer names it but does not carry
+     * its id, and the id is the one this call asked for.
+     */
+    info.default_party_id = party_id;
     info.jwt = selected->token;
     session.set_auth(std::move(info));
     return selected->party_name;

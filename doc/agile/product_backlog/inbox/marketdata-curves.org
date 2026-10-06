@@ -29,11 +29,11 @@ stored as a series.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | BACKLOG (paused)                     |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Catalogue signed off 2026-10-06; the journey documents are being written under =doc/knowledge/journeys/market_data/= and =operations=. |
-| Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
-| Next          | Finish the journey documents, then check the data model against them. |
+| Now           | The journey documents and their prototypes are written; the curve work itself is paused on purpose. |
+| Waiting on    | The synthetic data generation story (Sprint 27, =synthetic-data-against-market-data=) — a curve cannot be argued without data to plot, and the synthetic feeds are where the data comes from. |
+| Next          | Once the synthetic feeds drive the new model, check the data model against the journeys and start the representation. |
 | Last touched  | 2026-10-06                               |
 
 * What exists today
@@ -863,11 +863,14 @@ evolution second, the representation third.
   reader meets them, because two of them share a name.
 - No new name collision between this work and the oresmd layer's existing
   =curve= vocabulary.
+- Every market data journey has a plain-HTML prototype, the prototypes are
+  listed in one inventory, and the inventory check is green.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
 |      |       |       |     |             |
 
 * Decisions

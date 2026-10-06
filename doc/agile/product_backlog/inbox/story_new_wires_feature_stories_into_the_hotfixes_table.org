@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 27C2DFBA-A94D-486F-AB0A-C77ED4713AB1
+:END:
+#+title: story new wires a feature story into the Hotfixes table
+#+description: The sprint wiring function in compass.py picks the last table whose header names Story and State, and the sprint's Hotfixes table has the same header, so every feature story lands in Hotfixes as BACKLOG. Pick the last Stories table before the Hotfixes heading for a feature story, and the Hotfixes table only for a hotfix; add a test.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:bug:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

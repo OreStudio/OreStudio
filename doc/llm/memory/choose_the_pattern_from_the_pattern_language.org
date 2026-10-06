@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C06D33CB-66DD-41EA-A21D-B79054FAAC39
+:END:
+#+title: Choose the pattern from the pattern language, do not ask
+#+description: Map a requirement onto the established service architecture patterns, pick the one that fits, and apply it securely; ask the user only when no pattern fits and the analysis says why.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :architecture:patterns:security:memory:feedback:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+For an architectural problem, read the requirement in its journey, map it onto the patterns in the service architecture pattern language, choose the pattern that fits, and apply it with the pattern's security rules. That decision is the agent's work, not a question for the user. When no pattern fits, analyse why the use case is so specific that no standard microservices pattern covers it, and report that analysis.
+
+*Why:* Asked to fix the root tenant listing every tenant's parties, the agent proposed a fix and then asked the user to accept the identity design and the plan. The user pointed out that the project has an established pattern language for exactly this, and that picking the pattern is the agent's job.
+
+*How to apply:* Before proposing a design that crosses a service or tenant boundary, open the pattern hub, name the pattern each boundary uses, check its forces, pitfalls and security sections against the use case, and state the decision with its reasons. Ask only about real approvals, such as a database recreate.

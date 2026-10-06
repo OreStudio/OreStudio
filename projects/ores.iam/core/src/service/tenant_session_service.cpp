@@ -123,24 +123,11 @@ tenant_session_service::enter(const tenant_session_caller& caller,
 
     const auto target_id = target->to_string();
     const auto target_ctx = ctx_.with_tenant(*target, caller.username);
-    using ores::database::repository::execute_parameterized_string_query;
-    using ores::database::repository::execute_parameterized_multi_column_query;
-    const auto system_party = execute_parameterized_multi_column_query(
-        target_ctx,
-        "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
-        {target_id},
-        lg(),
-        "Reading the system party of the tenant entered");
-    if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
+    const auto inside = party_inside(*target, caller.username);
+    if (!inside)
         return refused_entry(tenant_session_refusal::no_system_party);
-    const auto party_id = *system_party.front()[0];
-    const auto party_name = system_party.front()[1].value_or("");
-    const auto visible = execute_parameterized_string_query(
-        target_ctx,
-        "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
-        {target_id, party_id},
-        lg(),
-        "Reading the parties the tenant's system party sees");
+    const auto& party_id = inside->party_id;
+    const auto& party_name = inside->party_name;
 
     const auto now = std::chrono::system_clock::now();
     security::jwt::jwt_claims claims;
@@ -148,7 +135,7 @@ tenant_session_service::enter(const tenant_session_caller& caller,
     claims.username = caller.username;
     claims.tenant_id = target_id;
     claims.party_id = party_id;
-    claims.visible_party_ids = visible;
+    claims.visible_party_ids = inside->visible;
     claims.roles = std::move(permissions);
     claims.session_id = caller.session_id;
     claims.session_start_time = now;
@@ -181,6 +168,72 @@ tenant_session_service::enter(const tenant_session_caller& caller,
             .party_id = party_id,
             .party_name = party_name,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
+}
+
+std::optional<tenant_session_service::inside_party>
+tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
+                                     const std::string& username) const {
+    using ores::database::repository::execute_parameterized_multi_column_query;
+    using ores::database::repository::execute_parameterized_string_query;
+    const auto target_id = target.to_string();
+    const auto target_ctx = ctx_.with_tenant(target, username);
+    const auto system_party = execute_parameterized_multi_column_query(
+        target_ctx,
+        "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
+        {target_id},
+        lg(),
+        "Reading the system party of the tenant acted inside");
+    if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
+        return std::nullopt;
+    inside_party r;
+    r.party_id = *system_party.front()[0];
+    r.party_name = system_party.front()[1].value_or("");
+    r.visible = execute_parameterized_string_query(
+        target_ctx,
+        "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
+        {target_id, r.party_id},
+        lg(),
+        "Reading the parties the tenant's system party sees");
+    return r;
+}
+
+eventing::service::cache::partition_token
+tenant_session_service::read_inside(const tenant_reader& reader,
+                                    const std::string& tenant_id,
+                                    std::chrono::seconds lifetime) {
+    const auto target = utility::uuid::tenant_id::from_string(tenant_id);
+    if (!target) {
+        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username
+                                  << ": unreadable tenant id " << tenant_id;
+        return {};
+    }
+    const auto inside = party_inside(*target, reader.username);
+    if (!inside) {
+        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username << " inside tenant "
+                                  << tenant_id << ": the tenant has no system party";
+        return {};
+    }
+    const auto now = std::chrono::system_clock::now();
+    security::jwt::jwt_claims claims;
+    claims.subject = boost::uuids::to_string(reader.account_id);
+    claims.username = reader.username;
+    claims.tenant_id = target->to_string();
+    claims.party_id = inside->party_id;
+    claims.visible_party_ids = inside->visible;
+    claims.roles = reader.permissions;
+    if (!target->is_system())
+        claims.acting_from_tenant_id = utility::uuid::tenant_id::system().to_string();
+    claims.issued_at = now;
+    claims.expires_at = now + lifetime;
+    const auto token = signer_.create_token(claims);
+    if (!token) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to sign the token for " << reader.username
+                                   << " inside tenant " << tenant_id;
+        return {};
+    }
+    BOOST_LOG_SEV(lg(), info) << "Issued a token for " << reader.username << " inside tenant "
+                              << tenant_id << " for " << lifetime.count() << "s";
+    return {.token = *token, .expires_at = claims.expires_at};
 }
 
 messaging::leave_tenant_response

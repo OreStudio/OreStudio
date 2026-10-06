@@ -1394,26 +1394,23 @@ def _format_columns_for_doxygen(columns):
 
 def derive_tenant_read_flags(domain_entity):
     """
-    Derive the two read-scope booleans every repository and cache template
-    reads, from has_tenant_id and tenant_read_scope.
+    Derive the read-scope boolean every repository template reads, from
+    has_tenant_id and tenant_read_scope.
 
-    A tenant-scoped read carries the app-level tenant filter, so a cache over
-    it needs nothing more. A shared read is governed by RLS alone, which allows
-    the system-tenant fallback, so its result set spans tenants; a per-tenant
-    cache over it must re-apply the filter or it files another tenant's rows
-    under this partition's key.
+    A tenant-scoped read carries the app-level tenant filter. A shared read is
+    governed by row-level security alone. A generated cache needs neither
+    flag: it reads each partition inside that partition's tenant, so the
+    policy returns exactly the rows the tenant may see.
 
     Args:
         domain_entity (dict): mutated in place.
 
     Returns:
-        dict: the same dict, with read_tenant_filtered and cache_tenant_filter
-        set to bools.
+        dict: the same dict, with read_tenant_filtered set to a bool.
     """
     has_tenant = bool(domain_entity.get('has_tenant_id', False))
     shared = domain_entity.get('tenant_read_scope', 'tenant') == 'shared'
     domain_entity['read_tenant_filtered'] = has_tenant and not shared
-    domain_entity['cache_tenant_filter'] = has_tenant and shared
     return domain_entity
 
 

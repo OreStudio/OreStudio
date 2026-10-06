@@ -27,6 +27,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/cache/partition_token_cache.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/cache/partitioned_cache.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/entity_event_publisher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.eventing.core/service/postgres_event_source.hpp"

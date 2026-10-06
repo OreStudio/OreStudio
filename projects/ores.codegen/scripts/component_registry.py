@@ -235,6 +235,26 @@ ACCEPTED_EXCEPTIONS: dict[str, tuple[AcceptedException, ...]] = {
             accepted_on="2026-09-27",
         ),
     ),
+    "marketdata": (
+        AcceptedException(
+            item="H01",
+            reason=(
+                "The four part diagrams are authored in two passes: the "
+                "automated pass refreshed every box and the manual section "
+                "below each sentinel carries the derived edges and the notes "
+                "for what the parser cannot read, with each rendered image "
+                "read. The composite root is the one exception: it owns no "
+                "code, so the automated pass, which reads C++ headers, has "
+                "nothing to contribute to it, and the root carries a "
+                "hand-authored component diagram of the four parts and their "
+                "measured dependencies, with the oresmd data-model diagram "
+                "kept beside it. This is the position every other listed "
+                "composite takes."
+            ),
+            accepted_by="marco",
+            accepted_on="2026-10-06",
+        ),
+    ),
 }
 
 

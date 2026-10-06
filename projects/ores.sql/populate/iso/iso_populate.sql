@@ -34,6 +34,14 @@
 \echo '--- ISO Standards Coding Schemes Artefacts ---'
 \ir iso_coding_schemes_artefact_populate.sql
 
+-- Publish coding schemes to production (required before other datasets can reference them)
+\echo '--- Publishing ISO Coding Schemes ---'
+select * from ores_dq_coding_schemes_publish_fn(
+    (select id from ores_dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(),
+    'upsert'
+);
+
 -- =============================================================================
 -- ISO Standards Datasets (countries, currencies - depend on coding schemes)
 -- =============================================================================

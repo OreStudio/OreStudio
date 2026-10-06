@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: EA3BB8F9-8734-4AA6-B8EC-D8C59E2876F6
+:END:
+#+title: Task: Implement Hotfix: Visual asset images never publish
+#+description: Initial task for: Hotfix: Visual asset images never publish
+#+type: task
+#+level: s1
+#+filetags: :visual_asset_images_never_publish:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/visual-asset-images-never-publish
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:573B7E45-F356-44BD-B8C0-6E22A2093949][Hotfix: Visual asset images never publish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Publish the country flag and cryptocurrency icon datasets to
+=ores_assets_images_tbl= when their masters load, so the country publish
+resolves a flag for every country and emits no missing-image warning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:573B7E45-F356-44BD-B8C0-6E22A2093949][Hotfix: Visual asset images never publish]] |
+| Now          | Done. A fresh recreate leaves no country without a flag.                       |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- =populate/flags/flags_populate.sql= and =populate/crypto/crypto_populate.sql=
+  each publish their image dataset to the system tenant after the images
+  artefact loads.
+- A fresh =compass db recreate= emits no =Image ... not found in
+  assets_images_tbl= warning.
+- =ores_refdata_countries_tbl= carries an =image_id= on all 250 rows after
+  a recreate.
+- A second publish of either dataset leaves the production row count
+  unchanged.
+
+* Plan
+
+Diagnosis. =populate/catalogues/catalogues_populate.sql= loads the flags and
+crypto datasets and their images into the DQ artefact table, then ISO and
+ACME publish countries. The country publish resolves each country's DQ image
+through =ores_dq_images_artefact_tbl= into =ores_assets_images_tbl=, and no
+step published the image datasets there. Only
+=populate/assets/system_avatars_populate.sql= called
+=ores_assets_publish_images_from_dq_fn=.
+
+Fix. Add the same publish call to the flags and crypto master includes,
+after their images artefact include, so the images are live before any
+country or currency publish reads them. The masters are hand-maintained
+today: the flag archetype is retired and the batch-execute master archetype
+is bound to no dataset model, so no codegen source produces them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Country rows with no =image_id=, before | 250 of 250 | `compass sql -- -c "select count(*) filter (where image_id is null) from ores_refdata_countries_tbl where valid_to = ores_utility_infinity_timestamp_fn()"` | cd56a5021c |
+| Country rows with no =image_id=, after a recreate | 0 of 250 | same | this commit |
+| DQ images with no production row, before | 250 | join of =ores_dq_countries_artefact_tbl= to =ores_assets_images_tbl= | cd56a5021c |
+| DQ images with no production row, after a recreate | 0 | same | this commit |
+| =ores_assets_images_tbl= live rows, before | 83 | `select count(*) from ores_assets_images_tbl where valid_to = ores_utility_infinity_timestamp_fn()` | cd56a5021c |
+| =ores_assets_images_tbl= live rows, after a recreate | 836 | same | this commit |
+
+* Notes
+
+- Root cause: =catalogues_populate.sql= staged the flag and crypto images
+  into =ores_dq_images_artefact_tbl= but published nothing into
+  =ores_assets_images_tbl=. Only =assets.system_avatars= published its
+  images, so the country publish resolved no flag and warned once per
+  country.
+- The warning came from =refdata_publish_from_dq_create.sql:140=, which
+  raises when the country's DQ image key has no matching production row.
+- The publish is idempotent: a second run of the flag dataset reported
+  =updated 276= and left the production row count unchanged.
+- The two bespoke =*_generate_metadata_sql.py= scripts are stale (wrong
+  master filename, superseded metadata format) and are not run by the build
+  or CI, so the masters are edited directly.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The flag and crypto masters publish their images to the system tenant. A
+fresh recreate publishes all 250 country flags and the crypto icons, every
+country carries a flag, and the country publish emits no warning.

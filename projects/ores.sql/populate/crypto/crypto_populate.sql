@@ -49,6 +49,21 @@
 \ir crypto_images_artefact_populate.sql
 
 -- =============================================================================
+-- Publish to the System Tenant
+-- =============================================================================
+
+-- The images stage into the DQ artefact table above and must publish before
+-- any cryptocurrency publish reads them, on the same terms as the flag icons.
+\echo '--- Publishing Cryptocurrency Icons ---'
+select * from ores_assets_publish_images_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'assets.crypto_icons'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(),
+    'upsert'
+);
+
+-- =============================================================================
 -- Cryptocurrency Currencies
 -- =============================================================================
 

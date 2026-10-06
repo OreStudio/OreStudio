@@ -76,7 +76,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:573B7E45-F356-44BD-B8C0-6E22A2093949][Hotfix: Visual asset images never publish]] | DONE | 2026-10-06 | 2026-10-06 | The flag and crypto image datasets stage into the DQ but never publish to ores_assets_images_tbl, so every country publishes without a flag. |
 
 * Achievements
 

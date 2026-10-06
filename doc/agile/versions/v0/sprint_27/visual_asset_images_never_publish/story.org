@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 573B7E45-F356-44BD-B8C0-6E22A2093949
+:END:
+#+title: Story: Hotfix: Visual asset images never publish
+#+description: The flag and crypto image datasets stage into the DQ but never publish to ores_assets_images_tbl, so every country publishes without a flag.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The database build publishes the flag and crypto images to
+=ores_assets_images_tbl=, so every country carries its flag and the country
+publish emits no missing-image warning.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Done. Both masters publish their images; a fresh recreate leaves no country without a flag. |
+| Waiting on    | Nothing.                               |
+| Next          | PR.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- A fresh =compass db recreate= emits no =Image ... not found in
+  assets_images_tbl= warning.
+- =ores_refdata_countries_tbl= carries an =image_id= on all 250 rows after
+  a recreate.
+- Both masters publish on the same terms as =assets.system_avatars=, and a
+  second publish leaves the row count unchanged.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1683BB86-2CC1-4239-BB50-930B7DA7F625][Scaffold story: Hotfix: Visual asset images never publish]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EA3BB8F9-8734-4AA6-B8EC-D8C59E2876F6][Implement Hotfix: Visual asset images never publish]] | DONE | 2026-10-06 | 2026-10-06 | Publish the flag and crypto images in their masters, so the country publish resolves every flag. |
+
+* Decisions
+
+- *The masters publish their own images.* Each dataset's master include
+  publishes to the system tenant at the end, mirroring
+  =populate/assets/system_avatars_populate.sql=. The country publish then
+  reads a flag that is already live, whatever loads the dataset.
+- *The masters are edited directly, not through codegen.* The flag
+  archetype is retired (3ecbdb8b15) and the batch-execute master archetype
+  is bound to no dataset model, so nothing regenerates either master today.
+  The two bespoke =*_generate_metadata_sql.py= scripts still name the
+  pre-rename =populate_flags.sql= output and emit the old metadata format,
+  so they are stale and are deliberately left alone.
+
+* Out of scope
+
+- The stale =flags_generate_metadata_sql.py=, =crypto_generate_metadata_sql.py=
+  and =ip2country_generate_metadata_sql.py= master output names. Fixing them
+  is part of the dataset-pipeline migration, not this hotfix.

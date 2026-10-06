@@ -47,3 +47,19 @@
 
 \echo '--- Flag Icon Images ---'
 \ir flags_images_artefact_populate.sql
+
+-- =============================================================================
+-- Publish to the System Tenant
+-- =============================================================================
+
+-- The images stage into the DQ artefact table above and must publish before
+-- the ISO countries publish reads them. Without this step every country
+-- resolves no flag and the publish warns once per country.
+\echo '--- Publishing Flag Icons ---'
+select * from ores_assets_publish_images_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'assets.country_flags'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(),
+    'upsert'
+);

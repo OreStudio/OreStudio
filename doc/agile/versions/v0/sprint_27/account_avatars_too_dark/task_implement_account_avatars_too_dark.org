@@ -98,3 +98,11 @@ BFF image cache, which holds bytes forever, was cleared by restarting
 Verified in the browser: the Accounts list under System administration draws
 the service-account avatars in the theme's ink against the dark surface
 (=evidence/accounts_avatars_after.png=).
+
+The image route was a second cause. It answered =private, max-age=31536000,
+immutable=, so a browser kept the old bytes under the image's identifier until
+its site data was cleared, and a hard reload does not revalidate an immutable
+response. The route now answers =private, max-age=300=, the same as the account
+picture route, so an image rewritten under its identifier shows within five
+minutes. Every avatar SVG is accounted for: 27 in =external/avatars= and 216
+live =image/svg+xml= rows, none left dark.

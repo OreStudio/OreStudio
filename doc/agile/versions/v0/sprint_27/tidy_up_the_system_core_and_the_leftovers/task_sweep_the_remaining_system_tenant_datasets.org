@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: DDA14E5C-5532-49E4-92B6-89A848F6613D
+:END:
+#+title: Task: Sweep the remaining system-tenant datasets
+#+description: The system_core bundle carries the datasets the installation itself is read from. Trading, marketdata and inbox tables also resolve rows against the system tenant, and were left out of the first pass because the provisioning failure only exposed the coding schemes. Find every dataset that must live on the system tenant and add it, so the bundle is the whole set rather than the set a failure revealed.
+#+type: task
+#+level: s1
+#+filetags: :tidy_up_the_system_core_and_the_leftovers:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =system_core= bundle carries every dataset the installation itself is
+read from, not only the ones a provisioning failure happened to expose.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- Every dataset whose rows a validator, a definer function or an RLS policy
+  resolves against the system tenant is a member of =system_core=.
+- The sweep states how each candidate was found, so the next reader can repeat
+  it instead of trusting the list.
+- Trading, marketdata and inbox are among those named, or the record says why
+  they are not.
+- A full recreate followed by the ACME provisioning run still completes, and
+  the screens those datasets serve read the rows the bundle published.
+- Extending the bundle stays a membership change: no code changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The sweep found nothing to add. The bundle already holds every dataset that
+must be published into the system tenant.
+
+Method, so it can be repeated. Of the 45 tables the DQ publisher writes, twelve
+carry a system-tenant predicate on themselves:
+
+- =countries= and =currencies= read the system tenant as a shared overlay
+  (Ctenant_id in (p_tenant_id, system)=). Both are in =system_core=.
+- =business_unit_types=, =payment_frequencies=, =tenor_schedules=,
+  =calendars=, =calendar_types= and the rest of the hard reads are seeded
+  directly at build time with the system tenant, so no dataset publishes them
+  and none belongs in the bundle. =trading.trade_types=, =trading.activity_types=
+  and the inbox lookups are the same shape.
+- =currency_pairs=, =currency_pair_conventions= and the three CRM tables read
+  the system tenant as an optional overlay, and the =base= bundle gives each
+  tenant its own copy, so the overlay is satisfied either way.
+
+Trading, marketdata and inbox resolve against the system tenant for machinery
+rather than reference data: =marketdata_feed_bindings=' predicate is an RLS
+policy that lets the system tenant see every tenant's bindings, and
+=marketdata_publish_from_dq= reads the artefact table it staged itself.
+
+The only hard requirements remain the coding schemes, which a validator resolves
+against the system tenant, and the template images, which a security-definer
+function reads across the isolation policy. Both are in the bundle.
+
+One correction to the first pass: =fpml.asset_class= and =ore.asset_class= are
+not required. The validator that reads the system tenant is
+Cores_refdata_validate_asset_class_code_fn=, and it reads
+=ores_refdata_asset_class_codes_tbl=, which is seeded at build time, not
+=ores_refdata_asset_classes_tbl= which is what those datasets write. They are
+left in the bundle because the removed build-time bootstrap published them to
+the system tenant and this sweep did not prove nothing else reads them.

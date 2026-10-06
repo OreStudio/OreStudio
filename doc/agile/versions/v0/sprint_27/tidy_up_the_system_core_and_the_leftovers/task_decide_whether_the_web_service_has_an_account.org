@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ like every other service's, or it has none and carries no picture.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -90,3 +90,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The web service needs no identity of its own, and the picture of one is gone.
+
+The evidence, in the order it settles the question:
+
+- =ores.web.service= is the only enabled registry entry with no =account_var=.
+  Nothing reads one, so no IAM account is generated and none exists.
+- It appears nowhere in =env_init.py= and nowhere in =.env=. It has no database
+  role, opens no database connection, and no =psql_var=.
+- It does hold a mutual-TLS client certificate, =ores.web.service.crt=, issued
+  by the same CA as every other service's. The server is configured with
+  Cver verify: true= and no user or account block, so a client certificate is
+  the whole of what NATS authenticates.
+- The broker opens that connection and no more. =broker.ts= reads no token and
+  names no actor: the identity a service acts on is the caller's, and it travels
+  with the request. The service acts for the browser rather than as itself.
+
+So an account would be an identity nothing reads and nothing can check. The
+registry now says why it has none, beside the entry, so the next reader does not
+have to establish it again. =ores_web_service.svg= and the image published from
+it are removed; the avatar set is 26.

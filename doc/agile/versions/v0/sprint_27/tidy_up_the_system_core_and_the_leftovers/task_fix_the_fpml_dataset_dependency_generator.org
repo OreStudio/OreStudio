@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ edited by hand.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -97,3 +97,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator was retired, not broken, and is deleted.
+
+This task was filed as a wrong function name. It is not: the function does not
+exist because the pathway that called it does not either. The site build already
+recorded the finding, in =model-the-handcrafted-ores-dq-code=: =fpml_parser.py=
+does not render SQL. =generate_entity_model= writes C<plural>_entity.json=, and
+codegen no longer discovers JSON models -- =manifest.py= states that JSON model
+support was decommissioned when every model moved to org. Nothing in the
+repository regenerates the FpML SQL, so no rename can make it do so, and the
+files it appears to generate are hand-maintained.
+
+Nothing references it: no build target, no workflow, no test, no script. It was
+a trap that reads as the generator of files it cannot produce.
+
+Deleted. The FpML port onto the org dataset pipeline is already owned by the
+capture =Migrate FPML, crypto, flags and ip2country onto the org dataset
+pipeline=, which names this generator among the bespoke ones to replace.

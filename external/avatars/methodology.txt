@@ -34,7 +34,6 @@ ores_ore_service          Calculator
 ores_marketdata_service   Data Line
 ores_analytics_service    Data Histogram
 ores_http_server          Globe
-ores_web_service          Window
 ores_storage_service      Storage
 ores_inbox_service        Mail Inbox
 ores_compute_wrapper      Developer Board

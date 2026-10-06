@@ -428,6 +428,14 @@
 :entry_point: packages/bff/dist/main.js
 :END:
 
+It carries no =account_var=, and that is deliberate rather than an omission. The
+other services hold an IAM account because they act as themselves: they open a
+database connection, and a validator or a permission check resolves who they
+are. This one acts for the browser. It reaches the bus over the same mutual-TLS
+client certificate every service presents, and the identity a service acts on
+is the caller's, which travels with the request. Giving it an account would give
+it an identity that nothing reads and nothing can check.
+
 * ores.storage.service
 :PROPERTIES:
 :psql_var:    storage_service

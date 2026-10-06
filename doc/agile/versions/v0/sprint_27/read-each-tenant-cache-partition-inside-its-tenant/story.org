@@ -40,7 +40,7 @@ Every tenant's partition of a generated event cache loads inside that tenant, wi
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8E435740-9847-482B-A56C-62B8C32D6356][Scaffold story: Read each tenant's cache partition inside its tenant]] | STARTED | 2026-10-05 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8E435740-9847-482B-A56C-62B8C32D6356][Scaffold story: Read each tenant's cache partition inside its tenant]] | DONE | 2026-10-05 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:0CBC3DD8-9A7A-4C59-A44F-B8A04047FF9E][Give the event cache facet a partition-scoped identity]] | DONE | 2026-10-05 | 2026-10-06 | Initial task for: Read each tenant's cache partition inside its tenant |
 | [[id:8C119C20-734A-4E03-ADA8-2E0EED97B381][Mint each cache partition's token in IAM]] | DONE | | 2026-10-06 | Task for: Read each tenant's cache partition inside its tenant |
 | [[id:E5197AB7-7FFA-4B89-B03E-CC8EF85BE9C3][Restore strict tenant scoping on parties]] | DONE | | 2026-10-06 | Task for: Read each tenant's cache partition inside its tenant |

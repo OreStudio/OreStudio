@@ -451,8 +451,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // partition is one tenant's copy of refdata's parties, so it is read
     // inside that tenant: IAM issues itself a short-lived token for the
     // tenant, carrying only the parties read, and row-level security returns
-    // that tenant's parties alone (Cache-Aside, with Token Exchange behind a
-    // partition token cache).
+    // that tenant's parties alone. The tokens come from Token Exchange
+    // behind a partition token cache.
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
     const auto self = repository::account_repository().read_latest_by_username(
         system_ctx, ctx.service_account());

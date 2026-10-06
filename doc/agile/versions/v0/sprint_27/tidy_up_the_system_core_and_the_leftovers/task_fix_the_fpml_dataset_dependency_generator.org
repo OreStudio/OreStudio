@@ -8,7 +8,7 @@
 #+filetags: :tidy_up_the_system_core_and_the_leftovers:sprint_27:v0:
 #+owner: marco
 #+branch: feature/finish-the-system-core-tidy-up
-#+pr:
+#+pr: 2719
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2719][#2719]] | [codegen,assets] Retire the fpml generator and the web avatar |
 
 * Review
 

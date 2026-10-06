@@ -92,6 +92,12 @@ checks, in this order:
 4. The grant's tenant equals the tenant in the request.
 5. The grantor is active.
 
+The caller's service name is the =<Component>Service= role its account holds,
+so the audience carries role names such as =ReportingService= and not host
+names. A grant's =max_runs= is the number of distinct run ids the issue log
+holds as issued for it, so an exchange that refreshes a token mid-run does not
+spend another run.
+
 IAM then computes the permissions: the role's permissions, intersected with the
 permissions the grantor holds in the party now. A grantor who loses a permission
 loses it for their runs too, and a grantor who loses all of them makes the
@@ -150,6 +156,10 @@ rules are these:
   tokens, so the =run_id= claim stays exact.
 - *Lifetime.* A token is used while it has more than 20% of its life left. The
   next request after that exchanges again. Concurrent misses share one exchange.
+- *Work longer than a token.* A step whose work outlives its token keeps
+  exchanging, so a run of hours lives through many tokens. An actor that cannot
+  re-exchange holds no run token at all and acts under its own identity, as the
+  grid's worker node does.
 - *Expiry in flight.* An owner that answers =token_expired= causes one
   invalidation, one exchange and one retry of the same request. Any other
   refusal fails the request.

@@ -29,9 +29,10 @@ The design has three parts:
    credential.
 2. *A run token.* A step service exchanges its own token and the grant id for
    a short-lived token. The token carries the tenant, the party and the
-   =ReportRun= permissions. The service keeps it in a memory cache, and the
-   workflow state never holds it. The owners read and write as that tenant and
-   that party, and their handlers do not change.
+   =ReportRun= permissions. The service keeps it in a memory cache and
+   exchanges again while the work continues, so a run of hours lives through
+   many tokens, and the workflow state never holds it. The owners read and
+   write as that tenant and that party, and their handlers do not change.
 3. *Fair shares.* Three queues hold the work of many tenants: admission in
    reporting, step concurrency in each step service, and dispatch in the
    compute grid. Each queue gives every tenant a share, so one tenant with many

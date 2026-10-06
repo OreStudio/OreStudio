@@ -31,7 +31,7 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement; the representation reuses the existing tables. |
+| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement, with typed axes, components and manually keyed points; the value representation reuses the existing tables and needs only a cold per-point provenance annex. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
 | Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
 | Last touched  | 2026-10-06                               |
@@ -379,6 +379,12 @@ observation hypertable already holds: the table is append-only, partitioned
 on =observation_datetime=, carries no audit payload, and gives identity by
 key. That is the shape a data-oriented model wants for the points.
 
+The one cold table the requirements do imply is the per-point provenance annex
+the manual-keying and trustworthiness needs call for, described under *Manually
+keyed points* below. It is keyed by the point and holds no value, so it is a
+split of cold data from the hot row, not a second representation of the
+points.
+
 ** If a first-class build is needed, it is a cold header
 
 One consumer type would earn a table: a journey that treats a build as an
@@ -566,6 +572,52 @@ So the recommendation stays: the surface is one series; ATM, RR and BF are
 values of its strike-label axis, and what they need is a typed, named,
 validated axis and a read that returns a slice, not a series and not a table.
 
+** Manually keyed points
+
+Users key points by hand: a trader's IR level, a broker's vol, a correction
+after a bad feed. That is a first-class market-data operation, not an anomaly,
+and it needs three facts the model does not store at a point today: that the
+value is manual, who keyed it, and when.
+
+Two facts decide the design:
+
+- *The hot row must not carry them.* =market_observation= is
+  =no_audit_columns=, append-only, and the hot path. Adding actor and reason
+  columns would put cold metadata on every one of its rows and undo the
+  hot/cold split the model already has.
+- *A manual point is an ordinary bitemporal write.* The value has the same
+  shape as any other point, and the table's =soft_update_delete= trigger
+  already closes the prior row and inserts the new one. The override therefore
+  needs no value storage of its own: the manual write is a normal write, and
+  the history keeps both the fed value and the manual one.
+
+What is missing is the point's *provenance*, which is cold and belongs in the
+existing per-point annex. =observation_lineage= is keyed by the same triple
+and already carries =modified_by=, =performed_by=, =change_reason_code= and
+=change_commentary=. What it lacks is the two things a manual point needs in
+order to be told from a fed or derived one:
+
+- a *point source kind* — quoted, interpolated, extrapolated and manual (the
+  [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][curve point provenance]]
+  proposal's derivation kind, extended with manual), and
+- the *actor and time at point granularity*, which the annex has and the
+  observation does not.
+
+The clean shape is one per-point cold annex, not a second table keyed the same
+way: either broaden =observation_lineage= into the point-provenance annex that
+document already proposes, or rename it to say what it now is. Two cold tables
+keyed by =(series_id, observation_datetime, oresmd_uri)= would be a smell.
+
+** Precedence: a feed must not silently undo a manual point
+
+Because the manual write is bitemporal, a later feed tick would close the
+manual row and take over, so the precedence is a policy the model must state
+rather than a consequence of write order. Either the point is marked locked in
+its provenance and the ingest skips a locked point, or the read prefers the
+latest manual point over the latest automatic one until the manual point is
+cleared. Either way the rule is explicit and testable, and the evolution view
+can show the manual segment with its actor and its reason.
+
 ** The requirements the use case implies
 
 1. A composite object is first-class: identifiable and of a kind (term
@@ -586,6 +638,12 @@ validated axis and a read that returns a slice, not a series and not a table.
    definition of the object, so they cannot disagree.
 8. Every node's value carries its provenance per instant, so the view can
    explain a change.
+9. A point's source kind is stored per point — quoted, derived or manual —
+   and a manual point names the actor, the time and the reason.
+10. A manual point is not silently overwritten by a later automatic write; the
+   precedence between the two is explicit.
+11. The evolution view distinguishes manual points and shows their actor and
+   reason, so a person can see what was keyed by hand.
 
 ** What to add, in order
 
@@ -603,10 +661,17 @@ validated axis and a read that returns a slice, not a series and not a table.
    five-bucket window and returns a matrix, not arrays of objects.
 5. The single-instant read reshaped to the same object definition, so the
    three cannot disagree.
-6. Validate the recipe's pillar tenor codes against =refdata_tenors= (capture
+6. The per-point provenance annex: the source kind (quoted, derived, manual),
+   and for a manual point the actor, the time and the reason, in one cold
+   annex keyed by the point's natural key. Name it once — broaden
+   =observation_lineage= or rename it — rather than adding a second cold
+   table beside it.
+7. The manual precedence rule: what a later automatic write does to a manual
+   point, stated as a policy and covered by a test.
+8. Validate the recipe's pillar tenor codes against =refdata_tenors= (capture
    =A6472918=).
-7. Guard the curve-snapshot reads (capture =D9258D1F=).
-8. Only then decide the =curve_builds= table, from the agreed journeys.
+9. Guard the curve-snapshot reads (capture =D9258D1F=).
+10. Only then decide the =curve_builds= table, from the agreed journeys.
 
 * Acceptance
 
@@ -635,6 +700,13 @@ evolution second, the representation third.
   object.
 - *A node's provenance is readable per instant*: what it was built from, by
   which recipe, and when.
+- *A point can be keyed by hand.* A manual point or override is written as an
+  ordinary point, and the history keeps the value it replaced.
+- *A manual point is attributable.* A point says whether it is quoted, derived
+  or manual; a manual one names who keyed it, when and why, so it is never
+  indistinguishable from a fed or derived point.
+- *A manual point is respected.* A later automatic write does not silently
+  undo it; the precedence rule is explicit and tested.
 - *The single-instant, slice and evolution reads agree*, because they share
   one definition of the object at an instant.
 - At least one production consumer reads the object, or the story says in the

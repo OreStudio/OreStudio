@@ -10,8 +10,8 @@
 #+created: 2026-10-06
 #+updated: 2026-10-06
 
-A read inside a unit of work commits it. sqlgen's postgres iterator wraps every read in its own BEGIN and END, and PostgreSQL reads END as COMMIT. A unit of work stays atomic only while no read runs between its writes.
+A read inside a unit of work commits it in unpatched sqlgen. Its postgres iterator wraps every read in its own BEGIN and END, and PostgreSQL reads END as COMMIT. This project patches that iterator, so a transaction survives a read.
 
 *Why:* Found on 2026-10-06 while moving booking onto the repositories: a booking that failed on its last write left the trade anchor behind. The service's conflict read and every repository apply_claim read committed the transaction before the failing write, so the destructor's rollback had nothing to undo. It took a long hunt, because the destructor reported a successful rollback and the row vanished from psql when the test run dropped its tenant.
 
-*How to apply:* Never read through sqlgen inside a unit of work. State write claims that read nothing instead: precondition must_not_exist for a versioned table, or any for a current-state table, and do a conflict read before the unit of work opens. The overlay port at build/cmake/overlays/common/sqlgen holds a staged fix-iterator-transaction.patch that stops the iterator committing a transaction it joined; listing it in the portfile's PATCHES enables it. Once enabled, remove the read-free claims and invert the unit-of-work case that records the defect.
+*How to apply:* Keep fix-iterator-transaction.patch listed in build/cmake/overlays/common/sqlgen/portfile.cmake until upstream fixes munich-data-engineering/sqlgen#140 and the registry port carries the fix. The unit-of-work case named "a read inside a unit of work does not commit it" is the proof it is applied. If the patch is ever dropped, no read may run between the writes of a unit of work, and each write must state a claim that reads nothing.

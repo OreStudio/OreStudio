@@ -1,0 +1,34 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.service.expected_services_populate.org. Edit the org source. }}
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_expected_services_populate.mustache
+ *
+ * Expected Services
+ *
+ * The installation's expected services and their replica counts, from the
+ * service registry. The services roster reads these rows.
+ *
+ * This script is idempotent.
+ */
+
+\echo '--- Expected Services ---'
+
+{{#service_registry.services}}
+{{#enabled}}
+insert into ores_telemetry_expected_services_tbl
+    (service_name, replicas, display_name, description, service_account)
+values ('{{name}}', {{replicas}}, '{{display_name_sql}}', '{{summary_sql}}',
+        {{#account_var}}:'{{account_var}}'{{/account_var}}{{^account_var}}null{{/account_var}})
+on conflict (service_name) do update set
+    replicas = excluded.replicas,
+    display_name = excluded.display_name,
+    description = excluded.description,
+    service_account = excluded.service_account;
+
+{{/enabled}}
+{{/service_registry.services}}
+-- Summary
+select 'Expected Services' as entity, count(*) as count
+from ores_telemetry_expected_services_tbl;

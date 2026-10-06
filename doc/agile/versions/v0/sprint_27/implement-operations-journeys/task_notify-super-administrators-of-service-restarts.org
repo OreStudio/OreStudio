@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 2F054957-1C41-4E98-B89E-6DE3D16924F7
+:END:
+#+title: Task: Notify super administrators of service restarts
+#+description: Telemetry raises a service-restarted notification to the super administrators when a service starts again, marking a restart whose previous instance never stopped gracefully.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A super administrator learns that a service restarted without watching the
+services screen. When telemetry records a =started= event for a service that
+has run before, it raises a =service_restarted= notification through the
+inbox to the system tenant's super administrators. The notification names the
+service, the instance and the host, and says whether the previous instance
+stopped gracefully or was lost.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- A =service_restarted= notification kind is seeded, with its message in
+  every locale the inbox carries.
+- Telemetry raises it to the holders of =telemetry::samples:read= in the
+  system tenant when a service starts after an earlier instance; the first
+  start after a database is created raises nothing.
+- The notification says whether the previous instance stopped gracefully or
+  was lost, and links to the services screen.
+- Raising never fails the event's storage: an unsuccessful raise is logged.
+- A test proves a restart raises one notification and a first start raises
+  none.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Settled with the operator on 2026-10-06: super administrators only, for now.
+A raise reaches the permission holders of the raiser's own tenant
+(=ores_iam_current_tenant_id_fn()= in =notification_center.cpp=), and
+telemetry acts in the system tenant, so its raise reaches the super
+administrators. Telling each tenant's administrators would need the raise to
+fan out across tenants, which the inbox does not do; that stays out of scope.
+
+A service cannot announce its own restart, because the inbox and IAM may not
+be up while it starts, so telemetry raises on the event it records.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

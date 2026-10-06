@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 2F80B0B6-1C58-4157-9FDC-30D5A1D996CF
+:END:
+#+title: Task: Close service sessions on shutdown
+#+description: A service that logged in as its service account logs out through iam.v1.auth.logout when it shuts down gracefully, so a restart leaves no open session behind.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A graceful shutdown closes the sessions the process opened. Seven processes
+log in as their service account through =make_service_token_provider=
+(=ores.iam.client=): =ores.synthetic=, =ores.ore=, =ores.reporting=,
+=ores.scheduler= and =ores.marketdata= services, the http server, and IAM's
+own registrar. The provider logs in with =service_login_request= and refreshes
+its token, but nothing ever sends =iam.v1.auth.logout=. So every restart
+leaves an open session behind until it expires, and the session records
+overstate who is signed in. The logout joins the shutdown that the shared
+service lifecycle already runs: after the =stopped= event, before
+=nats.drain()=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The service token provider can log out: it sends =iam.v1.auth.logout= with
+  its current token and forgets the token.
+- The shared service lifecycle logs the service out on a graceful shutdown,
+  after the =stopped= event and before =nats.drain()=, so no service wires it
+  by hand.
+- A logout that fails is logged and never blocks the shutdown.
+- A test proves a service session is closed after a graceful stop, and the
+  session records show no open session for a stopped service.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Raised by the operator on 2026-10-06, beside
+[[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]]:
+both run in the same shutdown hook, so the order is the stopped event, then
+the logout, then the drain. Interactive clients already log out: the shell,
+the http server's login routes and the web client call =iam.v1.auth.logout=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -292,4 +293,77 @@ TEST_CASE("create_and_list_service_sample", tags) {
     CHECK(it->version == sample.version);
 
     BOOST_LOG_SEV(lg, debug) << "Service sample read back with host id " << it->host_id;
+}
+
+TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    telemetry_repository repo;
+
+    boost::uuids::random_generator gen;
+    const auto suffix = boost::uuids::to_string(gen());
+    const auto reporting = "ores.test.roster-" + suffix + ".service";
+    const auto silent = "ores.test.silent-" + suffix + ".service";
+    const std::string insert_expected =
+        "INSERT INTO ores_telemetry_expected_services_tbl "
+        "(service_name, replicas, display_name, description, service_account) "
+        "VALUES ($1, $2::integer, $3, $4, nullif($5, ''))";
+    ores::database::repository::execute_parameterized_command(
+        h.context(), insert_expected, {reporting, "2", "Roster Test Service", "Reports for the test.", "roster_test_user"},
+        lg, "Expecting the reporting service");
+    ores::database::repository::execute_parameterized_command(
+        h.context(), insert_expected, {silent, "1", "Silent Test Service", "Never reports.", ""}, lg,
+        "Expecting the silent service");
+
+    const auto now = std::chrono::system_clock::now();
+    const auto report = [&](const std::string& instance, std::chrono::minutes age) {
+        service_sample sample;
+        sample.sampled_at = now - age;
+        sample.service_name = reporting;
+        sample.instance_id = instance;
+        sample.host_id = "roster-test-host";
+        sample.version = "1.0.0-test";
+        repo.insert_service_sample(h.context(), sample);
+    };
+    report("leftover", std::chrono::minutes(180));
+    report("quiet", std::chrono::minutes(10));
+    report("fresh", std::chrono::minutes(1));
+
+    const auto roster = repo.list_service_roster(h.context(), now);
+    std::vector<service_roster_slot> reporting_slots;
+    std::vector<service_roster_slot> silent_slots;
+    for (const auto& slot : roster) {
+        if (slot.service_name == reporting)
+            reporting_slots.push_back(slot);
+        else if (slot.service_name == silent)
+            silent_slots.push_back(slot);
+    }
+    BOOST_LOG_SEV(lg, debug) << "Roster slots: reporting=" << reporting_slots.size()
+                             << " silent=" << silent_slots.size();
+
+    REQUIRE(reporting_slots.size() == 2);
+    CHECK(reporting_slots[0].display_name == "Roster Test Service");
+    CHECK(reporting_slots[0].description == "Reports for the test.");
+    CHECK(reporting_slots[0].service_account == std::optional<std::string>("roster_test_user"));
+    CHECK(reporting_slots[0].slot == 1);
+    CHECK(reporting_slots[0].instance_id == std::optional<std::string>("fresh"));
+    CHECK(reporting_slots[0].state == ores::telemetry::domain::service_state::running);
+    CHECK(reporting_slots[1].slot == 2);
+    CHECK(reporting_slots[1].instance_id == std::optional<std::string>("quiet"));
+    CHECK(reporting_slots[1].state == ores::telemetry::domain::service_state::lost);
+    CHECK(reporting_slots[1].host_id == std::optional<std::string>("roster-test-host"));
+    CHECK(reporting_slots[1].sampled_at.has_value());
+
+    REQUIRE(silent_slots.size() == 1);
+    CHECK(silent_slots[0].slot == 1);
+    CHECK_FALSE(silent_slots[0].service_account.has_value());
+    CHECK(silent_slots[0].state == ores::telemetry::domain::service_state::missing);
+    CHECK_FALSE(silent_slots[0].instance_id.has_value());
+    CHECK_FALSE(silent_slots[0].sampled_at.has_value());
+
+    ores::database::repository::execute_parameterized_command(
+        h.context(),
+        "DELETE FROM ores_telemetry_expected_services_tbl WHERE service_name IN ($1, $2)",
+        {reporting, silent}, lg, "Removing the test's expected services");
 }

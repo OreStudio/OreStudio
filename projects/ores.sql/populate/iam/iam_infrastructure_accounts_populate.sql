@@ -50,7 +50,8 @@ BEGIN
     PERFORM ores_iam_service_accounts_upsert_fn(
         current_setting('ores.compute_wrapper_user'),
         'compute_wrapper@system.ores',
-        'System service account for Compute Wrapper worker service'
+        'System service account for Compute Wrapper worker service',
+        p_full_name => 'Compute Wrapper'
     );
 
     PERFORM ores_iam_account_role_assign_fn(

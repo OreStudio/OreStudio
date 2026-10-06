@@ -757,7 +757,8 @@ create or replace function ores_iam_service_accounts_upsert_fn(
     p_username    text,
     p_email       text,
     p_description text,
-    p_password    text default null  -- plaintext DB password; stored as SHA-256 hex
+    p_password    text default null, -- plaintext DB password; stored as SHA-256 hex
+    p_full_name   text default null
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_username, 'Service account username');
@@ -776,7 +777,7 @@ begin
     end if;
 
     insert into ores_iam_accounts_tbl (
-        id, tenant_id, version, account_type, username, password_hash, password_salt,
+        id, tenant_id, version, account_type, username, full_name, password_hash, password_salt,
         totp_secret, email, modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
@@ -786,6 +787,7 @@ begin
         0,
         'service',
         p_username,
+        p_full_name,
         '!SERVICE_ACCOUNT_NO_PASSWORD!',  -- Dummy hash - service accounts cannot login
         '!NO_SALT!',                       -- Dummy salt - service accounts cannot login
         '',

@@ -42,6 +42,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/ores.telemetry.domain.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/resource.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/semantic_conventions.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/service_state.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/span.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/span_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.telemetry.core/domain/span_id.hpp"

@@ -252,16 +252,13 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
 {{#current_state}}
     const auto t = apply_claim(ctx, v, claim);
 {{#immutable}}
-    const auto query = sqlgen::insert({{entity_singular}}_mapper::map(t));
+    execute_write_op(ctx, sqlgen::insert({{entity_singular}}_mapper::map(t)),
+        lg(), "Writing {{entity_singular_words}} to database.");
 {{/immutable}}
 {{^immutable}}
-    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(t));
+    execute_write_op(ctx, sqlgen::insert_or_replace({{entity_singular}}_mapper::map(t)),
+        lg(), "Writing {{entity_singular_words}} to database.");
 {{/immutable}}
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
 {{/current_state}}
 {{^current_state}}
     const auto t = apply_claim(ctx, v, claim);
@@ -280,16 +277,13 @@ void {{entity_singular}}_repository::write(
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
 {{#current_state}}
 {{#immutable}}
-    const auto query = sqlgen::insert({{entity_singular}}_mapper::map(batch));
+    execute_write_op(ctx, sqlgen::insert({{entity_singular}}_mapper::map(batch)),
+        lg(), "Writing {{entity_plural_words}} to database.");
 {{/immutable}}
 {{^immutable}}
-    const auto query = sqlgen::insert_or_replace({{entity_singular}}_mapper::map(batch));
+    execute_write_op(ctx, sqlgen::insert_or_replace({{entity_singular}}_mapper::map(batch)),
+        lg(), "Writing {{entity_plural_words}} to database.");
 {{/immutable}}
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
 {{/current_state}}
 {{^current_state}}
     execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),

@@ -156,12 +156,8 @@ void csa_repository::write(context ctx,
                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing csa. " << "netting_set_code: " << v.netting_set_code;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert_or_replace(csa_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(
+        ctx, sqlgen::insert_or_replace(csa_mapper::map(t)), lg(), "Writing csa to database.");
 }
 
 void csa_repository::write(context ctx,
@@ -172,12 +168,8 @@ void csa_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert_or_replace(csa_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(
+        ctx, sqlgen::insert_or_replace(csa_mapper::map(batch)), lg(), "Writing csas to database.");
 }
 
 std::vector<domain::csa> csa_repository::read_latest(context ctx) {

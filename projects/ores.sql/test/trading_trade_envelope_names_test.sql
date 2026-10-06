@@ -99,17 +99,56 @@ select '00000000-0000-0000-0000-00000000e001'::uuid, ores_utility_system_tenant_
     'Active', 'Trading', false, 'GBLO', owner_name, owner_name, 'system.new_record', 'test'
 from t_ctx;
 
+-- A booking writes the four rows the service writes, so this test exercises
+-- the schema the service writes against. The service is tested in
+-- service_trade_operations_service_tests.cpp.
+create or replace function pg_temp.book_raw(p_id uuid, p_counterparty_id uuid,
+    p_netting_set_id uuid, p_counterparty_identifier_id uuid, p_netting_set_identifier_id uuid)
+returns boolean as $$
+declare
+    v_activity_id uuid := gen_random_uuid();
+begin
+    insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
+        trade_type, counterparty_scope, booking_nature, entry_channel)
+    select p_id, ores_utility_system_tenant_id_fn(), party_id, p_counterparty_id,
+        'Swap', 'external', 'actual', 'stp'
+    from t_ctx;
+
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    select v_activity_id, ores_utility_system_tenant_id_fn(), party_id,
+        'new_booking', owner_name, now(), 'test'
+    from t_ctx;
+
+    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, counterparty_id, book_id, netting_set_id,
+        counterparty_identifier_id, netting_set_identifier_id, modified_by, performed_by,
+        change_reason_code, change_commentary)
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+        p_counterparty_id, '00000000-0000-0000-0000-00000000e001'::uuid, p_netting_set_id,
+        p_counterparty_identifier_id, p_netting_set_identifier_id,
+        owner_name, owner_name, 'system.new_record', 'test'
+    from t_ctx;
+
+    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, status_id, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+        ores_utility_nil_uuid_fn(), owner_name, owner_name, 'system.new_record', 'test'
+    from t_ctx;
+
+    return true;
+end;
+$$ language plpgsql;
+
 create or replace function pg_temp.book(p_id uuid, p_counterparty_alias text,
     p_netting_set_alias text, p_record_names boolean)
 returns boolean as $$
-    select ores_trading_book_trade_fn(p_id, party_id,
-        pg_temp.counterparty_of(p_counterparty_alias), 'Swap', 'external', 'actual', 'stp',
-        '00000000-0000-0000-0000-00000000e001'::uuid,
+    select pg_temp.book_raw(p_id,
+        pg_temp.counterparty_of(p_counterparty_alias),
         pg_temp.netting_set_of(p_netting_set_alias),
         case when p_record_names then pg_temp.alias('counterparty', p_counterparty_alias) end,
-        case when p_record_names then pg_temp.alias('netting_set', p_netting_set_alias) end,
-        null, null, 'new_booking', owner_name, 'system.new_record', 'test') is not null
-    from t_ctx;
+        case when p_record_names then pg_temp.alias('netting_set', p_netting_set_alias) end);
 $$ language sql;
 
 select pg_temp.book('00000000-0000-0000-0000-00000000e101', 'CP', 'NS', true);
@@ -143,20 +182,16 @@ select results_eq(
     'a trade with no netting set gets no netting set name');
 
 select throws_like(
-    $$select ores_trading_book_trade_fn('00000000-0000-0000-0000-00000000e105'::uuid,
-        (select party_id from t_ctx), pg_temp.counterparty_of('CPTY_A'), 'Swap', 'external',
-        'actual', 'stp', '00000000-0000-0000-0000-00000000e001'::uuid, null,
-        pg_temp.alias('counterparty', 'CPTY_B'), null, null, null, 'new_booking',
-        (select owner_name from t_ctx), 'system.new_record', 'test')$$,
+    $$select pg_temp.book_raw('00000000-0000-0000-0000-00000000e105'::uuid,
+        pg_temp.counterparty_of('CPTY_A'), null,
+        pg_temp.alias('counterparty', 'CPTY_B'), null)$$,
     '%The identifier must be the trade''s counterparty''s%',
     'the booking refuses an identifier of another counterparty');
 
 select throws_like(
-    $$select ores_trading_book_trade_fn('00000000-0000-0000-0000-00000000e106'::uuid,
-        (select party_id from t_ctx), pg_temp.counterparty_of('CPTY_B'), 'Swap', 'external',
-        'actual', 'stp', '00000000-0000-0000-0000-00000000e001'::uuid,
-        pg_temp.netting_set_of('CPTY_B'), null, pg_temp.alias('netting_set', 'CPTY_B_full'),
-        null, null, 'new_booking', (select owner_name from t_ctx), 'system.new_record', 'test')$$,
+    $$select pg_temp.book_raw('00000000-0000-0000-0000-00000000e106'::uuid,
+        pg_temp.counterparty_of('CPTY_B'), pg_temp.netting_set_of('CPTY_B'),
+        null, pg_temp.alias('netting_set', 'CPTY_B_full'))$$,
     '%The identifier must be the netting set''s%',
     'the booking refuses an identifier of another netting set');
 

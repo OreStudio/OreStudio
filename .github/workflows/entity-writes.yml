@@ -1,0 +1,65 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Entity-table writes
+on:  # yamllint disable-line rule:truthy
+  # The check reads the SQL create tree and the hand-written C++ trees, so it
+  # fires on all of them, and on the check, its baseline and this file, so an
+  # edit to any of those is verified here too.
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.sql/create/**"
+      - "projects/ores.*/src/**"
+      - "projects/ores.*/include/**"
+      - "projects/ores.codegen/scripts/check_entity_table_writes.py"
+      - "projects/ores.codegen/scripts/entity_table_writes_baseline.json"
+      - ".github/workflows/entity-writes.yml"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/ores.sql/create/**"
+      - "projects/ores.*/src/**"
+      - "projects/ores.*/include/**"
+      - "projects/ores.codegen/scripts/check_entity_table_writes.py"
+      - "projects/ores.codegen/scripts/entity_table_writes_baseline.json"
+      - ".github/workflows/entity-writes.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The generated repositories are the only code that should write an entity
+  # table. A SQL function or a hand-written C++ file that writes one bypasses
+  # the claim check, the audit stamping and the row-level security the
+  # repository applies. The sanctioned purge and test fixtures are excepted,
+  # and the ratchet baseline names the writers that predate the rule. The scan
+  # needs no toolchain and takes a fraction of a second.
+  entity-writes:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check entity tables are written only through the repositories
+        run: |
+          python3 projects/ores.codegen/scripts/check_entity_table_writes.py

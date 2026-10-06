@@ -24,6 +24,8 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <sqlgen/Session.hpp>
+#include <sqlgen/Transaction.hpp>
 #include <sqlgen/postgres.hpp>
 #include <vector>
 
@@ -48,6 +50,8 @@ class context {
 public:
     using connection_type = sqlgen::postgres::Connection;
     using connection_pool_type = tenant_aware_pool<connection_type>;
+    using session_type = sqlgen::Session<connection_type>;
+    using transaction_type = sqlgen::Transaction<session_type>;
 
     /**
      * @brief Constructs a tenant-only context.
@@ -96,6 +100,30 @@ public:
      */
     connection_pool_type& connection_pool() {
         return connection_pool_;
+    }
+
+    /**
+     * @brief Gets the transaction this context is bound to, if any.
+     *
+     * A context made by a unit of work carries one. Every repository read
+     * and write made through such a context joins that transaction, and no
+     * write commits until the unit of work commits. A context without one
+     * runs each write in a transaction of its own.
+     */
+    const std::optional<sqlgen::Ref<transaction_type>>& active_transaction() const {
+        return active_transaction_;
+    }
+
+    /**
+     * @brief Returns a copy of this context bound to the given transaction.
+     *
+     * The reference is an owning, copyable handle, so every copy of the
+     * returned context carries the same transaction.
+     */
+    [[nodiscard]] context with_transaction(sqlgen::Ref<transaction_type> transaction) const {
+        auto copy = *this;
+        copy.active_transaction_ = std::move(transaction);
+        return copy;
     }
 
     /**
@@ -236,6 +264,7 @@ public:
                               service_account_,
                               policy_);
         scoped.roles_ = roles_;
+        scoped.active_transaction_ = active_transaction_;
         return scoped;
     }
 
@@ -259,6 +288,7 @@ public:
                               service_account_,
                               policy_);
         scoped.roles_ = roles_;
+        scoped.active_transaction_ = active_transaction_;
         return scoped;
     }
 
@@ -270,6 +300,7 @@ private:
     std::optional<std::vector<std::string>> roles_;
     std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
     std::vector<std::string> workspace_resolution_;
+    std::optional<sqlgen::Ref<transaction_type>> active_transaction_;
 };
 
 }

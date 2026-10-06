@@ -161,12 +161,10 @@ void counterparty_scope_type_repository::write(context ctx,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty scope type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert(counterparty_scope_type_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert(counterparty_scope_type_mapper::map(t)),
+                     lg(),
+                     "Writing counterparty scope type to database.");
 }
 
 void counterparty_scope_type_repository::write(
@@ -178,12 +176,10 @@ void counterparty_scope_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert(counterparty_scope_type_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert(counterparty_scope_type_mapper::map(batch)),
+                     lg(),
+                     "Writing counterparty scope types to database.");
 }
 
 std::vector<domain::counterparty_scope_type>

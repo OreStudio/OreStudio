@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 5724BDE2-7FA4-4667-9129-2D9DD7783AB2
+:END:
+#+title: Entity-table writes go through the repositories
+#+description: Application code writes an entity table only through its generated repository; the sanctioned purge and test fixtures are the only exceptions, and a checked ratchet baseline lists the writers that predate the rule.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:database:repository:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+Application code writes an entity table only through the generated repository
+for that entity. The repository states the optimistic concurrency claim,
+stamps the audit columns, and applies the tenant and the party the row must
+carry; a hand-written write states all of that itself and drifts from the
+repository the moment either changes. Two classes are excepted: the sanctioned
+tenant purge and test fixtures. A check states the rule to a machine, and a
+ratchet baseline names the writers that predate it.
+
+* Detail
+
+** The rule
+
+A table named =ores_<component>_<entity>_tbl= is an entity table. Only the
+generated repository for that entity writes it. Neither a SQL function nor a
+hand-written C++ file runs =insert=, =update= or =delete= against one.
+
+The repository is where the shape of a write lives:
+
+- The claim. Who last read the row, which the store checks before it writes.
+- The audit. =modified_by=, =performed_by=, the change reason and the comment.
+- The tenant and the party. Row-level security holds the written row to both.
+
+** The exceptions
+
+*The sanctioned purge.* =ores_iam_purge_tenant_fn= deletes across the
+component tables when a tenant is removed. It is the one function allowed to
+write entity tables directly, and =ores_iam_purge_test_tenants_fn= is its test
+counterpart.
+
+*Test fixtures.* The SQL test tree, =projects/ores.sql/test/=, and every
+=tests= directory, write the rows a repository would, so that a test can set
+up the state it needs. They are not application code.
+
+** The check
+
+=projects/ores.codegen/scripts/check_entity_table_writes.py= reads every SQL
+function under =projects/ores.sql/create/= and every hand-written C++ file
+under =projects/ores.*/=. It fails on a writer of an entity table that is not
+a repository, the purge or a fixture. It runs in
+=.github/workflows/codegen-drift.yml= and locally:
+
+#+begin_src sh
+python3 projects/ores.codegen/scripts/check_entity_table_writes.py
+#+end_src
+
+** The ratchet baseline
+
+=projects/ores.codegen/scripts/entity_table_writes_baseline.json= names the
+writers that predate the rule, each with a reason. The check fails on a writer
+that is not in it, and on an entry that no longer writes, so the list can only
+shrink. Remove an entry when its writer is fixed. Run =--write-baseline= only
+to accept a new writer, and state its reason.
+
+* See also
+
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]] — the sibling rule for whose table a component may reach.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the relational database and what reaches it.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — the policies a written row is held to.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that owns the DDL and the purge.

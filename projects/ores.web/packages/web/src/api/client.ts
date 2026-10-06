@@ -945,6 +945,8 @@ export const api = {
             readonly type?: string;
             readonly status?: string;
             readonly includeTest?: boolean;
+            readonly sort?: string;
+            readonly descending?: boolean;
             readonly offset?: number;
             readonly limit?: number;
         } = {},
@@ -958,6 +960,12 @@ export const api = {
         }
         if (query.includeTest === true) {
             params.set('includeTest', 'true');
+        }
+        if (query.sort !== undefined && query.sort !== '') {
+            params.set('sort', query.sort);
+        }
+        if (query.descending === true) {
+            params.set('descending', 'true');
         }
         if (query.offset !== undefined) {
             params.set('offset', String(query.offset));
@@ -979,11 +987,26 @@ export const api = {
     },
 
     /** One page of the parties of the session's own tenant. */
-    async parties(query: { readonly offset: number; readonly limit: number }): Promise<PartyPage> {
+    async parties(query: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly search?: string;
+        readonly sort?: string;
+        readonly descending?: boolean;
+    }): Promise<PartyPage> {
         const params = new URLSearchParams({
             offset: String(query.offset),
             limit: String(query.limit),
         });
+        if (query.search !== undefined && query.search !== '') {
+            params.set('search', query.search);
+        }
+        if (query.sort !== undefined && query.sort !== '') {
+            params.set('sort', query.sort);
+        }
+        if (query.descending === true) {
+            params.set('descending', 'true');
+        }
         return partyPageSchema.parse(
             await request(`/api/parties?${params.toString()}`, { method: 'GET' }),
         );
@@ -1004,12 +1027,27 @@ export const api = {
     /** One page of a tenant's parties, read inside it from system administration. */
     async tenantParties(
         code: string,
-        query: { readonly offset: number; readonly limit: number },
+        query: {
+            readonly offset: number;
+            readonly limit: number;
+            readonly search?: string;
+            readonly sort?: string;
+            readonly descending?: boolean;
+        },
     ): Promise<PartyPage> {
         const params = new URLSearchParams({
             offset: String(query.offset),
             limit: String(query.limit),
         });
+        if (query.search !== undefined && query.search !== '') {
+            params.set('search', query.search);
+        }
+        if (query.sort !== undefined && query.sort !== '') {
+            params.set('sort', query.sort);
+        }
+        if (query.descending === true) {
+            params.set('descending', 'true');
+        }
         return partyPageSchema.parse(
             await request(`/api/tenants/${encodeURIComponent(code)}/parties?${params.toString()}`, {
                 method: 'GET',

@@ -170,6 +170,29 @@ describe('the party page', () => {
     });
 
     /*
+     * The search and the order are the caller's, and reach the server as the
+     * filter and the order of the page request.
+     */
+    it('sends the search and the order the caller asks for', async () => {
+        const sent: Recorded[] = [];
+        await readPartiesPage(callerAnswering(reply([], 0), sent), {
+            offset: 0,
+            limit: 20,
+            search: 'acme',
+            sort: 'full_name',
+            descending: true,
+        });
+
+        expect(sent[0]?.body).toEqual({
+            offset: 0,
+            limit: 20,
+            order: { field: 'full_name', descending: true },
+            as_of: null,
+            filter: { id_one_of: null, search: 'acme' },
+        });
+    });
+
+    /*
      * A parent on another page is read by its id, once for every such parent,
      * so a page costs two reads at most however its parents fall.
      */
@@ -199,7 +222,7 @@ describe('the party page', () => {
             limit: 2,
             order: { field: '', descending: false },
             as_of: null,
-            filter: { id_one_of: [SYSTEM_PARTY, ACME] },
+            filter: { id_one_of: [SYSTEM_PARTY, ACME], search: null },
         });
         // The system party is not visible to this session, so it is not answered.
         expect(page.parties.map((p) => p.parentName)).toEqual([

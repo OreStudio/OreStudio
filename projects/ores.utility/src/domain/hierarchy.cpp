@@ -33,8 +33,10 @@ hierarchy_node
 build_node(const boost::uuids::uuid& id,
            const std::unordered_map<boost::uuids::uuid, hierarchy_flat_row, uuid_hash>& rowsById,
            const std::unordered_map<boost::uuids::uuid, std::vector<boost::uuids::uuid>, uuid_hash>&
-               childrenOf) {
+               childrenOf,
+           std::unordered_set<boost::uuids::uuid, uuid_hash>& placed) {
     const auto& row = rowsById.at(id);
+    placed.insert(id);
 
     hierarchy_node node;
     node.id = row.id;
@@ -44,8 +46,14 @@ build_node(const boost::uuids::uuid& id,
     auto childrenIt = childrenOf.find(id);
     if (childrenIt != childrenOf.end()) {
         node.children.reserve(childrenIt->second.size());
-        for (const auto& childId : childrenIt->second)
-            node.children.push_back(build_node(childId, rowsById, childrenOf));
+        for (const auto& childId : childrenIt->second) {
+            // A child already placed is a cycle or a second claim on one
+            // child; descending again would recurse forever or duplicate the
+            // subtree.
+            if (placed.contains(childId))
+                continue;
+            node.children.push_back(build_node(childId, rowsById, childrenOf, placed));
+        }
     }
 
     return node;
@@ -84,10 +92,24 @@ std::vector<hierarchy_node> build_tree(const std::vector<hierarchy_flat_row>& ro
             rootIds.push_back(id);
     }
 
+    std::unordered_set<boost::uuids::uuid, uuid_hash> placed;
     std::vector<hierarchy_node> roots;
     roots.reserve(rootIds.size());
-    for (const auto& id : rootIds)
-        roots.push_back(build_node(id, rowsById, childrenOf));
+    for (const auto& id : rootIds) {
+        if (placed.contains(id))
+            continue;
+        roots.push_back(build_node(id, rowsById, childrenOf, placed));
+    }
+
+    // A parent cycle has no root, so nobody reaches its rows: a cycle is a
+    // ring with no entry. Promote every row left unplaced to a root, in input
+    // order, so the forest holds every row exactly once. The cycle is broken
+    // at the row it is first entered, which becomes a root.
+    for (const auto& id : orderedIds) {
+        if (placed.contains(id))
+            continue;
+        roots.push_back(build_node(id, rowsById, childrenOf, placed));
+    }
 
     return roots;
 }

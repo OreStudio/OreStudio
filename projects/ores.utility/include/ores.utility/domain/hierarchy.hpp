@@ -68,6 +68,12 @@ struct hierarchy_node final {
  * crash, since badly-seeded data can violate the "one root per tenant"
  * convention that party/counterparty hierarchies otherwise follow.
  *
+ * A parent cycle (A's parent is B and B's parent is A) has no root, so no
+ * walk from a root reaches it. Every row left unreached is promoted to a
+ * root in input order, and a child already placed is never descended into
+ * again, so each row appears exactly once in the forest and the walk
+ * terminates.
+ *
  * Rows whose id appears more than once in the input are handled on a
  * best-effort basis: the first occurrence wins and later duplicates are
  * discarded.

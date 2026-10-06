@@ -31,6 +31,7 @@ import {
 import { api } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { RecordTable, type ListSource } from '../refdata/RecordList.js';
 import { RecordDetails, RecordHeader } from '../refdata/records.js';
 import { Avatar, imageUrl } from '../ui/Images.js';
@@ -80,7 +81,7 @@ function TenantBody({ detail }: { readonly detail: TenantDetailResponse }): Reac
     const [removing, setRemoving] = useState(false);
     const { tab, bar } = useTabs({
         label: tenant.name,
-        tabs: ['details', 'parties', 'people'],
+        tabs: ['details', 'parties', 'people', 'history'],
         titleOf: (candidate) => t(`tenants.detail.tab.${candidate}`),
     });
     const text = (value: string): ReactNode =>
@@ -160,6 +161,9 @@ function TenantBody({ detail }: { readonly detail: TenantDetailResponse }): Reac
             )}
             {tab === 'parties' && <TenantParties code={tenant.code} />}
             {tab === 'people' && <TenantPeople code={tenant.code} />}
+            {tab === 'history' && (
+                <HistoryPanel entityType="ores.iam.tenant" entityId={tenant.code} />
+            )}
             {removing && (
                 <RemoveTenantDialog
                     tenant={tenant}
@@ -178,11 +182,24 @@ function TenantParties({ code }: { readonly code: string }): ReactNode {
         key: 'tenant-parties',
         scope: code,
         read: async (page) => {
-            const read = await api.tenantParties(code, { offset: page.offset, limit: page.limit });
+            const read = await api.tenantParties(code, {
+                offset: page.offset,
+                limit: page.limit,
+                search: page.search,
+                sort: page.sort,
+                descending: page.descending,
+            });
             return { rows: read.parties, total: read.totalCount };
         },
-        search: false,
-        sortable: [],
+        search: true,
+        sortable: [
+            'short_code',
+            'full_name',
+            'party_category',
+            'party_type',
+            'status',
+            'business_center_code',
+        ],
         mayAdd: false,
     };
     return (

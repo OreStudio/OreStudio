@@ -118,6 +118,12 @@ party_service::list_parties(const messaging::list_parties_request& request) {
         response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "filter_too_large";
+        response.result.message = "The search text is longer than 256 characters.";
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.

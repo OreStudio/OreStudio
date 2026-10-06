@@ -89,12 +89,14 @@ const historyQuerySchema = z.object({
     entityId: z.string().min(1).max(200),
 });
 
-/** The entity types whose history the BFF serves: those of the lists and the versioned records it serves. */
+/** The entity types whose history the BFF serves: the lists, the versioned records, and the tenant. */
 const HISTORY_TYPES = new Set([
     ...CLASSIFICATION_LISTS.map((list) => list.entityType),
     ...REFDATA_RECORDS.filter((resource) => resource.versioned).map(
         (resource) => resource.entityType,
     ),
+    // The tenant is not a refdata record: IAM serves the tenant's own versions.
+    'ores.iam.tenant',
 ]);
 
 /**

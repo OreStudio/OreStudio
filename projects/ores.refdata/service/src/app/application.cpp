@@ -30,7 +30,6 @@
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/currency_market_tier_changed_event.hpp"
 #include "ores.refdata.api/eventing/monetary_nature_changed_event.hpp"
-#include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/party_status_changed_event.hpp"
@@ -94,9 +93,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     // Generated per-entity event mappings (book, business_day_convention_type,
-    // business_unit, business_unit_type, country, currency, party_id_scheme,
-    // party_type, portfolio, purpose_type). See event_registrar.cpp for why
-    // not every entity is migrated here yet.
+    // business_unit, business_unit_type, country, currency, party,
+    // party_id_scheme, party_type, portfolio, purpose_type). See
+    // event_registrar.cpp for why not every entity is migrated here yet.
     auto generated_event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
 
@@ -114,8 +113,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.refdata.currency_market_tier", "ores_refdata_currency_market_tiers");
     ev::service::registrar::register_mapping<rdev::monetary_nature_changed_event>(
         event_source, "ores.refdata.monetary_nature", "ores_refdata_monetary_natures");
-    ev::service::registrar::register_mapping<rdev::party_changed_event>(
-        event_source, "ores.refdata.party", "ores_refdata_parties");
     ev::service::registrar::register_mapping<rdev::party_contact_information_changed_event>(
         event_source,
         "ores.refdata.party_contact_information",
@@ -182,17 +179,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ev::domain::entity_change_event{.entity = "ores.refdata.monetary_nature",
                                                 .timestamp = e.timestamp,
                                                 .entity_ids = e.codes,
-                                                .tenant_id = e.tenant_id});
-        });
-
-    auto party_sub =
-        event_bus.subscribe<rdev::party_changed_event>([&nats](const rdev::party_changed_event& e) {
-            publish_entity_event(
-                nats,
-                std::string(ev::domain::event_traits<rdev::party_changed_event>::name),
-                ev::domain::entity_change_event{.entity = "ores.refdata.party",
-                                                .timestamp = e.timestamp,
-                                                .entity_ids = e.party_ids,
                                                 .tenant_id = e.tenant_id});
         });
 

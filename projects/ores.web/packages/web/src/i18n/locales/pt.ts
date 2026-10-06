@@ -298,7 +298,12 @@ const pt: SourceCatalogue = {
         detail: {
             viewOnlyHint:
                 'As partes e as pessoas deste inquilino são alteradas pelos seus próprios administradores.',
-            tab: { details: 'Detalhes', parties: 'Partes', people: 'Pessoas' },
+            tab: {
+                details: 'Detalhes',
+                parties: 'Partes',
+                people: 'Pessoas',
+                history: 'Histórico',
+            },
             person: 'Nome',
             username: 'Utilizador',
             email: 'Email',

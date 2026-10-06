@@ -39,13 +39,15 @@ export function tenantPath(code?: string): string {
     return code === undefined ? '/tenants' : `/tenants/${encodeURIComponent(code)}`;
 }
 
-/** The roster query for one page of the list: its search, filters and bounds. */
+/** The roster query for one page of the list: its search, order, filters and bounds. */
 export function tenantQuery(page: PageRequest): Parameters<typeof api.tenants>[0] {
     return {
         search: page.search,
         type: page.filters['type'] ?? '',
         status: page.filters['status'] ?? '',
         includeTest: page.filters['test'] === '1',
+        sort: page.sort,
+        descending: page.descending,
         offset: page.offset,
         limit: page.limit,
     };
@@ -91,7 +93,7 @@ export function TenantsPage(): ReactNode {
         key: 'tenants',
         read: async (page) => tenantListPage(await api.tenants(tenantQuery(page)), t, plural),
         search: true,
-        sortable: [],
+        sortable: ['code', 'name'],
         filters: [
             {
                 kind: 'choice',
@@ -130,8 +132,14 @@ export function TenantsPage(): ReactNode {
                     header: t('tenants.code'),
                     cell: (tenant) => tenant.code,
                     mono: true,
+                    sort: 'code',
                 },
-                { id: 'name', header: t('tenants.name'), cell: (tenant) => tenant.name },
+                {
+                    id: 'name',
+                    header: t('tenants.name'),
+                    cell: (tenant) => tenant.name,
+                    sort: 'name',
+                },
                 {
                     id: 'hostname',
                     header: t('tenants.hostname'),

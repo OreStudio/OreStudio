@@ -27,15 +27,28 @@ import { FlaggedCode } from '../images/flags.js';
 import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { imageUrl } from '../ui/Images.js';
 
-/** The parties of the session's own tenant; the server pages them in key order. */
+/** The parties of the session's own tenant; the server pages them in the caller's order. */
 const PARTIES: ListSource<TenantParty> = {
     key: 'parties',
     read: async (page) => {
-        const read = await api.parties({ offset: page.offset, limit: page.limit });
+        const read = await api.parties({
+            offset: page.offset,
+            limit: page.limit,
+            search: page.search,
+            sort: page.sort,
+            descending: page.descending,
+        });
         return { rows: read.parties, total: read.totalCount };
     },
-    search: false,
-    sortable: [],
+    search: true,
+    sortable: [
+        'short_code',
+        'full_name',
+        'party_category',
+        'party_type',
+        'status',
+        'business_center_code',
+    ],
     mayAdd: false,
 };
 
@@ -48,14 +61,31 @@ export function partyColumns(
     tenant?: string,
 ): readonly ListColumn<TenantParty>[] {
     return [
-        { id: 'code', header: t('parties.code'), cell: (party) => party.code, mono: true },
-        { id: 'name', header: t('parties.name'), cell: (party) => party.name },
-        { id: 'category', header: t('parties.category'), cell: (party) => party.category },
-        { id: 'type', header: t('parties.type'), cell: (party) => party.type },
-        { id: 'status', header: t('parties.status'), cell: (party) => party.status },
+        {
+            id: 'code',
+            header: t('parties.code'),
+            cell: (party) => party.code,
+            mono: true,
+            sort: 'short_code',
+        },
+        { id: 'name', header: t('parties.name'), cell: (party) => party.name, sort: 'full_name' },
+        {
+            id: 'category',
+            header: t('parties.category'),
+            cell: (party) => party.category,
+            sort: 'party_category',
+        },
+        { id: 'type', header: t('parties.type'), cell: (party) => party.type, sort: 'party_type' },
+        {
+            id: 'status',
+            header: t('parties.status'),
+            cell: (party) => party.status,
+            sort: 'status',
+        },
         {
             id: 'business_centre',
             header: t('parties.businessCentre'),
+            sort: 'business_center_code',
             cell: (party) => (
                 <FlaggedCode
                     code={party.businessCentreCode}

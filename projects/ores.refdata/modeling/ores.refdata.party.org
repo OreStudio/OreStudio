@@ -52,6 +52,8 @@ Surrogate key for the party record.
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
+:sortable:    true
+:searchable:  true
 :END:
 
 Full legal name of the party.
@@ -67,6 +69,8 @@ std::string(faker::company::companyName())
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:sortable:    true
+:searchable:  true
 :END:
 
 Short code for quick reference.
@@ -79,9 +83,10 @@ std::string(faker::string::alpha(6))
 
 ** codename
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:       text
+:cpp_type:   std::string
+:nullable:   false
+:searchable: true
 :END:
 
 Globally unique human-readable codename (adjective_noun).
@@ -115,6 +120,7 @@ std::nullopt
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "Operational"
+:sortable:      true
 :END:
 
 Structural classification of this party.
@@ -136,6 +142,7 @@ std::string("Operational")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Classification of this party.
@@ -167,6 +174,7 @@ std::nullopt
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Business center location code.
@@ -189,6 +197,7 @@ std::string("WRLD")
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:sortable: true
 :END:
 
 Current lifecycle status.

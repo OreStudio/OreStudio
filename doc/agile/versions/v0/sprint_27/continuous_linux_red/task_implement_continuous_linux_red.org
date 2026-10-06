@@ -27,11 +27,11 @@ and stop the sccache steps from failing on a run that never reached the build.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B30B52D7-E6C9-438B-8F38-DA776F0C86A9][Hotfix: Continuous Linux red and the site build cancelled on every push]] |
-| Now          | Checker fixed; the mapping test passes and the checker passes at main's vcpkg pin. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open the PR.                |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -123,3 +123,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Boost port check resolves an include to the port that ships it, so
+boost/functional/hash.hpp no longer asks for boost-functional. The check passes
+on main's tree at vcpkg pin 19780d9cd. Five tests in
+=projects/ores.codegen/tests/test_check_boost_dependencies.py= pin the mapping,
+and codegen-drift runs them when the check changes.
+
+The sccache delete, save and statistics steps run only when the CTest step
+started, so a failure before the build neither reddens the run a second time
+nor deletes the saved cache.

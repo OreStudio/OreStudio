@@ -7,41 +7,61 @@
 #+level: s1
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/grant-and-revoke-with-the-report-schedule
+#+pr: 2685
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
-#+environment:
+#+updated: 2026-10-06
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person who schedules a report definition gives IAM their consent for its
+runs, and unscheduling it withdraws that consent. The ReportRun role exists in
+every tenant.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Not yet started.                       |
+| Now          | Reconciliation fixed; re-running the live schedule/unschedule cycle. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Re-run the live test, then open the PR. |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- Scheduling creates a run grant on behalf of the person, before the job, and
+  records its id on the definition; a refused grant schedules nothing.
+- A definition the scheduler cannot take gets no grant: an invalid cron fails
+  before the grant, and a refused job revokes the grant it was given.
+- A session acting for another party than the definition's cannot schedule it.
+- Unscheduling revokes the grant; a revoke the person may not make leaves the
+  grant recorded and logs why.
+- The =ReportRun= role holds the permissions the run's steps are checked for,
+  and every tenant receives it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Of the six moments the design gives a grant, schedule and unschedule are the
+ones reporting can act on now, because both already relay the person's token.
+A manual run's grant, suspension on lapse, revoke on delete and re-grant on a
+change of party each need the exchange or a person's token where reporting has
+none; they move to the exchange task.
+
+1. =run_grant_id= on the report definition, regenerated on every surface.
+2. =schedule_one= asks IAM for the grant before it puts the job; =unschedule_one=
+   revokes it after it deletes the job. Both call IAM with the relayed client.
+3. The schedule handler refuses a session that acts for another party.
+4. Seed =ReportRun= with the codes the run's steps check: the run setup, the
+   curve configuration, conventions, pricing model and today's market documents,
+   storage objects, and the compute batch and workunits.
 
 * Measurements
 
@@ -59,6 +79,29 @@ task and name that file in the Command column.
 
 * Notes
 
+- The first live test scheduled /Intercompany Exposure Matrix/, whose cron is
+  invalid. IAM made the grant, then the cron check failed, and the grant stayed
+  active with no job behind it. =schedule_one= now checks the cron before it
+  asks for the grant, and revokes the grant when the scheduler refuses the job.
+- The cron =0 6 * * 1,15= in =reporting_report_definitions_populate.sql= puts
+  15 in the day-of-week field, which takes 0 to 7. It most likely means days 1
+  and 15 of the month, =0 6 1,15 * *=. That is a seed data defect outside this
+  task.
+- Reconciliation used to schedule every unscheduled definition at service
+  start and on every definition change, as the service account and with no
+  grant, so it overrode what a person had just unscheduled. It now keeps a
+  report job only when a definition records both the job and the grant behind
+  it. It removes every other report job, restores a granted definition's job if
+  the scheduler lost it (the recorded grant is the consent, so no person is
+  needed), and clears the =scheduler_job_id= of a definition whose job has no
+  grant so the person can schedule it again. It never creates a schedule no
+  person asked for. This changes visible behavior: seeded definitions no
+  longer schedule themselves.
+- The schedule handler built the scheduling service with the relayed client as
+  its only client, so scheduler puts would have carried the person's token and
+  the grant calls would have had no client at all. It now passes the service
+  client for scheduler jobs and the relayed client for the grants.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2685][#2685]] | [reporting] Grant and revoke runs with the report schedule |
 
 * Review
 
@@ -83,3 +126,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Unit tests: 57 cases in =ores.reporting.core.tests= pass, including the new
+  reconciliation-decision cases in =service_scheduling_plan_tests.cpp=.
+- Live test against the running fleet (tenant Acme Corporation, party Acme
+  Corporation Plc, definition /Headline Position/):
+  - =schedule-report-definitions= returned =scheduled_count: 1=. The definition
+    then carried a =scheduler_job_id= and a =run_grant_id= and the matching
+    scheduler job existed. Reconciliation ran on the change and kept the job.
+  - =unschedule-report-definitions= returned =unscheduled_count: 1=. The
+    definition's =scheduler_job_id= and =run_grant_id= were cleared, the
+    scheduler job was gone, and reconciliation did not put it back.
+  - On the first start of the fixed service, reconciliation removed the 181
+    report jobs the scheduler held, none of which had a grant, and cleared 156
+    definitions whose job had no grant.

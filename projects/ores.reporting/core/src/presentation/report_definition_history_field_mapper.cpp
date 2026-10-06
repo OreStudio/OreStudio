@@ -47,6 +47,9 @@ render_report_definition_fields(const domain::report_definition& v) {
     fields.push_back({.name = "Scheduler Job ID",
                       .value = v.scheduler_job_id ? boost::uuids::to_string(*v.scheduler_job_id) :
                                                     std::string{}});
+    fields.push_back(
+        {.name = "Run Grant ID",
+         .value = v.run_grant_id ? boost::uuids::to_string(*v.run_grant_id) : std::string{}});
     fields.push_back({.name = "Pre Processing", .value = v.pre_processing});
     fields.push_back({.name = "Prepared Input Key", .value = v.prepared_input_key});
     fields.push_back({.name = "Post Processing", .value = v.post_processing});

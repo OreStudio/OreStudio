@@ -49,6 +49,7 @@ struct report_definition_write {
     std::string schedule_expression;
     std::string concurrency_policy;
     std::optional<boost::uuids::uuid> scheduler_job_id;
+    std::optional<boost::uuids::uuid> run_grant_id;
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;

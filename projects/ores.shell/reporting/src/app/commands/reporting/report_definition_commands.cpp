@@ -142,8 +142,8 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <name> <party_id> <description> <report_type> <fsm_state_id> <schedule_expression> "
-        "<concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key> "
-        "<post_processing> <is_official> <reason> <commentary>");
+        "<concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing> "
+        "<prepared_input_key> <post_processing> <is_official> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,9 +151,9 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
-        "<schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing> "
-        "<prepared_input_key> <post_processing> <is_official> <reason> <commentary> [--version "
-        "<n>]");
+        "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
+        "<pre_processing> <prepared_input_key> <post_processing> <is_official> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,8 +161,9 @@ void report_definition_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <name> <party_id> <description> <report_type> <fsm_state_id> "
-        "<schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing> "
-        "<prepared_input_key> <post_processing> <is_official> <reason> <commentary>");
+        "<schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> "
+        "<pre_processing> <prepared_input_key> <post_processing> <is_official> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +358,8 @@ void report_definition_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -375,6 +376,7 @@ void report_definition_commands::process_add(std::ostream& out,
             req.change.write.concurrency_policy, parsed->positionals[next++], "concurrency_policy");
         read_token(
             req.change.write.scheduler_job_id, parsed->positionals[next++], "scheduler_job_id");
+        read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         read_token(req.change.write.pre_processing, parsed->positionals[next++], "pre_processing");
         read_token(
             req.change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");
@@ -423,8 +425,8 @@ void report_definition_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -441,6 +443,7 @@ void report_definition_commands::process_set(std::ostream& out,
             req.change.write.concurrency_policy, parsed->positionals[next++], "concurrency_policy");
         read_token(
             req.change.write.scheduler_job_id, parsed->positionals[next++], "scheduler_job_id");
+        read_token(req.change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
         read_token(req.change.write.pre_processing, parsed->positionals[next++], "pre_processing");
         read_token(
             req.change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");
@@ -501,8 +504,8 @@ void report_definition_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -521,6 +524,7 @@ void report_definition_commands::process_put_many(std::ostream& out,
                 change.write.concurrency_policy, parsed->positionals[next++], "concurrency_policy");
             read_token(
                 change.write.scheduler_job_id, parsed->positionals[next++], "scheduler_job_id");
+            read_token(change.write.run_grant_id, parsed->positionals[next++], "run_grant_id");
             read_token(change.write.pre_processing, parsed->positionals[next++], "pre_processing");
             read_token(
                 change.write.prepared_input_key, parsed->positionals[next++], "prepared_input_key");

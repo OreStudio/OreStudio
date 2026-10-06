@@ -92,6 +92,7 @@ domain::report_definition to_domain(const messaging::report_definition_write& wr
     v.schedule_expression = write.schedule_expression;
     v.concurrency_policy = write.concurrency_policy;
     v.scheduler_job_id = write.scheduler_job_id;
+    v.run_grant_id = write.run_grant_id;
     v.pre_processing = write.pre_processing;
     v.prepared_input_key = write.prepared_input_key;
     v.post_processing = write.post_processing;

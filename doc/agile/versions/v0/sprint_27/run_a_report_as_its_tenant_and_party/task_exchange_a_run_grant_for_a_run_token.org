@@ -66,6 +66,20 @@ task and name that file in the Command column.
   log and a generic =partition_token_cache= in =ores.eventing=. Build on those
   rather than a second set.
 
+- The exchange must check that the grant's resource names the run's definition,
+  =reporting.report_definition/<id>=. The definition's =run_grant_id= is a
+  generated column a person can set through the generic report definition
+  write, so the exchange, not the column, must tie a grant to its definition.
+- Moments deferred here from the schedule task, because each needs the
+  exchange or a person's token where reporting has none: a one-run grant for a
+  manual trigger; suspending a definition when an exchange answers
+  =grant_lapsed=; revoking a definition's grant when it is deleted; and a new
+  grant when its party changes.
+- Reconciliation schedules every unscheduled definition at service start as
+  the service account, so its jobs carry no grant. Once runs exchange a grant,
+  decide whether reconciliation re-creates jobs only for definitions that hold
+  an active grant, and leaves the rest unscheduled.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

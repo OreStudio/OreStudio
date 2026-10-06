@@ -88,7 +88,7 @@ public:
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(req_ctx);
             auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
-            service::report_scheduling_service scheduler(ctx_, delegated);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
@@ -99,6 +99,15 @@ public:
                     auto def = svc.get_definition(sg(id));
                     if (!def)
                         continue;
+                    // The run grant is made for the session's party, so a
+                    // session acting for another party would grant the wrong one.
+                    if (req_ctx.party_id() != def->party_id) {
+                        failed_ids.push_back(id);
+                        if (first_error.empty())
+                            first_error = "Act for the definition's party to schedule it: its "
+                                          "runs act in that party, with your consent.";
+                        continue;
+                    }
                     auto result = scheduler.schedule_one(*def, actor);
                     if (!result) {
                         failed_ids.push_back(id);
@@ -140,7 +149,7 @@ public:
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(req_ctx);
             auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
-            service::report_scheduling_service scheduler(ctx_, delegated);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;

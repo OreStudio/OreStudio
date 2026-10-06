@@ -85,6 +85,7 @@ export interface ListIntradayPowerCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: IntradayPowerCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListIntradayPowerCurveConfigsResponse {

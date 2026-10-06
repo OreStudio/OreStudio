@@ -81,6 +81,7 @@ export interface ListBarrierTypesRequest {
     limit: number;
     order: Order;
     filter: BarrierTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBarrierTypesResponse {

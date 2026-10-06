@@ -83,6 +83,7 @@ export interface ListRoundingTypesRequest {
     limit: number;
     order: Order;
     filter: RoundingTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRoundingTypesResponse {

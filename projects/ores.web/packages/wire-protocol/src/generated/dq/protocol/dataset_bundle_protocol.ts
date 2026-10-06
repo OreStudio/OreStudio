@@ -83,6 +83,7 @@ export interface ListDatasetBundlesRequest {
     limit: number;
     order: Order;
     filter: DatasetBundlesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDatasetBundlesResponse {

@@ -82,6 +82,7 @@ export interface ListDefaultCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: DefaultCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDefaultCurveConfigsResponse {

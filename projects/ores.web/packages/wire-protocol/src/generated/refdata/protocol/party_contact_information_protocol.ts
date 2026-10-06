@@ -94,6 +94,7 @@ export interface ListPartyContactInformationsRequest {
     limit: number;
     order: Order;
     filter: PartyContactInformationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPartyContactInformationsResponse {

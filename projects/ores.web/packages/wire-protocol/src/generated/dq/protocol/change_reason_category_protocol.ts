@@ -81,6 +81,7 @@ export interface ListChangeReasonCategoriesRequest {
     limit: number;
     order: Order;
     filter: ChangeReasonCategoriesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListChangeReasonCategoriesResponse {

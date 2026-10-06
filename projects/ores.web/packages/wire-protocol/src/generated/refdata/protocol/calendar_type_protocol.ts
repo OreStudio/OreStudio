@@ -83,6 +83,7 @@ export interface ListCalendarTypesRequest {
     limit: number;
     order: Order;
     filter: CalendarTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCalendarTypesResponse {

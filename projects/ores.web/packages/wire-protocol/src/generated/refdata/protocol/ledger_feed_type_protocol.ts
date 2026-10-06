@@ -83,6 +83,7 @@ export interface ListLedgerFeedTypesRequest {
     limit: number;
     order: Order;
     filter: LedgerFeedTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListLedgerFeedTypesResponse {

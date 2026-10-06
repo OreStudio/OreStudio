@@ -102,6 +102,7 @@ struct list_market_series_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<market_series_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_market_series_response {

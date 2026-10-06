@@ -97,6 +97,7 @@ export interface ListBaseCorrelationConfigsRequest {
     limit: number;
     order: Order;
     filter: BaseCorrelationConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBaseCorrelationConfigsResponse {

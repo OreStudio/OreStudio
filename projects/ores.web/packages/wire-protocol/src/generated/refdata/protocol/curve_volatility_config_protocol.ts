@@ -110,6 +110,7 @@ export interface ListCurveVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: CurveVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveVolatilityConfigsResponse {

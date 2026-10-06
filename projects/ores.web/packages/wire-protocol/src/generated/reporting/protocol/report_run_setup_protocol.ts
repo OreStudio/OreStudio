@@ -124,6 +124,7 @@ export interface ListReportRunSetupsRequest {
     limit: number;
     order: Order;
     filter: ReportRunSetupsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportRunSetupsResponse {

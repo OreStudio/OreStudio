@@ -83,6 +83,7 @@ export interface ListPartyTypesRequest {
     limit: number;
     order: Order;
     filter: PartyTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPartyTypesResponse {

@@ -105,6 +105,7 @@ export interface ListDefaultCurveConfigurationsRequest {
     limit: number;
     order: Order;
     filter: DefaultCurveConfigurationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDefaultCurveConfigurationsResponse {

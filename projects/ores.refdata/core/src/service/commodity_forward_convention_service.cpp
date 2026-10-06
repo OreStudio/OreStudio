@@ -116,9 +116,24 @@ commodity_forward_convention_service::list_commodity_forward_conventions(
         response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.commodity_forward_conventions =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_commodity_forward_convention_count(ctx_, request.filter);
+    // A stated instant is parsed here, so a malformed one is the caller's
+    // mistake rather than a database error, and the store reads one form.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        try {
+            as_of = ores::platform::time::datetime::to_iso8601_utc(
+                ores::platform::time::datetime::from_iso8601_utc(*request.as_of));
+        } catch (const std::invalid_argument&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
+    response.commodity_forward_conventions = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total =
+        repo_.get_total_commodity_forward_convention_count(ctx_, request.filter, as_of);
     return response;
 }
 

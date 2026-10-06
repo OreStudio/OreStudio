@@ -81,6 +81,7 @@ export interface ListFraConventionsRequest {
     limit: number;
     order: Order;
     filter: FraConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFraConventionsResponse {

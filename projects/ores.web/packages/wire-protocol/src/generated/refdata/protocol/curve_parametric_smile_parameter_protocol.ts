@@ -85,6 +85,7 @@ export interface ListCurveParametricSmileParametersRequest {
     limit: number;
     order: Order;
     filter: CurveParametricSmileParametersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveParametricSmileParametersResponse {

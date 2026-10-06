@@ -93,6 +93,7 @@ export interface ListAccountContactInformationsRequest {
     limit: number;
     order: Order;
     filter: AccountContactInformationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAccountContactInformationsResponse {

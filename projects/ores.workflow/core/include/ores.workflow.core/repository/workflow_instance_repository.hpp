@@ -147,7 +147,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt);
+                const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active workflow instances.
@@ -156,7 +157,8 @@ public:
      */
     std::uint32_t get_total_instance_count(
         context ctx,
-        const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt);
+        const std::optional<messaging::workflow_instances_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a workflow instance by closing its temporal validity.

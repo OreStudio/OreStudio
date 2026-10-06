@@ -98,6 +98,7 @@ struct list_curve_configuration_sections_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<curve_configuration_sections_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_curve_configuration_sections_response {

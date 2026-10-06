@@ -92,6 +92,7 @@ export interface ListOisConventionsRequest {
     limit: number;
     order: Order;
     filter: OisConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListOisConventionsResponse {

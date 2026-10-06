@@ -87,6 +87,7 @@ export interface ListTodaysMarketConfigurationBindingsRequest {
     limit: number;
     order: Order;
     filter: TodaysMarketConfigurationBindingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTodaysMarketConfigurationBindingsResponse {

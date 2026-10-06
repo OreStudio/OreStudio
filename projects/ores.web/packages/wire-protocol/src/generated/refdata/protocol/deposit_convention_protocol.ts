@@ -87,6 +87,7 @@ export interface ListDepositConventionsRequest {
     limit: number;
     order: Order;
     filter: DepositConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDepositConventionsResponse {

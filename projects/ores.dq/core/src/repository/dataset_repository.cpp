@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_entity.hpp"
 #include "ores.dq.core/repository/dataset_mapper.hpp"
@@ -284,34 +285,33 @@ dataset_repository::read_latest(context ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
-                                const std::optional<messaging::datasets_filter>& filter) {
+                                const std::optional<messaging::datasets_filter>& filter,
+                                const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query =
+        sqlgen::read<std::vector<dataset_entity>> | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<dataset_entity, domain::dataset>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return dataset_mapper::map(entities); },
         lg(),
         "Reading latest datasets with pagination.");
 }
 
-std::uint32_t dataset_repository::get_total_dataset_count(
-    context ctx, const std::optional<messaging::datasets_filter>& filter) {
+std::uint32_t
+dataset_repository::get_total_dataset_count(context ctx,
+                                            const std::optional<messaging::datasets_filter>& filter,
+                                            const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<dataset_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<dataset_entity>>;
 
     return execute_count_query<dataset_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting datasets");
+        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting datasets");
 }
 
 std::vector<domain::dataset> dataset_repository::read_latest(context ctx,

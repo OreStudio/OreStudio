@@ -91,6 +91,7 @@ export interface ListCurveBootstrapConfigsRequest {
     limit: number;
     order: Order;
     filter: CurveBootstrapConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveBootstrapConfigsResponse {

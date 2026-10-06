@@ -85,6 +85,7 @@ export interface ListBondOptionsRequest {
     limit: number;
     order: Order;
     filter: BondOptionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondOptionsResponse {

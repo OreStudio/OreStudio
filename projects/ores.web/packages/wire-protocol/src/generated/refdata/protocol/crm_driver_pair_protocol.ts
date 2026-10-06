@@ -85,6 +85,7 @@ export interface ListCrmDriverPairsRequest {
     limit: number;
     order: Order;
     filter: CrmDriverPairsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCrmDriverPairsResponse {

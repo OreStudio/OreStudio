@@ -83,6 +83,7 @@ export interface ListCurveRolesRequest {
     limit: number;
     order: Order;
     filter: CurveRolesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveRolesResponse {

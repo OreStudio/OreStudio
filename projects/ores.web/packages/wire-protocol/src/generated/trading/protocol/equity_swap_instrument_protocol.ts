@@ -91,6 +91,7 @@ export interface ListEquitySwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquitySwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquitySwapInstrumentsResponse {

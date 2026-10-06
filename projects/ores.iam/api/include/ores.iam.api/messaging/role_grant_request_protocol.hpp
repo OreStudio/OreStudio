@@ -99,6 +99,7 @@ struct list_role_grant_requests_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<role_grant_requests_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_role_grant_requests_response {

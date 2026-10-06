@@ -102,6 +102,7 @@ struct list_ir_curve_bootstrap_pillars_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<ir_curve_bootstrap_pillars_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_ir_curve_bootstrap_pillars_response {

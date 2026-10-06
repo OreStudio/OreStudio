@@ -90,6 +90,7 @@ export interface ListNettingSetsRequest {
     limit: number;
     order: Order;
     filter: NettingSetsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNettingSetsResponse {

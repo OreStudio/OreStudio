@@ -85,6 +85,7 @@ export interface ListCrmEnabledDerivedPairsRequest {
     limit: number;
     order: Order;
     filter: CrmEnabledDerivedPairsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCrmEnabledDerivedPairsResponse {

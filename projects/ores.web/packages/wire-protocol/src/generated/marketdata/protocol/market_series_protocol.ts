@@ -86,6 +86,7 @@ export interface ListMarketSeriesRequest {
     limit: number;
     order: Order;
     filter: MarketSeriesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMarketSeriesResponse {

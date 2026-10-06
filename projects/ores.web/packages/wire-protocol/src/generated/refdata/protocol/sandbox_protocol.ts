@@ -91,6 +91,7 @@ export interface ListSandboxesRequest {
     limit: number;
     order: Order;
     filter: SandboxesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSandboxesResponse {

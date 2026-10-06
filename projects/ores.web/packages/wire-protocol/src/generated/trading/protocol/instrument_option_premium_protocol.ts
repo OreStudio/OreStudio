@@ -84,6 +84,7 @@ export interface ListInstrumentOptionPremiumsRequest {
     offset: number;
     limit: number;
     order: Order;
+    as_of: string | null;
 }
 
 export interface ListInstrumentOptionPremiumsResponse {

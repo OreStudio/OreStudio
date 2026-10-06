@@ -91,6 +91,7 @@ export interface ListCalendarEventsRequest {
     limit: number;
     order: Order;
     filter: CalendarEventsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCalendarEventsResponse {

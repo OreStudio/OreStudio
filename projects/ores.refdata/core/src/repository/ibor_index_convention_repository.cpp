@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_mapper.hpp"
@@ -297,40 +298,43 @@ std::vector<domain::ibor_index_convention> ibor_index_convention_repository::rea
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::ibor_index_conventions_filter>& filter) {
+    const std::optional<messaging::ibor_index_conventions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IBOR index conventions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<ibor_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<ibor_index_convention_entity, domain::ibor_index_convention>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return ibor_index_convention_mapper::map(entities); },
         lg(),
         "Reading latest IBOR index conventions with pagination.");
 }
 
 std::uint32_t ibor_index_convention_repository::get_total_ibor_index_convention_count(
-    context ctx, const std::optional<messaging::ibor_index_conventions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::ibor_index_conventions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IBOR index convention count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<ibor_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
 
     return execute_count_query<ibor_index_convention_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting IBOR index conventions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting IBOR index conventions");
 }
 
 std::vector<domain::ibor_index_convention>

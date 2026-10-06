@@ -89,6 +89,7 @@ export interface ListZeroConventionsRequest {
     limit: number;
     order: Order;
     filter: ZeroConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListZeroConventionsResponse {

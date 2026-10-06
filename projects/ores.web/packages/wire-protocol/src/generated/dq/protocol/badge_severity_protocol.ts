@@ -83,6 +83,7 @@ export interface ListBadgeSeveritiesRequest {
     limit: number;
     order: Order;
     filter: BadgeSeveritiesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBadgeSeveritiesResponse {

@@ -92,6 +92,7 @@ export interface ListEquityOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityOptionInstrumentsResponse {

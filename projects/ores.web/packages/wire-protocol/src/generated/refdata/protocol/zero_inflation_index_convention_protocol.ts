@@ -86,6 +86,7 @@ export interface ListZeroInflationIndexConventionsRequest {
     limit: number;
     order: Order;
     filter: ZeroInflationIndexConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListZeroInflationIndexConventionsResponse {

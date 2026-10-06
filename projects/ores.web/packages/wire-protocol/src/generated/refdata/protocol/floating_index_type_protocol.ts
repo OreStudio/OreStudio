@@ -81,6 +81,7 @@ export interface ListFloatingIndexTypesRequest {
     limit: number;
     order: Order;
     filter: FloatingIndexTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFloatingIndexTypesResponse {

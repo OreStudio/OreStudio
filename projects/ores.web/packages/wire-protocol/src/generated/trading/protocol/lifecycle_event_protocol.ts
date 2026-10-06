@@ -82,6 +82,7 @@ export interface ListLifecycleEventsRequest {
     limit: number;
     order: Order;
     filter: LifecycleEventsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListLifecycleEventsResponse {

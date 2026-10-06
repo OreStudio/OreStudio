@@ -88,6 +88,7 @@ export interface ListApprovalDecisionsRequest {
     limit: number;
     order: Order;
     filter: ApprovalDecisionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListApprovalDecisionsResponse {

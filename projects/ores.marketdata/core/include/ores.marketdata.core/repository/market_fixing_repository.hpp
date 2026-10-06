@@ -153,7 +153,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::market_fixings_filter>& filter = std::nullopt);
+                const std::optional<messaging::market_fixings_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active market fixings.
@@ -161,7 +162,9 @@ public:
      * @return Total number of active market fixings
      */
     std::uint32_t get_total_market_fixing_count(
-        context ctx, const std::optional<messaging::market_fixings_filter>& filter = std::nullopt);
+        context ctx,
+        const std::optional<messaging::market_fixings_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a market fixing by closing its temporal validity.

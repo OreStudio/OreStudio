@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/series_classification_rule_entity.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_mapper.hpp"
@@ -282,36 +283,39 @@ std::vector<domain::series_classification_rule>
 series_classification_rule_repository::read_latest(context ctx,
                                                    std::uint32_t offset,
                                                    std::uint32_t limit,
-                                                   const ores::utility::domain::order& order) {
+                                                   const ores::utility::domain::order& order,
+                                                   const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series classification rules with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<series_classification_rule_entity,
                                       domain::series_classification_rule>(
         ctx,
         query,
         list_order(order, {"series_type", "metric"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return series_classification_rule_mapper::map(entities); },
         lg(),
         "Reading latest series classification rules with pagination.");
 }
 
-std::uint32_t series_classification_rule_repository::get_total_rule_count(context ctx) {
+std::uint32_t series_classification_rule_repository::get_total_rule_count(
+    context ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series classification rule count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<series_classification_rule_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<series_classification_rule_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<series_classification_rule_entity>(
-        ctx, query, std::nullopt, lg(), "Counting series classification rules");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), std::nullopt),
+        lg(),
+        "Counting series classification rules");
 }
 
 std::vector<domain::series_classification_rule>

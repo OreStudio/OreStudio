@@ -67,6 +67,7 @@ export interface ListRunGrantsRequest {
     limit: number;
     order: Order;
     filter: RunGrantsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRunGrantsResponse {

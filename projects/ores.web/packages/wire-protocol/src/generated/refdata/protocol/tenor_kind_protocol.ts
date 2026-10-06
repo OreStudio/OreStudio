@@ -83,6 +83,7 @@ export interface ListTenorKindsRequest {
     limit: number;
     order: Order;
     filter: TenorKindsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorKindsResponse {

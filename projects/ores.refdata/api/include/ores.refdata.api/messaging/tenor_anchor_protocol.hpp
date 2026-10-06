@@ -98,6 +98,7 @@ struct list_tenor_anchors_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_anchors_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_tenor_anchors_response {

@@ -90,6 +90,7 @@ export interface ListCounterpartiesRequest {
     limit: number;
     order: Order;
     filter: CounterpartiesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCounterpartiesResponse {

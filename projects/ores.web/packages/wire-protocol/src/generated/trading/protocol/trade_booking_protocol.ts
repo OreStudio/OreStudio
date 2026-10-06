@@ -87,6 +87,7 @@ export interface ListTradeBookingsRequest {
     limit: number;
     order: Order;
     filter: TradeBookingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradeBookingsResponse {

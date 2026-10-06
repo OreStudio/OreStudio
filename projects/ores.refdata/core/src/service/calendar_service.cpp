@@ -119,9 +119,23 @@ calendar_service::list_calendars(const messaging::list_calendars_request& reques
         response.result.message = "The search text is longer than 256 characters.";
         return response;
     }
-    response.calendars =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_calendar_count(ctx_, request.filter);
+    // A stated instant is parsed here, so a malformed one is the caller's
+    // mistake rather than a database error, and the store reads one form.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        try {
+            as_of = ores::platform::time::datetime::to_iso8601_utc(
+                ores::platform::time::datetime::from_iso8601_utc(*request.as_of));
+        } catch (const std::invalid_argument&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
+    response.calendars = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_calendar_count(ctx_, request.filter, as_of);
     return response;
 }
 

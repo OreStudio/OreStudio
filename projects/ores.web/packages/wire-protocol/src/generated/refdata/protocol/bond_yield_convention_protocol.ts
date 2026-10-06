@@ -86,6 +86,7 @@ export interface ListBondYieldConventionsRequest {
     limit: number;
     order: Order;
     filter: BondYieldConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondYieldConventionsResponse {

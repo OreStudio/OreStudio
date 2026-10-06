@@ -82,6 +82,7 @@ export interface ListTradeStatesRequest {
     limit: number;
     order: Order;
     filter: TradeStatesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradeStatesResponse {

@@ -85,6 +85,7 @@ export interface ListPaymentFrequenciesRequest {
     limit: number;
     order: Order;
     filter: PaymentFrequenciesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPaymentFrequenciesResponse {

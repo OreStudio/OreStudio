@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/inflation_seasonality_factor_entity.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_factor_mapper.hpp"
@@ -287,37 +288,41 @@ inflation_seasonality_factor_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::inflation_seasonality_factors_filter>& filter) {
+    const std::optional<messaging::inflation_seasonality_factors_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation seasonality factors with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<inflation_seasonality_factor_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<inflation_seasonality_factor_entity,
                                       domain::inflation_seasonality_factor>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return inflation_seasonality_factor_mapper::map(entities); },
         lg(),
         "Reading latest inflation seasonality factors with pagination.");
 }
 
 std::uint32_t inflation_seasonality_factor_repository::get_total_seasonality_factor_count(
-    context ctx, const std::optional<messaging::inflation_seasonality_factors_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::inflation_seasonality_factors_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active inflation seasonality factor count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<inflation_seasonality_factor_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<inflation_seasonality_factor_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting inflation seasonality factors");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting inflation seasonality factors");
 }
 
 std::vector<domain::inflation_seasonality_factor>

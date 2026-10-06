@@ -85,6 +85,7 @@ export interface ListIborIndexConventionsRequest {
     limit: number;
     order: Order;
     filter: IborIndexConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListIborIndexConventionsResponse {

@@ -29,6 +29,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <algorithm>
@@ -306,40 +307,42 @@ platform_repository::read_latest(context ctx,
                                  std::uint32_t offset,
                                  std::uint32_t limit,
                                  const ores::utility::domain::order& order,
-                                 const std::optional<messaging::platforms_filter>& filter) {
+                                 const std::optional<messaging::platforms_filter>& filter,
+                                 const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute platforms with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<platform_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<platform_entity, domain::platform>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return platform_mapper::map(entities); },
         lg(),
         "Reading latest compute platforms with pagination.");
 }
 
 std::uint32_t platform_repository::get_total_platform_count(
-    context ctx, const std::optional<messaging::platforms_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::platforms_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute platform count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query =
-        sqlgen::read<std::vector<platform_entity>> |
-        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<platform_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
-    return execute_count_query<platform_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting compute platforms");
+    return execute_count_query<platform_entity>(ctx,
+                                                query,
+                                                narrowed(valid_at(as_of), filter_condition(filter)),
+                                                lg(),
+                                                "Counting compute platforms");
 }
 
 std::vector<domain::platform>

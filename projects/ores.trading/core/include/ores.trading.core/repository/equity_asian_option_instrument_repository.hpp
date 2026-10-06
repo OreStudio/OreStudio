@@ -151,7 +151,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::equity_asian_option_instruments_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active Equity Asian Option instruments.
@@ -161,7 +162,8 @@ public:
     std::uint32_t get_total_equity_asian_option_instrument_count(
         context ctx,
         const std::optional<messaging::equity_asian_option_instruments_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a Equity Asian Option instrument by closing its temporal validity.

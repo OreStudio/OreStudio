@@ -87,6 +87,7 @@ export interface ListKnockOutSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: KnockOutSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListKnockOutSwapInstrumentsResponse {

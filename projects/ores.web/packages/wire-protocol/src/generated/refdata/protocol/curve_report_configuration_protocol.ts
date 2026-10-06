@@ -93,6 +93,7 @@ export interface ListCurveReportConfigurationsRequest {
     limit: number;
     order: Order;
     filter: CurveReportConfigurationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveReportConfigurationsResponse {

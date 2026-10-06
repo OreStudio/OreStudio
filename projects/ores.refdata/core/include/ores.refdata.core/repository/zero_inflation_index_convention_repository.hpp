@@ -150,7 +150,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::zero_inflation_index_conventions_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active zero inflation index conventions.
@@ -160,7 +161,8 @@ public:
     std::uint32_t get_total_zero_inflation_index_convention_count(
         context ctx,
         const std::optional<messaging::zero_inflation_index_conventions_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a zero inflation index convention by closing its temporal validity.

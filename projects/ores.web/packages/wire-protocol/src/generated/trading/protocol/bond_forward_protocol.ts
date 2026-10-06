@@ -91,6 +91,7 @@ export interface ListBondForwardsRequest {
     limit: number;
     order: Order;
     filter: BondForwardsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondForwardsResponse {

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.iam.api/domain/account_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_status_entity.hpp"
 #include "ores.iam.core/repository/account_status_mapper.hpp"
@@ -270,36 +271,40 @@ std::vector<domain::account_status> account_status_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::account_statuses_filter>& filter) {
+    const std::optional<messaging::account_statuses_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account statuses with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_status_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<account_status_entity, domain::account_status>(
         ctx,
         query,
         list_order(order, {"status"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return account_status_mapper::map(entities); },
         lg(),
         "Reading latest account statuses with pagination.");
 }
 
 std::uint32_t account_status_repository::get_total_status_count(
-    context ctx, const std::optional<messaging::account_statuses_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::account_statuses_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account status count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<account_status_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<account_status_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<account_status_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting account statuses");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting account statuses");
 }
 
 std::vector<domain::account_status>

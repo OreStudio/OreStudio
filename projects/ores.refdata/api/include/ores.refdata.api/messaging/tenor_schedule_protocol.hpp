@@ -106,6 +106,7 @@ struct list_tenor_schedules_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenor_schedules_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_tenor_schedules_response {

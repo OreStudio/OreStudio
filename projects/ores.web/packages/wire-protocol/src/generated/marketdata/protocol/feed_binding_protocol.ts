@@ -83,6 +83,7 @@ export interface ListFeedBindingsRequest {
     limit: number;
     order: Order;
     filter: FeedBindingsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFeedBindingsResponse {

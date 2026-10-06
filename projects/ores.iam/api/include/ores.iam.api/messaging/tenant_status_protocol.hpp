@@ -100,6 +100,7 @@ struct list_tenant_statuses_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<tenant_statuses_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_tenant_statuses_response {

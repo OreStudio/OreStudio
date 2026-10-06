@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_identifier_entity.hpp"
 #include "ores.trading.core/repository/trade_identifier_mapper.hpp"
@@ -268,35 +269,35 @@ std::vector<domain::trade_identifier>
 trade_identifier_repository::read_latest(context ctx,
                                          std::uint32_t offset,
                                          std::uint32_t limit,
-                                         const ores::utility::domain::order& order) {
+                                         const ores::utility::domain::order& order,
+                                         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifiers with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<trade_identifier_entity, domain::trade_identifier>(
         ctx,
         query,
         list_order(order, {"trade_id", "id_type"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return trade_identifier_mapper::map(entities); },
         lg(),
         "Reading latest trade identifiers with pagination.");
 }
 
-std::uint32_t trade_identifier_repository::get_total_identifier_count(context ctx) {
+std::uint32_t
+trade_identifier_repository::get_total_identifier_count(context ctx,
+                                                        const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<trade_identifier_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<trade_identifier_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<trade_identifier_entity>(
-        ctx, query, std::nullopt, lg(), "Counting trade identifiers");
+        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting trade identifiers");
 }
 
 std::vector<domain::trade_identifier>

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/parameter_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/parameter_definition_entity.hpp"
 #include "ores.reporting.core/repository/parameter_definition_mapper.hpp"
@@ -371,36 +372,40 @@ std::vector<domain::parameter_definition> parameter_definition_repository::read_
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::parameter_definitions_filter>& filter) {
+    const std::optional<messaging::parameter_definitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest parameter definitions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<parameter_definition_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<parameter_definition_entity, domain::parameter_definition>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return parameter_definition_mapper::map(entities); },
         lg(),
         "Reading latest parameter definitions with pagination.");
 }
 
 std::uint32_t parameter_definition_repository::get_total_parameter_count(
-    context ctx, const std::optional<messaging::parameter_definitions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::parameter_definitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active parameter definition count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<parameter_definition_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<parameter_definition_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<parameter_definition_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting parameter definitions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting parameter definitions");
 }
 
 std::vector<domain::parameter_definition>

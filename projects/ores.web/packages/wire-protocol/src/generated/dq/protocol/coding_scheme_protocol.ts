@@ -86,6 +86,7 @@ export interface ListCodingSchemesRequest {
     limit: number;
     order: Order;
     filter: CodingSchemesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCodingSchemesResponse {

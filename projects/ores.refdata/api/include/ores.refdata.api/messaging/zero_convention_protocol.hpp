@@ -105,6 +105,7 @@ struct list_zero_conventions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<zero_conventions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_zero_conventions_response {

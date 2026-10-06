@@ -85,6 +85,7 @@ export interface ListBusinessCentresRequest {
     limit: number;
     order: Order;
     filter: BusinessCentresFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBusinessCentresResponse {

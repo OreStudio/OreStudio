@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/report_definition_entity.hpp"
 #include "ores.reporting.core/repository/report_definition_mapper.hpp"
@@ -326,40 +327,43 @@ std::vector<domain::report_definition> report_definition_repository::read_latest
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::report_definitions_filter>& filter) {
+    const std::optional<messaging::report_definitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report definitions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_definition_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
-        sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<report_definition_entity, domain::report_definition>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return report_definition_mapper::map(entities); },
         lg(),
         "Reading latest report definitions with pagination.");
 }
 
 std::uint32_t report_definition_repository::get_total_definition_count(
-    context ctx, const std::optional<messaging::report_definitions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::report_definitions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report definition count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query =
-        sqlgen::read<std::vector<report_definition_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid);
 
     return execute_count_query<report_definition_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting report definitions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting report definitions");
 }
 
 std::vector<domain::report_definition>

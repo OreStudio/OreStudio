@@ -172,7 +172,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::workflow_steps_filter>& filter = std::nullopt);
+                const std::optional<messaging::workflow_steps_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active workflow steps.
@@ -180,7 +181,9 @@ public:
      * @return Total number of active workflow steps
      */
     std::uint32_t get_total_step_count(
-        context ctx, const std::optional<messaging::workflow_steps_filter>& filter = std::nullopt);
+        context ctx,
+        const std::optional<messaging::workflow_steps_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a workflow step by closing its temporal validity.

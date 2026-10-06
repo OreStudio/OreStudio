@@ -87,6 +87,7 @@ export interface ListBadgeDefinitionsRequest {
     limit: number;
     order: Order;
     filter: BadgeDefinitionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBadgeDefinitionsResponse {

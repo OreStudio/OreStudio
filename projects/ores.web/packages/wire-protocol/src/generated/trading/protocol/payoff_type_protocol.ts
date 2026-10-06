@@ -81,6 +81,7 @@ export interface ListPayoffTypesRequest {
     limit: number;
     order: Order;
     filter: PayoffTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPayoffTypesResponse {

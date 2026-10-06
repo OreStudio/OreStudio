@@ -99,6 +99,7 @@ struct list_composite_instruments_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_instruments_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_composite_instruments_response {

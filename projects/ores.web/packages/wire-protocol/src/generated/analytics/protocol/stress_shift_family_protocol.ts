@@ -81,6 +81,7 @@ export interface ListStressShiftFamiliesRequest {
     limit: number;
     order: Order;
     filter: StressShiftFamiliesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListStressShiftFamiliesResponse {

@@ -85,6 +85,7 @@ export interface ListFutureConventionsRequest {
     limit: number;
     order: Order;
     filter: FutureConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFutureConventionsResponse {

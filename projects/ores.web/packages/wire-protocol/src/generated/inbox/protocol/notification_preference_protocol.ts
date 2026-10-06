@@ -87,6 +87,7 @@ export interface ListNotificationPreferencesRequest {
     limit: number;
     order: Order;
     filter: NotificationPreferencesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNotificationPreferencesResponse {

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/commodity_basket_constituent_entity.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_mapper.hpp"
@@ -292,37 +293,39 @@ std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_latest(context ctx,
                                                      std::uint32_t offset,
                                                      std::uint32_t limit,
-                                                     const ores::utility::domain::order& order) {
+                                                     const ores::utility::domain::order& order,
+                                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity basket constituents with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<commodity_basket_constituent_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<commodity_basket_constituent_entity,
                                       domain::commodity_basket_constituent>(
         ctx,
         query,
         list_order(order, {"trade_id", "sequence_number"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return commodity_basket_constituent_mapper::map(entities); },
         lg(),
         "Reading latest commodity basket constituents with pagination.");
 }
 
-std::uint32_t
-commodity_basket_constituent_repository::get_total_commodity_basket_constituent_count(context ctx) {
+std::uint32_t commodity_basket_constituent_repository::get_total_commodity_basket_constituent_count(
+    context ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity basket constituent count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<commodity_basket_constituent_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<commodity_basket_constituent_entity>(
-        ctx, query, std::nullopt, lg(), "Counting commodity basket constituents");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), std::nullopt),
+        lg(),
+        "Counting commodity basket constituents");
 }
 
 std::vector<domain::commodity_basket_constituent>

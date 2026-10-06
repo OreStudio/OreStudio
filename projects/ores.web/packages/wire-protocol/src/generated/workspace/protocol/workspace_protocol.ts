@@ -88,6 +88,7 @@ export interface ListWorkspacesRequest {
     limit: number;
     order: Order;
     filter: WorkspacesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListWorkspacesResponse {

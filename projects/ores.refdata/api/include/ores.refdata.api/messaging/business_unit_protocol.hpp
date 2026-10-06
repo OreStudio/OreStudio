@@ -103,6 +103,7 @@ struct list_business_units_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<business_units_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_business_units_response {

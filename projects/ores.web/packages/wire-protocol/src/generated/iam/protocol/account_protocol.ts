@@ -65,6 +65,7 @@ export interface ListAccountsRequest {
     limit: number;
     order: Order;
     filter: AccountsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAccountsResponse {

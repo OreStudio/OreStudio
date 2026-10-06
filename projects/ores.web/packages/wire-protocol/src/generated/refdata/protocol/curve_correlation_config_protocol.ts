@@ -95,6 +95,7 @@ export interface ListCurveCorrelationConfigsRequest {
     limit: number;
     order: Order;
     filter: CurveCorrelationConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveCorrelationConfigsResponse {

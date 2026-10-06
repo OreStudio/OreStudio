@@ -83,6 +83,7 @@ export interface ListPurposeTypesRequest {
     limit: number;
     order: Order;
     filter: PurposeTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPurposeTypesResponse {

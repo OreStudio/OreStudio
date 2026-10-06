@@ -147,7 +147,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::bond_options_filter>& filter = std::nullopt);
+                const std::optional<messaging::bond_options_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active bond options.
@@ -155,7 +156,9 @@ public:
      * @return Total number of active bond options
      */
     std::uint32_t get_total_option_count(
-        context ctx, const std::optional<messaging::bond_options_filter>& filter = std::nullopt);
+        context ctx,
+        const std::optional<messaging::bond_options_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a bond option by closing its temporal validity.

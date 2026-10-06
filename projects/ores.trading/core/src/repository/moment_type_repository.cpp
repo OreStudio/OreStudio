@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/moment_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/moment_type_entity.hpp"
 #include "ores.trading.core/repository/moment_type_mapper.hpp"
@@ -266,36 +267,39 @@ moment_type_repository::read_latest(context ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
-                                    const std::optional<messaging::moment_types_filter>& filter) {
+                                    const std::optional<messaging::moment_types_filter>& filter,
+                                    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest moment types with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<moment_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+    const auto query = sqlgen::read<std::vector<moment_type_entity>> | where("tenant_id"_c == tid) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<moment_type_entity, domain::moment_type>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return moment_type_mapper::map(entities); },
         lg(),
         "Reading latest moment types with pagination.");
 }
 
 std::uint32_t moment_type_repository::get_total_moment_type_count(
-    context ctx, const std::optional<messaging::moment_types_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::moment_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active moment type count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<moment_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<moment_type_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<moment_type_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting moment types");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting moment types");
 }
 
 std::vector<domain::moment_type>

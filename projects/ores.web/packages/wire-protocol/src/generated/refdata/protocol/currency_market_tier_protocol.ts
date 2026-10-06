@@ -83,6 +83,7 @@ export interface ListCurrencyMarketTiersRequest {
     limit: number;
     order: Order;
     filter: CurrencyMarketTiersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurrencyMarketTiersResponse {

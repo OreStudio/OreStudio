@@ -84,6 +84,7 @@ export interface ListRoleGrantRequestsRequest {
     limit: number;
     order: Order;
     filter: RoleGrantRequestsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRoleGrantRequestsResponse {

@@ -83,6 +83,7 @@ export interface ListBondReposRequest {
     limit: number;
     order: Order;
     filter: BondReposFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondReposResponse {

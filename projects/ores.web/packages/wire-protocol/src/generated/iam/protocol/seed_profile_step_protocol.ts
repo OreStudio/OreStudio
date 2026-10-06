@@ -87,6 +87,7 @@ export interface ListSeedProfileStepsRequest {
     limit: number;
     order: Order;
     filter: SeedProfileStepsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSeedProfileStepsResponse {

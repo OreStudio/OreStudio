@@ -194,7 +194,8 @@ public:
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
         const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active matrix rows.
@@ -204,7 +205,8 @@ public:
     std::uint32_t get_total_row_count(
         context ctx,
         const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a matrix row by closing its temporal validity.

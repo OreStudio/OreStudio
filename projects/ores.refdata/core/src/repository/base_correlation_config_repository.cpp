@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/base_correlation_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/base_correlation_config_entity.hpp"
 #include "ores.refdata.core/repository/base_correlation_config_mapper.hpp"
@@ -278,37 +279,41 @@ std::vector<domain::base_correlation_config> base_correlation_config_repository:
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::base_correlation_configs_filter>& filter) {
+    const std::optional<messaging::base_correlation_configs_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest base correlation configs with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<base_correlation_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<base_correlation_config_entity,
                                       domain::base_correlation_config>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return base_correlation_config_mapper::map(entities); },
         lg(),
         "Reading latest base correlation configs with pagination.");
 }
 
 std::uint32_t base_correlation_config_repository::get_total_base_correlation_config_count(
-    context ctx, const std::optional<messaging::base_correlation_configs_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::base_correlation_configs_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active base correlation config count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<base_correlation_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<base_correlation_config_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<base_correlation_config_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting base correlation configs");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting base correlation configs");
 }
 
 std::vector<domain::base_correlation_config>

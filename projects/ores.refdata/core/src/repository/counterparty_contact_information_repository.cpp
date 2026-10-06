@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
@@ -440,21 +441,20 @@ counterparty_contact_information_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
+    const std::optional<messaging::counterparty_contact_informations_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty contact informations with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<counterparty_contact_information_entity,
                                       domain::counterparty_contact_information>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
         "Reading latest counterparty contact informations with pagination.");
@@ -462,16 +462,21 @@ counterparty_contact_information_repository::read_latest(
 
 std::uint32_t
 counterparty_contact_information_repository::get_total_counterparty_contact_information_count(
-    context ctx, const std::optional<messaging::counterparty_contact_informations_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::counterparty_contact_informations_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty contact information count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<counterparty_contact_information_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting counterparty contact informations");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting counterparty contact informations");
 }
 
 std::vector<domain::counterparty_contact_information>

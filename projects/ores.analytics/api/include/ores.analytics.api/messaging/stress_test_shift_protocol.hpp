@@ -105,6 +105,7 @@ struct list_stress_test_shifts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<stress_test_shifts_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_stress_test_shifts_response {

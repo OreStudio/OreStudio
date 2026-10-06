@@ -150,7 +150,8 @@ public:
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
-        const std::optional<messaging::equity_forward_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::equity_forward_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active equity forward instruments.
@@ -159,7 +160,8 @@ public:
      */
     std::uint32_t get_total_equity_forward_instrument_count(
         context ctx,
-        const std::optional<messaging::equity_forward_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::equity_forward_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a equity forward instrument by closing its temporal validity.

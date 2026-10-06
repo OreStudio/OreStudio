@@ -90,6 +90,7 @@ export interface ListFxVarianceSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxVarianceSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxVarianceSwapInstrumentsResponse {

@@ -118,6 +118,7 @@ struct list_commodity_curve_configs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<commodity_curve_configs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_commodity_curve_configs_response {

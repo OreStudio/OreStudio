@@ -86,6 +86,7 @@ export interface ListPricingModelProductParametersRequest {
     limit: number;
     order: Order;
     filter: PricingModelProductParametersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPricingModelProductParametersResponse {

@@ -86,6 +86,7 @@ export interface ListCurrencyPairConventionsRequest {
     limit: number;
     order: Order;
     filter: CurrencyPairConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurrencyPairConventionsResponse {

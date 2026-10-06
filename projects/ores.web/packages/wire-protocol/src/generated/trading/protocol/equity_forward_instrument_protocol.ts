@@ -89,6 +89,7 @@ export interface ListEquityForwardInstrumentsRequest {
     limit: number;
     order: Order;
     filter: EquityForwardInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityForwardInstrumentsResponse {

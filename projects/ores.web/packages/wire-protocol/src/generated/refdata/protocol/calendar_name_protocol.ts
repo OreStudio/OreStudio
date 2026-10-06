@@ -81,6 +81,7 @@ export interface ListCalendarNamesRequest {
     limit: number;
     order: Order;
     filter: CalendarNamesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCalendarNamesResponse {

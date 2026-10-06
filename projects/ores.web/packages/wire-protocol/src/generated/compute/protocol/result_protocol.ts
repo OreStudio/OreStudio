@@ -90,6 +90,7 @@ export interface ListResultsRequest {
     limit: number;
     order: Order;
     filter: ResultsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListResultsResponse {

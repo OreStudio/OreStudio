@@ -82,6 +82,7 @@ export interface ListAppsRequest {
     limit: number;
     order: Order;
     filter: AppsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAppsResponse {

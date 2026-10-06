@@ -108,9 +108,23 @@ commodity_basket_constituent_service::list_commodity_basket_constituents(
                                   request.order.field + ".";
         return response;
     }
+    // A stated instant is parsed here, so a malformed one is the caller's
+    // mistake rather than a database error, and the store reads one form.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        try {
+            as_of = ores::platform::time::datetime::to_iso8601_utc(
+                ores::platform::time::datetime::from_iso8601_utc(*request.as_of));
+        } catch (const std::invalid_argument&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
     response.commodity_basket_constituents =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order);
-    response.total = repo_.get_total_commodity_basket_constituent_count(ctx_);
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
+    response.total = repo_.get_total_commodity_basket_constituent_count(ctx_, as_of);
     return response;
 }
 

@@ -97,6 +97,7 @@ struct list_settlement_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<settlement_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_settlement_types_response {

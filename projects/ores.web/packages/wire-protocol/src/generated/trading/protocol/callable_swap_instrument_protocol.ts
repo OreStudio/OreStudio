@@ -84,6 +84,7 @@ export interface ListCallableSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: CallableSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCallableSwapInstrumentsResponse {

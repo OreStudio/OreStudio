@@ -94,6 +94,7 @@ export interface ListCounterpartyContactInformationsRequest {
     limit: number;
     order: Order;
     filter: CounterpartyContactInformationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCounterpartyContactInformationsResponse {

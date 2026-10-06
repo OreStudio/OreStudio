@@ -101,6 +101,7 @@ struct list_images_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<images_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_images_response {

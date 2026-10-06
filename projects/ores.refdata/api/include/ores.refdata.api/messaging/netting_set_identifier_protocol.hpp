@@ -102,6 +102,7 @@ struct list_netting_set_identifiers_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<netting_set_identifiers_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_netting_set_identifiers_response {

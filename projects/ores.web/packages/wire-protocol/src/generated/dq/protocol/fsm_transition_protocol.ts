@@ -85,6 +85,7 @@ export interface ListFsmTransitionsRequest {
     limit: number;
     order: Order;
     filter: FsmTransitionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFsmTransitionsResponse {

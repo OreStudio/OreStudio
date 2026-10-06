@@ -89,6 +89,7 @@ export interface ListFxAccumulatorInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxAccumulatorInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxAccumulatorInstrumentsResponse {

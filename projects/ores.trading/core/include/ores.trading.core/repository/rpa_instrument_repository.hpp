@@ -148,7 +148,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::rpa_instruments_filter>& filter = std::nullopt);
+                const std::optional<messaging::rpa_instruments_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active RPA instruments.
@@ -156,7 +157,9 @@ public:
      * @return Total number of active RPA instruments
      */
     std::uint32_t get_total_rpa_instrument_count(
-        context ctx, const std::optional<messaging::rpa_instruments_filter>& filter = std::nullopt);
+        context ctx,
+        const std::optional<messaging::rpa_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a RPA instrument by closing its temporal validity.

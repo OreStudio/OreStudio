@@ -84,6 +84,7 @@ export interface ListCrmTopologyConfigsRequest {
     limit: number;
     order: Order;
     filter: CrmTopologyConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCrmTopologyConfigsResponse {

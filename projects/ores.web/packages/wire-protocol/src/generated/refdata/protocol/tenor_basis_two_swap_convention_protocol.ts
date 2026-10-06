@@ -90,6 +90,7 @@ export interface ListTenorBasisTwoSwapConventionsRequest {
     limit: number;
     order: Order;
     filter: TenorBasisTwoSwapConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorBasisTwoSwapConventionsResponse {

@@ -104,6 +104,7 @@ export interface ListCsasRequest {
     limit: number;
     order: Order;
     filter: CsasFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCsasResponse {

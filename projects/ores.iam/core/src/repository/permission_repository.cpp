@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/permission_entity.hpp"
 #include "ores.iam.core/repository/permission_mapper.hpp"
@@ -257,36 +258,39 @@ permission_repository::read_latest(context ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
-                                   const std::optional<messaging::permissions_filter>& filter) {
+                                   const std::optional<messaging::permissions_filter>& filter,
+                                   const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permissions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<permission_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+    const auto query = sqlgen::read<std::vector<permission_entity>> | where("tenant_id"_c == tid) |
                        sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<permission_entity, domain::permission>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return permission_mapper::map(entities); },
         lg(),
         "Reading latest permissions with pagination.");
 }
 
 std::uint32_t permission_repository::get_total_permission_count(
-    context ctx, const std::optional<messaging::permissions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::permissions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active permission count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<permission_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<permission_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<permission_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting permissions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting permissions");
 }
 
 std::vector<domain::permission>

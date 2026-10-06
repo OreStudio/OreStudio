@@ -107,6 +107,7 @@ export interface ListCommodityInstrumentsRequest {
     limit: number;
     order: Order;
     filter: CommodityInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityInstrumentsResponse {

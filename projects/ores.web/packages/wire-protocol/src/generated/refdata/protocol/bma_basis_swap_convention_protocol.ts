@@ -91,6 +91,7 @@ export interface ListBmaBasisSwapConventionsRequest {
     limit: number;
     order: Order;
     filter: BmaBasisSwapConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBmaBasisSwapConventionsResponse {

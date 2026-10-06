@@ -83,6 +83,7 @@ export interface ListTenorConventionsRequest {
     limit: number;
     order: Order;
     filter: TenorConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorConventionsResponse {

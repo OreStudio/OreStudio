@@ -88,6 +88,7 @@ export interface ListIrCurveBootstrapConfigsRequest {
     limit: number;
     order: Order;
     filter: IrCurveBootstrapConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListIrCurveBootstrapConfigsResponse {

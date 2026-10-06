@@ -71,6 +71,7 @@ export interface ListPermissionsRequest {
     limit: number;
     order: Order;
     filter: PermissionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPermissionsResponse {

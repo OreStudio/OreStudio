@@ -89,6 +89,7 @@ export interface ListReportAnalyticParametersRequest {
     limit: number;
     order: Order;
     filter: ReportAnalyticParametersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportAnalyticParametersResponse {

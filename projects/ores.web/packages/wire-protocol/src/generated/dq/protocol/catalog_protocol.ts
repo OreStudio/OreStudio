@@ -82,6 +82,7 @@ export interface ListCatalogsRequest {
     limit: number;
     order: Order;
     filter: CatalogsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCatalogsResponse {

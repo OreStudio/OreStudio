@@ -140,6 +140,7 @@ struct list_report_run_setups_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_run_setups_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_report_run_setups_response {

@@ -82,6 +82,7 @@ export interface ListCurveConfigurationSectionsRequest {
     limit: number;
     order: Order;
     filter: CurveConfigurationSectionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveConfigurationSectionsResponse {

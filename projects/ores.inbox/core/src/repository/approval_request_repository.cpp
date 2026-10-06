@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.inbox.api/domain/approval_request_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_request_entity.hpp"
 #include "ores.inbox.core/repository/approval_request_mapper.hpp"
@@ -339,36 +340,40 @@ std::vector<domain::approval_request> approval_request_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::approval_requests_filter>& filter) {
+    const std::optional<messaging::approval_requests_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval requests with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<approval_request_entity, domain::approval_request>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return approval_request_mapper::map(entities); },
         lg(),
         "Reading latest approval requests with pagination.");
 }
 
 std::uint32_t approval_request_repository::get_total_request_count(
-    context ctx, const std::optional<messaging::approval_requests_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::approval_requests_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_request_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<approval_request_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<approval_request_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting approval requests");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting approval requests");
 }
 
 std::vector<domain::approval_request>

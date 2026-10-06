@@ -84,3 +84,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The story, its five tasks and the sprint row are in place. The scaffold lands
+ahead of the work, which follows task by task, starting with the sweep that
+finishes the system_core bundle and the ER diagram image.
